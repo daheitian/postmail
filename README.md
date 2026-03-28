@@ -1,105 +1,107 @@
 # Jant
 
-> **Work in Progress**: This project is still under active development and not yet ready for use. See the latest build at [demo.jant.me](https://demo.jant.me).
+> **Work in Progress**: Jant is still pre-1.0. Breaking changes are expected while the product and docs settle.
+>
+> Live demo: [demo.jant.me](https://demo.jant.me)
 >
 > Demo login: `demo@jant.me` / `jantdemodemojant`
 
-A personal microblogging system as smooth as <https://threads.com>.
+Jant is a small blog system for one author. It treats notes, links, quotes, threads, and collections as normal parts of writing, with a publishing flow that feels closer to posting than opening an admin panel.
 
-> **Jant** = Jantelagen (Law of Jante)
-> Low-key, de-socialized personal expression.
+No followers. No likes. No algorithmic feed.
 
-## What is Jant?
+The name comes from _Jantelagen_, a Nordic social concept often associated with humility. I liked the word, so I used it as the inspiration for the name.
 
-Jant is a single-author microblog for people who want to share thoughts without the noise of social media. No followers, no likes, no retweets—just your words.
+## Why Jant Exists
 
-**Features**:
+Maybe the honest answer is: because I couldn't find what I wanted.
 
-- Multiple content types: notes, articles, links, quotes, images
-- Thread support for longer thoughts
-- Collections for curated topics
-- Beautiful, themeable design
-- Deploys on Cloudflare Workers or as a self-hosted Node/Docker app
+Most blog systems treat "published" and "broadcast" as the same decision. Post something, and it goes to your RSS feed, your subscribers, and your timeline all at once. I wanted a quieter model. A post should be able to live on the site, have its own URL, belong to a collection, or continue a thread without automatically becoming an announcement. In Jant, `/feed` defaults to `Featured`, not `Latest`, and `Hidden from Latest` exists for exactly that middle ground.
+
+I also wanted publishing to feel modern. Not another WordPress or Ghost-style dashboard, but something closer to posting. Threads matter here. A lot of writing happens as one note, then a follow-up, then a correction, then one more addition. Very few blog systems treat that as a first-class shape.
+
+And I have always liked Tumblr's core instinct: note, link, and quote should be first-class formats. Those three cover most of what I have wanted from blogging for years. Open-source alternatives in that space still seem surprisingly rare, so I built the one I wanted.
+
+## What Jant Includes
+
+- Three post formats: note, link, and quote
+- Threads for connected thoughts and self-replies
+- Collections for curated topics and ongoing series
+- Rich attachments for images, video, audio, documents, and pasted code
+- Ratings for books, films, articles, and other posts you want to keep a record of
+- Featured-first feeds, so publishing and syndication stay separate by default
+- Search, archive pages, and RSS feeds
+- Theme customization with built-in themes, fonts, and custom CSS
+- Full API, import tools, and Zola export for portability
+
+## How It Runs
+
+| Option             | Best for                                         | Default stack                                        |
+| ------------------ | ------------------------------------------------ | ---------------------------------------------------- |
+| Cloudflare Workers | Cheap global hosting with minimal infrastructure | D1 + R2                                              |
+| Docker / Node.js   | Self-hosting on your own server                  | SQLite or Postgres + S3 (recommended) or local media |
+
+Cloudflare Workers is a first-class target because it can keep a personal site online for a long time at very low cost.
+
+If you prefer to run Jant yourself on a more traditional server, that works too. Docker and bare Node are both supported.
 
 ## Quick Start
 
-### One-Click Deploy
+### Deploy on Cloudflare
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
 
-### Developer Setup
+Use the Cloudflare deploy button for the fastest path. It starts from the Jant starter repo and walks you through the required Cloudflare fields.
+
+See [Deploy on Cloudflare](docs/deployment.md) for the full one-click and manual guide.
+
+### Create with CLI
 
 ```bash
-# Create a new Jant site
-npm create jant my-blog
-
-# Start development
-cd my-blog
+npm create jant@latest my-site
+cd my-site
 npm run dev
 ```
 
+Open `http://localhost:3000` and complete the first-run setup in the browser.
+
+### Run with Docker
+
+Use the official image when you want a traditional server deployment:
+
+- Docker image: [`owenyoung/jant`](https://hub.docker.com/r/owenyoung/jant)
+- Guide: [Deploy with Docker](docs/deployment-docker.md)
+
+### Hosted Option
+
+If you would rather not self-host, there is also a small hosted option. Access opens gradually. Write to `owen#jant.me` if you want help getting set up.
+
 ## Documentation
 
-- Official Docker image: [`owenyoung/jant`](https://hub.docker.com/r/owenyoung/jant)
+- [Introduction to Jant](docs/overview.md)
 - [Getting Started](docs/getting-started.md)
-- [Backups & Recovery](docs/backups.md)
-- [Deployment](docs/deployment.md)
-- [Docker Deployment](docs/deployment-docker.md)
+- [Writing and Organizing Posts](docs/writing-and-organizing.md)
+- [Deploy on Cloudflare](docs/deployment.md)
+- [Deploy with Docker](docs/deployment-docker.md)
 - [Configuration](docs/configuration.md)
+- [Export and Import](docs/export-and-import.md)
+- [Backups and Recovery](docs/backups.md)
 - [Theming](docs/theming.md)
 - [API Reference](docs/API.md)
 
-### Recommended Configuration
-
-After deploying, configure these in `wrangler.toml` for the best experience:
-
-| Variable              | Why                                                                                   |
-| --------------------- | ------------------------------------------------------------------------------------- |
-| `R2_PUBLIC_URL`       | Serve media directly from CDN instead of proxying through Worker (faster, lower cost) |
-| `IMAGE_TRANSFORM_URL` | Enable automatic thumbnail generation and image optimization                          |
-
-See [Configuration](docs/configuration.md) for full details and setup instructions.
-
 ## Development
 
-Requires [mise](https://mise.jdx.dev/) — it manages Node.js and pnpm automatically.
+Jant's own repo uses [mise](https://mise.jdx.dev/) to manage Node.js and pnpm.
 
 ```bash
-# Install mise (macOS/Linux)
-curl https://mise.run | sh
-
-# Clone and setup
 git clone https://github.com/jant-me/jant.git
 cd jant
-mise install   # installs Node.js and pnpm
-pnpm install   # installs dependencies
-
-# Start development server (defaults to http://localhost:3000)
+mise install
+pnpm install
 mise run dev
-
-# Recreate the local D1 shell with dev auth + canonical demo snapshot
-mise run db-local-rebuild-demo
-
-# Reload just the canonical demo snapshot into the current local DB shell
-mise run db-local-load-demo-snapshot
-
-# Override the dev port
-PORT=9030 mise run dev
 ```
 
-For authenticated browser or agent debugging, run `mise run dev-debug`. It uses the first free port starting at `19020` and prints the exact `http://localhost:19xxx/...` login URL to use. Prefer `localhost` for browser debugging because some environments upgrade `*.localtest.me` to HTTPS, which breaks local HTTP dev ports.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for code style, PR process, and release workflow.
-
-### Translation Reference
-
-Jant keeps [`references/lingui-po-translate/`](references/lingui-po-translate/) as a checked-in copy of [lingui-po-translate](https://github.com/theowenyoung/lingui-po-translate). This is the CLI tool we use for AI-assisted Lingui PO translation, and we keep it locally so the team can check its supported options and integration details without leaving the repo.
-
-The most relevant options for our workflow are `--service`, `--serviceConfig`, `--model`, `--baseUrl`, `--prompt`, and `--sourceOverride`. Its README also documents how Lingui `@context` comments are passed through to translation prompts, which matches Jant's `t({ comment: "@context:..." })` convention.
-
-## Philosophy
-
-Jant is built on the idea that not everything needs to be optimized for engagement. Write for yourself. Share if you want. No metrics, no pressure
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contributor workflow.
 
 ## License
 

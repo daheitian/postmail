@@ -1,241 +1,122 @@
-# Backups & Recovery
+# Backups and Recovery
 
-Jant separates **site export** from **infrastructure backup**.
+Jant has three different recovery tools, and they solve different problems:
 
-The short version:
+| Need                                                        | Use this                                          |
+| ----------------------------------------------------------- | ------------------------------------------------- |
+| Move content to another site                                | `site export` and `site import`                   |
+| Restore content with the same internal IDs and storage keys | `site snapshot export` and `site snapshot import` |
+| Recover from production data loss                           | a real database backup plus a real media backup   |
 
-- Use **Export Static Site** when you want a Zola export for static publishing or to import into another Jant instance.
-- Treat **database backup** and **media backup** as infrastructure concerns.
-- Practice recovery on a blank staging environment before you need it in production.
+If you remember only one rule, remember this:
 
-## What counts as a full backup
+**A full Jant backup always includes both the database and the uploaded media files.**
 
-A full Jant backup needs both of these:
+## What Counts as a Full Backup
 
-- Your database
-- Your uploaded media files
+You need both:
 
-If you only back up the database, you keep your posts, collections, settings, and media metadata, but not the uploaded files themselves. If you only back up media storage, you keep the files but lose the records that point to them.
+- the database
+- the media storage
 
-## What "Export Static Site" is for
+If you back up only the database, you keep posts, collections, settings, and media metadata, but not the uploaded files.
 
-The dashboard export and `jant site export` produce a Zola site ZIP. That export is useful for:
+If you back up only media storage, you keep files but lose the records that point to them.
 
-- Static publishing
-- Moving content into another Jant instance with `jant site import`
-- Keeping a human-readable archive of your published structure
+## What Site Export Is For
 
-It is **not** a complete disaster-recovery plan for a live Jant deployment.
+`site export` is a portability tool.
 
-### Dashboard export vs CLI export
+Use it for:
 
-The dashboard button downloads the raw site export from Jant.
+- moving content into another Jant site
+- keeping a portable archive
+- generating a Zola-compatible static export
 
-If you need a more portable export from the command line, prefer:
+Do not treat `site export` as your primary disaster-recovery plan for a live production site.
 
-```bash
-npx jant site export --output jant-site-export.zip
-```
+See [Export and Import](export-and-import.md) for the command guide.
 
-The CLI localizes referenced media into the export by default. That makes it the better option when you want a more self-contained archive or plan to inspect the exported Zola site locally before importing it somewhere else.
+## What Site Snapshot Is For
 
-The export also includes standard `static/favicon.ico` and `static/apple-touch-icon.png` files. Jant writes mode metadata into `config.toml` so `jant site import` can tell whether those icons were the bundled defaults or user-uploaded custom assets.
+`site snapshot` is a restore-oriented content snapshot.
 
-## What "Site Snapshot" is for
+Use it when you want to:
 
-`jant site snapshot export` and `jant site snapshot import` are for **identity-preserving recovery**.
+- preserve post IDs and storage keys
+- rebuild a known content set elsewhere
+- keep a round-trip-safe content archive
 
-Use them when you want to round-trip the same Jant content set without regenerating internal IDs or storage keys. A snapshot includes:
-
-- `db.sql` for the content tables and site-facing settings
-- `storage-manifest.json` for referenced storage objects
-- `objects/` with the actual uploaded files
-
-This is different from `jant site export`:
-
-- `site export/import` is a content migration tool. It can rewrite media IDs and storage keys.
-- `site snapshot export/import` is a restore tool. It keeps IDs and storage keys intact.
-
-The current snapshot scope is intentionally limited to content and presentation data:
-
-- `site_setting` for site-facing keys
-- `collection`
-- `nav_item`
-- `collection_directory_item`
-- `post`
-- `post_collection`
-- `path_registry`
-- `media`
-
-Snapshot import does **not** replace auth and shell state such as:
-
-- `user`
-- `account`
-- `session`
-- `api_token`
-- onboarding markers and reset tokens in `site_setting`
-
-That makes snapshot restore a good fit for workflows like:
-
-- Rebuilding a demo content set into another environment
-- Restoring a curated content snapshot into the same site
-- Keeping a round-trip-safe archive while leaving login state alone
+Snapshots are closer to recovery than `site export`, but they still do not replace a full operational backup plan.
 
 ## Cloudflare Workers
 
-If you deploy Jant on Cloudflare Workers with D1 and R2:
+If you run Jant on Cloudflare with D1 and R2:
 
-- Use **D1 Time Travel** for short-window database recovery.
-- Treat **R2 protection** separately from D1 recovery.
-- Add scheduled exports only if you need longer retention, off-platform copies, or compliance snapshots.
+- recover the database with your D1 recovery method
+- treat media recovery separately from database recovery
+- add off-platform exports only when your retention requirements demand them
 
-Cloudflare documents D1 Time Travel here:
+For most small sites, a practical plan looks like this:
 
-- [D1 Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/)
+1. use D1 recovery for recent database problems
+2. keep R2 or S3 media under a clear retention policy
+3. periodically export or snapshot if you want independent copies
 
-Cloudflare also documents an example workflow for exporting D1 into R2 on a schedule:
-
-- [Export and save D1 database](https://developers.cloudflare.com/workflows/examples/backup-d1/)
-
-For media, remember that R2 durability is not the same thing as a full backup strategy. If you need stronger protection against accidental deletion or overwrites, add a storage policy such as object retention, a second copy, or another storage-level workflow.
-
-- [R2 durability](https://developers.cloudflare.com/r2/reference/durability/)
-- [R2 Bucket Lock](https://developers.cloudflare.com/r2/buckets/bucket-locks/)
-
-### Recommended Cloudflare strategy
-
-For most small Jant sites:
-
-- Use D1 Time Travel as your first database recovery tool
-- Keep media in R2 with a clear retention policy
-- Run scheduled D1 exports outside Jant only if you need longer retention or off-platform copies
-- Keep `Export Static Site` for migration and manual archival, not as your primary disaster-recovery mechanism
+Remember that object durability is not the same thing as having a recovery workflow.
 
 ## Node and Docker
 
-If you run Jant on Node or Docker with the default local storage layout and SQLite, back up both of these paths:
+If you run the default Docker or Node setup, back up:
 
 - `data/jant.sqlite`
 - `data/media/`
 
 If you use Postgres instead of SQLite, back up:
 
-- Your Postgres database
-- `data/media/` when using default local media storage
+- your Postgres database
+- local media storage, if you still use it
 
 If you use S3-compatible storage instead of local media storage, back up:
 
-- `data/jant.sqlite` or your Postgres database
-- Your media bucket and its retention policy
+- the database
+- the media bucket and its retention policy
 
-## Restore options
+## Restore Checklists
 
-### Restore from a Jant site export
+### Cloudflare Restore
 
-Use this when you want to move content into a new Jant instance.
+1. restore the database
+2. restore missing media objects if storage loss was involved
+3. deploy or point Jant at the restored resources
+4. verify home page, collections, media URLs, and settings
 
-Start with a dry run:
+### Docker or Node Restore
 
-```bash
-npx jant site import --path ./jant-site-export.zip --dry-run
-```
+1. stop the app
+2. restore the database file or database service
+3. restore media files or the media bucket
+4. start the app
+5. verify posts, collections, uploads, and feeds
 
-Then import for real:
+## Recovery Drill
 
-```bash
-npx jant site import --path ./jant-site-export.zip
-```
+Run a restore drill on a blank staging environment before you need one in production.
 
-For a remote instance:
+Checklist:
 
-```bash
-export JANT_API_TOKEN=jnt_YOUR_TOKEN
-npx jant site import --url https://your-site.com --path ./jant-site-export.zip
-```
-
-This is the right tool for migration and content recovery. It is not the same as restoring your production database and storage byte-for-byte.
-
-### Restore from a Jant site snapshot
-
-Use this when you want to restore content with the same IDs and storage keys.
-
-Export a snapshot:
-
-```bash
-npx jant site snapshot export --output ./jant-site-snapshot
-```
-
-Restore it into another initialized Jant environment:
-
-```bash
-npx jant site snapshot import --path ./jant-site-snapshot --replace
-```
-
-In `single-site` mode, Jant automatically remaps the snapshot to the only
-initialized site when the embedded `site_id` differs. Self-hosted restores do
-not need to preserve the old internal site ID.
-
-You can also use a ZIP artifact:
-
-```bash
-npx jant site snapshot export --output ./jant-site-snapshot.zip
-npx jant site snapshot import --path ./jant-site-snapshot.zip --replace
-```
-
-On Cloudflare, add `--remote` and point the command at the site's Wrangler config:
-
-```bash
-npx jant site snapshot export --remote --config ./wrangler.toml --output ./jant-site-snapshot.zip
-npx jant site snapshot import --remote --config ./wrangler.toml --path ./jant-site-snapshot.zip --replace
-```
-
-If you intentionally want to load a content snapshot from one site into a
-different existing site container, use the explicit remap mode:
-
-```bash
-npx jant site snapshot import --path ./jant-site-snapshot.zip --replace --remap-site
-```
-
-`--remap-site` rewrites the snapshot's `site_id` and referenced storage keys to
-match the resolved target site. Keep it for trusted, controlled workflows such
-as demo content publishing. In `host-based` mode, the default snapshot import
-path remains identity-preserving unless you opt into remapping explicitly.
-
-### Restore on Cloudflare
-
-For a production recovery on Cloudflare:
-
-1. Restore the D1 database with D1 Time Travel or your own SQL export workflow.
-2. Restore media from your R2 policy or secondary copy if media objects were lost.
-3. Point Jant at the restored database and storage.
-4. Verify pages, media URLs, settings, and collections before reopening the site.
-
-### Restore on Node or Docker
-
-For a default local deployment:
-
-1. Stop the app.
-2. Restore `data/jant.sqlite`.
-3. Restore `data/media/`.
-4. Start the app.
-5. Verify pages, uploads, settings, and collections.
-
-## Recovery drill
-
-Yes, this should be documented. It does not need a separate playbook at first, but it does need a repeatable checklist.
-
-Run this on a blank staging environment:
-
-1. Restore the database.
-2. Restore the media files or media bucket.
-3. Start Jant against the restored data.
-4. Open the home page and settings.
-5. Check a sample of posts, collections, and media URLs.
-6. Record how old the restored data was and how long recovery took.
+1. restore the database
+2. restore media
+3. start Jant
+4. open the home page, settings, and a sample of post URLs
+5. verify attachments and collection pages
+6. record how long the restore took and how much data was missing
 
 Track two numbers:
 
 - **RPO**: how much data you can afford to lose
 - **RTO**: how long recovery can take
+
+If you cannot measure those two numbers, your backup plan is not finished.
 
 If you cannot restore into an empty environment with confidence, you do not have a real backup yet.

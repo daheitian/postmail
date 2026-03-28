@@ -1,89 +1,76 @@
-# Create Jant
+# create-jant
 
-Bookstrap a new [Jant](https://github.com/jant-me/jant) project.
+Scaffold a new [Jant](https://github.com/jant-me/jant) site for Cloudflare Workers.
 
 ## Usage
 
 ```bash
-# Using npm
-npm create jant my-blog
+# npm
+npm create jant@latest my-site
 
-# Using pnpm
-pnpm create jant my-blog
+# pnpm
+pnpm create jant@latest my-site
 
-# Using yarn
-yarn create jant my-blog
+# yarn
+yarn create jant my-site
 
-# Interactive mode (prompts for project name)
-npm create jant
+# interactive mode
+npm create jant@latest
 ```
 
-## What's Included
+## What It Does
 
-The scaffolded project includes:
+The scaffold:
 
-- **Hono** - Fast, lightweight web framework
-- **Cloudflare Workers** - Serverless edge runtime
-- **D1** - SQLite database at the edge
-- **R2** - Object storage for media
-- **Drizzle ORM** - Type-safe database access
-- **Tailwind CSS v4** - Utility-first CSS framework
-- **BaseCoat** - UI component library
-- **Lingui** - Internationalization (i18n)
-- **better-auth** - Authentication
-- **Vite** - Fast build tool with HMR
+- creates a Cloudflare Workers project wired for Jant
+- generates a local `.dev.vars` file with a secure `AUTH_SECRET`
+- installs dependencies by default
+- initializes a git repository by default
+- can switch the storage template to S3-compatible storage with `--s3`
 
-## Getting Started
+## Options
 
-After creating your project:
+```bash
+create-jant [project-name] [options]
+
+--s3           Use S3-compatible storage instead of Cloudflare R2
+--no-install   Skip dependency installation
+--no-git       Skip git initialization
+-y, --yes      Skip prompts and use defaults
+```
+
+## After Scaffolding
 
 ```bash
 cd my-site
-pnpm install
-cp .dev.vars.example .dev.vars
-# Edit .dev.vars with your AUTH_SECRET (32+ characters)
-pnpm dev
+npm run dev
 ```
 
-Visit http://localhost:3000 to see your site.
+Open `http://localhost:3000`.
 
-Need another local port? Run `PORT=3030 pnpm dev`.
-
-## Project Structure
-
-```
-my-site/
-├── src/
-│   ├── index.ts          # Entry point
-│   ├── app.tsx           # Hono app factory
-│   ├── types.ts          # TypeScript types
-│   ├── db/               # Database schema & migrations
-│   ├── services/         # Business logic
-│   ├── routes/           # Route handlers
-│   ├── theme/            # UI components & layouts
-│   ├── lib/              # Utilities
-│   ├── i18n/             # Internationalization
-│   └── middleware/       # Hono middleware
-├── static/               # Static assets
-├── vite.config.ts        # Vite configuration
-├── wrangler.toml         # Cloudflare Workers config
-└── drizzle.config.ts     # Drizzle ORM config
-```
-
-## Scripts
+Need another local port?
 
 ```bash
-pnpm dev               # Start dev server (http://localhost:3000)
-pnpm build             # Build for production
-pnpm run deploy        # Apply migrations/backfills and deploy to Cloudflare Workers
-pnpm typecheck         # Run TypeScript checks
-pnpm lint              # Run ESLint
-pnpm format            # Format code with Prettier
-pnpm db:generate       # Generate Drizzle migrations
-pnpm exec jant migrate --local   # Apply schema migrations + data backfills (local)
-pnpm exec jant migrate --remote  # Apply schema migrations + data backfills (production)
-pnpm i18n:build        # Extract + compile translations
+PORT=3030 npm run dev
 ```
+
+## What the New Project Includes
+
+- Cloudflare Workers runtime
+- D1 for the database
+- R2 for media by default
+- Drizzle ORM
+- better-auth
+- Tailwind CSS v4 and BaseCoat
+- Lingui for localization
+- Jant's CLI commands through the local `jant` binary
+
+## Documentation
+
+- [Getting Started](https://github.com/jant-me/jant/blob/main/docs/getting-started.md)
+- [Deploy on Cloudflare](https://github.com/jant-me/jant/blob/main/docs/deployment.md)
+- [Configuration](https://github.com/jant-me/jant/blob/main/docs/configuration.md)
+- [Theming](https://github.com/jant-me/jant/blob/main/docs/theming.md)
 
 ## License
 

@@ -2,241 +2,152 @@
 
 A personal website/blog powered by [Jant](https://github.com/jant-me/jant).
 
-## Option A: One-Click Deploy
+Examples below use `npm`, but the same scripts work with `pnpm run` or `yarn`.
 
-Deploy to Cloudflare instantly — no local setup required:
+## Option A: One-Click Deploy
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
 
+Deploy to Cloudflare instantly, without local setup.
+
+In this flow, Cloudflare creates the new GitHub repo, D1 database, and R2 bucket for you from the form.
+
 ### Deploy form fields
 
-| Field                      | What to do                                                                                                                                                 |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Git account**            | Select your GitHub account. A new repo will be created for you.                                                                                            |
-| **D1 database**            | Keep "Create new". The default name is fine.                                                                                                               |
-| **Database location hint** | Pick a region close to you (optional, Cloudflare auto-selects).                                                                                            |
-| **R2 bucket**              | Keep "Create new". The default name is fine. Used for media uploads.                                                                                       |
-| **AUTH_SECRET**            | Used for login session encryption. Keep the pre-filled value or generate your own with `openssl rand -base64 32`.                                          |
-| **SITE_ORIGIN**            | Optional. Set this when you want a fixed public origin such as `https://my-blog.example.com`. If you leave it empty, Jant uses the current request origin. |
-| **SITE_PATH_PREFIX**       | Optional. Set this only when you mount the site under a subpath such as `/blog`. Leave it empty for normal root deploys.                                   |
+| Field                      | What to do                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Git account**            | Select your GitHub account. Cloudflare creates a new repo for you.                                                        |
+| **D1 database**            | Keep **Create new**. The default name is fine.                                                                            |
+| **Database location hint** | Pick a nearby region if you want. Leaving it alone is fine too.                                                           |
+| **R2 bucket**              | Keep **Create new**. The default name is fine.                                                                            |
+| **AUTH_SECRET**            | Keep the generated value, or replace it with your own 32+ character secret.                                               |
+| **SITE_ORIGIN**            | Optional. Set this when you want a fixed public origin such as `https://my-blog.example.com`.                             |
+| **SITE_PATH_PREFIX**       | Optional. Set this only when you mount the site under a subpath such as `/blog`. Leave it empty for a normal root deploy. |
 
 ### After deploy
 
-1. Visit your site at the URL shown in the Cloudflare dashboard (e.g. `https://<project>.<account>.workers.dev`)
-2. Go to `/setup` to set up your admin account
-3. If you set `SITE_ORIGIN` to a custom domain, add it in: Cloudflare dashboard → Workers & Pages → your worker → Settings → Domains & Routes → Add Custom Domain
-4. If you leave `SITE_ORIGIN` empty, Jant uses your current `*.workers.dev` or custom-domain request host automatically
+1. Open the site URL shown in Cloudflare, usually `https://<project>.<account>.workers.dev`
+2. Go through the setup flow and create your admin account
+3. If you set `SITE_ORIGIN` to a custom domain, add that domain in Cloudflare under **Workers & Pages**
+4. If you leave `SITE_ORIGIN` empty, Jant uses the current request host automatically
 
 ### Develop locally
 
+Cloudflare creates a GitHub repo for you during one-click deploy. To keep working locally:
+
 ```bash
-# Clone the repo that was created for you
 git clone git@github.com:<your-username>/<your-repo>.git
 cd <your-repo>
 npm install
 npm run dev
 ```
 
-Visit http://localhost:3000. Changes pushed to `main` will auto-deploy.
+Open `http://localhost:3000`. Changes pushed to `main` will auto-deploy.
 
-## Option B: Create with CLI
-
-Set up a new project locally, then deploy manually:
+Need another local port? Run:
 
 ```bash
-npm create jant my-site
-cd my-site
-npm run dev
+PORT=3030 npm run dev
 ```
 
-Visit http://localhost:3000. When you're ready to go live, continue with [Deploy to Cloudflare](#deploy-to-cloudflare) below.
+## Option B: Manual Deploy from Your Machine
 
-Need another local port? Run `PORT=3030 npm run dev`.
+If you would rather create or keep a local site repo and deploy it yourself, use the steps below.
 
-### Deploy to Cloudflare
-
-#### 1. Prerequisites
-
-Install [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) and log in:
+### 1. Log In to Wrangler
 
 ```bash
-wrangler login
+npx wrangler login
 ```
 
-#### 2. Create D1 Database
-
-Check the `database_name` in your `wrangler.toml` (defaults to `<your-project>-db`), then create it:
+### 2. Create the D1 Database
 
 ```bash
-wrangler d1 create <your-project>-db
-# Copy the database_id from the output!
+npx wrangler d1 create <your-project>-db
 ```
 
-#### 3. Update Configuration
+Copy the `database_id` from the output into `wrangler.toml`.
 
-Edit `wrangler.toml`:
-
-- Replace `database_id = "local"` with the ID from step 2
-- Set `SITE_ORIGIN` if you want a fixed public origin (e.g. `https://example.com`)
-- Set `SITE_PATH_PREFIX` only if you deploy under a subpath (e.g. `/blog`)
-
-> R2 bucket is automatically created on first deploy — no manual setup needed.
->
-> **Note:** Changing `database_id` resets your local development database (local data is stored per database ID). If you've already started local development, you'll need to go through the setup wizard again to create your admin account.
->
-> **Subpath deploys on Cloudflare:** If `SITE_PATH_PREFIX` is set to `/blog`, Jant publishes built assets under `/blog/_assets/*`. `npm run deploy` detects that prefix and prepares `dist/public/blog/_assets/*` automatically, so routing `/blog*` to the same Worker is enough.
-
-#### 4. Set Production Secrets
-
-Generate a production secret and save it somewhere safe (you'll need it again for CI):
+### 3. Create the R2 Bucket
 
 ```bash
-# Generate a secret
+npx wrangler r2 bucket create <your-project>-media
+```
+
+Make sure `wrangler.toml` uses the same bucket name.
+
+### 4. Set the Production Auth Secret
+
+```bash
 openssl rand -base64 32
-
-# Set it in Cloudflare
-wrangler secret put AUTH_SECRET
-# Paste the generated value when prompted
+npx wrangler secret put AUTH_SECRET
 ```
 
-> **Important:** This is separate from the `AUTH_SECRET` in `.dev.vars` (which is for local development only). Do not change the production secret after your site is live — it will invalidate all sessions. If you get locked out, use `npm run reset-password` to generate a password reset link.
+This is separate from the local secret in `.dev.vars`.
 
-#### 5. Deploy
+### 5. Deploy
 
 ```bash
-# Apply database migrations and deploy
 npm run deploy
 ```
 
-Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
+After deploy, Cloudflare gives you a `*.workers.dev` URL.
 
-#### 6. Custom Domain (Optional)
+## Local Development
 
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Workers & Pages
-2. Select your worker → Settings → Domains & Routes
-3. Click **Add -> Custom domain** and enter your domain
-
-### GitHub Actions (CI/CD)
-
-A workflow file is included at `.github/workflows/deploy.yml`. Complete the [deployment](#deploy-to-cloudflare) first, then set up CI for automatic deployments.
-
-> Runtime secrets (`AUTH_SECRET`, S3 keys, etc.) are already stored in Cloudflare from the manual deployment step. CI only needs deployment credentials.
->
-> Until you replace the placeholder D1 `database_id` in `wrangler.toml` and add `CF_API_TOKEN` and `CF_ACCOUNT_ID`, the workflow exits early with a skip message instead of failing.
-
-#### 1. Push to GitHub
-
-Create a new repository on [GitHub](https://github.com/new), then commit and push your project:
+Start the local dev server:
 
 ```bash
-git add -A
-git commit -m "Initial setup"
-git remote add origin git@github.com:<your-username>/<your-repo>.git
-git push -u origin main
-```
-
-#### 2. Create API Token
-
-1. Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)
-2. Click **Create Token** → **Use template** next to **Edit Cloudflare Workers**
-3. **Add D1 permission** (not in template by default):
-   - Click **+ Add more** → **Account** → **D1** → **Edit**
-
-Your permissions should include:
-
-| Scope   | Permission         | Access                        |
-| ------- | ------------------ | ----------------------------- |
-| Account | Workers Scripts    | Edit                          |
-| Account | Workers R2 Storage | Edit                          |
-| Account | **D1**             | **Edit** ← Must add manually! |
-| Zone    | Workers Routes     | Edit                          |
-
-4. Set **Account Resources** → **Include** → your account
-5. Set **Zone Resources** → **Include** → **All zones from an account** → your account
-6. **Create Token** and copy it
-
-#### 3. Add GitHub Secrets
-
-Go to your repo → **Settings** → **Secrets and variables** → **Actions**:
-
-| Secret Name     | Value                                                                    |
-| --------------- | ------------------------------------------------------------------------ |
-| `CF_API_TOKEN`  | API token from above                                                     |
-| `CF_ACCOUNT_ID` | Your Cloudflare Account ID (found in dashboard URL or `wrangler whoami`) |
-
-#### 4. Verify Auto-Deploy
-
-The workflow is pre-configured to deploy on every push to `main`. After pushing your code, check the **Actions** tab in your GitHub repo to confirm the deployment succeeded.
-
-## Commands
-
-| Command                  | Description                                      |
-| ------------------------ | ------------------------------------------------ |
-| `npm run dev`            | Start local dev server (auto-applies migrations) |
-| `npm run deploy`         | Apply remote migrations and deploy               |
-| `npm run reset-password` | Generate a password reset link if locked out     |
-| `npm run export`         | Export D1 database to a SQL file                 |
-
-> Use `--remote` to run commands against your production database (e.g. `npx jant reset-password --remote`).
-
-## Environment Variables
-
-| Variable           | Description                                    | Location         |
-| ------------------ | ---------------------------------------------- | ---------------- |
-| `AUTH_SECRET`      | Secret key for authentication (32+ chars)      | `.dev.vars` file |
-| `SITE_ORIGIN`      | Optional fixed public origin for absolute URLs | `wrangler.toml`  |
-| `SITE_PATH_PREFIX` | Optional public path prefix such as `/blog`    | `wrangler.toml`  |
-
-For all available variables (site name, language, R2 storage, image optimization, S3, demo mode, etc.), see the **[Configuration Guide](https://github.com/jant-me/jant/blob/main/docs/configuration.md)**.
-
-## Customization
-
-### Color Themes
-
-Pick a color theme from the dashboard: **Settings > Appearance**.
-
-### Custom CSS
-
-Inject custom CSS from the dashboard: **Settings > Appearance > Custom CSS**. This CSS is applied with the highest priority, so you can override any built-in styles.
-
-### Data Attributes
-
-Target specific elements with stable data attributes:
-
-```css
-/* Style only note-format posts */
-[data-format="note"] {
-  border-left: 3px solid var(--primary);
-}
-
-/* Style the home page differently */
-[data-page="home"] {
-  background: var(--muted);
-}
-
-/* Hide compose prompt for unauthenticated visitors */
-body:not([data-authenticated]) .compose-prompt {
-  display: none;
-}
-```
-
-## Updating
-
-```bash
-# Update @jant/core to latest version
-npm install @jant/core@latest
-
-# Start dev server (auto-applies migrations locally)
 npm run dev
-
-# Deploy (includes remote migrations)
-npm run deploy
 ```
 
-> New versions of `@jant/core` may include database migrations. Check the [release notes](https://github.com/jant-me/jant/releases) for any breaking changes.
+Open `http://localhost:3000`.
+
+## Common Commands
+
+| Command                                                | Description                           |
+| ------------------------------------------------------ | ------------------------------------- |
+| `npm run dev`                                          | Start local development               |
+| `npm run deploy`                                       | Apply remote migrations and deploy    |
+| `npm run reset-password`                               | Generate a password reset token       |
+| `npx jant site export --output ./jant-site-export.zip` | Export the site as a portable archive |
+
+## Configuration
+
+The most common values live in two files:
+
+- `.dev.vars` for local secrets
+- `wrangler.toml` for non-sensitive Cloudflare configuration
+
+Useful examples:
+
+```toml
+[vars]
+SITE_ORIGIN = "https://yourdomain.com"
+# SITE_PATH_PREFIX = "/blog"
+# R2_PUBLIC_URL = "https://media.yourdomain.com"
+# IMAGE_TRANSFORM_URL = "https://media.yourdomain.com/cdn-cgi/image"
+```
 
 ## Documentation
 
-- [Configuration Guide](https://github.com/jant-me/jant/blob/main/docs/configuration.md)
-- [Theming Guide](https://github.com/jant-me/jant/blob/main/docs/theming.md)
+Start here:
+
+- [Introduction](https://github.com/jant-me/jant/blob/main/docs/overview.md)
+- [Deploy on Cloudflare](https://github.com/jant-me/jant/blob/main/docs/deployment.md)
+- [Configuration](https://github.com/jant-me/jant/blob/main/docs/configuration.md)
+
+For writing and customization:
+
+- [Writing and Organizing Posts](https://github.com/jant-me/jant/blob/main/docs/writing-and-organizing.md)
+- [Theming](https://github.com/jant-me/jant/blob/main/docs/theming.md)
+
+For operations:
+
+- [Export and Import](https://github.com/jant-me/jant/blob/main/docs/export-and-import.md)
+- [Backups and Recovery](https://github.com/jant-me/jant/blob/main/docs/backups.md)
+
+Reference:
+
+- [API Reference](https://github.com/jant-me/jant/blob/main/docs/API.md)
 - [GitHub Repository](https://github.com/jant-me/jant)

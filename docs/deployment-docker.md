@@ -1,23 +1,22 @@
-# Docker Deployment
+# Deploy with Docker
 
 The official Docker image is `owenyoung/jant`.
 
-It runs the Node runtime, applies SQLite schema migrations and data backfills, and then starts `jant start`.
+It runs the Node runtime, applies pending migrations, and then starts Jant.
 
 Docker Hub: <https://hub.docker.com/r/owenyoung/jant>
 
-## Prerequisites
+## Before You Begin
 
-1. Docker 27+ or another recent Docker Engine release
-2. Docker Compose v2
-3. A public site URL
-4. A long random auth secret
+You need:
 
-## Quick Start
+- Docker Engine 27 or newer, or another recent Docker release
+- Docker Compose v2
+- a long random `AUTH_SECRET`
 
-### Docker Compose
+## Quick Start with Docker Compose
 
-Download the official files:
+Download the official Compose files:
 
 ```bash
 curl -O https://raw.githubusercontent.com/jant-me/jant/main/compose.yml
@@ -25,7 +24,19 @@ curl -o .env https://raw.githubusercontent.com/jant-me/jant/main/.env.example
 mkdir -p data/media
 ```
 
-Then update `.env` and start Jant:
+Edit `.env` and set at least:
+
+```env
+AUTH_SECRET=replace-with-a-long-random-secret
+```
+
+Generate a secret with:
+
+```bash
+openssl rand -base64 32
+```
+
+Start the stack:
 
 ```bash
 docker compose up -d
@@ -33,9 +44,51 @@ docker compose up -d
 
 Open `http://127.0.0.1:3000`.
 
-### Docker Run
+## What the Default Compose Setup Gives You
 
-Use the official image directly when you want one container without Compose:
+The bundled `compose.yml` uses a simple single-node layout:
+
+- the official image `owenyoung/jant:latest`
+- SQLite stored at `./data/jant.sqlite`
+- uploaded media stored at `./data/media/`
+- container data mounted at `/var/lib/jant`
+- `TRUST_PROXY=true`, which is appropriate when the container sits behind a reverse proxy you control
+
+This is the easiest way to self-host Jant on a VPS or home server.
+
+The default Compose setup uses local media because it is the quickest way to get a site running. For a longer-lived deployment, S3-compatible storage is usually the better choice.
+
+## Important Environment Variables
+
+Set these in `.env`:
+
+| Variable           | Required          | Purpose                                                                                   |
+| ------------------ | ----------------- | ----------------------------------------------------------------------------------------- |
+| `AUTH_SECRET`      | Yes               | Session signing and authentication                                                        |
+| `SITE_ORIGIN`      | Usually           | Canonical URLs for RSS, sitemaps, exports, and auth callbacks                             |
+| `SITE_PATH_PREFIX` | Only for subpaths | Public mount path such as `/blog`                                                         |
+| `TRUST_PROXY`      | Depends           | Set to `true` when running behind Caddy, Nginx, Traefik, or another trusted reverse proxy |
+
+Example:
+
+```env
+AUTH_SECRET=replace-with-a-long-random-secret
+SITE_ORIGIN=https://your-jant.example
+# SITE_PATH_PREFIX=/blog
+TRUST_PROXY=true
+```
+
+For the full list of Node and Docker variables, see [Configuration](configuration.md).
+
+## Local Media or S3?
+
+Use local media when you want the simplest possible setup or are testing on one machine.
+
+Use S3-compatible storage when you want the recommended long-term setup for Docker or Node. It keeps media outside the app host and makes it easier to move or rebuild the app later without treating uploaded files as container-local state.
+
+## Running Without Compose
+
+Use `docker run` when you want one container and will manage the rest yourself:
 
 ```bash
 docker run -d \
@@ -47,113 +100,29 @@ docker run -d \
   owenyoung/jant:latest
 ```
 
-Set `TRUST_PROXY=true` when the container is behind Caddy, Nginx, Traefik, or another reverse proxy you control.
+Set `TRUST_PROXY=true` if the container sits behind your own reverse proxy.
 
-To publish Docker on a different host port, set:
+## Updating the Site
 
-```env
-HOST_PORT=8080
-```
-
-If you also want the app inside the container to listen on a different port,
-set:
-
-```env
-PORT=8080
-```
-
-## Required Configuration
-
-`AUTH_SECRET` is required. `SITE_ORIGIN` is optional when you want a fixed
-public origin for canonical URLs, RSS, sitemaps, exports, or proxy-aware
-absolute URLs. `SITE_PATH_PREFIX` is only needed when you mount Jant under a
-subpath.
-
-```env
-AUTH_SECRET=replace-with-a-long-random-secret
-# SITE_ORIGIN=https://your-jant.example
-# SITE_PATH_PREFIX=/blog
-```
-
-Generate a secret with:
-
-```bash
-openssl rand -base64 32
-```
-
-The bundled `compose.yml` already defaults the official image to the recommended single-node layout:
-
-- `image: owenyoung/jant:latest`
-- `PORT=3000`
-- `HOST_PORT=3000`
-- `DATA_DIR=/var/lib/jant`
-- `TRUST_PROXY=true`
-- SQLite at `/var/lib/jant/jant.sqlite`
-- Local media at `/var/lib/jant/media/`
-- `./data:/var/lib/jant`
-
-This keeps the SQLite file and uploaded media together under the host `./data/` directory.
-
-If you want to pin a version or test another official tag, set:
-
-```env
-IMAGE=owenyoung/jant:<version>
-```
-
-Repo contributors can use `compose.dev.yml` instead. It builds the local checkout with the repo's `Dockerfile` and starts that image:
-
-```bash
-docker compose -f compose.dev.yml up --build -d
-```
-
-## Reverse Proxy
-
-Docker Compose already defaults this to `true`, because the recommended
-deployment path is behind Caddy, Nginx, or Traefik. Override it only when you
-need different behavior:
-
-```env
-TRUST_PROXY=false
-```
-
-Set `TRUST_PROXY=false` when the container is directly exposed to the
-internet. The reverse proxy should terminate TLS and forward requests to the
-container on the configured `PORT` (defaults to `3000`).
-
-## Common Commands
-
-Start in the background:
-
-```bash
-docker compose up -d
-```
-
-Tail logs:
-
-```bash
-docker compose logs -f
-```
-
-Pull the latest published image:
+Pull the latest image and restart:
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
-Run the repo's Dockerfile locally instead of the published image:
+Pin a specific version when you want repeatable deploys:
 
-```bash
-docker build -t jant:local .
-IMAGE=jant:local docker compose up -d
+```env
+IMAGE=owenyoung/jant:<version>
 ```
 
-Or use the dedicated development compose file:
+## Common Commands
+
+Show logs:
 
 ```bash
-docker compose -f compose.dev.yml up --build -d
-docker compose -f compose.dev.yml logs -f
-docker compose -f compose.dev.yml down
+docker compose logs -f
 ```
 
 Stop the stack:
@@ -162,13 +131,17 @@ Stop the stack:
 docker compose down
 ```
 
+Change the public host port:
+
+```env
+HOST_PORT=8080
+```
+
 ## Backups
 
-For the full backup and recovery guide, see [Backups & Recovery](backups.md).
-
-Back up both of these paths from the mounted volume:
+With the default Docker setup, a full backup includes both:
 
 - `data/jant.sqlite`
 - `data/media/`
 
-With the default local storage setup and SQLite, together they represent the full site state. If you use Postgres, back up the database separately. If you use S3-compatible storage, back up `data/jant.sqlite` or your Postgres database and manage the media bucket separately.
+If you switch to Postgres or S3-compatible storage, your backup plan changes too. See [Backups and Recovery](backups.md) for the recovery model.

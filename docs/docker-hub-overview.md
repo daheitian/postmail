@@ -1,6 +1,6 @@
 # Jant
 
-Jant is a single-author microblog for people who want to publish notes, links, quotes, and threads without followers, likes, or algorithmic feeds.
+Jant is a self-hosted, single-author microblog for notes, links, and quotes, without followers, likes, or algorithmic feeds.
 
 The official Docker image is `owenyoung/jant`. It runs the Node runtime, applies SQLite schema migrations and data backfills on startup, and then starts the app.
 
@@ -72,4 +72,5 @@ With the default Compose file, that maps to `./data` on the host and includes:
 - Full Docker deployment guide: https://github.com/jant-me/jant/blob/main/docs/deployment-docker.md
 - Configuration reference: https://github.com/jant-me/jant/blob/main/docs/configuration.md
 - Backups and recovery: https://github.com/jant-me/jant/blob/main/docs/backups.md
+- Export and import: https://github.com/jant-me/jant/blob/main/docs/export-and-import.md
 - Source repository: https://github.com/jant-me/jant

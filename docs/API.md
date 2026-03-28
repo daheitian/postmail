@@ -6,6 +6,8 @@ REST API for programmatic access to your Jant microblog. Use it to publish posts
 
 All endpoints return JSON. Timestamps are Unix seconds (not milliseconds).
 
+For site-level migration and recovery workflows, see [Export and Import](export-and-import.md) in addition to this reference.
+
 ---
 
 ## Authentication
@@ -536,7 +538,7 @@ Permanently deletes the file from storage and database.
 
 Base path: `/api/collections`
 
-Collections organize posts by topic (e.g. "Books", "Tools", "Movies"). A post can belong to multiple collections. Collection pages are available at `/c/{slug}`.
+Collections organize posts by topic (e.g. "Books", "Tools", "Movies"). A post can belong to multiple collections. Collection pages are available at `/c/{slug}`, and combined collection views are available at `/c/{slug1}+{slug2}`.
 
 ### List Collections
 

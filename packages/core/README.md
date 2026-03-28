@@ -1,22 +1,27 @@
 # @jant/core
 
-A modern, open-source microblogging platform for Cloudflare Workers and self-hosted Node deployments.
+A self-hosted, single-author microblogging platform for Cloudflare Workers, Docker, and Node.js.
 
 > Still in development
 
 ## What is Jant?
 
-Jant is a single-author microblog for people who want to share thoughts without the noise of social media. No followers, no likes, no algorithms—just your words.
+Jant is a place to publish notes, links, and quotes on your own site, without followers, likes, or algorithmic feeds.
 
-## Features
+## Recommended Starting Points
 
-- **Multiple content types** - Notes, articles, links, quotes, images, and pages
-- **Thread support** - Chain posts together for longer thoughts
-- **Collections** - Curate posts into themed collections
-- **Full-text search** - Find anything with FTS5-powered search
-- **i18n ready** - Built-in internationalization support
-- **Beautiful themes** - Clean, responsive design with dark mode
-- **Flexible deployment** - Run on Cloudflare Workers or self-host on Node/Docker
+For a new site, start with `create-jant`:
+
+```bash
+npm create jant@latest my-site
+cd my-site
+npm run dev
+```
+
+For a traditional server deployment, use the official Docker image:
+
+- [`owenyoung/jant`](https://hub.docker.com/r/owenyoung/jant)
+- [Docker deployment guide](https://github.com/jant-me/jant/blob/main/docs/deployment-docker.md)
 
 ## Tech Stack
 
@@ -28,34 +33,16 @@ Jant is a single-author microblog for people who want to share thoughts without 
 - **ORM**: [Drizzle](https://orm.drizzle.team)
 - **CSS**: Tailwind CSS v4 + [BaseCoat](https://basecoat.dev)
 
-## Quick Start
-
-The easiest way to create a new Jant site:
-
-```bash
-pnpm create jant my-blog
-cd my-blog
-pnpm run dev
-```
-
-## Manual Setup
-
-If you want to set up manually:
-
-```bash
-# Install
-pnpm add @jant/core
-
-# See documentation for configuration
-```
-
 ## Documentation
 
+- [Overview](https://github.com/jant-me/jant/blob/main/docs/overview.md)
 - [Getting Started](https://github.com/jant-me/jant/blob/main/docs/getting-started.md)
-- [Deployment](https://github.com/jant-me/jant/blob/main/docs/deployment.md)
-- [Official Docker Image](https://hub.docker.com/r/owenyoung/jant)
-- [Docker Deployment](https://github.com/jant-me/jant/blob/main/docs/deployment-docker.md)
+- [Writing and Organizing Posts](https://github.com/jant-me/jant/blob/main/docs/writing-and-organizing.md)
+- [Deploy on Cloudflare](https://github.com/jant-me/jant/blob/main/docs/deployment.md)
+- [Deploy with Docker](https://github.com/jant-me/jant/blob/main/docs/deployment-docker.md)
 - [Configuration](https://github.com/jant-me/jant/blob/main/docs/configuration.md)
+- [Export and Import](https://github.com/jant-me/jant/blob/main/docs/export-and-import.md)
+- [Backups and Recovery](https://github.com/jant-me/jant/blob/main/docs/backups.md)
 - [Theming](https://github.com/jant-me/jant/blob/main/docs/theming.md)
 - [API Reference](https://github.com/jant-me/jant/blob/main/docs/API.md)
 

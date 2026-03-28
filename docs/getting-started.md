@@ -1,98 +1,71 @@
 # Getting Started
 
-Get your Jant site running in 5 minutes.
+The fastest way to start a new Jant site is `create-jant`. It scaffolds a Cloudflare-ready project, generates a local `AUTH_SECRET`, installs dependencies by default, and gives you a working local development setup.
+
+If you want to evaluate Jant without creating a project first, skip to [Deploy with Docker](deployment-docker.md).
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+
-- [pnpm](https://pnpm.io/)
-- A [Cloudflare](https://cloudflare.com/) account (free tier works)
+- [Node.js](https://nodejs.org/) 24 or newer
+- A Cloudflare account if you plan to deploy on Workers
 
-## Create Your Site
-
-```bash
-pnpm create jant my-blog
-cd my-blog
-```
-
-This scaffolds a new Jant project with everything configured.
-
-## Local Development
+## Create a New Site
 
 ```bash
-pnpm run dev
+npm create jant@latest my-site
+cd my-site
 ```
 
-Open [http://localhost:3000](http://localhost:3000). You'll see the setup page on first visit.
+If you prefer `pnpm` or `yarn`, use their `create` command instead. Jant adapts the scaffolded scripts to the package manager you used.
+
+## Start Local Development
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
 
 To use a different local port:
 
 ```bash
-PORT=3030 pnpm run dev
+PORT=3030 npm run dev
 ```
 
-## First-time Setup
+## Complete Setup in the Browser
 
-1. Create your admin account (email + password)
+On first launch, Jant walks you through the initial site setup.
+
+1. Create your admin account
 2. Set your site name
 3. Choose your language
 
-That's it. You're ready to write.
+After that, you can start publishing immediately.
 
-## Writing Content
+## Understand the Default Publishing Model
 
-### Notes
+Before you write the first few posts, one default is worth knowing:
 
-Quick thoughts. No title needed.
+- `/feed` points to `Featured` by default
+- `/feed/latest` exists separately for the latest public posts
+- `Hidden from Latest` lets a post stay public on your site without entering that stream
 
-### Articles
+That split is intentional. In Jant, publishing something and broadcasting it are not automatically the same action.
 
-Longer posts with titles. Supports Markdown.
+## What the Scaffold Already Did
 
-### Links
+By default, `create-jant` also:
 
-Share external content with your commentary.
+- generated `.dev.vars` with a secure local `AUTH_SECRET`
+- installed dependencies
+- initialized a git repository
+- created a Cloudflare Workers project with D1 and R2 bindings ready to configure
 
-### Quotes
+If you passed `--no-install` or `--no-git`, do those steps yourself.
 
-Attribute words to others.
+## What to Read Next
 
-### Images
-
-Photos with optional captions.
-
-## Visibility
-
-Every post has a visibility level:
-
-| Level                  | What it means                                                          |
-| ---------------------- | ---------------------------------------------------------------------- |
-| **Public**             | Normal publish, visible everywhere (default)                           |
-| **Hidden from Latest** | Won't appear in Latest, but still appears in collections you add it to |
-| **Private**            | Only visible when logged in                                            |
-| **Draft**              | Work in progress, not published                                        |
-
-### Featured
-
-Featured is an independent curation flag, not a visibility level. Any post (including thread replies) can be featured. Featured posts always appear on the Featured page and in the explicit featured feeds (`/feed/featured` and `/feed/featured/atom.xml`). The main feed (`/feed`) points to Featured by default and can be changed to Latest in General settings. Feature a post from the post menu.
-
-## Threads
-
-Reply to your own posts to create connected threads. The thread shares the root post's visibility, but featured status is independent — you can feature individual replies.
-
-## Collections
-
-Organize posts into themed collections:
-
-- `/c/reading-2024` - Book notes from this year
-- `/c/recipes` - Your cooking experiments
-- `/c/thoughts-on-ai` - A series on AI
-
-Collection pages are for browsing and can use their own sort options. Collection feeds (`/c/{slug}/feed`) are ordered by when posts were added to the collection.
-
-## Next Steps
-
-- [Deploy to Cloudflare](deployment.md)
-- [Plan backups and recovery](backups.md)
-- [Configure your site](configuration.md)
-- [Customize the theme](theming.md)
+- [Writing and Organizing Posts](writing-and-organizing.md) to understand notes, links, quotes, threads, and collections
+- [Deploy on Cloudflare](deployment.md) to publish the site you just created
+- [Configuration](configuration.md) to tune URLs, storage, feeds, and uploads
+- [Theming](theming.md) to change how the site looks

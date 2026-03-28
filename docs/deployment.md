@@ -1,157 +1,216 @@
-# Deployment
+# Deploy on Cloudflare
 
-Jant supports multiple deployment targets:
+You can deploy Jant on Cloudflare in two ways:
 
-- [Cloudflare Workers](#cloudflare-workers)
-- [Docker](./deployment-docker.md)
+- `Option A`: one-click deploy from the starter repo
+- `Option B`: use a site repo created with `create-jant` and deploy manually
 
-This page covers the Cloudflare Workers path.
+If you want to run Jant on your own server instead, use [Deploy with Docker](deployment-docker.md).
 
-## Cloudflare Workers
+## Option A: One-Click Deploy
 
-## Prerequisites
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
 
-1. A Cloudflare account
-2. Wrangler CLI installed (`pnpm add -g wrangler`)
-3. Logged in to Wrangler (`wrangler login`)
+Deploy to Cloudflare instantly, without local setup.
 
-## Create Resources
+In this flow, Cloudflare creates the new GitHub repo, D1 database, and R2 bucket for you from the form.
 
-### D1 Database
+### Deploy Form Fields
+
+Use these defaults when the form appears:
+
+| Field                      | What to do                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Git account**            | Select your GitHub account. Cloudflare creates a new repo for you.                                                        |
+| **D1 database**            | Keep **Create new**. The default name is fine.                                                                            |
+| **Database location hint** | Pick a nearby region if you want. Leaving it alone is fine too.                                                           |
+| **R2 bucket**              | Keep **Create new**. The default name is fine.                                                                            |
+| **AUTH_SECRET**            | Keep the generated value, or replace it with your own 32+ character secret.                                               |
+| **SITE_ORIGIN**            | Optional. Set this when you want a fixed public origin such as `https://my-blog.example.com`.                             |
+| **SITE_PATH_PREFIX**       | Optional. Set this only when you mount the site under a subpath such as `/blog`. Leave it empty for a normal root deploy. |
+
+### After Deploy
+
+1. Open the site URL shown in Cloudflare, usually `https://<project>.<account>.workers.dev`
+2. Go through the setup flow and create your admin account
+3. If you set `SITE_ORIGIN` to a custom domain, add that domain in Cloudflare under **Workers & Pages**
+4. If you leave `SITE_ORIGIN` empty, Jant uses the current request host automatically
+
+### Develop Locally Later
+
+Cloudflare creates a GitHub repo for you during one-click deploy. To keep working locally:
 
 ```bash
-wrangler d1 create jant-db
+git clone git@github.com:<your-username>/<your-repo>.git
+cd <your-repo>
+npm install
+npm run dev
 ```
 
-Copy the database ID and update `wrangler.toml`:
+Changes pushed to `main` will continue to deploy automatically.
+
+## Option B: Manual Deploy from a Site Repo
+
+Use this path when you want to start locally with `create-jant` and deploy from your own machine.
+
+```bash
+npm create jant@latest my-site
+cd my-site
+```
+
+## Before You Begin
+
+You need:
+
+- a Cloudflare account
+- a Jant site repo
+- Wrangler access through `npx wrangler`
+
+Log in first:
+
+```bash
+npx wrangler login
+```
+
+### 1. Create the D1 Database
+
+Create a D1 database:
+
+```bash
+npx wrangler d1 create my-site-db
+```
+
+Copy the `database_id` from the output into `wrangler.toml`:
 
 ```toml
 [[d1_databases]]
 binding = "DB"
-database_name = "jant-db"
+database_name = "my-site-db"
 database_id = "your-database-id"
 ```
 
-### R2 Bucket (for media)
+If your scaffold already has a different `database_name`, either keep that name in the command or update `wrangler.toml` to match.
+
+### 2. Create the R2 Bucket
+
+Create an R2 bucket for media uploads:
 
 ```bash
-wrangler r2 bucket create jant-media
+npx wrangler r2 bucket create my-site-media
 ```
 
-Update `wrangler.toml`:
+Make sure the bucket name in `wrangler.toml` matches:
 
 ```toml
 [[r2_buckets]]
 binding = "R2"
-bucket_name = "jant-media"
+bucket_name = "my-site-media"
 ```
 
-**Recommended:** Enable public access on your R2 bucket and set `R2_PUBLIC_URL` in `wrangler.toml`. This allows media files to be served directly from Cloudflare's CDN instead of being proxied through your Worker.
+### 3. Set the Production Auth Secret
 
-1. Go to Cloudflare Dashboard → R2 → `jant-media` → Settings → Public access
-2. Enable public access (custom domain or `r2.dev` subdomain)
-3. Add the URL to `wrangler.toml`:
+Your local `.dev.vars` secret is only for development. Set a real production secret before the first deploy:
+
+```bash
+openssl rand -base64 32
+npx wrangler secret put AUTH_SECRET
+```
+
+Keep this secret stable after launch. Changing it invalidates active sessions.
+
+### 4. Optional but Recommended Media Settings
+
+Jant works without extra media configuration, but most production sites should set `R2_PUBLIC_URL` so media is served directly from Cloudflare's edge instead of being proxied through the Worker.
+
+1. Open your R2 bucket in the Cloudflare dashboard.
+2. Enable public access with a custom domain or `r2.dev` URL.
+3. Add the public URL to `wrangler.toml`:
 
 ```toml
 [vars]
 R2_PUBLIC_URL = "https://media.yourdomain.com"
 ```
 
-> Without `R2_PUBLIC_URL`, media uploads still work — files are served through a Worker proxy route (`/media/:id`), but this is slower and uses more Worker CPU.
+If you also want Cloudflare image transformations, set:
 
-## Configure Secrets
-
-```bash
-# Required: Auth secret (must be at least 32 characters!)
-# Generate one with: openssl rand -base64 32
-wrangler secret put AUTH_SECRET
+```toml
+[vars]
+IMAGE_TRANSFORM_URL = "https://media.yourdomain.com/cdn-cgi/image"
 ```
 
-> **Important**: `AUTH_SECRET` must be at least 32 characters. If it's shorter, authentication will fail with "AUTH_SECRET is not set".
+See [Configuration](configuration.md) for when to use each variable.
 
-You can also set it in Cloudflare Dashboard → Workers & Pages → your Worker → Settings → Variables and Secrets.
-
-## Run Migrations
+### 5. Deploy
 
 ```bash
-# Apply schema migrations and data backfills
-pnpm exec jant migrate --remote
+npm run deploy
 ```
 
-## Deploy
+The default deploy script runs `jant deploy`, which:
 
-```bash
-pnpm run deploy
-```
+- applies remote migrations and data backfills
+- detects whether `SITE_PATH_PREFIX` is set
+- uses the right asset directory for root-path or subpath deploys
 
-The default deploy script runs `jant deploy`, which applies remote migrations and chooses the correct static asset directory automatically:
+After deploy, Cloudflare gives you a `*.workers.dev` URL.
 
-- Root-path deploys reuse the built `dist/client` directory directly
-- Subpath deploys prepare `dist/public/<prefix>/_assets/*` before calling Wrangler
+## Optional: Push-to-Deploy with GitHub Actions
 
-Your site is now live at `https://your-worker.workers.dev`.
+A site created with `create-jant` already includes `.github/workflows/deploy.yml`.
+
+If you want automatic deploys on every push to `main`, add these GitHub repository secrets:
+
+- `CF_API_TOKEN`
+- `CF_ACCOUNT_ID`
+
+The workflow uses them to apply remote migrations and deploy your Worker.
+
+## Finish Setup in the Browser
+
+Open the deployed site and complete setup if you have not already:
+
+1. create the admin account
+2. confirm the site name
+3. publish your first post
 
 ## Custom Domain
 
-1. Go to Cloudflare Dashboard → Workers → Your Worker
-2. Click "Custom Domains"
-3. Add your domain
+Add a custom domain in Cloudflare after the first deploy:
 
-## Environment Variables
+1. open **Workers & Pages**
+2. choose your Worker
+3. open **Domains & Routes**
+4. add the domain
 
-Set non-sensitive values such as `SITE_ORIGIN` and `SITE_PATH_PREFIX` in `wrangler.toml` under `[vars]`:
+Set `SITE_ORIGIN` in `wrangler.toml` when you want Jant to use a fixed canonical host for RSS, sitemaps, and other absolute URLs:
 
 ```toml
 [vars]
 SITE_ORIGIN = "https://yourdomain.com"
 ```
 
-For subpath deploys, set:
-
-```toml
-[vars]
-SITE_PATH_PREFIX = "/blog"
-```
-
 ## Deploy Under a Subpath
 
-To serve Jant from a subpath, set `SITE_PATH_PREFIX` to the public mount path:
+Set `SITE_PATH_PREFIX` when the site should live under a subpath such as `/blog`:
 
 ```toml
 [vars]
 SITE_PATH_PREFIX = "/blog"
 ```
 
-Jant will then use:
-
-- Page routes under `/blog/*`
-- Static assets under `/blog/_assets/*`
-
-Jant also keeps fonts under `/_assets/*` as regular files rather than inline `data:` URLs, so the default `font-src 'self'` CSP stays sufficient.
-
-On Cloudflare, `npm run deploy` detects that `SITE_PATH_PREFIX` is set and prepares a publishable `dist/public` directory before calling Wrangler, so the generated asset paths already live inside the site prefix. Route the site prefix itself to the Worker:
+Then route that prefix to the Worker:
 
 - `/blog*`
 
-`/_assets` is reserved for Jant's built assets inside each public site prefix.
+Jant automatically prepares prefixed static assets under `/blog/_assets/*` during deploy.
 
-Use Worker secrets for sensitive values:
+## Updating an Existing Site
 
-```bash
-wrangler secret put AUTH_SECRET
-```
-
-See [Configuration](configuration.md) for all available options.
-
-## Updating
-
-Pull the latest changes and redeploy:
+Update the dependency, then redeploy:
 
 ```bash
-git pull
-pnpm run deploy
+npm install @jant/core@latest
+npm run deploy
 ```
 
-Schema migrations and data backfills run automatically on deploy.
-
-For backup and restore planning, see [Backups & Recovery](backups.md).
+For configuration details, see [Configuration](configuration.md). For recovery planning, see [Backups and Recovery](backups.md).

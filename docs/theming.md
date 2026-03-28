@@ -1,8 +1,14 @@
 # Theming
 
-Customize how your Jant site looks using CSS variables and the Custom CSS editor in **Settings > Custom CSS**.
+Jant gives you three layers of visual control:
 
-All built-in themes include light and dark palettes. In **Settings > Color Theme** you can let the site follow the visitor's system preference, or lock it to Light or Dark. Your Custom CSS is applied on top of the selected theme, so you can pick a theme as a starting point and fine-tune from there.
+1. built-in color themes
+2. built-in font themes
+3. custom CSS
+
+Start with **Settings > Color Theme** and **Settings > Font Theme**. Use **Settings > Custom CSS** only for the parts that still need to change.
+
+All built-in themes include light and dark palettes. Your custom CSS is applied on top of the selected theme, so it is best to treat the built-in theme as a starting point rather than replacing everything from scratch.
 
 ## Color Variables
 
@@ -213,6 +219,7 @@ Jant automatically follows the visitor's system preference (light/dark). Use a m
 
 ## Tips
 
+- Start with theme variables before writing deep selector overrides. Variables survive design changes better.
 - Custom CSS has the highest priority and overrides everything, including the selected color theme.
 - Use `oklch()` for colors. A good rule of thumb: keep `--primary` slightly sturdier for solid controls, and let `--site-accent` carry the softer editorial color.
 - Test in both light and dark mode. If you override a color variable in `:root`, consider whether it also needs a matching override in `@media (prefers-color-scheme: dark)` or `:root[data-theme-mode="dark"]`.

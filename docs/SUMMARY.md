@@ -1,20 +1,26 @@
 # Summary
 
-## Getting started
+## Overview
 
+- [Introduction](overview.md)
 - [Getting started](getting-started.md)
+- [Writing and organizing posts](writing-and-organizing.md)
 
 ## Self-hosting
 
-- [Deployment](deployment.md)
-- [Docker deployment](deployment-docker.md)
+- [Deploy on Cloudflare](deployment.md)
+- [Deploy with Docker](deployment-docker.md)
 - [Configuration](configuration.md)
-- [Backups](backups.md)
 
-## Publishing
+## Operations
+
+- [Export and import](export-and-import.md)
+- [Backups and recovery](backups.md)
+
+## Customization
 
 - [Theming](theming.md)
 
 ## Reference
 
-- [API](API.md)
+- [API reference](API.md)
