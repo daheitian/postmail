@@ -231,7 +231,7 @@ export function GeneralContent({
           main-feed-url={mainFeedUrl}
           latest-feed-url={latestFeedUrl}
           featured-feed-url={featuredFeedUrl}
-          demo-mode={demoMode ? "true" : "false"}
+          demo-mode={demoMode || undefined}
         >
           {/* SSR fallback skeleton */}
           <div>
