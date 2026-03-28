@@ -44,7 +44,7 @@ interface CollectionsResponse {
     postCount: number;
     recentActivityAt: number;
   }>;
-  sidebarItems?: Array<{
+  directoryItems?: Array<{
     id: string;
     type: "collection" | "divider" | "link";
     collectionId: string | null;
@@ -54,7 +54,7 @@ interface CollectionsResponse {
   }>;
 }
 
-interface SidebarItemUpdateResponse {
+interface DirectoryItemUpdateResponse {
   label?: string | null;
   url?: string | null;
 }
@@ -310,7 +310,7 @@ export class JantCollectionsManager extends LitElement {
 
   #toItems(json: CollectionsResponse): CollectionManagerItem[] {
     const collections = json.collections ?? [];
-    const sidebarItems = json.sidebarItems ?? [];
+    const directoryItems = json.directoryItems ?? [];
     const collectionMap = new Map<string, ManagedCollection>();
 
     for (const collection of collections) {
@@ -328,7 +328,7 @@ export class JantCollectionsManager extends LitElement {
     const seenCollections = new Set<string>();
     const orderedItems: CollectionManagerItem[] = [];
 
-    for (const item of sidebarItems) {
+    for (const item of directoryItems) {
       const collection =
         item.collectionId != null
           ? collectionMap.get(item.collectionId)
@@ -403,8 +403,8 @@ export class JantCollectionsManager extends LitElement {
       onEnd: (evt) => {
         const orderedIds = readSortableDataIds(
           list,
-          "[data-sidebar-item]",
-          "sidebarItem",
+          "[data-directory-item]",
+          "directoryItem",
         );
         revertSortableDomMove(list, evt, this.#revertNextSibling);
         this.#revertNextSibling = null;
@@ -426,7 +426,7 @@ export class JantCollectionsManager extends LitElement {
             (entry): entry is CollectionManagerItem => entry !== undefined,
           );
 
-        fetch(`/api/collections/sidebar-items/${movedId}/move`, {
+        fetch(`/api/collections/directory-items/${movedId}/move`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -492,7 +492,7 @@ export class JantCollectionsManager extends LitElement {
     this._showMoreMenu = false;
     document.removeEventListener("click", this.#closeMoreMenu);
     try {
-      const res = await fetch("/api/collections/sidebar-items", {
+      const res = await fetch("/api/collections/directory-items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -524,7 +524,7 @@ export class JantCollectionsManager extends LitElement {
 
     this._addingLink = true;
     try {
-      const res = await fetch("/api/collections/sidebar-items", {
+      const res = await fetch("/api/collections/directory-items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -549,7 +549,7 @@ export class JantCollectionsManager extends LitElement {
 
   async #deleteDivider(id: string) {
     try {
-      const res = await fetch(`/api/collections/sidebar-items/${id}`, {
+      const res = await fetch(`/api/collections/directory-items/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -565,7 +565,7 @@ export class JantCollectionsManager extends LitElement {
     if (normalized === current) return;
 
     try {
-      const res = await fetch(`/api/collections/sidebar-items/${id}`, {
+      const res = await fetch(`/api/collections/directory-items/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -573,7 +573,7 @@ export class JantCollectionsManager extends LitElement {
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const updated = (await res.json()) as SidebarItemUpdateResponse;
+      const updated = (await res.json()) as DirectoryItemUpdateResponse;
       this._items = this._items.map((item) =>
         item.id === id ? { ...item, label: updated.label ?? null } : item,
       );
@@ -632,14 +632,14 @@ export class JantCollectionsManager extends LitElement {
     }
 
     try {
-      const res = await fetch(`/api/collections/sidebar-items/${item.id}`, {
+      const res = await fetch(`/api/collections/directory-items/${item.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ label, url }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const updated = (await res.json()) as SidebarItemUpdateResponse;
+      const updated = (await res.json()) as DirectoryItemUpdateResponse;
       this._items = this._items.map((entry) =>
         entry.id === item.id
           ? {
@@ -672,7 +672,7 @@ export class JantCollectionsManager extends LitElement {
     document.removeEventListener("click", this.#closeItemMenu);
 
     try {
-      const res = await fetch(`/api/collections/sidebar-items/${item.id}`, {
+      const res = await fetch(`/api/collections/directory-items/${item.id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -719,7 +719,7 @@ export class JantCollectionsManager extends LitElement {
     if (this._reorderMode) {
       return html`
         <div
-          data-sidebar-item=${item.id}
+          data-directory-item=${item.id}
           class="collection-directory-item collection-directory-item-reorder"
         >
           <div class="collection-directory-handle" data-drag-handle>
@@ -880,7 +880,7 @@ export class JantCollectionsManager extends LitElement {
     if (this._reorderMode) {
       return html`
         <div
-          data-sidebar-item=${item.id}
+          data-directory-item=${item.id}
           class="collection-directory-item collection-directory-item-reorder"
         >
           <div class="collection-directory-handle" data-drag-handle>
@@ -1037,7 +1037,7 @@ export class JantCollectionsManager extends LitElement {
     if (this._reorderMode) {
       return html`
         <div
-          data-sidebar-item=${item.id}
+          data-directory-item=${item.id}
           class="collection-directory-divider-row"
         >
           <div class="collection-directory-handle" data-drag-handle>

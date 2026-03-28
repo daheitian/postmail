@@ -104,7 +104,7 @@ export interface UpdateCollection {
   sortOrder?: CollectionSortOrder;
 }
 
-export type CreateSidebarItem =
+export type CreateCollectionDirectoryEntry =
   | {
       type: "collection";
       collectionId: string;
@@ -119,7 +119,7 @@ export type CreateSidebarItem =
       url: string;
     };
 
-export interface UpdateSidebarItem {
+export interface UpdateCollectionDirectoryEntry {
   label?: string | null;
   url?: string;
 }

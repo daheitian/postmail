@@ -15,10 +15,10 @@ describe("Collections API Routes", () => {
 
       const body = await res.json();
       expect(body.collections).toEqual([]);
-      expect(body.sidebarItems).toEqual([]);
+      expect(body.directoryItems).toEqual([]);
     });
 
-    it("returns collections with post counts and sidebar items", async () => {
+    it("returns collections with post counts and directory items", async () => {
       const { app, services } = createTestApp();
       app.route("/api/collections", collectionsApiRoutes);
 
@@ -40,16 +40,16 @@ describe("Collections API Routes", () => {
       expect(body.collections[0].postCount).toBe(1);
       expect(body.collections[0].recentActivityAt).toBe(post.lastActivityAt);
 
-      expect(body.sidebarItems).toHaveLength(1);
-      expect(body.sidebarItems[0].type).toBe("collection");
-      expect(body.sidebarItems[0].collectionId).toBe(col.id);
+      expect(body.directoryItems).toHaveLength(1);
+      expect(body.directoryItems[0].type).toBe("collection");
+      expect(body.directoryItems[0].collectionId).toBe(col.id);
     });
 
     it("returns divider labels", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
-      const divider = await services.collections.createSidebarItem({
+      const divider = await services.collections.createDirectoryItem({
         type: "divider",
         label: "Notes",
       });
@@ -57,7 +57,7 @@ describe("Collections API Routes", () => {
       const res = await app.request("/api/collections");
       const body = await res.json();
 
-      expect(body.sidebarItems).toContainEqual(
+      expect(body.directoryItems).toContainEqual(
         expect.objectContaining({
           id: divider.id,
           type: "divider",
@@ -96,7 +96,7 @@ describe("Collections API Routes", () => {
         expect(res.status).toBe(200);
 
         const body = await res.json();
-        expect(body.sidebarItems).toEqual([]);
+        expect(body.directoryItems).toEqual([]);
         expect(
           body.collections.map((collection: { id: string }) => collection.id),
         ).toEqual([newer.id, older.id]);
@@ -311,12 +311,12 @@ describe("Collections API Routes", () => {
     });
   });
 
-  describe("POST /api/collections/sidebar-items", () => {
-    it("creates a divider sidebar item", async () => {
+  describe("POST /api/collections/directory-items", () => {
+    it("creates a divider directory item", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
-      const res = await app.request("/api/collections/sidebar-items", {
+      const res = await app.request("/api/collections/directory-items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "divider" }),
@@ -328,11 +328,11 @@ describe("Collections API Routes", () => {
       expect(body.collectionId).toBeNull();
     });
 
-    it("creates a custom link sidebar item", async () => {
+    it("creates a custom link directory item", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
-      const res = await app.request("/api/collections/sidebar-items", {
+      const res = await app.request("/api/collections/directory-items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -350,17 +350,17 @@ describe("Collections API Routes", () => {
     });
   });
 
-  describe("DELETE /api/collections/sidebar-items/:id", () => {
-    it("deletes a sidebar item", async () => {
+  describe("DELETE /api/collections/directory-items/:id", () => {
+    it("deletes a directory item", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
-      const item = await services.collections.createSidebarItem({
+      const item = await services.collections.createDirectoryItem({
         type: "divider",
       });
 
       const res = await app.request(
-        `/api/collections/sidebar-items/${item.id}`,
+        `/api/collections/directory-items/${item.id}`,
         { method: "DELETE" },
       );
 
@@ -370,17 +370,17 @@ describe("Collections API Routes", () => {
     });
   });
 
-  describe("PUT /api/collections/sidebar-items/:id", () => {
+  describe("PUT /api/collections/directory-items/:id", () => {
     it("updates a divider label", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
-      const item = await services.collections.createSidebarItem({
+      const item = await services.collections.createDirectoryItem({
         type: "divider",
       });
 
       const res = await app.request(
-        `/api/collections/sidebar-items/${item.id}`,
+        `/api/collections/directory-items/${item.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -397,14 +397,14 @@ describe("Collections API Routes", () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
-      const item = await services.collections.createSidebarItem({
+      const item = await services.collections.createDirectoryItem({
         type: "link",
         label: "Quotes",
         url: "/archive?format=quote",
       });
 
       const res = await app.request(
-        `/api/collections/sidebar-items/${item.id}`,
+        `/api/collections/directory-items/${item.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -422,8 +422,8 @@ describe("Collections API Routes", () => {
     });
   });
 
-  describe("PUT /api/collections/sidebar-items/:id/move", () => {
-    it("moves a sidebar item", async () => {
+  describe("PUT /api/collections/directory-items/:id/move", () => {
+    it("moves a directory item", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
@@ -431,7 +431,7 @@ describe("Collections API Routes", () => {
       await services.collections.create({ slug: "b", title: "B" });
       await services.collections.create({ slug: "c", title: "C" });
 
-      const items = await services.collections.listSidebarItems();
+      const items = await services.collections.listDirectoryItems();
       expect(items).toHaveLength(3);
       const itemA = items[0];
       const itemB = items[1];
@@ -439,7 +439,7 @@ describe("Collections API Routes", () => {
 
       // Move C between A and B
       const res = await app.request(
-        `/api/collections/sidebar-items/${itemC?.id ?? ""}/move`,
+        `/api/collections/directory-items/${itemC?.id ?? ""}/move`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -452,7 +452,7 @@ describe("Collections API Routes", () => {
 
       expect(res.status).toBe(200);
 
-      const reordered = await services.collections.listSidebarItems();
+      const reordered = await services.collections.listDirectoryItems();
       expect(reordered[0]?.id).toBe(itemA?.id);
       expect(reordered[1]?.id).toBe(itemC?.id);
       expect(reordered[2]?.id).toBe(itemB?.id);

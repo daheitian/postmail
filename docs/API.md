@@ -97,15 +97,15 @@ All timestamps are Unix seconds:
 
 Jant uses TypeIDs everywhere.
 
-| Resource                 | Prefix | Example                          |
-| ------------------------ | ------ | -------------------------------- |
-| Post                     | `pst_` | `pst_01jpyx3m7gw4w3h7m4bknq0v1d` |
-| Media / attachment       | `med_` | `med_01jpyx4g9m8b4y50a4gx3t7p1n` |
-| Upload session           | `upl_` | `upl_01jpyx9h0m8w4g5q1c7d2f3r4s` |
-| Collection               | `col_` | `col_01jpyx5qds8y79w2dd6sv4rznj` |
-| Custom URL / path record | `pth_` | `pth_01jpyxb27t6m4v9r2k8s5c1qfh` |
-| Collection sidebar item  | `cdi_` | `cdi_01jpyx8r7s3v8m1q5c9k2f6gth` |
-| Nav item                 | `nav_` | `nav_01jpyxcv3m7w4b8k2r5s9t1qfh` |
+| Resource                  | Prefix | Example                          |
+| ------------------------- | ------ | -------------------------------- |
+| Post                      | `pst_` | `pst_01jpyx3m7gw4w3h7m4bknq0v1d` |
+| Media / attachment        | `med_` | `med_01jpyx4g9m8b4y50a4gx3t7p1n` |
+| Upload session            | `upl_` | `upl_01jpyx9h0m8w4g5q1c7d2f3r4s` |
+| Collection                | `col_` | `col_01jpyx5qds8y79w2dd6sv4rznj` |
+| Custom URL / path record  | `pth_` | `pth_01jpyxb27t6m4v9r2k8s5c1qfh` |
+| Collection directory item | `cdi_` | `cdi_01jpyx8r7s3v8m1q5c9k2f6gth` |
+| Nav item                  | `nav_` | `nav_01jpyxcv3m7w4b8k2r5s9t1qfh` |
 
 Invalid IDs return `400`.
 
@@ -945,6 +945,41 @@ Base path: `/api/collections`
 
 Collections group posts by topic. A post can belong to multiple collections.
 
+Collection responses include these fields:
+
+| Field              | Type                                  | Notes                          |
+| ------------------ | ------------------------------------- | ------------------------------ |
+| `id`               | `col_*` string                        | Collection ID                  |
+| `siteId`           | string                                | Owning site                    |
+| `slug`             | string                                | Canonical collection slug      |
+| `title`            | string                                | Display title                  |
+| `description`      | string \| `null`                      | Optional description           |
+| `sortOrder`        | `newest` \| `oldest` \| `rating_desc` | Per-collection post sort order |
+| `createdAt`        | integer                               | Unix seconds                   |
+| `updatedAt`        | integer                               | Unix seconds                   |
+| `postCount`        | integer                               | Only present in list responses |
+| `recentActivityAt` | integer                               | Only present in list responses |
+
+Directory item responses include these fields:
+
+| Field          | Type                                | Notes                            |
+| -------------- | ----------------------------------- | -------------------------------- |
+| `id`           | `cdi_*` string                      | Directory item ID                |
+| `siteId`       | string                              | Owning site                      |
+| `type`         | `collection` \| `divider` \| `link` | Item kind                        |
+| `collectionId` | `col_*` string \| `null`            | Present for `type: "collection"` |
+| `label`        | string \| `null`                    | Divider label or link label      |
+| `url`          | string \| `null`                    | Present for `type: "link"`       |
+| `position`     | string                              | Fractional ordering key          |
+| `createdAt`    | integer                             | Unix seconds                     |
+| `updatedAt`    | integer                             | Unix seconds                     |
+
+Notes:
+
+- Creating a collection automatically creates a `type: "collection"` directory item.
+- Deleting a collection also deletes its `type: "collection"` directory item.
+- `POST /api/collections/directory-items` only accepts `divider` and `link`. Collection-backed items are managed through collection CRUD, not this endpoint.
+
 ### List collections
 
 `GET /api/collections`
@@ -964,6 +999,7 @@ Default response:
   "collections": [
     {
       "id": "col_01jpyx5qds8y79w2dd6sv4rznj",
+      "siteId": "sit_01jpyx1v6z9k4c7b2m5q8r3nfh",
       "slug": "reading",
       "title": "Reading",
       "description": "Books I've read",
@@ -974,12 +1010,14 @@ Default response:
       "recentActivityAt": 1706100000
     }
   ],
-  "sidebarItems": [
+  "directoryItems": [
     {
       "id": "cdi_01jpyx8r7s3v8m1q5c9k2f6gth",
+      "siteId": "sit_01jpyx1v6z9k4c7b2m5q8r3nfh",
       "type": "collection",
       "collectionId": "col_01jpyx5qds8y79w2dd6sv4rznj",
       "label": null,
+      "url": null,
       "position": "a0",
       "createdAt": 1706000000,
       "updatedAt": 1706000000
@@ -988,7 +1026,10 @@ Default response:
 }
 ```
 
-`view=compose` returns collections sorted by recent activity and always returns an empty `sidebarItems` array.
+Notes:
+
+- The default response returns directory ordering in `directoryItems`.
+- `view=compose` returns collections sorted by recent activity and always returns an empty `directoryItems` array.
 
 ### Get a collection
 
@@ -1001,6 +1042,7 @@ Response:
 ```json
 {
   "id": "col_01jpyx5qds8y79w2dd6sv4rznj",
+  "siteId": "sit_01jpyx1v6z9k4c7b2m5q8r3nfh",
   "slug": "reading",
   "title": "Reading",
   "description": "Books I've read",
@@ -1029,14 +1071,19 @@ Request body:
 
 Fields:
 
-| Field         | Type                                  | Required | Notes                     |
-| ------------- | ------------------------------------- | -------- | ------------------------- |
-| `slug`        | string                                | yes      | Canonical collection slug |
-| `title`       | string                                | yes      | Display title             |
-| `description` | string                                | no       | Optional description      |
-| `sortOrder`   | `newest` \| `oldest` \| `rating_desc` | no       | Defaults to `newest`      |
+| Field         | Type                                  | Required | Notes                                                                        |
+| ------------- | ------------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| `slug`        | string                                | yes      | Canonical collection slug, max `200`, lowercase letters/numbers/hyphens only |
+| `title`       | string                                | yes      | Display title, max `120`                                                     |
+| `description` | string                                | no       | Optional description, max `500`                                              |
+| `sortOrder`   | `newest` \| `oldest` \| `rating_desc` | no       | Defaults to `newest`                                                         |
 
-Response: `201 Created` with the collection object.
+Notes:
+
+- Reserved slugs are rejected.
+- On success, Jant also creates the collection's `type: "collection"` directory item.
+
+Response: `201 Created` with the collection object, including `siteId`.
 
 ### Update a collection
 
@@ -1046,9 +1093,16 @@ Auth: `Session or token`
 
 This is a partial update.
 
-- Set `description` to `null` to clear it.
+Request body fields:
 
-Response: `200 OK` with the updated collection object.
+| Field         | Type                                  | Required | Notes                              |
+| ------------- | ------------------------------------- | -------- | ---------------------------------- |
+| `slug`        | string                                | no       | Same rules as create               |
+| `title`       | string                                | no       | Max `120`                          |
+| `description` | string \| `null`                      | no       | Set to `null` to clear             |
+| `sortOrder`   | `newest` \| `oldest` \| `rating_desc` | no       | Replaces the collection sort order |
+
+Response: `200 OK` with the updated collection object, including `siteId`.
 
 ### Delete a collection
 
@@ -1064,19 +1118,69 @@ Response:
 { "success": true }
 ```
 
-### Create a sidebar divider
+### Create a directory item
 
-`POST /api/collections/sidebar-items`
+`POST /api/collections/directory-items`
 
 Auth: `Session or token`
 
-Creates a divider item for the `/c` collections index.
+Creates a manual directory item for the `/c` collections index.
 
-Response: `201 Created` with the new sidebar item.
+Request body:
 
-### Update a sidebar item
+Divider:
 
-`PUT /api/collections/sidebar-items/:id`
+```json
+{
+  "type": "divider",
+  "label": "Essays"
+}
+```
+
+Link:
+
+```json
+{
+  "type": "link",
+  "label": "Quotes",
+  "url": "/archive?format=quote"
+}
+```
+
+Fields by type:
+
+| Field   | Type             | Required | Notes                                                         |
+| ------- | ---------------- | -------- | ------------------------------------------------------------- |
+| `type`  | `divider`        | yes      | Creates a divider item                                        |
+| `label` | string \| `null` | no       | Divider label, max `60`; blank values are stored as `null`    |
+| `type`  | `link`           | yes      | Creates a custom link item                                    |
+| `label` | string           | yes      | Link label, 1-60 chars after trim                             |
+| `url`   | string           | yes      | Relative path or absolute `http:`, `https:`, or `mailto:` URL |
+
+Notes:
+
+- `type: "collection"` is not accepted here.
+- New items are appended to the end of the directory.
+
+Response:
+
+```json
+{
+  "id": "cdi_01jpyx8r7s3v8m1q5c9k2f6gth",
+  "siteId": "sit_01jpyx1v6z9k4c7b2m5q8r3nfh",
+  "type": "divider",
+  "collectionId": null,
+  "label": "Essays",
+  "url": null,
+  "position": "a1",
+  "createdAt": 1706000000,
+  "updatedAt": 1706000000
+}
+```
+
+### Update a directory item
+
+`PUT /api/collections/directory-items/:id`
 
 Auth: `Session or token`
 
@@ -1086,11 +1190,27 @@ Request body:
 { "label": "Essays" }
 ```
 
-- Set `label` to `null` to clear it.
+This is a partial update.
 
-### Move a sidebar item
+Request body fields:
 
-`PUT /api/collections/sidebar-items/:id/move`
+| Field   | Type             | Required | Notes                                              |
+| ------- | ---------------- | -------- | -------------------------------------------------- |
+| `label` | string \| `null` | no       | For dividers: update label, or set `null` to clear |
+| `url`   | string           | no       | For links: update URL                              |
+
+Notes:
+
+- Divider items only use `label`.
+- Link items use `label` and `url`.
+- Link labels cannot be cleared with `null`.
+- Collection-backed items should be managed through collection endpoints, not updated directly here.
+
+Response: `200 OK` with the updated directory item.
+
+### Move a directory item
+
+`PUT /api/collections/directory-items/:id/move`
 
 Auth: `Session or token`
 
@@ -1103,12 +1223,25 @@ Request body:
 }
 ```
 
+Fields:
+
+| Field    | Type                     | Required | Notes                               |
+| -------- | ------------------------ | -------- | ----------------------------------- |
+| `after`  | `cdi_*` string \| `null` | no       | Place the item after this neighbor  |
+| `before` | `cdi_*` string \| `null` | no       | Place the item before this neighbor |
+
+Notes:
+
 - `after` and `before` are both optional and nullable.
-- Use `null` to move to the beginning or end.
+- Use `before: "<id>"` with `after: null` to move to the beginning.
+- Use `after: "<id>"` with `before: null` to move to the end.
+- If both are missing or `null`, Jant appends the item to the end.
 
-### Delete a sidebar item
+Response: `200 OK` with the moved directory item, including its new `position`.
 
-`DELETE /api/collections/sidebar-items/:id`
+### Delete a directory item
+
+`DELETE /api/collections/directory-items/:id`
 
 Auth: `Session or token`
 
@@ -1130,6 +1263,12 @@ Request body:
 { "postId": "pst_01jpyx3m7gw4w3h7m4bknq0v1d" }
 ```
 
+Fields:
+
+| Field    | Type           | Required | Notes   |
+| -------- | -------------- | -------- | ------- |
+| `postId` | `pst_*` string | yes      | Post ID |
+
 Response:
 
 ```json
@@ -1141,6 +1280,8 @@ Response:
 `DELETE /api/collections/:id/posts/:postId`
 
 Auth: `Session or token`
+
+Removes the post-to-collection association. It does not delete the post or the collection.
 
 Response:
 

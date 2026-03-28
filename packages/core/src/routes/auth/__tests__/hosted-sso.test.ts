@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Hono } from "hono";
 import { errorHandler } from "../../../middleware/error-handler.js";
 import { UnauthorizedError } from "../../../lib/errors.js";
+import { createI18n } from "../../../i18n/index.js";
 import { hostedSsoRoutes } from "../hosted-sso.js";
 import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
@@ -60,8 +61,11 @@ function createHostedSsoTestApp(options?: {
       updatedAt: 0,
     });
     c.set("appConfig", {
+      siteName: "Jant",
       sitePathPrefix: "",
     } as AppVariables["appConfig"]);
+    c.set("lang", "en");
+    c.set("i18n", createI18n("en"));
     await next();
   });
   app.route("/", hostedSsoRoutes);

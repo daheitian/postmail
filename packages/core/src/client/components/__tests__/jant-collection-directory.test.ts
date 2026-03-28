@@ -19,8 +19,8 @@ import type {
   CollectionManagerItem,
   CollectionManagerLabels,
 } from "../collection-manager-types.js";
-import "../jant-collection-sidebar.js";
-import type { JantCollectionsManager } from "../jant-collection-sidebar.js";
+import "../jant-collection-directory.js";
+import type { JantCollectionsManager } from "../jant-collection-directory.js";
 
 const labels: CollectionManagerLabels = {
   collectionsTitle: "Collections",
@@ -84,7 +84,7 @@ const labels: CollectionManagerLabels = {
 
 const items: CollectionManagerItem[] = [
   {
-    id: "sidebar-1",
+    id: "directory-1",
     type: "collection",
     collectionId: "collection-1",
     position: "a0",
@@ -99,7 +99,7 @@ const items: CollectionManagerItem[] = [
     },
   },
   {
-    id: "sidebar-2",
+    id: "directory-2",
     type: "collection",
     collectionId: "collection-2",
     position: "a1",
@@ -130,7 +130,7 @@ const groupedItems: CollectionManagerItem[] = [
     position: "a9",
   },
   {
-    id: "sidebar-3",
+    id: "directory-3",
     type: "collection",
     collectionId: "collection-3",
     position: "b0",

@@ -442,30 +442,35 @@ export const UpdateNavItemSchema = z.object({
     .optional(),
 });
 
-export const SidebarItemLabelSchema = z.string().trim().max(60);
-export const SidebarLinkLabelSchema = sanitizeText(60).pipe(z.string().min(1));
-export const SidebarLinkUrlSchema = z
+export const CollectionDirectoryLabelSchema = z.string().trim().max(60);
+export const CollectionDirectoryLinkLabelSchema = sanitizeText(60).pipe(
+  z.string().min(1),
+);
+export const CollectionDirectoryLinkUrlSchema = z
   .string()
   .min(1)
   .refine((val) => sanitizeUrl(val) !== "", {
     message: "URL must use http:, https:, or mailto: protocol",
   });
 
-export const CreateSidebarItemSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("divider"),
-    label: SidebarItemLabelSchema.nullable().optional(),
-  }),
-  z.object({
-    type: z.literal("link"),
-    label: SidebarLinkLabelSchema,
-    url: SidebarLinkUrlSchema,
-  }),
-]);
+export const CreateCollectionDirectoryItemSchema = z.discriminatedUnion(
+  "type",
+  [
+    z.object({
+      type: z.literal("divider"),
+      label: CollectionDirectoryLabelSchema.nullable().optional(),
+    }),
+    z.object({
+      type: z.literal("link"),
+      label: CollectionDirectoryLinkLabelSchema,
+      url: CollectionDirectoryLinkUrlSchema,
+    }),
+  ],
+);
 
-export const UpdateSidebarItemSchema = z.object({
-  label: z.union([SidebarItemLabelSchema, z.null()]).optional(),
-  url: SidebarLinkUrlSchema.optional(),
+export const UpdateCollectionDirectoryItemSchema = z.object({
+  label: z.union([CollectionDirectoryLabelSchema, z.null()]).optional(),
+  url: CollectionDirectoryLinkUrlSchema.optional(),
 });
 
 export {

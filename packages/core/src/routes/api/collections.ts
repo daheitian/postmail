@@ -11,10 +11,10 @@ import {
   CollectionDirectoryItemIdSchema,
   CollectionDescriptionValueSchema,
   CollectionSortOrderSchema,
-  CreateSidebarItemSchema,
+  CreateCollectionDirectoryItemSchema,
   CreateCollectionSchema,
   PostIdSchema,
-  UpdateSidebarItemSchema,
+  UpdateCollectionDirectoryItemSchema,
   parseValidated,
 } from "../../lib/schemas.js";
 import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
@@ -43,7 +43,7 @@ const ListCollectionsQuerySchema = z.object({
   view: z.enum(["compose"]).optional(),
 });
 
-// List collections (includes post counts and sidebar items)
+// List collections (includes post counts and directory items)
 collectionsApiRoutes.get("/", async (c) => {
   const query = parseValidated(ListCollectionsQuerySchema, c.req.query());
 
@@ -51,7 +51,7 @@ collectionsApiRoutes.get("/", async (c) => {
     const collections = await c.var.services.collections.listByRecentActivity();
     return c.json({
       collections,
-      sidebarItems: [],
+      directoryItems: [],
     });
   }
 
@@ -59,32 +59,45 @@ collectionsApiRoutes.get("/", async (c) => {
 
   return c.json({
     collections: directoryData.collections,
-    sidebarItems: directoryData.sidebarItems,
+    directoryItems: directoryData.directoryItems,
   });
 });
 
-// Create sidebar item (divider or link) — must be before /:id
-collectionsApiRoutes.post("/sidebar-items", requireAuthApi(), async (c) => {
-  const body = parseValidated(CreateSidebarItemSchema, await c.req.json());
-  const item = await c.var.services.collections.createSidebarItem(body);
+// Create directory item (divider or link) — must be before /:id
+collectionsApiRoutes.post("/directory-items", requireAuthApi(), async (c) => {
+  const body = parseValidated(
+    CreateCollectionDirectoryItemSchema,
+    await c.req.json(),
+  );
+  const item = await c.var.services.collections.createDirectoryItem(body);
   return c.json(item, 201);
 });
 
-collectionsApiRoutes.put("/sidebar-items/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"), ID_PREFIX.collectionDirectoryItem);
-  const body = parseValidated(UpdateSidebarItemSchema, await c.req.json());
-
-  const item = assertFound(
-    await c.var.services.collections.updateSidebarItem(id, body),
-    "Sidebar item",
-  );
-
-  return c.json(item);
-});
-
-// Move sidebar item — must be before /:id
 collectionsApiRoutes.put(
-  "/sidebar-items/:id/move",
+  "/directory-items/:id",
+  requireAuthApi(),
+  async (c) => {
+    const id = parseIdParam(
+      c.req.param("id"),
+      ID_PREFIX.collectionDirectoryItem,
+    );
+    const body = parseValidated(
+      UpdateCollectionDirectoryItemSchema,
+      await c.req.json(),
+    );
+
+    const item = assertFound(
+      await c.var.services.collections.updateDirectoryItem(id, body),
+      "Directory item",
+    );
+
+    return c.json(item);
+  },
+);
+
+// Move directory item — must be before /:id
+collectionsApiRoutes.put(
+  "/directory-items/:id/move",
   requireAuthApi(),
   async (c) => {
     const id = parseIdParam(
@@ -94,28 +107,28 @@ collectionsApiRoutes.put(
     const body = parseValidated(MoveSchema, await c.req.json());
 
     const item = assertFound(
-      await c.var.services.collections.moveSidebarItem(
+      await c.var.services.collections.moveDirectoryItem(
         id,
         body.after ?? null,
         body.before ?? null,
       ),
-      "Sidebar item",
+      "Directory item",
     );
 
     return c.json(item);
   },
 );
 
-// Delete sidebar item — must be before /:id
+// Delete directory item — must be before /:id
 collectionsApiRoutes.delete(
-  "/sidebar-items/:id",
+  "/directory-items/:id",
   requireAuthApi(),
   async (c) => {
     const id = parseIdParam(
       c.req.param("id"),
       ID_PREFIX.collectionDirectoryItem,
     );
-    await c.var.services.collections.deleteSidebarItem(id);
+    await c.var.services.collections.deleteDirectoryItem(id);
     return c.json({ success: true });
   },
 );

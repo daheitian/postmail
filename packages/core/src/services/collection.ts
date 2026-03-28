@@ -2,7 +2,8 @@
  * Collection Service (v2)
  *
  * Manages collections. Posts belong to collections via post_collections junction table (M:N).
- * Sidebar ordering is managed through the collection_directory_item table with fractional indexing.
+ * Collection directory ordering is managed through the collection_directory_item
+ * table with fractional indexing.
  */
 
 import { eq, asc, sql, and, inArray, desc } from "drizzle-orm";
@@ -22,14 +23,14 @@ import { now } from "../lib/time.js";
 import type {
   Collection,
   CollectionDirectoryCollection,
+  CollectionDirectoryEntry,
+  CollectionDirectoryEntryType,
   CollectionDirectoryItem,
   CollectionsDirectoryData,
-  SidebarItem,
-  SidebarItemType,
   CreateCollection,
-  CreateSidebarItem,
+  CreateCollectionDirectoryEntry,
   UpdateCollection,
-  UpdateSidebarItem,
+  UpdateCollectionDirectoryEntry,
   CollectionSortOrder,
 } from "../types.js";
 import { ConflictError, ValidationError } from "../lib/errors.js";
@@ -39,13 +40,13 @@ import {
   type PathService,
 } from "./path.js";
 import {
-  CreateSidebarItemSchema,
+  CreateCollectionDirectoryItemSchema,
+  CollectionDirectoryLabelSchema,
+  CollectionDirectoryLinkLabelSchema,
+  CollectionDirectoryLinkUrlSchema,
   CollectionDescriptionValueSchema,
   CollectionSlugSchema,
   CollectionTitleSchema,
-  SidebarItemLabelSchema,
-  SidebarLinkLabelSchema,
-  SidebarLinkUrlSchema,
   parseValidated,
 } from "../lib/schemas.js";
 
@@ -109,23 +110,25 @@ export interface CollectionService {
   create(data: CreateCollection): Promise<Collection>;
   update(id: string, data: UpdateCollection): Promise<Collection | null>;
   delete(id: string): Promise<boolean>;
-  /** List all sidebar items ordered by position */
-  listSidebarItems(): Promise<SidebarItem[]>;
-  /** Create a sidebar item (collection, divider, or link) */
-  createSidebarItem(data: CreateSidebarItem): Promise<SidebarItem>;
-  /** Delete a sidebar item by ID */
-  deleteSidebarItem(id: string): Promise<boolean>;
-  /** Update a sidebar item */
-  updateSidebarItem(
+  /** List all collection directory items ordered by position */
+  listDirectoryItems(): Promise<CollectionDirectoryEntry[]>;
+  /** Create a collection directory item (collection, divider, or link) */
+  createDirectoryItem(
+    data: CreateCollectionDirectoryEntry,
+  ): Promise<CollectionDirectoryEntry>;
+  /** Delete a collection directory item by ID */
+  deleteDirectoryItem(id: string): Promise<boolean>;
+  /** Update a collection directory item */
+  updateDirectoryItem(
     id: string,
-    data: UpdateSidebarItem,
-  ): Promise<SidebarItem | null>;
-  /** Move a sidebar item between two neighbors */
-  moveSidebarItem(
+    data: UpdateCollectionDirectoryEntry,
+  ): Promise<CollectionDirectoryEntry | null>;
+  /** Move a collection directory item between two neighbors */
+  moveDirectoryItem(
     id: string,
     after: string | null,
     before: string | null,
-  ): Promise<SidebarItem | null>;
+  ): Promise<CollectionDirectoryEntry | null>;
   /** Get post count per collection */
   getPostCounts(): Promise<Map<string, number>>;
   /** Add a post to a collection */
@@ -155,7 +158,7 @@ export function createCollectionService(
   const {
     collections,
     pathRegistry,
-    collectionDirectoryItems: sidebarItems,
+    collectionDirectoryItems: directoryItemsTable,
     postCollections,
     posts,
   } = databaseSchema;
@@ -215,11 +218,13 @@ export function createCollectionService(
     };
   }
 
-  function toSidebarItem(row: typeof sidebarItems.$inferSelect): SidebarItem {
+  function toDirectoryItem(
+    row: typeof directoryItemsTable.$inferSelect,
+  ): CollectionDirectoryEntry {
     return {
       id: row.id,
       siteId: row.siteId,
-      type: row.type as SidebarItemType,
+      type: row.type as CollectionDirectoryEntryType,
       collectionId: row.collectionId,
       label: row.label,
       url: row.url,
@@ -229,65 +234,71 @@ export function createCollectionService(
     };
   }
 
-  function normalizeSidebarLabel(label?: string | null): string | null {
+  function normalizeDirectoryLabel(label?: string | null): string | null {
     if (label === null) return null;
     if (label === undefined) return null;
 
-    const trimmed = parseValidated(SidebarItemLabelSchema, label);
+    const trimmed = parseValidated(CollectionDirectoryLabelSchema, label);
     return trimmed ? trimmed : null;
   }
 
-  function normalizeSidebarLinkLabel(label: string): string {
-    return parseValidated(SidebarLinkLabelSchema, label);
+  function normalizeDirectoryLinkLabel(label: string): string {
+    return parseValidated(CollectionDirectoryLinkLabelSchema, label);
   }
 
-  function normalizeSidebarUrl(url: string): string {
-    return parseValidated(SidebarLinkUrlSchema, url);
+  function normalizeDirectoryUrl(url: string): string {
+    return parseValidated(CollectionDirectoryLinkUrlSchema, url);
   }
 
-  function normalizeCreateSidebarItemInput(
-    data: CreateSidebarItem,
-  ): CreateSidebarItem {
+  function normalizeCreateDirectoryItemInput(
+    data: CreateCollectionDirectoryEntry,
+  ): CreateCollectionDirectoryEntry {
     if (data.type === "collection") {
       return data;
     }
 
-    const normalized = parseValidated(CreateSidebarItemSchema, data);
+    const normalized = parseValidated(
+      CreateCollectionDirectoryItemSchema,
+      data,
+    );
     if (normalized.type === "divider") {
       return {
         type: "divider",
-        label: normalizeSidebarLabel(normalized.label),
+        label: normalizeDirectoryLabel(normalized.label),
       };
     }
 
     return {
       type: "link",
-      label: normalizeSidebarLinkLabel(normalized.label),
-      url: normalizeSidebarUrl(normalized.url),
+      label: normalizeDirectoryLinkLabel(normalized.label),
+      url: normalizeDirectoryUrl(normalized.url),
     };
   }
 
-  async function getLastSidebarPosition(): Promise<string | null> {
+  async function getLastDirectoryPosition(): Promise<string | null> {
     const rows = await db
-      .select({ position: sidebarItems.position })
-      .from(sidebarItems)
-      .where(eq(sidebarItems.siteId, siteId))
-      .orderBy(sql`${sidebarItems.position} DESC`)
+      .select({ position: directoryItemsTable.position })
+      .from(directoryItemsTable)
+      .where(eq(directoryItemsTable.siteId, siteId))
+      .orderBy(sql`${directoryItemsTable.position} DESC`)
       .limit(1);
     return rows[0]?.position ?? null;
   }
 
-  async function listOrderedSidebarPositions(excludeId?: string) {
+  async function listOrderedDirectoryPositions(excludeId?: string) {
     const rows = await db
-      .select({ id: sidebarItems.id, position: sidebarItems.position })
-      .from(sidebarItems)
-      .where(eq(sidebarItems.siteId, siteId))
-      .orderBy(asc(sidebarItems.position));
+      .select({
+        id: directoryItemsTable.id,
+        position: directoryItemsTable.position,
+      })
+      .from(directoryItemsTable)
+      .where(eq(directoryItemsTable.siteId, siteId))
+      .orderBy(asc(directoryItemsTable.position));
     return excludeId ? rows.filter((row) => row.id !== excludeId) : rows;
   }
 
-  async function getAppendSidebarPosition(): Promise<string> {
-    const lastPos = await getLastSidebarPosition();
+  async function getAppendDirectoryPosition(): Promise<string> {
+    const lastPos = await getLastDirectoryPosition();
     return generateKeyBetween(lastPos, null);
   }
 
@@ -300,12 +311,12 @@ export function createCollectionService(
     return rows.length > 0;
   }
 
-  async function getSidebarMovePosition(
+  async function getDirectoryMovePosition(
     id: string,
     afterId: string | null,
     beforeId: string | null,
   ): Promise<string> {
-    const rows = await listOrderedSidebarPositions(id);
+    const rows = await listOrderedDirectoryPositions(id);
     const afterIndex = afterId
       ? rows.findIndex((row) => row.id === afterId)
       : -1;
@@ -434,7 +445,7 @@ export function createCollectionService(
 
   function buildDirectoryItems(
     directoryCollections: CollectionDirectoryCollection[],
-    orderedSidebarItems: SidebarItem[],
+    orderedDirectoryItems: CollectionDirectoryEntry[],
   ): CollectionDirectoryItem[] {
     const collectionMap = new Map(
       directoryCollections.map((collection) => [collection.id, collection]),
@@ -442,7 +453,7 @@ export function createCollectionService(
     const seenCollections = new Set<string>();
     const items: CollectionDirectoryItem[] = [];
 
-    for (const item of orderedSidebarItems) {
+    for (const item of orderedDirectoryItems) {
       if (item.type === "divider") {
         items.push({
           id: item.id,
@@ -541,15 +552,15 @@ export function createCollectionService(
     },
 
     async listDirectoryData() {
-      const [directoryCollections, orderedSidebarItems] = await Promise.all([
+      const [directoryCollections, orderedDirectoryItems] = await Promise.all([
         listDirectoryCollections(),
-        this.listSidebarItems(),
+        this.listDirectoryItems(),
       ]);
 
       return {
         collections: directoryCollections,
-        items: buildDirectoryItems(directoryCollections, orderedSidebarItems),
-        sidebarItems: orderedSidebarItems,
+        items: buildDirectoryItems(directoryCollections, orderedDirectoryItems),
+        directoryItems: orderedDirectoryItems,
       };
     },
 
@@ -581,7 +592,7 @@ export function createCollectionService(
 
       for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
         try {
-          const position = await getAppendSidebarPosition();
+          const position = await getAppendDirectoryPosition();
           if (usesBatchWrites) {
             const writeQueries = [
               db.insert(collections).values({
@@ -605,7 +616,7 @@ export function createCollectionService(
                 createdAt: timestamp,
                 updatedAt: timestamp,
               }),
-              db.insert(sidebarItems).values({
+              db.insert(directoryItemsTable).values({
                 id: createEntityId("collectionDirectoryItem"),
                 siteId,
                 type: "collection",
@@ -649,7 +660,7 @@ export function createCollectionService(
                 updatedAt: timestamp,
               });
 
-              await tx.insert(sidebarItems).values({
+              await tx.insert(directoryItemsTable).values({
                 id: createEntityId("collectionDirectoryItem"),
                 siteId,
                 type: "collection",
@@ -685,7 +696,7 @@ export function createCollectionService(
         }
       }
 
-      throw new Error("Failed to assign a unique sidebar item position");
+      throw new Error("Failed to assign a unique directory item position");
     },
 
     async update(id, data) {
@@ -743,11 +754,11 @@ export function createCollectionService(
           ),
         );
       await db
-        .delete(sidebarItems)
+        .delete(directoryItemsTable)
         .where(
           and(
-            eq(sidebarItems.siteId, siteId),
-            eq(sidebarItems.collectionId, id),
+            eq(directoryItemsTable.siteId, siteId),
+            eq(directoryItemsTable.collectionId, id),
           ),
         );
       const result = await db
@@ -757,24 +768,24 @@ export function createCollectionService(
       return result.length > 0;
     },
 
-    async listSidebarItems() {
+    async listDirectoryItems() {
       const rows = await db
         .select()
-        .from(sidebarItems)
-        .where(eq(sidebarItems.siteId, siteId))
-        .orderBy(asc(sidebarItems.position));
-      return rows.map(toSidebarItem);
+        .from(directoryItemsTable)
+        .where(eq(directoryItemsTable.siteId, siteId))
+        .orderBy(asc(directoryItemsTable.position));
+      return rows.map(toDirectoryItem);
     },
 
-    async createSidebarItem(data) {
-      const normalizedData = normalizeCreateSidebarItemInput(data);
+    async createDirectoryItem(data) {
+      const normalizedData = normalizeCreateDirectoryItemInput(data);
       const id = createEntityId("collectionDirectoryItem");
       const timestamp = now();
 
       for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
         try {
           const result = await db
-            .insert(sidebarItems)
+            .insert(directoryItemsTable)
             .values({
               id,
               siteId,
@@ -790,31 +801,36 @@ export function createCollectionService(
                     ? normalizedData.label
                     : null,
               url: normalizedData.type === "link" ? normalizedData.url : null,
-              position: await getAppendSidebarPosition(),
+              position: await getAppendDirectoryPosition(),
               createdAt: timestamp,
               updatedAt: timestamp,
             })
             .returning();
 
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-          return toSidebarItem(result[0]!);
+          return toDirectoryItem(result[0]!);
         } catch (err) {
           if (
             normalizedData.type === "collection" &&
             isUniqueConstraintError(err)
           ) {
             const existing = await db
-              .select({ id: sidebarItems.id })
-              .from(sidebarItems)
+              .select({ id: directoryItemsTable.id })
+              .from(directoryItemsTable)
               .where(
                 and(
-                  eq(sidebarItems.siteId, siteId),
-                  eq(sidebarItems.collectionId, normalizedData.collectionId),
+                  eq(directoryItemsTable.siteId, siteId),
+                  eq(
+                    directoryItemsTable.collectionId,
+                    normalizedData.collectionId,
+                  ),
                 ),
               )
               .limit(1);
             if (existing.length > 0) {
-              throw new ConflictError("Collection is already in the sidebar.");
+              throw new ConflictError(
+                "Collection is already in the directory.",
+              );
             }
           }
           if (
@@ -826,35 +842,45 @@ export function createCollectionService(
         }
       }
 
-      throw new Error("Failed to assign a unique sidebar item position");
+      throw new Error("Failed to assign a unique directory item position");
     },
 
-    async deleteSidebarItem(id) {
+    async deleteDirectoryItem(id) {
       const result = await db
-        .delete(sidebarItems)
-        .where(and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)))
+        .delete(directoryItemsTable)
+        .where(
+          and(
+            eq(directoryItemsTable.siteId, siteId),
+            eq(directoryItemsTable.id, id),
+          ),
+        )
         .returning();
       return result.length > 0;
     },
 
-    async updateSidebarItem(id, data) {
+    async updateDirectoryItem(id, data) {
       const existing = await db
         .select()
-        .from(sidebarItems)
-        .where(and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)))
+        .from(directoryItemsTable)
+        .where(
+          and(
+            eq(directoryItemsTable.siteId, siteId),
+            eq(directoryItemsTable.id, id),
+          ),
+        )
         .limit(1);
       const item = existing[0];
       if (!item) return null;
 
       if (data.label === undefined && data.url === undefined) {
-        return toSidebarItem(item);
+        return toDirectoryItem(item);
       }
 
       let nextLabel = item.label;
       let nextUrl = item.url;
 
       if (item.type === "divider" && data.label !== undefined) {
-        nextLabel = normalizeSidebarLabel(data.label);
+        nextLabel = normalizeDirectoryLabel(data.label);
       }
 
       if (item.type === "link") {
@@ -862,31 +888,41 @@ export function createCollectionService(
           if (data.label === null) {
             throw new ValidationError("Link label is required.");
           }
-          nextLabel = normalizeSidebarLinkLabel(data.label);
+          nextLabel = normalizeDirectoryLinkLabel(data.label);
         }
         if (data.url !== undefined) {
-          nextUrl = normalizeSidebarUrl(data.url);
+          nextUrl = normalizeDirectoryUrl(data.url);
         }
       }
 
       const result = await db
-        .update(sidebarItems)
+        .update(directoryItemsTable)
         .set({
           label: item.type === "collection" ? null : nextLabel,
           url: item.type === "link" ? nextUrl : null,
           updatedAt: now(),
         })
-        .where(and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)))
+        .where(
+          and(
+            eq(directoryItemsTable.siteId, siteId),
+            eq(directoryItemsTable.id, id),
+          ),
+        )
         .returning();
 
-      return result[0] ? toSidebarItem(result[0]) : null;
+      return result[0] ? toDirectoryItem(result[0]) : null;
     },
 
-    async moveSidebarItem(id, afterId, beforeId) {
+    async moveDirectoryItem(id, afterId, beforeId) {
       const items = await db
         .select()
-        .from(sidebarItems)
-        .where(and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)))
+        .from(directoryItemsTable)
+        .where(
+          and(
+            eq(directoryItemsTable.siteId, siteId),
+            eq(directoryItemsTable.id, id),
+          ),
+        )
         .limit(1);
       if (!items[0]) return null;
 
@@ -894,17 +930,20 @@ export function createCollectionService(
       for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
         try {
           const result = await db
-            .update(sidebarItems)
+            .update(directoryItemsTable)
             .set({
-              position: await getSidebarMovePosition(id, afterId, beforeId),
+              position: await getDirectoryMovePosition(id, afterId, beforeId),
               updatedAt: timestamp,
             })
             .where(
-              and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)),
+              and(
+                eq(directoryItemsTable.siteId, siteId),
+                eq(directoryItemsTable.id, id),
+              ),
             )
             .returning();
 
-          return result[0] ? toSidebarItem(result[0]) : null;
+          return result[0] ? toDirectoryItem(result[0]) : null;
         } catch (err) {
           if (
             !isUniqueConstraintError(err) ||
@@ -915,7 +954,7 @@ export function createCollectionService(
         }
       }
 
-      throw new Error("Failed to assign a unique sidebar item position");
+      throw new Error("Failed to assign a unique directory item position");
     },
 
     async getPostCounts() {

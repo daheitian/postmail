@@ -99,7 +99,7 @@ export function createAuthService(
     collections,
     postCollections,
     pathRegistry,
-    collectionDirectoryItems: sidebarItems,
+    collectionDirectoryItems: directoryItemsTable,
     navItems,
     siteMembers,
     siteDomains,
@@ -113,7 +113,7 @@ export function createAuthService(
     // Junction/dependent tables first
     await targetDb.delete(postCollections);
     await targetDb.delete(pathRegistry);
-    await targetDb.delete(sidebarItems);
+    await targetDb.delete(directoryItemsTable);
     await targetDb.delete(media);
     await targetDb.delete(navItems);
 

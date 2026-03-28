@@ -131,12 +131,12 @@ export interface CollectionDirectoryCollection extends Collection {
   recentActivityAt: number;
 }
 
-export type SidebarItemType = "collection" | "divider" | "link";
+export type CollectionDirectoryEntryType = "collection" | "divider" | "link";
 
-export interface SidebarItem {
+export interface CollectionDirectoryEntry {
   id: string;
   siteId: string;
-  type: SidebarItemType;
+  type: CollectionDirectoryEntryType;
   collectionId: string | null;
   label: string | null;
   url: string | null;
@@ -147,7 +147,7 @@ export interface SidebarItem {
 
 export interface CollectionDirectoryItem {
   id: string;
-  type: "collection" | "divider" | "link";
+  type: CollectionDirectoryEntryType;
   label?: string | null;
   url?: string | null;
   collection?: CollectionDirectoryCollection;
@@ -156,7 +156,7 @@ export interface CollectionDirectoryItem {
 export interface CollectionsDirectoryData {
   collections: CollectionDirectoryCollection[];
   items: CollectionDirectoryItem[];
-  sidebarItems: SidebarItem[];
+  directoryItems: CollectionDirectoryEntry[];
 }
 
 export interface PostCollection {

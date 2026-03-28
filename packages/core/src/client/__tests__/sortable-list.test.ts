@@ -50,7 +50,7 @@ describe("sortable-list helpers", () => {
   });
 
   it("reverts DOM moves using the captured next sibling when available", () => {
-    const list = createList(["a", "b", "c"], "sidebarItem");
+    const list = createList(["a", "b", "c"], "directoryItem");
     const movedItem = list.children[1] as HTMLElement;
     const originalNextSibling = movedItem.nextSibling;
 
@@ -66,7 +66,7 @@ describe("sortable-list helpers", () => {
     );
 
     expect(
-      readSortableDataIds(list, "[data-sidebar-item]", "sidebarItem"),
+      readSortableDataIds(list, "[data-directory-item]", "directoryItem"),
     ).toEqual(["a", "b", "c"]);
   });
 

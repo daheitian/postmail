@@ -5,7 +5,7 @@ import {
 } from "../../__tests__/helpers/db.js";
 import {
   collections,
-  collectionDirectoryItems as sidebarItems,
+  collectionDirectoryItems as directoryItemsTable,
 } from "../../db/schema.js";
 import { createCollectionService } from "../collection.js";
 import { createPathService } from "../path.js";
@@ -68,17 +68,17 @@ describe("CollectionService", () => {
       expect(collection.updatedAt).toBeGreaterThan(0);
     });
 
-    it("auto-creates a sidebar item", async () => {
+    it("auto-creates a directory item", async () => {
       const collection = await collectionService.create({
         slug: "test",
         title: "Test",
       });
 
-      const sidebarItems = await collectionService.listSidebarItems();
-      expect(sidebarItems).toHaveLength(1);
-      expect(sidebarItems[0]?.type).toBe("collection");
-      expect(sidebarItems[0]?.collectionId).toBe(collection.id);
-      expect(typeof sidebarItems[0]?.position).toBe("string");
+      const directoryItems = await collectionService.listDirectoryItems();
+      expect(directoryItems).toHaveLength(1);
+      expect(directoryItems[0]?.type).toBe("collection");
+      expect(directoryItems[0]?.collectionId).toBe(collection.id);
+      expect(typeof directoryItems[0]?.position).toBe("string");
     });
 
     it("rolls back the collection insert when slug persistence fails inside the batch", async () => {
@@ -258,7 +258,7 @@ describe("CollectionService", () => {
         slug: "reading",
         title: "Reading",
       });
-      const divider = await collectionService.createSidebarItem({
+      const divider = await collectionService.createDirectoryItem({
         type: "divider",
         label: "Essays",
       });
@@ -276,7 +276,7 @@ describe("CollectionService", () => {
         post.lastActivityAt,
       );
       expect(
-        directory.sidebarItems.find((item) => item.id === divider.id)?.label,
+        directory.directoryItems.find((item) => item.id === divider.id)?.label,
       ).toBe("Essays");
       expect(directory.items).toEqual([
         expect.objectContaining({
@@ -296,7 +296,7 @@ describe("CollectionService", () => {
     });
 
     it("includes custom links in directory items", async () => {
-      const link = await collectionService.createSidebarItem({
+      const link = await collectionService.createDirectoryItem({
         type: "link",
         label: "Quotes",
         url: "/archive?format=quote",
@@ -304,7 +304,7 @@ describe("CollectionService", () => {
 
       const directory = await collectionService.listDirectoryData();
 
-      expect(directory.sidebarItems).toContainEqual(
+      expect(directory.directoryItems).toContainEqual(
         expect.objectContaining({
           id: link.id,
           type: "link",
@@ -454,20 +454,20 @@ describe("CollectionService", () => {
       expect(after).toHaveLength(0);
     });
 
-    it("removes sidebar item when collection is deleted", async () => {
+    it("removes the directory item when collection is deleted", async () => {
       const collection = await collectionService.create({
         slug: "test",
         title: "Test",
       });
 
-      // Verify sidebar item exists
-      const before = await collectionService.listSidebarItems();
+      // Verify directory item exists
+      const before = await collectionService.listDirectoryItems();
       expect(before).toHaveLength(1);
 
       await collectionService.delete(collection.id);
 
-      // Sidebar item should be gone
-      const after = await collectionService.listSidebarItems();
+      // Directory item should be gone
+      const after = await collectionService.listDirectoryItems();
       expect(after).toHaveLength(0);
     });
 
@@ -479,9 +479,9 @@ describe("CollectionService", () => {
     });
   });
 
-  describe("listSidebarItems", () => {
+  describe("listDirectoryItems", () => {
     it("returns empty array when no items exist", async () => {
-      const items = await collectionService.listSidebarItems();
+      const items = await collectionService.listDirectoryItems();
       expect(items).toEqual([]);
     });
 
@@ -489,7 +489,7 @@ describe("CollectionService", () => {
       await collectionService.create({ slug: "first", title: "First" });
       await collectionService.create({ slug: "second", title: "Second" });
 
-      const items = await collectionService.listSidebarItems();
+      const items = await collectionService.listDirectoryItems();
       expect(items).toHaveLength(2);
       expect(items[0]?.type).toBe("collection");
       expect(items[1]?.type).toBe("collection");
@@ -501,10 +501,10 @@ describe("CollectionService", () => {
 
     it("includes dividers", async () => {
       await collectionService.create({ slug: "a", title: "A" });
-      await collectionService.createSidebarItem({ type: "divider" });
+      await collectionService.createDirectoryItem({ type: "divider" });
       await collectionService.create({ slug: "b", title: "B" });
 
-      const items = await collectionService.listSidebarItems();
+      const items = await collectionService.listDirectoryItems();
       expect(items).toHaveLength(3);
       expect(items[0]?.type).toBe("collection");
       expect(items[1]?.type).toBe("divider");
@@ -512,9 +512,9 @@ describe("CollectionService", () => {
     });
   });
 
-  describe("createSidebarItem", () => {
+  describe("createDirectoryItem", () => {
     it("creates a divider", async () => {
-      const item = await collectionService.createSidebarItem({
+      const item = await collectionService.createDirectoryItem({
         type: "divider",
       });
 
@@ -526,10 +526,10 @@ describe("CollectionService", () => {
     });
 
     it("creates items with incrementing positions", async () => {
-      const first = await collectionService.createSidebarItem({
+      const first = await collectionService.createDirectoryItem({
         type: "divider",
       });
-      const second = await collectionService.createSidebarItem({
+      const second = await collectionService.createDirectoryItem({
         type: "divider",
       });
 
@@ -543,15 +543,15 @@ describe("CollectionService", () => {
       });
 
       await expect(
-        collectionService.createSidebarItem({
+        collectionService.createDirectoryItem({
           type: "collection",
           collectionId: collection.id,
         }),
-      ).rejects.toThrow("Collection is already in the sidebar.");
+      ).rejects.toThrow("Collection is already in the directory.");
     });
 
     it("creates a custom link", async () => {
-      const item = await collectionService.createSidebarItem({
+      const item = await collectionService.createDirectoryItem({
         type: "link",
         label: "Quotes",
         url: "/archive?format=quote",
@@ -563,13 +563,13 @@ describe("CollectionService", () => {
       expect(item.url).toBe("/archive?format=quote");
     });
 
-    it("rejects duplicate sidebar positions at the database layer", async () => {
-      const item = await collectionService.createSidebarItem({
+    it("rejects duplicate directory positions at the database layer", async () => {
+      const item = await collectionService.createDirectoryItem({
         type: "divider",
       });
 
       await expect(
-        db.insert(sidebarItems).values({
+        db.insert(directoryItemsTable).values({
           id: "00000000-0000-7000-8000-000000000001",
           type: "divider",
           collectionId: null,
@@ -582,13 +582,13 @@ describe("CollectionService", () => {
     });
   });
 
-  describe("updateSidebarItem", () => {
+  describe("updateDirectoryItem", () => {
     it("updates and trims a divider label", async () => {
-      const item = await collectionService.createSidebarItem({
+      const item = await collectionService.createDirectoryItem({
         type: "divider",
       });
 
-      const updated = await collectionService.updateSidebarItem(item.id, {
+      const updated = await collectionService.updateDirectoryItem(item.id, {
         label: "  Writing  ",
       });
 
@@ -596,13 +596,13 @@ describe("CollectionService", () => {
     });
 
     it("updates a custom link label and url", async () => {
-      const item = await collectionService.createSidebarItem({
+      const item = await collectionService.createDirectoryItem({
         type: "link",
         label: "Quotes",
         url: "/archive?format=quote",
       });
 
-      const updated = await collectionService.updateSidebarItem(item.id, {
+      const updated = await collectionService.updateDirectoryItem(item.id, {
         label: "Quote archive",
         url: "/archive?format=quote&view=list",
       });
@@ -612,34 +612,34 @@ describe("CollectionService", () => {
     });
   });
 
-  describe("deleteSidebarItem", () => {
-    it("deletes a sidebar item", async () => {
-      const item = await collectionService.createSidebarItem({
+  describe("deleteDirectoryItem", () => {
+    it("deletes a directory item", async () => {
+      const item = await collectionService.createDirectoryItem({
         type: "divider",
       });
-      const result = await collectionService.deleteSidebarItem(item.id);
+      const result = await collectionService.deleteDirectoryItem(item.id);
       expect(result).toBe(true);
 
-      const items = await collectionService.listSidebarItems();
+      const items = await collectionService.listDirectoryItems();
       expect(items).toHaveLength(0);
     });
 
     it("returns false for non-existent item", async () => {
-      const result = await collectionService.deleteSidebarItem(
+      const result = await collectionService.deleteDirectoryItem(
         "00000000-0000-0000-0000-000000009999",
       );
       expect(result).toBe(false);
     });
   });
 
-  describe("moveSidebarItem", () => {
+  describe("moveDirectoryItem", () => {
     it("moves an item between two others", async () => {
       const col1 = await collectionService.create({ slug: "a", title: "A" });
       const col2 = await collectionService.create({ slug: "b", title: "B" });
       const col3 = await collectionService.create({ slug: "c", title: "C" });
 
-      // Get sidebar items (A, B, C order)
-      const items = await collectionService.listSidebarItems();
+      // Get directory items (A, B, C order)
+      const items = await collectionService.listDirectoryItems();
       expect(items).toHaveLength(3);
       const itemA = items.find((i) => i.collectionId === col1.id);
       const itemB = items.find((i) => i.collectionId === col2.id);
@@ -649,7 +649,7 @@ describe("CollectionService", () => {
       expect(itemC).toBeDefined();
 
       // Move C between A and B
-      const moved = await collectionService.moveSidebarItem(
+      const moved = await collectionService.moveDirectoryItem(
         itemC?.id ?? "",
         itemA?.id ?? "",
         itemB?.id ?? "",
@@ -658,7 +658,7 @@ describe("CollectionService", () => {
       expect(moved).not.toBeNull();
 
       // Verify new order: A, C, B
-      const reordered = await collectionService.listSidebarItems();
+      const reordered = await collectionService.listDirectoryItems();
       expect(reordered[0]?.collectionId).toBe(col1.id);
       expect(reordered[1]?.collectionId).toBe(col3.id);
       expect(reordered[2]?.collectionId).toBe(col2.id);
@@ -669,20 +669,20 @@ describe("CollectionService", () => {
       const col2 = await collectionService.create({ slug: "b", title: "B" });
       const col3 = await collectionService.create({ slug: "c", title: "C" });
 
-      const items = await collectionService.listSidebarItems();
+      const items = await collectionService.listDirectoryItems();
       const itemA = items.find((i) => i.collectionId === col1.id);
       const itemC = items.find((i) => i.collectionId === col3.id);
       expect(itemA).toBeDefined();
       expect(itemC).toBeDefined();
 
       // Move C to the beginning (before A, no after)
-      await collectionService.moveSidebarItem(
+      await collectionService.moveDirectoryItem(
         itemC?.id ?? "",
         null,
         itemA?.id ?? "",
       );
 
-      const reordered = await collectionService.listSidebarItems();
+      const reordered = await collectionService.listDirectoryItems();
       expect(reordered[0]?.collectionId).toBe(col3.id);
       expect(reordered[1]?.collectionId).toBe(col1.id);
       expect(reordered[2]?.collectionId).toBe(col2.id);
@@ -693,27 +693,27 @@ describe("CollectionService", () => {
       const col2 = await collectionService.create({ slug: "b", title: "B" });
       const col3 = await collectionService.create({ slug: "c", title: "C" });
 
-      const items = await collectionService.listSidebarItems();
+      const items = await collectionService.listDirectoryItems();
       const itemA = items.find((i) => i.collectionId === col1.id);
       const itemC = items.find((i) => i.collectionId === col3.id);
       expect(itemA).toBeDefined();
       expect(itemC).toBeDefined();
 
       // Move A to the end (after C, no before)
-      await collectionService.moveSidebarItem(
+      await collectionService.moveDirectoryItem(
         itemA?.id ?? "",
         itemC?.id ?? "",
         null,
       );
 
-      const reordered = await collectionService.listSidebarItems();
+      const reordered = await collectionService.listDirectoryItems();
       expect(reordered[0]?.collectionId).toBe(col2.id);
       expect(reordered[1]?.collectionId).toBe(col3.id);
       expect(reordered[2]?.collectionId).toBe(col1.id);
     });
 
     it("returns null for non-existent item", async () => {
-      const result = await collectionService.moveSidebarItem(
+      const result = await collectionService.moveDirectoryItem(
         "00000000-0000-0000-0000-000000009999",
         null,
         null,

@@ -19,7 +19,7 @@ import "./client/components/jant-settings-general.js";
 import "./client/components/jant-settings-avatar.js";
 import "./client/settings-bridge.js";
 import "./client/components/jant-collection-form.js";
-import "./client/components/jant-collection-sidebar.js";
+import "./client/components/jant-collection-directory.js";
 import "./client/collection-form-bridge.js";
 import "./client/components/jant-post-form.js";
 import "./client/post-form-bridge.js";
