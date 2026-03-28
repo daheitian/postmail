@@ -5,7 +5,6 @@
  * Runs multiple passes to handle FTS5 trigger dependencies.
  *
  * @example node scripts/nuke-db.mjs sites/demo
- * @example node scripts/nuke-db.mjs sites/jant-me
  */
 
 import { execSync } from "node:child_process";

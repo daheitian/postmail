@@ -146,8 +146,6 @@ mise run dev              # Start Vite dev server (defaults to 3000; set PORT to
 mise run dev-debug        # Start debug server on the first free port from 19020 and prepare local auth helpers
 mise run dev-auth-bootstrap # Sync local demo credentials + print auth debug URLs
 mise run build            # Build @jant/core (lib + client assets)
-mise run dev-site         # Build @jant/core + start jant.me dev server
-mise run deploy-site      # Build @jant/core + deploy jant.me to Workers
 ```
 
 ### Code Quality

@@ -217,9 +217,7 @@ accordingly:
 - `scripts/demo-public/clear-storage.mjs`
 - `scripts/demo-source/clear-storage.mjs`
 - `scripts/demo-public/clear-content.mjs`
-- `sites/jant-me/scripts/clear-content.mjs`
 - `sites/content-lab/scripts/clear-content.mjs`
-- `sites/jant-me/scripts/export-site.mjs`
 - `sites/content-lab/scripts/export-content-lab.mjs`
 - `scripts/demo-public/verify.mjs`
 

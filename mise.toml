@@ -513,17 +513,6 @@ description = "Drop ALL tables in the public demo database (including migrations
 run = "node scripts/nuke-db.mjs sites/demo"
 
 
-# =============================================================================
-# Official Site
-# =============================================================================
-[tasks.dev-site]
-description = "Start jant.me development server (build @jant/core first)"
-run = "pnpm --filter @jant/core build && pnpm --filter jant-me dev"
-
-[tasks.deploy-site]
-description = "Deploy jant.me to Cloudflare Workers"
-run = "pnpm --filter @jant/core build && pnpm --filter jant-me run deploy"
-
 [tasks.dev-content-lab]
 description = "Start the content-lab Worker (build @jant/core first)"
 run = "pnpm --filter @jant/core build && pnpm --filter jant-content-lab dev"
@@ -549,45 +538,6 @@ echo "Done! content-lab content has been cleared."
 [tasks.db-content-lab-nuke]
 description = "Drop ALL tables in content-lab database (including migrations)"
 run = "node scripts/nuke-db.mjs sites/content-lab"
-
-[tasks.db-site-export-content]
-alias = "db-site-export"
-description = "Export jant.me content to scripts/seed-site.sql"
-dir = "sites/jant-me"
-run = "node scripts/export-site.mjs"
-
-[tasks.db-site-clear-content]
-alias = "db-site-clean"
-description = "Clear jant.me content without reseeding (runs remote migrations first)"
-dir = "sites/jant-me"
-run = """
-echo "Running remote migrations..."
-node ../../scripts/run-jant.mjs migrate --remote
-echo "Clearing jant.me data..."
-node scripts/clear-content.mjs
-echo "Done! jant.me content has been cleared."
-"""
-
-[tasks.db-site-load-content]
-alias = "db-site-push"
-description = "Load scripts/seed-site.sql into jant.me (runs remote migrations first)"
-dir = "sites/jant-me"
-run = """
-echo "Running remote migrations..."
-node ../../scripts/run-jant.mjs migrate --remote
-echo "Loading seed data to jant.me..."
-node ../../scripts/run-jant.mjs db execute-file --remote --file scripts/seed-site.sql
-echo "Done! jant.me has been seeded from seed-site.sql."
-"""
-
-[tasks.db-site-reseed]
-description = "Replace jant.me content with scripts/seed-site.sql (runs remote migrations first)"
-dir = "sites/jant-me"
-run = "mise run db-site-load-content"
-
-[tasks.db-site-nuke]
-description = "Drop ALL tables in jant.me database (including migrations)"
-run = "node scripts/nuke-db.mjs sites/jant-me"
 
 # =============================================================================
 # Code Generation

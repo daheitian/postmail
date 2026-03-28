@@ -333,16 +333,6 @@ importers:
         specifier: 'catalog:'
         version: 4.76.0(@cloudflare/workers-types@4.20260317.1)
 
-  sites/jant-me:
-    dependencies:
-      '@jant/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-    devDependencies:
-      wrangler:
-        specifier: 'catalog:'
-        version: 4.76.0(@cloudflare/workers-types@4.20260317.1)
-
 packages:
 
   '@aws-crypto/crc32@5.2.0':
