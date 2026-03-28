@@ -1,6 +1,6 @@
 # Jant
 
-> **Work in Progress**: Jant is still pre-1.0. Breaking changes are expected while the product and docs settle.
+> **Pre-1.0**: Jant is still early. Expect rough edges, breaking changes, and docs that keep moving while the product settles.
 >
 > Live demo: [demo.jant.me](https://demo.jant.me)
 >

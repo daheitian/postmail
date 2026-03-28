@@ -1,12 +1,12 @@
 # Introduction to Jant
 
+> **Pre-1.0**: Jant is still early. Expect rough edges, breaking changes, and docs that keep moving while the product settles.
+
 Jant is a small blog system for one author. It handles notes, links, quotes, threads, and collections. Publishing feels more like posting than opening an admin panel.
 
 No followers. No likes. No algorithmic feed.
 
 The name comes from _Jantelagen_, a Nordic social concept — roughly, the idea that you shouldn't think too much of yourself or put yourself above others. I've always liked the word. It felt right for something that's meant to be quiet.
-
----
 
 ## Why Another Blog System
 
@@ -24,8 +24,6 @@ That sounds like a small thing. It isn't, if you care about it.
 
 So I built the thing I wanted. I'm not arguing every other tool is wrong. This is just the one that fits the way I publish.
 
----
-
 ## How It Runs
 
 Jant can run in two ways:
@@ -39,8 +37,6 @@ Cloudflare Workers is a first-class target because it can keep your blog running
 
 That said, Jant isn't locked to any one runtime. If you'd rather run it on your own server, you can. SQLite, Postgres, Docker — all of it works.
 
----
-
 ## What Jant Has
 
 - **Three post formats**: note, link, and quote — each a genuine first-class thing, not a workaround
@@ -52,8 +48,6 @@ That said, Jant isn't locked to any one runtime. If you'd rather run it on your 
 - **RSS feeds, archive pages, search**: so the site is actually browsable
 - **Full API**: automate publishing, run imports, maintain your content without touching a UI
 - **Export to Zola**: leave with your content anytime
-
----
 
 ## Hosted Option
 
@@ -75,8 +69,6 @@ Pricing is simple:
 That base price isn't arbitrary. Years ago I wrote on my blog that I liked the feel of a `.com` domain price — low enough to be friendly, high enough to be real, in that small zone where it feels like you got away with something. When Cloudflare started offering `.com` registrations at cost with no markup, that became the obvious anchor. So that's what I used.
 
 Most people will never come close to the 10 GB storage limit. But if you do, the upgrade path is there.
-
----
 
 ## Getting Started
 
