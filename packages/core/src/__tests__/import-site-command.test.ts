@@ -354,6 +354,167 @@ After
     ).toEqual(["/older-root", "legacy/path"]);
   });
 
+  it("reads exported collection directory items from extra.jant.collections_directory", () => {
+    expect(
+      __test__.normalizeImportedCollectionDirectory({
+        extra: {
+          jant: {
+            collections_directory_exported: true,
+            collections_directory: [
+              {
+                type: "divider",
+                label: "Writing",
+              },
+              {
+                type: "collection",
+                slug: "notes",
+              },
+              {
+                type: "link",
+                label: "Blogroll",
+                url: "https://example.com",
+              },
+            ],
+          },
+        },
+      }),
+    ).toEqual({
+      exported: true,
+      items: [
+        {
+          type: "divider",
+          label: "Writing",
+        },
+        {
+          type: "collection",
+          slug: "notes",
+        },
+        {
+          type: "link",
+          label: "Blogroll",
+          url: "https://example.com",
+        },
+      ],
+    });
+  });
+
+  it("restores collection directory order and replaces exported dividers and links", async () => {
+    const items = [
+      {
+        id: "collection-notes",
+        type: "collection",
+        collectionId: "col-notes",
+        label: null,
+        url: null,
+      },
+      {
+        id: "old-divider",
+        type: "divider",
+        collectionId: null,
+        label: "Old",
+        url: null,
+      },
+      {
+        id: "collection-links",
+        type: "collection",
+        collectionId: "col-links",
+        label: null,
+        url: null,
+      },
+      {
+        id: "collection-extra",
+        type: "collection",
+        collectionId: "col-extra",
+        label: null,
+        url: null,
+      },
+    ];
+    let createdCount = 0;
+
+    const target = {
+      async listCollectionDirectoryItems() {
+        return items.map((item) => ({ ...item }));
+      },
+      async createCollectionDirectoryItem(data) {
+        createdCount += 1;
+        const item = {
+          id: `created-${createdCount}`,
+          type: data.type,
+          collectionId: null,
+          label: data.label ?? null,
+          url: data.url ?? null,
+        };
+        items.push(item);
+        return { ...item };
+      },
+      async deleteCollectionDirectoryItem(id) {
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) return false;
+        items.splice(index, 1);
+        return true;
+      },
+      async moveCollectionDirectoryItem(id, after, before) {
+        const index = items.findIndex((item) => item.id === id);
+        if (index === -1) return null;
+        const [item] = items.splice(index, 1);
+
+        let nextIndex = items.length;
+        if (after) {
+          const afterIndex = items.findIndex((entry) => entry.id === after);
+          nextIndex = afterIndex >= 0 ? afterIndex + 1 : items.length;
+        } else if (before) {
+          const beforeIndex = items.findIndex((entry) => entry.id === before);
+          nextIndex = beforeIndex >= 0 ? beforeIndex : items.length;
+        }
+
+        items.splice(nextIndex, 0, item);
+        return { ...item };
+      },
+    };
+
+    await expect(
+      __test__.syncImportedCollectionDirectory(
+        target,
+        {
+          exported: true,
+          items: [
+            { type: "collection", slug: "links" },
+            { type: "divider", label: "Writing" },
+            { type: "collection", slug: "notes" },
+            {
+              type: "link",
+              label: "Blogroll",
+              url: "https://example.com",
+            },
+          ],
+        },
+        new Map([
+          ["notes", "col-notes"],
+          ["links", "col-links"],
+        ]),
+      ),
+    ).resolves.toEqual({
+      created: 2,
+      deleted: 1,
+      moved: 3,
+    });
+
+    expect(items.map((item) => item.id)).toEqual([
+      "collection-links",
+      "created-1",
+      "collection-notes",
+      "created-2",
+      "collection-extra",
+    ]);
+    expect(items.map((item) => item.type)).toEqual([
+      "collection",
+      "divider",
+      "collection",
+      "link",
+      "collection",
+    ]);
+  });
+
   it("maps quote posts to sourceName/sourceUrl for remote imports", () => {
     expect(
       __test__.toRemotePostPayload({

@@ -29,6 +29,8 @@
 
 默认情况下，Jant 会把导出中引用到的媒体本地化进去，让归档尽量更自包含。
 
+如果这个导出来自 Jant，`config.toml` 还会保留供 round-trip import 使用的 Jant 元数据，包括 header navigation 和 collections directory 结构（collection 顺序、divider、自定义 link）。
+
 ### 导出本地站点
 
 ```bash
@@ -106,6 +108,7 @@ npx jant site import --path ./jant-site-export.zip --skip-media
 
 - posts
 - collections
+- collection directory items
 - navigation items
 - media records
 - path registry entries

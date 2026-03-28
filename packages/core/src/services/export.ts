@@ -91,6 +91,31 @@ interface AttachmentExportMeta {
 
 type IconExportMode = "default" | "custom";
 
+type ExportedCollectionDirectoryItem =
+  | {
+      type: "collection";
+      slug: string;
+    }
+  | {
+      type: "divider";
+      label: string | null;
+    }
+  | {
+      type: "link";
+      label: string;
+      url: string;
+    };
+
+interface ExportCollectionDirectorySourceItem {
+  type: "collection" | "divider" | "link";
+  label?: string | null;
+  url?: string | null;
+  collection?: {
+    id: string;
+    slug: string;
+  };
+}
+
 interface SiteIconAssets {
   faviconBytes: Uint8Array;
   faviconMode: IconExportMode;
@@ -110,14 +135,21 @@ export function createExportService(
 ): ExportService {
   return {
     async generateZolaSite() {
+      const collectionDirectoryDataPromise =
+        typeof services.collections.listDirectoryData === "function"
+          ? services.collections.listDirectoryData()
+          : Promise.resolve(null);
+
       // 1. Query all data
-      const [allPosts, allCollections] = await Promise.all([
-        services.posts.list({
-          excludeReplies: false,
-          limit: 10000,
-        }),
-        services.collections.list(),
-      ]);
+      const [allPosts, allCollections, collectionDirectoryData] =
+        await Promise.all([
+          services.posts.list({
+            excludeReplies: false,
+            limit: 10000,
+          }),
+          services.collections.list(),
+          collectionDirectoryDataPromise,
+        ]);
 
       const allPostIds = allPosts.map((p) => p.id);
       const roots = allPosts.filter((p) => p.replyToId === null);
@@ -143,6 +175,16 @@ export function createExportService(
         deps.storage,
       );
       const iconAssets = await buildSiteIconAssets(siteConfig, deps.storage);
+      const exportedCollectionDirectoryItems =
+        buildExportedCollectionDirectoryItems(
+          collectionDirectoryData?.items ??
+            allCollections.map((collection) => ({
+              id: collection.id,
+              type: "collection" as const,
+              collection,
+            })),
+          collectionSlugMap,
+        );
 
       // 2. Group replies by threadId
       const repliesByThread = new Map<string, Post[]>();
@@ -202,7 +244,11 @@ export function createExportService(
 
       // Generate scaffold
       files["config.toml"] = new TextEncoder().encode(
-        buildConfigToml(siteConfig, iconAssets),
+        buildConfigToml(
+          siteConfig,
+          iconAssets,
+          exportedCollectionDirectoryItems,
+        ),
       );
       files["content/_index.md"] = new TextEncoder().encode(buildRootSection());
       files["content/archive/_index.md"] = new TextEncoder().encode(
@@ -730,6 +776,7 @@ function safeJsonForHtml(value: unknown): string {
 function buildConfigToml(
   config: SiteConfig,
   iconAssets: SiteIconAssets,
+  collectionDirectoryItems: ExportedCollectionDirectoryItem[],
 ): string {
   const footerHtml = config.siteFooter ? renderMarkdown(config.siteFooter) : "";
   const parts = [
@@ -757,6 +804,7 @@ function buildConfigToml(
     `favicon_mode = "${iconAssets.faviconMode}"`,
     `apple_touch_mode = "${iconAssets.appleTouchMode}"`,
     "nav_exported = true",
+    "collections_directory_exported = true",
     `theme_id = "${escapeToml(config.themeId || config.defaultThemeId)}"`,
     `default_theme_id = "${escapeToml(config.defaultThemeId)}"`,
     `font_theme_id = "${escapeToml(config.fontThemeId)}"`,
@@ -785,6 +833,24 @@ function buildConfigToml(
     if (item.systemKey) {
       parts.push(`system_key = "${escapeToml(item.systemKey)}"`);
     }
+  }
+
+  for (const item of collectionDirectoryItems) {
+    parts.push("");
+    parts.push("[[extra.jant.collections_directory]]");
+    parts.push(`type = "${escapeToml(item.type)}"`);
+    if (item.type === "collection") {
+      parts.push(`slug = "${escapeToml(item.slug)}"`);
+      continue;
+    }
+    if (item.type === "divider") {
+      if (item.label !== null) {
+        parts.push(`label = "${escapeToml(item.label)}"`);
+      }
+      continue;
+    }
+    parts.push(`label = "${escapeToml(item.label)}"`);
+    parts.push(`url = "${escapeToml(item.url)}"`);
   }
 
   parts.push("");
@@ -883,7 +949,7 @@ static/
 ## Customizing
 
 - **Site settings** — edit \`config.toml\` to change the title, URL, or language.
-- **Jant metadata** — \`config.toml\` stores \`[extra.jant_export]\` and \`[extra.jant]\` for round-trip import.
+- **Jant metadata** — \`config.toml\` stores \`[extra.jant_export]\`, \`[extra.jant]\`, and \`[[extra.jant.collections_directory]]\` for round-trip import.
 - **Styles** — edit \`static/style.css\`. The theme supports light and dark modes via \`prefers-color-scheme\`.
 - **Templates** — edit files in \`templates/\`. Zola uses the [Tera](https://keats.github.io/tera/) template engine.
 - **Debugging** — export to a directory with \`jant site export --directory ./my-site\`, then run \`cd my-site && zola serve\`.
@@ -893,9 +959,52 @@ static/
 
 - The raw export API only writes content files. The CLI localizes media by default unless you pass \`--no-localize-media\`.
 - Thread replies are merged into the root post as a single page. Reply metadata is preserved in HTML comments (\`<!-- jant:reply ... -->\`).
+- The collections directory structure is exported in \`config.toml\`, including collection order, dividers, and custom links for round-trip imports.
 - Attachments are preserved as Jant HTML blocks (\`data-jant-node="attachments"\`). Text attachments embed canonical Markdown in the block metadata, while the rendered preview is display-only and ignored by \`jant site import\`.
 - Posts with \`draft: true\` in front matter are only built when you pass the \`--drafts\` flag to \`zola build\` or \`zola serve\`.
 `;
+}
+
+function buildExportedCollectionDirectoryItems(
+  items: readonly ExportCollectionDirectorySourceItem[],
+  collectionSlugMap: Map<string, string>,
+): ExportedCollectionDirectoryItem[] {
+  return items
+    .map((item) => {
+      if (item.type === "divider") {
+        return {
+          type: "divider",
+          label: item.label ?? null,
+        } satisfies ExportedCollectionDirectoryItem;
+      }
+
+      if (item.type === "link") {
+        if (!item.label || !item.url) {
+          return null;
+        }
+        return {
+          type: "link",
+          label: item.label,
+          url: item.url,
+        } satisfies ExportedCollectionDirectoryItem;
+      }
+
+      const collectionId = item.collection?.id;
+      if (!collectionId) {
+        return null;
+      }
+
+      const slug = collectionSlugMap.get(collectionId) ?? item.collection?.slug;
+      if (!slug) {
+        return null;
+      }
+
+      return {
+        type: "collection",
+        slug,
+      } satisfies ExportedCollectionDirectoryItem;
+    })
+    .filter((item): item is ExportedCollectionDirectoryItem => item !== null);
 }
 
 // ---------------------------------------------------------------------------

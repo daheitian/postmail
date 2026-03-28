@@ -669,6 +669,58 @@ function normalizeImportedNavItems(siteConfig) {
   };
 }
 
+function normalizeImportedCollectionDirectory(siteConfig) {
+  const jant = siteConfig?.extra?.jant || {};
+  const directoryItems = jant.collections_directory;
+  if (!Array.isArray(directoryItems)) {
+    return {
+      exported: Boolean(jant.collections_directory_exported),
+      items: [],
+    };
+  }
+
+  return {
+    exported: true,
+    items: directoryItems
+      .map((item) => {
+        if (!item || typeof item !== "object") return null;
+
+        if (
+          item.type === "collection" &&
+          typeof item.slug === "string" &&
+          item.slug.trim()
+        ) {
+          return {
+            type: "collection",
+            slug: item.slug.trim(),
+          };
+        }
+
+        if (item.type === "divider") {
+          return {
+            type: "divider",
+            label: typeof item.label === "string" ? item.label : null,
+          };
+        }
+
+        if (
+          item.type === "link" &&
+          typeof item.label === "string" &&
+          typeof item.url === "string"
+        ) {
+          return {
+            type: "link",
+            label: item.label,
+            url: item.url,
+          };
+        }
+
+        return null;
+      })
+      .filter(Boolean),
+  };
+}
+
 async function buildSiteAvatarImport(siteConfig, sourceRootDir) {
   const exportInfo = siteConfig?.extra?.jant_export || {};
   if (exportInfo.format !== "jant-site") {
@@ -742,6 +794,117 @@ async function buildSiteAvatarImport(siteConfig, sourceRootDir) {
         )
       : null,
   };
+}
+
+async function reorderCollectionDirectoryItems(target, orderedIds) {
+  const dedupedIds = [];
+  const seenIds = new Set();
+  for (const id of orderedIds) {
+    if (typeof id !== "string" || !id || seenIds.has(id)) continue;
+    seenIds.add(id);
+    dedupedIds.push(id);
+  }
+
+  let moves = 0;
+
+  for (let index = 0; index < dedupedIds.length; index += 1) {
+    const itemId = dedupedIds[index];
+    const currentItems = await target.listCollectionDirectoryItems();
+    const currentIds = currentItems.map((item) => item.id);
+    const currentIndex = currentIds.indexOf(itemId);
+    if (currentIndex === -1) continue;
+
+    if (index === 0) {
+      if (currentIndex === 0) continue;
+      const beforeId = currentIds.find((id) => id !== itemId) ?? null;
+      await target.moveCollectionDirectoryItem(itemId, null, beforeId);
+      moves += 1;
+      continue;
+    }
+
+    const afterId = dedupedIds[index - 1];
+    const afterIndex = currentIds.indexOf(afterId);
+    if (afterIndex === -1) continue;
+    if (currentIds[afterIndex + 1] === itemId) continue;
+
+    const beforeId =
+      currentIds.slice(afterIndex + 1).find((id) => id !== itemId) ?? null;
+    await target.moveCollectionDirectoryItem(itemId, afterId, beforeId);
+    moves += 1;
+  }
+
+  return moves;
+}
+
+async function syncImportedCollectionDirectory(
+  target,
+  importedDirectory,
+  collectionSlugToId,
+) {
+  if (!importedDirectory.exported) {
+    return { created: 0, deleted: 0, moved: 0 };
+  }
+
+  let deleted = 0;
+  const existingItems = await target.listCollectionDirectoryItems();
+  for (const item of existingItems) {
+    if (item.type === "collection") continue;
+    const removed = await target.deleteCollectionDirectoryItem(item.id);
+    if (removed !== false) {
+      deleted += 1;
+    }
+  }
+
+  let currentItems = await target.listCollectionDirectoryItems();
+  const collectionItemIds = new Map(
+    currentItems
+      .filter((item) => item.type === "collection" && item.collectionId)
+      .map((item) => [item.collectionId, item.id]),
+  );
+
+  const desiredIds = [];
+  const seenCollectionIds = new Set();
+  let created = 0;
+
+  for (const item of importedDirectory.items) {
+    if (item.type === "collection") {
+      const collectionId = collectionSlugToId.get(item.slug);
+      if (!collectionId || seenCollectionIds.has(collectionId)) {
+        continue;
+      }
+      seenCollectionIds.add(collectionId);
+      const directoryItemId = collectionItemIds.get(collectionId);
+      if (directoryItemId) {
+        desiredIds.push(directoryItemId);
+      }
+      continue;
+    }
+
+    const createdItem = await target.createCollectionDirectoryItem(
+      item.type === "divider"
+        ? {
+            type: "divider",
+            ...(item.label !== null ? { label: item.label } : {}),
+          }
+        : {
+            type: "link",
+            label: item.label,
+            url: item.url,
+          },
+    );
+    desiredIds.push(createdItem.id);
+    created += 1;
+  }
+
+  currentItems = await target.listCollectionDirectoryItems();
+  const currentIds = currentItems.map((item) => item.id);
+  const desiredIdSet = new Set(desiredIds);
+  const moved = await reorderCollectionDirectoryItems(target, [
+    ...desiredIds,
+    ...currentIds.filter((id) => !desiredIdSet.has(id)),
+  ]);
+
+  return { created, deleted, moved };
 }
 
 function buildIncompleteSetupError(targetLabel) {
@@ -945,8 +1108,38 @@ function createRemoteTarget(apiUrl, token) {
       const existing = await apiCall("GET", "/api/collections", apiUrl, token);
       return existing.collections || [];
     },
+    async listCollectionDirectoryItems() {
+      const existing = await apiCall("GET", "/api/collections", apiUrl, token);
+      return existing.directoryItems || [];
+    },
     async createCollection(data) {
       return apiCall("POST", "/api/collections", apiUrl, token, data);
+    },
+    async createCollectionDirectoryItem(data) {
+      return apiCall(
+        "POST",
+        "/api/collections/directory-items",
+        apiUrl,
+        token,
+        data,
+      );
+    },
+    async moveCollectionDirectoryItem(id, after, before) {
+      return apiCall(
+        "PUT",
+        `/api/collections/directory-items/${id}/move`,
+        apiUrl,
+        token,
+        { after, before },
+      );
+    },
+    async deleteCollectionDirectoryItem(id) {
+      return apiCall(
+        "DELETE",
+        `/api/collections/directory-items/${id}`,
+        apiUrl,
+        token,
+      );
     },
     async createPost(data) {
       return apiCall(
@@ -1081,8 +1274,20 @@ async function createLocalTarget(env = process.env) {
     async listCollections() {
       return runtime.services.collections.list();
     },
+    async listCollectionDirectoryItems() {
+      return runtime.services.collections.listDirectoryItems();
+    },
     async createCollection(data) {
       return runtime.services.collections.create(data);
+    },
+    async createCollectionDirectoryItem(data) {
+      return runtime.services.collections.createDirectoryItem(data);
+    },
+    async moveCollectionDirectoryItem(id, after, before) {
+      return runtime.services.collections.moveDirectoryItem(id, after, before);
+    },
+    async deleteCollectionDirectoryItem(id) {
+      return runtime.services.collections.deleteDirectoryItem(id);
     },
     async createPost(data) {
       const { attachments, ...postData } = data;
@@ -1229,7 +1434,10 @@ export const __test__ = {
   buildImportedAttachments,
   buildSettingsUpdatesFromConfig,
   normalizeImportedNavItems,
+  normalizeImportedCollectionDirectory,
   buildSiteAvatarImport,
+  reorderCollectionDirectoryItems,
+  syncImportedCollectionDirectory,
   collectReplySlugPaths,
   getExportedRootAliases,
   getRootAliasPathsForImport,
@@ -1368,6 +1576,9 @@ export async function run(argv) {
     console.log(
       `Found ${postFiles.length} posts and ${collectionFiles.length} collections`,
     );
+    const importedCollectionDirectory = siteConfig
+      ? normalizeImportedCollectionDirectory(siteConfig)
+      : { exported: false, items: [] };
 
     if (target) {
       const setupError = await getIncompleteSetupError(
@@ -1503,6 +1714,27 @@ export async function run(argv) {
       } catch (err) {
         console.error(`Error creating collection "${slug}": ${err.message}`);
         process.exit(1);
+      }
+    }
+
+    if (importedCollectionDirectory.exported) {
+      if (dryRun) {
+        console.log(
+          `[dry-run] Would restore collection directory with ${importedCollectionDirectory.items.length} items`,
+        );
+      } else {
+        try {
+          await syncImportedCollectionDirectory(
+            target,
+            importedCollectionDirectory,
+            collectionSlugToId,
+          );
+        } catch (err) {
+          console.error(
+            `Error restoring collections directory: ${err.message}`,
+          );
+          process.exit(1);
+        }
       }
     }
 

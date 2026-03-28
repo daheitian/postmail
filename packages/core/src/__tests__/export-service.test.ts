@@ -62,6 +62,28 @@ describe("createExportService", () => {
       },
       collections: {
         list: async () => [collection],
+        listDirectoryData: async () => ({
+          collections: [],
+          items: [
+            {
+              id: "divider-1",
+              type: "divider" as const,
+              label: "Writing",
+            },
+            {
+              id: "collection-item-1",
+              type: "collection" as const,
+              collection,
+            },
+            {
+              id: "link-1",
+              type: "link" as const,
+              label: "Elsewhere",
+              url: "https://example.com/elsewhere",
+            },
+          ],
+          directoryItems: [],
+        }),
         getCollectionsByPostIds: async () =>
           new Map([["post-1", [collection]]]),
       },
@@ -115,6 +137,14 @@ describe("createExportService", () => {
     expect(configToml).toContain('site_avatar_mode = "none"');
     expect(configToml).toContain('favicon_mode = "default"');
     expect(configToml).toContain('apple_touch_mode = "default"');
+    expect(configToml).toContain("collections_directory_exported = true");
+    expect(configToml).toContain("[[extra.jant.collections_directory]]");
+    expect(configToml).toContain('type = "divider"');
+    expect(configToml).toContain('label = "Writing"');
+    expect(configToml).toContain('type = "collection"');
+    expect(configToml).toContain('slug = "programming"');
+    expect(configToml).toContain('type = "link"');
+    expect(configToml).toContain('url = "https://example.com/elsewhere"');
     expect(collectionMetadata).toContain('title = "编程开发"');
     expect(collectionMetadata).toContain(
       'description = "Posts about building and shipping software."',

@@ -29,6 +29,8 @@ Use it when you want to:
 
 By default, Jant localizes referenced media into the export so the archive is more self-contained.
 
+When the export comes from Jant, `config.toml` also keeps Jant-specific metadata for round-trip imports, including header navigation and the collections directory structure (collection order, dividers, and custom links).
+
 ### Export the Local Site
 
 ```bash
@@ -106,6 +108,7 @@ A snapshot includes the content and presentation data Jant needs to restore a si
 
 - posts
 - collections
+- collection directory items
 - navigation items
 - media records
 - path registry entries
