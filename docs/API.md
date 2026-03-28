@@ -199,6 +199,38 @@ Jant supports three post formats:
 | `link`  | Shared reference | `title`, `url`  |
 | `quote` | Quoted text      | `quoteText`     |
 
+Post responses include these fields:
+
+| Field            | Type                                     | Notes                                                     |
+| ---------------- | ---------------------------------------- | --------------------------------------------------------- |
+| `id`             | `pst_*` string                           | Post ID                                                   |
+| `siteId`         | string                                   | Owning site                                               |
+| `format`         | `note` \| `link` \| `quote`              | Post format                                               |
+| `status`         | `draft` \| `published`                   | Stored post status                                        |
+| `visibility`     | `public` \| `latest_hidden` \| `private` | Resolved visibility shown to clients                      |
+| `pinnedAt`       | integer \| `null`                        | Pin timestamp                                             |
+| `featuredAt`     | integer \| `null`                        | Feature timestamp                                         |
+| `slug`           | string                                   | Canonical slug                                            |
+| `title`          | string \| `null`                         | Returned for non-quote responses; omitted for `quote`     |
+| `url`            | string \| `null`                         | Returned for non-quote responses; usually `null` on notes |
+| `sourceName`     | string \| `null`                         | Returned instead of `title` for `quote`                   |
+| `sourceUrl`      | string \| `null`                         | Returned instead of `url` for `quote`                     |
+| `body`           | string \| `null`                         | Raw TipTap JSON string when stored that way               |
+| `bodyHtml`       | string \| `null`                         | Rendered HTML                                             |
+| `bodyText`       | string \| `null`                         | Plain-text rendering                                      |
+| `quoteText`      | string \| `null`                         | Quote content                                             |
+| `summary`        | string \| `null`                         | Optional summary                                          |
+| `rating`         | integer \| `null`                        | `1` to `5` when set                                       |
+| `replyToId`      | `pst_*` string \| `null`                 | Parent reply/post ID                                      |
+| `threadId`       | `pst_*` string                           | Thread root ID                                            |
+| `deletedAt`      | integer \| `null`                        | Soft-delete timestamp                                     |
+| `publishedAt`    | integer \| `null`                        | Publish timestamp                                         |
+| `lastActivityAt` | integer                                  | Last activity timestamp                                   |
+| `createdAt`      | integer                                  | Unix seconds                                              |
+| `updatedAt`      | integer                                  | Unix seconds                                              |
+| `attachments`    | array                                    | Ordered media/text attachment objects                     |
+| `collectionIds`  | `col_*` string[]                         | Only included by `GET /api/posts/:id`                     |
+
 ### Post response shape
 
 The post list and detail endpoints return the same core fields. `GET /api/posts/:id` additionally includes `collectionIds`.
@@ -208,6 +240,7 @@ Example:
 ```json
 {
   "id": "pst_01jpyx3m7gw4w3h7m4bknq0v1d",
+  "siteId": "sit_01jpyx1v6z9k4c7b2m5q8r3nfh",
   "format": "note",
   "status": "published",
   "visibility": "public",
@@ -215,6 +248,7 @@ Example:
   "featuredAt": null,
   "slug": "hello-world",
   "title": "Hello World",
+  "body": null,
   "bodyHtml": "<p>Hello world</p>",
   "bodyText": "Hello world",
   "quoteText": null,
@@ -234,6 +268,7 @@ Example:
 Notes:
 
 - Quote posts replace `title` and `url` with `sourceName` and `sourceUrl`.
+- Quote responses omit `title` and `url` instead of returning them as `null`.
 - `replyToId !== null` means the post is a thread reply.
 - `threadId` points at the thread root.
 - `GET /api/posts` includes both root posts and replies. There is currently no `excludeReplies` query parameter.
@@ -280,13 +315,26 @@ Response:
 }
 ```
 
-`nextCursor` is `null` when there are no more results.
+Notes:
+
+- Each item uses the post response fields above, except list responses omit `collectionIds`.
+- `nextCursor` is `null` when there are no more results.
 
 ### Suggest or validate a slug
 
 `GET /api/posts/slug`
 
 Auth: `Session or token`
+
+Query parameters:
+
+| Parameter | Type           | Required | Notes                                                |
+| --------- | -------------- | -------- | ---------------------------------------------------- |
+| `mode`    | `suggest`      | yes      | Suggest a slug from `title`                          |
+| `title`   | string         | suggest  | Source title used for slug suggestion                |
+| `postId`  | `pst_*` string | no       | Exclude the current post when suggesting or checking |
+| `mode`    | `check`        | yes      | Check whether a specific slug is available           |
+| `slug`    | string         | check    | Lowercase slug candidate to validate and check       |
 
 Modes:
 
@@ -322,6 +370,8 @@ When editing an existing post, pass `postId` so the current slug counts as avail
 ```text
 GET /api/posts/slug?mode=check&slug=hello-world&postId=pst_...
 ```
+
+Invalid slug candidates return `400`, including reserved slugs and slugs with invalid characters.
 
 ### Get a single post
 
@@ -379,27 +429,27 @@ Request body:
 
 Fields:
 
-| Field           | Type                                     | Required         | Notes                                                   |
-| --------------- | ---------------------------------------- | ---------------- | ------------------------------------------------------- |
-| `format`        | `note` \| `link` \| `quote`              | yes              | Post format                                             |
-| `title`         | string                                   | format-dependent | Required for `link`; not allowed for `quote`            |
-| `sourceName`    | string                                   | no               | Quote attribution name                                  |
-| `body`          | string                                   | no               | TipTap JSON string                                      |
-| `bodyMarkdown`  | string                                   | no               | Recommended for scripts                                 |
-| `slug`          | string                                   | no               | Canonical slug                                          |
-| `path`          | string                                   | no               | Create-time path helper; mutually exclusive with `slug` |
-| `status`        | `draft` \| `published`                   | no               | Defaults to `published`                                 |
-| `visibility`    | `public` \| `latest_hidden` \| `private` | no               | Defaults to `public`                                    |
-| `pinned`        | boolean                                  | no               | Pin the post                                            |
-| `featured`      | boolean                                  | no               | Mark as featured                                        |
-| `url`           | absolute URL                             | format-dependent | Required for `link`; not allowed for `quote`            |
-| `sourceUrl`     | absolute URL                             | no               | Quote attribution URL                                   |
-| `quoteText`     | string                                   | format-dependent | Required for `quote`                                    |
-| `rating`        | integer                                  | no               | `1` to `5`; send `0` to clear on update                 |
-| `collectionIds` | string[]                                 | no               | Collection TypeIDs                                      |
-| `replyToId`     | string                                   | no               | Make this post a thread reply                           |
-| `publishedAt`   | integer                                  | no               | Unix seconds; defaults to now for published posts       |
-| `attachments`   | attachment[]                             | no               | Ordered attachments, max `20`                           |
+| Field           | Type                                     | Required         | Notes                                                       |
+| --------------- | ---------------------------------------- | ---------------- | ----------------------------------------------------------- |
+| `format`        | `note` \| `link` \| `quote`              | yes              | Post format                                                 |
+| `title`         | string                                   | format-dependent | Required for `link`; max `300`; not allowed for `quote`     |
+| `sourceName`    | string                                   | no               | Quote attribution name, max `300`                           |
+| `body`          | string                                   | no               | TipTap JSON string                                          |
+| `bodyMarkdown`  | string                                   | no               | Recommended for scripts                                     |
+| `slug`          | string                                   | no               | Canonical slug                                              |
+| `path`          | string                                   | no               | Create-time path helper; mutually exclusive with `slug`     |
+| `status`        | `draft` \| `published`                   | no               | Defaults to `published`                                     |
+| `visibility`    | `public` \| `latest_hidden` \| `private` | no               | Defaults to `public`                                        |
+| `pinned`        | boolean                                  | no               | Pin the post                                                |
+| `featured`      | boolean                                  | no               | Mark as featured                                            |
+| `url`           | absolute URL                             | format-dependent | Required for `link`; allows `http:`, `https:`, or `mailto:` |
+| `sourceUrl`     | absolute URL                             | no               | Quote attribution URL                                       |
+| `quoteText`     | string                                   | format-dependent | Required for `quote`                                        |
+| `rating`        | integer                                  | no               | `1` to `5`; send `0` to clear on update                     |
+| `collectionIds` | string[]                                 | no               | Collection TypeIDs                                          |
+| `replyToId`     | string                                   | no               | Make this post a thread reply                               |
+| `publishedAt`   | integer                                  | no               | Unix seconds; only valid for published posts                |
+| `attachments`   | attachment[]                             | no               | Ordered attachments, max `20`                               |
 
 Important rules:
 
@@ -441,6 +491,12 @@ Input shapes:
   "summary": "Optional summary"
 }
 ```
+
+Notes:
+
+- `contentFormat` currently only supports `markdown`.
+- Media attachment `alt` is optional and limited to `500` characters.
+- Text attachment `summary` is optional and limited to `300` characters.
 
 Response shapes:
 
@@ -517,6 +573,10 @@ Example:
 }
 ```
 
+Request body fields:
+
+This endpoint accepts the same JSON fields as `POST /api/posts`, except `path`. All fields are optional.
+
 Attachment replacement rules:
 
 - Omit `attachments`: keep existing attachments
@@ -527,6 +587,8 @@ Notes:
 
 - `path` is not supported on update. Use `slug` for canonical URL changes and `custom-urls` for extra aliases.
 - For quote posts, keep using `sourceName` and `sourceUrl`.
+- Thread replies reject direct `visibility` and `pinned` changes.
+- Draft updates cannot set `publishedAt`.
 - To clear a rating, send `0`.
 
 Response: `200 OK` with the updated post.
@@ -1297,6 +1359,20 @@ Base path: `/api/nav-items`
 
 Navigation items power the header navigation.
 
+Nav item responses include these fields:
+
+| Field       | Type                                              | Notes                             |
+| ----------- | ------------------------------------------------- | --------------------------------- |
+| `id`        | `nav_*` string                                    | Nav item ID                       |
+| `siteId`    | string                                            | Owning site                       |
+| `type`      | `link` \| `system`                                | Custom link or built-in item      |
+| `systemKey` | `rss` \| `settings` \| `collections` \| `archive` | Only present for `type: "system"` |
+| `label`     | string                                            | Display label                     |
+| `url`       | string                                            | Stored URL or path                |
+| `position`  | string                                            | Fractional ordering key           |
+| `createdAt` | integer                                           | Unix seconds                      |
+| `updatedAt` | integer                                           | Unix seconds                      |
+
 ### List nav items
 
 `GET /api/nav-items`
@@ -1346,6 +1422,16 @@ Create a built-in item:
 }
 ```
 
+Fields by type:
+
+| Field       | Type                                              | Required | Notes                                                         |
+| ----------- | ------------------------------------------------- | -------- | ------------------------------------------------------------- |
+| `type`      | `link`                                            | yes      | Creates a custom nav link                                     |
+| `label`     | string                                            | yes      | Link label, 1-100 chars after trim                            |
+| `url`       | string                                            | yes      | Relative path or absolute `http:`, `https:`, or `mailto:` URL |
+| `type`      | `system`                                          | yes      | Creates a built-in nav item                                   |
+| `systemKey` | `rss` \| `settings` \| `collections` \| `archive` | yes      | Built-in destination key                                      |
+
 System keys:
 
 - `rss`
@@ -1357,6 +1443,8 @@ Notes:
 
 - Built-in items get their label and URL automatically.
 - Jant rejects duplicate built-in items.
+
+Response: `201 Created` with the new nav item.
 
 ### Move a nav item
 
@@ -1375,6 +1463,8 @@ Request body:
 
 - `after` and `before` are optional and nullable.
 - If neither is provided, the item moves to the end.
+
+Response: `200 OK` with the moved nav item, including its new `position`.
 
 ### Update a nav item
 
@@ -1395,6 +1485,9 @@ Notes:
 
 - This is a partial update.
 - Built-in system items reject manual label and URL edits.
+- Only `label` and `url` are accepted.
+
+Response: `200 OK` with the updated nav item.
 
 ### Delete a nav item
 
@@ -1415,6 +1508,18 @@ Response:
 Base path: `/api/custom-urls`
 
 Custom URLs let you attach extra paths to posts or collections, or define internal redirects.
+
+Custom URL responses include these fields:
+
+| Field          | Type                                 | Notes                                             |
+| -------------- | ------------------------------------ | ------------------------------------------------- |
+| `id`           | `pth_*` string                       | Custom URL ID                                     |
+| `path`         | string                               | Normalized path without a leading slash           |
+| `targetType`   | `post` \| `collection` \| `redirect` | Target kind                                       |
+| `targetId`     | string \| `null`                     | Resolved post/collection TypeID for alias records |
+| `toPath`       | string \| `null`                     | Redirect destination with a leading slash         |
+| `redirectType` | `301` \| `302` \| `null`             | Redirect status for redirect records              |
+| `createdAt`    | integer                              | Unix seconds                                      |
 
 Target types:
 
@@ -1468,6 +1573,7 @@ Response:
 
 Notes:
 
+- List and create responses only cover alias and redirect records. Canonical post and collection slugs are not returned here.
 - Response `path` values are normalized and do not include a leading slash.
 - Alias responses return the resolved post or collection TypeID in `targetId`.
 
@@ -1490,13 +1596,13 @@ Request body:
 
 Fields:
 
-| Field          | Type                                 | Required      | Notes                                                                |
-| -------------- | ------------------------------------ | ------------- | -------------------------------------------------------------------- |
-| `path`         | string                               | yes           | Must start with `/` in the request body                              |
-| `targetType`   | `post` \| `collection` \| `redirect` | yes           | Target kind                                                          |
-| `targetId`     | string                               | alias only    | For `post` and `collection`, send the canonical slug, not the TypeID |
-| `toPath`       | string                               | redirect only | Internal destination path such as `/new-path`                        |
-| `redirectType` | `"301"` \| `"302"`                   | redirect only | Defaults to `301`                                                    |
+| Field          | Type                                 | Required      | Notes                                                                         |
+| -------------- | ------------------------------------ | ------------- | ----------------------------------------------------------------------------- |
+| `path`         | string                               | yes           | Must start with `/`; max `512`; lowercase letters, numbers, `-`, and `/` only |
+| `targetType`   | `post` \| `collection` \| `redirect` | yes           | Target kind                                                                   |
+| `targetId`     | string                               | alias only    | For `post` and `collection`, send the canonical slug, not the TypeID          |
+| `toPath`       | string                               | redirect only | Internal destination path such as `/new-path`; normalized before storage      |
+| `redirectType` | `"301"` \| `"302"`                   | redirect only | Defaults to `301`                                                             |
 
 Examples:
 
@@ -1526,13 +1632,18 @@ Important notes:
 - `path` must not collide with an existing slug or custom URL.
 - Reserved paths are rejected.
 - Redirects are for internal paths. External redirect targets are not supported by this API.
+- Post and collection targets must already exist by slug or the API returns `404`.
 - Create responses resolve slug targets to TypeIDs.
+
+Response: `201 Created` with the new custom URL object.
 
 ### Delete a custom URL
 
 `DELETE /api/custom-urls/:id`
 
 Auth: `Session or token`
+
+This only deletes non-canonical custom URL records. Canonical post and collection slugs are not removable through this endpoint.
 
 Response:
 
@@ -1571,10 +1682,12 @@ All values are strings because they map directly to stored config values.
 
 Notes:
 
+- Editable keys are derived from the config registry; env-only and internal keys are excluded.
 - Boolean and numeric settings are still strings in the API.
 - Send strings in `PUT /api/settings`, not JSON booleans or numbers.
 - `TIME_ZONE` is normalized to canonical IANA names when possible.
-- Environment-only and internal keys are excluded from `GET /api/settings`.
+- `GET /api/settings` fills in defaults for editable keys that are not stored yet.
+- In demo mode, `NOINDEX` is always returned as `"true"`.
 
 ### Get editable settings
 
@@ -1601,6 +1714,11 @@ Response:
 }
 ```
 
+Notes:
+
+- The response always returns the full editable settings object, not only keys stored in the database.
+- Environment-only and internal keys never appear in this response.
+
 ### Update editable settings
 
 `PUT /api/settings`
@@ -1616,18 +1734,36 @@ Request body:
 }
 ```
 
+Request rules:
+
+- The body must be a JSON object whose values are strings.
+- `SITE_NAME` is trimmed and limited to `120` characters.
+- `SITE_DESCRIPTION` is trimmed and limited to `300` characters.
+- `SITE_FOOTER` is trimmed and limited to `5000` characters.
+- `TIME_ZONE` accepts canonical IANA names and normalizes legacy aliases such as `"Beijing"` to `"Asia/Shanghai"`.
+
 Behavior:
 
 - Editable keys are updated.
 - Rejected keys are ignored if at least one editable key remains.
 - If every provided key is rejected, the endpoint returns `400`.
+- Successful responses return the full current editable settings object, plus optional top-level `rejectedKeys`.
 
 Example partial-apply response:
 
 ```json
 {
   "settings": {
-    "SITE_NAME": "New Name"
+    "SITE_NAME": "New Name",
+    "SITE_DESCRIPTION": "Thoughts, links, and quotes — one post at a time",
+    "SITE_LANGUAGE": "en",
+    "HOME_DEFAULT_VIEW": "latest",
+    "MAIN_RSS_FEED": "featured",
+    "HEADER_NAV_MAX_VISIBLE": "2",
+    "TIME_ZONE": "UTC",
+    "SITE_FOOTER": "",
+    "SHOW_JANT_BRANDING_ON_HOME": "",
+    "NOINDEX": ""
   },
   "rejectedKeys": ["AUTH_SECRET"]
 }
@@ -1637,6 +1773,8 @@ Rejected keys are returned:
 
 - in `details.rejectedKeys` on `400`
 - in top-level `rejectedKeys` on successful partial updates
+
+In demo mode, `NOINDEX` updates are rejected and the returned value stays `"true"`.
 
 ### Mark compose shortcut discovery as seen
 
@@ -1677,13 +1815,19 @@ Response:
 { "success": true }
 ```
 
-This endpoint also updates the related internal settings used for favicon and avatar rendering.
+Notes:
+
+- File storage must be configured or the endpoint returns `500`.
+- Omitting `file` returns `400`.
+- On success, this endpoint updates the internal avatar/favicon settings used by site rendering.
 
 ### Remove site avatar and related icons
 
 `DELETE /api/settings/avatar`
 
 Auth: `Session or token`
+
+Removes the stored avatar and related favicon settings.
 
 Response:
 
