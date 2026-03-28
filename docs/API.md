@@ -1856,6 +1856,21 @@ Query parameters:
 | `q`       | string  | yes      | none    | Maximum length `200` |
 | `limit`   | integer | no       | `20`    | Maximum `50`         |
 
+Result objects include these fields:
+
+| Field         | Type                        | Notes                                             |
+| ------------- | --------------------------- | ------------------------------------------------- |
+| `id`          | `pst_*` string              | Post ID                                           |
+| `format`      | `note` \| `link` \| `quote` | Post format                                       |
+| `slug`        | string                      | Canonical slug                                    |
+| `snippet`     | string \| omitted           | Search snippet; may contain `<mark>` tags         |
+| `publishedAt` | integer \| `null`           | Publish timestamp                                 |
+| `permalink`   | string                      | Public path, including any configured site prefix |
+| `title`       | string \| `null`            | Present for `note` and `link` results             |
+| `url`         | string \| `null`            | Present for `note` and `link` results             |
+| `sourceName`  | string \| `null`            | Present instead of `title` for `quote` results    |
+| `sourceUrl`   | string \| `null`            | Present instead of `url` for `quote` results      |
+
 Response:
 
 ```json
@@ -1882,6 +1897,7 @@ Notes:
 - `snippet` may contain `<mark>` tags.
 - All search results include `permalink`.
 - Quote results use `sourceName` and `sourceUrl` instead of `title` and `url`.
+- Search only returns published posts.
 
 ---
 
@@ -1895,10 +1911,28 @@ Base path: `/api/export`
 
 Auth: `Session or token`
 
+Request body: none
+
 Response:
 
 - Content type: `application/zip`
 - Download filename: `jant-export.zip`
+
+Archive contents:
+
+- `config.toml`
+- `content/<post-slug>/index.md` for each root post or merged thread
+- `content/c/<collection-slug>/_index.md` for each collection
+- `content/_index.md` and `content/archive/_index.md`
+- `templates/*` and `static/*`
+- `README.md`
+
+Notes:
+
+- Thread replies are merged into their thread root page in the exported Zola content.
+- Collection membership is exported as the `c` taxonomy.
+- Navigation items, theme CSS, custom CSS, favicon, and Apple touch icon are included in the scaffold when available.
+- Exported post bodies become Markdown. Media references point back to the original Jant media URLs; the ZIP does not bundle original media binaries.
 
 Example:
 
@@ -1931,11 +1965,18 @@ Requirements:
 
 If `INTERNAL_ADMIN_TOKEN` is not configured, these endpoints return `404`.
 
+Notes:
+
+- `api-tokens` and upload-cleanup endpoints operate on the current resolved site.
+- Managed-site lifecycle and domain endpoints return `409` outside host-based mode.
+
 ### API token maintenance
 
 #### Health check
 
 `GET /api/internal/api-tokens/health`
+
+Auth: `Internal admin token`
 
 Response:
 
@@ -1946,6 +1987,10 @@ Response:
 #### Purge all user API tokens for the current site
 
 `POST /api/internal/api-tokens/purge`
+
+Auth: `Internal admin token`
+
+This removes user-created API tokens for the currently resolved site only.
 
 Response:
 
@@ -1959,13 +2004,24 @@ Response:
 
 `POST /api/internal/uploads/cleanup`
 
+Auth: `Internal admin token`
+
 Request body:
 
 ```json
 { "limit": 10 }
 ```
 
-`limit` is optional and capped internally.
+Fields:
+
+| Field   | Type    | Required | Notes                           |
+| ------- | ------- | -------- | ------------------------------- |
+| `limit` | integer | no       | Positive integer, maximum `500` |
+
+Notes:
+
+- The JSON body is optional. If the request is not JSON, the endpoint treats it as an empty object.
+- File storage must be configured or the endpoint returns `500`.
 
 Response:
 
@@ -1976,6 +2032,13 @@ Response:
 }
 ```
 
+Response fields:
+
+| Field                     | Type    | Notes                                          |
+| ------------------------- | ------- | ---------------------------------------------- |
+| `abortedMultipartUploads` | integer | Number of underlying multipart uploads aborted |
+| `deletedSessions`         | integer | Number of expired upload-session rows removed  |
+
 ### Managed site lifecycle
 
 These endpoints are only available in host-based mode.
@@ -1983,6 +2046,8 @@ These endpoints are only available in host-based mode.
 #### Create a managed site
 
 `POST /api/internal/sites`
+
+Auth: `Internal admin token`
 
 Request body:
 
@@ -1994,6 +2059,14 @@ Request body:
 }
 ```
 
+Fields:
+
+| Field         | Type   | Required | Notes                                                     |
+| ------------- | ------ | -------- | --------------------------------------------------------- |
+| `key`         | string | yes      | Lowercase site key, `3-40` chars, letters/numbers/hyphens |
+| `primaryHost` | string | yes      | Lowercase hostname, max `255`                             |
+| `siteName`    | string | yes      | Display name, `1-120` chars after trim                    |
+
 Response:
 
 ```json
@@ -2004,15 +2077,28 @@ Response:
 }
 ```
 
+Notes:
+
+- New managed sites start with `status: "active"`.
+- Jant seeds onboarding as completed and stores the provided `SITE_NAME`.
+- Duplicate site keys return `409`.
+- Duplicate primary hosts return `409`.
+
 #### Delete a managed site
 
 `DELETE /api/internal/sites/:siteId`
 
+Auth: `Internal admin token`
+
 Response: `204 No Content`
+
+This removes the target site and its associated site-scoped records.
 
 #### Get managed-site media usage
 
 `GET /api/internal/sites/:siteId/media-usage`
+
+Auth: `Internal admin token`
 
 Response:
 
@@ -2027,14 +2113,19 @@ Response:
 
 `GET /api/internal/sites/:siteId/export`
 
+Auth: `Internal admin token`
+
 Response:
 
 - Content type: `application/zip`
 - Filename resembles `<site-key>-site-export.zip`
+- Export shape matches `POST /api/export/zola`, but for the specified managed site
 
 #### Suspend a managed site
 
 `POST /api/internal/sites/:siteId/suspend`
+
+Auth: `Internal admin token`
 
 Response:
 
@@ -2049,6 +2140,8 @@ Response:
 
 `POST /api/internal/sites/:siteId/resume`
 
+Auth: `Internal admin token`
+
 Response:
 
 ```json
@@ -2060,9 +2153,20 @@ Response:
 
 ### Managed site domains
 
+Domain objects include these fields:
+
+| Field               | Type                 | Notes                     |
+| ------------------- | -------------------- | ------------------------- |
+| `id`                | string               | Site domain ID            |
+| `host`              | string               | Lowercase hostname        |
+| `kind`              | `primary` \| `alias` | Domain role for the site  |
+| `redirectToPrimary` | boolean              | Whether requests redirect |
+
 #### List domains
 
 `GET /api/internal/sites/:siteId/domains`
+
+Auth: `Internal admin token`
 
 Response:
 
@@ -2083,6 +2187,8 @@ Response:
 
 `POST /api/internal/sites/:siteId/domains`
 
+Auth: `Internal admin token`
+
 Request body:
 
 ```json
@@ -2092,21 +2198,46 @@ Request body:
 }
 ```
 
+Fields:
+
+| Field         | Type    | Required | Notes                                         |
+| ------------- | ------- | -------- | --------------------------------------------- |
+| `host`        | string  | yes      | Lowercase hostname, max `255`                 |
+| `makePrimary` | boolean | no       | When true, demotes the current primary domain |
+
+Notes:
+
+- Hosts are trimmed and normalized to lowercase.
+- Adding a host already attached to this site returns `409`.
+- Adding a host already attached to another site returns `409`.
+
 Response: `201 Created` with the full `domains` list.
 
 #### Promote a domain to primary
 
 `POST /api/internal/sites/:siteId/domains/:domainId/primary`
 
+Auth: `Internal admin token`
+
 Response: updated `domains` list.
+
+Notes:
+
+- If the target domain is already primary, the response still returns the current `domains` list.
+- Missing `domainId` returns `404`.
 
 #### Delete a domain
 
 `DELETE /api/internal/sites/:siteId/domains/:domainId`
 
+Auth: `Internal admin token`
+
 Response: updated `domains` list.
 
-Deleting the current primary domain without promoting another domain first returns `409`.
+Notes:
+
+- Deleting the current primary domain without promoting another domain first returns `409`.
+- Missing `domainId` returns `404`.
 
 ---
 
@@ -2124,15 +2255,35 @@ These are not part of the JSON content-management API, but they are often useful
 | `GET /feed/latest/atom.xml`   | Public | Atom     | Latest public posts feed                                        |
 | `GET /feed/featured`          | Public | RSS      | Featured posts feed                                             |
 | `GET /feed/featured/atom.xml` | Public | Atom     | Featured posts feed                                             |
+| `GET /feed/all`               | Public | Redirect | Legacy alias to `/feed/latest`                                  |
+| `GET /feed/all/atom.xml`      | Public | Redirect | Legacy Atom alias to `/feed/latest/atom.xml`                    |
+| `GET /c/:slug/feed`           | Public | RSS      | Collection feed for one collection or collection selection      |
 | `GET /sitemap.xml`            | Public | XML      | Sitemap for published posts                                     |
 | `GET /robots.txt`             | Public | Text     | Robots rules and sitemap location                               |
 
-Feed notes:
+### Health and readiness
 
-- `GET /feed/latest` and `GET /feed/latest/atom.xml` accept `?format=note|link|quote`
-- `GET /feed/all` and `GET /feed/all/atom.xml` are legacy aliases that redirect to the `latest` feed with `308`
+#### Liveness
 
-Readiness example:
+`GET /health`
+
+Auth: `Public`
+
+Response:
+
+```json
+{ "status": "ok" }
+```
+
+This endpoint bypasses site resolution and only answers whether the process is up.
+
+#### Readiness
+
+`GET /readyz`
+
+Auth: `Public`
+
+Response:
 
 ```json
 {
@@ -2143,6 +2294,54 @@ Readiness example:
   }
 }
 ```
+
+Notes:
+
+- Returns `200` when all checks pass.
+- Returns `503` when `status` is `"error"`.
+- `startupConfig.error` and `database.error` appear when a check fails.
+- This endpoint is stricter than `/health`: it verifies startup configuration and performs a lightweight database query.
+
+### Feeds
+
+All feed endpoints are public and return cached XML with `Cache-Control: public, max-age=180`.
+
+Feed notes:
+
+- `GET /feed` and `GET /feed/atom.xml` use the configured `MAIN_RSS_FEED` to choose `latest` or `featured`.
+- `GET /feed/latest` and `GET /feed/latest/atom.xml` accept `?format=note|link|quote`.
+- Invalid `format` values are ignored rather than rejected.
+- Latest feeds include published root posts only, excluding private posts and `latest_hidden` posts.
+- Featured feeds include published featured root posts and exclude private posts.
+- `GET /feed/all` and `GET /feed/all/atom.xml` are legacy aliases that redirect to the `latest` feed with `308`, preserving the query string.
+- `GET /c/:slug/feed` returns an RSS feed for the collection page selection. Non-canonical collection aliases redirect to the canonical selection path with `301`.
+
+### Sitemap and robots
+
+#### Sitemap
+
+`GET /sitemap.xml`
+
+Auth: `Public`
+
+Notes:
+
+- Returns XML with content type `application/xml; charset=utf-8`.
+- Includes up to `1000` published root posts.
+- Excludes private posts.
+
+#### Robots
+
+`GET /robots.txt`
+
+Auth: `Public`
+
+Notes:
+
+- Returns text with content type `text/plain; charset=utf-8`.
+- When `NOINDEX` is enabled, the file disallows the entire site with `Disallow: /`.
+- Otherwise it allows the public site and disallows the internal utility prefix `/_/`.
+- Always includes an absolute `Sitemap:` line that points at `/sitemap.xml`.
 
 ---
 
