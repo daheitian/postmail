@@ -62,12 +62,17 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
       comment: "@context: Button to exit collection organize mode",
     }),
     organizeHint: t({
-      message: "Drag collections and dividers into the order you want.",
+      message: "Drag collections, links, and dividers into the order you want.",
       comment: "@context: Helper text shown while organizing collections",
     }),
     newDivider: t({
       message: "New Divider",
       comment: "@context: Menu action to create a divider on collections page",
+    }),
+    newLink: t({
+      message: "New Link",
+      comment:
+        "@context: Menu action to create a custom link on collections page",
     }),
     dividerLabel: t({
       message: "Divider",
@@ -220,6 +225,34 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
                       </span>
                       <span class="collections-page-menu-item-label">
                         {labels.organize}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      class="collections-page-menu-item"
+                      data-collections-action="link"
+                    >
+                      <span
+                        class="collections-page-menu-item-icon"
+                        aria-hidden="true"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.08L11.7 5.24" />
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-2.92 2.92a5 5 0 0 0 7.07 7.08l1.69-1.7" />
+                        </svg>
+                      </span>
+                      <span class="collections-page-menu-item-label">
+                        {labels.newLink}
                       </span>
                     </button>
                     <button

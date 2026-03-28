@@ -444,7 +444,7 @@ export const pathRegistry = sqliteTable(
 );
 
 // =============================================================================
-// Collection Directory Items (unified ordering for collections + dividers)
+// Collection Directory Items (unified ordering for collections, links, and dividers)
 // =============================================================================
 
 export const collectionDirectoryItems = sqliteTable(
@@ -454,11 +454,12 @@ export const collectionDirectoryItems = sqliteTable(
     siteId: text("site_id")
       .notNull()
       .references(() => sites.id, { onDelete: "cascade" }),
-    type: text("type", { enum: ["collection", "divider"] }).notNull(),
+    type: text("type", { enum: ["collection", "divider", "link"] }).notNull(),
     collectionId: text("collection_id").references(() => collections.id, {
       onDelete: "cascade",
     }),
     label: text("label"),
+    url: text("url"),
     position: text("position").notNull().default("a0"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -466,7 +467,7 @@ export const collectionDirectoryItems = sqliteTable(
   (table) => [
     check(
       "chk_collection_directory_item_type",
-      sql`${table.type} IN ('collection', 'divider')`,
+      sql`${table.type} IN ('collection', 'divider', 'link')`,
     ),
     index("idx_collection_directory_item_site_collection_id").on(
       table.siteId,
@@ -484,14 +485,24 @@ export const collectionDirectoryItems = sqliteTable(
     check(
       "chk_collection_directory_item_shape",
       sql`(
-        ${table.type} = 'collection' AND ${table.collectionId} IS NOT NULL
+        ${table.type} = 'collection'
+        AND ${table.collectionId} IS NOT NULL
+        AND ${table.label} IS NULL
+        AND ${table.url} IS NULL
       ) OR (
-        ${table.type} = 'divider' AND ${table.collectionId} IS NULL
+        ${table.type} = 'divider'
+        AND ${table.collectionId} IS NULL
+        AND ${table.url} IS NULL
+      ) OR (
+        ${table.type} = 'link'
+        AND ${table.collectionId} IS NULL
+        AND ${table.label} IS NOT NULL
+        AND ${table.url} IS NOT NULL
       )`,
     ),
     check(
       "chk_collection_directory_item_label",
-      sql`${table.type} = 'divider' OR ${table.label} IS NULL`,
+      sql`${table.type} <> 'collection' OR ${table.label} IS NULL`,
     ),
   ],
 );

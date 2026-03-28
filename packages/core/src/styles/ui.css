@@ -708,6 +708,24 @@
     right: 0;
   }
 
+  .collections-link-create,
+  .collections-link-edit {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+  }
+
+  .collections-link-edit {
+    margin-top: 0.25rem;
+    margin-left: 4.3rem;
+  }
+
+  .collections-link-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+
   .collections-page-icon-button {
     display: flex;
     align-items: center;
@@ -5093,13 +5111,15 @@
     color: var(--site-text-primary);
   }
 
-  .compose-publish-slug-field {
+  .compose-publish-slug-field,
+  .compose-publish-date-field {
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
   }
 
-  .compose-publish-slug-input-wrap {
+  .compose-publish-slug-input-wrap,
+  .compose-publish-date-input-wrap {
     display: flex;
     align-items: center;
     gap: 0.7rem;
@@ -5124,7 +5144,8 @@
       box-shadow 0.16s ease;
   }
 
-  .compose-publish-slug-input-wrap:focus-within {
+  .compose-publish-slug-input-wrap:focus-within,
+  .compose-publish-date-input-wrap:focus-within {
     border-color: color-mix(in srgb, var(--site-text-primary) 16%, transparent);
     background:
       linear-gradient(
@@ -5157,7 +5178,8 @@
       "Courier New", monospace;
   }
 
-  .compose-publish-slug-input {
+  .compose-publish-slug-input,
+  .compose-publish-date-input {
     min-width: 0;
     flex: 1;
     border: none;
@@ -5173,7 +5195,12 @@
       "Courier New", monospace;
   }
 
-  .compose-publish-slug-input::placeholder {
+  .compose-publish-date-input {
+    font-family: inherit;
+  }
+
+  .compose-publish-slug-input::placeholder,
+  .compose-publish-date-input::placeholder {
     color: color-mix(
       in srgb,
       var(--site-text-secondary) 82%,
@@ -5181,18 +5208,21 @@
     );
   }
 
-  .compose-publish-slug-input:focus {
+  .compose-publish-slug-input:focus,
+  .compose-publish-date-input:focus {
     outline: none;
     box-shadow: none;
   }
 
-  .compose-publish-slug-status {
+  .compose-publish-slug-status,
+  .compose-publish-date-status {
     color: var(--site-text-secondary);
     font-size: 0.75rem;
     line-height: 1.35;
   }
 
-  .compose-publish-slug-status-error {
+  .compose-publish-slug-status-error,
+  .compose-publish-date-status-error {
     color: var(--destructive);
   }
 

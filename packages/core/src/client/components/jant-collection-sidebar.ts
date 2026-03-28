@@ -46,15 +46,17 @@ interface CollectionsResponse {
   }>;
   sidebarItems?: Array<{
     id: string;
-    type: "collection" | "divider";
+    type: "collection" | "divider" | "link";
     collectionId: string | null;
     label: string | null;
+    url: string | null;
     position: string;
   }>;
 }
 
 interface SidebarItemUpdateResponse {
   label?: string | null;
+  url?: string | null;
 }
 
 export class JantCollectionsManager extends LitElement {
@@ -65,7 +67,14 @@ export class JantCollectionsManager extends LitElement {
     _items: { state: true },
     _reorderMode: { state: true },
     _editingDividerId: { state: true },
+    _editingLinkId: { state: true },
+    _editLinkLabel: { state: true },
+    _editLinkUrl: { state: true },
     _showMoreMenu: { state: true },
+    _showLinkForm: { state: true },
+    _newLinkLabel: { state: true },
+    _newLinkUrl: { state: true },
+    _addingLink: { state: true },
     _hoveringId: { state: true },
     _showItemMenuId: { state: true },
   };
@@ -76,7 +85,14 @@ export class JantCollectionsManager extends LitElement {
   declare _items: CollectionManagerItem[];
   declare _reorderMode: boolean;
   declare _editingDividerId: string | null;
+  declare _editingLinkId: string | null;
+  declare _editLinkLabel: string;
+  declare _editLinkUrl: string;
   declare _showMoreMenu: boolean;
+  declare _showLinkForm: boolean;
+  declare _newLinkLabel: string;
+  declare _newLinkUrl: string;
+  declare _addingLink: boolean;
   declare _hoveringId: string | null;
   declare _showItemMenuId: string | null;
 
@@ -137,6 +153,9 @@ export class JantCollectionsManager extends LitElement {
       case "divider":
         void this.#addDivider();
         break;
+      case "link":
+        this.#openLinkForm();
+        break;
       default:
         break;
     }
@@ -160,7 +179,14 @@ export class JantCollectionsManager extends LitElement {
     this._items = [];
     this._reorderMode = false;
     this._editingDividerId = null;
+    this._editingLinkId = null;
+    this._editLinkLabel = "";
+    this._editLinkUrl = "";
     this._showMoreMenu = false;
+    this._showLinkForm = false;
+    this._newLinkLabel = "";
+    this._newLinkUrl = "";
+    this._addingLink = false;
     this._hoveringId = null;
     this._showItemMenuId = null;
   }
@@ -185,9 +211,11 @@ export class JantCollectionsManager extends LitElement {
     document.removeEventListener("click", this.#closeItemMenu);
   }
 
-  #hasCollections() {
+  #hasDirectoryContent() {
     return this._items.some(
-      (item) => item.type === "collection" && item.collection,
+      (item) =>
+        (item.type === "collection" && item.collection) ||
+        (item.type === "link" && item.label && item.url),
     );
   }
 
@@ -319,6 +347,7 @@ export class JantCollectionsManager extends LitElement {
         type: item.type,
         collectionId: item.collectionId,
         label: item.label,
+        url: item.url,
         position: item.position,
         collection,
       });
@@ -330,6 +359,8 @@ export class JantCollectionsManager extends LitElement {
         id: `collection-${collection.id}`,
         type: "collection",
         collectionId: collection.id,
+        label: null,
+        url: null,
         position: "",
         collection: collectionMap.get(collection.id),
       });
@@ -412,6 +443,8 @@ export class JantCollectionsManager extends LitElement {
 
   #enterReorderMode() {
     this._reorderMode = true;
+    this._showLinkForm = false;
+    this._editingLinkId = null;
     this._showMoreMenu = false;
     document.removeEventListener("click", this.#closeMoreMenu);
   }
@@ -423,7 +456,9 @@ export class JantCollectionsManager extends LitElement {
     this.#sortable = null;
   }
 
-  protected updated(): void {
+  protected updated(
+    changedProperties: PropertyValueMap<JantCollectionsManager>,
+  ): void {
     this.#bindManagerRoot();
     this.#syncHeaderState();
 
@@ -440,6 +475,15 @@ export class JantCollectionsManager extends LitElement {
         input.select();
         input.scrollIntoView({ block: "nearest" });
         this._editingDividerId = null;
+      }
+    }
+
+    if (changedProperties.has("_showLinkForm") && this._showLinkForm) {
+      const input = this.querySelector<HTMLInputElement>(
+        '[data-link-form-input="label"]',
+      );
+      if (input && this.ownerDocument.activeElement !== input) {
+        input.focus();
       }
     }
   }
@@ -459,6 +503,47 @@ export class JantCollectionsManager extends LitElement {
       this._editingDividerId = item.id;
     } catch {
       showToast(this.labels.saveFailed, "error");
+    }
+  }
+
+  #openLinkForm() {
+    this._showMoreMenu = false;
+    this._showLinkForm = true;
+    this._newLinkLabel = "";
+    this._newLinkUrl = "";
+    document.removeEventListener("click", this.#closeMoreMenu);
+  }
+
+  async #createLink() {
+    const label = this._newLinkLabel.trim();
+    const url = this._newLinkUrl.trim();
+    if (!label || !url) {
+      showToast(this.labels.labelAndUrlRequired, "error");
+      return;
+    }
+
+    this._addingLink = true;
+    try {
+      const res = await fetch("/api/collections/sidebar-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "link",
+          label,
+          url,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      this._showLinkForm = false;
+      this._newLinkLabel = "";
+      this._newLinkUrl = "";
+      showToast(this.labels.linkCreated);
+      await this.#refreshList();
+    } catch {
+      showToast(this.labels.saveFailed, "error");
+    } finally {
+      this._addingLink = false;
     }
   }
 
@@ -518,6 +603,85 @@ export class JantCollectionsManager extends LitElement {
 
       showToast(this.labels.deleted);
       await this.#refreshList();
+    } catch {
+      showToast(this.labels.saveFailed, "error");
+    }
+  }
+
+  #toggleLinkEdit(item: CollectionManagerItem) {
+    if (item.type !== "link") return;
+
+    if (this._editingLinkId === item.id) {
+      this._editingLinkId = null;
+      this._editLinkLabel = "";
+      this._editLinkUrl = "";
+      return;
+    }
+
+    this._editingLinkId = item.id;
+    this._editLinkLabel = item.label ?? "";
+    this._editLinkUrl = item.url ?? "";
+  }
+
+  async #saveLink(item: CollectionManagerItem) {
+    const label = this._editLinkLabel.trim();
+    const url = this._editLinkUrl.trim();
+    if (!label || !url) {
+      showToast(this.labels.labelAndUrlRequired, "error");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/collections/sidebar-items/${item.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label, url }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const updated = (await res.json()) as SidebarItemUpdateResponse;
+      this._items = this._items.map((entry) =>
+        entry.id === item.id
+          ? {
+              ...entry,
+              label: updated.label ?? label,
+              url: updated.url ?? url,
+            }
+          : entry,
+      );
+      this._editingLinkId = null;
+      this._editLinkLabel = "";
+      this._editLinkUrl = "";
+      showToast(this.labels.linkSaved);
+    } catch {
+      showToast(this.labels.saveFailed, "error");
+      await this.#refreshList();
+    }
+  }
+
+  async #deleteLink(item: CollectionManagerItem) {
+    const confirmed = await showConfirmDialog({
+      message: this.labels.confirmDeleteLink,
+      confirmLabel: this.labels.deleteLink,
+      cancelLabel: this.labels.cancel,
+      tone: "danger",
+    });
+    if (!confirmed) return;
+
+    this._showItemMenuId = null;
+    document.removeEventListener("click", this.#closeItemMenu);
+
+    try {
+      const res = await fetch(`/api/collections/sidebar-items/${item.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      this._editingLinkId = null;
+      this._editLinkLabel = "";
+      this._editLinkUrl = "";
+      showToast(this.labels.linkDeleted);
+      this._items = this._items.filter((entry) => entry.id !== item.id);
     } catch {
       showToast(this.labels.saveFailed, "error");
     }
@@ -589,7 +753,8 @@ export class JantCollectionsManager extends LitElement {
       <div
         class=${classMap({
           "group relative": true,
-          "z-50": this._showItemMenuId === item.id,
+          "z-50":
+            this._showItemMenuId === item.id || this._editingLinkId === item.id,
         })}
         @mouseenter=${() => {
           this._hoveringId = item.id;
@@ -611,9 +776,172 @@ export class JantCollectionsManager extends LitElement {
     `;
   }
 
+  #renderLinkEditPanel(item: CollectionManagerItem) {
+    if (this._editingLinkId !== item.id) return nothing;
+
+    return html`
+      <div
+        class="collections-link-edit card"
+        @click=${(e: Event) => e.stopPropagation()}
+      >
+        <form
+          class="grid gap-4"
+          @submit=${(e: Event) => {
+            e.preventDefault();
+            void this.#saveLink(item);
+          }}
+        >
+          <div class="field">
+            <label class="label" for=${`collections-link-label-${item.id}`}>
+              ${this.labels.label}
+            </label>
+            <input
+              id=${`collections-link-label-${item.id}`}
+              type="text"
+              class="input"
+              .value=${this._editLinkLabel}
+              @input=${(e: Event) => {
+                this._editLinkLabel = (
+                  e.currentTarget as HTMLInputElement
+                ).value;
+              }}
+            />
+          </div>
+          <div class="field">
+            <label class="label" for=${`collections-link-url-${item.id}`}>
+              ${this.labels.url}
+            </label>
+            <input
+              id=${`collections-link-url-${item.id}`}
+              type="text"
+              class="input"
+              .value=${this._editLinkUrl}
+              @input=${(e: Event) => {
+                this._editLinkUrl = (e.currentTarget as HTMLInputElement).value;
+              }}
+            />
+          </div>
+          <div class="collections-link-edit-actions">
+            <button
+              type="button"
+              class="btn-outline"
+              @click=${() => this.#toggleLinkEdit(item)}
+            >
+              ${this.labels.cancel}
+            </button>
+            <button type="submit" class="btn-sm">
+              ${this.labels.formLabels.submitLabel}
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+  }
+
+  #renderLinkItem(item: CollectionManagerItem, sequence: number) {
+    if (!item.label || !item.url) return nothing;
+
+    const body = html`
+      <div class="collection-directory-main">
+        <span class="collection-directory-sequence" aria-hidden="true">
+          ${String(sequence).padStart(2, "0")}
+        </span>
+        <div class="collection-directory-title-row">
+          <span class="collection-directory-title">
+            ${item.label}
+            <span class="collection-directory-title-marker" aria-hidden="true">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.08L11.7 5.24"
+                />
+                <path
+                  d="M14 11a5 5 0 0 0-7.54-.54l-2.92 2.92a5 5 0 0 0 7.07 7.08l1.69-1.7"
+                />
+              </svg>
+            </span>
+          </span>
+        </div>
+        <p class="collection-directory-summary">
+          <span class="collection-directory-meta">Link</span>
+        </p>
+      </div>
+    `;
+
+    if (this._reorderMode) {
+      return html`
+        <div
+          data-sidebar-item=${item.id}
+          class="collection-directory-item collection-directory-item-reorder"
+        >
+          <div class="collection-directory-handle" data-drag-handle>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="9" cy="5" r="1" />
+              <circle cx="9" cy="19" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="15" cy="5" r="1" />
+              <circle cx="15" cy="19" r="1" />
+            </svg>
+          </div>
+          <div class="collection-directory-reorder-main" data-drag-handle>
+            ${body}
+          </div>
+        </div>
+      `;
+    }
+
+    return html`
+      <div
+        class=${classMap({
+          "group relative": true,
+          "z-50":
+            this._showItemMenuId === item.id || this._editingLinkId === item.id,
+        })}
+        @mouseenter=${() => {
+          this._hoveringId = item.id;
+        }}
+        @mouseleave=${() => {
+          if (this._hoveringId === item.id) this._hoveringId = null;
+        }}
+      >
+        <a
+          href=${publicPath(item.url)}
+          class="collection-directory-item collection-directory-item-link collection-directory-item-manageable"
+        >
+          ${body}
+        </a>
+        ${this._hoveringId === item.id || this._showItemMenuId === item.id
+          ? this.#renderItemMenu(item)
+          : nothing}
+        ${this.#renderLinkEditPanel(item)}
+      </div>
+    `;
+  }
+
   #renderItemMenu(item: CollectionManagerItem) {
     const collection = item.collection;
-    if (!collection) return nothing;
+    const isLink = item.type === "link" && !!item.label && !!item.url;
+    if (!collection && !isLink) return nothing;
 
     const isOpen = this._showItemMenuId === item.id;
 
@@ -655,23 +983,49 @@ export class JantCollectionsManager extends LitElement {
                 class="collections-page-menu"
                 @click=${(e: Event) => e.stopPropagation()}
               >
-                <a
-                  href=${publicPath(
-                    `/c/${collection.slug}/edit?returnTo=${encodeURIComponent(
-                      publicPath("/c"),
-                    )}`,
-                  )}
-                  class="collections-page-menu-item"
-                >
-                  ${this.labels.edit}
-                </a>
-                <button
-                  type="button"
-                  class="collections-page-menu-item collections-page-menu-item-danger"
-                  @click=${() => this.#deleteCollection(collection)}
-                >
-                  ${this.labels.deleteCollection}
-                </button>
+                ${collection
+                  ? html`
+                      <a
+                        href=${publicPath(
+                          `/c/${collection.slug}/edit?returnTo=${encodeURIComponent(
+                            publicPath("/c"),
+                          )}`,
+                        )}
+                        class="collections-page-menu-item"
+                      >
+                        ${this.labels.edit}
+                      </a>
+                      <button
+                        type="button"
+                        class="collections-page-menu-item collections-page-menu-item-danger"
+                        @click=${() => this.#deleteCollection(collection)}
+                      >
+                        ${this.labels.deleteCollection}
+                      </button>
+                    `
+                  : html`
+                      <button
+                        type="button"
+                        class="collections-page-menu-item"
+                        @click=${() => {
+                          this._showItemMenuId = null;
+                          document.removeEventListener(
+                            "click",
+                            this.#closeItemMenu,
+                          );
+                          this.#toggleLinkEdit(item);
+                        }}
+                      >
+                        ${this.labels.edit}
+                      </button>
+                      <button
+                        type="button"
+                        class="collections-page-menu-item collections-page-menu-item-danger"
+                        @click=${() => this.#deleteLink(item)}
+                      >
+                        ${this.labels.deleteLink}
+                      </button>
+                    `}
               </div>
             `
           : nothing}
@@ -791,17 +1145,94 @@ export class JantCollectionsManager extends LitElement {
     `;
   }
 
+  #renderCreateLinkForm() {
+    if (!this._showLinkForm) return nothing;
+
+    return html`
+      <div class="collections-link-create card">
+        <form
+          class="grid gap-4"
+          @submit=${(e: Event) => {
+            e.preventDefault();
+            void this.#createLink();
+          }}
+        >
+          <header class="grid gap-1">
+            <h2 class="text-base font-semibold">${this.labels.newLink}</h2>
+            <p class="text-sm text-muted-foreground">
+              ${this.labels.addLinkDescription}
+            </p>
+          </header>
+          <div class="field">
+            <label class="label" for="collections-new-link-label">
+              ${this.labels.label}
+            </label>
+            <input
+              id="collections-new-link-label"
+              type="text"
+              class="input"
+              data-link-form-input="label"
+              placeholder=${this.labels.linkLabelPlaceholder}
+              .value=${this._newLinkLabel}
+              @input=${(e: Event) => {
+                this._newLinkLabel = (
+                  e.currentTarget as HTMLInputElement
+                ).value;
+              }}
+            />
+          </div>
+          <div class="field">
+            <label class="label" for="collections-new-link-url">
+              ${this.labels.url}
+            </label>
+            <input
+              id="collections-new-link-url"
+              type="text"
+              class="input"
+              placeholder=${this.labels.linkUrlPlaceholder}
+              .value=${this._newLinkUrl}
+              @input=${(e: Event) => {
+                this._newLinkUrl = (e.currentTarget as HTMLInputElement).value;
+              }}
+            />
+          </div>
+          <div class="collections-link-edit-actions">
+            <button
+              type="button"
+              class="btn-outline"
+              @click=${() => {
+                this._showLinkForm = false;
+                this._newLinkLabel = "";
+                this._newLinkUrl = "";
+              }}
+            >
+              ${this.labels.cancel}
+            </button>
+            <button type="submit" class="btn-sm" ?disabled=${this._addingLink}>
+              ${this.labels.addLink}
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+  }
+
   render() {
     return html`
-      ${this.#hasCollections()
+      ${this.#renderCreateLinkForm()}
+      ${this.#hasDirectoryContent()
         ? html`
             <div id="collections-manager-list" class="collection-directory">
               ${(() => {
-                let collectionIndex = 0;
+                let itemIndex = 0;
                 return this._items.map((item, index) => {
                   if (item.type === "collection") {
-                    collectionIndex += 1;
-                    return this.#renderCollectionItem(item, collectionIndex);
+                    itemIndex += 1;
+                    return this.#renderCollectionItem(item, itemIndex);
+                  }
+                  if (item.type === "link") {
+                    itemIndex += 1;
+                    return this.#renderLinkItem(item, itemIndex);
                   }
                   return this.#renderDividerItem(item, index);
                 });

@@ -342,6 +342,31 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       comment:
         "@context: Compose publish settings help text for private visibility",
     }),
+    publishDateLabel: t({
+      message: "Published on",
+      comment: "@context: Compose publish settings publish date section label",
+    }),
+    publishDateHint: t({
+      message:
+        "Leave blank to publish now. Use an earlier date when importing older posts.",
+      comment: "@context: Compose publish settings help text for publish date",
+    }),
+    publishDateReset: t({
+      message: "Use current date",
+      comment:
+        "@context: Compose publish settings action to reset the publish date to the current date",
+    }),
+    publishDateInvalid: t({
+      message: "Enter a valid date.",
+      comment:
+        "@context: Compose publish settings validation error for an invalid publish date",
+    }),
+    publishDateFutureError: t({
+      message:
+        "Choose today or an earlier date, or leave it blank to publish now.",
+      comment:
+        "@context: Compose publish settings validation error when a future publish date is selected",
+    }),
     publishSlugLabel: t({
       message: "Custom link",
       comment: "@context: Compose publish settings slug section label",

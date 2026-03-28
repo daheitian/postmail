@@ -30,22 +30,35 @@ const labels: CollectionManagerLabels = {
   done: "Done",
   organizeHint: "Drag to reorder.",
   newDivider: "New divider",
+  newLink: "New link",
+  addLink: "Add link",
+  addLinkDescription: "Add a custom shortcut.",
   dividerLabel: "Divider label",
   dividerLabelPlaceholder: "Section",
   newCollection: "New collection",
   edit: "Edit",
+  label: "Label",
+  url: "URL",
+  linkLabelPlaceholder: "Quotes",
+  linkUrlPlaceholder: "/archive?format=quote",
+  labelAndUrlRequired: "Add a label and URL.",
   deleteDivider: "Delete divider",
   moreActions: "More actions",
   deleteCollection: "Delete collection",
   confirmDelete: "Delete this collection permanently?",
+  deleteLink: "Remove link",
+  confirmDeleteLink: "Remove this link from Collections?",
   cancel: "Cancel",
   entrySingular: "entry",
   entryPlural: "entries",
   emptyState: "Create a collection to get started.",
   orderSaved: "Collection order updated.",
   saved: "Collection saved.",
+  linkCreated: "Link added.",
+  linkSaved: "Link updated.",
   saveFailed: "Save failed.",
   deleted: "Collection deleted.",
+  linkDeleted: "Link removed.",
   formLabels: {
     titleLabel: "Title",
     titlePlaceholder: "My Collection",
@@ -130,6 +143,16 @@ const groupedItems: CollectionManagerItem[] = [
       postCount: 1,
       recentActivityAt: 1_763_619_300,
     },
+  },
+];
+
+const itemsWithLink: CollectionManagerItem[] = [
+  {
+    id: "link-1",
+    type: "link",
+    label: "Quotes",
+    url: "/archive?format=quote&visibility=public&view=list",
+    position: "a0",
   },
 ];
 
@@ -302,5 +325,40 @@ describe("JantCollectionsManager", () => {
     expect(links).toHaveLength(1);
     expect(links[0]?.textContent?.trim()).toBe("Reading group");
     expect(links[0]?.getAttribute("href")).toBe("/c/reading+tools");
+  });
+
+  it("keeps focus on the URL field while typing in the new link form", async () => {
+    const el = await createElement();
+
+    el._showLinkForm = true;
+    await el.updateComplete;
+
+    const urlInput = el.querySelector<HTMLInputElement>(
+      "#collections-new-link-url",
+    );
+    expect(urlInput).not.toBeNull();
+    if (!urlInput) throw new Error("Expected new link URL input");
+
+    urlInput.focus();
+    urlInput.value = "/archive?format=quote";
+    urlInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    expect(document.activeElement).toBe(urlInput);
+  });
+
+  it("does not show the raw URL in link rows", async () => {
+    const el = await createElementWithItems(itemsWithLink);
+
+    const linkRow = el.querySelector<HTMLAnchorElement>(
+      ".collection-directory-item-link",
+    );
+
+    expect(linkRow).not.toBeNull();
+    expect(linkRow?.textContent).toContain("Quotes");
+    expect(linkRow?.textContent).toContain("Link");
+    expect(linkRow?.textContent).not.toContain(
+      "/archive?format=quote&visibility=public&view=list",
+    );
   });
 });

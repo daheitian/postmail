@@ -131,7 +131,7 @@ export interface CollectionDirectoryCollection extends Collection {
   recentActivityAt: number;
 }
 
-export type SidebarItemType = "collection" | "divider";
+export type SidebarItemType = "collection" | "divider" | "link";
 
 export interface SidebarItem {
   id: string;
@@ -139,6 +139,7 @@ export interface SidebarItem {
   type: SidebarItemType;
   collectionId: string | null;
   label: string | null;
+  url: string | null;
   position: string;
   createdAt: number;
   updatedAt: number;
@@ -146,8 +147,9 @@ export interface SidebarItem {
 
 export interface CollectionDirectoryItem {
   id: string;
-  type: "collection" | "divider";
+  type: "collection" | "divider" | "link";
   label?: string | null;
+  url?: string | null;
   collection?: CollectionDirectoryCollection;
 }
 

@@ -12,22 +12,35 @@ export interface CollectionManagerLabels {
   done: string;
   organizeHint: string;
   newDivider: string;
+  newLink: string;
+  addLink: string;
+  addLinkDescription: string;
   dividerLabel: string;
   dividerLabelPlaceholder: string;
   newCollection: string;
   edit: string;
+  label: string;
+  url: string;
+  linkLabelPlaceholder: string;
+  linkUrlPlaceholder: string;
+  labelAndUrlRequired: string;
   deleteDivider: string;
   moreActions: string;
   deleteCollection: string;
   confirmDelete: string;
+  deleteLink: string;
+  confirmDeleteLink: string;
   cancel: string;
   entrySingular: string;
   entryPlural: string;
   emptyState: string;
   orderSaved: string;
   saved: string;
+  linkCreated: string;
+  linkSaved: string;
   saveFailed: string;
   deleted: string;
+  linkDeleted: string;
   formLabels: CollectionFormLabels;
 }
 
@@ -43,9 +56,10 @@ export interface ManagedCollection {
 
 export interface CollectionManagerItem {
   id: string;
-  type: "collection" | "divider";
+  type: "collection" | "divider" | "link";
   collectionId?: string | null;
   label?: string | null;
+  url?: string | null;
   position?: string;
   collection?: ManagedCollection;
 }

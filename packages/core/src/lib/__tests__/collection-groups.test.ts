@@ -38,6 +38,23 @@ describe("getDividerCollectionGroup", () => {
     });
   });
 
+  it("ignores links while collecting grouped collection slugs", () => {
+    const group = getDividerCollectionGroup(
+      [
+        { type: "divider", label: "Browse" },
+        { type: "collection", collection: { slug: "books" } },
+        { type: "link", label: "Quotes", url: "/archive?format=quote" },
+        { type: "collection", collection: { slug: "essays" } },
+      ],
+      0,
+    );
+
+    expect(group).toEqual({
+      slugExpression: "books+essays",
+      collectionCount: 2,
+    });
+  });
+
   it("returns null for unlabeled dividers or groups with fewer than two collections", () => {
     expect(
       getDividerCollectionGroup(

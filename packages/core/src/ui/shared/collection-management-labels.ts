@@ -98,6 +98,14 @@ const collectionMutationMessages = {
     message: "More actions",
     comment: "@context: Aria-label for collections page more button",
   }),
+  label: msg({
+    message: "Label",
+    comment: "@context: Field label for a custom collections link",
+  }),
+  url: msg({
+    message: "URL",
+    comment: "@context: Field label for a custom collections link URL",
+  }),
   deleteCollection: msg({
     message: "Delete",
     comment: "@context: Delete collection action",
@@ -122,6 +130,49 @@ const collectionMutationMessages = {
   deleted: msg({
     message: "Collection deleted.",
     comment: "@context: Toast after deleting a collection",
+  }),
+  deleteLink: msg({
+    message: "Remove Link",
+    comment: "@context: Delete custom link action on collections page",
+  }),
+  confirmDeleteLink: msg({
+    message: "Remove this link from Collections? The destination won't change.",
+    comment: "@context: Confirm dialog for deleting a custom collections link",
+  }),
+  linkCreated: msg({
+    message: "Link added.",
+    comment: "@context: Toast after creating a custom collections link",
+  }),
+  linkSaved: msg({
+    message: "Link updated.",
+    comment: "@context: Toast after saving a custom collections link",
+  }),
+  linkDeleted: msg({
+    message: "Link removed.",
+    comment: "@context: Toast after deleting a custom collections link",
+  }),
+  addLink: msg({
+    message: "Add Link",
+    comment:
+      "@context: Primary action to add a custom link on collections page",
+  }),
+  addLinkDescription: msg({
+    message: "Add a custom shortcut to any page or site.",
+    comment:
+      "@context: Helper text for the custom collections link form on collections page",
+  }),
+  linkLabelPlaceholder: msg({
+    message: "Quotes",
+    comment: "@context: Placeholder for the custom collections link label",
+  }),
+  linkUrlPlaceholder: msg({
+    message: "/archive?format=quote or https://example.com",
+    comment: "@context: Placeholder for the custom collections link URL",
+  }),
+  labelAndUrlRequired: msg({
+    message: "Add a label and URL.",
+    comment:
+      "@context: Validation message when creating or editing a custom collections link",
   }),
 } as const;
 
@@ -151,11 +202,23 @@ export const getCollectionFormLabels = (t: Translate) => ({
 export const getCollectionMutationLabels = (t: Translate) => ({
   edit: t(collectionMutationMessages.edit),
   moreActions: t(collectionMutationMessages.moreActions),
+  label: t(collectionMutationMessages.label),
+  url: t(collectionMutationMessages.url),
   deleteCollection: t(collectionMutationMessages.deleteCollection),
   confirmDelete: t(collectionMutationMessages.confirmDelete),
+  deleteLink: t(collectionMutationMessages.deleteLink),
+  confirmDeleteLink: t(collectionMutationMessages.confirmDeleteLink),
   cancel: t(collectionMutationMessages.cancel),
   saved: t(collectionMutationMessages.saved),
+  linkCreated: t(collectionMutationMessages.linkCreated),
+  linkSaved: t(collectionMutationMessages.linkSaved),
   saveFailed: t(collectionMutationMessages.saveFailed),
   deleted: t(collectionMutationMessages.deleted),
+  linkDeleted: t(collectionMutationMessages.linkDeleted),
+  addLink: t(collectionMutationMessages.addLink),
+  addLinkDescription: t(collectionMutationMessages.addLinkDescription),
+  linkLabelPlaceholder: t(collectionMutationMessages.linkLabelPlaceholder),
+  linkUrlPlaceholder: t(collectionMutationMessages.linkUrlPlaceholder),
+  labelAndUrlRequired: t(collectionMutationMessages.labelAndUrlRequired),
   formLabels: getCollectionFormLabels(t),
 });

@@ -211,6 +211,13 @@ const labels: ComposeLabels = {
     "Doesn't appear in Latest. Still appears in collections you add it to.",
   publishVisibilityPrivate: "Private",
   publishVisibilityPrivateHint: "Only visible when signed in.",
+  publishDateLabel: "Published on",
+  publishDateHint:
+    "Leave blank to publish now. Use an earlier date when importing older posts.",
+  publishDateReset: "Use current date",
+  publishDateInvalid: "Enter a valid date.",
+  publishDateFutureError:
+    "Choose today or an earlier date, or leave it blank to publish now.",
   publishSlugLabel: "Custom link",
   publishSlugPlaceholder: "your-post-link",
   publishSlugHint: "Leave blank to generate one automatically.",

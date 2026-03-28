@@ -104,6 +104,22 @@ export interface UpdateCollection {
   sortOrder?: CollectionSortOrder;
 }
 
+export type CreateSidebarItem =
+  | {
+      type: "collection";
+      collectionId: string;
+    }
+  | {
+      type: "divider";
+      label?: string | null;
+    }
+  | {
+      type: "link";
+      label: string;
+      url: string;
+    };
+
 export interface UpdateSidebarItem {
   label?: string | null;
+  url?: string;
 }

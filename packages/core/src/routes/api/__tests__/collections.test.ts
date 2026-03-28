@@ -49,11 +49,10 @@ describe("Collections API Routes", () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
-      const divider = await services.collections.createSidebarItem(
-        "divider",
-        undefined,
-        "Notes",
-      );
+      const divider = await services.collections.createSidebarItem({
+        type: "divider",
+        label: "Notes",
+      });
 
       const res = await app.request("/api/collections");
       const body = await res.json();
@@ -320,12 +319,34 @@ describe("Collections API Routes", () => {
       const res = await app.request("/api/collections/sidebar-items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "divider" }),
       });
 
       expect(res.status).toBe(201);
       const body = await res.json();
       expect(body.type).toBe("divider");
       expect(body.collectionId).toBeNull();
+    });
+
+    it("creates a custom link sidebar item", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const res = await app.request("/api/collections/sidebar-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "link",
+          label: "Quotes",
+          url: "/archive?format=quote",
+        }),
+      });
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body.type).toBe("link");
+      expect(body.label).toBe("Quotes");
+      expect(body.url).toBe("/archive?format=quote");
     });
   });
 
@@ -334,7 +355,9 @@ describe("Collections API Routes", () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
-      const item = await services.collections.createSidebarItem("divider");
+      const item = await services.collections.createSidebarItem({
+        type: "divider",
+      });
 
       const res = await app.request(
         `/api/collections/sidebar-items/${item.id}`,
@@ -352,7 +375,9 @@ describe("Collections API Routes", () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
 
-      const item = await services.collections.createSidebarItem("divider");
+      const item = await services.collections.createSidebarItem({
+        type: "divider",
+      });
 
       const res = await app.request(
         `/api/collections/sidebar-items/${item.id}`,
@@ -366,6 +391,34 @@ describe("Collections API Routes", () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.label).toBe("Reading");
+    });
+
+    it("updates a custom link label and url", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const item = await services.collections.createSidebarItem({
+        type: "link",
+        label: "Quotes",
+        url: "/archive?format=quote",
+      });
+
+      const res = await app.request(
+        `/api/collections/sidebar-items/${item.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            label: "Quote archive",
+            url: "/archive?format=quote&view=list",
+          }),
+        },
+      );
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.label).toBe("Quote archive");
+      expect(body.url).toBe("/archive?format=quote&view=list");
     });
   });
 

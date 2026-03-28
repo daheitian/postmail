@@ -442,6 +442,32 @@ export const UpdateNavItemSchema = z.object({
     .optional(),
 });
 
+export const SidebarItemLabelSchema = z.string().trim().max(60);
+export const SidebarLinkLabelSchema = sanitizeText(60).pipe(z.string().min(1));
+export const SidebarLinkUrlSchema = z
+  .string()
+  .min(1)
+  .refine((val) => sanitizeUrl(val) !== "", {
+    message: "URL must use http:, https:, or mailto: protocol",
+  });
+
+export const CreateSidebarItemSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("divider"),
+    label: SidebarItemLabelSchema.nullable().optional(),
+  }),
+  z.object({
+    type: z.literal("link"),
+    label: SidebarLinkLabelSchema,
+    url: SidebarLinkUrlSchema,
+  }),
+]);
+
+export const UpdateSidebarItemSchema = z.object({
+  label: z.union([SidebarItemLabelSchema, z.null()]).optional(),
+  url: SidebarLinkUrlSchema.optional(),
+});
+
 export {
   CollectionDirectoryItemIdSchema,
   CollectionIdSchema,

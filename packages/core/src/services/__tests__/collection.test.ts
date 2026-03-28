@@ -258,11 +258,10 @@ describe("CollectionService", () => {
         slug: "reading",
         title: "Reading",
       });
-      const divider = await collectionService.createSidebarItem(
-        "divider",
-        undefined,
-        "Essays",
-      );
+      const divider = await collectionService.createSidebarItem({
+        type: "divider",
+        label: "Essays",
+      });
 
       const post = await postService.create({
         format: "note",
@@ -294,6 +293,33 @@ describe("CollectionService", () => {
           label: "Essays",
         }),
       ]);
+    });
+
+    it("includes custom links in directory items", async () => {
+      const link = await collectionService.createSidebarItem({
+        type: "link",
+        label: "Quotes",
+        url: "/archive?format=quote",
+      });
+
+      const directory = await collectionService.listDirectoryData();
+
+      expect(directory.sidebarItems).toContainEqual(
+        expect.objectContaining({
+          id: link.id,
+          type: "link",
+          label: "Quotes",
+          url: "/archive?format=quote",
+        }),
+      );
+      expect(directory.items).toContainEqual(
+        expect.objectContaining({
+          id: link.id,
+          type: "link",
+          label: "Quotes",
+          url: "/archive?format=quote",
+        }),
+      );
     });
   });
 
@@ -475,7 +501,7 @@ describe("CollectionService", () => {
 
     it("includes dividers", async () => {
       await collectionService.create({ slug: "a", title: "A" });
-      await collectionService.createSidebarItem("divider");
+      await collectionService.createSidebarItem({ type: "divider" });
       await collectionService.create({ slug: "b", title: "B" });
 
       const items = await collectionService.listSidebarItems();
@@ -488,7 +514,9 @@ describe("CollectionService", () => {
 
   describe("createSidebarItem", () => {
     it("creates a divider", async () => {
-      const item = await collectionService.createSidebarItem("divider");
+      const item = await collectionService.createSidebarItem({
+        type: "divider",
+      });
 
       expect(item.type).toBe("divider");
       expect(item.collectionId).toBeNull();
@@ -498,8 +526,12 @@ describe("CollectionService", () => {
     });
 
     it("creates items with incrementing positions", async () => {
-      const first = await collectionService.createSidebarItem("divider");
-      const second = await collectionService.createSidebarItem("divider");
+      const first = await collectionService.createSidebarItem({
+        type: "divider",
+      });
+      const second = await collectionService.createSidebarItem({
+        type: "divider",
+      });
 
       expect(first.position < second.position).toBe(true);
     });
@@ -511,18 +543,37 @@ describe("CollectionService", () => {
       });
 
       await expect(
-        collectionService.createSidebarItem("collection", collection.id),
+        collectionService.createSidebarItem({
+          type: "collection",
+          collectionId: collection.id,
+        }),
       ).rejects.toThrow("Collection is already in the sidebar.");
     });
 
+    it("creates a custom link", async () => {
+      const item = await collectionService.createSidebarItem({
+        type: "link",
+        label: "Quotes",
+        url: "/archive?format=quote",
+      });
+
+      expect(item.type).toBe("link");
+      expect(item.collectionId).toBeNull();
+      expect(item.label).toBe("Quotes");
+      expect(item.url).toBe("/archive?format=quote");
+    });
+
     it("rejects duplicate sidebar positions at the database layer", async () => {
-      const item = await collectionService.createSidebarItem("divider");
+      const item = await collectionService.createSidebarItem({
+        type: "divider",
+      });
 
       await expect(
         db.insert(sidebarItems).values({
           id: "00000000-0000-7000-8000-000000000001",
           type: "divider",
           collectionId: null,
+          url: null,
           position: item.position,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt,
@@ -533,7 +584,9 @@ describe("CollectionService", () => {
 
   describe("updateSidebarItem", () => {
     it("updates and trims a divider label", async () => {
-      const item = await collectionService.createSidebarItem("divider");
+      const item = await collectionService.createSidebarItem({
+        type: "divider",
+      });
 
       const updated = await collectionService.updateSidebarItem(item.id, {
         label: "  Writing  ",
@@ -541,11 +594,29 @@ describe("CollectionService", () => {
 
       expect(updated?.label).toBe("Writing");
     });
+
+    it("updates a custom link label and url", async () => {
+      const item = await collectionService.createSidebarItem({
+        type: "link",
+        label: "Quotes",
+        url: "/archive?format=quote",
+      });
+
+      const updated = await collectionService.updateSidebarItem(item.id, {
+        label: "Quote archive",
+        url: "/archive?format=quote&view=list",
+      });
+
+      expect(updated?.label).toBe("Quote archive");
+      expect(updated?.url).toBe("/archive?format=quote&view=list");
+    });
   });
 
   describe("deleteSidebarItem", () => {
     it("deletes a sidebar item", async () => {
-      const item = await collectionService.createSidebarItem("divider");
+      const item = await collectionService.createSidebarItem({
+        type: "divider",
+      });
       const result = await collectionService.deleteSidebarItem(item.id);
       expect(result).toBe(true);
 

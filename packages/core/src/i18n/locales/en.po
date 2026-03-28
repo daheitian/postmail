@@ -31,6 +31,11 @@ msgstr "{hiddenCount} more {0}"
 msgid "/* Your custom CSS here */"
 msgstr "/* Your custom CSS here */"
 
+#. @context: Placeholder for the custom collections link URL
+#: src/ui/shared/collection-management-labels.ts
+msgid "/archive?format=quote or https://example.com"
+msgstr "/archive?format=quote or https://example.com"
+
 #. @context: Compose collection trigger label when multiple collections selected. %name% is the first collection name, %count% is how many more
 #: src/ui/compose/ComposeDialog.tsx
 msgid "%name% + %count% more"
@@ -165,6 +170,16 @@ msgstr "Add"
 msgid "Add a custom link to any URL"
 msgstr "Add a custom link to any URL"
 
+#. @context: Helper text for the custom collections link form on collections page
+#: src/ui/shared/collection-management-labels.ts
+msgid "Add a custom shortcut to any page or site."
+msgstr "Add a custom shortcut to any page or site."
+
+#. @context: Validation message when creating or editing a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Add a label and URL."
+msgstr "Add a label and URL."
+
 #. @context: Description for the RSS system navigation toggle
 #: src/ui/shared/navigation-labels.ts
 msgid "Add a link to your main RSS feed. Change what /feed returns in General."
@@ -201,7 +216,9 @@ msgid "Add custom link to navigation"
 msgstr "Add custom link to navigation"
 
 #. @context: Button and heading for adding custom link
+#. @context: Primary action to add a custom link on collections page
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/collection-management-labels.ts
 msgid "Add Link"
 msgstr "Add Link"
 
@@ -499,6 +516,11 @@ msgstr "Choose the standard logo for most placements and the reverse logo when y
 #: src/ui/pages/BrandPage.tsx
 msgid "Choose the standard logo for websites, docs, directories, and editorial layouts."
 msgstr "Choose the standard logo for websites, docs, directories, and editorial layouts."
+
+#. @context: Compose publish settings validation error when a future publish date is selected
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Choose today or an earlier date, or leave it blank to publish now."
+msgstr "Choose today or an earlier date, or leave it blank to publish now."
 
 #. @context: Asset keyword on the public brand asset page
 #. @context: Title for the circle tile asset card
@@ -1043,8 +1065,8 @@ msgstr "Drafts"
 
 #. @context: Helper text shown while organizing collections
 #: src/ui/shared/CollectionsManager.tsx
-msgid "Drag collections and dividers into the order you want."
-msgstr "Drag collections and dividers into the order you want."
+msgid "Drag collections, links, and dividers into the order you want."
+msgstr "Drag collections, links, and dividers into the order you want."
 
 #. @context: Placeholder for API token name input
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -1088,6 +1110,11 @@ msgstr "Email"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Emoji"
 msgstr "Emoji"
+
+#. @context: Compose publish settings validation error for an invalid publish date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Enter a valid date."
+msgstr "Enter a valid date."
 
 #. @context: Compose URL field error message
 #: src/ui/compose/ComposeDialog.tsx
@@ -1495,8 +1522,10 @@ msgstr "Keep the artwork unchanged."
 msgid "Keep this link under 200 characters."
 msgstr "Keep this link under 200 characters."
 
+#. @context: Field label for a custom collections link
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/collection-management-labels.ts
 msgid "Label"
 msgstr "Label"
 
@@ -1574,6 +1603,11 @@ msgstr "Latest posts"
 msgid "Leave blank to generate one automatically."
 msgstr "Leave blank to generate one automatically."
 
+#. @context: Compose publish settings help text for publish date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Leave blank to publish now. Use an earlier date when importing older posts."
+msgstr "Leave blank to publish now. Use an earlier date when importing older posts."
+
 #. @context: Suffix after Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "lets you override any theme variable."
@@ -1600,6 +1634,16 @@ msgstr "link"
 msgid "Link"
 msgstr "Link"
 
+#. @context: Toast after creating a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Link added."
+msgstr "Link added."
+
+#. @context: Toast after deleting a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Link removed."
+msgstr "Link removed."
+
 #. @context: Description for the archive system navigation toggle
 #: src/ui/shared/navigation-labels.ts
 msgid "Link to the post archive"
@@ -1609,6 +1653,11 @@ msgstr "Link to the post archive"
 #: src/ui/shared/navigation-labels.ts
 msgid "Link to your collections page"
 msgstr "Link to your collections page"
+
+#. @context: Toast after saving a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Link updated."
+msgstr "Link updated."
 
 #. @context: Post format label plural - links
 #: src/ui/pages/ArchivePage.tsx
@@ -1810,6 +1859,11 @@ msgstr "New Custom URL"
 #: src/ui/shared/CollectionsManager.tsx
 msgid "New Divider"
 msgstr "New Divider"
+
+#. @context: Menu action to create a custom link on collections page
+#: src/ui/shared/CollectionsManager.tsx
+msgid "New Link"
+msgstr "New Link"
 
 #. @context: Password form field
 #. @context: Password reset form field
@@ -2150,6 +2204,11 @@ msgstr "Publish settings"
 msgid "Published"
 msgstr "Published"
 
+#. @context: Compose publish settings publish date section label
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Published on"
+msgstr "Published on"
+
 #. @context: Tooltip text for the archive tile published timestamp
 #. @context: Tooltip text for the published timestamp in the post footer
 #: src/ui/pages/ArchivePage.tsx
@@ -2196,8 +2255,10 @@ msgstr "Quote"
 msgid "Quoted or highlighted passages should feel like annotations, not warnings."
 msgstr "Quoted or highlighted passages should feel like annotations, not warnings."
 
+#. @context: Placeholder for the custom collections link label
 #. @context: Post format label plural - quotes
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/collection-management-labels.ts
 msgid "Quotes"
 msgstr "Quotes"
 
@@ -2269,6 +2330,16 @@ msgstr "Remove attachment"
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Remove Divider"
 msgstr "Remove Divider"
+
+#. @context: Delete custom link action on collections page
+#: src/ui/shared/collection-management-labels.ts
+msgid "Remove Link"
+msgstr "Remove Link"
+
+#. @context: Confirm dialog for deleting a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Remove this link from Collections? The destination won't change."
+msgstr "Remove this link from Collections? The destination won't change."
 
 #. @context: Archive tile label for multiple thread replies
 #: src/ui/pages/ArchivePage.tsx
@@ -3007,8 +3078,10 @@ msgstr "Upload failed. Please try again."
 msgid "Uploading..."
 msgstr "Uploading..."
 
+#. @context: Field label for a custom collections link URL
 #. @context: Nav item URL field
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/collection-management-labels.ts
 msgid "URL"
 msgstr "URL"
 
@@ -3016,6 +3089,11 @@ msgstr "URL"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Usage"
 msgstr "Usage"
+
+#. @context: Compose publish settings action to reset the publish date to the current date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Use current date"
+msgstr "Use current date"
 
 #. @context: Switch label for setting featured posts as default homepage
 #: src/ui/dash/appearance/NavigationContent.tsx

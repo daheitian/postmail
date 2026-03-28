@@ -3,8 +3,9 @@
  */
 
 export interface GroupableCollectionItem {
-  type: "collection" | "divider";
+  type: "collection" | "divider" | "link";
   label?: string | null;
+  url?: string | null;
   collection?: {
     slug: string;
   };

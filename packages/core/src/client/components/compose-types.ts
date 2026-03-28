@@ -63,6 +63,8 @@ export interface LocalDraft {
   quoteText: string;
   quoteAuthor: string;
   slug: string;
+  publishedAtInput?: string;
+  publishedAtTimeMinutes?: number | null;
   visibility: ComposeVisibility;
   rating: number;
   showTitle: boolean;
@@ -158,6 +160,11 @@ export interface ComposeLabels {
   publishVisibilityHiddenFromLatestHint: string;
   publishVisibilityPrivate: string;
   publishVisibilityPrivateHint: string;
+  publishDateLabel: string;
+  publishDateHint: string;
+  publishDateReset: string;
+  publishDateInvalid: string;
+  publishDateFutureError: string;
   publishSlugLabel: string;
   publishSlugPlaceholder: string;
   publishSlugHint: string;
@@ -225,6 +232,7 @@ export interface ComposeSubmitDetail {
   status: "published" | "draft";
   visibility?: ComposeVisibility;
   slug?: string;
+  publishedAt?: number;
   rating: number;
   collectionIds: string[];
   attachments: ComposeSubmitAttachment[];

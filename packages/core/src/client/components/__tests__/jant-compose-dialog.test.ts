@@ -144,6 +144,13 @@ const labels: ComposeLabels = {
     "Doesn't appear in Latest. Still appears in collections you add it to.",
   publishVisibilityPrivate: "Private",
   publishVisibilityPrivateHint: "Only visible when signed in.",
+  publishDateLabel: "Published on",
+  publishDateHint:
+    "Leave blank to publish now. Use an earlier date when importing older posts.",
+  publishDateReset: "Use current date",
+  publishDateInvalid: "Enter a valid date.",
+  publishDateFutureError:
+    "Choose today or an earlier date, or leave it blank to publish now.",
   publishSlugLabel: "Custom link",
   publishSlugPlaceholder: "your-post-link",
   publishSlugHint: "Leave blank to generate one automatically.",
@@ -489,6 +496,122 @@ describe("JantComposeDialog", () => {
     ).toBeUndefined();
   });
 
+  it("includes a past publish date in the submit payload", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-28T12:34:00Z"));
+
+    try {
+      const el = await createElement();
+      const editor = requireElement(
+        el.querySelector<JantComposeEditor>("jant-compose-editor"),
+        "expected compose editor",
+      );
+      editor._bodyJson = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Backdated post" }],
+          },
+        ],
+      };
+      await editor.updateComplete;
+
+      requireElement(
+        el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+        "expected publish settings toggle",
+      ).click();
+      await el.updateComplete;
+
+      const publishedAtInput = requireElement(
+        el.querySelector<HTMLInputElement>(".compose-publish-date-input"),
+        "expected publish date input",
+      );
+      publishedAtInput.value = "2024-01-15";
+      publishedAtInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await el.updateComplete;
+
+      let receivedDetail: ComposeSubmitDetail | null = null;
+      el.addEventListener("jant:compose-submit-deferred", (event) => {
+        receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+      });
+
+      requireElement(
+        el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+        "expected publish button",
+      ).click();
+
+      expect(receivedDetail).not.toBeNull();
+      const now = new Date();
+      expect(
+        (receivedDetail as unknown as ComposeSubmitDetail).publishedAt,
+      ).toBe(
+        Math.floor(
+          new Date(
+            2024,
+            0,
+            15,
+            now.getHours(),
+            now.getMinutes(),
+            0,
+            0,
+          ).getTime() / 1000,
+        ),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("blocks publishing with a future publish date", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-28T12:34:00Z"));
+
+    try {
+      const el = await createElement();
+      const editor = requireElement(
+        el.querySelector<JantComposeEditor>("jant-compose-editor"),
+        "expected compose editor",
+      );
+      editor._bodyJson = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Future post" }],
+          },
+        ],
+      };
+      await editor.updateComplete;
+
+      requireElement(
+        el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+        "expected publish settings toggle",
+      ).click();
+      await el.updateComplete;
+
+      const publishedAtInput = requireElement(
+        el.querySelector<HTMLInputElement>(".compose-publish-date-input"),
+        "expected publish date input",
+      );
+      publishedAtInput.value = "2099-01-01";
+      publishedAtInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await el.updateComplete;
+
+      expect(
+        requireElement(
+          el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+          "expected publish button",
+        ).disabled,
+      ).toBe(true);
+      expect(el.textContent).toContain(
+        "Choose today or an earlier date, or leave it blank to publish now.",
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("updates the publish button label for private visibility", async () => {
     const el = await createElement();
 
@@ -831,9 +954,11 @@ describe("JantComposeDialog", () => {
     );
     expect(panel.textContent).not.toContain("Publish settings");
     expect(panel.textContent).toContain("Visibility");
+    expect(panel.textContent).toContain("Published on");
     expect(panel.textContent).toContain("Custom link");
     expect(panel.textContent).not.toContain("Save as draft");
     expect(panel.textContent).not.toContain("Discard");
+    expect(panel.querySelector(".compose-publish-date-input")).not.toBeNull();
     expect(panel.querySelector(".compose-publish-slug-input")).not.toBeNull();
   });
 

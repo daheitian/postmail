@@ -431,6 +431,7 @@ function buildPostBody(
     quoteText: detail.quoteText || undefined,
     slug: detail.slug || undefined,
     status: detail.status,
+    publishedAt: detail.status === "published" ? detail.publishedAt : undefined,
     visibility: detail.visibility || undefined,
     rating: detail.rating || undefined,
     collectionIds: detail.collectionIds,

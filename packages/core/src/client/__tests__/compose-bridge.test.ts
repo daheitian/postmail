@@ -257,4 +257,87 @@ describe("compose bridge", () => {
 
     expect(fetchSpy).toHaveBeenCalled();
   });
+
+  it("sends publishedAt on publish and omits it when retrying as draft", async () => {
+    const composeEl = document.createElement(
+      "jant-compose-dialog",
+    ) as ComposeHarness;
+    composeEl.refreshCollections = vi.fn(async () => true);
+    composeEl.pageMode = false;
+    document.body.appendChild(composeEl);
+
+    let requestCount = 0;
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (input, init) => {
+        const raw =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url;
+        const url = new URL(raw, "http://localhost");
+
+        if (url.pathname === "/compose") {
+          requestCount += 1;
+          const body = JSON.parse(String(init?.body)) as {
+            status: string;
+            publishedAt?: number;
+          };
+
+          if (requestCount === 1) {
+            expect(body).toMatchObject({
+              status: "published",
+              publishedAt: 1705311000,
+            });
+            return new Response(JSON.stringify({ error: "Publish failed" }), {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+
+          expect(body.status).toBe("draft");
+          expect(body.publishedAt).toBeUndefined();
+          return new Response(
+            JSON.stringify({
+              status: "draft",
+              toast: "Draft saved.",
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
+
+        throw new Error(`Unexpected fetch: ${url.pathname}`);
+      });
+
+    composeEl.dispatchEvent(
+      new CustomEvent("jant:compose-submit-deferred", {
+        bubbles: true,
+        detail: {
+          format: "note",
+          title: "",
+          body: "Backdated publish",
+          url: "",
+          quoteText: "",
+          quoteAuthor: "",
+          slug: "",
+          status: "published",
+          publishedAt: 1705311000,
+          visibility: "public",
+          rating: 0,
+          collectionIds: [],
+          attachments: [],
+          pendingAttachments: [],
+        },
+      }),
+    );
+
+    await flushAsyncWork();
+    await flushAsyncWork();
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
 });

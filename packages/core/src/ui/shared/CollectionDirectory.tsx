@@ -3,7 +3,7 @@ import { useLingui } from "@lingui/react/macro";
 import type { CollectionDirectoryItem } from "../../types.js";
 import { getDividerCollectionGroup } from "../../lib/collection-groups.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
-import { toPublicPath } from "../../lib/url.js";
+import { toPublicHref, toPublicPath } from "../../lib/url.js";
 
 export interface CollectionDirectoryProps {
   items: CollectionDirectoryItem[];
@@ -11,8 +11,12 @@ export interface CollectionDirectoryProps {
   sitePathPrefix?: string;
 }
 
-const hasCollections = (items: CollectionDirectoryItem[]) =>
-  items.some((item) => item.type === "collection" && item.collection);
+const hasDirectoryContent = (items: CollectionDirectoryItem[]) =>
+  items.some(
+    (item) =>
+      (item.type === "collection" && item.collection) ||
+      (item.type === "link" && item.label && item.url),
+  );
 
 const formatSequence = (value: number) => String(value).padStart(2, "0");
 
@@ -23,7 +27,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
 }) => {
   const { t } = useLingui();
 
-  if (!hasCollections(items)) {
+  if (!hasDirectoryContent(items)) {
     return (
       <p class="text-muted-foreground">
         {emptyMessage ??
@@ -36,12 +40,12 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
     );
   }
 
-  let collectionIndex = 0;
+  let itemIndex = 0;
 
   return (
     <div class="collection-directory">
       {items.map((item, index) => {
-        if (item.type === "divider" || !item.collection) {
+        if (item.type === "divider") {
           const hasLabel = !!item.label;
           const group = getDividerCollectionGroup(items, index);
           return (
@@ -77,9 +81,56 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
           );
         }
 
+        if (item.type === "link" && item.label && item.url) {
+          itemIndex += 1;
+          const sequence = formatSequence(itemIndex);
+
+          return (
+            <a
+              key={item.id}
+              href={toPublicHref(item.url, sitePathPrefix)}
+              class="collection-directory-item collection-directory-item-link"
+            >
+              <div class="collection-directory-main">
+                <span class="collection-directory-sequence" aria-hidden="true">
+                  {sequence}
+                </span>
+                <div class="collection-directory-title-row">
+                  <span class="collection-directory-title">
+                    {item.label}
+                    <span
+                      class="collection-directory-title-marker"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.08L11.7 5.24" />
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-2.92 2.92a5 5 0 0 0 7.07 7.08l1.69-1.7" />
+                      </svg>
+                    </span>
+                  </span>
+                </div>
+                <p class="collection-directory-summary">
+                  <span class="collection-directory-meta">Link</span>
+                </p>
+              </div>
+            </a>
+          );
+        }
+
         const collection = item.collection;
-        collectionIndex += 1;
-        const sequence = formatSequence(collectionIndex);
+        if (!collection) return null;
+        itemIndex += 1;
+        const sequence = formatSequence(itemIndex);
 
         return (
           <a

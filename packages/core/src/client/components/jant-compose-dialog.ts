@@ -81,6 +81,8 @@ interface ComposeStateSnapshot {
   format: ComposeFormat;
   collectionIds: string[];
   slug: string;
+  publishedAtInput: string;
+  publishedAtTimeMinutes: number | null;
   visibility: ComposeVisibility;
   title: string;
   bodyJson: JSONContent | null;
@@ -293,6 +295,70 @@ function normalizeComposeDoc(json: JSONContent | null): JSONContent | null {
   return isEmptyComposeDoc(json) ? null : json;
 }
 
+function padDateTimePart(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+function toLocalDateInputValue(timestamp: number): string {
+  const date = new Date(timestamp * 1000);
+  return `${date.getFullYear()}-${padDateTimePart(
+    date.getMonth() + 1,
+  )}-${padDateTimePart(date.getDate())}`;
+}
+
+function parseLocalDateInputValue(
+  value: string,
+): { year: number; monthIndex: number; day: number } | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsed = new Date(year, month - 1, day);
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return { year, monthIndex: month - 1, day };
+}
+
+function getTimestampTimeMinutes(timestamp: number): number {
+  const date = new Date(timestamp * 1000);
+  return date.getHours() * 60 + date.getMinutes();
+}
+
+function buildTimestampFromLocalDate(
+  value: string,
+  timeMinutes: number,
+): number | null {
+  const parsed = parseLocalDateInputValue(value);
+  if (!parsed) return null;
+
+  const clampedMinutes = Math.min(Math.max(timeMinutes, 0), 23 * 60 + 59);
+  const hours = Math.floor(clampedMinutes / 60);
+  const minutes = clampedMinutes % 60;
+  return Math.floor(
+    new Date(
+      parsed.year,
+      parsed.monthIndex,
+      parsed.day,
+      hours,
+      minutes,
+      0,
+      0,
+    ).getTime() / 1000,
+  );
+}
+
 export class JantComposeDialog extends LitElement {
   private static _lastNewPostVisibility: ComposeVisibility = "public";
 
@@ -326,6 +392,7 @@ export class JantComposeDialog extends LitElement {
     _replyToData: { state: true },
     _replyExpanded: { state: true },
     _slug: { state: true },
+    _publishedAtInput: { state: true },
     _visibility: { state: true },
     _showPublishPanel: { state: true },
     _suggestedSlug: { state: true },
@@ -364,6 +431,7 @@ export class JantComposeDialog extends LitElement {
   declare _replyToData: ReplyToData | null;
   declare _replyExpanded: boolean;
   declare _slug: string;
+  declare _publishedAtInput: string;
   declare _visibility: ComposeVisibility;
   declare _showPublishPanel: boolean;
   declare _suggestedSlug: string;
@@ -388,6 +456,7 @@ export class JantComposeDialog extends LitElement {
     | "post-view"
     | null = null;
   private _replyRefreshId: string | null = null;
+  private _publishedAtTimeMinutes: number | null = null;
   private _slugCheckTimer: ReturnType<typeof setTimeout> | null = null;
   private _slugSuggestTimer: ReturnType<typeof setTimeout> | null = null;
   private _slugSuggestRequestId = 0;
@@ -437,6 +506,8 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshKind = null;
     this._replyRefreshId = null;
     this._slug = "";
+    this._publishedAtInput = "";
+    this._publishedAtTimeMinutes = null;
     this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
     this._suggestedSlug = "";
@@ -471,6 +542,7 @@ export class JantComposeDialog extends LitElement {
       changed.has("_format") ||
       changed.has("_collectionIds") ||
       changed.has("_slug") ||
+      changed.has("_publishedAtInput") ||
       changed.has("_visibility")
     ) {
       // Schedule draft auto-save for new-post mode only
@@ -507,6 +579,8 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshKind = null;
     this._replyRefreshId = null;
     this._slug = "";
+    this._publishedAtInput = "";
+    this._publishedAtTimeMinutes = null;
     this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
     this._suggestedSlug = "";
@@ -565,6 +639,12 @@ export class JantComposeDialog extends LitElement {
     this._suggestedSlug = "";
     this._suggestedSlugLoading = false;
     this._slugSuggestionKey = "";
+    this._publishedAtInput = post.publishedAt
+      ? toLocalDateInputValue(post.publishedAt)
+      : "";
+    this._publishedAtTimeMinutes = post.publishedAt
+      ? getTimestampTimeMinutes(post.publishedAt)
+      : null;
     this._visibility = post.visibility ?? "public";
     this._visibilityLocked = Boolean(post.replyToId);
 
@@ -813,6 +893,8 @@ export class JantComposeDialog extends LitElement {
       format: this._format,
       collectionIds: [...this._collectionIds],
       slug: this._slug,
+      publishedAtInput: this._publishedAtInput,
+      publishedAtTimeMinutes: this._publishedAtTimeMinutes,
       visibility: this._visibility,
       title: editorData.title,
       bodyJson: editor.getNormalizedBodyJson(),
@@ -1025,6 +1107,7 @@ export class JantComposeDialog extends LitElement {
       quoteText: editorData.quoteText,
       quoteAuthor: editorData.quoteAuthor,
       slug: this._slug.trim() || undefined,
+      publishedAt: this._getPublishedAtSubmitValue(status),
       status,
       visibility: this._visibilityLocked ? undefined : this._visibility,
       rating: editorData.rating,
@@ -1038,7 +1121,15 @@ export class JantComposeDialog extends LitElement {
     };
   }
 
-  private _focusBlockedSubmitField(): boolean {
+  private _focusBlockedSubmitField(status: "published" | "draft"): boolean {
+    if (
+      status === "published" &&
+      this._getPublishedAtValidationMessage() !== null
+    ) {
+      this._revealPublishedAtField();
+      return true;
+    }
+
     if (this._getSlugValidationMessage()) {
       this._revealSlugField();
       return true;
@@ -1071,7 +1162,7 @@ export class JantComposeDialog extends LitElement {
     if (this._loading) return false;
     const editor = this._editor;
     if (!editor) return false;
-    if (this._focusBlockedSubmitField()) {
+    if (this._focusBlockedSubmitField(status)) {
       return false;
     }
 
@@ -1513,7 +1604,7 @@ export class JantComposeDialog extends LitElement {
         return;
       }
       if (!this._canPublish()) {
-        this._focusBlockedSubmitField();
+        this._focusBlockedSubmitField("published");
         return;
       }
       this._submit("published");
@@ -1738,6 +1829,12 @@ export class JantComposeDialog extends LitElement {
     this._suggestedSlug = "";
     this._suggestedSlugLoading = false;
     this._slugSuggestionKey = "";
+    this._publishedAtInput = post.publishedAt
+      ? toLocalDateInputValue(post.publishedAt)
+      : "";
+    this._publishedAtTimeMinutes = post.publishedAt
+      ? getTimestampTimeMinutes(post.publishedAt)
+      : null;
     this._visibility = post.visibility ?? "public";
     this._visibilityLocked = Boolean(post.replyToId);
 
@@ -1936,6 +2033,8 @@ export class JantComposeDialog extends LitElement {
       quoteText: data.quoteText,
       quoteAuthor: data.quoteAuthor,
       slug: this._slug,
+      publishedAtInput: this._publishedAtInput,
+      publishedAtTimeMinutes: this._publishedAtTimeMinutes,
       visibility: this._visibility,
       rating: data.rating,
       showTitle:
@@ -2006,6 +2105,8 @@ export class JantComposeDialog extends LitElement {
     this._suggestedSlug = "";
     this._suggestedSlugLoading = false;
     this._slugSuggestionKey = "";
+    this._publishedAtInput = draft.publishedAtInput ?? "";
+    this._publishedAtTimeMinutes = draft.publishedAtTimeMinutes ?? null;
     this._visibility = draft.visibility ?? "public";
 
     // Restore reply context if this draft was a reply
@@ -2859,23 +2960,88 @@ export class JantComposeDialog extends LitElement {
     return null;
   }
 
-  private _revealSlugField() {
+  private _getCurrentTimestamp(): number {
+    return Math.floor(Date.now() / 1000);
+  }
+
+  private _getPublishedAtMaxInput(): string {
+    return toLocalDateInputValue(this._getCurrentTimestamp());
+  }
+
+  private _getPublishedAtTimeMinutes(): number {
+    return (
+      this._publishedAtTimeMinutes ??
+      getTimestampTimeMinutes(this._getCurrentTimestamp())
+    );
+  }
+
+  private _hasPublishedAtValue(): boolean {
+    return this._publishedAtInput.trim().length > 0;
+  }
+
+  private _getPublishedAtValidationMessage(): string | null {
+    if (!this._hasPublishedAtValue()) return null;
+
+    const parsedDate = parseLocalDateInputValue(this._publishedAtInput);
+    if (parsedDate === null) {
+      return this.labels.publishDateInvalid;
+    }
+
+    if (this._publishedAtInput > this._getPublishedAtMaxInput()) {
+      return this.labels.publishDateFutureError;
+    }
+
+    return null;
+  }
+
+  private _getPublishedAtSubmitValue(
+    status: "published" | "draft",
+  ): number | undefined {
+    if (status === "draft") return undefined;
+
+    const publishedAt = buildTimestampFromLocalDate(
+      this._publishedAtInput,
+      this._getPublishedAtTimeMinutes(),
+    );
+    if (publishedAt !== null) {
+      return Math.min(publishedAt, this._getCurrentTimestamp());
+    }
+
+    if (this._publishedAtInput.trim().length > 0) {
+      return undefined;
+    }
+
+    if (this._editPostId) {
+      return this._getCurrentTimestamp();
+    }
+
+    return undefined;
+  }
+
+  private _openPublishPanelAndFocus(selector: string) {
     this._showCollection = false;
     this._collectionSearch = "";
     this._showPublishPanel = true;
     this._confirmPanelOpen = false;
     this._scheduleSuggestedSlugRefresh(true);
     this.updateComplete.then(() => {
-      this.querySelector<HTMLInputElement>(
-        ".compose-publish-slug-input",
-      )?.focus();
+      this.querySelector<HTMLInputElement>(selector)?.focus();
     });
+  }
+
+  private _revealSlugField() {
+    this._openPublishPanelAndFocus(".compose-publish-slug-input");
+  }
+
+  private _revealPublishedAtField() {
+    this._openPublishPanelAndFocus(".compose-publish-date-input");
   }
 
   private _canPublish(): boolean {
     if (this._loading) return false;
     const editor = this._editor;
     if (!editor) return false;
+    if (this._getPublishedAtValidationMessage()) return false;
     if (this._getSlugValidationMessage()) return false;
     if (editor.getUrlValidationMessage()) return false;
     if (editor.getLinkTitleValidationMessage()) return false;
@@ -2919,6 +3085,21 @@ export class JantComposeDialog extends LitElement {
       return;
     }
     this._scheduleSuggestedSlugRefresh();
+  }
+
+  private _onPublishedAtInput(e: Event) {
+    this._publishedAtInput = (e.target as HTMLInputElement).value;
+  }
+
+  private _resetPublishedAt() {
+    const currentTimestamp = this._getCurrentTimestamp();
+    this._publishedAtInput = toLocalDateInputValue(currentTimestamp);
+    this._publishedAtTimeMinutes = getTimestampTimeMinutes(currentTimestamp);
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLInputElement>(
+        ".compose-publish-date-input",
+      )?.focus();
+    });
   }
 
   private _renderVisibilityIcon(
@@ -2970,6 +3151,58 @@ export class JantComposeDialog extends LitElement {
             )
           : nothing}
       </button>
+    `;
+  }
+
+  private _renderPublishDateSection() {
+    const publishedAtError = this._getPublishedAtValidationMessage();
+
+    return html`
+      <section class="compose-publish-section">
+        <div class="compose-publish-section-header">
+          <div class="compose-publish-section-copy">
+            <p class="compose-publish-section-label">
+              ${this.labels.publishDateLabel}
+            </p>
+            <p class="compose-publish-section-hint">
+              ${this.labels.publishDateHint}
+            </p>
+          </div>
+          ${this._hasPublishedAtValue()
+            ? html`
+                <button
+                  type="button"
+                  class="compose-publish-section-action"
+                  @click=${() => this._resetPublishedAt()}
+                >
+                  ${this.labels.publishDateReset}
+                </button>
+              `
+            : nothing}
+        </div>
+        <div class="compose-publish-date-field">
+          <div class="compose-publish-date-input-wrap">
+            <input
+              type="date"
+              class="compose-input compose-publish-date-input"
+              .value=${this._publishedAtInput}
+              max=${this._getPublishedAtMaxInput()}
+              aria-invalid=${publishedAtError ? "true" : "false"}
+              @input=${(e: Event) => this._onPublishedAtInput(e)}
+            />
+          </div>
+          ${publishedAtError
+            ? html`<p
+                class=${classMap({
+                  "compose-publish-date-status": true,
+                  "compose-publish-date-status-error": true,
+                })}
+              >
+                ${publishedAtError}
+              </p>`
+            : nothing}
+        </div>
+      </section>
     `;
   }
 
@@ -3130,6 +3363,8 @@ export class JantComposeDialog extends LitElement {
               class="compose-publish-divider"
               aria-hidden="true"
             ></div>`}
+        ${this._renderPublishDateSection()}
+        <div class="compose-publish-divider" aria-hidden="true"></div>
         ${this._renderPublishSlugSection()}
       </div>
     `;

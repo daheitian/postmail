@@ -31,6 +31,11 @@ msgstr "{hiddenCount} 条隐藏的 {0}"
 msgid "/* Your custom CSS here */"
 msgstr "/* 在此添加自定义 CSS */"
 
+#. @context: Placeholder for the custom collections link URL
+#: src/ui/shared/collection-management-labels.ts
+msgid "/archive?format=quote or https://example.com"
+msgstr ""
+
 #. @context: Compose collection trigger label when multiple collections selected. %name% is the first collection name, %count% is how many more
 #: src/ui/compose/ComposeDialog.tsx
 msgid "%name% + %count% more"
@@ -165,6 +170,16 @@ msgstr "添加"
 msgid "Add a custom link to any URL"
 msgstr "添加指向任意 URL 的自定义链接"
 
+#. @context: Helper text for the custom collections link form on collections page
+#: src/ui/shared/collection-management-labels.ts
+msgid "Add a custom shortcut to any page or site."
+msgstr ""
+
+#. @context: Validation message when creating or editing a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Add a label and URL."
+msgstr ""
+
 #. @context: Description for the RSS system navigation toggle
 #: src/ui/shared/navigation-labels.ts
 msgid "Add a link to your main RSS feed. Change what /feed returns in General."
@@ -201,7 +216,9 @@ msgid "Add custom link to navigation"
 msgstr "向导航添加自定义链接"
 
 #. @context: Button and heading for adding custom link
+#. @context: Primary action to add a custom link on collections page
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/collection-management-labels.ts
 msgid "Add Link"
 msgstr "添加链接"
 
@@ -499,6 +516,11 @@ msgstr "在大多数场景选择标准徽标，需要更高对比度时选择反
 #: src/ui/pages/BrandPage.tsx
 msgid "Choose the standard logo for websites, docs, directories, and editorial layouts."
 msgstr "为网站、文档、名录和编辑版面选择标准徽标."
+
+#. @context: Compose publish settings validation error when a future publish date is selected
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Choose today or an earlier date, or leave it blank to publish now."
+msgstr "请选择今天或更早的日期，或留空以立即发布。"
 
 #. @context: Asset keyword on the public brand asset page
 #. @context: Title for the circle tile asset card
@@ -1043,8 +1065,8 @@ msgstr "草稿"
 
 #. @context: Helper text shown while organizing collections
 #: src/ui/shared/CollectionsManager.tsx
-msgid "Drag collections and dividers into the order you want."
-msgstr "拖动合集和分隔线，调整为你想要的顺序。"
+msgid "Drag collections, links, and dividers into the order you want."
+msgstr ""
 
 #. @context: Placeholder for API token name input
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -1088,6 +1110,11 @@ msgstr "电子邮箱"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Emoji"
 msgstr "表情"
+
+#. @context: Compose publish settings validation error for an invalid publish date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Enter a valid date."
+msgstr "请输入有效日期。"
 
 #. @context: Compose URL field error message
 #: src/ui/compose/ComposeDialog.tsx
@@ -1495,8 +1522,10 @@ msgstr "保持图稿不变。"
 msgid "Keep this link under 200 characters."
 msgstr "把这个链接控制在 200 个字符以内。"
 
+#. @context: Field label for a custom collections link
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/collection-management-labels.ts
 msgid "Label"
 msgstr "标签"
 
@@ -1574,6 +1603,11 @@ msgstr "最新帖子"
 msgid "Leave blank to generate one automatically."
 msgstr "留空则自动生成。"
 
+#. @context: Compose publish settings help text for publish date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Leave blank to publish now. Use an earlier date when importing older posts."
+msgstr "留空则立即发布。导入旧文章时可使用更早的日期。"
+
 #. @context: Suffix after Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "lets you override any theme variable."
@@ -1600,6 +1634,16 @@ msgstr "链接"
 msgid "Link"
 msgstr "链接"
 
+#. @context: Toast after creating a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Link added."
+msgstr ""
+
+#. @context: Toast after deleting a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Link removed."
+msgstr ""
+
 #. @context: Description for the archive system navigation toggle
 #: src/ui/shared/navigation-labels.ts
 msgid "Link to the post archive"
@@ -1609,6 +1653,11 @@ msgstr "链接到文章归档页"
 #: src/ui/shared/navigation-labels.ts
 msgid "Link to your collections page"
 msgstr "链接到你的合集页"
+
+#. @context: Toast after saving a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Link updated."
+msgstr ""
 
 #. @context: Post format label plural - links
 #: src/ui/pages/ArchivePage.tsx
@@ -1810,6 +1859,11 @@ msgstr "新建自定义 URL"
 #: src/ui/shared/CollectionsManager.tsx
 msgid "New Divider"
 msgstr "新建分隔线"
+
+#. @context: Menu action to create a custom link on collections page
+#: src/ui/shared/CollectionsManager.tsx
+msgid "New Link"
+msgstr ""
 
 #. @context: Password form field
 #. @context: Password reset form field
@@ -2150,6 +2204,11 @@ msgstr "发布设置"
 msgid "Published"
 msgstr "已发布"
 
+#. @context: Compose publish settings publish date section label
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Published on"
+msgstr "发布于"
+
 #. @context: Tooltip text for the archive tile published timestamp
 #. @context: Tooltip text for the published timestamp in the post footer
 #: src/ui/pages/ArchivePage.tsx
@@ -2196,8 +2255,10 @@ msgstr "引用"
 msgid "Quoted or highlighted passages should feel like annotations, not warnings."
 msgstr "引用或突出显示的段落应该像注释，而不是警告."
 
+#. @context: Placeholder for the custom collections link label
 #. @context: Post format label plural - quotes
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/collection-management-labels.ts
 msgid "Quotes"
 msgstr "引用"
 
@@ -2269,6 +2330,16 @@ msgstr ""
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Remove Divider"
 msgstr "删除分隔线"
+
+#. @context: Delete custom link action on collections page
+#: src/ui/shared/collection-management-labels.ts
+msgid "Remove Link"
+msgstr ""
+
+#. @context: Confirm dialog for deleting a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Remove this link from Collections? The destination won't change."
+msgstr ""
 
 #. @context: Archive tile label for multiple thread replies
 #: src/ui/pages/ArchivePage.tsx
@@ -3007,8 +3078,10 @@ msgstr "上传失败。请重试。"
 msgid "Uploading..."
 msgstr "上传中..."
 
+#. @context: Field label for a custom collections link URL
 #. @context: Nav item URL field
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/collection-management-labels.ts
 msgid "URL"
 msgstr "URL"
 
@@ -3016,6 +3089,11 @@ msgstr "URL"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Usage"
 msgstr "用法"
+
+#. @context: Compose publish settings action to reset the publish date to the current date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Use current date"
+msgstr "使用当前日期"
 
 #. @context: Switch label for setting featured posts as default homepage
 #: src/ui/dash/appearance/NavigationContent.tsx

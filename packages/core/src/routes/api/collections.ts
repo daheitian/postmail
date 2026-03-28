@@ -11,8 +11,10 @@ import {
   CollectionDirectoryItemIdSchema,
   CollectionDescriptionValueSchema,
   CollectionSortOrderSchema,
+  CreateSidebarItemSchema,
   CreateCollectionSchema,
   PostIdSchema,
+  UpdateSidebarItemSchema,
   parseValidated,
 } from "../../lib/schemas.js";
 import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
@@ -35,10 +37,6 @@ const PostAssignSchema = z.object({
 const MoveSchema = z.object({
   after: CollectionDirectoryItemIdSchema.nullable().optional(),
   before: CollectionDirectoryItemIdSchema.nullable().optional(),
-});
-
-const UpdateSidebarItemSchema = z.object({
-  label: z.string().trim().max(60).nullable().optional(),
 });
 
 const ListCollectionsQuerySchema = z.object({
@@ -65,9 +63,10 @@ collectionsApiRoutes.get("/", async (c) => {
   });
 });
 
-// Create sidebar item (divider) — must be before /:id
+// Create sidebar item (divider or link) — must be before /:id
 collectionsApiRoutes.post("/sidebar-items", requireAuthApi(), async (c) => {
-  const item = await c.var.services.collections.createSidebarItem("divider");
+  const body = parseValidated(CreateSidebarItemSchema, await c.req.json());
+  const item = await c.var.services.collections.createSidebarItem(body);
   return c.json(item, 201);
 });
 

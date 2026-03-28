@@ -27,20 +27,25 @@ import type {
   SidebarItem,
   SidebarItemType,
   CreateCollection,
+  CreateSidebarItem,
   UpdateCollection,
   UpdateSidebarItem,
   CollectionSortOrder,
 } from "../types.js";
-import { ConflictError } from "../lib/errors.js";
+import { ConflictError, ValidationError } from "../lib/errors.js";
 import {
   createPathService,
   toCollectionPath,
   type PathService,
 } from "./path.js";
 import {
+  CreateSidebarItemSchema,
   CollectionDescriptionValueSchema,
   CollectionSlugSchema,
   CollectionTitleSchema,
+  SidebarItemLabelSchema,
+  SidebarLinkLabelSchema,
+  SidebarLinkUrlSchema,
   parseValidated,
 } from "../lib/schemas.js";
 
@@ -106,12 +111,8 @@ export interface CollectionService {
   delete(id: string): Promise<boolean>;
   /** List all sidebar items ordered by position */
   listSidebarItems(): Promise<SidebarItem[]>;
-  /** Create a sidebar item (collection or divider) */
-  createSidebarItem(
-    type: SidebarItemType,
-    collectionId?: string,
-    label?: string | null,
-  ): Promise<SidebarItem>;
+  /** Create a sidebar item (collection, divider, or link) */
+  createSidebarItem(data: CreateSidebarItem): Promise<SidebarItem>;
   /** Delete a sidebar item by ID */
   deleteSidebarItem(id: string): Promise<boolean>;
   /** Update a sidebar item */
@@ -221,6 +222,7 @@ export function createCollectionService(
       type: row.type as SidebarItemType,
       collectionId: row.collectionId,
       label: row.label,
+      url: row.url,
       position: row.position,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -228,8 +230,41 @@ export function createCollectionService(
   }
 
   function normalizeSidebarLabel(label?: string | null): string | null {
-    const trimmed = label?.trim();
+    if (label === null) return null;
+    if (label === undefined) return null;
+
+    const trimmed = parseValidated(SidebarItemLabelSchema, label);
     return trimmed ? trimmed : null;
+  }
+
+  function normalizeSidebarLinkLabel(label: string): string {
+    return parseValidated(SidebarLinkLabelSchema, label);
+  }
+
+  function normalizeSidebarUrl(url: string): string {
+    return parseValidated(SidebarLinkUrlSchema, url);
+  }
+
+  function normalizeCreateSidebarItemInput(
+    data: CreateSidebarItem,
+  ): CreateSidebarItem {
+    if (data.type === "collection") {
+      return data;
+    }
+
+    const normalized = parseValidated(CreateSidebarItemSchema, data);
+    if (normalized.type === "divider") {
+      return {
+        type: "divider",
+        label: normalizeSidebarLabel(normalized.label),
+      };
+    }
+
+    return {
+      type: "link",
+      label: normalizeSidebarLinkLabel(normalized.label),
+      url: normalizeSidebarUrl(normalized.url),
+    };
   }
 
   async function getLastSidebarPosition(): Promise<string | null> {
@@ -417,6 +452,17 @@ export function createCollectionService(
         continue;
       }
 
+      if (item.type === "link") {
+        if (!item.label || !item.url) continue;
+        items.push({
+          id: item.id,
+          type: "link",
+          label: item.label,
+          url: item.url,
+        });
+        continue;
+      }
+
       const collection = item.collectionId
         ? collectionMap.get(item.collectionId)
         : undefined;
@@ -564,6 +610,8 @@ export function createCollectionService(
                 siteId,
                 type: "collection",
                 collectionId: id,
+                label: null,
+                url: null,
                 position,
                 createdAt: timestamp,
                 updatedAt: timestamp,
@@ -606,6 +654,8 @@ export function createCollectionService(
                 siteId,
                 type: "collection",
                 collectionId: id,
+                label: null,
+                url: null,
                 position,
                 createdAt: timestamp,
                 updatedAt: timestamp,
@@ -716,11 +766,10 @@ export function createCollectionService(
       return rows.map(toSidebarItem);
     },
 
-    async createSidebarItem(type, collectionId, label) {
+    async createSidebarItem(data) {
+      const normalizedData = normalizeCreateSidebarItemInput(data);
       const id = createEntityId("collectionDirectoryItem");
       const timestamp = now();
-      const normalizedLabel =
-        type === "divider" ? normalizeSidebarLabel(label) : null;
 
       for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
         try {
@@ -729,9 +778,18 @@ export function createCollectionService(
             .values({
               id,
               siteId,
-              type,
-              collectionId: collectionId ?? null,
-              label: normalizedLabel,
+              type: normalizedData.type,
+              collectionId:
+                normalizedData.type === "collection"
+                  ? normalizedData.collectionId
+                  : null,
+              label:
+                normalizedData.type === "divider"
+                  ? (normalizedData.label ?? null)
+                  : normalizedData.type === "link"
+                    ? normalizedData.label
+                    : null,
+              url: normalizedData.type === "link" ? normalizedData.url : null,
               position: await getAppendSidebarPosition(),
               createdAt: timestamp,
               updatedAt: timestamp,
@@ -742,8 +800,7 @@ export function createCollectionService(
           return toSidebarItem(result[0]!);
         } catch (err) {
           if (
-            type === "collection" &&
-            collectionId &&
+            normalizedData.type === "collection" &&
             isUniqueConstraintError(err)
           ) {
             const existing = await db
@@ -752,7 +809,7 @@ export function createCollectionService(
               .where(
                 and(
                   eq(sidebarItems.siteId, siteId),
-                  eq(sidebarItems.collectionId, collectionId),
+                  eq(sidebarItems.collectionId, normalizedData.collectionId),
                 ),
               )
               .limit(1);
@@ -789,15 +846,34 @@ export function createCollectionService(
       const item = existing[0];
       if (!item) return null;
 
-      if (data.label === undefined) {
+      if (data.label === undefined && data.url === undefined) {
         return toSidebarItem(item);
+      }
+
+      let nextLabel = item.label;
+      let nextUrl = item.url;
+
+      if (item.type === "divider" && data.label !== undefined) {
+        nextLabel = normalizeSidebarLabel(data.label);
+      }
+
+      if (item.type === "link") {
+        if (data.label !== undefined) {
+          if (data.label === null) {
+            throw new ValidationError("Link label is required.");
+          }
+          nextLabel = normalizeSidebarLinkLabel(data.label);
+        }
+        if (data.url !== undefined) {
+          nextUrl = normalizeSidebarUrl(data.url);
+        }
       }
 
       const result = await db
         .update(sidebarItems)
         .set({
-          label:
-            item.type === "divider" ? normalizeSidebarLabel(data.label) : null,
+          label: item.type === "collection" ? null : nextLabel,
+          url: item.type === "link" ? nextUrl : null,
           updatedAt: now(),
         })
         .where(and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)))
