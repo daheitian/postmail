@@ -1,0 +1,46 @@
+name: Redeploy Jant Cloud Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/deploy-jant-cloud-docs.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-jant-cloud-docs-${{ github.ref_name || 'manual' }}
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch jant-cloud rebuild to tonormal/build
+        env:
+          BUILD_REPO_TOKEN: ${{ secrets.BUILD_REPO_TOKEN }}
+          DOCS_SHA: ${{ github.sha }}
+        run: |
+          curl -fsSL -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${BUILD_REPO_TOKEN}" \
+            https://api.github.com/repos/tonormal/build/dispatches \
+            -d "$(jq -n \
+              --arg service "jant-cloud" \
+              --arg deploy_ref "main" \
+              --arg docs_sha "$DOCS_SHA" \
+              '{
+                event_type: "deploy-external-app",
+                client_payload: {
+                  service: $service,
+                  deploy_ref: $deploy_ref,
+                  docs_source_repository: "jant-me/jant",
+                  docs_source_sha: $docs_sha
+                }
+              }')"
+
+          echo "Triggered jant-cloud production rebuild after docs update at $DOCS_SHA."
