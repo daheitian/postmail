@@ -13,6 +13,7 @@ import type { Context } from "hono";
 import { msg } from "@lingui/core/macro";
 import { getPublicAssetBasePath, toAssetPath } from "../../lib/asset-path.js";
 import { getJantIconHref } from "../../lib/jant-branding.js";
+import { getThemeBrowserColors, resolveBuiltinTheme } from "../../lib/theme.js";
 import { isFullUrl, toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import { CORE_VERSION, IS_VITE_DEV } from "../../lib/version.js";
 import { I18nProvider } from "../../i18n/index.js";
@@ -86,6 +87,11 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   // Read custom CSS from appConfig
   const customCSS = appConfig?.customCSS || undefined;
   const themeMode = appConfig?.themeMode ?? "auto";
+  const activeTheme = resolveBuiltinTheme(
+    appConfig?.themeId,
+    appConfig?.defaultThemeId,
+  );
+  const browserThemeColors = getThemeBrowserColors(activeTheme);
   const resolvedClientBundle =
     clientBundle ?? (isAuthenticated ? "full" : "public");
   const fontLanguage = appConfig?.siteLanguage?.toLowerCase() ?? "";
@@ -180,6 +186,25 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        {themeMode === "dark" ? (
+          <meta name="theme-color" content={browserThemeColors.dark} />
+        ) : themeMode === "light" ? (
+          <meta name="theme-color" content={browserThemeColors.light} />
+        ) : (
+          <>
+            <meta name="theme-color" content={browserThemeColors.light} />
+            <meta
+              name="theme-color"
+              content={browserThemeColors.light}
+              media="(prefers-color-scheme: light)"
+            />
+            <meta
+              name="theme-color"
+              content={browserThemeColors.dark}
+              media="(prefers-color-scheme: dark)"
+            />
+          </>
+        )}
         <title>{title}</title>
         {description && <meta name="description" content={description} />}
         <meta property="og:title" content={title} />

@@ -10,6 +10,9 @@ function createContext(
     assetBasePath?: string;
     sitePathPrefix?: string;
     siteUrl?: string;
+    themeMode?: "auto" | "light" | "dark";
+    themeId?: string;
+    defaultThemeId?: string;
   },
 ) {
   const values = {
@@ -20,7 +23,9 @@ function createContext(
       siteLanguage: "en",
       noindex: false,
       customCSS: "",
-      themeMode: "auto",
+      themeMode: overrides?.themeMode ?? "auto",
+      themeId: overrides?.themeId ?? "",
+      defaultThemeId: overrides?.defaultThemeId ?? "linen",
       assetBasePath: overrides?.assetBasePath ?? "/_assets",
     },
     lang: "en",
@@ -165,5 +170,47 @@ describe("BaseLayout", () => {
     expect(html).toContain(`src="/blog/_assets/client.js?v=${CORE_VERSION}"`);
     expect(html).toContain(`href="/blog/_assets/client.css?v=${CORE_VERSION}"`);
     expect(html).toContain('data-asset-base-path="/blog/_assets"');
+  });
+
+  it("renders theme-color tags that follow the active theme in auto mode", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        c: createContext("featured", {
+          defaultThemeId: "linen",
+          themeMode: "auto",
+        }),
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain(
+      'meta name="theme-color" content="oklch(0.975 0.015 92)"',
+    );
+    expect(html).toContain('media="(prefers-color-scheme: light)"');
+    expect(html).toContain(
+      'meta name="theme-color" content="oklch(0.182 0.003 95)" media="(prefers-color-scheme: dark)"',
+    );
+  });
+
+  it("pins theme-color to the forced theme mode", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        c: createContext("featured", {
+          defaultThemeId: "linen",
+          themeMode: "dark",
+        }),
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain(
+      'meta name="theme-color" content="oklch(0.182 0.003 95)"',
+    );
+    expect(html).not.toContain('media="(prefers-color-scheme: light)"');
+    expect(html).not.toContain('media="(prefers-color-scheme: dark)"');
   });
 });

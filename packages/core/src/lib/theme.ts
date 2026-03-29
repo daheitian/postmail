@@ -8,6 +8,11 @@ import type { ColorTheme } from "../ui/color-themes.js";
 import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
 import type { ThemeMode } from "../types/config.js";
 
+const DEFAULT_THEME_BROWSER_COLORS = {
+  light: "oklch(1 0 0)",
+  dark: "oklch(0.145 0 0)",
+} as const;
+
 /**
  * Get the list of available color themes.
  *
@@ -22,6 +27,51 @@ import type { ThemeMode } from "../types/config.js";
  */
 export function getAvailableThemes(): ColorTheme[] {
   return BUILTIN_COLOR_THEMES;
+}
+
+/**
+ * Resolve the active built-in color theme from configured IDs.
+ *
+ * @param themeId - Explicit theme ID
+ * @param fallbackThemeId - Fallback/default theme ID
+ * @returns Matching built-in theme, if configured
+ *
+ * @example
+ * ```typescript
+ * const activeTheme = resolveBuiltinTheme("linen", "dune");
+ * ```
+ */
+export function resolveBuiltinTheme(
+  themeId?: string,
+  fallbackThemeId?: string,
+): ColorTheme | undefined {
+  return BUILTIN_COLOR_THEMES.find(
+    (theme) => theme.id === (themeId || fallbackThemeId),
+  );
+}
+
+/**
+ * Return browser chrome colors for the active theme.
+ *
+ * These colors are used for `<meta name="theme-color">` so mobile browser UI
+ * stays aligned with the page surface.
+ *
+ * @param theme - Active color theme
+ * @returns Light and dark browser chrome colors
+ *
+ * @example
+ * ```typescript
+ * const chromeColors = getThemeBrowserColors(activeTheme);
+ * ```
+ */
+export function getThemeBrowserColors(theme?: ColorTheme): {
+  light: string;
+  dark: string;
+} {
+  return {
+    light: theme?.light["--background"] ?? DEFAULT_THEME_BROWSER_COLORS.light,
+    dark: theme?.dark["--background"] ?? DEFAULT_THEME_BROWSER_COLORS.dark,
+  };
 }
 
 /**

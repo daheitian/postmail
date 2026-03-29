@@ -15,8 +15,7 @@ import {
   getConfiguredSingleSiteUrl,
   getSiteResolutionMode,
 } from "../lib/env.js";
-import { buildThemeStyle } from "../lib/theme.js";
-import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
+import { buildThemeStyle, resolveBuiltinTheme } from "../lib/theme.js";
 import {
   BUILTIN_FONT_THEMES,
   getCjkSerifCssVariables,
@@ -46,8 +45,9 @@ export function withConfig(): MiddlewareHandler<Env> {
     c.set("appConfig", appConfig);
 
     // Resolve active color theme
-    const activeTheme = BUILTIN_COLOR_THEMES.find(
-      (t) => t.id === (appConfig.themeId || appConfig.defaultThemeId),
+    const activeTheme = resolveBuiltinTheme(
+      appConfig.themeId,
+      appConfig.defaultThemeId,
     );
 
     // Build font theme CSS variables

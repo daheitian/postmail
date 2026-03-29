@@ -148,6 +148,27 @@
     var(--site-accent) 16%,
     transparent
   );
+  --compose-paper-bg: var(--site-page-bg);
+  --compose-control-bg: color-mix(
+    in srgb,
+    var(--site-nav-hover-bg) 72%,
+    var(--compose-paper-bg)
+  );
+  --compose-control-bg-strong: color-mix(
+    in srgb,
+    var(--site-nav-hover-bg) 88%,
+    var(--compose-paper-bg)
+  );
+  --compose-control-border: color-mix(
+    in srgb,
+    var(--site-column-outline) 68%,
+    transparent
+  );
+  --compose-floating-bg: color-mix(
+    in srgb,
+    var(--compose-paper-bg) 94%,
+    var(--site-nav-hover-bg) 6%
+  );
 
   /* Search highlight */
   --search-mark-bg: oklch(0.92 0.14 90 / 0.55);

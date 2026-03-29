@@ -1,9 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { buildThemeStyle } from "../theme.js";
+import {
+  buildThemeStyle,
+  getThemeBrowserColors,
+  resolveBuiltinTheme,
+} from "../theme.js";
 import {
   BUILTIN_FONT_THEMES,
   getFontThemeCssVariables,
 } from "../../ui/font-themes.js";
+import { BUILTIN_COLOR_THEMES } from "../../ui/color-themes.js";
 
 describe("buildThemeStyle", () => {
   it("returns empty string when no theme and no variables", () => {
@@ -95,5 +100,26 @@ describe("buildThemeStyle", () => {
 
     expect(css).toContain(':root:root[data-theme-mode="dark"]');
     expect(css).toContain(':root:root:not([data-theme-mode="light"])');
+  });
+
+  it("resolves the active built-in theme from primary and fallback IDs", () => {
+    expect(resolveBuiltinTheme("linen", "dune")?.id).toBe("linen");
+    expect(resolveBuiltinTheme("", "dune")?.id).toBe("dune");
+    expect(resolveBuiltinTheme("missing", "dune")).toBeUndefined();
+  });
+
+  it("returns theme-aware browser chrome colors", () => {
+    const linen = BUILTIN_COLOR_THEMES.find(
+      (theme) => theme.id === "linen",
+    ) as (typeof BUILTIN_COLOR_THEMES)[number];
+
+    expect(getThemeBrowserColors(linen)).toEqual({
+      light: "oklch(0.975 0.015 92)",
+      dark: "oklch(0.182 0.003 95)",
+    });
+    expect(getThemeBrowserColors()).toEqual({
+      light: "oklch(1 0 0)",
+      dark: "oklch(0.145 0 0)",
+    });
   });
 });
