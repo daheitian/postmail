@@ -48,7 +48,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({
         <blockquote class={`feed-quote${isCompact ? "" : " feed-quote-card"}`}>
           {!isCompact && <DecorativeQuoteMark class="feed-quote-mark" />}
           <div
-            class={`e-content feed-quote-content${isCompact ? " text-sm" : ""}`}
+            class={`e-content feed-quote-content${isCompact ? " text-sm" : isDetail ? " post-detail-quote" : ""}`}
           >
             {post.quoteText}
           </div>
@@ -72,7 +72,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({
       )}
       {!isCompact && commentaryHtml && (
         <div
-          class="feed-quote-commentary prose text-muted-foreground"
+          class={`feed-quote-commentary prose${isDetail ? " post-detail-body" : " text-muted-foreground"}`}
           data-post-body
           dangerouslySetInnerHTML={{ __html: commentaryHtml }}
         />

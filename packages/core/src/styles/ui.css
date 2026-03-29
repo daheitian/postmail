@@ -1492,6 +1492,59 @@
     margin-top: 0.45rem;
   }
 
+  /*
+   * Detail pages get a denser reading ladder than the surrounding UI chrome.
+   * This keeps long-form text feeling grounded without making global UI copy
+   * unnecessarily heavy.
+   */
+  article[data-page="post"] {
+    color: var(--site-reading-body);
+  }
+
+  article[data-page="post"] .post-detail-title {
+    color: var(--site-reading-title);
+    text-wrap: pretty;
+  }
+
+  article[data-page="post"] .post-detail-body,
+  article[data-page="post"] .post-detail-body.prose {
+    color: var(--site-reading-body);
+  }
+
+  article[data-page="post"] .feed-quote-content,
+  article[data-page="post"] .post-detail-quote {
+    color: var(--site-reading-quote);
+  }
+
+  article[data-page="post"] .feed-link-domain,
+  article[data-page="post"] .feed-quote-attribution,
+  article[data-page="post"] [data-post-meta],
+  article[data-page="post"] [data-post-meta] .post-footer-meta,
+  article[data-page="post"] [data-post-meta] a,
+  article[data-page="post"] [data-post-meta] time {
+    color: var(--site-reading-meta);
+  }
+
+  article[data-page="post"] .feed-link-domain:hover,
+  article[data-page="post"] .feed-quote-source:hover,
+  article[data-page="post"] [data-post-meta] a:hover,
+  article[data-page="post"] [data-post-meta] .post-footer-external-link:hover {
+    color: var(--site-reading-body);
+  }
+
+  article[data-page="post"] .feed-quote {
+    border-left-color: color-mix(
+      in srgb,
+      var(--site-reading-meta) 74%,
+      var(--site-divider)
+    );
+  }
+
+  article[data-page="post"] .feed-quote-mark {
+    color: color-mix(in srgb, var(--site-accent) 18%, var(--site-reading-meta));
+    opacity: 0.72;
+  }
+
   .feed-link-summary {
     margin-top: 0.75rem;
   }

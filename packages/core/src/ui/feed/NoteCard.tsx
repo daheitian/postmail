@@ -42,7 +42,9 @@ export const NoteCard: FC<TimelineCardProps> = ({
       {isArticle &&
         (isDetail ? (
           <div class="post-header-block">
-            <h1 class="p-name text-2xl font-semibold">{post.title}</h1>
+            <h1 class="p-name post-detail-title text-2xl font-semibold">
+              {post.title}
+            </h1>
             {showHeaderRating && <StarRating rating={post.rating} />}
           </div>
         ) : (
@@ -56,7 +58,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
         ))}
       {displayHtml && (
         <div
-          class={`e-content prose ${isCompact ? "prose-sm" : isArticle && !isDetail ? "text-muted-foreground" : ""}`}
+          class={`e-content prose ${isCompact ? "prose-sm" : isDetail ? "post-detail-body" : isArticle ? "text-muted-foreground" : ""}`}
           data-post-body
           dangerouslySetInnerHTML={{ __html: displayHtml }}
         />

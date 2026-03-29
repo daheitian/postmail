@@ -69,7 +69,7 @@ export const LinkCard: FC<TimelineCardProps> = ({
       {post.title &&
         (isDetail ? (
           <div class="post-header-block">
-            <h1 class="p-name feed-link-title text-2xl font-semibold">
+            <h1 class="p-name post-detail-title feed-link-title text-2xl font-semibold">
               <a
                 href={safeUrl || post.permalink}
                 class="u-url feed-link-title-link"
@@ -97,7 +97,7 @@ export const LinkCard: FC<TimelineCardProps> = ({
         ))}
       {!isCompact && post.bodyHtml && (
         <div
-          class="e-content prose text-muted-foreground feed-link-summary"
+          class={`e-content prose feed-link-summary${isDetail ? " post-detail-body" : " text-muted-foreground"}`}
           data-post-body
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />

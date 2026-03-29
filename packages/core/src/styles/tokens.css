@@ -97,6 +97,31 @@
   --site-nav-hover-bg: var(--accent);
   --site-text-primary: var(--foreground);
   --site-text-secondary: var(--muted-foreground);
+  --site-reading-title: oklch(
+    from var(--site-text-primary) calc(l - 0.055) c h
+  );
+  --site-reading-heading: oklch(
+    from var(--site-text-primary) calc(l - 0.04) c h
+  );
+  --site-reading-body: oklch(from var(--site-text-primary) calc(l - 0.03) c h);
+  --site-reading-quote: oklch(
+    from var(--site-text-primary) calc(l - 0.015) c h
+  );
+  --site-reading-meta: color-mix(
+    in srgb,
+    var(--site-text-secondary) 72%,
+    var(--site-text-primary)
+  );
+  --site-reading-caption: color-mix(
+    in srgb,
+    var(--site-text-secondary) 88%,
+    var(--site-text-primary)
+  );
+  --site-reading-link: color-mix(
+    in oklch,
+    var(--site-accent) 72%,
+    var(--site-reading-body)
+  );
   --site-text-placeholder: oklch(from var(--muted-foreground) l c h / 0.5);
   --site-media-outline: var(--border);
   --site-divider: var(--border);
@@ -187,6 +212,33 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme-mode="light"]) {
+    --site-reading-title: var(--site-text-primary);
+    --site-reading-heading: color-mix(
+      in oklch,
+      var(--site-text-primary) 94%,
+      var(--site-text-secondary)
+    );
+    --site-reading-body: oklch(
+      from var(--site-text-primary) calc(l - 0.04) c h
+    );
+    --site-reading-quote: oklch(
+      from var(--site-text-primary) calc(l - 0.015) c h
+    );
+    --site-reading-meta: color-mix(
+      in srgb,
+      var(--site-text-secondary) 92%,
+      var(--site-text-primary)
+    );
+    --site-reading-caption: color-mix(
+      in srgb,
+      var(--site-text-secondary) 96%,
+      var(--site-text-primary)
+    );
+    --site-reading-link: color-mix(
+      in oklch,
+      var(--site-accent) 76%,
+      var(--site-text-primary)
+    );
     --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
     --search-mark-color: oklch(0.92 0.08 90);
     --dash-bg: oklch(0.2 0.005 80);
@@ -194,6 +246,31 @@
 }
 
 :root[data-theme-mode="dark"] {
+  --site-reading-title: var(--site-text-primary);
+  --site-reading-heading: color-mix(
+    in oklch,
+    var(--site-text-primary) 94%,
+    var(--site-text-secondary)
+  );
+  --site-reading-body: oklch(from var(--site-text-primary) calc(l - 0.04) c h);
+  --site-reading-quote: oklch(
+    from var(--site-text-primary) calc(l - 0.015) c h
+  );
+  --site-reading-meta: color-mix(
+    in srgb,
+    var(--site-text-secondary) 92%,
+    var(--site-text-primary)
+  );
+  --site-reading-caption: color-mix(
+    in srgb,
+    var(--site-text-secondary) 96%,
+    var(--site-text-primary)
+  );
+  --site-reading-link: color-mix(
+    in oklch,
+    var(--site-accent) 76%,
+    var(--site-text-primary)
+  );
   --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
   --search-mark-color: oklch(0.92 0.08 90);
   --dash-bg: oklch(0.2 0.005 80);

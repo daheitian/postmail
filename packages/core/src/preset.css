@@ -212,3 +212,56 @@
   color: color-mix(in srgb, var(--site-accent) 84%, var(--color-foreground));
   text-decoration-color: currentColor;
 }
+
+/*
+ * Detail-page reading prose
+ *
+ * Keep these overrides outside cascade layers so they can outrank the base
+ * `.prose` variable defaults defined above.
+ */
+article[data-page="post"] .post-detail-body.prose {
+  --tw-prose-body: var(--site-reading-body);
+  --tw-prose-headings: var(--site-reading-heading);
+  --tw-prose-lead: color-mix(
+    in srgb,
+    var(--site-reading-body) 88%,
+    var(--site-reading-meta)
+  );
+  --tw-prose-links: var(--site-reading-link);
+  --tw-prose-bold: var(--site-reading-heading);
+  --tw-prose-counters: var(--site-reading-meta);
+  --tw-prose-bullets: var(--site-reading-meta);
+  --tw-prose-hr: color-mix(in srgb, var(--site-divider) 82%, transparent);
+  --tw-prose-quotes: var(--site-reading-quote);
+  --tw-prose-quote-borders: color-mix(
+    in srgb,
+    var(--site-reading-meta) 28%,
+    var(--site-divider)
+  );
+  --tw-prose-captions: var(--site-reading-caption);
+  --tw-prose-kbd: var(--site-reading-heading);
+  --tw-prose-code: var(--site-reading-heading);
+  --tw-prose-pre-code: color-mix(
+    in srgb,
+    var(--site-reading-caption) 86%,
+    var(--site-reading-body)
+  );
+  --tw-prose-th-borders: color-mix(
+    in srgb,
+    var(--site-divider) 88%,
+    transparent
+  );
+  --tw-prose-td-borders: color-mix(
+    in srgb,
+    var(--site-divider) 82%,
+    transparent
+  );
+}
+
+article[data-page="post"] .post-detail-body.prose a:hover {
+  color: color-mix(
+    in oklch,
+    var(--site-reading-link) 78%,
+    var(--site-reading-heading)
+  );
+}
