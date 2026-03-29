@@ -104,8 +104,11 @@ function SessionRow({
             </>
           )}
           {t({
-            message: `Signed in ${formatDate(session.createdAt)}`,
+            message: "Signed in {date}",
             comment: "@context: Session creation date",
+            values: {
+              date: formatDate(session.createdAt),
+            },
           })}
         </div>
       </div>

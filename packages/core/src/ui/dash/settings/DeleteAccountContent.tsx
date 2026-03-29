@@ -8,6 +8,7 @@
 
 import { useLingui } from "@lingui/react/macro";
 import { buildConfirmActionExpression } from "../../../lib/confirm.js";
+import { coalesceDisplayText } from "../../../lib/display-text.js";
 import { escapeHtml } from "../../../lib/html.js";
 import { toPublicPath } from "../../../lib/url.js";
 
@@ -23,11 +24,21 @@ export function DeleteAccountContent({
   sitePathPrefix = "",
 }: DeleteAccountContentProps) {
   const { t } = useLingui();
+  const normalizedSiteName =
+    coalesceDisplayText(siteName) ||
+    t({
+      message: "this blog",
+      comment:
+        "@context: Generic fallback blog name in the delete-account confirmation phrase when the site name is unavailable",
+    });
 
   const confirmPhrase = t({
-    message: `I want to delete ${siteName}`,
+    message: "I want to delete {siteName}",
     comment:
       "@context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.",
+    values: {
+      siteName: normalizedSiteName,
+    },
   });
   const escapedConfirmPhrase = escapeHtml(confirmPhrase);
   const deleteAccountLabel = t({

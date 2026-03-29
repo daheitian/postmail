@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import type { Context } from "hono";
 import { renderToString } from "hono/jsx/dom/server";
 import { describe, expect, it } from "vitest";
@@ -97,6 +98,17 @@ describe("timeline cards", () => {
     expect(feedHtml).toContain('href="/media/full.jpg"');
     expect(detailHtml).toContain("data-post-media");
     expect(detailHtml).toContain('href="/media/full.jpg"');
+  });
+
+  it("preserves authored line breaks in quote cards", () => {
+    const css = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.feed-quote-content\s*\{[\s\S]*white-space:\s*pre-line;/,
+    );
   });
 
   it("keeps link and quote attachments hidden in compact mode", () => {

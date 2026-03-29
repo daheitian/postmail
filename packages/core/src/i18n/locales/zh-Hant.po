@@ -19,17 +19,19 @@ msgid " and try again."
 msgstr " 後再試一次。"
 
 #. @context: Link showing count of hidden thread posts between curated posts
-#. placeholder {0}: segment.hiddenBeforeCount
-#. placeholder {1}: segment.hiddenBeforeCount === 1 ? "post" : "posts"
 #: src/ui/feed/CuratedThreadPreview.tsx
-msgid "{0} hidden {1}"
-msgstr "隱藏了 {0} 則"
+msgid "{count, plural, one {# hidden post} other {# hidden posts}}"
+msgstr ""
 
 #. @context: Link showing count of hidden thread posts between root and latest
-#. placeholder {0}: hiddenCount === 1 ? "post" : "posts"
 #: src/ui/feed/ThreadPreview.tsx
-msgid "{hiddenCount} more {0}"
-msgstr "還有 {hiddenCount} 則 {0}"
+msgid "{count, plural, one {# more post} other {# more posts}}"
+msgstr ""
+
+#. @context: Search results count - multiple
+#: src/ui/pages/SearchPage.tsx
+msgid "{count, plural, one {Found # result} other {Found # results}}"
+msgstr ""
 
 #. @context: Custom CSS textarea placeholder
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -731,10 +733,9 @@ msgid "Create your admin account."
 msgstr "建立您的管理員帳號."
 
 #. @context: Token creation date
-#. placeholder {0}: formatDate(token.createdAt)
 #: src/ui/dash/settings/ApiTokensContent.tsx
-msgid "Created {0}"
-msgstr "建立於 {0}"
+msgid "Created {date}"
+msgstr ""
 
 #. @context: Badge indicating the current active session
 #: src/ui/dash/settings/SessionsContent.tsx
@@ -1308,17 +1309,6 @@ msgstr "字型主題"
 msgid "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(green, 12%) should not suddenly become the loudest thing on the page."
 msgstr "也因為這個原因，行內程式碼應該保持中性。像 theme.siteAccent = soften(green, 12%) 這樣的內容，不該突然變成頁面裡最吵的一部分。"
 
-#. @context: Search results count - multiple
-#. placeholder {0}: String(results.length)
-#: src/ui/pages/SearchPage.tsx
-msgid "Found {0} results"
-msgstr "找到 {0} 筆結果"
-
-#. @context: Search results count - single
-#: src/ui/pages/SearchPage.tsx
-msgid "Found 1 result"
-msgstr "找到 1 個結果"
-
 #. @context: Compose dialog - open fullscreen editor
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Fullscreen"
@@ -1565,10 +1555,9 @@ msgid "Language and time updated."
 msgstr "語言和時間已更新。"
 
 #. @context: Token last used date
-#. placeholder {0}: formatDate(token.lastUsedAt)
 #: src/ui/dash/settings/ApiTokensContent.tsx
-msgid "Last used {0}"
-msgstr "上次使用於 {0}"
+msgid "Last used {date}"
+msgstr ""
 
 #. @context: Active browse tab label on sample page
 #. @context: Browse filter for latest posts
@@ -2581,10 +2570,9 @@ msgid "Sign Out"
 msgstr "登出"
 
 #. @context: Session creation date
-#. placeholder {0}: formatDate(session.createdAt)
 #: src/ui/dash/settings/SessionsContent.tsx
-msgid "Signed in {0}"
-msgstr "已於 {0} 登入"
+msgid "Signed in {date}"
+msgstr ""
 
 #. @context: Settings group label for site settings
 #. @context: Settings subsection heading for basic site fields
@@ -2856,6 +2844,11 @@ msgstr "這些裝置目前已登入您的帳戶。撤銷任何您不認識的工
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
 msgstr "這篇文章想回答一個具體問題：當預設強調色要撐起一整段閱讀體驗時，它是否依然足夠平靜？"
+
+#. @context: Generic fallback blog name in the delete-account confirmation phrase when the site name is unavailable
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "this blog"
+msgstr ""
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx

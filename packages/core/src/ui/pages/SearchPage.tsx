@@ -239,15 +239,14 @@ export const SearchPage: FC<SearchPageProps> = ({
                   message: "No results. Try different keywords.",
                   comment: "@context: Search empty results",
                 })
-              : results.length === 1
-                ? t({
-                    message: "Found 1 result",
-                    comment: "@context: Search results count - single",
-                  })
-                : t({
-                    message: `Found ${String(results.length)} results`,
-                    comment: "@context: Search results count - multiple",
-                  })}
+              : t({
+                  message:
+                    "{count, plural, one {Found # result} other {Found # results}}",
+                  comment: "@context: Search results count - multiple",
+                  values: {
+                    count: results.length,
+                  },
+                })}
           </p>
 
           {results.length > 0 && (

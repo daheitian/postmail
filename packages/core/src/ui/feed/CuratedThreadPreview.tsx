@@ -41,9 +41,13 @@ export const CuratedThreadPreview: FC<CuratedThreadPreviewProps> = ({
           >
             <a href={segment.post.permalink} class="thread-gap-link">
               {t({
-                message: `${segment.hiddenBeforeCount} hidden ${segment.hiddenBeforeCount === 1 ? "post" : "posts"}`,
+                message:
+                  "{count, plural, one {# hidden post} other {# hidden posts}}",
                 comment:
                   "@context: Link showing count of hidden thread posts between curated posts",
+                values: {
+                  count: segment.hiddenBeforeCount,
+                },
               })}
             </a>
           </div>

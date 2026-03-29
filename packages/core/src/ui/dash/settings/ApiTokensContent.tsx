@@ -36,15 +36,21 @@ function TokenRow({
           </code>
           <span class="mx-2">&middot;</span>
           {t({
-            message: `Created ${formatDate(token.createdAt)}`,
+            message: "Created {date}",
             comment: "@context: Token creation date",
+            values: {
+              date: formatDate(token.createdAt),
+            },
           })}
           {token.lastUsedAt && (
             <>
               <span class="mx-2">&middot;</span>
               {t({
-                message: `Last used ${formatDate(token.lastUsedAt)}`,
+                message: "Last used {date}",
                 comment: "@context: Token last used date",
+                values: {
+                  date: formatDate(token.lastUsedAt),
+                },
               })}
             </>
           )}

@@ -48,6 +48,14 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
     hasParentReply: parentReply !== undefined,
     totalReplyCount,
   });
+  const hiddenPostsLabel = t({
+    message: "{count, plural, one {# more post} other {# more posts}}",
+    comment:
+      "@context: Link showing count of hidden thread posts between root and latest",
+    values: {
+      count: hiddenCount,
+    },
+  });
   const startsCollapsedWithAffordances = isThreadContextLikelyOverflow({
     rootPost,
     parentReply,
@@ -74,11 +82,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
         {hiddenCount > 0 && (
           <div class="thread-item thread-item-gap">
             <a href={latestReply.permalink} class="thread-gap-link">
-              {t({
-                message: `${hiddenCount} more ${hiddenCount === 1 ? "post" : "posts"}`,
-                comment:
-                  "@context: Link showing count of hidden thread posts between root and latest",
-              })}
+              {hiddenPostsLabel}
             </a>
           </div>
         )}

@@ -3,7 +3,8 @@
  */
 
 import { useLingui } from "@lingui/react/macro";
-import { toPublicPath } from "../../../lib/url.js";
+import { coalesceDisplayText } from "../../../lib/display-text.js";
+import { extractDomain, toPublicPath } from "../../../lib/url.js";
 import {
   SettingsDirectoryItemContent,
   SettingsDirectoryLink,
@@ -38,7 +39,12 @@ export function AccountMenuContent({
   const { t } = useLingui();
   const isHosted = Boolean(hostedControlPlaneAccountUrl);
   const providerLabel =
-    hostedControlPlaneProviderLabel ??
+    coalesceDisplayText(
+      hostedControlPlaneProviderLabel,
+      hostedControlPlaneAccountUrl
+        ? extractDomain(hostedControlPlaneAccountUrl)
+        : undefined,
+    ) ??
     t({
       message: "Hosted account",
       comment:
