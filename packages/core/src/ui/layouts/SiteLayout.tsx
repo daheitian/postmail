@@ -125,68 +125,69 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                         label={link.displayLabel}
                       />
                     ))}
-                    {overflowLinks.length > 0 && (
-                      <div class="dropdown-menu site-header-more">
-                        <button
-                          type="button"
-                          id="site-nav-more-trigger"
-                          class={`site-header-more-btn ${hasActiveOverflow ? "site-header-more-btn-active" : ""}`}
-                          aria-haspopup="menu"
-                          aria-controls="site-nav-more-menu"
-                          aria-expanded="false"
-                          aria-label={t({
-                            message: "More links",
-                            comment:
-                              "@context: Button to show overflow nav links",
-                          })}
+                    <div
+                      class="dropdown-menu site-header-more"
+                      hidden={overflowLinks.length === 0}
+                    >
+                      <button
+                        type="button"
+                        id="site-nav-more-trigger"
+                        class={`site-header-more-btn ${hasActiveOverflow ? "site-header-more-btn-active" : ""}`}
+                        aria-haspopup="menu"
+                        aria-controls="site-nav-more-menu"
+                        aria-expanded="false"
+                        aria-label={t({
+                          message: "More links",
+                          comment:
+                            "@context: Button to show overflow nav links",
+                        })}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                          >
-                            <circle cx="5" cy="12" r="2" />
-                            <circle cx="12" cy="12" r="2" />
-                            <circle cx="19" cy="12" r="2" />
-                          </svg>
-                        </button>
+                          <circle cx="5" cy="12" r="2" />
+                          <circle cx="12" cy="12" r="2" />
+                          <circle cx="19" cy="12" r="2" />
+                        </svg>
+                      </button>
+                      <div
+                        id="site-nav-more-popover"
+                        data-popover
+                        data-align="end"
+                        aria-hidden="true"
+                      >
                         <div
-                          id="site-nav-more-popover"
-                          data-popover
-                          data-align="end"
-                          aria-hidden="true"
+                          role="menu"
+                          id="site-nav-more-menu"
+                          aria-labelledby="site-nav-more-trigger"
                         >
-                          <div
-                            role="menu"
-                            id="site-nav-more-menu"
-                            aria-labelledby="site-nav-more-trigger"
-                          >
-                            {overflowLinks.map((link) => (
-                              <a
-                                key={link.id}
-                                href={link.url}
-                                role="menuitem"
-                                class={
-                                  link.isActive
-                                    ? "site-header-menuitem-active"
-                                    : undefined
-                                }
-                                {...(link.isExternal
-                                  ? {
-                                      target: "_blank",
-                                      rel: "noopener noreferrer",
-                                    }
-                                  : {})}
-                              >
-                                {link.displayLabel}
-                              </a>
-                            ))}
-                          </div>
+                          {overflowLinks.map((link) => (
+                            <a
+                              key={link.id}
+                              href={link.url}
+                              role="menuitem"
+                              class={
+                                link.isActive
+                                  ? "site-header-menuitem-active"
+                                  : undefined
+                              }
+                              {...(link.isExternal
+                                ? {
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                  }
+                                : {})}
+                            >
+                              {link.displayLabel}
+                            </a>
+                          ))}
                         </div>
                       </div>
-                    )}
+                    </div>
                   </nav>
                 )}
                 <a

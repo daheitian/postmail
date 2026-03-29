@@ -54,7 +54,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.85rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     min-height: 2.5rem;
     width: 100%;
   }
@@ -84,6 +84,7 @@
 
   .site-header-right {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
     gap: 0.55rem;
     margin-left: auto;
@@ -140,13 +141,18 @@
 
   .site-logo {
     display: flex;
+    flex: 0 1 auto;
     align-items: center;
     gap: 10px;
+    min-width: 0;
     padding: 0.15rem 0;
     font-size: clamp(1.18rem, 1.08rem + 0.45vw, 1.34rem);
     font-weight: var(--fw-medium);
     font-family: var(--font-site-title);
     letter-spacing: -0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: var(--site-text-primary);
     text-decoration: none;
     line-height: var(--type-display-leading);
@@ -171,7 +177,8 @@
   .site-header-nav {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
     justify-content: flex-end;
     gap: 0.9rem;
     min-width: 0;
@@ -179,6 +186,7 @@
 
   .site-header-link {
     display: inline-flex;
+    flex: none;
     align-items: center;
     position: relative;
     min-height: 2rem;
@@ -187,6 +195,7 @@
     font-size: 0.84rem;
     line-height: 1;
     letter-spacing: 0.01em;
+    white-space: nowrap;
     color: var(--site-text-secondary);
     text-decoration: none;
     transition:
@@ -263,6 +272,7 @@
 
   .site-header-more [data-popover] {
     min-width: 170px;
+    max-width: calc(100vw - (var(--site-padding) * 2));
   }
 
   .site-header-more [data-popover] [role="menuitem"] {
@@ -324,17 +334,6 @@
     flex-direction: column;
     gap: 0.15rem;
     margin-bottom: var(--space-xl);
-  }
-
-  @media (max-width: 699px) {
-    .site-header-right {
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    .site-header-nav {
-      justify-content: flex-start;
-    }
   }
 
   /* --- Main content area -------------------------------------------------- */
@@ -3501,13 +3500,22 @@
     cursor: not-allowed;
   }
 
-  @media (max-width: 700px), (max-height: 760px) {
+  /* Treat touch-first browsers as mobile here too. iOS Safari can expose a
+   * desktop-sized layout viewport for dialogs while still behaving like phone UI. */
+  @media (max-width: 700px),
+    (max-height: 760px),
+    (hover: none) and (pointer: coarse) {
     .compose-dialog {
       --compose-margin-top: 0px;
 
+      position: fixed;
+      inset: 0;
+      box-sizing: border-box;
       width: 100vw;
+      min-width: 100vw;
       max-width: 100vw;
       height: 100dvh;
+      min-height: 100dvh;
       max-height: 100dvh;
       margin: 0;
       border: none;
@@ -3516,6 +3524,7 @@
     }
 
     .compose-dialog-inner {
+      height: 100dvh;
       min-height: 100dvh;
       max-height: 100dvh;
       border-radius: 0;
@@ -4076,7 +4085,9 @@
     color: var(--site-text-primary);
   }
 
-  @media (max-width: 700px), (max-height: 760px) {
+  @media (max-width: 700px),
+    (max-height: 760px),
+    (hover: none) and (pointer: coarse) {
     .compose-tool-view-group {
       display: none;
     }
@@ -7627,9 +7638,14 @@
     border: none;
     outline: none;
     margin: 0;
+    position: fixed;
+    inset: 0;
+    box-sizing: border-box;
     width: 100vw;
+    min-width: 100vw;
     max-width: 100vw;
     height: 100dvh;
+    min-height: 100dvh;
     max-height: 100dvh;
     background:
       radial-gradient(
