@@ -13,6 +13,77 @@ const DEFAULT_THEME_BROWSER_COLORS = {
   dark: "oklch(0.145 0 0)",
 } as const;
 
+function clampToUnit(value: number): number {
+  return Math.min(1, Math.max(0, value));
+}
+
+function linearSrgbToEncoded(value: number): number {
+  const channel = clampToUnit(value);
+  return channel <= 0.0031308
+    ? channel * 12.92
+    : 1.055 * Math.pow(channel, 1 / 2.4) - 0.055;
+}
+
+function rgbChannelToHex(value: number): string {
+  return Math.round(clampToUnit(value) * 255)
+    .toString(16)
+    .padStart(2, "0");
+}
+
+function parseOklch(color: string): { l: number; c: number; h: number } | null {
+  const match = color
+    .trim()
+    .match(
+      /^oklch\(\s*([+-]?\d*\.?\d+%?)\s+([+-]?\d*\.?\d+)\s+([+-]?\d*\.?\d+)(?:\s*\/\s*[+-]?\d*\.?\d+%?)?\s*\)$/i,
+    );
+  if (!match) return null;
+
+  const [, rawL, rawC, rawH] = match;
+  if (!rawL || !rawC || !rawH) return null;
+
+  const l = rawL.endsWith("%")
+    ? Number.parseFloat(rawL.slice(0, -1)) / 100
+    : Number.parseFloat(rawL);
+  const c = Number.parseFloat(rawC);
+  const h = Number.parseFloat(rawH);
+
+  if ([l, c, h].some((value) => Number.isNaN(value))) return null;
+
+  return { l, c, h };
+}
+
+function oklchToHex(color: string): string | null {
+  const parsed = parseOklch(color);
+  if (!parsed) return null;
+
+  const hueRadians = (parsed.h * Math.PI) / 180;
+  const a = parsed.c * Math.cos(hueRadians);
+  const b = parsed.c * Math.sin(hueRadians);
+
+  const l = parsed.l + 0.3963377774 * a + 0.2158037573 * b;
+  const m = parsed.l - 0.1055613458 * a - 0.0638541728 * b;
+  const s = parsed.l - 0.0894841775 * a - 1.291485548 * b;
+
+  const lCube = l ** 3;
+  const mCube = m ** 3;
+  const sCube = s ** 3;
+
+  const rLinear =
+    4.0767416621 * lCube - 3.3077115913 * mCube + 0.2309699292 * sCube;
+  const gLinear =
+    -1.2684380046 * lCube + 2.6097574011 * mCube - 0.3413193965 * sCube;
+  const bLinear =
+    -0.0041960863 * lCube - 0.7034186147 * mCube + 1.707614701 * sCube;
+
+  return `#${rgbChannelToHex(linearSrgbToEncoded(rLinear))}${rgbChannelToHex(
+    linearSrgbToEncoded(gLinear),
+  )}${rgbChannelToHex(linearSrgbToEncoded(bLinear))}`;
+}
+
+function normalizeThemeColorForMeta(color: string): string {
+  return oklchToHex(color) ?? color;
+}
+
 /**
  * Get the list of available color themes.
  *
@@ -69,8 +140,12 @@ export function getThemeBrowserColors(theme?: ColorTheme): {
   dark: string;
 } {
   return {
-    light: theme?.light["--background"] ?? DEFAULT_THEME_BROWSER_COLORS.light,
-    dark: theme?.dark["--background"] ?? DEFAULT_THEME_BROWSER_COLORS.dark,
+    light: normalizeThemeColorForMeta(
+      theme?.light["--background"] ?? DEFAULT_THEME_BROWSER_COLORS.light,
+    ),
+    dark: normalizeThemeColorForMeta(
+      theme?.dark["--background"] ?? DEFAULT_THEME_BROWSER_COLORS.dark,
+    ),
   };
 }
 

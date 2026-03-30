@@ -114,12 +114,26 @@ describe("buildThemeStyle", () => {
     ) as (typeof BUILTIN_COLOR_THEMES)[number];
 
     expect(getThemeBrowserColors(linen)).toEqual({
-      light: "oklch(0.975 0.015 92)",
-      dark: "oklch(0.182 0.003 95)",
+      light: "#faf7ec",
+      dark: "#121211",
     });
     expect(getThemeBrowserColors()).toEqual({
-      light: "oklch(1 0 0)",
-      dark: "oklch(0.145 0 0)",
+      light: "#ffffff",
+      dark: "#0a0a0a",
+    });
+  });
+
+  it("keeps non-oklch browser chrome colors unchanged", () => {
+    expect(
+      getThemeBrowserColors({
+        id: "custom",
+        name: "Custom",
+        light: { "--background": "#f4efe5" },
+        dark: { "--background": "rgb(18 18 17)" },
+      }),
+    ).toEqual({
+      light: "#f4efe5",
+      dark: "rgb(18 18 17)",
     });
   });
 });

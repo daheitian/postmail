@@ -185,12 +185,10 @@ describe("BaseLayout", () => {
       }),
     );
 
-    expect(html).toContain(
-      'meta name="theme-color" content="oklch(0.975 0.015 92)"',
-    );
+    expect(html).toContain('meta name="theme-color" content="#faf7ec"');
     expect(html).toContain('media="(prefers-color-scheme: light)"');
     expect(html).toContain(
-      'meta name="theme-color" content="oklch(0.182 0.003 95)" media="(prefers-color-scheme: dark)"',
+      'meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)"',
     );
   });
 
@@ -207,9 +205,7 @@ describe("BaseLayout", () => {
       }),
     );
 
-    expect(html).toContain(
-      'meta name="theme-color" content="oklch(0.182 0.003 95)"',
-    );
+    expect(html).toContain('meta name="theme-color" content="#121211"');
     expect(html).not.toContain('media="(prefers-color-scheme: light)"');
     expect(html).not.toContain('media="(prefers-color-scheme: dark)"');
   });
