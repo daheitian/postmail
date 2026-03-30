@@ -172,3 +172,27 @@ jobs:
     secrets:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+
+  deploy-studio-prod:
+    name: Deploy Jant via Build
+    needs: [ci, pg-smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/deploy-studio.yml
+    with:
+      source_ref: ${{ github.ref_name }}
+      source_sha: ${{ github.sha }}
+      target_env: prod
+    secrets:
+      BUILD_REPO_TOKEN: ${{ secrets.BUILD_REPO_TOKEN }}
+
+  deploy-studio-preview:
+    name: Deploy Jant Preview via Build
+    needs: [ci, pg-smoke]
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/deploy-studio.yml
+    with:
+      source_ref: ${{ github.event.pull_request.head.ref }}
+      source_sha: ${{ github.event.pull_request.head.sha }}
+      target_env: preview
+    secrets:
+      BUILD_REPO_TOKEN: ${{ secrets.BUILD_REPO_TOKEN }}

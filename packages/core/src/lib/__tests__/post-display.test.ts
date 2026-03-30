@@ -74,7 +74,6 @@ describe("post display assembly", () => {
 
     expect(view?.id).toBe(root.id);
     expect(view?.isLastInThread).toBe(false);
-    expect(view?.threadRootPermalink).toBe(view?.permalink);
   });
 
   it("assembles permalink thread data for partial post view refreshes", async () => {

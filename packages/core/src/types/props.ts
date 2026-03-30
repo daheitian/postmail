@@ -155,7 +155,6 @@ export interface PostFooterDisplayOptions {
   hideActions?: boolean;
   hideReply?: boolean;
   hideTimestamp?: boolean;
-  hideThreadLink?: boolean;
 }
 
 export interface TimelineCardDisplayOptions {

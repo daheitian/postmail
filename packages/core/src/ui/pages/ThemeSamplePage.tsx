@@ -318,7 +318,6 @@ export function ThemeSamplePage({
         },
       ],
       threadRootId: "018e2b6f-3a10-7000-8000-000000000010",
-      threadRootPermalink: notePermalink,
       isLastInThread: false,
     },
     {

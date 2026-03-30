@@ -7,15 +7,10 @@ const THREAD_CONTEXT_DISPLAY = {
   hideRating: true,
   footer: {
     hideReply: true,
-    hideThreadLink: true,
   },
 } as const;
 
-const CURATED_SEGMENT_DISPLAY = {
-  footer: {
-    hideThreadLink: true,
-  },
-} as const;
+const CURATED_SEGMENT_DISPLAY = {} as const;
 
 interface CuratedThreadPreviewProps {
   curatedThread: NonNullable<TimelineItemView["curatedThread"]>;

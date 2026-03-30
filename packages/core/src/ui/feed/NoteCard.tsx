@@ -9,7 +9,11 @@ import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "../../types.js";
 import { MediaGallery } from "../shared/MediaGallery.js";
 import { StarRating } from "../shared/StarRating.js";
-import { PostFooter } from "../shared/PostFooter.js";
+import {
+  PostFooter,
+  PostMenuTriggerButton,
+  PostPublishedLink,
+} from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 
 export const NoteCard: FC<TimelineCardProps> = ({
@@ -24,6 +28,11 @@ export const NoteCard: FC<TimelineCardProps> = ({
   const hasVisibleRating =
     !!post.rating && post.rating > 0 && !display?.hideRating;
   const showHeaderRating = isDetail && isArticle && hasVisibleRating;
+  const showHeaderActions = !display?.footer?.hideActions;
+  const footerDisplay =
+    isDetail && isArticle
+      ? { ...display?.footer, hideTimestamp: true }
+      : display?.footer;
 
   return (
     <article
@@ -41,10 +50,21 @@ export const NoteCard: FC<TimelineCardProps> = ({
       {!isCompact && !display?.hideStatusBadges && <PostStatusBadges />}
       {isArticle &&
         (isDetail ? (
-          <div class="post-header-block">
+          <div class="post-header-block post-header-block-detail">
             <h1 class="p-name post-detail-title text-2xl font-semibold">
               {post.title}
             </h1>
+            <div class="post-header-meta-row">
+              <PostPublishedLink
+                post={post}
+                className="u-url post-header-meta-link"
+              />
+              {showHeaderActions && (
+                <div class="post-header-actions">
+                  <PostMenuTriggerButton className="post-menu-trigger post-header-menu-trigger" />
+                </div>
+              )}
+            </div>
             {showHeaderRating && <StarRating rating={post.rating} />}
           </div>
         ) : (
@@ -79,7 +99,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
       {!isCompact && !showHeaderRating && !display?.hideRating && (
         <StarRating rating={post.rating} />
       )}
-      <PostFooter post={post} detail={isDetail} display={display?.footer} />
+      <PostFooter post={post} detail={isDetail} display={footerDisplay} />
     </article>
   );
 };

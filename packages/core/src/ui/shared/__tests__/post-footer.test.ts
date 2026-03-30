@@ -111,6 +111,17 @@ describe("PostFooter", () => {
     );
   });
 
+  it("can hide the timestamp without leaving a leading separator", () => {
+    const html = renderPostFooter(createPostView(), true, "en", {
+      hideTimestamp: true,
+    });
+
+    expect(html).not.toContain('class="dt-published"');
+    expect(html).not.toContain('class="post-collection-sep"');
+    expect(html).toContain('href="/c/notes"');
+    expect(html).toContain("data-post-menu-trigger");
+  });
+
   it("can hide reply without hiding the more menu", () => {
     const html = renderPostFooter(createPostView(), false, "en", {
       hideReply: true,

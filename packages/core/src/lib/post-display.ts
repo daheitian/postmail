@@ -9,11 +9,7 @@ import type { Context } from "hono";
 import type { Bindings, Post, PostView } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { buildMediaMap } from "./media-helpers.js";
-import {
-  createMediaContext,
-  loadThreadRootPermalinks,
-  toPostView,
-} from "./view.js";
+import { createMediaContext, toPostView } from "./view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -54,17 +50,11 @@ export async function assemblePostCardView(
   }
 
   const mediaCtx = createMediaContext(c.var.appConfig);
-  const [rawMediaMap, collectionsMap, rootPermalinkMap, lastPostMap] =
-    await Promise.all([
-      c.var.services.media.getByPostIds([post.id]),
-      c.var.services.collections.getCollectionsByPostIds([post.id]),
-      loadThreadRootPermalinks(
-        [post],
-        c.var.services.posts.getById.bind(c.var.services.posts),
-        mediaCtx.sitePathPrefix,
-      ),
-      c.var.services.posts.getLastPostIdsByThread([post.threadId]),
-    ]);
+  const [rawMediaMap, collectionsMap, lastPostMap] = await Promise.all([
+    c.var.services.media.getByPostIds([post.id]),
+    c.var.services.collections.getCollectionsByPostIds([post.id]),
+    c.var.services.posts.getLastPostIdsByThread([post.threadId]),
+  ]);
 
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -74,21 +64,12 @@ export async function assemblePostCardView(
     mediaCtx.localPublicUrl,
     mediaCtx.sitePathPrefix,
   );
-  const rootPermalink = post.replyToId
-    ? rootPermalinkMap.get(post.threadId)
-    : undefined;
-
   const view = toPostView(
     { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
     mediaCtx,
     collectionsMap.get(post.id),
-    rootPermalink,
     lastPostMap.get(post.threadId) === post.id,
   );
-
-  if (!post.replyToId && lastPostMap.get(post.threadId) !== post.id) {
-    view.threadRootPermalink = view.permalink;
-  }
 
   return view;
 }
@@ -152,7 +133,6 @@ export async function assemblePostPageDisplay(
             },
             mediaCtx,
             collectionsMap.get(threadPost.id),
-            undefined,
             index === threadPosts.length - 1,
           ),
         )

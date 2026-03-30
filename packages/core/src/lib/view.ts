@@ -180,7 +180,6 @@ export function toPostView(
   post: PostWithMedia,
   ctx: MediaContext,
   postCollections?: Collection[],
-  threadRootPermalink?: string,
   isLastInThread?: boolean,
 ): PostView {
   const id = post.id;
@@ -279,7 +278,6 @@ export function toPostView(
     collections,
     replyToId: post.replyToId ?? undefined,
     threadRootId: post.replyToId ? post.threadId : undefined,
-    threadRootPermalink,
     isLastInThread: isLastInThread ?? true,
     body: post.body ?? undefined,
   };
@@ -290,27 +288,16 @@ export function toPostView(
  *
  * @param posts - Posts with media attachments
  * @param ctx - Media context with URL configuration
- * @param threadRootPermalinkMap - Optional map of thread root ID → permalink
  * @returns Render-ready PostView[]
  */
 export function toPostViews(
   posts: PostWithMedia[],
   ctx: MediaContext,
-  threadRootPermalinkMap?: Map<string, string>,
   isLastInThreadMap?: Map<string, boolean>,
 ): PostView[] {
-  return posts.map((p) => {
-    const rootPermalink = p.replyToId
-      ? threadRootPermalinkMap?.get(p.threadId)
-      : undefined;
-    return toPostView(
-      p,
-      ctx,
-      undefined,
-      rootPermalink,
-      isLastInThreadMap?.get(p.id),
-    );
-  });
+  return posts.map((p) =>
+    toPostView(p, ctx, undefined, isLastInThreadMap?.get(p.id)),
+  );
 }
 
 /**
@@ -319,14 +306,12 @@ export function toPostViews(
 export function toPostViewFromPost(
   post: Post,
   ctx: MediaContext,
-  threadRootPermalink?: string,
   isLastInThread?: boolean,
 ): PostView {
   return toPostView(
     { ...post, mediaAttachments: [] },
     ctx,
     undefined,
-    threadRootPermalink,
     isLastInThread,
   );
 }
@@ -337,57 +322,11 @@ export function toPostViewFromPost(
 export function toPostViewsFromPosts(
   posts: Post[],
   ctx: MediaContext,
-  threadRootPermalinkMap?: Map<string, string>,
   isLastInThreadMap?: Map<string, boolean>,
 ): PostView[] {
-  return posts.map((p) => {
-    const rootPermalink = p.replyToId
-      ? threadRootPermalinkMap?.get(p.threadId)
-      : undefined;
-    return toPostViewFromPost(
-      p,
-      ctx,
-      rootPermalink,
-      isLastInThreadMap?.get(p.id),
-    );
-  });
-}
-
-// =============================================================================
-// Thread Helpers
-// =============================================================================
-
-/**
- * Builds a map of thread root ID → permalink for posts that are thread replies.
- *
- * @param posts - Posts to inspect for thread membership
- * @param getById - Lookup function to fetch a post by ID
- * @returns Map of thread root ID → permalink string (e.g. `/{slug}`)
- *
- * @example
- * ```ts
- * const map = await loadThreadRootPermalinks(posts, services.posts.getById);
- * const views = toPostViews(postsWithMedia, mediaCtx, map);
- * ```
- */
-export async function loadThreadRootPermalinks(
-  posts: Post[],
-  getById: (id: string) => Promise<Post | null>,
-  sitePathPrefix = "",
-): Promise<Map<string, string>> {
-  const threadRootIds = [
-    ...new Set(posts.filter((p) => p.replyToId).map((p) => p.threadId)),
-  ];
-  const map = new Map<string, string>();
-  if (threadRootIds.length > 0) {
-    const roots = await Promise.all(threadRootIds.map(getById));
-    for (const root of roots) {
-      if (root) {
-        map.set(root.id, toPublicPath(`/${root.slug}`, sitePathPrefix));
-      }
-    }
-  }
-  return map;
+  return posts.map((p) =>
+    toPostViewFromPost(p, ctx, isLastInThreadMap?.get(p.id)),
+  );
 }
 
 // =============================================================================

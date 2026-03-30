@@ -1452,11 +1452,6 @@ msgstr "如果这一页显得太有品牌姿态，最先该收一收的是默认
 msgid "Images"
 msgstr "图片"
 
-#. @context: Link to the thread root from a post footer
-#: src/ui/shared/PostFooter.tsx
-msgid "In thread →"
-msgstr "在线程中 →"
-
 #. @context: Accessible label for the asset keyword list on the public brand page
 #: src/ui/pages/BrandPage.tsx
 msgid "Included assets"
@@ -1760,7 +1755,7 @@ msgstr "媒体"
 
 #. @context: Aria-label for collections page more button
 #. @context: Button label for a menu with more actions
-#. @context: Post menu trigger label in the post footer
+#. @context: Post menu trigger label in post actions
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/shared/collection-management-labels.ts
 #: src/ui/shared/PostFooter.tsx
@@ -2204,7 +2199,7 @@ msgid "Published on"
 msgstr "发布于"
 
 #. @context: Tooltip text for the archive tile published timestamp
-#. @context: Tooltip text for the published timestamp in the post footer
+#. @context: Tooltip text for the published timestamp in post metadata
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/shared/PostFooter.tsx
 msgid "Published on {date} at {time}"

@@ -317,7 +317,7 @@ describe("Timeline data assembly", () => {
     expect(item?.threadPreview?.totalReplyCount).toBe(2);
   });
 
-  it('shows an "In thread" link for featured root posts with replies', async () => {
+  it("keeps featured root posts with replies in curated thread mode", async () => {
     const root = await postService.create({
       format: "note",
       bodyMarkdown: "Featured root",
@@ -347,9 +347,6 @@ describe("Timeline data assembly", () => {
         highlighted: false,
       }),
     ]);
-    expect(result.items[0]?.post.threadRootPermalink).toBe(
-      result.items[0]?.post.permalink,
-    );
   });
 
   it("renders a standalone featured root without curated thread chrome", async () => {
@@ -630,9 +627,6 @@ describe("Timeline data assembly", () => {
         highlighted: false,
       }),
     ]);
-    expect(result.items[0]?.post.threadRootPermalink).toBe(
-      result.items[0]?.post.permalink,
-    );
   });
 
   it("highlights the union of collected posts across multiple collections", async () => {

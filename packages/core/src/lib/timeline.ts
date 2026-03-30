@@ -15,7 +15,6 @@ import type {
 import type { AppVariables } from "../types/app-context.js";
 import { buildMediaMap } from "./media-helpers.js";
 import { createMediaContext, toPostView } from "./view.js";
-import { toPublicPath } from "./url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -107,7 +106,6 @@ async function buildTimelineItems(
         },
         mediaCtx,
         contextCollectionsMap.get(threadCtx.latestReply.id),
-        undefined,
         true, // latestReply is the last post in the thread
       );
 
@@ -120,7 +118,6 @@ async function buildTimelineItems(
             },
             mediaCtx,
             contextCollectionsMap.get(threadCtx.parentReply.id),
-            undefined,
             false, // parentReply is not the last post
           )
         : undefined;
@@ -193,10 +190,6 @@ async function buildCuratedThreadItems(
       return items;
     }
 
-    const threadRootPermalink = toPublicPath(
-      `/${root.slug}`,
-      mediaCtx.sitePathPrefix,
-    );
     const lastPostId = thread[thread.length - 1]?.id;
     const postViews = thread.map((post) =>
       toPostView(
@@ -206,7 +199,6 @@ async function buildCuratedThreadItems(
         },
         mediaCtx,
         collectionsMap.get(post.id),
-        post.replyToId ? threadRootPermalink : undefined,
         post.id === lastPostId,
       ),
     );
@@ -229,10 +221,6 @@ async function buildCuratedThreadItems(
 
     if (selectedIndices.length === 0) {
       return items;
-    }
-
-    if (selectedIndices[0] === 0 && !rootView.isLastInThread) {
-      rootView.threadRootPermalink = rootView.permalink;
     }
 
     const selectedIndexSet = new Set(selectedIndices);

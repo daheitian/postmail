@@ -1452,11 +1452,6 @@ msgstr "If this page feels too branded, the first place to soften is the default
 msgid "Images"
 msgstr "Images"
 
-#. @context: Link to the thread root from a post footer
-#: src/ui/shared/PostFooter.tsx
-msgid "In thread →"
-msgstr "In thread →"
-
 #. @context: Accessible label for the asset keyword list on the public brand page
 #: src/ui/pages/BrandPage.tsx
 msgid "Included assets"
@@ -1760,7 +1755,7 @@ msgstr "Media"
 
 #. @context: Aria-label for collections page more button
 #. @context: Button label for a menu with more actions
-#. @context: Post menu trigger label in the post footer
+#. @context: Post menu trigger label in post actions
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/shared/collection-management-labels.ts
 #: src/ui/shared/PostFooter.tsx
@@ -2204,7 +2199,7 @@ msgid "Published on"
 msgstr "Published on"
 
 #. @context: Tooltip text for the archive tile published timestamp
-#. @context: Tooltip text for the published timestamp in the post footer
+#. @context: Tooltip text for the published timestamp in post metadata
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/shared/PostFooter.tsx
 msgid "Published on {date} at {time}"

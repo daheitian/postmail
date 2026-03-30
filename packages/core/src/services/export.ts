@@ -1403,7 +1403,17 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
 {% endif %}
 {% endmacro %}
 
-{% macro post_footer(page, detail=false) %}
+{% macro post_header_meta(page) %}
+<div class="post-header-meta-row">
+  <a href="{{ page.permalink }}" class="u-url post-header-meta-link">
+    <time class="dt-published" datetime="{{ page.date }}" title="{{ page.date }}">
+      {{ page.date | date(format="%b %e, %Y") }}
+    </time>
+  </a>
+</div>
+{% endmacro %}
+
+{% macro post_footer(page, detail=false, show_date=true) %}
 {% set collections = page.taxonomies.c | default(value=[]) %}
 <footer class="post-menu-footer{% if detail %} post-footer-detail{% endif %}" data-post-meta>
   <div class="post-footer-meta">
@@ -1413,11 +1423,13 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
       </svg>
       <span class="sr-only">Featured</span>
     </span>
+    {% if show_date %}
     <a href="{{ page.permalink }}" class="u-url post-date-link">
       <time class="dt-published" datetime="{{ page.date }}" title="{{ page.date }}">
         {{ page.date | date(format="%b %e, %Y") }}
       </time>
     </a>
+    {% endif %}
     {% if page.extra.format == "link" and page.extra.link_url %}
     <a href="{{ page.extra.link_url }}" class="post-footer-external-link" target="_blank" rel="noopener noreferrer" aria-label="Open external link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1430,8 +1442,11 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
     {% set first_collection = collections | first %}
     {% set first_collection_meta = get_section(path='c/' ~ first_collection ~ '/_index.md') %}
     {% set hidden_collection_count = collections | length %}
+    {% set show_collection_separator = show_date or (page.extra.format == "link" and page.extra.link_url) or page.extra.featured %}
     <span class="post-collection-tags">
+      {% if show_collection_separator %}
       <span class="post-collection-sep" aria-hidden="true">&middot;</span>
+      {% endif %}
       <a href="{{ get_taxonomy_url(kind='c', name=first_collection) }}" class="post-collection-tag">{{ first_collection_meta.title | default(value=first_collection) }}</a>
       {% if hidden_collection_count > 1 %}
       <span class="post-collection-more-wrap">
@@ -1469,8 +1484,9 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {{ self::post_status_badges() }}
   {% if page.title %}
     {% if detail %}
-    <div class="post-header-block">
+    <div class="post-header-block post-header-block-detail">
       <h1 class="p-name detail-title post-detail-title">{{ page.title }}</h1>
+      {{ self::post_header_meta(page=page) }}
       {{ self::post_rating(page=page) }}
     </div>
     {% else %}
@@ -1489,7 +1505,11 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% if not detail or not page.title %}
   {{ self::post_rating(page=page) }}
   {% endif %}
-  {{ self::post_footer(page=page, detail=detail) }}
+  {% if detail and page.title %}
+  {{ self::post_footer(page=page, detail=detail, show_date=false) }}
+  {% else %}
+  {{ self::post_footer(page=page, detail=detail, show_date=true) }}
+  {% endif %}
 </article>
 {% endmacro %}
 
@@ -2109,6 +2129,12 @@ img {
   margin-bottom: 1rem;
 }
 
+.post-header-block-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
 .post-header-block .feed-link-title,
 .post-header-block .feed-note-title,
 .post-header-block .detail-title {
@@ -2117,6 +2143,30 @@ img {
 
 .post-header-block .post-rating {
   margin-top: 0.45rem;
+}
+
+.post-header-block-detail .post-rating {
+  margin-top: 0;
+}
+
+.post-header-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  line-height: 1.35;
+}
+
+.post-header-meta-link {
+  color: var(--site-text-secondary);
+  font-size: 0.875rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.post-header-meta-link:hover {
+  color: var(--site-text-primary);
+  text-decoration: underline;
 }
 
 .detail-title {
@@ -2216,6 +2266,9 @@ img {
 
 [data-page="post"] .feed-link-domain,
 [data-page="post"] .feed-quote-attribution,
+[data-page="post"] .post-header-meta-row,
+[data-page="post"] .post-header-meta-link,
+[data-page="post"] .post-header-meta-link time,
 [data-page="post"] .post-footer-meta,
 [data-page="post"] .post-footer-meta a,
 [data-page="post"] .post-footer-meta time,
@@ -2248,6 +2301,7 @@ img {
 
 [data-page="post"] .feed-link-domain:hover,
 [data-page="post"] .feed-quote-source:hover,
+[data-page="post"] .post-header-meta-link:hover,
 [data-page="post"] .post-date-link:hover,
 [data-page="post"] .post-footer-external-link:hover {
   color: var(--site-reading-body);

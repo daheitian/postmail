@@ -18,7 +18,7 @@ import { sanitizeUrl } from "../../lib/url.js";
 
 interface PostFooterProps {
   post: PostView;
-  /** Detail page variant: border-top, shows permalink */
+  /** Detail page variant: border-top styling */
   detail?: boolean;
   display?: PostFooterDisplayOptions;
 }
@@ -74,19 +74,80 @@ const CompactCollectionTags: FC<{
   );
 };
 
-export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
+interface PostPublishedLinkProps {
+  post: Pick<
+    PostView,
+    "permalink" | "publishedAt" | "publishedAtFormatted" | "publishedAtTime"
+  >;
+  className: string;
+}
+
+export const PostPublishedLink: FC<PostPublishedLinkProps> = ({
+  post,
+  className,
+}) => {
   const { t } = useLingui();
   const publishedLabel = t({
     ...msg({
       message: "Published on {date} at {time}",
       comment:
-        "@context: Tooltip text for the published timestamp in the post footer",
+        "@context: Tooltip text for the published timestamp in post metadata",
     }),
     values: {
       date: post.publishedAtFormatted,
       time: post.publishedAtTime,
     },
   });
+
+  return (
+    <a href={post.permalink} class={className}>
+      <time
+        class="dt-published"
+        datetime={post.publishedAt}
+        title={publishedLabel}
+      >
+        {post.publishedAtFormatted}
+      </time>
+    </a>
+  );
+};
+
+export const PostMenuTriggerButton: FC<{ className?: string }> = ({
+  className = "post-menu-trigger",
+}) => {
+  const { t } = useLingui();
+
+  return (
+    <button
+      type="button"
+      class={className}
+      aria-haspopup="menu"
+      aria-label={t(
+        msg({
+          message: "More actions",
+          comment: "@context: Post menu trigger label in post actions",
+        }),
+      )}
+      aria-expanded="false"
+      data-post-menu-trigger
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <circle cx="5" cy="12" r="1.75" />
+        <circle cx="12" cy="12" r="1.75" />
+        <circle cx="19" cy="12" r="1.75" />
+      </svg>
+    </button>
+  );
+};
+
+export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
+  const { t } = useLingui();
   const featuredLabel =
     post.featuredAtFormatted && post.featuredAtTime
       ? t({
@@ -110,14 +171,11 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
   const safeExternalUrl =
     post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
   const showTimestamp = !display?.hideTimestamp;
-  const showThreadLink = !!post.threadRootPermalink && !display?.hideThreadLink;
   const hideActions = !!display?.hideActions;
   const hideReply = !!display?.hideReply;
   const showReply = !hideReply && post.isLastInThread;
-  const showThreadSeparator =
-    showThreadLink && (showTimestamp || !!safeExternalUrl || !!detail);
   const showCollectionSeparator =
-    showTimestamp || !!safeExternalUrl || !!detail || showThreadLink;
+    showTimestamp || !!safeExternalUrl || post.featured;
 
   return (
     <footer
@@ -147,15 +205,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
           </svg>
         </span>
         {showTimestamp && (
-          <a href={post.permalink} class="u-url post-footer-link">
-            <time
-              class="dt-published"
-              datetime={post.publishedAt}
-              title={publishedLabel}
-            >
-              {post.publishedAtFormatted}
-            </time>
-          </a>
+          <PostPublishedLink post={post} className="u-url post-footer-link" />
         )}
         {safeExternalUrl && (
           <a
@@ -183,21 +233,6 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
               <path d="M7 17 17 7" />
               <path d="M9 7h8v8" />
             </svg>
-          </a>
-        )}
-        {showThreadSeparator && (
-          <span class="post-collection-sep" aria-hidden="true">
-            &middot;
-          </span>
-        )}
-        {showThreadLink && post.threadRootPermalink && (
-          <a href={post.threadRootPermalink} class="post-footer-link">
-            {t(
-              msg({
-                message: "In thread →",
-                comment: "@context: Link to the thread root from a post footer",
-              }),
-            )}
           </a>
         )}
         <CompactCollectionTags
@@ -235,31 +270,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
               </svg>
             </button>
           )}
-          <button
-            type="button"
-            class="post-menu-trigger"
-            aria-haspopup="menu"
-            aria-label={t(
-              msg({
-                message: "More actions",
-                comment: "@context: Post menu trigger label in the post footer",
-              }),
-            )}
-            aria-expanded="false"
-            data-post-menu-trigger
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <circle cx="5" cy="12" r="1.75" />
-              <circle cx="12" cy="12" r="1.75" />
-              <circle cx="19" cy="12" r="1.75" />
-            </svg>
-          </button>
+          <PostMenuTriggerButton />
         </div>
       )}
     </footer>

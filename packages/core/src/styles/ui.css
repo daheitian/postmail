@@ -1483,6 +1483,12 @@
     margin-bottom: 1rem;
   }
 
+  .post-header-block-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
   .post-header-block .feed-link-title,
   .post-header-block .feed-note-title {
     margin-bottom: 0;
@@ -1490,6 +1496,48 @@
 
   .post-header-block .post-rating {
     margin-top: 0.45rem;
+  }
+
+  .post-header-block-detail .post-detail-title,
+  .post-header-block-detail .post-rating {
+    margin-bottom: 0;
+  }
+
+  .post-header-block-detail .post-rating {
+    margin-top: 0;
+  }
+
+  .post-header-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    min-width: 0;
+    line-height: 1.35;
+  }
+
+  .post-header-meta-link {
+    color: var(--site-text-secondary);
+    font-size: 0.875rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .post-header-meta-link:hover {
+    color: var(--site-text-primary);
+    text-decoration: underline;
+  }
+
+  .post-header-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .post-header-menu-trigger {
+    margin-right: -0.1rem;
   }
 
   /*
@@ -1518,6 +1566,9 @@
 
   [data-page="post"] .feed-link-domain,
   [data-page="post"] .feed-quote-attribution,
+  [data-page="post"] .post-header-meta-row,
+  [data-page="post"] .post-header-meta-link,
+  [data-page="post"] .post-header-meta-link time,
   [data-page="post"] [data-post-meta],
   [data-page="post"] [data-post-meta] .post-footer-meta,
   [data-page="post"] [data-post-meta] a,
@@ -1527,8 +1578,21 @@
 
   [data-page="post"] .feed-link-domain:hover,
   [data-page="post"] .feed-quote-source:hover,
+  [data-page="post"] .post-header-meta-link:hover,
   [data-page="post"] [data-post-meta] a:hover,
   [data-page="post"] [data-post-meta] .post-footer-external-link:hover {
+    color: var(--site-reading-body);
+  }
+
+  [data-page="post"] .post-header-actions .post-menu-trigger {
+    color: var(--site-reading-meta);
+  }
+
+  [data-page="post"] .post-header-actions .post-menu-trigger:hover,
+  [data-page="post"] .post-header-actions .post-menu-trigger:focus-visible,
+  [data-page="post"]
+    .post-header-actions
+    .post-menu-trigger[aria-expanded="true"] {
     color: var(--site-reading-body);
   }
 

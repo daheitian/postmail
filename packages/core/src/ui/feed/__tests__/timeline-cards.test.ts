@@ -139,8 +139,29 @@ describe("timeline cards", () => {
     expect(feedHtml.indexOf("data-post-body")).toBeLessThan(
       feedHtml.indexOf('class="post-rating"'),
     );
-    expect(detailHtml).toContain('class="post-header-block"');
+    expect(detailHtml).toContain(
+      'class="post-header-block post-header-block-detail"',
+    );
     expect(detailHtml.indexOf('class="post-rating"')).toBeLessThan(
+      detailHtml.indexOf("data-post-body"),
+    );
+  });
+
+  it("moves titled note detail timestamps into the header while keeping footer actions", () => {
+    const post = createPostView({
+      format: "note",
+      rating: 4,
+      summaryHtml: "<p>Summary</p>",
+    });
+
+    const detailHtml = renderWithI18n(NoteCard({ post, mode: "detail" }));
+
+    expect(detailHtml).toContain('class="post-header-meta-row"');
+    expect(detailHtml).toContain('class="u-url post-header-meta-link"');
+    expect(detailHtml.match(/class="dt-published"/g)).toHaveLength(1);
+    expect(detailHtml).toContain("data-reply-trigger");
+    expect(detailHtml.match(/data-post-menu-trigger/g)).toHaveLength(2);
+    expect(detailHtml.indexOf('class="post-header-meta-row"')).toBeLessThan(
       detailHtml.indexOf("data-post-body"),
     );
   });
