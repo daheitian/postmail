@@ -9,6 +9,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       working_directory: sites/demo
+      github_environment: demo
     secrets:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}

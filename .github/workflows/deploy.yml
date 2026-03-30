@@ -13,6 +13,10 @@ on:
         required: false
         type: string
         default: "."
+      github_environment:
+        description: "GitHub environment name shown in the Deployments UI"
+        required: true
+        type: string
       node_version:
         description: "Node.js version"
         required: false
@@ -30,6 +34,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy
+    environment: ${{ inputs.github_environment }}
 
     steps:
       - name: Checkout

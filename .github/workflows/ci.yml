@@ -147,6 +147,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       working_directory: sites/demo
+      github_environment: demo
     secrets:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -158,6 +159,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       working_directory: sites/demo-source
+      github_environment: demo-source
     secrets:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -169,6 +171,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       working_directory: sites/content-lab
+      github_environment: content-lab
     secrets:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -182,6 +185,7 @@ jobs:
       source_ref: ${{ github.ref_name }}
       source_sha: ${{ github.sha }}
       target_env: prod
+      github_environment: jant-prod
     secrets:
       BUILD_REPO_TOKEN: ${{ secrets.BUILD_REPO_TOKEN }}
 
@@ -194,5 +198,70 @@ jobs:
       source_ref: ${{ github.event.pull_request.head.ref }}
       source_sha: ${{ github.event.pull_request.head.sha }}
       target_env: preview
+      github_environment: jant-preview
     secrets:
       BUILD_REPO_TOKEN: ${{ secrets.BUILD_REPO_TOKEN }}
+
+  deploy-summary:
+    name: Deployment Summary
+    needs:
+      - changes
+      - ci
+      - pg-smoke
+      - deploy-demo
+      - deploy-demo-source
+      - deploy-content-lab
+      - deploy-studio-prod
+      - deploy-studio-preview
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write deployment summary
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || '' }}
+          CI_RESULT: ${{ needs.ci.result }}
+          PG_SMOKE_RESULT: ${{ needs['pg-smoke'].result }}
+          DEMO_SELECTED: ${{ needs.changes.outputs.demo || 'false' }}
+          DEMO_SOURCE_SELECTED: ${{ needs.changes.outputs.demo_source || 'false' }}
+          CONTENT_LAB_SELECTED: ${{ needs.changes.outputs.content_lab || 'false' }}
+          DEPLOY_DEMO_RESULT: ${{ needs['deploy-demo'].result }}
+          DEPLOY_DEMO_SOURCE_RESULT: ${{ needs['deploy-demo-source'].result }}
+          DEPLOY_CONTENT_LAB_RESULT: ${{ needs['deploy-content-lab'].result }}
+          DEPLOY_STUDIO_PROD_RESULT: ${{ needs['deploy-studio-prod'].result }}
+          DEPLOY_STUDIO_PREVIEW_RESULT: ${{ needs['deploy-studio-preview'].result }}
+        run: |
+          set -euo pipefail
+
+          write_row() {
+            printf '| %s | %s | %s |\n' "$1" "$2" "$3"
+          }
+
+          {
+            echo "## Deployment Summary"
+            echo
+            echo "- Event: \`$EVENT_NAME\`"
+            echo "- Ref: \`$REF_NAME\`"
+            echo "- CI: \`$CI_RESULT\`"
+            echo "- PG Smoke: \`$PG_SMOKE_RESULT\`"
+            echo
+            echo "| Target | Selected | Result |"
+            echo "| --- | --- | --- |"
+
+            if [ "$EVENT_NAME" = "push" ] && [ "$REF_NAME" = "main" ]; then
+              write_row "demo.jant.me" "${DEMO_SELECTED:-false}" "$DEPLOY_DEMO_RESULT"
+              write_row "demo-source.jant.me" "${DEMO_SOURCE_SELECTED:-false}" "$DEPLOY_DEMO_SOURCE_RESULT"
+              write_row "content-lab.jant.me" "${CONTENT_LAB_SELECTED:-false}" "$DEPLOY_CONTENT_LAB_RESULT"
+              write_row "jant prod build" "true" "$DEPLOY_STUDIO_PROD_RESULT"
+            elif [ "$EVENT_NAME" = "pull_request" ]; then
+              if [ "$PR_HEAD_REPO" != "$REPOSITORY" ]; then
+                write_row "jant preview build" "no (fork PR)" "$DEPLOY_STUDIO_PREVIEW_RESULT"
+              else
+                write_row "jant preview build" "true" "$DEPLOY_STUDIO_PREVIEW_RESULT"
+              fi
+            else
+              write_row "automatic deploys" "n/a" "not selected for this event"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

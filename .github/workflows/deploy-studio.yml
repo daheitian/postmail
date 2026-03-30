@@ -15,6 +15,11 @@ on:
         description: "Deployment target environment"
         required: true
         type: string
+      github_environment:
+        description: "GitHub environment name shown in the Deployments UI"
+        required: false
+        type: string
+        default: ""
     secrets:
       BUILD_REPO_TOKEN:
         description: "GitHub token for tonormal/build repository dispatch"
@@ -31,6 +36,7 @@ concurrency:
 jobs:
   dispatch:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.github_environment || (github.ref_name == 'main' && 'jant-prod' || 'jant-preview') }}
     steps:
       - name: Dispatch to tonormal/build
         env:
