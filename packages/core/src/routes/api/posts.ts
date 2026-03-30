@@ -214,6 +214,17 @@ postsApiRoutes.get("/slug", requireAuthApi(), async (c) => {
   });
 });
 
+// Get post body content (requires auth)
+postsApiRoutes.get("/:id/content", requireAuthApi(), async (c) => {
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.post);
+  const content = assertFound(
+    await c.var.services.posts.getBodyContent(id),
+    "Post",
+  );
+
+  return c.json(content);
+});
+
 // Get single post (requires auth)
 postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
   const id = parseIdParam(c.req.param("id"), ID_PREFIX.post);

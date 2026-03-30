@@ -27,6 +27,7 @@ import type {
   ComposeLabels,
   ComposeAttachment,
   AttachedTextItem,
+  ComposeEditorSelection,
   ComposeFullscreenOpenDetail,
 } from "./compose-types.js";
 import {
@@ -131,6 +132,16 @@ function renderComposeToolbarIcon(
   </svg>`;
 }
 
+function clampEditorSelection(
+  editor: Editor,
+  selection: ComposeEditorSelection,
+): ComposeEditorSelection {
+  const max = editor.state.doc.content.size;
+  const from = Math.max(1, Math.min(selection.from, max));
+  const to = Math.max(from, Math.min(selection.to, max));
+  return { from, to };
+}
+
 export class JantComposeEditor extends LitElement {
   static properties = {
     format: { type: String },
@@ -178,6 +189,7 @@ export class JantComposeEditor extends LitElement {
   private _fileInput: HTMLInputElement | null = null;
   private _lastFocusedField: HTMLTextAreaElement | HTMLInputElement | null =
     null;
+  private _lastEditorSelection: ComposeEditorSelection | null = null;
   private _emojiPickerEl: HTMLElement | null = null;
   private _emojiContainer: HTMLElement | null = null;
   private readonly _urlStatusId = `compose-url-status-${crypto.randomUUID()}`;
@@ -412,6 +424,7 @@ export class JantComposeEditor extends LitElement {
     this._title = "";
     this._bodyJson = null;
     this._editor?.commands.clearContent();
+    this._lastEditorSelection = null;
     this._url = "";
     this._quoteText = "";
     this._quoteAuthor = "";
@@ -476,6 +489,26 @@ export class JantComposeEditor extends LitElement {
     this._editor?.commands.focus();
   }
 
+  focusSelection(selection?: ComposeEditorSelection | null) {
+    if (this.format !== "note" || !this._editor) {
+      this.focusInput();
+      return;
+    }
+
+    const targetSelection = selection ?? this.getEditorSelection();
+    if (!targetSelection) {
+      this.focusInput();
+      return;
+    }
+
+    const normalizedSelection = clampEditorSelection(
+      this._editor,
+      targetSelection,
+    );
+    this._lastEditorSelection = normalizedSelection;
+    this._editor.chain().focus().setTextSelection(normalizedSelection).run();
+  }
+
   focusUrlInput(position?: "start" | "end") {
     this._focusTextControl(
       this.querySelector<HTMLInputElement>(".compose-url-input"),
@@ -527,8 +560,18 @@ export class JantComposeEditor extends LitElement {
     return this.getLinkTitleValidationMessage();
   }
 
+  getEditorSelection(): ComposeEditorSelection | null {
+    return this._readEditorSelection() ?? this._lastEditorSelection;
+  }
+
   isEmojiPickerOpen(): boolean {
     return this._showEmojiPicker;
+  }
+
+  private _readEditorSelection(): ComposeEditorSelection | null {
+    if (!this._editor) return null;
+    const { from, to } = this._editor.state.selection;
+    return { from, to };
   }
 
   private _focusTextControl(
@@ -561,6 +604,9 @@ export class JantComposeEditor extends LitElement {
       onFocus: () => {
         this._lastFocusedField = null;
       },
+      onSelectionUpdate: (selection) => {
+        this._lastEditorSelection = selection;
+      },
       pasteMedia: {
         shouldInsertInline: (file) => this._shouldPasteInlineImage(file),
         onPasteFiles: (files) => {
@@ -568,6 +614,7 @@ export class JantComposeEditor extends LitElement {
         },
       },
     });
+    this._lastEditorSelection = this._readEditorSelection();
 
     // Lock editor min-height once so new lines fill existing space
     // instead of growing the dialog line-by-line.
@@ -666,6 +713,7 @@ export class JantComposeEditor extends LitElement {
       json: this._editor?.getJSON() ?? this._bodyJson,
       title: this._title,
       showTitle: this._showTitle,
+      selection: this.getEditorSelection(),
     };
   }
 
@@ -792,7 +840,12 @@ export class JantComposeEditor extends LitElement {
   }
 
   /** Updates editor content and title from fullscreen close */
-  setEditorState(json: JSONContent | null, title: string, showTitle: boolean) {
+  setEditorState(
+    json: JSONContent | null,
+    title: string,
+    showTitle: boolean,
+    selection?: ComposeEditorSelection | null,
+  ) {
     this._bodyJson = json;
     this._title = title;
     if (this.format === "note") {
@@ -806,6 +859,7 @@ export class JantComposeEditor extends LitElement {
         },
       );
     }
+    this._lastEditorSelection = selection ?? this._readEditorSelection();
   }
 
   private static SUMMARY_LENGTH = 100;
@@ -1241,10 +1295,10 @@ export class JantComposeEditor extends LitElement {
   private _restoreEmojiFocus() {
     const field = this._lastFocusedField;
     if (field && this.contains(field) && !field.disabled) {
-      this._focusTextControl(field, "end");
+      field.focus();
       return;
     }
-    this.focusInput("end");
+    this.focusSelection();
   }
 
   private _onDocumentClick(e: Event) {

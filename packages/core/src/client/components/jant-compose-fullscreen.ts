@@ -13,6 +13,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import type {
+  ComposeEditorSelection,
   ComposeLabels,
   ComposeFullscreenCloseDetail,
   ComposeFullscreenOpenDetail,
@@ -42,6 +43,7 @@ export class JantComposeFullscreen extends LitElement {
 
   private _editor: Editor | null = null;
   private _content: JSONContent | null = null;
+  private _selection: ComposeEditorSelection | null = null;
   private _fileInput: HTMLInputElement | null = null;
 
   createRenderRoot() {
@@ -111,6 +113,7 @@ export class JantComposeFullscreen extends LitElement {
 
   private _onOpen = (e: CustomEvent<ComposeFullscreenOpenDetail>) => {
     this._content = e.detail.json;
+    this._selection = e.detail.selection ?? null;
     this._title = e.detail.title;
     if (e.detail.labels) {
       this.labels = e.detail.labels;
@@ -149,7 +152,17 @@ export class JantComposeFullscreen extends LitElement {
       },
     });
 
-    this._editor.commands.focus("end");
+    const selection = this._selection;
+    if (selection) {
+      const max = this._editor.state.doc.content.size;
+      const from = Math.max(1, Math.min(selection.from, max));
+      const to = Math.max(from, Math.min(selection.to, max));
+      this._selection = { from, to };
+      this._editor.chain().focus().setTextSelection({ from, to }).run();
+      return;
+    }
+
+    this._editor.commands.focus();
   }
 
   private _destroyEditor() {
@@ -185,6 +198,12 @@ export class JantComposeFullscreen extends LitElement {
 
   private _close() {
     const json = this._editor?.getJSON() ?? this._content;
+    const selection = this._editor
+      ? {
+          from: this._editor.state.selection.from,
+          to: this._editor.state.selection.to,
+        }
+      : this._selection;
     this._destroyEditor();
 
     // Close the modal dialog before Lit removes it from DOM
@@ -203,6 +222,7 @@ export class JantComposeFullscreen extends LitElement {
           json,
           title: this._title,
           showTitle: this._showTitle || this._title.trim().length > 0,
+          selection,
           replyExpanded: this._replyExpanded,
         },
       }),

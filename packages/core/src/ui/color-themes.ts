@@ -44,6 +44,14 @@ interface ThemeModeColors {
   searchMarkColor?: string;
   /** Admin dashboard background */
   dashBg?: string;
+  /** Detail-page title color for long-form reading */
+  readingTitle?: string;
+  /** Detail-page heading color for long-form reading */
+  readingHeading?: string;
+  /** Detail-page body color for long-form reading */
+  readingBody?: string;
+  /** Detail-page quote color for long-form reading */
+  readingQuote?: string;
 }
 
 /** Default destructive/success colors that harmonize with most themes */
@@ -113,6 +121,18 @@ function defineTheme(opts: {
       "--search-mark-color":
         light.searchMarkColor ?? DEFAULTS.light.searchMarkColor,
       "--dash-bg": light.dashBg ?? DEFAULTS.light.dashBg,
+      ...(light.readingTitle
+        ? { "--site-reading-title": light.readingTitle }
+        : {}),
+      ...(light.readingHeading
+        ? { "--site-reading-heading": light.readingHeading }
+        : {}),
+      ...(light.readingBody
+        ? { "--site-reading-body": light.readingBody }
+        : {}),
+      ...(light.readingQuote
+        ? { "--site-reading-quote": light.readingQuote }
+        : {}),
     },
     dark: {
       "--background": dark.bg,
@@ -148,6 +168,16 @@ function defineTheme(opts: {
       "--search-mark-color":
         dark.searchMarkColor ?? DEFAULTS.dark.searchMarkColor,
       "--dash-bg": dark.dashBg ?? DEFAULTS.dark.dashBg,
+      ...(dark.readingTitle
+        ? { "--site-reading-title": dark.readingTitle }
+        : {}),
+      ...(dark.readingHeading
+        ? { "--site-reading-heading": dark.readingHeading }
+        : {}),
+      ...(dark.readingBody ? { "--site-reading-body": dark.readingBody } : {}),
+      ...(dark.readingQuote
+        ? { "--site-reading-quote": dark.readingQuote }
+        : {}),
     },
   };
 }
@@ -168,6 +198,10 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
       destructive: "oklch(0.56 0.21 24)",
       success: "oklch(0.56 0.11 158)",
       dashBg: "oklch(0.955 0.012 92)",
+      readingTitle: "oklch(0.208 0.009 60)",
+      readingHeading: "oklch(0.226 0.01 62)",
+      readingBody: "oklch(0.242 0.012 58)",
+      readingQuote: "oklch(0.232 0.012 60)",
     },
     dark: {
       bg: "oklch(0.182 0.003 95)",

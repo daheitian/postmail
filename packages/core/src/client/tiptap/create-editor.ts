@@ -25,6 +25,7 @@ export interface CreateEditorOptions {
   content?: JSONContent | null;
   onUpdate?: (json: JSONContent) => void;
   onFocus?: () => void;
+  onSelectionUpdate?: (selection: { from: number; to: number }) => void;
   toolbarMode?: FormattingToolbarMode;
   pasteMedia?: PasteMediaOptions;
 }
@@ -53,6 +54,12 @@ export function createTiptapEditor(options: CreateEditorOptions): Editor {
     },
     onFocus: () => {
       options.onFocus?.();
+    },
+    onSelectionUpdate: ({ editor }) => {
+      options.onSelectionUpdate?.({
+        from: editor.state.selection.from,
+        to: editor.state.selection.to,
+      });
     },
   });
 

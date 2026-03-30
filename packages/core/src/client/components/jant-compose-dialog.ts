@@ -728,7 +728,7 @@ export class JantComposeDialog extends LitElement {
 
     this.closest("dialog")?.showModal();
     globalThis.requestAnimationFrame(() => {
-      this._editor?.focusInput();
+      this._focusDialogShell();
       this._captureInitialSnapshot();
     });
   }
@@ -1526,8 +1526,17 @@ export class JantComposeDialog extends LitElement {
     this.requestClose();
   };
 
-  private _focusPageEditorEnd() {
-    this.updateComplete.then(() => this._editor?.focusInput("end"));
+  private _focusDialogShell() {
+    const shell = this.querySelector<HTMLElement>(".compose-dialog-inner");
+    if (shell) {
+      shell.focus();
+      return;
+    }
+    this._dialogEl?.focus();
+  }
+
+  private _restorePageEditorFocus() {
+    this.updateComplete.then(() => this._editor?.focusInput());
   }
 
   private _dismissEscapeOverlay(): boolean {
@@ -1549,19 +1558,19 @@ export class JantComposeDialog extends LitElement {
     if (this._showCollection) {
       this._showCollection = false;
       this._collectionSearch = "";
-      this._focusPageEditorEnd();
+      this._restorePageEditorFocus();
       return true;
     }
 
     if (this._showPublishPanel) {
       this._showPublishPanel = false;
-      this._focusPageEditorEnd();
+      this._restorePageEditorFocus();
       return true;
     }
 
     if (this._altPanelOpen) {
       this._closeAltPanel();
-      this._focusPageEditorEnd();
+      this._restorePageEditorFocus();
       return true;
     }
 
@@ -1646,8 +1655,9 @@ export class JantComposeDialog extends LitElement {
         e.detail.json as import("@tiptap/core").JSONContent,
         e.detail.title,
         e.detail.showTitle,
+        e.detail.selection,
       );
-      this.updateComplete.then(() => editor.focusInput("end"));
+      this.updateComplete.then(() => editor.focusSelection(e.detail.selection));
     }
     this._replyExpanded = e.detail.replyExpanded;
   };
@@ -3453,6 +3463,7 @@ export class JantComposeDialog extends LitElement {
           "compose-dialog-inner-page": this.pageMode,
           "compose-dialog-inner-suspended": this._addCollectionPanelOpen,
         })}
+        tabindex="-1"
         aria-hidden=${this._addCollectionPanelOpen ? "true" : "false"}
         ?inert=${this._addCollectionPanelOpen}
       >

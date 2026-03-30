@@ -189,10 +189,16 @@ export interface ComposeFullscreenReplyContext {
   expanded: boolean;
 }
 
+export interface ComposeEditorSelection {
+  from: number;
+  to: number;
+}
+
 export interface ComposeFullscreenOpenDetail {
   json: JSONContent | null;
   title: string;
   showTitle: boolean;
+  selection?: ComposeEditorSelection | null;
   labels?: ComposeLabels;
   replyContext?: ComposeFullscreenReplyContext | null;
 }
@@ -201,6 +207,7 @@ export interface ComposeFullscreenCloseDetail {
   json: JSONContent | null;
   title: string;
   showTitle: boolean;
+  selection?: ComposeEditorSelection | null;
   replyExpanded: boolean;
 }
 

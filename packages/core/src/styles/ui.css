@@ -1497,42 +1497,42 @@
    * This keeps long-form text feeling grounded without making global UI copy
    * unnecessarily heavy.
    */
-  article[data-page="post"] {
+  [data-page="post"] {
     color: var(--site-reading-body);
   }
 
-  article[data-page="post"] .post-detail-title {
+  [data-page="post"] .post-detail-title {
     color: var(--site-reading-title);
     text-wrap: pretty;
   }
 
-  article[data-page="post"] .post-detail-body,
-  article[data-page="post"] .post-detail-body.prose {
+  [data-page="post"] .post-detail-body,
+  [data-page="post"] .post-detail-body.prose {
     color: var(--site-reading-body);
   }
 
-  article[data-page="post"] .feed-quote-content,
-  article[data-page="post"] .post-detail-quote {
+  [data-page="post"] .feed-quote-content,
+  [data-page="post"] .post-detail-quote {
     color: var(--site-reading-quote);
   }
 
-  article[data-page="post"] .feed-link-domain,
-  article[data-page="post"] .feed-quote-attribution,
-  article[data-page="post"] [data-post-meta],
-  article[data-page="post"] [data-post-meta] .post-footer-meta,
-  article[data-page="post"] [data-post-meta] a,
-  article[data-page="post"] [data-post-meta] time {
+  [data-page="post"] .feed-link-domain,
+  [data-page="post"] .feed-quote-attribution,
+  [data-page="post"] [data-post-meta],
+  [data-page="post"] [data-post-meta] .post-footer-meta,
+  [data-page="post"] [data-post-meta] a,
+  [data-page="post"] [data-post-meta] time {
     color: var(--site-reading-meta);
   }
 
-  article[data-page="post"] .feed-link-domain:hover,
-  article[data-page="post"] .feed-quote-source:hover,
-  article[data-page="post"] [data-post-meta] a:hover,
-  article[data-page="post"] [data-post-meta] .post-footer-external-link:hover {
+  [data-page="post"] .feed-link-domain:hover,
+  [data-page="post"] .feed-quote-source:hover,
+  [data-page="post"] [data-post-meta] a:hover,
+  [data-page="post"] [data-post-meta] .post-footer-external-link:hover {
     color: var(--site-reading-body);
   }
 
-  article[data-page="post"] .feed-quote {
+  [data-page="post"] .feed-quote {
     border-left-color: color-mix(
       in srgb,
       var(--site-reading-meta) 74%,
@@ -1540,7 +1540,7 @@
     );
   }
 
-  article[data-page="post"] .feed-quote-mark {
+  [data-page="post"] .feed-quote-mark {
     color: color-mix(in srgb, var(--site-accent) 18%, var(--site-reading-meta));
     opacity: 0.72;
   }
@@ -6133,21 +6133,47 @@
   }
 
   .media-lightbox-content {
+    width: 100%;
+    height: 100dvh;
+    position: relative;
+    outline: none;
+  }
+
+  .media-lightbox-stage {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     height: 100%;
-    position: relative;
-    outline: none;
+    padding: 16px 72px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .media-lightbox-stage-scroll {
+    align-items: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable both-edges;
+    -webkit-overflow-scrolling: touch;
   }
 
   .media-lightbox-img {
-    max-width: 90vw;
-    max-height: 90vh;
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
     border-radius: 4px;
     animation: lightbox-scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .media-lightbox-img-scroll {
+    width: min(100%, 44rem);
+    max-width: none;
+    max-height: none;
+    height: auto;
+    margin: 0 auto;
   }
 
   .media-lightbox-close {
@@ -6219,10 +6245,16 @@
   }
 
   @media (max-width: 640px) {
+    .media-lightbox-stage {
+      padding: 16px 8px;
+    }
+
     .media-lightbox-img {
-      max-width: 100vw;
-      max-height: 85vh;
       border-radius: 0;
+    }
+
+    .media-lightbox-img-scroll {
+      width: 100%;
     }
 
     .media-lightbox-close {
@@ -6585,8 +6617,8 @@
   /* --- Lightbox video ----------------------------------------------------- */
 
   .media-lightbox-video {
-    max-width: 90vw;
-    max-height: 90vh;
+    max-width: 100%;
+    max-height: 100%;
     border-radius: 4px;
     animation: lightbox-scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
     background-color: black;
@@ -6594,8 +6626,6 @@
 
   @media (max-width: 640px) {
     .media-lightbox-video {
-      max-width: 100vw;
-      max-height: 85vh;
       border-radius: 0;
     }
   }

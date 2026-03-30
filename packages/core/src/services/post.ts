@@ -34,6 +34,7 @@ import { now } from "../lib/time.js";
 import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { extractSummary, extractBodyText } from "../lib/summary.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
+import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import { generatePostSlug } from "../lib/slug.js";
 import { getSlugValidationIssue } from "../lib/slug-format.js";
 import { normalizePath, slugify } from "../lib/url.js";
@@ -139,8 +140,18 @@ export interface CollectionFeedEntry {
   collectedAt: number;
 }
 
+export interface PostBodyContent {
+  id: string;
+  type: "post";
+  format: Format;
+  contentFormat: "markdown";
+  content: string;
+  chars: number;
+}
+
 export interface PostService {
   getById(id: string): Promise<Post | null>;
+  getBodyContent(id: string): Promise<PostBodyContent | null>;
   getBySlug(slug: string): Promise<Post | null>;
   suggestSlug(input: {
     title?: string;
@@ -1016,6 +1027,20 @@ export function createPostService(
         )
         .limit(1);
       return hydratePost(result[0]);
+    },
+
+    async getBodyContent(id) {
+      const post = await this.getById(id);
+      if (!post) return null;
+
+      return {
+        id: post.id,
+        type: "post",
+        format: post.format,
+        contentFormat: "markdown",
+        content: post.body ? tiptapJsonToMarkdown(post.body) : "",
+        chars: post.bodyText?.length ?? 0,
+      };
     },
 
     async getBySlug(slug) {

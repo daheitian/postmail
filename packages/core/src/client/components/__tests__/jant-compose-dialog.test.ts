@@ -218,6 +218,18 @@ describe("JantComposeDialog", () => {
         _lastNewPostVisibility: string;
       }
     )._lastNewPostVisibility = "public";
+
+    if (!HTMLDialogElement.prototype.showModal) {
+      HTMLDialogElement.prototype.showModal = function () {
+        this.setAttribute("open", "");
+      };
+    }
+
+    if (!HTMLDialogElement.prototype.close) {
+      HTMLDialogElement.prototype.close = function () {
+        this.removeAttribute("open");
+      };
+    }
   });
 
   it("renders with collections and labels", async () => {
@@ -253,20 +265,29 @@ describe("JantComposeDialog", () => {
     ).not.toBeNull();
   });
 
-  it("focuses the main editor body after fullscreen closes", async () => {
+  it("restores the editor selection after fullscreen closes", async () => {
     const el = await createElement();
     const editor = requireElement(
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
       "expected compose editor",
     );
-    const focusSpy = vi.spyOn(editor, "focusInput");
+    const focusSpy = vi.spyOn(editor, "focusSelection");
 
     document.dispatchEvent(
       new CustomEvent("jant:fullscreen-close", {
         detail: {
-          json: null,
+          json: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Hello" }],
+              },
+            ],
+          },
           title: "",
           showTitle: false,
+          selection: { from: 3, to: 3 },
           replyExpanded: false,
         },
       }),
@@ -275,7 +296,55 @@ describe("JantComposeDialog", () => {
     await flushUpdates(el);
     await flushUpdates(el);
 
-    expect(focusSpy).toHaveBeenCalledWith("end");
+    expect(focusSpy).toHaveBeenCalledWith({ from: 3, to: 3 });
+  });
+
+  it("opens edit mode without auto-focusing the editor body", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "pst_123",
+          format: "note",
+          title: "Long draft",
+          body: JSON.stringify({
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Long body text" }],
+              },
+            ],
+          }),
+          mediaAttachments: [],
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    const compose = await createElement();
+    const editor = requireElement(
+      compose.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const shell = requireElement(
+      compose.querySelector<HTMLElement>(".compose-dialog-inner"),
+      "expected compose dialog shell",
+    );
+    const shellFocusSpy = vi.spyOn(shell, "focus");
+    const focusSpy = vi.spyOn(editor, "focusInput");
+
+    await compose.openEdit("pst_123");
+    await flushUpdates(compose);
+    await flushUpdates(compose);
+
+    expect(focusSpy).not.toHaveBeenCalled();
+    expect(shellFocusSpy).toHaveBeenCalled();
   });
 
   it("opens publish settings even when publish is disabled", async () => {
@@ -2494,7 +2563,7 @@ describe("JantComposeDialog", () => {
     await editor.updateComplete;
 
     const closeEmojiPickerSpy = vi.spyOn(editor, "closeEmojiPicker");
-    const focusSpy = vi.spyOn(editor, "focusInput");
+    const focusSpy = vi.spyOn(editor, "focusSelection");
 
     (
       el as unknown as {
@@ -2505,7 +2574,7 @@ describe("JantComposeDialog", () => {
 
     expect(closeEmojiPickerSpy).toHaveBeenCalledWith({ restoreFocus: true });
     expect(el._confirmPanelOpen).toBe(false);
-    expect(focusSpy).toHaveBeenCalledWith("end");
+    expect(focusSpy).toHaveBeenCalled();
   });
 
   it("dialog cancel closes the collection selector and keeps selected collections", async () => {
@@ -2536,7 +2605,7 @@ describe("JantComposeDialog", () => {
     expect(el._showCollection).toBe(false);
     expect(el._collectionIds).toEqual(["col-1"]);
     expect(el._confirmPanelOpen).toBe(false);
-    expect(focusSpy).toHaveBeenCalledWith("end");
+    expect(focusSpy).toHaveBeenCalledWith();
   });
 
   it("dialog cancel closes publish settings and returns focus to the editor", async () => {
@@ -2568,7 +2637,7 @@ describe("JantComposeDialog", () => {
 
     expect(el._showPublishPanel).toBe(false);
     expect(el._confirmPanelOpen).toBe(false);
-    expect(focusSpy).toHaveBeenCalledWith("end");
+    expect(focusSpy).toHaveBeenCalledWith();
   });
 
   it("requestClose with content shows confirmation panel", async () => {

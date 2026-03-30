@@ -75,6 +75,8 @@ describe("BUILTIN_COLOR_THEMES", () => {
 
     expect(linen?.light["--primary"]).toBe("oklch(0.3633 0.0697 159.95)");
     expect(linen?.light["--site-accent"]).toBe("oklch(0.4406 0.0568 159.95)");
+    expect(linen?.light["--site-reading-body"]).toBe("oklch(0.242 0.012 58)");
+    expect(linen?.light["--site-reading-heading"]).toBe("oklch(0.226 0.01 62)");
     expect(linen?.dark["--primary"]).toBe("oklch(0.6966 0.0528 159.95)");
     expect(linen?.dark["--site-accent"]).toBe("oklch(0.7306 0.0478 159.95)");
   });

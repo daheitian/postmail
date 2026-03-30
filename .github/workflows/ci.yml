@@ -9,9 +9,74 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  changes:
+    name: Detect Deploy Targets
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      demo: ${{ steps.filter.outputs.demo }}
+      demo_source: ${{ steps.filter.outputs.demo_source }}
+      content_lab: ${{ steps.filter.outputs.content_lab }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve changed deploy targets
+        id: filter
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            mapfile -t changed_files < <(git ls-tree -r --name-only "$AFTER_SHA")
+          else
+            mapfile -t changed_files < <(git diff --name-only "$BEFORE_SHA" "$AFTER_SHA")
+          fi
+
+          echo "Changed files:"
+          if [ ${#changed_files[@]} -eq 0 ]; then
+            echo "  (none)"
+          else
+            printf '  %s\n' "${changed_files[@]}"
+          fi
+
+          demo=false
+          demo_source=false
+          content_lab=false
+
+          for file in "${changed_files[@]}"; do
+            case "$file" in
+              packages/core/*|sites/demo/*|.github/workflows/deploy.yml|.github/workflows/deploy-demo.yml)
+                demo=true
+                ;;
+            esac
+
+            case "$file" in
+              packages/core/*|sites/demo-source/*|.github/workflows/deploy.yml|.github/workflows/deploy-demo-source.yml)
+                demo_source=true
+                ;;
+            esac
+
+            case "$file" in
+              packages/core/*|sites/content-lab/*|.github/workflows/deploy.yml|.github/workflows/deploy-content-lab.yml)
+                content_lab=true
+                ;;
+            esac
+          done
+
+          {
+            echo "demo=$demo"
+            echo "demo_source=$demo_source"
+            echo "content_lab=$content_lab"
+          } >> "$GITHUB_OUTPUT"
+
   ci:
     name: CI
     runs-on: ubuntu-latest
@@ -74,3 +139,36 @@ jobs:
           PG_SMOKE_ADMIN_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
           PG_SMOKE_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/jant_pg_smoke
         run: mise run check-pg-smoke
+
+  deploy-demo:
+    name: Deploy Demo
+    needs: [changes, ci, pg-smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.demo == 'true'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      working_directory: sites/demo
+    secrets:
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+
+  deploy-demo-source:
+    name: Deploy demo-source
+    needs: [changes, ci, pg-smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.demo_source == 'true'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      working_directory: sites/demo-source
+    secrets:
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+
+  deploy-content-lab:
+    name: Deploy content-lab
+    needs: [changes, ci, pg-smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.content_lab == 'true'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      working_directory: sites/content-lab
+    secrets:
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}

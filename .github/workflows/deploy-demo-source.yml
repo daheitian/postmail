@@ -1,14 +1,6 @@
 name: Deploy demo-source
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "packages/core/**"
-      - "sites/demo-source/**"
-      - ".github/workflows/deploy.yml"
-      - ".github/workflows/deploy-demo-source.yml"
   workflow_dispatch:
 
 jobs:

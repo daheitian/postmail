@@ -1470,7 +1470,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% if page.title %}
     {% if detail %}
     <div class="post-header-block">
-      <h1 class="p-name detail-title">{{ page.title }}</h1>
+      <h1 class="p-name detail-title post-detail-title">{{ page.title }}</h1>
       {{ self::post_rating(page=page) }}
     </div>
     {% else %}
@@ -1480,7 +1480,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
     {% endif %}
   {% endif %}
   {% if detail and page.content %}
-  <div class="e-content prose" data-post-body>{{ page.content | safe }}</div>
+  <div class="e-content prose post-detail-body" data-post-body>{{ page.content | safe }}</div>
   {% elif not detail and page.summary %}
   <div class="e-content prose {% if page.title %}post-body-summary{% endif %}" data-post-body>{{ page.summary | safe }}</div>
   {% elif page.content %}
@@ -1520,7 +1520,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% if page.title %}
     {% if detail %}
     <div class="post-header-block">
-      <h1 class="p-name detail-title feed-link-title">
+      <h1 class="p-name detail-title post-detail-title feed-link-title">
         <a href="{{ page.extra.link_url | default(value=page.permalink) }}" class="u-url feed-link-title-link" {% if page.extra.link_url %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ page.title }}</a>
       </h1>
       {{ self::post_rating(page=page) }}
@@ -1532,7 +1532,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
     {% endif %}
   {% endif %}
   {% if detail and page.content %}
-  <div class="e-content prose feed-link-summary" data-post-body>{{ page.content | safe }}</div>
+  <div class="e-content prose feed-link-summary post-detail-body" data-post-body>{{ page.content | safe }}</div>
   {% elif not detail and page.summary %}
   <div class="e-content prose feed-link-summary" data-post-body>{{ page.summary | safe }}</div>
   {% elif page.content %}
@@ -1563,7 +1563,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% if page.extra.quote_text %}
   <blockquote class="feed-quote feed-quote-card">
     ${DECORATIVE_QUOTE_MARK_SVG}
-    <div class="e-content feed-quote-content">{{ page.extra.quote_text }}</div>
+    <div class="e-content feed-quote-content{% if detail %} post-detail-quote{% endif %}">{{ page.extra.quote_text }}</div>
   </blockquote>
   {% endif %}
   {% if page.extra.source_name or page.extra.source_url %}
@@ -1578,7 +1578,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   </div>
   {% endif %}
   {% if detail and page.content %}
-  <div class="feed-quote-commentary prose" data-post-body>{{ page.content | safe }}</div>
+  <div class="feed-quote-commentary prose{% if detail %} post-detail-body{% endif %}" data-post-body>{{ page.content | safe }}</div>
   {% elif not detail and page.summary %}
   <div class="feed-quote-commentary prose" data-post-body>{{ page.summary | safe }}</div>
   {% elif page.content %}
@@ -1669,6 +1669,41 @@ const STYLE_CSS = `/* Jant Export Theme */
   --site-nav-hover-bg: var(--accent);
   --site-text-primary: var(--foreground);
   --site-text-secondary: var(--muted-foreground);
+  --site-reading-title: color-mix(
+    in oklch,
+    var(--site-text-primary) 81%,
+    black
+  );
+  --site-reading-heading: color-mix(
+    in oklch,
+    var(--site-text-primary) 86%,
+    black
+  );
+  --site-reading-body: color-mix(
+    in oklch,
+    var(--site-text-primary) 90%,
+    black
+  );
+  --site-reading-quote: color-mix(
+    in oklch,
+    var(--site-text-primary) 95%,
+    black
+  );
+  --site-reading-meta: color-mix(
+    in srgb,
+    var(--site-text-secondary) 72%,
+    var(--site-text-primary)
+  );
+  --site-reading-caption: color-mix(
+    in srgb,
+    var(--site-text-secondary) 88%,
+    var(--site-text-primary)
+  );
+  --site-reading-link: color-mix(
+    in oklch,
+    var(--site-accent) 72%,
+    var(--site-reading-body)
+  );
   --site-text-placeholder: oklch(from var(--muted-foreground) l c h / 0.5);
   --site-divider: var(--border);
   --site-feed-card-bg: color-mix(
@@ -1706,6 +1741,37 @@ const STYLE_CSS = `/* Jant Export Theme */
     --accent: oklch(0.238 0.003 95);
     --border: oklch(0.305 0.003 95);
     --site-accent: oklch(0.7306 0.0478 159.95);
+    --site-reading-title: var(--site-text-primary);
+    --site-reading-heading: color-mix(
+      in oklch,
+      var(--site-text-primary) 94%,
+      var(--site-text-secondary)
+    );
+    --site-reading-body: color-mix(
+      in oklch,
+      var(--site-text-primary) 96%,
+      black
+    );
+    --site-reading-quote: color-mix(
+      in oklch,
+      var(--site-text-primary) 98%,
+      black
+    );
+    --site-reading-meta: color-mix(
+      in srgb,
+      var(--site-text-secondary) 92%,
+      var(--site-text-primary)
+    );
+    --site-reading-caption: color-mix(
+      in srgb,
+      var(--site-text-secondary) 96%,
+      var(--site-text-primary)
+    );
+    --site-reading-link: color-mix(
+      in oklch,
+      var(--site-accent) 76%,
+      var(--site-text-primary)
+    );
   }
 }
 
@@ -2062,6 +2128,24 @@ img {
   text-wrap: balance;
 }
 
+[data-page="post"] {
+  color: var(--site-reading-body);
+}
+
+[data-page="post"] .detail-title,
+[data-page="post"] .post-detail-title {
+  color: var(--site-reading-title);
+}
+
+[data-page="post"] .post-detail-body,
+[data-page="post"] .post-detail-body.prose {
+  color: var(--site-reading-body);
+}
+
+[data-page="post"] .post-detail-body :is(h1, h2, h3, h4) {
+  color: var(--site-reading-heading);
+}
+
 .feed-quote-post {
   position: relative;
   padding: 0.45rem 0 0.35rem;
@@ -2095,6 +2179,15 @@ img {
   opacity: 0.66;
 }
 
+[data-page="post"] .feed-quote-mark {
+  color: color-mix(
+    in srgb,
+    var(--site-accent) 18%,
+    var(--site-reading-meta)
+  );
+  opacity: 0.72;
+}
+
 .feed-quote-content {
   font-family: var(--font-serif);
   color: var(--site-text-primary);
@@ -2102,6 +2195,11 @@ img {
   line-height: 1.36;
   letter-spacing: -0.02em;
   text-wrap: pretty;
+}
+
+[data-page="post"] .feed-quote-content,
+[data-page="post"] .post-detail-quote {
+  color: var(--site-reading-quote);
 }
 
 .feed-quote-attribution {
@@ -2116,11 +2214,30 @@ img {
   line-height: 1.4;
 }
 
+[data-page="post"] .feed-link-domain,
+[data-page="post"] .feed-quote-attribution,
+[data-page="post"] .post-footer-meta,
+[data-page="post"] .post-footer-meta a,
+[data-page="post"] .post-footer-meta time,
+[data-page="post"] .post-date-link,
+[data-page="post"] .post-footer-external-link,
+[data-page="post"] .post-collection-sep {
+  color: var(--site-reading-meta);
+}
+
 .feed-quote-attribution::before {
   content: "";
   width: 0.9rem;
   height: 1px;
   background: color-mix(in srgb, var(--site-text-secondary) 38%, var(--site-divider));
+}
+
+[data-page="post"] .feed-quote-attribution::before {
+  background: color-mix(
+    in srgb,
+    var(--site-reading-meta) 38%,
+    var(--site-divider)
+  );
 }
 
 .feed-quote-source {
@@ -2129,12 +2246,23 @@ img {
   text-decoration-color: color-mix(in srgb, var(--site-text-secondary) 55%, transparent);
 }
 
+[data-page="post"] .feed-link-domain:hover,
+[data-page="post"] .feed-quote-source:hover,
+[data-page="post"] .post-date-link:hover,
+[data-page="post"] .post-footer-external-link:hover {
+  color: var(--site-reading-body);
+}
+
 .feed-quote-commentary {
   position: relative;
   max-width: 34rem;
   margin-top: 1.1rem;
   padding-top: 0.95rem;
   color: color-mix(in srgb, var(--site-text-secondary) 84%, var(--site-text-primary));
+}
+
+[data-page="post"] .feed-quote-commentary {
+  color: var(--site-reading-body);
 }
 
 .feed-quote-commentary::before {
@@ -2234,6 +2362,18 @@ article[data-post-featured] .post-footer-featured {
   color: color-mix(in srgb, var(--site-text-secondary) 88%, var(--site-text-primary));
 }
 
+[data-page="post"] .post-detail-body.prose a {
+  color: var(--site-reading-link);
+}
+
+[data-page="post"] .post-detail-body.prose a:hover {
+  color: color-mix(
+    in oklch,
+    var(--site-reading-link) 78%,
+    var(--site-reading-heading)
+  );
+}
+
 .prose > :first-child {
   margin-top: 0;
 }
@@ -2277,6 +2417,15 @@ article[data-post-featured] .post-footer-featured {
   padding-left: 0.95rem;
   border-left: 2px solid color-mix(in srgb, var(--site-divider) 75%, transparent);
   color: var(--site-text-secondary);
+}
+
+[data-page="post"] .post-detail-body.prose blockquote {
+  border-left-color: color-mix(
+    in srgb,
+    var(--site-reading-meta) 28%,
+    var(--site-divider)
+  );
+  color: var(--site-reading-quote);
 }
 
 .prose code {

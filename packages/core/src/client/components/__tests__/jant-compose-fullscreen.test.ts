@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Editor } from "@tiptap/core";
 import type {
   ComposeFullscreenCloseDetail,
   ComposeLabels,
@@ -25,6 +26,14 @@ async function flush(el?: JantComposeFullscreen) {
   if (el) {
     await el.updateComplete;
   }
+}
+
+function requireEditor(el: JantComposeFullscreen): Editor {
+  const editor = (el as unknown as { _editor?: Editor | null })._editor;
+  if (!editor) {
+    throw new Error("expected fullscreen editor instance");
+  }
+  return editor;
 }
 
 describe("JantComposeFullscreen", () => {
@@ -125,7 +134,7 @@ describe("JantComposeFullscreen", () => {
 
     el.querySelector<HTMLButtonElement>(".compose-fullscreen-done")?.click();
 
-    expect(detail).toEqual({
+    expect(detail).toMatchObject({
       json: {
         type: "doc",
         content: [{ type: "paragraph" }],
@@ -133,6 +142,58 @@ describe("JantComposeFullscreen", () => {
       title: "Desk Notes",
       showTitle: true,
       replyExpanded: false,
+      selection: { from: 1, to: 1 },
+    });
+  });
+
+  it("restores and returns the current editor selection", async () => {
+    const el = document.createElement(
+      "jant-compose-fullscreen",
+    ) as JantComposeFullscreen;
+    el.labels = labels;
+    document.body.appendChild(el);
+    await flush(el);
+
+    document.dispatchEvent(
+      new CustomEvent("jant:fullscreen-open", {
+        detail: {
+          json: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "abcdef" }],
+              },
+            ],
+          },
+          title: "",
+          showTitle: false,
+          selection: { from: 4, to: 4 },
+          labels,
+        },
+      }),
+    );
+    await flush(el);
+
+    const editor = requireEditor(el);
+    expect(editor.state.selection.from).toBe(4);
+    expect(editor.state.selection.to).toBe(4);
+
+    editor.chain().focus().setTextSelection({ from: 2, to: 2 }).run();
+
+    let detail: ComposeFullscreenCloseDetail | null = null;
+    document.addEventListener(
+      "jant:fullscreen-close",
+      (event) => {
+        detail = (event as CustomEvent<ComposeFullscreenCloseDetail>).detail;
+      },
+      { once: true },
+    );
+
+    el.querySelector<HTMLButtonElement>(".compose-fullscreen-done")?.click();
+
+    expect(detail).toMatchObject({
+      selection: { from: 2, to: 2 },
     });
   });
 

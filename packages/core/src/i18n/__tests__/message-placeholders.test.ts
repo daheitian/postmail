@@ -1,10 +1,12 @@
 import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
+const TEST_DIR = dirname(fileURLToPath(import.meta.url));
 const SOURCE_ROOTS = [
-  "/Users/green/project/jant/main/packages/core/src/ui",
-  "/Users/green/project/jant/main/packages/core/src/routes",
+  resolve(TEST_DIR, "../../ui"),
+  resolve(TEST_DIR, "../../routes"),
 ];
 
 const SOURCE_FILE_RE = /\.[cm]?[jt]sx?$/;

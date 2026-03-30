@@ -6,7 +6,9 @@ vi.mock("../../upload-with-metadata.js", () => ({
 }));
 import type { Editor } from "@tiptap/core";
 import type { Slice } from "@tiptap/pm/model";
+import * as ProseMirrorView from "@tiptap/pm/view";
 import type { ComposeLabels } from "../compose-types.js";
+import { renderTiptapJson } from "../../../lib/tiptap-render.js";
 import "../jant-compose-editor.js";
 import type { JantComposeEditor } from "../jant-compose-editor.js";
 import { uploadWithMetadata } from "../../upload-with-metadata.js";
@@ -129,6 +131,24 @@ function parsePastedText(el: JantComposeEditor, text: string): Slice | null {
 
   return slice;
 }
+
+function copyEditorSelection(el: JantComposeEditor) {
+  const editor = requireEditor(el);
+  editor.commands.selectAll();
+  return editor.view.serializeForClipboard(editor.state.selection.content());
+}
+
+const parseFromClipboard = (
+  ProseMirrorView as unknown as {
+    __parseFromClipboard: (
+      view: Editor["view"],
+      text: string,
+      html: string | null,
+      plainText: boolean,
+      context: Editor["state"]["selection"]["$from"],
+    ) => Slice | null;
+  }
+).__parseFromClipboard;
 
 const labels: ComposeLabels = {
   cancel: "Cancel",
@@ -481,6 +501,106 @@ describe("JantComposeEditor", () => {
     expect(linkTextNode?.text).toBe("https://openai.com");
     expect(linkTextNode?.marks[0]?.type.name).toBe("link");
     expect(linkTextNode?.marks[0]?.attrs.href).toBe("https://openai.com");
+  });
+
+  it("serializes read more markers as markdown comments in plain text", async () => {
+    const el = await createElement("note");
+    const editor = requireEditor(el);
+
+    editor.commands.setContent({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Before" }],
+        },
+        { type: "moreBreak" },
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "After" }],
+        },
+      ],
+    });
+    expect(editor.getText()).toBe("Before\n\n<!--more-->\n\nAfter");
+  });
+
+  it("parses pasted read more markers into moreBreak nodes", async () => {
+    const el = await createElement("note");
+
+    const slice = parsePastedText(el, "Before\n\n<!--more-->\n\nAfter");
+
+    expect(slice?.content.childCount).toBe(3);
+    expect(slice?.content.firstChild?.textContent).toBe("Before");
+    expect(slice?.content.child(1).type.name).toBe("moreBreak");
+    expect(slice?.content.lastChild?.textContent).toBe("After");
+  });
+
+  it("parses pasted visible read more labels into moreBreak nodes", async () => {
+    const el = await createElement("note");
+
+    const slice = parsePastedText(el, "Before\n\nRead More ↓\n\nAfter");
+
+    expect(slice?.content.childCount).toBe(3);
+    expect(slice?.content.firstChild?.textContent).toBe("Before");
+    expect(slice?.content.child(1).type.name).toBe("moreBreak");
+    expect(slice?.content.lastChild?.textContent).toBe("After");
+  });
+
+  it("preserves read more markers when copied and pasted between editors", async () => {
+    const source = await createElement("note");
+    const target = await createElement("note");
+    const sourceEditor = requireEditor(source);
+    const targetEditor = requireEditor(target);
+
+    sourceEditor.commands.setContent({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Before" }],
+        },
+        { type: "moreBreak" },
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "After" }],
+        },
+      ],
+    });
+
+    const { dom, text } = copyEditorSelection(source);
+
+    targetEditor.commands.clearContent();
+    targetEditor.view.pasteHTML(dom.innerHTML);
+
+    expect(targetEditor.getJSON().content?.[1]).toMatchObject({
+      type: "moreBreak",
+    });
+    expect(renderTiptapJson(JSON.stringify(targetEditor.getJSON()))).toContain(
+      "<!--more-->",
+    );
+    expect(text).toBe("Before\n\n<!--more-->\n\nAfter");
+  });
+
+  it("renders pasted visible read more labels as excerpt markers", async () => {
+    const el = await createElement("note");
+    const editor = requireEditor(el);
+
+    editor.commands.clearContent();
+    const slice = parseFromClipboard(
+      editor.view,
+      "Before\n\nRead More ↓\n\nAfter",
+      null,
+      false,
+      editor.state.selection.$from,
+    );
+    if (!slice) {
+      throw new Error("expected clipboard slice");
+    }
+    editor.view.dispatch(editor.state.tr.replaceSelection(slice));
+
+    expect(renderTiptapJson(JSON.stringify(editor.getJSON()))).toContain(
+      "<!--more-->",
+    );
   });
 
   it("toggles star rating visibility", async () => {

@@ -226,6 +226,96 @@ describe("Posts API Routes", () => {
     });
   });
 
+  describe("GET /api/posts/:id/content", () => {
+    it("returns 401 when not authenticated", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "note",
+        bodyMarkdown: "test post",
+      });
+      const res = await app.request(`/api/posts/${post.id}/content`);
+      expect(res.status).toBe(401);
+    });
+
+    it("returns markdown for a note body", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "note",
+        bodyMarkdown: "# Heading\n\nBody text",
+      });
+
+      const res = await app.request(`/api/posts/${post.id}/content`);
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toEqual({
+        id: post.id,
+        type: "post",
+        format: "note",
+        contentFormat: "markdown",
+        content: "# Heading\n\nBody text",
+        chars: 17,
+      });
+    });
+
+    it("returns quote commentary without quoteText or source metadata", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "quote",
+        title: "Marcus Aurelius",
+        url: "https://example.com/meditations",
+        quoteText: "What stands in the way becomes the way.",
+        bodyMarkdown: "Short commentary",
+      });
+
+      const res = await app.request(`/api/posts/${post.id}/content`);
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toEqual({
+        id: post.id,
+        type: "post",
+        format: "quote",
+        contentFormat: "markdown",
+        content: "Short commentary",
+        chars: 16,
+      });
+    });
+
+    it("returns empty markdown when a link has no commentary body", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "link",
+        title: "Example",
+        url: "https://example.com",
+      });
+
+      const res = await app.request(`/api/posts/${post.id}/content`);
+      expect(res.status).toBe(200);
+      await expect(res.json()).resolves.toEqual({
+        id: post.id,
+        type: "post",
+        format: "link",
+        contentFormat: "markdown",
+        content: "",
+        chars: 0,
+      });
+    });
+
+    it("returns 404 for a non-existent post", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+      const missingId = createEntityId("post");
+
+      const res = await app.request(`/api/posts/${missingId}/content`);
+      expect(res.status).toBe(404);
+    });
+  });
+
   describe("GET /api/posts/:id", () => {
     it("returns 401 when not authenticated", async () => {
       const { app, services } = createTestApp({ authenticated: false });

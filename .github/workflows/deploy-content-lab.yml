@@ -1,14 +1,6 @@
 name: Deploy content-lab
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "packages/core/**"
-      - "sites/content-lab/**"
-      - ".github/workflows/deploy.yml"
-      - ".github/workflows/deploy-content-lab.yml"
   workflow_dispatch:
 
 jobs:

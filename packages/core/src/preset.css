@@ -219,7 +219,7 @@
  * Keep these overrides outside cascade layers so they can outrank the base
  * `.prose` variable defaults defined above.
  */
-article[data-page="post"] .post-detail-body.prose {
+[data-page="post"] .post-detail-body.prose {
   --tw-prose-body: var(--site-reading-body);
   --tw-prose-headings: var(--site-reading-heading);
   --tw-prose-lead: color-mix(
@@ -258,7 +258,7 @@ article[data-page="post"] .post-detail-body.prose {
   );
 }
 
-article[data-page="post"] .post-detail-body.prose a:hover {
+[data-page="post"] .post-detail-body.prose a:hover {
   color: color-mix(
     in oklch,
     var(--site-reading-link) 78%,
