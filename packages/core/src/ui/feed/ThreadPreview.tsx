@@ -5,8 +5,9 @@
  * Thread line connects all posts via `.thread-group` / `.thread-item`.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { ThreadPreviewProps } from "../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
 import { TimelineItemFromPost } from "./TimelineItem.js";
@@ -35,27 +36,33 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
   parentReply,
   totalReplyCount,
 }) => {
-  const { t } = useLingui();
-  const showMoreLabel = t({
-    message: "Show more",
-    comment: "@context: Button to expand faded thread context",
-  });
-  const showLessLabel = t({
-    message: "Show less",
-    comment: "@context: Button to collapse expanded thread context",
-  });
+  const { i18n } = useLingui();
+  const showMoreLabel = i18n._(
+    msg({
+      message: "Show more",
+      comment: "@context: Button to expand faded thread context",
+    }),
+  );
+  const showLessLabel = i18n._(
+    msg({
+      message: "Show less",
+      comment: "@context: Button to collapse expanded thread context",
+    }),
+  );
   const { hiddenCount } = getThreadPreviewState({
     hasParentReply: parentReply !== undefined,
     totalReplyCount,
   });
-  const hiddenPostsLabel = t({
-    message: "{count, plural, one {# more post} other {# more posts}}",
-    comment:
-      "@context: Link showing count of hidden thread posts between root and latest",
-    values: {
+  const hiddenPostsLabel = i18n._(
+    msg({
+      message: "{count, plural, one {# more post} other {# more posts}}",
+      comment:
+        "@context: Link showing count of hidden thread posts between root and latest",
+    }),
+    {
       count: hiddenCount,
     },
-  });
+  );
   const startsCollapsedWithAffordances = isThreadContextLikelyOverflow({
     rootPost,
     parentReply,

@@ -4,8 +4,9 @@
  * Provides consistent Edit/View/Delete button group for list and detail pages
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import { buildConfirmActionExpression } from "../../lib/confirm.js";
 
 export interface ActionButtonsProps {
@@ -61,7 +62,7 @@ export const ActionButtons: FC<ActionButtonsProps> = ({
   viewLabel,
   deleteLabel,
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   const editClass = size === "sm" ? "btn-sm-outline" : "btn-outline";
   const viewClass = size === "sm" ? "btn-sm-ghost" : "btn-ghost";
@@ -70,28 +71,36 @@ export const ActionButtons: FC<ActionButtonsProps> = ({
       ? "btn-sm-ghost text-destructive"
       : "btn-ghost text-destructive";
 
-  const defaultEditLabel = t({
-    message: "Edit",
-    comment: "@context: Button to edit item",
-  });
-  const defaultViewLabel = t({
-    message: "View",
-    comment: "@context: Button to view item on public site",
-  });
-  const defaultDeleteLabel = t({
-    message: "Delete",
-    comment: "@context: Button to delete item",
-  });
+  const defaultEditLabel = i18n._(
+    msg({
+      message: "Edit",
+      comment: "@context: Button to edit item",
+    }),
+  );
+  const defaultViewLabel = i18n._(
+    msg({
+      message: "View",
+      comment: "@context: Button to view item on public site",
+    }),
+  );
+  const defaultDeleteLabel = i18n._(
+    msg({
+      message: "Delete",
+      comment: "@context: Button to delete item",
+    }),
+  );
 
   const deleteClickHandler = deleteAction
     ? deleteConfirm
       ? buildConfirmActionExpression(`@post('${deleteAction}')`, {
           message: deleteConfirm,
           confirmLabel: deleteLabel || defaultDeleteLabel,
-          cancelLabel: t({
-            message: "Cancel",
-            comment: "@context: Button label to dismiss a dialog or action",
-          }),
+          cancelLabel: i18n._(
+            msg({
+              message: "Cancel",
+              comment: "@context: Button label to dismiss a dialog or action",
+            }),
+          ),
           tone: "danger",
         })
       : `@post('${deleteAction}')`

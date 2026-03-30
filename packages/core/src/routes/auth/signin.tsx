@@ -5,7 +5,7 @@
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
 import { msg } from "@lingui/core/macro";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
@@ -23,7 +23,7 @@ const SigninContent: FC<{
   demoPassword?: string;
   sitePathPrefix?: string;
 }> = ({ demoEmail, demoPassword, sitePathPrefix = "" }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const signals = JSON.stringify({
     email: demoEmail || "",
     password: demoPassword || "",
@@ -34,21 +34,25 @@ const SigninContent: FC<{
       <div class="card max-w-md w-full">
         <header>
           <h2>
-            {t({
-              message: "Sign In",
-              comment: "@context: Sign in page heading",
-            })}
+            {i18n._(
+              msg({
+                message: "Sign In",
+                comment: "@context: Sign in page heading",
+              }),
+            )}
           </h2>
         </header>
         <section>
           {demoEmail && demoPassword && (
             <p class="text-muted-foreground text-sm mb-4">
-              {t({
-                message:
-                  "Demo credentials are pre-filled — hit Sign In to continue.",
-                comment:
-                  "@context: Hint shown on signin page when demo credentials are pre-filled",
-              })}
+              {i18n._(
+                msg({
+                  message:
+                    "Demo credentials are pre-filled — hit Sign In to continue.",
+                  comment:
+                    "@context: Hint shown on signin page when demo credentials are pre-filled",
+                }),
+              )}
             </p>
           )}
           <form
@@ -59,19 +63,23 @@ const SigninContent: FC<{
           >
             <div class="field">
               <label class="label">
-                {t({
-                  message: "Email",
-                  comment: "@context: Setup/signin form field - email",
-                })}
+                {i18n._(
+                  msg({
+                    message: "Email",
+                    comment: "@context: Setup/signin form field - email",
+                  }),
+                )}
               </label>
               <input type="email" data-bind="email" class="input" required />
             </div>
             <div class="field">
               <label class="label">
-                {t({
-                  message: "Password",
-                  comment: "@context: Setup/signin form field - password",
-                })}
+                {i18n._(
+                  msg({
+                    message: "Password",
+                    comment: "@context: Setup/signin form field - password",
+                  }),
+                )}
               </label>
               <input
                 type="password"
@@ -96,10 +104,12 @@ const SigninContent: FC<{
               >
                 <path d="M21 12a9 9 0 1 1-6.219-8.56" />
               </svg>
-              {t({
-                message: "Sign In",
-                comment: "@context: Sign in form submit button",
-              })}
+              {i18n._(
+                msg({
+                  message: "Sign In",
+                  comment: "@context: Sign in form submit button",
+                }),
+              )}
             </button>
           </form>
         </section>

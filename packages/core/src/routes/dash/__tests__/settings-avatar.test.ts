@@ -1,9 +1,8 @@
 /**
  * Tests for avatar upload/removal service methods.
  *
- * Note: Route handlers that import JSX components with @lingui/react/macro
- * cannot run in vitest (requires SWC plugin). These tests verify the
- * service-layer operations that the routes delegate to.
+ * Note: These tests stay at the service layer. They avoid rendering the full
+ * route JSX tree so vitest does not need the runtime SSR setup for those pages.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";

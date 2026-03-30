@@ -8,9 +8,10 @@
  * and rendering. Server provides labels and collections as JSON attributes.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
 import type { Collection } from "../../types.js";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import { getCollectionFormLabels } from "../shared/collection-management-labels.js";
 
 export interface ComposeDialogProps {
@@ -31,425 +32,640 @@ export const ComposeForm: FC<ComposeFormProps> = ({
   closeHref,
   autoRestoreDraft = false,
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   const labels = JSON.stringify({
-    cancel: t({ message: "Cancel", comment: "@context: Close compose dialog" }),
-    note: t({ message: "Note", comment: "@context: Compose format tab" }),
-    link: t({ message: "Link", comment: "@context: Compose format tab" }),
-    quote: t({ message: "Quote", comment: "@context: Compose format tab" }),
-    saveDraft: t({
-      message: "Save as Draft",
-      comment: "@context: Header draft button tooltip",
-    }),
-    saveAsDraft: t({
-      message: "Save as draft",
-      comment: "@context: More menu - save draft",
-    }),
-    discard: t({
-      message: "Discard",
-      comment: "@context: More menu - discard post",
-    }),
-    titlePlaceholder: t({
-      message: "Title",
-      comment: "@context: Compose note title placeholder",
-    }),
-    bodyPlaceholder: t({
-      message: "What's on your mind...",
-      comment: "@context: Compose body placeholder",
-    }),
-    urlPlaceholder: t({
-      message: "Paste a URL...",
-      comment: "@context: Compose link URL placeholder",
-    }),
-    urlInvalid: t({
-      message: "Enter a valid URL starting with http://, https://, or mailto:.",
-      comment: "@context: Compose URL field error message",
-    }),
-    linkUrlRequired: t({
-      message: "Add a URL before posting this link.",
-      comment: "@context: Compose link URL required error",
-    }),
-    linkTitleRequired: t({
-      message: "Add a title before posting this link.",
-      comment: "@context: Compose link title required error",
-    }),
-    linkTitlePlaceholder: t({
-      message: "Give it a title...",
-      comment: "@context: Compose link title placeholder",
-    }),
-    thoughtsPlaceholder: t({
-      message: "Your thoughts (optional)",
-      comment: "@context: Compose thoughts placeholder",
-    }),
-    quotePlaceholder: t({
-      message: "Type the quote...",
-      comment: "@context: Compose quote text placeholder",
-    }),
-    authorPlaceholder: t({
-      message: "Author (optional)",
-      comment: "@context: Compose quote author placeholder",
-    }),
-    sourcePlaceholder: t({
-      message: "Source link (optional)",
-      comment: "@context: Compose quote source link placeholder",
-    }),
-    attachedText: t({
-      message: "Text attachment",
-      comment: "@context: Attached text panel title",
-    }),
-    attachedTextPlaceholder: t({
-      message:
-        "Paste a long article, AI response, or any text...\n\nMarkdown formatting will be preserved.",
-      comment: "@context: Attached text placeholder",
-    }),
-    attachedTextHint: t({
-      message: "Supplementary content attached to your post",
-      comment: "@context: Attached text panel hint",
-    }),
-    done: t({
-      message: "Done",
-      comment: "@context: Close attached text panel",
-    }),
-    media: t({
-      message: "Media",
-      comment: "@context: Compose toolbar - media tooltip",
-    }),
-    rate: t({
-      message: "Rate",
-      comment: "@context: Compose toolbar - rate tooltip",
-    }),
-    emoji: t({
-      message: "Emoji",
-      comment: "@context: Compose toolbar - emoji picker tooltip",
-    }),
-    title: t({
-      message: "Title",
-      comment: "@context: Compose toolbar - title tooltip",
-    }),
-    fullscreen: t({
-      message: "Fullscreen",
-      comment: "@context: Compose dialog - open fullscreen editor",
-    }),
-    collection: t({
-      message: "Collection",
-      comment: "@context: Compose collection selector trigger label",
-    }),
-    searchCollections: t({
-      message: "Search...",
-      comment: "@context: Compose collection combobox search placeholder",
-    }),
-    noCollections: t({
-      message: "No collections match that search. Try a different name.",
-      comment:
-        "@context: Compose collection combobox empty state when search has no results",
-    }),
-    emptyCollections: t({
-      message: "Create a collection to get started.",
-      comment:
-        "@context: Compose collection combobox empty state when no collections exist",
-    }),
-    post: t({
-      message: "Post",
-      comment: "@context: Compose button - publish post",
-    }),
-    addAlt: t({
-      message: "+ ALT",
-      comment: "@context: Add alt text label under attachment thumbnail",
-    }),
-    addAltTitle: t({
-      message: "Add alt text",
-      comment: "@context: Alt text panel title",
-    }),
-    altPlaceholder: t({
-      message: "Describe this for people with visual impairments...",
-      comment: "@context: Alt text textarea placeholder",
-    }),
-    altHint: t({
-      message: "Helps screen readers describe the image",
-      comment: "@context: Hint text in alt text panel",
-    }),
-    addMore: t({
-      message: "Add",
-      comment: "@context: Add more attachments button",
-    }),
-    removeAttachment: t({
-      message: "Remove attachment",
-      comment: "@context: Button to remove an uploaded attachment in compose",
-    }),
-    uploading: t({
-      message: "Uploading...",
-      comment: "@context: Toast shown during background upload",
-    }),
-    published: t({
-      message: "Published!",
-      comment: "@context: Toast shown after successful deferred publish",
-    }),
-    view: t({
-      message: "View",
-      comment: "@context: Toast action button to view the published post",
-    }),
-    retryAll: t({
-      message: "Tap to retry",
-      comment:
-        "@context: Label on failed upload overlay button, tells user tapping retries the upload",
-    }),
-    editPost: t({
-      message: "Edit post",
-      comment: "@context: Compose dialog header title in edit mode",
-    }),
-    update: t({
-      message: "Done",
-      comment: "@context: Compose button - update existing post",
-    }),
-    confirmCloseTitle: t({
-      message: "Save to drafts?",
-      comment: "@context: Confirm close action sheet title",
-    }),
-    confirmCloseSubtitle: t({
-      message: "Save to drafts to edit and post at a later time.",
-      comment: "@context: Confirm close action sheet subtitle",
-    }),
-    confirmCloseSave: t({
-      message: "Save",
-      comment: "@context: Confirm close action sheet - save draft button",
-    }),
-    confirmCloseCancel: t({
-      message: "Cancel",
-      comment:
-        "@context: Confirm close action sheet - cancel and return to editor",
-    }),
-    confirmCloseDiscard: t({
-      message: "Don't save",
-      comment: "@context: Confirm close action sheet - discard button",
-    }),
-    confirmAttachedTitle: t({
-      message: "Save text attachment?",
-      comment:
-        "@context: Confirm action sheet title when closing text attachment editor",
-    }),
-    confirmAttachedSubtitle: t({
-      message:
-        "Save these changes to the text attachment, discard them, or keep editing.",
-      comment:
-        "@context: Confirm action sheet subtitle when closing text attachment editor",
-    }),
-    confirmAttachedSave: t({
-      message: "Save",
-      comment:
-        "@context: Confirm action sheet - save text attachment changes button",
-    }),
-    confirmAttachedDiscard: t({
-      message: "Don't save",
-      comment:
-        "@context: Confirm action sheet - discard text attachment changes button",
-    }),
-    confirmEditTitle: t({
-      message: "You have unsaved changes",
-      comment:
-        "@context: Confirm close action sheet title when editing a published post",
-    }),
-    confirmEditSubtitle: t({
-      message: "Do you want to publish your changes or discard them?",
-      comment:
-        "@context: Confirm close action sheet subtitle when editing a published post",
-    }),
-    confirmEditPublish: t({
-      message: "Publish",
-      comment:
-        "@context: Confirm close action sheet - publish update button for editing published post",
-    }),
-    confirmEditDiscard: t({
-      message: "Discard",
-      comment:
-        "@context: Confirm close action sheet - discard changes button for editing published post",
-    }),
-    discardChangesConfirm: t({
-      message: "Discard changes?",
-      comment:
-        "@context: Confirm dialog shown before discarding attached text edits",
-    }),
-    drafts: t({ message: "Drafts", comment: "@context: Drafts panel title" }),
-    draftsEmpty: t({
-      message: "No drafts yet. Save a draft to find it here.",
-      comment: "@context: Drafts panel empty state",
-    }),
-    deleteDraft: t({
-      message: "Delete Draft",
-      comment: "@context: Draft item action",
-    }),
-    draftDeleted: t({
-      message: "Draft deleted.",
-      comment: "@context: Toast after draft deletion",
-    }),
-    publishFailedDraft: t({
-      message: "Couldn't publish. Saved as draft.",
-      comment:
-        "@context: Toast when publish fails and post is auto-saved as draft",
-    }),
-    uploadFailedDraft: t({
-      message: "Some uploads failed. Saved as draft.",
-      comment:
-        "@context: Toast when uploads fail and post is auto-saved as draft",
-    }),
-    reply: t({
-      message: "Reply",
-      comment: "@context: Compose button - reply to post",
-    }),
-    publishHideFromLatest: t({
-      message: "Hide from Latest",
-      comment:
-        "@context: Compose dropdown option for hiding a post from the Latest view",
-    }),
-    publishPrivate: t({
-      message: "Post as Private",
-      comment:
-        "@context: Compose dropdown option - publish post visible only when logged in",
-    }),
-    publishSettings: t({
-      message: "Publish settings",
-      comment: "@context: Compose publish settings panel title",
-    }),
-    publishVisibilityLabel: t({
-      message: "Visibility",
-      comment: "@context: Compose publish settings section label",
-    }),
-    publishVisibilityPublic: t({
-      message: "Public",
-      comment: "@context: Compose publish settings visibility option",
-    }),
-    publishVisibilityPublicHint: t({
-      message: "Appears in Latest.",
-      comment:
-        "@context: Compose publish settings help text for public visibility",
-    }),
-    publishVisibilityHiddenFromLatest: t({
-      message: "Hidden from Latest",
-      comment: "@context: Compose publish settings visibility option",
-    }),
-    publishVisibilityHiddenFromLatestHint: t({
-      message:
-        "Doesn't appear in Latest. Still appears in collections you add it to.",
-      comment:
-        "@context: Compose publish settings help text for posts hidden from Latest",
-    }),
-    publishVisibilityPrivate: t({
-      message: "Private",
-      comment: "@context: Compose publish settings visibility option",
-    }),
-    publishVisibilityPrivateHint: t({
-      message: "Only visible when signed in.",
-      comment:
-        "@context: Compose publish settings help text for private visibility",
-    }),
-    publishDateLabel: t({
-      message: "Published on",
-      comment: "@context: Compose publish settings publish date section label",
-    }),
-    publishDateHint: t({
-      message:
-        "Leave blank to publish now. Use an earlier date when importing older posts.",
-      comment: "@context: Compose publish settings help text for publish date",
-    }),
-    publishDateReset: t({
-      message: "Use current date",
-      comment:
-        "@context: Compose publish settings action to reset the publish date to the current date",
-    }),
-    publishDateInvalid: t({
-      message: "Enter a valid date.",
-      comment:
-        "@context: Compose publish settings validation error for an invalid publish date",
-    }),
-    publishDateFutureError: t({
-      message:
-        "Choose today or an earlier date, or leave it blank to publish now.",
-      comment:
-        "@context: Compose publish settings validation error when a future publish date is selected",
-    }),
-    publishSlugLabel: t({
-      message: "Custom link",
-      comment: "@context: Compose publish settings slug section label",
-    }),
-    publishSlugPlaceholder: t({
-      message: "your-post-link",
-      comment: "@context: Compose publish settings slug input placeholder",
-    }),
-    publishSlugHint: t({
-      message: "Leave blank to generate one automatically.",
-      comment: "@context: Compose publish settings slug help text",
-    }),
-    publishSlugAuto: t({
-      message: "Generate automatically",
-      comment:
-        "@context: Compose publish settings slug summary when no custom slug is set",
-    }),
-    publishSlugReset: t({
-      message: "Reset link",
-      comment:
-        "@context: Compose custom slug action that clears the manual slug and falls back to automatic generation",
-    }),
-    publishSlugSuggested: t({
-      message: "Suggested link",
-      comment:
-        "@context: Compose custom slug helper label for the suggested slug",
-    }),
-    publishSlugGenerating: t({
-      message: "Generating a link...",
-      comment:
-        "@context: Compose custom slug helper while generating a suggested slug",
-    }),
-    publishSlugChecking: t({
-      message: "Checking link...",
-      comment:
-        "@context: Compose custom slug helper while checking whether a manual slug is available",
-    }),
-    publishSlugTaken: t({
-      message: "This link is already in use. Choose something else.",
-      comment:
-        "@context: Compose custom slug validation error when the entered slug is already taken",
-    }),
-    publishSlugInvalid: t({
-      message: "Use lowercase letters, numbers, and hyphens only.",
-      comment:
-        "@context: Compose custom slug validation error for invalid characters",
-    }),
-    publishSlugReserved: t({
-      message: "This link is reserved. Choose something else.",
-      comment:
-        "@context: Compose custom slug validation error for reserved paths",
-    }),
-    postHiddenFromLatest: t({
-      message: "Post hidden",
-      comment: "@context: Compose publish button for posts hidden from Latest",
-    }),
-    postPrivately: t({
-      message: "Post privately",
-      comment: "@context: Compose publish button for private visibility",
-    }),
-    showMore: t({
-      message: "Show more",
-      comment: "@context: Expand reply context",
-    }),
-    showLess: t({
-      message: "Show less",
-      comment: "@context: Collapse reply context",
-    }),
-    addCollection: t({
-      message: "Add Collection",
-      comment: "@context: Action to create a new collection from compose",
-    }),
-    collectionCountLabel: t({
-      message: "%name% + %count% more",
-      comment:
-        "@context: Compose collection trigger label when multiple collections selected. %name% is the first collection name, %count% is how many more",
-    }),
-    draftRestored: t({
-      message: "Draft restored.",
-      comment:
-        "@context: Toast shown when a local draft is restored on compose open",
-    }),
-    collectionFormLabels: getCollectionFormLabels(t),
+    cancel: i18n._(
+      msg({
+        message: "Cancel",
+        comment: "@context: Close compose dialog",
+      }),
+    ),
+    note: i18n._(
+      msg({
+        message: "Note",
+        comment: "@context: Compose format tab",
+      }),
+    ),
+    link: i18n._(
+      msg({
+        message: "Link",
+        comment: "@context: Compose format tab",
+      }),
+    ),
+    quote: i18n._(
+      msg({
+        message: "Quote",
+        comment: "@context: Compose format tab",
+      }),
+    ),
+    saveDraft: i18n._(
+      msg({
+        message: "Save as Draft",
+        comment: "@context: Header draft button tooltip",
+      }),
+    ),
+    saveAsDraft: i18n._(
+      msg({
+        message: "Save as draft",
+        comment: "@context: More menu - save draft",
+      }),
+    ),
+    discard: i18n._(
+      msg({
+        message: "Discard",
+        comment: "@context: More menu - discard post",
+      }),
+    ),
+    titlePlaceholder: i18n._(
+      msg({
+        message: "Title",
+        comment: "@context: Compose note title placeholder",
+      }),
+    ),
+    bodyPlaceholder: i18n._(
+      msg({
+        message: "What's on your mind...",
+        comment: "@context: Compose body placeholder",
+      }),
+    ),
+    urlPlaceholder: i18n._(
+      msg({
+        message: "Paste a URL...",
+        comment: "@context: Compose link URL placeholder",
+      }),
+    ),
+    urlInvalid: i18n._(
+      msg({
+        message:
+          "Enter a valid URL starting with http://, https://, or mailto:.",
+        comment: "@context: Compose URL field error message",
+      }),
+    ),
+    linkUrlRequired: i18n._(
+      msg({
+        message: "Add a URL before posting this link.",
+        comment: "@context: Compose link URL required error",
+      }),
+    ),
+    linkTitleRequired: i18n._(
+      msg({
+        message: "Add a title before posting this link.",
+        comment: "@context: Compose link title required error",
+      }),
+    ),
+    linkTitlePlaceholder: i18n._(
+      msg({
+        message: "Give it a title...",
+        comment: "@context: Compose link title placeholder",
+      }),
+    ),
+    thoughtsPlaceholder: i18n._(
+      msg({
+        message: "Your thoughts (optional)",
+        comment: "@context: Compose thoughts placeholder",
+      }),
+    ),
+    quotePlaceholder: i18n._(
+      msg({
+        message: "Type the quote...",
+        comment: "@context: Compose quote text placeholder",
+      }),
+    ),
+    authorPlaceholder: i18n._(
+      msg({
+        message: "Author (optional)",
+        comment: "@context: Compose quote author placeholder",
+      }),
+    ),
+    sourcePlaceholder: i18n._(
+      msg({
+        message: "Source link (optional)",
+        comment: "@context: Compose quote source link placeholder",
+      }),
+    ),
+    attachedText: i18n._(
+      msg({
+        message: "Text attachment",
+        comment: "@context: Attached text panel title",
+      }),
+    ),
+    attachedTextPlaceholder: i18n._(
+      msg({
+        message:
+          "Paste a long article, AI response, or any text...\n\nMarkdown formatting will be preserved.",
+        comment: "@context: Attached text placeholder",
+      }),
+    ),
+    attachedTextHint: i18n._(
+      msg({
+        message: "Supplementary content attached to your post",
+        comment: "@context: Attached text panel hint",
+      }),
+    ),
+    done: i18n._(
+      msg({
+        message: "Done",
+        comment: "@context: Close attached text panel",
+      }),
+    ),
+    media: i18n._(
+      msg({
+        message: "Media",
+        comment: "@context: Compose toolbar - media tooltip",
+      }),
+    ),
+    rate: i18n._(
+      msg({
+        message: "Rate",
+        comment: "@context: Compose toolbar - rate tooltip",
+      }),
+    ),
+    emoji: i18n._(
+      msg({
+        message: "Emoji",
+        comment: "@context: Compose toolbar - emoji picker tooltip",
+      }),
+    ),
+    title: i18n._(
+      msg({
+        message: "Title",
+        comment: "@context: Compose toolbar - title tooltip",
+      }),
+    ),
+    fullscreen: i18n._(
+      msg({
+        message: "Fullscreen",
+        comment: "@context: Compose dialog - open fullscreen editor",
+      }),
+    ),
+    collection: i18n._(
+      msg({
+        message: "Collection",
+        comment: "@context: Compose collection selector trigger label",
+      }),
+    ),
+    searchCollections: i18n._(
+      msg({
+        message: "Search...",
+        comment: "@context: Compose collection combobox search placeholder",
+      }),
+    ),
+    noCollections: i18n._(
+      msg({
+        message: "No collections match that search. Try a different name.",
+        comment:
+          "@context: Compose collection combobox empty state when search has no results",
+      }),
+    ),
+    emptyCollections: i18n._(
+      msg({
+        message: "Create a collection to get started.",
+        comment:
+          "@context: Compose collection combobox empty state when no collections exist",
+      }),
+    ),
+    post: i18n._(
+      msg({
+        message: "Post",
+        comment: "@context: Compose button - publish post",
+      }),
+    ),
+    addAlt: i18n._(
+      msg({
+        message: "+ ALT",
+        comment: "@context: Add alt text label under attachment thumbnail",
+      }),
+    ),
+    addAltTitle: i18n._(
+      msg({
+        message: "Add alt text",
+        comment: "@context: Alt text panel title",
+      }),
+    ),
+    altPlaceholder: i18n._(
+      msg({
+        message: "Describe this for people with visual impairments...",
+        comment: "@context: Alt text textarea placeholder",
+      }),
+    ),
+    altHint: i18n._(
+      msg({
+        message: "Helps screen readers describe the image",
+        comment: "@context: Hint text in alt text panel",
+      }),
+    ),
+    addMore: i18n._(
+      msg({
+        message: "Add",
+        comment: "@context: Add more attachments button",
+      }),
+    ),
+    removeAttachment: i18n._(
+      msg({
+        message: "Remove attachment",
+        comment: "@context: Button to remove an uploaded attachment in compose",
+      }),
+    ),
+    uploading: i18n._(
+      msg({
+        message: "Uploading...",
+        comment: "@context: Toast shown during background upload",
+      }),
+    ),
+    published: i18n._(
+      msg({
+        message: "Published!",
+        comment: "@context: Toast shown after successful deferred publish",
+      }),
+    ),
+    view: i18n._(
+      msg({
+        message: "View",
+        comment: "@context: Toast action button to view the published post",
+      }),
+    ),
+    retryAll: i18n._(
+      msg({
+        message: "Tap to retry",
+        comment:
+          "@context: Label on failed upload overlay button, tells user tapping retries the upload",
+      }),
+    ),
+    editPost: i18n._(
+      msg({
+        message: "Edit post",
+        comment: "@context: Compose dialog header title in edit mode",
+      }),
+    ),
+    update: i18n._(
+      msg({
+        message: "Done",
+        comment: "@context: Compose button - update existing post",
+      }),
+    ),
+    confirmCloseTitle: i18n._(
+      msg({
+        message: "Save to drafts?",
+        comment: "@context: Confirm close action sheet title",
+      }),
+    ),
+    confirmCloseSubtitle: i18n._(
+      msg({
+        message: "Save to drafts to edit and post at a later time.",
+        comment: "@context: Confirm close action sheet subtitle",
+      }),
+    ),
+    confirmCloseSave: i18n._(
+      msg({
+        message: "Save",
+        comment: "@context: Confirm close action sheet - save draft button",
+      }),
+    ),
+    confirmCloseCancel: i18n._(
+      msg({
+        message: "Cancel",
+        comment:
+          "@context: Confirm close action sheet - cancel and return to editor",
+      }),
+    ),
+    confirmCloseDiscard: i18n._(
+      msg({
+        message: "Don't save",
+        comment: "@context: Confirm close action sheet - discard button",
+      }),
+    ),
+    confirmAttachedTitle: i18n._(
+      msg({
+        message: "Save text attachment?",
+        comment:
+          "@context: Confirm action sheet title when closing text attachment editor",
+      }),
+    ),
+    confirmAttachedSubtitle: i18n._(
+      msg({
+        message:
+          "Save these changes to the text attachment, discard them, or keep editing.",
+        comment:
+          "@context: Confirm action sheet subtitle when closing text attachment editor",
+      }),
+    ),
+    confirmAttachedSave: i18n._(
+      msg({
+        message: "Save",
+        comment:
+          "@context: Confirm action sheet - save text attachment changes button",
+      }),
+    ),
+    confirmAttachedDiscard: i18n._(
+      msg({
+        message: "Don't save",
+        comment:
+          "@context: Confirm action sheet - discard text attachment changes button",
+      }),
+    ),
+    confirmEditTitle: i18n._(
+      msg({
+        message: "You have unsaved changes",
+        comment:
+          "@context: Confirm close action sheet title when editing a published post",
+      }),
+    ),
+    confirmEditSubtitle: i18n._(
+      msg({
+        message: "Do you want to publish your changes or discard them?",
+        comment:
+          "@context: Confirm close action sheet subtitle when editing a published post",
+      }),
+    ),
+    confirmEditPublish: i18n._(
+      msg({
+        message: "Publish",
+        comment:
+          "@context: Confirm close action sheet - publish update button for editing published post",
+      }),
+    ),
+    confirmEditDiscard: i18n._(
+      msg({
+        message: "Discard",
+        comment:
+          "@context: Confirm close action sheet - discard changes button for editing published post",
+      }),
+    ),
+    discardChangesConfirm: i18n._(
+      msg({
+        message: "Discard changes?",
+        comment:
+          "@context: Confirm dialog shown before discarding attached text edits",
+      }),
+    ),
+    drafts: i18n._(
+      msg({
+        message: "Drafts",
+        comment: "@context: Drafts panel title",
+      }),
+    ),
+    draftsEmpty: i18n._(
+      msg({
+        message: "No drafts yet. Save a draft to find it here.",
+        comment: "@context: Drafts panel empty state",
+      }),
+    ),
+    deleteDraft: i18n._(
+      msg({
+        message: "Delete Draft",
+        comment: "@context: Draft item action",
+      }),
+    ),
+    draftDeleted: i18n._(
+      msg({
+        message: "Draft deleted.",
+        comment: "@context: Toast after draft deletion",
+      }),
+    ),
+    publishFailedDraft: i18n._(
+      msg({
+        message: "Couldn't publish. Saved as draft.",
+        comment:
+          "@context: Toast when publish fails and post is auto-saved as draft",
+      }),
+    ),
+    uploadFailedDraft: i18n._(
+      msg({
+        message: "Some uploads failed. Saved as draft.",
+        comment:
+          "@context: Toast when uploads fail and post is auto-saved as draft",
+      }),
+    ),
+    reply: i18n._(
+      msg({
+        message: "Reply",
+        comment: "@context: Compose button - reply to post",
+      }),
+    ),
+    publishHideFromLatest: i18n._(
+      msg({
+        message: "Hide from Latest",
+        comment:
+          "@context: Compose dropdown option for hiding a post from the Latest view",
+      }),
+    ),
+    publishPrivate: i18n._(
+      msg({
+        message: "Post as Private",
+        comment:
+          "@context: Compose dropdown option - publish post visible only when logged in",
+      }),
+    ),
+    publishSettings: i18n._(
+      msg({
+        message: "Publish settings",
+        comment: "@context: Compose publish settings panel title",
+      }),
+    ),
+    publishVisibilityLabel: i18n._(
+      msg({
+        message: "Visibility",
+        comment: "@context: Compose publish settings section label",
+      }),
+    ),
+    publishVisibilityPublic: i18n._(
+      msg({
+        message: "Public",
+        comment: "@context: Compose publish settings visibility option",
+      }),
+    ),
+    publishVisibilityPublicHint: i18n._(
+      msg({
+        message: "Appears in Latest.",
+        comment:
+          "@context: Compose publish settings help text for public visibility",
+      }),
+    ),
+    publishVisibilityHiddenFromLatest: i18n._(
+      msg({
+        message: "Hidden from Latest",
+        comment: "@context: Compose publish settings visibility option",
+      }),
+    ),
+    publishVisibilityHiddenFromLatestHint: i18n._(
+      msg({
+        message:
+          "Doesn't appear in Latest. Still appears in collections you add it to.",
+        comment:
+          "@context: Compose publish settings help text for posts hidden from Latest",
+      }),
+    ),
+    publishVisibilityPrivate: i18n._(
+      msg({
+        message: "Private",
+        comment: "@context: Compose publish settings visibility option",
+      }),
+    ),
+    publishVisibilityPrivateHint: i18n._(
+      msg({
+        message: "Only visible when signed in.",
+        comment:
+          "@context: Compose publish settings help text for private visibility",
+      }),
+    ),
+    publishDateLabel: i18n._(
+      msg({
+        message: "Published on",
+        comment:
+          "@context: Compose publish settings publish date section label",
+      }),
+    ),
+    publishDateHint: i18n._(
+      msg({
+        message:
+          "Leave blank to publish now. Use an earlier date when importing older posts.",
+        comment:
+          "@context: Compose publish settings help text for publish date",
+      }),
+    ),
+    publishDateReset: i18n._(
+      msg({
+        message: "Use current date",
+        comment:
+          "@context: Compose publish settings action to reset the publish date to the current date",
+      }),
+    ),
+    publishDateInvalid: i18n._(
+      msg({
+        message: "Enter a valid date.",
+        comment:
+          "@context: Compose publish settings validation error for an invalid publish date",
+      }),
+    ),
+    publishDateFutureError: i18n._(
+      msg({
+        message:
+          "Choose today or an earlier date, or leave it blank to publish now.",
+        comment:
+          "@context: Compose publish settings validation error when a future publish date is selected",
+      }),
+    ),
+    publishSlugLabel: i18n._(
+      msg({
+        message: "Custom link",
+        comment: "@context: Compose publish settings slug section label",
+      }),
+    ),
+    publishSlugPlaceholder: i18n._(
+      msg({
+        message: "your-post-link",
+        comment: "@context: Compose publish settings slug input placeholder",
+      }),
+    ),
+    publishSlugHint: i18n._(
+      msg({
+        message: "Leave blank to generate one automatically.",
+        comment: "@context: Compose publish settings slug help text",
+      }),
+    ),
+    publishSlugAuto: i18n._(
+      msg({
+        message: "Generate automatically",
+        comment:
+          "@context: Compose publish settings slug summary when no custom slug is set",
+      }),
+    ),
+    publishSlugReset: i18n._(
+      msg({
+        message: "Reset link",
+        comment:
+          "@context: Compose custom slug action that clears the manual slug and falls back to automatic generation",
+      }),
+    ),
+    publishSlugSuggested: i18n._(
+      msg({
+        message: "Suggested link",
+        comment:
+          "@context: Compose custom slug helper label for the suggested slug",
+      }),
+    ),
+    publishSlugGenerating: i18n._(
+      msg({
+        message: "Generating a link...",
+        comment:
+          "@context: Compose custom slug helper while generating a suggested slug",
+      }),
+    ),
+    publishSlugChecking: i18n._(
+      msg({
+        message: "Checking link...",
+        comment:
+          "@context: Compose custom slug helper while checking whether a manual slug is available",
+      }),
+    ),
+    publishSlugTaken: i18n._(
+      msg({
+        message: "This link is already in use. Choose something else.",
+        comment:
+          "@context: Compose custom slug validation error when the entered slug is already taken",
+      }),
+    ),
+    publishSlugInvalid: i18n._(
+      msg({
+        message: "Use lowercase letters, numbers, and hyphens only.",
+        comment:
+          "@context: Compose custom slug validation error for invalid characters",
+      }),
+    ),
+    publishSlugReserved: i18n._(
+      msg({
+        message: "This link is reserved. Choose something else.",
+        comment:
+          "@context: Compose custom slug validation error for reserved paths",
+      }),
+    ),
+    postHiddenFromLatest: i18n._(
+      msg({
+        message: "Post hidden",
+        comment:
+          "@context: Compose publish button for posts hidden from Latest",
+      }),
+    ),
+    postPrivately: i18n._(
+      msg({
+        message: "Post privately",
+        comment: "@context: Compose publish button for private visibility",
+      }),
+    ),
+    showMore: i18n._(
+      msg({
+        message: "Show more",
+        comment: "@context: Expand reply context",
+      }),
+    ),
+    showLess: i18n._(
+      msg({
+        message: "Show less",
+        comment: "@context: Collapse reply context",
+      }),
+    ),
+    addCollection: i18n._(
+      msg({
+        message: "Add Collection",
+        comment: "@context: Action to create a new collection from compose",
+      }),
+    ),
+    collectionCountLabel: i18n._(
+      msg({
+        message: "%name% + %count% more",
+        comment:
+          "@context: Compose collection trigger label when multiple collections selected. %name% is the first collection name, %count% is how many more",
+      }),
+    ),
+    draftRestored: i18n._(
+      msg({
+        message: "Draft restored.",
+        comment:
+          "@context: Toast shown when a local draft is restored on compose open",
+      }),
+    ),
+    collectionFormLabels: getCollectionFormLabels(i18n),
   }).replace(/</g, "\\u003c");
 
   const collectionsJson = JSON.stringify(

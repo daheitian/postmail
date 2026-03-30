@@ -1,9 +1,8 @@
 /**
  * Tests for the collections listing page data logic.
  *
- * Note: Route handler tests that import JSX components with @lingui/react/macro
- * cannot run in vitest (requires SWC plugin). These tests verify the service
- * layer operations that the collections route orchestrates.
+ * Note: These tests stay at the service layer. They avoid rendering the full
+ * route JSX tree so vitest does not need the runtime SSR setup for those pages.
  */
 
 import { describe, it, expect, beforeEach } from "vitest";

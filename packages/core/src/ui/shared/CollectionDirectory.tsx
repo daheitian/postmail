@@ -1,5 +1,6 @@
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { CollectionDirectoryItem } from "../../types.js";
 import { getDividerCollectionGroup } from "../../lib/collection-groups.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
@@ -25,17 +26,19 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
   emptyMessage,
   sitePathPrefix = "",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   if (!hasDirectoryContent(items)) {
     return (
       <p class="text-muted-foreground">
         {emptyMessage ??
-          t({
-            message:
-              "No collections yet. Start one to organize posts by topic.",
-            comment: "@context: Empty state message on collections page",
-          })}
+          i18n._(
+            msg({
+              message:
+                "No collections yet. Start one to organize posts by topic.",
+              comment: "@context: Empty state message on collections page",
+            }),
+          )}
       </p>
     );
   }
@@ -151,14 +154,18 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                 <span class="collection-directory-meta">
                   {collection.postCount}{" "}
                   {collection.postCount === 1
-                    ? t({
-                        message: "entry",
-                        comment: "@context: Singular entry count label",
-                      })
-                    : t({
-                        message: "entries",
-                        comment: "@context: Plural entry count label",
-                      })}
+                    ? i18n._(
+                        msg({
+                          message: "entry",
+                          comment: "@context: Singular entry count label",
+                        }),
+                      )
+                    : i18n._(
+                        msg({
+                          message: "entries",
+                          comment: "@context: Plural entry count label",
+                        }),
+                      )}
                 </span>
                 <span
                   class="collection-directory-meta-separator"

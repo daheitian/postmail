@@ -21,17 +21,17 @@ msgstr " 后重试。"
 #. @context: Link showing count of hidden thread posts between curated posts
 #: src/ui/feed/CuratedThreadPreview.tsx
 msgid "{count, plural, one {# hidden post} other {# hidden posts}}"
-msgstr ""
+msgstr "{count, plural, one {# 条隐藏的帖子} other {# 条隐藏的帖子}}"
 
 #. @context: Link showing count of hidden thread posts between root and latest
 #: src/ui/feed/ThreadPreview.tsx
 msgid "{count, plural, one {# more post} other {# more posts}}"
-msgstr ""
+msgstr "{count, plural, one {# 条更多回复} other {# 条更多回复}}"
 
 #. @context: Search results count - multiple
 #: src/ui/pages/SearchPage.tsx
 msgid "{count, plural, one {Found # result} other {Found # results}}"
-msgstr ""
+msgstr "{count, plural, one {找到 # 条结果} other {找到 # 条结果}}"
 
 #. @context: Custom CSS textarea placeholder
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -41,7 +41,7 @@ msgstr "/* 在此添加自定义 CSS */"
 #. @context: Placeholder for the custom collections link URL
 #: src/ui/shared/collection-management-labels.ts
 msgid "/archive?format=quote or https://example.com"
-msgstr ""
+msgstr "/archive?format=quote 或 https://example.com"
 
 #. @context: Compose collection trigger label when multiple collections selected. %name% is the first collection name, %count% is how many more
 #: src/ui/compose/ComposeDialog.tsx
@@ -180,12 +180,12 @@ msgstr "添加指向任意 URL 的自定义链接"
 #. @context: Helper text for the custom collections link form on collections page
 #: src/ui/shared/collection-management-labels.ts
 msgid "Add a custom shortcut to any page or site."
-msgstr ""
+msgstr "向任意页面或站点添加自定义快捷方式。"
 
 #. @context: Validation message when creating or editing a custom collections link
 #: src/ui/shared/collection-management-labels.ts
 msgid "Add a label and URL."
-msgstr ""
+msgstr "添加标签和 URL."
 
 #. @context: Description for the RSS system navigation toggle
 #: src/ui/shared/navigation-labels.ts
@@ -735,7 +735,7 @@ msgstr "创建您的管理员账户。"
 #. @context: Token creation date
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Created {date}"
-msgstr ""
+msgstr "创建于 {date}"
 
 #. @context: Badge indicating the current active session
 #: src/ui/dash/settings/SessionsContent.tsx
@@ -1072,7 +1072,7 @@ msgstr "草稿"
 #. @context: Helper text shown while organizing collections
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Drag collections, links, and dividers into the order you want."
-msgstr ""
+msgstr "将合集、链接和分隔符拖动到所需的顺序。"
 
 #. @context: Placeholder for API token name input
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -1183,8 +1183,6 @@ msgstr "网站图标及页眉中的个人头像"
 
 #. @context: Archive visibility filter - featured posts
 #. @context: Browse filter for featured posts
-#. @context: Browse filter label
-#. @context: Browse filter label
 #. @context: Browse filter label for featured posts
 #. @context: Browser page title for the featured feed
 #. @context: Browser page title for the featured feed
@@ -1195,8 +1193,6 @@ msgstr "网站图标及页眉中的个人头像"
 #. @context: Tooltip and screen reader label for the featured-post icon in the post footer when no featured date is available
 #: src/routes/pages/featured.tsx
 #: src/routes/pages/home.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/dash/StatusBadge.tsx
@@ -1366,10 +1362,10 @@ msgstr "页首链接数量限制已更新。"
 msgid "Header links, home feed, and overflow menu"
 msgstr "页首链接、首页视图和溢出菜单"
 
-#. @context: Description for the RSS system navigation toggle. %feed% is either Latest or Featured.
+#. @context: Description for the RSS system navigation toggle. {feed} is either Latest or Featured.
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Header RSS points to your %feed% feed (/feed). Change what /feed returns in General."
-msgstr "页首 RSS 指向你的 %feed% feed（/feed）。可在通用设置中修改 /feed 的输出内容。"
+msgid "Header RSS points to your {feed} feed (/feed). Change what /feed returns in General."
+msgstr "页眉 RSS 指向您的 {feed} 订阅 (/feed)。在常规中更改 /feed 返回的内容。"
 
 #. @context: Bullet item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1460,7 +1456,7 @@ msgstr "包含资源"
 #. @context: Label above the included collections list on an aggregate collection page
 #: src/ui/pages/CollectionPage.tsx
 msgid "Includes"
-msgstr ""
+msgstr "包含"
 
 #. @context: Site accent sample badge
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1552,12 +1548,10 @@ msgstr "语言和时间已更新。"
 #. @context: Token last used date
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Last used {date}"
-msgstr ""
+msgstr "上次使用 {date}"
 
 #. @context: Active browse tab label on sample page
 #. @context: Browse filter for latest posts
-#. @context: Browse filter label
-#. @context: Browse filter label
 #. @context: Browse filter label for latest posts
 #. @context: Browser page title for the latest feed
 #. @context: Browser page title for the latest feed
@@ -1565,8 +1559,6 @@ msgstr ""
 #. @context: Select option for using latest posts as the main RSS feed
 #: src/routes/pages/home.tsx
 #: src/routes/pages/latest.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/layouts/SiteLayout.tsx
@@ -1626,12 +1618,12 @@ msgstr "链接"
 #. @context: Toast after creating a custom collections link
 #: src/ui/shared/collection-management-labels.ts
 msgid "Link added."
-msgstr ""
+msgstr "链接已添加."
 
 #. @context: Toast after deleting a custom collections link
 #: src/ui/shared/collection-management-labels.ts
 msgid "Link removed."
-msgstr ""
+msgstr "链接已删除。"
 
 #. @context: Description for the archive system navigation toggle
 #: src/ui/shared/navigation-labels.ts
@@ -1646,7 +1638,7 @@ msgstr "链接到你的合集页"
 #. @context: Toast after saving a custom collections link
 #: src/ui/shared/collection-management-labels.ts
 msgid "Link updated."
-msgstr ""
+msgstr "链接已更新。"
 
 #. @context: Post format label plural - links
 #: src/ui/pages/ArchivePage.tsx
@@ -1718,10 +1710,15 @@ msgstr "主 feed"
 msgid "Main RSS feed"
 msgstr "主 RSS feed"
 
+#. @context: Settings item label for opening the hosted account management page
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage Account"
+msgstr "管理账户"
+
 #. @context: Settings item description for hosted account management in the connected provider
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage password and hosted access in {providerLabel}"
-msgstr "在 {providerLabel} 中管理密码和托管站点访问权限"
+msgstr "在 {providerLabel} 管理密码和托管访问"
 
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1731,7 +1728,7 @@ msgstr "管理登录安全、导出和不可逆操作."
 #. @context: Intro text on the hosted account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage this site's active sessions here. Password and hosted access are managed through {providerLabel}."
-msgstr "在这里管理这个站点的当前会话。密码和托管站点访问权限通过 {providerLabel} 管理。"
+msgstr "在此处管理本站点的活动会话。密码和托管访问由 {providerLabel} 管理。"
 
 #. @context: Color theme preview date label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1820,8 +1817,6 @@ msgid "Navigation order updated."
 msgstr "导航排序已更新。"
 
 #. @context: Label for nav preview section
-#. @context: Label for nav preview section
-#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Navigation Preview"
 msgstr "导航预览"
@@ -1852,7 +1847,7 @@ msgstr "新建分隔线"
 #. @context: Menu action to create a custom link on collections page
 #: src/ui/shared/CollectionsManager.tsx
 msgid "New Link"
-msgstr ""
+msgstr "新建链接"
 
 #. @context: Password form field
 #. @context: Password reset form field
@@ -1968,7 +1963,7 @@ msgstr "这里还没有内容。"
 #. @context: Empty state message on an aggregate collection page
 #: src/ui/pages/CollectionPage.tsx
 msgid "Nothing here yet. Add posts to one of these collections to fill this view."
-msgstr ""
+msgstr "这里还没有内容。向这些合集中的任意一个添加帖子以填充此视图。"
 
 #. @context: Empty state message on featured page
 #: src/ui/pages/FeaturedPage.tsx
@@ -2015,7 +2010,7 @@ msgstr "打开原始 SVG"
 #. @context: Settings item description for the hosted delete-site entry in the account menu
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
-msgstr ""
+msgstr "在 {providerLabel} 打开托管站点控制以取消计费或永久删除此站点。"
 
 #. @context: Menu action to organize collections
 #: src/ui/shared/CollectionsManager.tsx
@@ -2111,7 +2106,7 @@ msgstr "以私密方式发布"
 #. @context: Compose publish button for posts hidden from Latest
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post hidden"
-msgstr ""
+msgstr "帖子已隐藏"
 
 #. @context: Compose publish button for private visibility
 #: src/ui/compose/ComposeDialog.tsx
@@ -2313,7 +2308,7 @@ msgstr "移除"
 #. @context: Button to remove an uploaded attachment in compose
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Remove attachment"
-msgstr ""
+msgstr "删除附件"
 
 #. @context: Tooltip for divider delete button
 #: src/ui/shared/CollectionsManager.tsx
@@ -2323,12 +2318,12 @@ msgstr "删除分隔线"
 #. @context: Delete custom link action on collections page
 #: src/ui/shared/collection-management-labels.ts
 msgid "Remove Link"
-msgstr ""
+msgstr "删除链接"
 
 #. @context: Confirm dialog for deleting a custom collections link
 #: src/ui/shared/collection-management-labels.ts
 msgid "Remove this link from Collections? The destination won't change."
-msgstr ""
+msgstr "要将此链接从合集中移除吗? 目标不会改变."
 
 #. @context: Archive tile label for multiple thread replies
 #: src/ui/pages/ArchivePage.tsx
@@ -2567,7 +2562,7 @@ msgstr "退出登录"
 #. @context: Session creation date
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "Signed in {date}"
-msgstr ""
+msgstr "已于 {date} 登录"
 
 #. @context: Settings group label for site settings
 #. @context: Settings subsection heading for basic site fields
@@ -2843,7 +2838,7 @@ msgstr "这篇文章想回答一个具体问题：当默认强调色要撑起一
 #. @context: Generic fallback blog name in the delete-account confirmation phrase when the site name is unavailable
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "this blog"
-msgstr ""
+msgstr "此博客"
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
@@ -2858,7 +2853,7 @@ msgstr "这会控制 /feed 返回哪一种 feed。"
 #. @context: Notice shown on hosted account settings explaining that password and hosted account controls live in the connected hosted auth provider
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "This hosted site signs in through {providerLabel}. Manage password and hosted access there."
-msgstr "这个托管站点通过 {providerLabel} 登录。在那里管理密码和托管站点访问权限。"
+msgstr "此托管站点通过 {providerLabel} 登录。请在那里管理密码和托管访问。"
 
 #. @context: Collection link help text
 #: src/ui/shared/collection-management-labels.ts
@@ -2916,7 +2911,7 @@ msgstr "这个登录链接已失效。返回 "
 #: src/routes/api/upload-multipart.ts
 #: src/routes/api/upload.ts
 msgid "This upload would exceed your shared hosted media limit. Remove files or upgrade storage to continue."
-msgstr ""
+msgstr "此上传将超出您共享的托管媒体限额。删除文件或升级存储以继续。"
 
 #. @context: Helper text for the detail article sample on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -3091,6 +3086,11 @@ msgstr "URL"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Usage"
 msgstr "用法"
+
+#. @context: Test string for Lingui interpolation support
+#: src/i18n/__tests__/context.test.tsx
+msgid "Use {brandColorName}"
+msgstr "使用 {brandColorName}"
 
 #. @context: Compose publish settings action to reset the publish date to the current date
 #: src/ui/compose/ComposeDialog.tsx

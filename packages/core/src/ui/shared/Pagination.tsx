@@ -4,8 +4,9 @@
  * Cursor-based pagination for post lists
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import { formatPageLabel, getPageNumbers } from "../../lib/pagination.js";
 
 export interface PaginationProps {
@@ -28,7 +29,7 @@ export const Pagination: FC<PaginationProps> = ({
   prevCursor,
   cursorParam = "cursor",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const hasPrev = prevCursor !== undefined;
   const hasNext = hasMore && nextCursor !== undefined;
 
@@ -43,14 +44,18 @@ export const Pagination: FC<PaginationProps> = ({
     return `${url.pathname}${url.search}`;
   };
 
-  const prevText = t({
-    message: "Previous",
-    comment: "@context: Pagination button - previous page",
-  });
-  const nextText = t({
-    message: "Next",
-    comment: "@context: Pagination button - next page",
-  });
+  const prevText = i18n._(
+    msg({
+      message: "Previous",
+      comment: "@context: Pagination button - previous page",
+    }),
+  );
+  const nextText = i18n._(
+    msg({
+      message: "Next",
+      comment: "@context: Pagination button - next page",
+    }),
+  );
 
   return (
     <nav class="flex items-center justify-between py-4" aria-label="Pagination">
@@ -94,17 +99,19 @@ export interface LoadMoreProps {
 }
 
 export const LoadMore: FC<LoadMoreProps> = ({ href, hasMore, text }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   if (!hasMore) {
     return null;
   }
 
   const buttonText =
     text ??
-    t({
-      message: "Load more",
-      comment: "@context: Pagination button - load more items",
-    });
+    i18n._(
+      msg({
+        message: "Load more",
+        comment: "@context: Pagination button - load more items",
+      }),
+    );
 
   return (
     <div class="text-center py-4">
@@ -141,7 +148,7 @@ export const PagePagination: FC<PagePaginationProps> = ({
   totalPages,
   pageParam = "page",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const hasPrev = currentPage > 1;
   const hasNext = totalPages ? currentPage < totalPages : (hasMore ?? false);
 
@@ -160,14 +167,18 @@ export const PagePagination: FC<PagePaginationProps> = ({
     return `${url.pathname}${url.search}`;
   };
 
-  const prevText = t({
-    message: "Previous",
-    comment: "@context: Pagination button - previous page",
-  });
-  const nextText = t({
-    message: "Next",
-    comment: "@context: Pagination button - next page",
-  });
+  const prevText = i18n._(
+    msg({
+      message: "Previous",
+      comment: "@context: Pagination button - previous page",
+    }),
+  );
+  const nextText = i18n._(
+    msg({
+      message: "Next",
+      comment: "@context: Pagination button - next page",
+    }),
+  );
 
   // Numbered pagination when totalPages is known
   if (totalPages && totalPages > 1) {

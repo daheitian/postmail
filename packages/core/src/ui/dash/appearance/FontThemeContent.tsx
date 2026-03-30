@@ -2,7 +2,8 @@
  * Font theme picker
  */
 
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "../../../i18n/context.js";
 import { getFontThemeCssVariables, type FontTheme } from "../../font-themes.js";
 import { toPublicPath } from "../../../lib/url.js";
 
@@ -31,7 +32,7 @@ export function FontThemeContent({
   currentFontThemeId: string;
   sitePathPrefix?: string;
 }) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <div
@@ -44,17 +45,21 @@ export function FontThemeContent({
     >
       <fieldset>
         <legend class="text-lg font-semibold">
-          {t({
-            message: "Font theme",
-            comment: "@context: Appearance settings heading for font theme",
-          })}
+          {i18n._(
+            msg({
+              message: "Font theme",
+              comment: "@context: Appearance settings heading for font theme",
+            }),
+          )}
         </legend>
         <p class="text-sm text-muted-foreground mb-4">
-          {t({
-            message:
-              "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm.",
-            comment: "@context: Font theme settings description",
-          })}
+          {i18n._(
+            msg({
+              message:
+                "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm.",
+              comment: "@context: Font theme settings description",
+            }),
+          )}
         </p>
         <div class="flex flex-col gap-2">
           {fontThemes.map((ft) => (
@@ -73,9 +78,9 @@ export function FontThemeContent({
                 class="mt-1"
               />
               <div>
-                <div class="font-medium">{t(ft.name)}</div>
+                <div class="font-medium">{i18n._(ft.name)}</div>
                 <div class="text-sm text-muted-foreground">
-                  {t(ft.description)}
+                  {i18n._(ft.description)}
                 </div>
                 <div
                   class="mt-3 rounded-xl border border-border/70 bg-muted/30 p-4"

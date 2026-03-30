@@ -6,7 +6,8 @@
  * Step 3: Delete account
  */
 
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "../../../i18n/context.js";
 import { buildConfirmActionExpression } from "../../../lib/confirm.js";
 import { coalesceDisplayText } from "../../../lib/display-text.js";
 import { escapeHtml } from "../../../lib/html.js";
@@ -23,29 +24,35 @@ export function DeleteAccountContent({
   csrfToken,
   sitePathPrefix = "",
 }: DeleteAccountContentProps) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const normalizedSiteName =
     coalesceDisplayText(siteName) ||
-    t({
-      message: "this blog",
-      comment:
-        "@context: Generic fallback blog name in the delete-account confirmation phrase when the site name is unavailable",
-    });
+    i18n._(
+      msg({
+        message: "this blog",
+        comment:
+          "@context: Generic fallback blog name in the delete-account confirmation phrase when the site name is unavailable",
+      }),
+    );
 
-  const confirmPhrase = t({
-    message: "I want to delete {siteName}",
-    comment:
-      "@context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.",
-    values: {
+  const confirmPhrase = i18n._(
+    msg({
+      message: "I want to delete {siteName}",
+      comment:
+        "@context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.",
+    }),
+    {
       siteName: normalizedSiteName,
     },
-  });
+  );
   const escapedConfirmPhrase = escapeHtml(confirmPhrase);
-  const deleteAccountLabel = t({
-    message: "Delete Account Permanently",
-    comment:
-      "@context: Final destructive button to delete account and all data",
-  });
+  const deleteAccountLabel = i18n._(
+    msg({
+      message: "Delete Account Permanently",
+      comment:
+        "@context: Final destructive button to delete account and all data",
+    }),
+  );
 
   return (
     <div
@@ -60,18 +67,22 @@ export function DeleteAccountContent({
       }`}
     >
       <h1 class="settings-page-title" style="color: var(--color-destructive)">
-        {t({
-          message: "Delete Account",
-          comment: "@context: Page title for account deletion",
-        })}
+        {i18n._(
+          msg({
+            message: "Delete Account",
+            comment: "@context: Page title for account deletion",
+          }),
+        )}
       </h1>
 
       <p class="text-sm text-muted-foreground mb-6">
-        {t({
-          message:
-            "This will permanently delete all your data — posts, media, collections, settings, and your account. Your blog will be reset to its initial setup state. This cannot be undone.",
-          comment: "@context: Warning text on account deletion page",
-        })}
+        {i18n._(
+          msg({
+            message:
+              "This will permanently delete all your data — posts, media, collections, settings, and your account. Your blog will be reset to its initial setup state. This cannot be undone.",
+            comment: "@context: Warning text on account deletion page",
+          }),
+        )}
       </p>
 
       {/* Step 1: Download site export */}
@@ -80,19 +91,23 @@ export function DeleteAccountContent({
           <span class="delete-account-step-number">1</span>
           <div>
             <h2 class="delete-account-step-title">
-              {t({
-                message: "Download a site export",
-                comment:
-                  "@context: Step 1 heading — user must download a site export before deleting",
-              })}
+              {i18n._(
+                msg({
+                  message: "Download a site export",
+                  comment:
+                    "@context: Step 1 heading — user must download a site export before deleting",
+                }),
+              )}
             </h2>
             <p class="text-sm text-muted-foreground">
-              {t({
-                message:
-                  "Before deleting, download a site export. You won't be able to recover this account after deletion.",
-                comment:
-                  "@context: Step 1 description for site export before account deletion",
-              })}
+              {i18n._(
+                msg({
+                  message:
+                    "Before deleting, download a site export. You won't be able to recover this account after deletion.",
+                  comment:
+                    "@context: Step 1 description for site export before account deletion",
+                }),
+              )}
             </p>
           </div>
         </div>
@@ -116,7 +131,7 @@ export function DeleteAccountContent({
                   URL.revokeObjectURL(a.href);
                   if ($_deleteStep < 2) $_deleteStep = 2
                 })
-                .catch(function() { alert('${t({ message: "Download failed. Please try again.", comment: "@context: Alert when site export download fails during account deletion" }).replace(/'/g, "\\'")}') })
+                .catch(function() { alert('${i18n._(msg({ message: "Download failed. Please try again.", comment: "@context: Alert when site export download fails during account deletion" })).replace(/'/g, "\\'")}') })
                 .finally(function() { $_downloadLoading = false })
             `}
           >
@@ -142,11 +157,13 @@ export function DeleteAccountContent({
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" x2="12" y1="15" y2="3" />
             </svg>
-            {t({
-              message: "Download Export ZIP",
-              comment:
-                "@context: Button to download the site export ZIP before deletion",
-            })}
+            {i18n._(
+              msg({
+                message: "Download Export ZIP",
+                comment:
+                  "@context: Button to download the site export ZIP before deletion",
+              }),
+            )}
           </button>
 
           <span
@@ -169,11 +186,13 @@ export function DeleteAccountContent({
               <circle cx="12" cy="12" r="10" />
               <path d="m9 12 2 2 4-4" />
             </svg>
-            {t({
-              message: "Export downloaded.",
-              comment:
-                "@context: Confirmation text after downloading the site export in delete flow",
-            })}
+            {i18n._(
+              msg({
+                message: "Export downloaded.",
+                comment:
+                  "@context: Confirmation text after downloading the site export in delete flow",
+              }),
+            )}
           </span>
         </div>
       </div>
@@ -188,18 +207,22 @@ export function DeleteAccountContent({
           <span class="delete-account-step-number">2</span>
           <div>
             <h2 class="delete-account-step-title">
-              {t({
-                message: "Confirm account deletion",
-                comment:
-                  "@context: Step 2 heading — user must type confirmation phrase",
-              })}
+              {i18n._(
+                msg({
+                  message: "Confirm account deletion",
+                  comment:
+                    "@context: Step 2 heading — user must type confirmation phrase",
+                }),
+              )}
             </h2>
             <p class="text-sm text-muted-foreground">
-              {t({
-                message: "Type the following phrase to confirm:",
-                comment:
-                  "@context: Instruction to type confirmation phrase before deletion",
-              })}
+              {i18n._(
+                msg({
+                  message: "Type the following phrase to confirm:",
+                  comment:
+                    "@context: Instruction to type confirmation phrase before deletion",
+                }),
+              )}
             </p>
             <p class="delete-account-confirm-phrase">
               <code
@@ -213,16 +236,22 @@ export function DeleteAccountContent({
           data-on:submit__prevent={buildConfirmActionExpression(
             `$_deleteLoading = true; @post('${toPublicPath("/settings/account/delete-account", sitePathPrefix)}', {headers: {'x-csrf-token': $_csrfToken}})`,
             {
-              message: t({
-                message: "Delete this blog permanently? This cannot be undone.",
-                comment:
-                  "@context: Final browser confirm dialog before account deletion",
-              }),
+              message: i18n._(
+                msg({
+                  message:
+                    "Delete this blog permanently? This cannot be undone.",
+                  comment:
+                    "@context: Final browser confirm dialog before account deletion",
+                }),
+              ),
               confirmLabel: deleteAccountLabel,
-              cancelLabel: t({
-                message: "Cancel",
-                comment: "@context: Button label to dismiss a dialog or action",
-              }),
+              cancelLabel: i18n._(
+                msg({
+                  message: "Cancel",
+                  comment:
+                    "@context: Button label to dismiss a dialog or action",
+                }),
+              ),
               tone: "danger",
             },
           )}

@@ -4,8 +4,9 @@
  * Collection header with breadcrumb, description, sorting, and timeline feed.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { CollectionPageProps } from "../../types.js";
 import { formatPageLabel } from "../../lib/pagination.js";
 import { toPublicPath } from "../../lib/url.js";
@@ -32,7 +33,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   const primaryCollection = collections[0];
   if (!primaryCollection) return null;
 
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const isAggregate = collections.length > 1;
   const selectionTitle = collections
     .map((collection) => collection.title)
@@ -49,11 +50,13 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   const sortPopoverId = `collection-sort-popover-${sortUiId}`;
   const pageLabel =
     currentPage > 1 ? formatPageLabel(currentPage, totalPages) : null;
-  const mutationLabels = getCollectionMutationLabels(t);
-  const newPostLabel = t({
-    message: "New post",
-    comment: "@context: Collection page quick compose button aria label",
-  });
+  const mutationLabels = getCollectionMutationLabels(i18n);
+  const newPostLabel = i18n._(
+    msg({
+      message: "New post",
+      comment: "@context: Collection page quick compose button aria label",
+    }),
+  );
   const sortOptions = [
     {
       value: "newest",
@@ -74,10 +77,12 @@ export const CollectionPage: FC<CollectionPageProps> = ({
           <path d="m7 10 5-5 5 5" />
         </svg>
       ),
-      label: t({
-        message: "Newest first",
-        comment: "@context: Collection sort order option",
-      }),
+      label: i18n._(
+        msg({
+          message: "Newest first",
+          comment: "@context: Collection sort order option",
+        }),
+      ),
     },
     {
       value: "oldest",
@@ -98,10 +103,12 @@ export const CollectionPage: FC<CollectionPageProps> = ({
           <path d="m7 14 5 5 5-5" />
         </svg>
       ),
-      label: t({
-        message: "Oldest first",
-        comment: "@context: Collection sort order option",
-      }),
+      label: i18n._(
+        msg({
+          message: "Oldest first",
+          comment: "@context: Collection sort order option",
+        }),
+      ),
     },
     ...(showRatingSort
       ? [
@@ -123,10 +130,12 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 <path d="m12 3.5 2.6 5.27 5.82.85-4.21 4.1.99 5.78L12 16.73 6.8 19.5l.99-5.78-4.21-4.1 5.82-.85L12 3.5Z" />
               </svg>
             ),
-            label: t({
-              message: "Highest rated",
-              comment: "@context: Collection sort order option",
-            }),
+            label: i18n._(
+              msg({
+                message: "Highest rated",
+                comment: "@context: Collection sort order option",
+              }),
+            ),
           },
         ]
       : []),
@@ -149,18 +158,22 @@ export const CollectionPage: FC<CollectionPageProps> = ({
         <div class="collection-page-topbar">
           <nav
             class="collection-breadcrumb"
-            aria-label={t({
-              message: "Breadcrumb",
-              comment: "@context: Breadcrumb label on collection detail page",
-            })}
+            aria-label={i18n._(
+              msg({
+                message: "Breadcrumb",
+                comment: "@context: Breadcrumb label on collection detail page",
+              }),
+            )}
           >
             <ol>
               <li>
                 <a href={toPublicPath("/c", sitePathPrefix)}>
-                  {t({
-                    message: "Collections",
-                    comment: "@context: Breadcrumb link to collections page",
-                  })}
+                  {i18n._(
+                    msg({
+                      message: "Collections",
+                      comment: "@context: Breadcrumb link to collections page",
+                    }),
+                  )}
                 </a>
               </li>
               <li aria-hidden="true">
@@ -197,11 +210,13 @@ export const CollectionPage: FC<CollectionPageProps> = ({
           {isAggregate ? (
             <div class="collection-page-meta">
               <span>
-                {t({
-                  message: "Includes",
-                  comment:
-                    "@context: Label above the included collections list on an aggregate collection page",
-                })}
+                {i18n._(
+                  msg({
+                    message: "Includes",
+                    comment:
+                      "@context: Label above the included collections list on an aggregate collection page",
+                  }),
+                )}
               </span>{" "}
               {collections.map((collection, index) => (
                 <span key={collection.id}>
@@ -224,31 +239,39 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 <>
                   {collections.length}{" "}
                   {collections.length === 1
-                    ? t({
-                        message: "collection",
-                        comment:
-                          "@context: Singular collection count label on an aggregate collection page",
-                      })
-                    : t({
-                        message: "collections",
-                        comment:
-                          "@context: Plural collection count label on an aggregate collection page",
-                      })}
+                    ? i18n._(
+                        msg({
+                          message: "collection",
+                          comment:
+                            "@context: Singular collection count label on an aggregate collection page",
+                        }),
+                      )
+                    : i18n._(
+                        msg({
+                          message: "collections",
+                          comment:
+                            "@context: Plural collection count label on an aggregate collection page",
+                        }),
+                      )}
                   <span> / </span>
                 </>
               ) : null}
               {totalThreadCount}{" "}
               {totalThreadCount === 1
-                ? t({
-                    message: "thread",
-                    comment:
-                      "@context: Singular thread count label on collection detail page",
-                  })
-                : t({
-                    message: "threads",
-                    comment:
-                      "@context: Plural thread count label on collection detail page",
-                  })}
+                ? i18n._(
+                    msg({
+                      message: "thread",
+                      comment:
+                        "@context: Singular thread count label on collection detail page",
+                    }),
+                  )
+                : i18n._(
+                    msg({
+                      message: "threads",
+                      comment:
+                        "@context: Plural thread count label on collection detail page",
+                    }),
+                  )}
               {pageLabel ? <span> / {pageLabel}</span> : null}
             </p>
             <span class="collection-page-meta-divider" aria-hidden="true">
@@ -264,11 +287,13 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 aria-expanded="false"
               >
                 <span class="sr-only">
-                  {t({
-                    message: "Sort",
-                    comment:
-                      "@context: Sort menu label on collection detail page",
-                  })}
+                  {i18n._(
+                    msg({
+                      message: "Sort",
+                      comment:
+                        "@context: Sort menu label on collection detail page",
+                    }),
+                  )}
                   :{" "}
                 </span>
                 <span>{currentSortLabel}</span>
@@ -484,17 +509,21 @@ export const CollectionPage: FC<CollectionPageProps> = ({
         {items.length === 0 ? (
           <p class="text-muted-foreground">
             {isAggregate
-              ? t({
-                  message:
-                    "Nothing here yet. Add posts to one of these collections to fill this view.",
-                  comment:
-                    "@context: Empty state message on an aggregate collection page",
-                })
-              : t({
-                  message:
-                    "This collection is empty. Add posts from the editor.",
-                  comment: "@context: Empty state message",
-                })}
+              ? i18n._(
+                  msg({
+                    message:
+                      "Nothing here yet. Add posts to one of these collections to fill this view.",
+                    comment:
+                      "@context: Empty state message on an aggregate collection page",
+                  }),
+                )
+              : i18n._(
+                  msg({
+                    message:
+                      "This collection is empty. Add posts from the editor.",
+                    comment: "@context: Empty state message",
+                  }),
+                )}
           </p>
         ) : (
           <TimelineFeed

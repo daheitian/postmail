@@ -2,7 +2,7 @@
  * Trans Component for Hono JSX
  *
  * Simple implementation that just renders children directly.
- * For complex translations with embedded JSX, use the t() function with placeholders.
+ * For translated copy, prefer `i18n._(msg(...), values?)` where possible.
  */
 
 import type { FC, PropsWithChildren } from "hono/jsx";
@@ -14,8 +14,8 @@ export interface TransProps extends PropsWithChildren {
 
 /**
  * Trans component - renders children as-is
- * Note: This is a simplified implementation. For translations with embedded JSX,
- * it's recommended to use t() with placeholders instead.
+ * Note: This is a simplified implementation. For most translated copy,
+ * prefer `i18n._(msg(...), values?)` instead.
  *
  * @example
  * ```tsx

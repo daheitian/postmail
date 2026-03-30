@@ -1183,8 +1183,6 @@ msgstr "Favicon and the profile mark in your header"
 
 #. @context: Archive visibility filter - featured posts
 #. @context: Browse filter for featured posts
-#. @context: Browse filter label
-#. @context: Browse filter label
 #. @context: Browse filter label for featured posts
 #. @context: Browser page title for the featured feed
 #. @context: Browser page title for the featured feed
@@ -1195,8 +1193,6 @@ msgstr "Favicon and the profile mark in your header"
 #. @context: Tooltip and screen reader label for the featured-post icon in the post footer when no featured date is available
 #: src/routes/pages/featured.tsx
 #: src/routes/pages/home.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/dash/StatusBadge.tsx
@@ -1366,10 +1362,10 @@ msgstr "Header link limit updated."
 msgid "Header links, home feed, and overflow menu"
 msgstr "Header links, home feed, and overflow menu"
 
-#. @context: Description for the RSS system navigation toggle. %feed% is either Latest or Featured.
+#. @context: Description for the RSS system navigation toggle. {feed} is either Latest or Featured.
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Header RSS points to your %feed% feed (/feed). Change what /feed returns in General."
-msgstr "Header RSS points to your %feed% feed (/feed). Change what /feed returns in General."
+msgid "Header RSS points to your {feed} feed (/feed). Change what /feed returns in General."
+msgstr "Header RSS points to your {feed} feed (/feed). Change what /feed returns in General."
 
 #. @context: Bullet item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1556,8 +1552,6 @@ msgstr "Last used {date}"
 
 #. @context: Active browse tab label on sample page
 #. @context: Browse filter for latest posts
-#. @context: Browse filter label
-#. @context: Browse filter label
 #. @context: Browse filter label for latest posts
 #. @context: Browser page title for the latest feed
 #. @context: Browser page title for the latest feed
@@ -1565,8 +1559,6 @@ msgstr "Last used {date}"
 #. @context: Select option for using latest posts as the main RSS feed
 #: src/routes/pages/home.tsx
 #: src/routes/pages/latest.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/layouts/SiteLayout.tsx
@@ -1718,6 +1710,11 @@ msgstr "Main feed"
 msgid "Main RSS feed"
 msgstr "Main RSS feed"
 
+#. @context: Settings item label for opening the hosted account management page
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage Account"
+msgstr "Manage Account"
+
 #. @context: Settings item description for hosted account management in the connected provider
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage password and hosted access in {providerLabel}"
@@ -1820,8 +1817,6 @@ msgid "Navigation order updated."
 msgstr "Navigation order updated."
 
 #. @context: Label for nav preview section
-#. @context: Label for nav preview section
-#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Navigation Preview"
 msgstr "Navigation Preview"
@@ -3091,6 +3086,11 @@ msgstr "URL"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Usage"
 msgstr "Usage"
+
+#. @context: Test string for Lingui interpolation support
+#: src/i18n/__tests__/context.test.tsx
+msgid "Use {brandColorName}"
+msgstr "Use {brandColorName}"
 
 #. @context: Compose publish settings action to reset the publish date to the current date
 #: src/ui/compose/ComposeDialog.tsx

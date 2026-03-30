@@ -1,25 +1,30 @@
+import type { Context } from "hono";
 import { renderToString } from "hono/jsx/dom/server";
-import { describe, expect, it, vi } from "vitest";
-
-vi.mock("@lingui/react/macro", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@lingui/react/macro")>();
-  return {
-    ...actual,
-    useLingui: () => ({
-      t: ({
-        message,
-      }: {
-        message: string;
-        comment?: string;
-        values?: Record<string, unknown>;
-      }) => message,
-    }),
-  };
-});
+import { describe, expect, it } from "vitest";
+import { I18nProvider } from "../../../../i18n/context.js";
+import { createI18n } from "../../../../i18n/i18n.js";
 
 async function loadGeneralContent() {
   const { GeneralContent } = await import("../GeneralContent.js");
   return GeneralContent;
+}
+
+function renderGeneralContent(
+  props: Parameters<Awaited<ReturnType<typeof loadGeneralContent>>>[0],
+) {
+  const i18n = createI18n("en");
+  const c = {
+    get(key: string) {
+      if (key === "i18n") return i18n;
+      return undefined;
+    },
+  } as unknown as Context;
+
+  I18nProvider({ c, children: "" });
+
+  return loadGeneralContent().then((GeneralContent) =>
+    renderToString(GeneralContent(props)),
+  );
 }
 
 function createProps(
@@ -57,15 +62,13 @@ function createProps(
 
 describe("GeneralContent", () => {
   it("omits the demo-mode attribute when demo mode is disabled", async () => {
-    const GeneralContent = await loadGeneralContent();
-    const html = renderToString(GeneralContent(createProps(false)));
+    const html = await renderGeneralContent(createProps(false));
 
     expect(html).not.toContain("demo-mode");
   });
 
   it("renders the demo-mode attribute when demo mode is enabled", async () => {
-    const GeneralContent = await loadGeneralContent();
-    const html = renderToString(GeneralContent(createProps(true)));
+    const html = await renderGeneralContent(createProps(true));
 
     expect(html).toMatch(/<jant-settings-general[^>]*demo-mode(?:=|\s|>)/);
   });

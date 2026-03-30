@@ -5,8 +5,9 @@
  * Each card shows only what's relevant: title/domain/quote + FTS snippet.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { SearchPageProps, SearchResultView } from "../../types.js";
 import { toPublicPath } from "../../lib/url.js";
 import { PagePagination } from "../shared/Pagination.js";
@@ -188,12 +189,17 @@ export const SearchPage: FC<SearchPageProps> = ({
   page,
   sitePathPrefix = "",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <div class="py-6" data-page="search">
       <h1 class="text-2xl font-semibold mb-6">
-        {t({ message: "Search", comment: "@context: Search page title" })}
+        {i18n._(
+          msg({
+            message: "Search",
+            comment: "@context: Search page title",
+          }),
+        )}
       </h1>
 
       {/* Search form */}
@@ -207,18 +213,22 @@ export const SearchPage: FC<SearchPageProps> = ({
             type="search"
             name="q"
             class="input flex-1"
-            placeholder={t({
-              message: "Search posts...",
-              comment: "@context: Search input placeholder",
-            })}
+            placeholder={i18n._(
+              msg({
+                message: "Search posts...",
+                comment: "@context: Search input placeholder",
+              }),
+            )}
             value={query}
             autofocus
           />
           <button type="submit" class="btn">
-            {t({
-              message: "Search",
-              comment: "@context: Search submit button",
-            })}
+            {i18n._(
+              msg({
+                message: "Search",
+                comment: "@context: Search submit button",
+              }),
+            )}
           </button>
         </div>
       </form>
@@ -235,18 +245,22 @@ export const SearchPage: FC<SearchPageProps> = ({
         <div>
           <p class="text-sm text-muted-foreground mb-4">
             {results.length === 0
-              ? t({
-                  message: "No results. Try different keywords.",
-                  comment: "@context: Search empty results",
-                })
-              : t({
-                  message:
-                    "{count, plural, one {Found # result} other {Found # results}}",
-                  comment: "@context: Search results count - multiple",
-                  values: {
+              ? i18n._(
+                  msg({
+                    message: "No results. Try different keywords.",
+                    comment: "@context: Search empty results",
+                  }),
+                )
+              : i18n._(
+                  msg({
+                    message:
+                      "{count, plural, one {Found # result} other {Found # results}}",
+                    comment: "@context: Search results count - multiple",
+                  }),
+                  {
                     count: results.length,
                   },
-                })}
+                )}
           </p>
 
           {results.length > 0 && (

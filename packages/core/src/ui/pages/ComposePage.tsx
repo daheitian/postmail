@@ -1,5 +1,6 @@
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { Collection } from "../../types.js";
 import { ComposeForm } from "../compose/ComposeDialog.js";
 
@@ -14,11 +15,13 @@ export const ComposePage: FC<ComposePageProps> = ({
   uploadMaxFileSize,
   closeHref = "/",
 }) => {
-  const { t } = useLingui();
-  const backLabel = t({
-    message: "Back",
-    comment: "@context: Link back from the new post page",
-  });
+  const { i18n } = useLingui();
+  const backLabel = i18n._(
+    msg({
+      message: "Back",
+      comment: "@context: Link back from the new post page",
+    }),
+  );
 
   return (
     <section class="compose-page" data-page="compose">
@@ -26,10 +29,12 @@ export const ComposePage: FC<ComposePageProps> = ({
         <div class="compose-page-intro">
           <div class="compose-page-intro-row">
             <h1 class="compose-page-title">
-              {t({
-                message: "New post",
-                comment: "@context: Page title for the new post page",
-              })}
+              {i18n._(
+                msg({
+                  message: "New post",
+                  comment: "@context: Page title for the new post page",
+                }),
+              )}
             </h1>
             <button
               type="button"

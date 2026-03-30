@@ -2,8 +2,9 @@
  * Account settings sub-menu — lists security, data, and destructive actions
  */
 
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
 import { coalesceDisplayText } from "../../../lib/display-text.js";
+import { useLingui } from "../../../i18n/context.js";
 import { extractDomain, toPublicPath } from "../../../lib/url.js";
 import {
   SettingsDirectoryItemContent,
@@ -36,64 +37,86 @@ export function AccountMenuContent({
   hostedControlPlaneProviderLabel?: string | null;
   hostedControlPlaneSiteDeleteUrl?: string | null;
 }) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const isHosted = Boolean(hostedControlPlaneAccountUrl);
+  const accountDomain = hostedControlPlaneAccountUrl
+    ? extractDomain(hostedControlPlaneAccountUrl)
+    : undefined;
   const providerLabel =
-    coalesceDisplayText(
-      hostedControlPlaneProviderLabel,
-      hostedControlPlaneAccountUrl
-        ? extractDomain(hostedControlPlaneAccountUrl)
-        : undefined,
-    ) ??
-    t({
-      message: "Hosted account",
-      comment:
-        "@context: Generic hosted auth provider label when no explicit provider name is configured",
-    });
+    coalesceDisplayText(hostedControlPlaneProviderLabel, accountDomain) ??
+    i18n._(
+      msg({
+        message: "Hosted account",
+        comment:
+          "@context: Generic hosted auth provider label when no explicit provider name is configured",
+      }),
+    );
+  const hostedIntroText = isHosted
+    ? i18n._(
+        msg({
+          message:
+            "Manage this site's active sessions here. Password and hosted access are managed through {providerLabel}.",
+          comment:
+            "@context: Intro text on the hosted account settings menu page below the title",
+        }),
+        {
+          providerLabel,
+        },
+      )
+    : i18n._(
+        msg({
+          message:
+            "Manage sign-in security, exports, and irreversible actions.",
+          comment:
+            "@context: Intro text on the account settings menu page below the title",
+        }),
+      );
+  const hostedAlertText =
+    isHosted && hostedControlPlaneAccountUrl
+      ? i18n._(
+          msg({
+            message:
+              "This hosted site signs in through {providerLabel}. Manage password and hosted access there.",
+            comment:
+              "@context: Notice shown on hosted account settings explaining that password and hosted account controls live in the connected hosted auth provider",
+          }),
+          {
+            providerLabel,
+          },
+        )
+      : null;
+  const hostedManageDescription =
+    isHosted && hostedControlPlaneAccountUrl
+      ? i18n._(
+          msg({
+            message: "Manage password and hosted access in {providerLabel}",
+            comment:
+              "@context: Settings item description for hosted account management in the connected provider",
+          }),
+          {
+            providerLabel,
+          },
+        )
+      : null;
 
   return (
     <div class="settings-root">
       <header class="page-intro">
         <h1 class="page-intro-title page-intro-title-compact">
-          {t({
-            message: "Account",
-            comment: "@context: Page title for the account settings menu",
-          })}
+          {i18n._(
+            msg({
+              message: "Account",
+              comment: "@context: Page title for the account settings menu",
+            }),
+          )}
         </h1>
-        <p class="page-intro-description">
-          {isHosted
-            ? t({
-                message:
-                  "Manage this site's active sessions here. Password and hosted access are managed through {providerLabel}.",
-                comment:
-                  "@context: Intro text on the hosted account settings menu page below the title",
-                values: {
-                  providerLabel,
-                },
-              })
-            : t({
-                message:
-                  "Manage sign-in security, exports, and irreversible actions.",
-                comment:
-                  "@context: Intro text on the account settings menu page below the title",
-              })}
-        </p>
+        <p class="page-intro-description">{hostedIntroText}</p>
       </header>
 
       {isHosted && hostedControlPlaneAccountUrl && (
         <div class="alert" role="alert">
           <section>
-            <p>
-              {t({
-                message:
-                  "This hosted site signs in through {providerLabel}. Manage password and hosted access there.",
-                comment:
-                  "@context: Notice shown on hosted account settings explaining that password and hosted account controls live in the connected hosted auth provider",
-                values: {
-                  providerLabel,
-                },
-              })}
-            </p>
+            <p>{hostedAlertText}</p>
           </section>
         </div>
       )}
@@ -102,12 +125,14 @@ export function AccountMenuContent({
         <div class="alert" role="alert">
           <section>
             <p>
-              {t({
-                message:
-                  "Demo mode hides sessions, password changes, and account deletion. Export still works.",
-                comment:
-                  "@context: Notice shown on the account page when demo restrictions are enabled",
-              })}
+              {i18n._(
+                msg({
+                  message:
+                    "Demo mode hides sessions, password changes, and account deletion. Export still works.",
+                  comment:
+                    "@context: Notice shown on the account page when demo restrictions are enabled",
+                }),
+              )}
             </p>
           </section>
         </div>
@@ -115,64 +140,75 @@ export function AccountMenuContent({
 
       {!demoMode && (
         <SettingsDirectorySection
-          title={t({
-            message: "Security",
-            comment:
-              "@context: Settings group label for account security settings",
-          })}
+          title={i18n._(
+            msg({
+              message: "Security",
+              comment:
+                "@context: Settings group label for account security settings",
+            }),
+          )}
         >
           <SettingsDirectoryLink
             href={toPublicPath("/settings/account/sessions", sitePathPrefix)}
             icon={ICONS.monitor}
             tone="subtle"
-            name={t({
-              message: "Sessions",
-              comment: "@context: Settings item — session management",
-            })}
-            description={t({
-              message: "See where you're signed in and revoke old sessions",
-              comment: "@context: Settings item description for sessions",
-            })}
+            name={i18n._(
+              msg({
+                message: "Sessions",
+                comment: "@context: Settings item — session management",
+              }),
+            )}
+            description={i18n._(
+              msg({
+                message: "See where you're signed in and revoke old sessions",
+                comment: "@context: Settings item description for sessions",
+              }),
+            )}
           />
           {isHosted && hostedControlPlaneAccountUrl ? (
             <SettingsDirectoryLink
               href={hostedControlPlaneAccountUrl}
               icon={ICONS.user}
               tone="subtle"
-              name={providerLabel}
-              description={t({
-                message: "Manage password and hosted access in {providerLabel}",
-                comment:
-                  "@context: Settings item description for hosted account management in the connected provider",
-                values: {
-                  providerLabel,
-                },
-              })}
+              name={i18n._(
+                msg({
+                  message: "Manage Account",
+                  comment:
+                    "@context: Settings item label for opening the hosted account management page",
+                }),
+              )}
+              description={hostedManageDescription ?? ""}
             />
           ) : (
             <SettingsDirectoryLink
               href={toPublicPath("/settings/account/password", sitePathPrefix)}
               icon={ICONS.lock}
               tone="subtle"
-              name={t({
-                message: "Password",
-                comment: "@context: Settings item — password settings",
-              })}
-              description={t({
-                message: "Update the password you use to sign in",
-                comment:
-                  "@context: Settings item description for password change",
-              })}
+              name={i18n._(
+                msg({
+                  message: "Password",
+                  comment: "@context: Settings item — password settings",
+                }),
+              )}
+              description={i18n._(
+                msg({
+                  message: "Update the password you use to sign in",
+                  comment:
+                    "@context: Settings item description for password change",
+                }),
+              )}
             />
           )}
         </SettingsDirectorySection>
       )}
 
       <SettingsDirectorySection
-        title={t({
-          message: "Data",
-          comment: "@context: Settings group label for data export/import",
-        })}
+        title={i18n._(
+          msg({
+            message: "Data",
+            comment: "@context: Settings group label for data export/import",
+          }),
+        )}
       >
         <form
           method="post"
@@ -186,17 +222,21 @@ export function AccountMenuContent({
           >
             <SettingsDirectoryItemContent
               icon={ICONS.download}
-              name={t({
-                message: "Export Static Site",
-                comment:
-                  "@context: Settings item — export a Zola static site ZIP",
-              })}
-              description={t({
-                message:
-                  "Download a Zola site ZIP for static publishing or import into another Jant.",
-                comment:
-                  "@context: Settings item description for static site export",
-              })}
+              name={i18n._(
+                msg({
+                  message: "Export Static Site",
+                  comment:
+                    "@context: Settings item — export a Zola static site ZIP",
+                }),
+              )}
+              description={i18n._(
+                msg({
+                  message:
+                    "Download a Zola site ZIP for static publishing or import into another Jant.",
+                  comment:
+                    "@context: Settings item description for static site export",
+                }),
+              )}
             />
           </button>
         </form>
@@ -206,58 +246,70 @@ export function AccountMenuContent({
           rel="noopener noreferrer"
           icon={ICONS.book}
           tone="subtle"
-          name={t({
-            message: "Backup & Restore Guide",
-            comment:
-              "@context: Link to backup and restore documentation from account settings",
-          })}
-          description={t({
-            message:
-              "When to use site export, database backups, and recovery drills.",
-            comment:
-              "@context: Description for backup and restore documentation link in account settings",
-          })}
+          name={i18n._(
+            msg({
+              message: "Backup & Restore Guide",
+              comment:
+                "@context: Link to backup and restore documentation from account settings",
+            }),
+          )}
+          description={i18n._(
+            msg({
+              message:
+                "When to use site export, database backups, and recovery drills.",
+              comment:
+                "@context: Description for backup and restore documentation link in account settings",
+            }),
+          )}
         />
       </SettingsDirectorySection>
 
       {!demoMode && isHosted && hostedControlPlaneSiteDeleteUrl ? (
         <SettingsDirectorySection
-          title={t({
-            message: "Danger Zone",
-            comment:
-              "@context: Settings group label for destructive account actions",
-          })}
+          title={i18n._(
+            msg({
+              message: "Danger Zone",
+              comment:
+                "@context: Settings group label for destructive account actions",
+            }),
+          )}
           tone="danger"
         >
           <SettingsDirectoryLink
             href={hostedControlPlaneSiteDeleteUrl}
             icon={ICONS.trash}
             tone="danger"
-            name={t({
-              message: "Delete Hosted Site",
-              comment:
-                "@context: Settings item — open the hosted site danger zone in the control plane",
-            })}
-            description={t({
-              message:
-                "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site.",
-              comment:
-                "@context: Settings item description for the hosted delete-site entry in the account menu",
-              values: {
+            name={i18n._(
+              msg({
+                message: "Delete Hosted Site",
+                comment:
+                  "@context: Settings item — open the hosted site danger zone in the control plane",
+              }),
+            )}
+            description={i18n._(
+              msg({
+                message:
+                  "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site.",
+                comment:
+                  "@context: Settings item description for the hosted delete-site entry in the account menu",
+              }),
+              {
                 providerLabel,
               },
-            })}
+            )}
           />
         </SettingsDirectorySection>
       ) : null}
 
       {!demoMode && !isHosted && (
         <SettingsDirectorySection
-          title={t({
-            message: "Danger Zone",
-            comment:
-              "@context: Settings group label for destructive account actions",
-          })}
+          title={i18n._(
+            msg({
+              message: "Danger Zone",
+              comment:
+                "@context: Settings group label for destructive account actions",
+            }),
+          )}
           tone="danger"
         >
           <SettingsDirectoryLink
@@ -267,15 +319,20 @@ export function AccountMenuContent({
             )}
             icon={ICONS.trash}
             tone="danger"
-            name={t({
-              message: "Delete Account",
-              comment: "@context: Settings item — delete account and all data",
-            })}
-            description={t({
-              message: "Permanently delete all data and reset the blog",
-              comment:
-                "@context: Settings item description for account deletion",
-            })}
+            name={i18n._(
+              msg({
+                message: "Delete Account",
+                comment:
+                  "@context: Settings item — delete account and all data",
+              }),
+            )}
+            description={i18n._(
+              msg({
+                message: "Permanently delete all data and reset the blog",
+                comment:
+                  "@context: Settings item description for account deletion",
+              }),
+            )}
           />
         </SettingsDirectorySection>
       )}

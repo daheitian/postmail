@@ -7,7 +7,7 @@
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
 import { msg } from "@lingui/core/macro";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
@@ -24,23 +24,27 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 const SetupContent: FC<{ sitePathPrefix?: string }> = ({
   sitePathPrefix = "",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <div class="min-h-screen flex items-center justify-center">
       <div class="card max-w-md w-full">
         <header>
           <h2>
-            {t({
-              message: "Welcome to Jant",
-              comment: "@context: Setup page welcome heading",
-            })}
+            {i18n._(
+              msg({
+                message: "Welcome to Jant",
+                comment: "@context: Setup page welcome heading",
+              }),
+            )}
           </h2>
           <p>
-            {t({
-              message: "Create your admin account.",
-              comment: "@context: Setup page description",
-            })}
+            {i18n._(
+              msg({
+                message: "Create your admin account.",
+                comment: "@context: Setup page description",
+              }),
+            )}
           </p>
         </header>
         <section>
@@ -53,10 +57,12 @@ const SetupContent: FC<{ sitePathPrefix?: string }> = ({
           >
             <div class="field">
               <label class="label">
-                {t({
-                  message: "Site Name",
-                  comment: "@context: Setup form field - site name",
-                })}
+                {i18n._(
+                  msg({
+                    message: "Site Name",
+                    comment: "@context: Setup form field - site name",
+                  }),
+                )}
               </label>
               <input
                 type="text"
@@ -68,10 +74,12 @@ const SetupContent: FC<{ sitePathPrefix?: string }> = ({
             </div>
             <div class="field">
               <label class="label">
-                {t({
-                  message: "Email",
-                  comment: "@context: Setup/signin form field - email",
-                })}
+                {i18n._(
+                  msg({
+                    message: "Email",
+                    comment: "@context: Setup/signin form field - email",
+                  }),
+                )}
               </label>
               <input
                 type="email"
@@ -83,10 +91,12 @@ const SetupContent: FC<{ sitePathPrefix?: string }> = ({
             </div>
             <div class="field">
               <label class="label">
-                {t({
-                  message: "Password",
-                  comment: "@context: Setup/signin form field - password",
-                })}
+                {i18n._(
+                  msg({
+                    message: "Password",
+                    comment: "@context: Setup/signin form field - password",
+                  }),
+                )}
               </label>
               <input
                 type="password"
@@ -112,10 +122,12 @@ const SetupContent: FC<{ sitePathPrefix?: string }> = ({
               >
                 <path d="M21 12a9 9 0 1 1-6.219-8.56" />
               </svg>
-              {t({
-                message: "Complete Setup",
-                comment: "@context: Setup form submit button",
-              })}
+              {i18n._(
+                msg({
+                  message: "Complete Setup",
+                  comment: "@context: Setup form submit button",
+                }),
+              )}
             </button>
           </form>
         </section>

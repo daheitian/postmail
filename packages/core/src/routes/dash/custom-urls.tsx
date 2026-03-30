@@ -4,8 +4,9 @@
  * Mounted under /settings/custom-urls
  */
 
+import { msg } from "@lingui/core/macro";
 import { Hono } from "hono";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { Bindings, CustomUrl } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { EmptyState } from "../../ui/dash/index.js";
@@ -119,64 +120,82 @@ function CustomUrlsListContent({
   totalPages: number;
   sitePathPrefix?: string;
 }) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const hasCustomUrls = customUrls.length > 0;
   const targetTypeLabels = {
-    post: t({
-      message: "Post",
-      comment: "@context: Custom URL target type badge for a post",
-    }),
-    collection: t({
-      message: "Collection",
-      comment: "@context: Custom URL target type badge for a collection",
-    }),
-    redirect: t({
-      message: "Redirect",
-      comment: "@context: Custom URL target type badge for a redirect",
-    }),
+    post: i18n._(
+      msg({
+        message: "Post",
+        comment: "@context: Custom URL target type badge for a post",
+      }),
+    ),
+    collection: i18n._(
+      msg({
+        message: "Collection",
+        comment: "@context: Custom URL target type badge for a collection",
+      }),
+    ),
+    redirect: i18n._(
+      msg({
+        message: "Redirect",
+        comment: "@context: Custom URL target type badge for a redirect",
+      }),
+    ),
   } satisfies Record<CustomUrl["targetType"], string>;
-  const moreActionsLabel = t({
-    message: "More actions",
-    comment: "@context: Button label for a menu with more actions",
-  });
-  const deleteLabel = t({
-    message: "Delete",
-    comment: "@context: Button to delete custom URL",
-  });
+  const moreActionsLabel = i18n._(
+    msg({
+      message: "More actions",
+      comment: "@context: Button label for a menu with more actions",
+    }),
+  );
+  const deleteLabel = i18n._(
+    msg({
+      message: "Delete",
+      comment: "@context: Button to delete custom URL",
+    }),
+  );
 
   return (
     <>
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-lg font-medium">
-          {t({
-            message: "Custom URLs",
-            comment: "@context: Settings section heading",
-          })}
+          {i18n._(
+            msg({
+              message: "Custom URLs",
+              comment: "@context: Settings section heading",
+            }),
+          )}
         </h2>
         {hasCustomUrls ? (
           <a
             href={toPublicPath("/settings/custom-urls/new", sitePathPrefix)}
             class="btn"
           >
-            {t({
-              message: "New Custom URL",
-              comment: "@context: Button to create new custom URL",
-            })}
+            {i18n._(
+              msg({
+                message: "New Custom URL",
+                comment: "@context: Button to create new custom URL",
+              }),
+            )}
           </a>
         ) : null}
       </div>
 
       {!hasCustomUrls ? (
         <EmptyState
-          message={t({
-            message:
-              "No custom URLs yet. Create one to add redirects or custom paths for posts.",
-            comment: "@context: Empty state message",
-          })}
-          ctaText={t({
-            message: "New Custom URL",
-            comment: "@context: Button to create new custom URL",
-          })}
+          message={i18n._(
+            msg({
+              message:
+                "No custom URLs yet. Create one to add redirects or custom paths for posts.",
+              comment: "@context: Empty state message",
+            }),
+          )}
+          ctaText={i18n._(
+            msg({
+              message: "New Custom URL",
+              comment: "@context: Button to create new custom URL",
+            }),
+          )}
           ctaHref={toPublicPath("/settings/custom-urls/new", sitePathPrefix)}
         />
       ) : (
@@ -287,12 +306,17 @@ function NewCustomUrlContent({
 }: {
   sitePathPrefix?: string;
 }) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <>
       <h2 class="text-lg font-medium mb-6">
-        {t({ message: "New Custom URL", comment: "@context: Page heading" })}
+        {i18n._(
+          msg({
+            message: "New Custom URL",
+            comment: "@context: Page heading",
+          }),
+        )}
       </h2>
 
       <form
@@ -303,10 +327,12 @@ function NewCustomUrlContent({
       >
         <div class="field">
           <label class="label">
-            {t({
-              message: "Path",
-              comment: "@context: Custom URL form field",
-            })}
+            {i18n._(
+              msg({
+                message: "Path",
+                comment: "@context: Custom URL form field",
+              }),
+            )}
           </label>
           <input
             type="text"
@@ -316,38 +342,48 @@ function NewCustomUrlContent({
             required
           />
           <p class="text-xs text-muted-foreground mt-1">
-            {t({
-              message: "The custom URL path (without leading slash)",
-              comment: "@context: Custom URL path help text",
-            })}
+            {i18n._(
+              msg({
+                message: "The custom URL path (without leading slash)",
+                comment: "@context: Custom URL path help text",
+              }),
+            )}
           </p>
         </div>
 
         <div class="field">
           <label class="label">
-            {t({
-              message: "Type",
-              comment: "@context: Custom URL form field",
-            })}
+            {i18n._(
+              msg({
+                message: "Type",
+                comment: "@context: Custom URL form field",
+              }),
+            )}
           </label>
           <select data-bind="targetType" class="select">
             <option value="redirect">
-              {t({
-                message: "Redirect",
-                comment: "@context: Custom URL type option",
-              })}
+              {i18n._(
+                msg({
+                  message: "Redirect",
+                  comment: "@context: Custom URL type option",
+                }),
+              )}
             </option>
             <option value="post">
-              {t({
-                message: "Post",
-                comment: "@context: Custom URL type option",
-              })}
+              {i18n._(
+                msg({
+                  message: "Post",
+                  comment: "@context: Custom URL type option",
+                }),
+              )}
             </option>
             <option value="collection">
-              {t({
-                message: "Collection",
-                comment: "@context: Custom URL type option",
-              })}
+              {i18n._(
+                msg({
+                  message: "Collection",
+                  comment: "@context: Custom URL type option",
+                }),
+              )}
             </option>
           </select>
         </div>
@@ -355,10 +391,12 @@ function NewCustomUrlContent({
         <div data-show="$targetType === 'redirect'" class="flex flex-col gap-4">
           <div class="field">
             <label class="label">
-              {t({
-                message: "Destination",
-                comment: "@context: Redirect destination field",
-              })}
+              {i18n._(
+                msg({
+                  message: "Destination",
+                  comment: "@context: Redirect destination field",
+                }),
+              )}
             </label>
             <input
               type="text"
@@ -370,23 +408,29 @@ function NewCustomUrlContent({
 
           <div class="field">
             <label class="label">
-              {t({
-                message: "Redirect Type",
-                comment: "@context: Redirect type field",
-              })}
+              {i18n._(
+                msg({
+                  message: "Redirect Type",
+                  comment: "@context: Redirect type field",
+                }),
+              )}
             </label>
             <select data-bind="redirectType" class="select">
               <option value="301">
-                {t({
-                  message: "301 (Permanent)",
-                  comment: "@context: Redirect type option",
-                })}
+                {i18n._(
+                  msg({
+                    message: "301 (Permanent)",
+                    comment: "@context: Redirect type option",
+                  }),
+                )}
               </option>
               <option value="302">
-                {t({
-                  message: "302 (Temporary)",
-                  comment: "@context: Redirect type option",
-                })}
+                {i18n._(
+                  msg({
+                    message: "302 (Temporary)",
+                    comment: "@context: Redirect type option",
+                  }),
+                )}
               </option>
             </select>
           </div>
@@ -397,10 +441,12 @@ function NewCustomUrlContent({
           class="field"
         >
           <label class="label">
-            {t({
-              message: "Target Slug",
-              comment: "@context: Custom URL target slug field",
-            })}
+            {i18n._(
+              msg({
+                message: "Target Slug",
+                comment: "@context: Custom URL target slug field",
+              }),
+            )}
           </label>
           <input
             type="text"
@@ -409,10 +455,12 @@ function NewCustomUrlContent({
             placeholder="my-post-slug"
           />
           <p class="text-xs text-muted-foreground mt-1">
-            {t({
-              message: "The slug of the target post or collection",
-              comment: "@context: Custom URL target slug help text",
-            })}
+            {i18n._(
+              msg({
+                message: "The slug of the target post or collection",
+                comment: "@context: Custom URL target slug help text",
+              }),
+            )}
           </p>
         </div>
 
@@ -433,19 +481,23 @@ function NewCustomUrlContent({
             >
               <path d="M21 12a9 9 0 1 1-6.219-8.56" />
             </svg>
-            {t({
-              message: "Create Custom URL",
-              comment: "@context: Button to save new custom URL",
-            })}
+            {i18n._(
+              msg({
+                message: "Create Custom URL",
+                comment: "@context: Button to save new custom URL",
+              }),
+            )}
           </button>
           <a
             href={toPublicPath("/settings/custom-urls", sitePathPrefix)}
             class="btn-outline"
           >
-            {t({
-              message: "Cancel",
-              comment: "@context: Button to cancel form",
-            })}
+            {i18n._(
+              msg({
+                message: "Cancel",
+                comment: "@context: Button to cancel form",
+              }),
+            )}
           </a>
         </div>
       </form>

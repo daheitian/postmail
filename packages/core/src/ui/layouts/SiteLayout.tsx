@@ -5,8 +5,9 @@
  * Content area with browse filter tabs and compose prompt/dialog for authenticated users.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC, PropsWithChildren } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { NavItemView, SiteLayoutProps } from "../../types.js";
 import { toPublicPath } from "../../lib/url.js";
 import { ComposeDialog } from "../compose/ComposeDialog.js";
@@ -48,11 +49,11 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   composeOpenShortcutDiscovered = false,
   children,
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const maxVisible = headerNavMaxVisible ?? 3;
   const linksWithLabels = links.map((link) => ({
     ...link,
-    displayLabel: getNavItemDisplayLabel(link, t, sitePathPrefix),
+    displayLabel: getNavItemDisplayLabel(link, i18n, sitePathPrefix),
   }));
   const visibleLinks = linksWithLabels.slice(0, maxVisible);
   const overflowLinks = linksWithLabels.slice(maxVisible);
@@ -69,17 +70,21 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
 
   const latestLink = {
     href: latestHref,
-    label: t({
-      message: "Latest",
-      comment: "@context: Browse filter for latest posts",
-    }),
+    label: i18n._(
+      msg({
+        message: "Latest",
+        comment: "@context: Browse filter for latest posts",
+      }),
+    ),
   };
   const featuredLink = {
     href: featuredHref,
-    label: t({
-      message: "Featured",
-      comment: "@context: Browse filter for featured posts",
-    }),
+    label: i18n._(
+      msg({
+        message: "Featured",
+        comment: "@context: Browse filter for featured posts",
+      }),
+    ),
   };
 
   // Default view tab comes first
@@ -88,10 +93,12 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       ? [featuredLink, latestLink]
       : [latestLink, featuredLink];
 
-  const searchLabel = t({
-    message: "Search",
-    comment: "@context: Search icon link in browse nav",
-  });
+  const searchLabel = i18n._(
+    msg({
+      message: "Search",
+      comment: "@context: Search icon link in browse nav",
+    }),
+  );
 
   const isHomePage =
     currentPath === toPublicPath("/", sitePathPrefix) ||
@@ -136,11 +143,13 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                         aria-haspopup="menu"
                         aria-controls="site-nav-more-menu"
                         aria-expanded="false"
-                        aria-label={t({
-                          message: "More links",
-                          comment:
-                            "@context: Button to show overflow nav links",
-                        })}
+                        aria-label={i18n._(
+                          msg({
+                            message: "More links",
+                            comment:
+                              "@context: Button to show overflow nav links",
+                          }),
+                        )}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"

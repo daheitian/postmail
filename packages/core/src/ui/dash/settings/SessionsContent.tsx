@@ -2,7 +2,8 @@
  * Session management: view active sessions and revoke them
  */
 
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "../../../i18n/context.js";
 import { formatDate } from "../../../lib/time.js";
 import { toPublicPath } from "../../../lib/url.js";
 
@@ -68,7 +69,7 @@ function SessionRow({
   session: SessionInfo;
   sitePathPrefix?: string;
 }) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const device = parseDevice(session.userAgent);
   const icon = isMobileUA(session.userAgent) ? ICON_MOBILE : ICON_DESKTOP;
 
@@ -81,18 +82,22 @@ function SessionRow({
       <div class="flex-1 min-w-0">
         <div class="font-medium flex items-center gap-2">
           {device ??
-            t({
-              message: "Unknown device",
-              comment:
-                "@context: Fallback label when session device can't be identified",
-            })}
+            i18n._(
+              msg({
+                message: "Unknown device",
+                comment:
+                  "@context: Fallback label when session device can't be identified",
+              }),
+            )}
           {session.isCurrent && (
             <span class="badge text-xs">
-              {t({
-                message: "Current",
-                comment:
-                  "@context: Badge indicating the current active session",
-              })}
+              {i18n._(
+                msg({
+                  message: "Current",
+                  comment:
+                    "@context: Badge indicating the current active session",
+                }),
+              )}
             </span>
           )}
         </div>
@@ -103,13 +108,15 @@ function SessionRow({
               <span class="mx-2">&middot;</span>
             </>
           )}
-          {t({
-            message: "Signed in {date}",
-            comment: "@context: Session creation date",
-            values: {
+          {i18n._(
+            msg({
+              message: "Signed in {date}",
+              comment: "@context: Session creation date",
+            }),
+            {
               date: formatDate(session.createdAt),
             },
-          })}
+          )}
         </div>
       </div>
       {!session.isCurrent && (
@@ -118,10 +125,12 @@ function SessionRow({
           class="btn-sm-ghost text-destructive"
           data-on:click__prevent={`@post('${toPublicPath(`/settings/account/sessions/${session.token}/revoke`, sitePathPrefix)}')`}
         >
-          {t({
-            message: "Revoke",
-            comment: "@context: Button to revoke a session",
-          })}
+          {i18n._(
+            msg({
+              message: "Revoke",
+              comment: "@context: Button to revoke a session",
+            }),
+          )}
         </button>
       )}
     </div>
@@ -135,23 +144,27 @@ export function SessionsContent({
   sessions: SessionInfo[];
   sitePathPrefix?: string;
 }) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <div class="flex flex-col gap-6 max-w-2xl">
       <div>
         <h2 class="text-lg font-medium mb-1">
-          {t({
-            message: "Active Sessions",
-            comment: "@context: Settings section heading for active sessions",
-          })}
+          {i18n._(
+            msg({
+              message: "Active Sessions",
+              comment: "@context: Settings section heading for active sessions",
+            }),
+          )}
         </h2>
         <p class="text-sm text-muted-foreground mb-4">
-          {t({
-            message:
-              "These devices are currently signed in to your account. Revoke any session you don't recognize.",
-            comment: "@context: Description for session management",
-          })}
+          {i18n._(
+            msg({
+              message:
+                "These devices are currently signed in to your account. Revoke any session you don't recognize.",
+              comment: "@context: Description for session management",
+            }),
+          )}
         </p>
       </div>
 
@@ -167,12 +180,14 @@ export function SessionsContent({
         </div>
       ) : (
         <p class="text-sm text-muted-foreground">
-          {t({
-            message:
-              "No active sessions right now. Signed-in devices show up here.",
-            comment:
-              "@context: Empty state when no sessions exist (shouldn't normally appear)",
-          })}
+          {i18n._(
+            msg({
+              message:
+                "No active sessions right now. Signed-in devices show up here.",
+              comment:
+                "@context: Empty state when no sessions exist (shouldn't normally appear)",
+            }),
+          )}
         </p>
       )}
     </div>

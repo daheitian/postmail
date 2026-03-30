@@ -1,7 +1,7 @@
-import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
+import type { I18n } from "../../i18n/i18n.js";
 
-type Translate = (descriptor: MessageDescriptor) => string;
+type Translator = Pick<I18n, "_">;
 
 const collectionFormMessages = {
   titleLabel: msg({
@@ -176,49 +176,49 @@ const collectionMutationMessages = {
   }),
 } as const;
 
-export const getCollectionFormLabels = (t: Translate) => ({
-  titleLabel: t(collectionFormMessages.titleLabel),
-  titlePlaceholder: t(collectionFormMessages.titlePlaceholder),
-  slugLabel: t(collectionFormMessages.slugLabel),
-  slugHelp: t(collectionFormMessages.slugHelp),
-  slugInvalidHelp: t(collectionFormMessages.slugInvalidHelp),
-  slugReservedHelp: t(collectionFormMessages.slugReservedHelp),
-  slugTooLongHelp: t(collectionFormMessages.slugTooLongHelp),
-  editSlugLabel: t(collectionFormMessages.editSlugLabel),
-  resetSlugLabel: t(collectionFormMessages.resetSlugLabel),
-  quickHint: t(collectionFormMessages.quickHint),
-  quickSubmitLabel: t(collectionFormMessages.quickSubmitLabel),
-  createdLabel: t(collectionFormMessages.createdLabel),
-  descriptionLabel: t(collectionFormMessages.descriptionLabel),
-  descriptionPlaceholder: t(collectionFormMessages.descriptionPlaceholder),
-  sortOrderLabel: t(collectionFormMessages.sortOrderLabel),
-  sortNewest: t(collectionFormMessages.sortNewest),
-  sortOldest: t(collectionFormMessages.sortOldest),
-  sortRatingDesc: t(collectionFormMessages.sortRatingDesc),
-  submitLabel: t(collectionFormMessages.submitLabel),
-  cancelLabel: t(collectionFormMessages.cancelLabel),
+export const getCollectionFormLabels = (i18n: Translator) => ({
+  titleLabel: i18n._(collectionFormMessages.titleLabel),
+  titlePlaceholder: i18n._(collectionFormMessages.titlePlaceholder),
+  slugLabel: i18n._(collectionFormMessages.slugLabel),
+  slugHelp: i18n._(collectionFormMessages.slugHelp),
+  slugInvalidHelp: i18n._(collectionFormMessages.slugInvalidHelp),
+  slugReservedHelp: i18n._(collectionFormMessages.slugReservedHelp),
+  slugTooLongHelp: i18n._(collectionFormMessages.slugTooLongHelp),
+  editSlugLabel: i18n._(collectionFormMessages.editSlugLabel),
+  resetSlugLabel: i18n._(collectionFormMessages.resetSlugLabel),
+  quickHint: i18n._(collectionFormMessages.quickHint),
+  quickSubmitLabel: i18n._(collectionFormMessages.quickSubmitLabel),
+  createdLabel: i18n._(collectionFormMessages.createdLabel),
+  descriptionLabel: i18n._(collectionFormMessages.descriptionLabel),
+  descriptionPlaceholder: i18n._(collectionFormMessages.descriptionPlaceholder),
+  sortOrderLabel: i18n._(collectionFormMessages.sortOrderLabel),
+  sortNewest: i18n._(collectionFormMessages.sortNewest),
+  sortOldest: i18n._(collectionFormMessages.sortOldest),
+  sortRatingDesc: i18n._(collectionFormMessages.sortRatingDesc),
+  submitLabel: i18n._(collectionFormMessages.submitLabel),
+  cancelLabel: i18n._(collectionFormMessages.cancelLabel),
 });
 
-export const getCollectionMutationLabels = (t: Translate) => ({
-  edit: t(collectionMutationMessages.edit),
-  moreActions: t(collectionMutationMessages.moreActions),
-  label: t(collectionMutationMessages.label),
-  url: t(collectionMutationMessages.url),
-  deleteCollection: t(collectionMutationMessages.deleteCollection),
-  confirmDelete: t(collectionMutationMessages.confirmDelete),
-  deleteLink: t(collectionMutationMessages.deleteLink),
-  confirmDeleteLink: t(collectionMutationMessages.confirmDeleteLink),
-  cancel: t(collectionMutationMessages.cancel),
-  saved: t(collectionMutationMessages.saved),
-  linkCreated: t(collectionMutationMessages.linkCreated),
-  linkSaved: t(collectionMutationMessages.linkSaved),
-  saveFailed: t(collectionMutationMessages.saveFailed),
-  deleted: t(collectionMutationMessages.deleted),
-  linkDeleted: t(collectionMutationMessages.linkDeleted),
-  addLink: t(collectionMutationMessages.addLink),
-  addLinkDescription: t(collectionMutationMessages.addLinkDescription),
-  linkLabelPlaceholder: t(collectionMutationMessages.linkLabelPlaceholder),
-  linkUrlPlaceholder: t(collectionMutationMessages.linkUrlPlaceholder),
-  labelAndUrlRequired: t(collectionMutationMessages.labelAndUrlRequired),
-  formLabels: getCollectionFormLabels(t),
+export const getCollectionMutationLabels = (i18n: Translator) => ({
+  edit: i18n._(collectionMutationMessages.edit),
+  moreActions: i18n._(collectionMutationMessages.moreActions),
+  label: i18n._(collectionMutationMessages.label),
+  url: i18n._(collectionMutationMessages.url),
+  deleteCollection: i18n._(collectionMutationMessages.deleteCollection),
+  confirmDelete: i18n._(collectionMutationMessages.confirmDelete),
+  deleteLink: i18n._(collectionMutationMessages.deleteLink),
+  confirmDeleteLink: i18n._(collectionMutationMessages.confirmDeleteLink),
+  cancel: i18n._(collectionMutationMessages.cancel),
+  saved: i18n._(collectionMutationMessages.saved),
+  linkCreated: i18n._(collectionMutationMessages.linkCreated),
+  linkSaved: i18n._(collectionMutationMessages.linkSaved),
+  saveFailed: i18n._(collectionMutationMessages.saveFailed),
+  deleted: i18n._(collectionMutationMessages.deleted),
+  linkDeleted: i18n._(collectionMutationMessages.linkDeleted),
+  addLink: i18n._(collectionMutationMessages.addLink),
+  addLinkDescription: i18n._(collectionMutationMessages.addLinkDescription),
+  linkLabelPlaceholder: i18n._(collectionMutationMessages.linkLabelPlaceholder),
+  linkUrlPlaceholder: i18n._(collectionMutationMessages.linkUrlPlaceholder),
+  labelAndUrlRequired: i18n._(collectionMutationMessages.labelAndUrlRequired),
+  formLabels: getCollectionFormLabels(i18n),
 });

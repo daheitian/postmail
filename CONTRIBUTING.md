@@ -460,22 +460,42 @@ Jant uses [Lingui](https://lingui.dev/) for i18n with an SWC plugin for compile-
 
 ### Adding Translatable Strings
 
-Wrap user-facing strings with the `t()` function and always include a context comment:
+Wrap user-facing strings with Lingui message descriptors and always include a context comment:
 
 ```tsx
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "../src/i18n/context.js";
 
-const { t } = useLingui();
-return <h1>{t({ message: "Settings", comment: "@context: Page title" })}</h1>;
+const { i18n } = useLingui();
+return (
+  <h1>
+    {i18n._(
+      msg({
+        message: "Settings",
+        comment: "@context: Page title",
+      }),
+    )}
+  </h1>
+);
 ```
 
-**Important**: The import from `@lingui/react/macro` is intentional — the SWC plugin rewrites it to `@jant/core/i18n` at compile time, which Vite resolves to source during bundling. Do not change this import path.
+For interpolated values, keep the runtime data in `values`:
+
+```tsx
+i18n._(
+  msg({
+    message: "Found {count} results",
+    comment: "@context: Search results count",
+  }),
+  { count },
+);
+```
 
 ### Workflow
 
 The i18n workflow is mostly automatic:
 
-1. Add `t()` calls in your code.
+1. Add `msg()` descriptors and `i18n._()` calls in your code.
 2. Commit — the pre-commit hook automatically extracts and compiles messages, then stages the updated locale files.
 3. For AI-powered translation to other languages, run `mise run i18n-refresh` (requires `OPENAI_API_KEY`).
 

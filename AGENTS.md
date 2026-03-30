@@ -83,13 +83,35 @@ Non-negotiable regardless of context:
 
 ### i18n
 
-All user-facing strings use `t()` with a `@context:` comment for translators:
+All user-facing strings use Lingui message descriptors with a `@context:` comment for translators. In components, import `msg` from `@lingui/core/macro`, get `i18n` from the local context hook, and translate with `i18n._(...)`:
 
 ```tsx
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "../../i18n/context.js";
 
-const { t } = useLingui();
-return <h1>{t({ message: "Settings", comment: "@context: Page title" })}</h1>;
+const { i18n } = useLingui();
+return (
+  <h1>
+    {i18n._(
+      msg({
+        message: "Settings",
+        comment: "@context: Page title",
+      }),
+    )}
+  </h1>
+);
+```
+
+When interpolating runtime values, keep them in `values`:
+
+```tsx
+i18n._(
+  msg({
+    message: "Found {count} results",
+    comment: "@context: Search results count",
+  }),
+  { count },
+);
 ```
 
 ### Tech Stack
@@ -150,7 +172,7 @@ If you notice code contradicting this document, think about which side is correc
 ### Common Pitfalls
 
 - Combining `.btn` or `.badge` with variant classes (`.btn-outline`, `.btn-ghost`, `.badge-outline`, etc.) — BaseCoat variants are self-contained and combining produces broken styles.
-- Importing from `@lingui/react` instead of `@lingui/react/macro` — the macro enables compile-time message extraction.
+- Importing `useLingui` from `@lingui/react/macro` or writing raw `t({ ... })` calls — in this codebase, prefer `msg(...)` from `@lingui/core/macro` plus `useLingui` from the local i18n context and call `i18n._(msg(...), values?)`.
 - Editing `packages/create-jant/template/` — this is auto-generated and will be overwritten.
 - Putting multi-service orchestration in route handlers — if two routes need the same sequence of service calls, extract it into a service method. Routes should be thin adapters: parse request → call service → format response.
 - Passing plain text to `dangerouslySetInnerHTML` without `escapeHtml()` — even single-author content can contain `<`, `>`, `&`. The pattern for safe highlighted output: `escapeHtml(text).replace(/\x02/g, '<mark>').replace(/\x03/g, '</mark>')` where `char(2)`/`char(3)` (STX/ETX) are used as FTS5 snippet markers in SQL.

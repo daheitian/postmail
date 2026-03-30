@@ -9,8 +9,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
-      // Match the SWC Lingui transform used in runtime builds.
-      "@lingui/react/macro": resolve(__dirname, "src/i18n/index.ts"),
       "@lingui/core/macro": resolve(
         __dirname,
         "src/__tests__/helpers/lingui-core-macro-mock.ts",

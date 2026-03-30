@@ -5,8 +5,9 @@
  * Clicking it opens the compose dialog.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 
 interface ComposePromptProps {
   composeOpenShortcutDiscovered?: boolean;
@@ -15,7 +16,7 @@ interface ComposePromptProps {
 export const ComposePrompt: FC<ComposePromptProps> = ({
   composeOpenShortcutDiscovered = false,
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <div
@@ -47,17 +48,21 @@ export const ComposePrompt: FC<ComposePromptProps> = ({
           </svg>
         </span>
         <span class="compose-prompt-text">
-          {t({
-            message: "What's on your mind?",
-            comment: "@context: Compose prompt placeholder text",
-          })}
+          {i18n._(
+            msg({
+              message: "What's on your mind?",
+              comment: "@context: Compose prompt placeholder text",
+            }),
+          )}
         </span>
       </button>
       <span class="compose-prompt-discovery-hint" aria-hidden="true">
-        {t({
-          message: "Press N to write",
-          comment: "@context: Hover hint for the homepage compose shortcut",
-        })}
+        {i18n._(
+          msg({
+            message: "Press N to write",
+            comment: "@context: Hover hint for the homepage compose shortcut",
+          }),
+        )}
       </span>
     </div>
   );

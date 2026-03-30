@@ -2,7 +2,8 @@
  * Password settings: change sign-in password
  */
 
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "../../../i18n/context.js";
 import { toPublicPath } from "../../../lib/url.js";
 
 export function AccountContent({
@@ -10,7 +11,7 @@ export function AccountContent({
 }: {
   sitePathPrefix?: string;
 }) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <div class="flex flex-col max-w-lg">
@@ -20,18 +21,22 @@ export function AccountContent({
         data-indicator="_passwordLoading"
       >
         <h2 class="text-lg font-semibold mb-4">
-          {t({
-            message: "Change Password",
-            comment: "@context: Settings section heading",
-          })}
+          {i18n._(
+            msg({
+              message: "Change Password",
+              comment: "@context: Settings section heading",
+            }),
+          )}
         </h2>
         <div class="flex flex-col gap-4">
           <div class="field">
             <label class="label">
-              {t({
-                message: "Current Password",
-                comment: "@context: Password form field",
-              })}
+              {i18n._(
+                msg({
+                  message: "Current Password",
+                  comment: "@context: Password form field",
+                }),
+              )}
             </label>
             <input
               type="password"
@@ -44,10 +49,12 @@ export function AccountContent({
 
           <div class="field">
             <label class="label">
-              {t({
-                message: "New Password",
-                comment: "@context: Password form field",
-              })}
+              {i18n._(
+                msg({
+                  message: "New Password",
+                  comment: "@context: Password form field",
+                }),
+              )}
             </label>
             <input
               type="password"
@@ -61,10 +68,12 @@ export function AccountContent({
 
           <div class="field">
             <label class="label">
-              {t({
-                message: "Confirm New Password",
-                comment: "@context: Password form field",
-              })}
+              {i18n._(
+                msg({
+                  message: "Confirm New Password",
+                  comment: "@context: Password form field",
+                }),
+              )}
             </label>
             <input
               type="password"
@@ -97,10 +106,12 @@ export function AccountContent({
           >
             <path d="M21 12a9 9 0 1 1-6.219-8.56" />
           </svg>
-          {t({
-            message: "Change Password",
-            comment: "@context: Button to change password",
-          })}
+          {i18n._(
+            msg({
+              message: "Change Password",
+              comment: "@context: Button to change password",
+            }),
+          )}
         </button>
       </form>
     </div>

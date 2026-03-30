@@ -4,8 +4,9 @@
  * Displays badges for post status, visibility, and pinned state.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { Status, Visibility } from "../../types.js";
 
 export interface StatusBadgeProps {
@@ -21,7 +22,7 @@ export const StatusBadge: FC<StatusBadgeProps> = ({
   featured,
   pinned,
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   const statusVariants: Record<Status, string> = {
     published: "badge-secondary",
@@ -29,14 +30,18 @@ export const StatusBadge: FC<StatusBadgeProps> = ({
   };
 
   const statusLabels: Record<Status, string> = {
-    published: t({
-      message: "Published",
-      comment: "@context: Post status badge - published",
-    }),
-    draft: t({
-      message: "Draft",
-      comment: "@context: Post status badge - draft",
-    }),
+    published: i18n._(
+      msg({
+        message: "Published",
+        comment: "@context: Post status badge - published",
+      }),
+    ),
+    draft: i18n._(
+      msg({
+        message: "Draft",
+        comment: "@context: Post status badge - draft",
+      }),
+    ),
   };
 
   return (
@@ -44,26 +49,32 @@ export const StatusBadge: FC<StatusBadgeProps> = ({
       <span class={statusVariants[status]}>{statusLabels[status]}</span>
       {featured && (
         <span class="badge-primary">
-          {t({
-            message: "Featured",
-            comment: "@context: Post badge - featured",
-          })}
+          {i18n._(
+            msg({
+              message: "Featured",
+              comment: "@context: Post badge - featured",
+            }),
+          )}
         </span>
       )}
       {visibility === "latest_hidden" && (
         <span class="badge-outline">
-          {t({
-            message: "Hidden from Latest",
-            comment: "@context: Post badge for posts hidden from Latest",
-          })}
+          {i18n._(
+            msg({
+              message: "Hidden from Latest",
+              comment: "@context: Post badge for posts hidden from Latest",
+            }),
+          )}
         </span>
       )}
       {pinned && (
         <span class="badge-outline">
-          {t({
-            message: "Pinned",
-            comment: "@context: Post badge - pinned",
-          })}
+          {i18n._(
+            msg({
+              message: "Pinned",
+              comment: "@context: Post badge - pinned",
+            }),
+          )}
         </span>
       )}
     </span>

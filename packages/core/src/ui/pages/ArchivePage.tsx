@@ -6,7 +6,8 @@
  */
 
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "../../i18n/context.js";
 import type {
   ArchivePageProps,
   ArchiveFilters,
@@ -65,33 +66,51 @@ function buildFilterUrl(
 // =============================================================================
 
 function getFormatLabel(format: string): string {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const labels: Record<string, string> = {
-    note: t({ message: "Note", comment: "@context: Post format label - note" }),
-    link: t({ message: "Link", comment: "@context: Post format label - link" }),
-    quote: t({
-      message: "Quote",
-      comment: "@context: Post format label - quote",
-    }),
+    note: i18n._(
+      msg({
+        message: "Note",
+        comment: "@context: Post format label - note",
+      }),
+    ),
+    link: i18n._(
+      msg({
+        message: "Link",
+        comment: "@context: Post format label - link",
+      }),
+    ),
+    quote: i18n._(
+      msg({
+        message: "Quote",
+        comment: "@context: Post format label - quote",
+      }),
+    ),
   };
   return labels[format] ?? format;
 }
 
 function getFormatLabelPlural(format: string): string {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const labels: Record<string, string> = {
-    note: t({
-      message: "Notes",
-      comment: "@context: Post format label plural - notes",
-    }),
-    link: t({
-      message: "Links",
-      comment: "@context: Post format label plural - links",
-    }),
-    quote: t({
-      message: "Quotes",
-      comment: "@context: Post format label plural - quotes",
-    }),
+    note: i18n._(
+      msg({
+        message: "Notes",
+        comment: "@context: Post format label plural - notes",
+      }),
+    ),
+    link: i18n._(
+      msg({
+        message: "Links",
+        comment: "@context: Post format label plural - links",
+      }),
+    ),
+    quote: i18n._(
+      msg({
+        message: "Quotes",
+        comment: "@context: Post format label plural - quotes",
+      }),
+    ),
   };
   return labels[format] ?? format + "s";
 }
@@ -113,28 +132,38 @@ const MEDIA_KIND_ICONS: Record<MediaKind, string> = {
 };
 
 function getMediaKindLabel(kind: MediaKind): string {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const labels: Record<MediaKind, string> = {
-    image: t({
-      message: "Images",
-      comment: "@context: Archive media filter - images",
-    }),
-    video: t({
-      message: "Video",
-      comment: "@context: Archive media filter - video",
-    }),
-    audio: t({
-      message: "Audio",
-      comment: "@context: Archive media filter - audio",
-    }),
-    text: t({
-      message: "Text attachment",
-      comment: "@context: Archive media filter - text file attachments",
-    }),
-    document: t({
-      message: "Files",
-      comment: "@context: Archive media filter - files/documents",
-    }),
+    image: i18n._(
+      msg({
+        message: "Images",
+        comment: "@context: Archive media filter - images",
+      }),
+    ),
+    video: i18n._(
+      msg({
+        message: "Video",
+        comment: "@context: Archive media filter - video",
+      }),
+    ),
+    audio: i18n._(
+      msg({
+        message: "Audio",
+        comment: "@context: Archive media filter - audio",
+      }),
+    ),
+    text: i18n._(
+      msg({
+        message: "Text attachment",
+        comment: "@context: Archive media filter - text file attachments",
+      }),
+    ),
+    document: i18n._(
+      msg({
+        message: "Files",
+        comment: "@context: Archive media filter - files/documents",
+      }),
+    ),
   };
   return labels[kind] ?? kind;
 }
@@ -217,12 +246,15 @@ const ChipSelect: FC<{
   activeIcon,
   iconOnly,
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const isActive = !!activeLabel;
-  const clearLabel = t({
-    message: "Clear filter",
-    comment: "@context: Archive filter button label to clear the active filter",
-  });
+  const clearLabel = i18n._(
+    msg({
+      message: "Clear filter",
+      comment:
+        "@context: Archive filter button label to clear the active filter",
+    }),
+  );
 
   return (
     <div
@@ -311,7 +343,7 @@ const ChipMediaSelect: FC<{
   clearUrl: string;
   sitePathPrefix?: string;
 }> = ({ id, icon, filters: f, activeLabel, clearUrl, sitePathPrefix = "" }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const isActive = !!activeLabel;
   const activeKinds = f.mediaKinds ?? [];
 
@@ -329,10 +361,13 @@ const ChipMediaSelect: FC<{
     { hasMedia: false, mediaKinds: undefined },
     sitePathPrefix,
   );
-  const clearLabel = t({
-    message: "Clear filter",
-    comment: "@context: Archive filter button label to clear the active filter",
-  });
+  const clearLabel = i18n._(
+    msg({
+      message: "Clear filter",
+      comment:
+        "@context: Archive filter button label to clear the active filter",
+    }),
+  );
 
   return (
     <div
@@ -376,11 +411,13 @@ const ChipMediaSelect: FC<{
           >
             <span class="flex items-center gap-2">
               <Icon name="text" class="[&>svg]:size-4 text-muted-foreground" />
-              {t({
-                message: "Text",
-                comment:
-                  "@context: Archive media filter - posts without any media attachments",
-              })}
+              {i18n._(
+                msg({
+                  message: "Text",
+                  comment:
+                    "@context: Archive media filter - posts without any media attachments",
+                }),
+              )}
             </span>
           </div>
           {MEDIA_KINDS.map((kind) => {
@@ -458,25 +495,33 @@ const ARCHIVE_VISIBILITIES: ArchiveVisibility[] = [
 ];
 
 function getVisibilityLabel(v: ArchiveVisibility): string {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const labels: Record<ArchiveVisibility, string> = {
-    public: t({
-      message: "Public",
-      comment: "@context: Archive visibility filter - public posts",
-    }),
-    latest_hidden: t({
-      message: "Hidden from Latest",
-      comment:
-        "@context: Archive visibility filter for posts hidden from Latest",
-    }),
-    private: t({
-      message: "Private",
-      comment: "@context: Archive visibility filter - private posts",
-    }),
-    featured: t({
-      message: "Featured",
-      comment: "@context: Archive visibility filter - featured posts",
-    }),
+    public: i18n._(
+      msg({
+        message: "Public",
+        comment: "@context: Archive visibility filter - public posts",
+      }),
+    ),
+    latest_hidden: i18n._(
+      msg({
+        message: "Hidden from Latest",
+        comment:
+          "@context: Archive visibility filter for posts hidden from Latest",
+      }),
+    ),
+    private: i18n._(
+      msg({
+        message: "Private",
+        comment: "@context: Archive visibility filter - private posts",
+      }),
+    ),
+    featured: i18n._(
+      msg({
+        message: "Featured",
+        comment: "@context: Archive visibility filter - featured posts",
+      }),
+    ),
   };
   return labels[v];
 }
@@ -514,17 +559,19 @@ const FilterBar: FC<{
   isAuthenticated,
   sitePathPrefix = "",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const currentUrl = buildFilterUrl(filters, {}, sitePathPrefix);
 
   // --- Year options ---------------------------------------------------------
 
   const yearOptions: ChipSelectOption[] = [
     {
-      label: t({
-        message: "All years",
-        comment: "@context: Archive filter - year dropdown default",
-      }),
+      label: i18n._(
+        msg({
+          message: "All years",
+          comment: "@context: Archive filter - year dropdown default",
+        }),
+      ),
       icon: FILTER_ICONS.year,
       value: buildFilterUrl(
         { ...filters, year: undefined },
@@ -542,10 +589,12 @@ const FilterBar: FC<{
 
   const collectionOptions: ChipSelectOption[] = [
     {
-      label: t({
-        message: "All collections",
-        comment: "@context: Archive filter - collection dropdown default",
-      }),
+      label: i18n._(
+        msg({
+          message: "All collections",
+          comment: "@context: Archive filter - collection dropdown default",
+        }),
+      ),
       icon: FILTER_ICONS.collection,
       value: buildFilterUrl(
         {
@@ -571,15 +620,19 @@ const FilterBar: FC<{
 
   const formatActiveLabel = filters.format
     ? filters.hasTitle === true
-      ? t({
-          message: "Titled",
-          comment: "@context: Archive filter - notes that have a title",
-        })
+      ? i18n._(
+          msg({
+            message: "Titled",
+            comment: "@context: Archive filter - notes that have a title",
+          }),
+        )
       : filters.hasTitle === false
-        ? t({
-            message: "Untitled",
-            comment: "@context: Archive filter - notes without a title",
-          })
+        ? i18n._(
+            msg({
+              message: "Untitled",
+              comment: "@context: Archive filter - notes without a title",
+            }),
+          )
         : getFormatLabelPlural(filters.format)
     : undefined;
 
@@ -593,10 +646,12 @@ const FilterBar: FC<{
 
   const formatOptions: ChipSelectOption[] = [
     {
-      label: t({
-        message: "All formats",
-        comment: "@context: Archive filter - all formats select option",
-      }),
+      label: i18n._(
+        msg({
+          message: "All formats",
+          comment: "@context: Archive filter - all formats select option",
+        }),
+      ),
       icon: FILTER_ICONS.format,
       value: buildFilterUrl(
         { ...filters, format: undefined, hasTitle: undefined },
@@ -617,10 +672,12 @@ const FilterBar: FC<{
       ),
     },
     {
-      label: t({
-        message: "Titled",
-        comment: "@context: Archive filter - notes that have a title",
-      }),
+      label: i18n._(
+        msg({
+          message: "Titled",
+          comment: "@context: Archive filter - notes that have a title",
+        }),
+      ),
       icon: "type",
       indent: true,
       value: buildFilterUrl(
@@ -633,10 +690,12 @@ const FilterBar: FC<{
       ),
     },
     {
-      label: t({
-        message: "Untitled",
-        comment: "@context: Archive filter - notes without a title",
-      }),
+      label: i18n._(
+        msg({
+          message: "Untitled",
+          comment: "@context: Archive filter - notes without a title",
+        }),
+      ),
       icon: "text",
       indent: true,
       value: buildFilterUrl(
@@ -675,10 +734,12 @@ const FilterBar: FC<{
 
   const visibilityOptions: ChipSelectOption[] = [
     {
-      label: t({
-        message: "All visibility",
-        comment: "@context: Archive filter - all visibility select option",
-      }),
+      label: i18n._(
+        msg({
+          message: "All visibility",
+          comment: "@context: Archive filter - all visibility select option",
+        }),
+      ),
       icon: FILTER_ICONS.visibility,
       value: allVisibilityUrl,
     },
@@ -694,11 +755,13 @@ const FilterBar: FC<{
   const activeKinds = filters.mediaKinds ?? [];
   const mediaActiveLabel =
     filters.hasMedia === false
-      ? t({
-          message: "Text",
-          comment:
-            "@context: Archive media filter - posts without any media attachments",
-        })
+      ? i18n._(
+          msg({
+            message: "Text",
+            comment:
+              "@context: Archive media filter - posts without any media attachments",
+          }),
+        )
       : activeKinds.length === 1
         ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check guarantees element exists
           getMediaKindLabel(activeKinds[0]!)
@@ -904,21 +967,25 @@ const ArchiveMonthHeader: FC<{
   count?: number;
   class: string;
 }> = ({ label, count, class: cls }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const countUnit =
     count === undefined
       ? null
       : count === 1
-        ? t({
-            message: "thread",
-            comment:
-              "@context: Archive month header count unit for a single thread",
-          })
-        : t({
-            message: "threads",
-            comment:
-              "@context: Archive month header count unit for multiple threads",
-          });
+        ? i18n._(
+            msg({
+              message: "thread",
+              comment:
+                "@context: Archive month header count unit for a single thread",
+            }),
+          )
+        : i18n._(
+            msg({
+              message: "threads",
+              comment:
+                "@context: Archive month header count unit for multiple threads",
+            }),
+          );
 
   return (
     <div class={cls}>
@@ -940,31 +1007,38 @@ const ArchiveTile: FC<{ post: PostView; timeZone?: string }> = ({
   post,
   timeZone = "UTC",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const variant = getTileVariant(post);
   const bgImage = getTileBgImage(post);
   const badge = getTileBadge(post);
   const { title, summary } = getTileText(post);
   const { shortDate } = getArchiveDateParts(post.publishedAt, timeZone);
-  const publishedLabel = t({
-    message: "Published on {date} at {time}",
-    comment: "@context: Tooltip text for the archive tile published timestamp",
-    values: {
+  const publishedLabel = i18n._(
+    msg({
+      message: "Published on {date} at {time}",
+      comment:
+        "@context: Tooltip text for the archive tile published timestamp",
+    }),
+    {
       date: post.publishedAtFormatted,
       time: post.publishedAtTime,
     },
-  });
+  );
   const replyCount = post.replyCount ?? 0;
   const replyCountUnit =
     replyCount === 1
-      ? t({
-          message: "Reply",
-          comment: "@context: Archive tile label for a single thread reply",
-        })
-      : t({
-          message: "Replies",
-          comment: "@context: Archive tile label for multiple thread replies",
-        });
+      ? i18n._(
+          msg({
+            message: "Reply",
+            comment: "@context: Archive tile label for a single thread reply",
+          }),
+        )
+      : i18n._(
+          msg({
+            message: "Replies",
+            comment: "@context: Archive tile label for multiple thread replies",
+          }),
+        );
   const replyCountLabel = `${replyCount} ${replyCountUnit}`;
   const hasBg = variant === "image" || variant === "mixed";
   const showBgTitle = hasBg && !!title;
@@ -1078,31 +1152,37 @@ export const ArchivePage: FC<ArchivePageProps> = ({
   sitePathPrefix = "",
   timeZone = "UTC",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const currentView: ArchiveView = filters.view ?? "grid";
   const paginationBaseUrl = buildFilterUrl(filters, {}, sitePathPrefix);
   const totalCountUnit =
     totalCount === 1
-      ? t({
-          message: "thread",
-          comment:
-            "@context: Archive page summary unit for a single matching thread",
-        })
-      : t({
-          message: "threads",
-          comment:
-            "@context: Archive page summary unit for multiple matching threads",
-        });
+      ? i18n._(
+          msg({
+            message: "thread",
+            comment:
+              "@context: Archive page summary unit for a single matching thread",
+          }),
+        )
+      : i18n._(
+          msg({
+            message: "threads",
+            comment:
+              "@context: Archive page summary unit for multiple matching threads",
+          }),
+        );
 
   return (
     <div class="py-6" data-page="archive">
       <header class="archive-page-header page-intro">
         <div class="page-intro-title-row">
           <h1 class="page-intro-title">
-            {t({
-              message: "Archive",
-              comment: "@context: Archive page title",
-            })}
+            {i18n._(
+              msg({
+                message: "Archive",
+                comment: "@context: Archive page title",
+              }),
+            )}
           </h1>
         </div>
         <p
@@ -1125,11 +1205,13 @@ export const ArchivePage: FC<ArchivePageProps> = ({
       <main>
         {groups.length === 0 ? (
           <p class="text-muted-foreground py-8 text-center">
-            {t({
-              message:
-                "No threads match these filters. Try adjusting your selection or clear all filters.",
-              comment: "@context: Archive empty state with filters applied",
-            })}
+            {i18n._(
+              msg({
+                message:
+                  "No threads match these filters. Try adjusting your selection or clear all filters.",
+                comment: "@context: Archive empty state with filters applied",
+              }),
+            )}
           </p>
         ) : currentView === "grid" ? (
           <div class="archive-grid-wrapper">

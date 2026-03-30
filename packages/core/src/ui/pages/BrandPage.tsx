@@ -1,4 +1,5 @@
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "../../i18n/context.js";
 import {
   getJantBrandPackHref,
   getJantIconFilename,
@@ -261,7 +262,7 @@ export function BrandPage({
 }: {
   sitePathPrefix?: string;
 }) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const brandPackHref = getJantBrandPackHref(sitePathPrefix);
   const positiveLogoHref = getJantLogoHref("positive", sitePathPrefix);
   const negativeLogoHref = getJantLogoHref("negative", sitePathPrefix);
@@ -287,57 +288,84 @@ export function BrandPage({
   const faviconAssetFilename = getJantIconFilename("favicon");
   const appleTouchFilename = getJantIconFilename("appleTouch");
   const socialImageFilename = getJantIconFilename("socialImage");
-  const logoLabel = t({
-    message: "Jant logo",
-    comment: "@context: Accessible label for the Jant logo mark",
-  });
-  const downloadSvgLabel = t({
-    message: "Download SVG",
-    comment: "@context: Download button label for a logo asset",
-  });
-  const downloadPngLabel = t({
-    message: "Download PNG",
-    comment: "@context: Download button label for a PNG logo asset",
-  });
-  const openRawPngLabel = t({
-    message: "Open raw PNG",
-    comment: "@context: Button label to open the raw PNG asset in the browser",
-  });
-  const openRawSvgLabel = t({
-    message: "Open raw SVG",
-    comment: "@context: Button label to open the raw SVG asset in the browser",
-  });
-  const downloadFileLabel = t({
-    message: "Download file",
-    comment: "@context: Download button label for a non-SVG brand asset",
-  });
-  const openRawAssetLabel = t({
-    message: "Open raw asset",
-    comment: "@context: Button label to open a raw brand asset in the browser",
-  });
-  const downloadBrandPackLabel = t({
-    message: "Download Brand Pack",
-    comment: "@context: Primary hero button label for the brand pack ZIP",
-  });
-  const browseFilesLabel = t({
-    message: "Browse files",
-    comment: "@context: Secondary hero button label to jump to the file list",
-  });
-  const defaultLogoBody = t({
-    message:
-      "Use this for websites, docs, articles, and other light or neutral surfaces.",
-    comment: "@context: Description for the default logo card",
-  });
-  const reverseLogoBody = t({
-    message:
-      "Use this on dark backgrounds, image-backed surfaces, and any placement where the green logo would lose contrast.",
-    comment: "@context: Description for the reverse logo card",
-  });
-  const brandPackBody = t({
-    message:
-      "A single ZIP with the main logo, reverse logo, square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and social preview image.",
-    comment: "@context: Description for the brand pack card",
-  });
+  const logoLabel = i18n._(
+    msg({
+      message: "Jant logo",
+      comment: "@context: Accessible label for the Jant logo mark",
+    }),
+  );
+  const downloadSvgLabel = i18n._(
+    msg({
+      message: "Download SVG",
+      comment: "@context: Download button label for a logo asset",
+    }),
+  );
+  const downloadPngLabel = i18n._(
+    msg({
+      message: "Download PNG",
+      comment: "@context: Download button label for a PNG logo asset",
+    }),
+  );
+  const openRawPngLabel = i18n._(
+    msg({
+      message: "Open raw PNG",
+      comment:
+        "@context: Button label to open the raw PNG asset in the browser",
+    }),
+  );
+  const openRawSvgLabel = i18n._(
+    msg({
+      message: "Open raw SVG",
+      comment:
+        "@context: Button label to open the raw SVG asset in the browser",
+    }),
+  );
+  const downloadFileLabel = i18n._(
+    msg({
+      message: "Download file",
+      comment: "@context: Download button label for a non-SVG brand asset",
+    }),
+  );
+  const openRawAssetLabel = i18n._(
+    msg({
+      message: "Open raw asset",
+      comment:
+        "@context: Button label to open a raw brand asset in the browser",
+    }),
+  );
+  const downloadBrandPackLabel = i18n._(
+    msg({
+      message: "Download Brand Pack",
+      comment: "@context: Primary hero button label for the brand pack ZIP",
+    }),
+  );
+  const browseFilesLabel = i18n._(
+    msg({
+      message: "Browse files",
+      comment: "@context: Secondary hero button label to jump to the file list",
+    }),
+  );
+  const defaultLogoBody = i18n._(
+    msg({
+      message:
+        "Use this for websites, docs, articles, and other light or neutral surfaces.",
+      comment: "@context: Description for the default logo card",
+    }),
+  );
+  const reverseLogoBody = i18n._(
+    msg({
+      message:
+        "Use this on dark backgrounds, image-backed surfaces, and any placement where the green logo would lose contrast.",
+      comment: "@context: Description for the reverse logo card",
+    }),
+  );
+  const brandPackBody = i18n._(
+    msg({
+      message:
+        "A single ZIP with the main logo, reverse logo, square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and social preview image.",
+      comment: "@context: Description for the brand pack card",
+    }),
+  );
 
   return (
     <div class="brand-page py-8" data-page="brand">
@@ -346,26 +374,32 @@ export function BrandPage({
           <div class="brand-mark-lockup">
             <JantBrandMark class="brand-hero-mark" label={logoLabel} />
             <p class="brand-eyebrow">
-              {t({
-                message: "Brand assets",
-                comment: "@context: Eyebrow on the public brand asset page",
-              })}
+              {i18n._(
+                msg({
+                  message: "Brand assets",
+                  comment: "@context: Eyebrow on the public brand asset page",
+                }),
+              )}
             </p>
           </div>
           <h1 class="brand-title">
-            {t({
-              message:
-                "Download the official Jant logo, icons, and preview files.",
-              comment: "@context: Hero title on the public brand asset page",
-            })}
+            {i18n._(
+              msg({
+                message:
+                  "Download the official Jant logo, icons, and preview files.",
+                comment: "@context: Hero title on the public brand asset page",
+              }),
+            )}
           </h1>
           <p class="brand-lead">
-            {t({
-              message:
-                "Everything on this page is ready to use for articles, launch posts, directories, and product coverage.",
-              comment:
-                "@context: Intro paragraph on the public brand asset page",
-            })}
+            {i18n._(
+              msg({
+                message:
+                  "Everything on this page is ready to use for articles, launch posts, directories, and product coverage.",
+                comment:
+                  "@context: Intro paragraph on the public brand asset page",
+              }),
+            )}
           </p>
 
           <div class="brand-hero-actions">
@@ -383,43 +417,57 @@ export function BrandPage({
 
           <div
             class="brand-keywords"
-            aria-label={t({
-              message: "Included assets",
-              comment:
-                "@context: Accessible label for the asset keyword list on the public brand page",
-            })}
+            aria-label={i18n._(
+              msg({
+                message: "Included assets",
+                comment:
+                  "@context: Accessible label for the asset keyword list on the public brand page",
+              }),
+            )}
           >
             {[
-              t({
-                message: "Logo",
-                comment:
-                  "@context: Asset keyword on the public brand asset page",
-              }),
-              t({
-                message: "Reverse logo",
-                comment:
-                  "@context: Asset keyword on the public brand asset page",
-              }),
-              t({
-                message: "Square logo",
-                comment:
-                  "@context: Asset keyword on the public brand asset page",
-              }),
-              t({
-                message: "Brand tile",
-                comment:
-                  "@context: Asset keyword on the public brand asset page",
-              }),
-              t({
-                message: "Circle tile",
-                comment:
-                  "@context: Asset keyword on the public brand asset page",
-              }),
-              t({
-                message: "Social preview",
-                comment:
-                  "@context: Asset keyword on the public brand asset page",
-              }),
+              i18n._(
+                msg({
+                  message: "Logo",
+                  comment:
+                    "@context: Asset keyword on the public brand asset page",
+                }),
+              ),
+              i18n._(
+                msg({
+                  message: "Reverse logo",
+                  comment:
+                    "@context: Asset keyword on the public brand asset page",
+                }),
+              ),
+              i18n._(
+                msg({
+                  message: "Square logo",
+                  comment:
+                    "@context: Asset keyword on the public brand asset page",
+                }),
+              ),
+              i18n._(
+                msg({
+                  message: "Brand tile",
+                  comment:
+                    "@context: Asset keyword on the public brand asset page",
+                }),
+              ),
+              i18n._(
+                msg({
+                  message: "Circle tile",
+                  comment:
+                    "@context: Asset keyword on the public brand asset page",
+                }),
+              ),
+              i18n._(
+                msg({
+                  message: "Social preview",
+                  comment:
+                    "@context: Asset keyword on the public brand asset page",
+                }),
+              ),
             ].map((keyword) => (
               <span key={keyword} class="brand-keyword">
                 {keyword}
@@ -431,28 +479,34 @@ export function BrandPage({
         <aside class="brand-manifest">
           <div class="brand-manifest-header">
             <p class="brand-panel-kicker">
-              {t({
-                message: "Start here",
-                comment:
-                  "@context: Heading for the quick-start panel on the brand asset page",
-              })}
+              {i18n._(
+                msg({
+                  message: "Start here",
+                  comment:
+                    "@context: Heading for the quick-start panel on the brand asset page",
+                }),
+              )}
             </p>
             <h2 class="brand-panel-title">
-              {t({
-                message: "Everything most people need is in one ZIP.",
-                comment:
-                  "@context: Section title for the quick-start panel on the brand asset page",
-              })}
+              {i18n._(
+                msg({
+                  message: "Everything most people need is in one ZIP.",
+                  comment:
+                    "@context: Section title for the quick-start panel on the brand asset page",
+                }),
+              )}
             </h2>
           </div>
 
           <p class="brand-panel-body brand-manifest-body">
-            {t({
-              message:
-                "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image.",
-              comment:
-                "@context: Intro copy for the quick-start panel on the brand asset page",
-            })}
+            {i18n._(
+              msg({
+                message:
+                  "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image.",
+                comment:
+                  "@context: Intro copy for the quick-start panel on the brand asset page",
+              }),
+            )}
           </p>
 
           <div class="brand-logo-actions brand-manifest-actions">
@@ -471,26 +525,33 @@ export function BrandPage({
                 <div class="brand-entry-surface">
                   <JantBrandMark
                     class="brand-entry-mark"
-                    label={t({
-                      message: "Logo",
-                      comment:
-                        "@context: Asset keyword on the public brand asset page",
-                    })}
+                    label={i18n._(
+                      msg({
+                        message: "Logo",
+                        comment:
+                          "@context: Asset keyword on the public brand asset page",
+                      }),
+                    )}
                   />
                 </div>
               </div>
               <div class="brand-entry-copy">
                 <p class="brand-spec-card-role">
-                  {t({
-                    message: "Default logo",
-                    comment: "@context: Usage label for the default logo card",
-                  })}
+                  {i18n._(
+                    msg({
+                      message: "Default logo",
+                      comment:
+                        "@context: Usage label for the default logo card",
+                    }),
+                  )}
                 </p>
                 <h3 class="brand-logo-title">
-                  {t({
-                    message: "Logo",
-                    comment: "@context: Title for the default logo card",
-                  })}
+                  {i18n._(
+                    msg({
+                      message: "Logo",
+                      comment: "@context: Title for the default logo card",
+                    }),
+                  )}
                 </h3>
                 <p class="brand-logo-body">{defaultLogoBody}</p>
               </div>
@@ -518,25 +579,32 @@ export function BrandPage({
                   <JantBrandMark
                     variant="negative"
                     class="brand-entry-mark"
-                    label={t({
-                      message: "Reverse logo",
-                      comment: "@context: Title for the reverse logo card",
-                    })}
+                    label={i18n._(
+                      msg({
+                        message: "Reverse logo",
+                        comment: "@context: Title for the reverse logo card",
+                      }),
+                    )}
                   />
                 </div>
               </div>
               <div class="brand-entry-copy">
                 <p class="brand-spec-card-role">
-                  {t({
-                    message: "Dark backgrounds",
-                    comment: "@context: Usage label for the reverse logo card",
-                  })}
+                  {i18n._(
+                    msg({
+                      message: "Dark backgrounds",
+                      comment:
+                        "@context: Usage label for the reverse logo card",
+                    }),
+                  )}
                 </p>
                 <h3 class="brand-logo-title">
-                  {t({
-                    message: "Reverse logo",
-                    comment: "@context: Title for the reverse logo card",
-                  })}
+                  {i18n._(
+                    msg({
+                      message: "Reverse logo",
+                      comment: "@context: Title for the reverse logo card",
+                    }),
+                  )}
                 </h3>
                 <p class="brand-logo-body">{reverseLogoBody}</p>
               </div>
@@ -559,10 +627,12 @@ export function BrandPage({
                 <div class="brand-entry-surface brand-entry-surface-stack">
                   <JantBrandMark
                     class="brand-entry-mark"
-                    label={t({
-                      message: "Brand pack",
-                      comment: "@context: Title for the brand pack card",
-                    })}
+                    label={i18n._(
+                      msg({
+                        message: "Brand pack",
+                        comment: "@context: Title for the brand pack card",
+                      }),
+                    )}
                   />
                   <div class="brand-entry-files" aria-hidden="true">
                     {["SVG", "PNG", "ICO", "ZIP"].map((label) => (
@@ -575,16 +645,20 @@ export function BrandPage({
               </div>
               <div class="brand-entry-copy">
                 <p class="brand-spec-card-role">
-                  {t({
-                    message: "Everything in one download",
-                    comment: "@context: Usage label for the brand pack card",
-                  })}
+                  {i18n._(
+                    msg({
+                      message: "Everything in one download",
+                      comment: "@context: Usage label for the brand pack card",
+                    }),
+                  )}
                 </p>
                 <h3 class="brand-logo-title">
-                  {t({
-                    message: "Brand pack",
-                    comment: "@context: Title for the brand pack card",
-                  })}
+                  {i18n._(
+                    msg({
+                      message: "Brand pack",
+                      comment: "@context: Title for the brand pack card",
+                    }),
+                  )}
                 </h3>
                 <p class="brand-logo-body">{brandPackBody}</p>
                 <code class="brand-spec-card-value">
@@ -611,96 +685,127 @@ export function BrandPage({
       <section class="brand-logo-resources" id="brand-files">
         <article class="brand-panel">
           <p class="brand-panel-kicker">
-            {t({
-              message: "Guidelines",
-              comment:
-                "@context: Section kicker for the usage guidance section on the brand asset page",
-            })}
+            {i18n._(
+              msg({
+                message: "Guidelines",
+                comment:
+                  "@context: Section kicker for the usage guidance section on the brand asset page",
+              }),
+            )}
           </p>
           <h2 class="brand-panel-title">
-            {t({
-              message: "A few simple rules.",
-              comment:
-                "@context: Section title for the usage guidance section on the brand asset page",
-            })}
+            {i18n._(
+              msg({
+                message: "A few simple rules.",
+                comment:
+                  "@context: Section title for the usage guidance section on the brand asset page",
+              }),
+            )}
           </h2>
           <div class="brand-guidance-grid">
             <GuidanceCard
-              title={t({
-                message: "Use the logo on light backgrounds.",
-                comment: "@context: Guidance title on the brand asset page",
-              })}
-              body={t({
-                message:
-                  "Choose the standard logo for websites, docs, directories, and editorial layouts.",
-                comment: "@context: Guidance body on the brand asset page",
-              })}
+              title={i18n._(
+                msg({
+                  message: "Use the logo on light backgrounds.",
+                  comment: "@context: Guidance title on the brand asset page",
+                }),
+              )}
+              body={i18n._(
+                msg({
+                  message:
+                    "Choose the standard logo for websites, docs, directories, and editorial layouts.",
+                  comment: "@context: Guidance body on the brand asset page",
+                }),
+              )}
             />
             <GuidanceCard
-              title={t({
-                message: "Use the reverse logo on dark backgrounds.",
-                comment: "@context: Guidance title on the brand asset page",
-              })}
-              body={t({
-                message:
-                  "Switch to the white logo when the standard green version would lose contrast.",
-                comment: "@context: Guidance body on the brand asset page",
-              })}
+              title={i18n._(
+                msg({
+                  message: "Use the reverse logo on dark backgrounds.",
+                  comment: "@context: Guidance title on the brand asset page",
+                }),
+              )}
+              body={i18n._(
+                msg({
+                  message:
+                    "Switch to the white logo when the standard green version would lose contrast.",
+                  comment: "@context: Guidance body on the brand asset page",
+                }),
+              )}
             />
             <GuidanceCard
-              title={t({
-                message: "Keep the artwork unchanged.",
-                comment: "@context: Guidance title on the brand asset page",
-              })}
-              body={t({
-                message:
-                  "Do not recolor, stretch, rotate, outline, or add effects to the logo.",
-                comment: "@context: Guidance body on the brand asset page",
-              })}
+              title={i18n._(
+                msg({
+                  message: "Keep the artwork unchanged.",
+                  comment: "@context: Guidance title on the brand asset page",
+                }),
+              )}
+              body={i18n._(
+                msg({
+                  message:
+                    "Do not recolor, stretch, rotate, outline, or add effects to the logo.",
+                  comment: "@context: Guidance body on the brand asset page",
+                }),
+              )}
             />
           </div>
         </article>
 
         <article class="brand-panel brand-panel-resource" id="brand-logos">
           <p class="brand-panel-kicker">
-            {t({
-              message: "Logos",
-              comment:
-                "@context: Section kicker for the logo downloads section",
-            })}
+            {i18n._(
+              msg({
+                message: "Logos",
+                comment:
+                  "@context: Section kicker for the logo downloads section",
+              }),
+            )}
           </p>
           <h2 class="brand-panel-title">
-            {t({
-              message: "Primary logo files",
-              comment: "@context: Section title for the logo downloads section",
-            })}
+            {i18n._(
+              msg({
+                message: "Primary logo files",
+                comment:
+                  "@context: Section title for the logo downloads section",
+              }),
+            )}
           </h2>
           <div class="brand-panel-body">
             <p>
-              {t({
-                message:
-                  "Choose the standard logo for most placements and the reverse logo when you need more contrast.",
-                comment: "@context: Body copy for the logo downloads section",
-              })}
+              {i18n._(
+                msg({
+                  message:
+                    "Choose the standard logo for most placements and the reverse logo when you need more contrast.",
+                  comment: "@context: Body copy for the logo downloads section",
+                }),
+              )}
             </p>
           </div>
         </article>
 
         <div class="brand-logo-grid">
           <LogoResourceCard
-            title={t({
-              message: "Logo",
-              comment: "@context: Title for the default logo asset card",
-            })}
-            usage={t({
-              message: "Default",
-              comment: "@context: Usage label for the default logo asset card",
-            })}
-            body={t({
-              message:
-                "Primary Jant logo for websites, docs, press coverage, and editorial layouts.",
-              comment: "@context: Description for the default logo asset card",
-            })}
+            title={i18n._(
+              msg({
+                message: "Logo",
+                comment: "@context: Title for the default logo asset card",
+              }),
+            )}
+            usage={i18n._(
+              msg({
+                message: "Default",
+                comment:
+                  "@context: Usage label for the default logo asset card",
+              }),
+            )}
+            body={i18n._(
+              msg({
+                message:
+                  "Primary Jant logo for websites, docs, press coverage, and editorial layouts.",
+                comment:
+                  "@context: Description for the default logo asset card",
+              }),
+            )}
             variant="positive"
             href={positiveLogoHref}
             filename={positiveLogoFilename}
@@ -711,14 +816,19 @@ export function BrandPage({
             rawLabel={openRawSvgLabel}
           />
           <LogoResourceCard
-            title={t({
-              message: "Reverse logo",
-              comment: "@context: Title for the reverse logo asset card",
-            })}
-            usage={t({
-              message: "Dark backgrounds",
-              comment: "@context: Usage label for the reverse logo asset card",
-            })}
+            title={i18n._(
+              msg({
+                message: "Reverse logo",
+                comment: "@context: Title for the reverse logo asset card",
+              }),
+            )}
+            usage={i18n._(
+              msg({
+                message: "Dark backgrounds",
+                comment:
+                  "@context: Usage label for the reverse logo asset card",
+              }),
+            )}
             body={reverseLogoBody}
             variant="negative"
             href={negativeLogoHref}
@@ -730,49 +840,61 @@ export function BrandPage({
 
         <article class="brand-panel brand-panel-resource">
           <p class="brand-panel-kicker">
-            {t({
-              message: "Icons and previews",
-              comment:
-                "@context: Section kicker for the icon and preview downloads section",
-            })}
+            {i18n._(
+              msg({
+                message: "Icons and previews",
+                comment:
+                  "@context: Section kicker for the icon and preview downloads section",
+              }),
+            )}
           </p>
           <h2 class="brand-panel-title">
-            {t({
-              message:
-                "Square assets for avatars, apps, browsers, and shared links",
-              comment:
-                "@context: Section title for the icon and preview downloads section",
-            })}
+            {i18n._(
+              msg({
+                message:
+                  "Square assets for avatars, apps, browsers, and shared links",
+                comment:
+                  "@context: Section title for the icon and preview downloads section",
+              }),
+            )}
           </h2>
           <div class="brand-panel-body">
             <p>
-              {t({
-                message:
-                  "Use these when you need a transparent square logo, a shaped tile with a built-in background, a browser icon, or a default preview image.",
-                comment:
-                  "@context: Body copy for the icon and preview downloads section",
-              })}
+              {i18n._(
+                msg({
+                  message:
+                    "Use these when you need a transparent square logo, a shaped tile with a built-in background, a browser icon, or a default preview image.",
+                  comment:
+                    "@context: Body copy for the icon and preview downloads section",
+                }),
+              )}
             </p>
           </div>
         </article>
 
         <div class="brand-icon-grid" id="brand-icons">
           <SquareLogoResourceCard
-            title={t({
-              message: "Square logo PNG",
-              comment: "@context: Title for the square logo PNG asset card",
-            })}
-            usage={t({
-              message: "Transparent square",
-              comment:
-                "@context: Usage label for the square logo PNG asset card",
-            })}
-            body={t({
-              message:
-                "A ready-made 1:1 PNG for decks, mockups, directories, and other square placements.",
-              comment:
-                "@context: Description for the square logo PNG asset card",
-            })}
+            title={i18n._(
+              msg({
+                message: "Square logo PNG",
+                comment: "@context: Title for the square logo PNG asset card",
+              }),
+            )}
+            usage={i18n._(
+              msg({
+                message: "Transparent square",
+                comment:
+                  "@context: Usage label for the square logo PNG asset card",
+              }),
+            )}
+            body={i18n._(
+              msg({
+                message:
+                  "A ready-made 1:1 PNG for decks, mockups, directories, and other square placements.",
+                comment:
+                  "@context: Description for the square logo PNG asset card",
+              }),
+            )}
             variant="positive"
             badge="512"
             pngHref={positiveLogoPngHref}
@@ -784,19 +906,25 @@ export function BrandPage({
             rawPngLabel={openRawPngLabel}
           />
           <BrandTileResourceCard
-            title={t({
-              message: "Brand tile",
-              comment: "@context: Title for the brand tile asset card",
-            })}
-            usage={t({
-              message: "Built-in background",
-              comment: "@context: Usage label for the brand tile asset card",
-            })}
-            body={t({
-              message:
-                "White logo on the Jant green rounded tile for app icon mockups, touch icons, directory listings, and other square placements that should feel softer.",
-              comment: "@context: Description for the brand tile asset card",
-            })}
+            title={i18n._(
+              msg({
+                message: "Brand tile",
+                comment: "@context: Title for the brand tile asset card",
+              }),
+            )}
+            usage={i18n._(
+              msg({
+                message: "Built-in background",
+                comment: "@context: Usage label for the brand tile asset card",
+              }),
+            )}
+            body={i18n._(
+              msg({
+                message:
+                  "White logo on the Jant green rounded tile for app icon mockups, touch icons, directory listings, and other square placements that should feel softer.",
+                comment: "@context: Description for the brand tile asset card",
+              }),
+            )}
             badge="512"
             pngHref={brandTilePngHref}
             pngFilename={brandTilePngFilename}
@@ -807,19 +935,25 @@ export function BrandPage({
             rawPngLabel={openRawPngLabel}
           />
           <BrandTileResourceCard
-            title={t({
-              message: "Square tile",
-              comment: "@context: Title for the square tile asset card",
-            })}
-            usage={t({
-              message: "Hard edge",
-              comment: "@context: Usage label for the square tile asset card",
-            })}
-            body={t({
-              message:
-                "White logo on the Jant green square tile for platforms and layouts that expect a true edge-to-edge square.",
-              comment: "@context: Description for the square tile asset card",
-            })}
+            title={i18n._(
+              msg({
+                message: "Square tile",
+                comment: "@context: Title for the square tile asset card",
+              }),
+            )}
+            usage={i18n._(
+              msg({
+                message: "Hard edge",
+                comment: "@context: Usage label for the square tile asset card",
+              }),
+            )}
+            body={i18n._(
+              msg({
+                message:
+                  "White logo on the Jant green square tile for platforms and layouts that expect a true edge-to-edge square.",
+                comment: "@context: Description for the square tile asset card",
+              }),
+            )}
             badge="512"
             pngHref={squareTilePngHref}
             pngFilename={squareTilePngFilename}
@@ -831,19 +965,25 @@ export function BrandPage({
             previewClassName="brand-icon-preview-tile-square"
           />
           <BrandTileResourceCard
-            title={t({
-              message: "Circle tile",
-              comment: "@context: Title for the circle tile asset card",
-            })}
-            usage={t({
-              message: "Avatar-ready",
-              comment: "@context: Usage label for the circle tile asset card",
-            })}
-            body={t({
-              message:
-                "White logo on the Jant green circle for profile images, badges, and other round placements where you want a ready-made asset.",
-              comment: "@context: Description for the circle tile asset card",
-            })}
+            title={i18n._(
+              msg({
+                message: "Circle tile",
+                comment: "@context: Title for the circle tile asset card",
+              }),
+            )}
+            usage={i18n._(
+              msg({
+                message: "Avatar-ready",
+                comment: "@context: Usage label for the circle tile asset card",
+              }),
+            )}
+            body={i18n._(
+              msg({
+                message:
+                  "White logo on the Jant green circle for profile images, badges, and other round placements where you want a ready-made asset.",
+                comment: "@context: Description for the circle tile asset card",
+              }),
+            )}
             badge="512"
             pngHref={circleTilePngHref}
             pngFilename={circleTilePngFilename}
@@ -855,18 +995,24 @@ export function BrandPage({
             previewClassName="brand-icon-preview-tile-circle"
           />
           <IconResourceCard
-            title={t({
-              message: "Favicon",
-              comment: "@context: Title for the favicon asset card",
-            })}
-            usage={t({
-              message: "Browser tab",
-              comment: "@context: Usage label for the favicon asset card",
-            })}
-            body={t({
-              message: "Small browser icon used in tabs and bookmarks.",
-              comment: "@context: Description for the favicon asset card",
-            })}
+            title={i18n._(
+              msg({
+                message: "Favicon",
+                comment: "@context: Title for the favicon asset card",
+              }),
+            )}
+            usage={i18n._(
+              msg({
+                message: "Browser tab",
+                comment: "@context: Usage label for the favicon asset card",
+              }),
+            )}
+            body={i18n._(
+              msg({
+                message: "Small browser icon used in tabs and bookmarks.",
+                comment: "@context: Description for the favicon asset card",
+              }),
+            )}
             asset="favicon"
             href={faviconAssetHref}
             filename={faviconAssetFilename}
@@ -875,20 +1021,26 @@ export function BrandPage({
             rawLabel={openRawAssetLabel}
           />
           <IconResourceCard
-            title={t({
-              message: "Apple touch icon",
-              comment: "@context: Title for the apple touch icon asset card",
-            })}
-            usage={t({
-              message: "iOS home screen",
-              comment:
-                "@context: Usage label for the apple touch icon asset card",
-            })}
-            body={t({
-              message: "Home screen icon for iPhone and iPad shortcuts.",
-              comment:
-                "@context: Description for the apple touch icon asset card",
-            })}
+            title={i18n._(
+              msg({
+                message: "Apple touch icon",
+                comment: "@context: Title for the apple touch icon asset card",
+              }),
+            )}
+            usage={i18n._(
+              msg({
+                message: "iOS home screen",
+                comment:
+                  "@context: Usage label for the apple touch icon asset card",
+              }),
+            )}
+            body={i18n._(
+              msg({
+                message: "Home screen icon for iPhone and iPad shortcuts.",
+                comment:
+                  "@context: Description for the apple touch icon asset card",
+              }),
+            )}
             asset="appleTouch"
             href={appleTouchHref}
             filename={appleTouchFilename}
@@ -897,22 +1049,28 @@ export function BrandPage({
             rawLabel={openRawAssetLabel}
           />
           <IconResourceCard
-            title={t({
-              message: "Social preview image",
-              comment:
-                "@context: Title for the social preview image asset card",
-            })}
-            usage={t({
-              message: "Shared links",
-              comment:
-                "@context: Usage label for the social preview image asset card",
-            })}
-            body={t({
-              message:
-                "Default preview image for social shares and link unfurls.",
-              comment:
-                "@context: Description for the social preview image asset card",
-            })}
+            title={i18n._(
+              msg({
+                message: "Social preview image",
+                comment:
+                  "@context: Title for the social preview image asset card",
+              }),
+            )}
+            usage={i18n._(
+              msg({
+                message: "Shared links",
+                comment:
+                  "@context: Usage label for the social preview image asset card",
+              }),
+            )}
+            body={i18n._(
+              msg({
+                message:
+                  "Default preview image for social shares and link unfurls.",
+                comment:
+                  "@context: Description for the social preview image asset card",
+              }),
+            )}
             asset="socialImage"
             href={socialImageHref}
             filename={socialImageFilename}

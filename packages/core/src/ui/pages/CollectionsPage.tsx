@@ -4,8 +4,9 @@
  * Single-column directory of collections.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { CollectionsPageProps } from "../../types.js";
 import { CollectionDirectory } from "../shared/CollectionDirectory.js";
 import { CollectionsManager } from "../shared/CollectionsManager.js";
@@ -18,22 +19,28 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
   isAuthenticated,
   sitePathPrefix = "",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const collectionCount = countCollections(items);
-  const emptyMessage = t({
-    message: "No collections yet. Start one to organize posts by topic.",
-    comment: "@context: Empty state message on collections page",
-  });
+  const emptyMessage = i18n._(
+    msg({
+      message: "No collections yet. Start one to organize posts by topic.",
+      comment: "@context: Empty state message on collections page",
+    }),
+  );
   const collectionCountLabel = `${collectionCount} ${
     collectionCount === 1
-      ? t({
-          message: "collection",
-          comment: "@context: Singular collection count label",
-        })
-      : t({
-          message: "collections",
-          comment: "@context: Plural collection count label",
-        })
+      ? i18n._(
+          msg({
+            message: "collection",
+            comment: "@context: Singular collection count label",
+          }),
+        )
+      : i18n._(
+          msg({
+            message: "collections",
+            comment: "@context: Plural collection count label",
+          }),
+        )
   }`;
 
   if (isAuthenticated) {
@@ -51,10 +58,12 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
           <div class="collections-page-heading page-intro">
             <div class="page-intro-title-row">
               <h1 class="page-intro-title">
-                {t({
-                  message: "Collections",
-                  comment: "@context: Collections page heading",
-                })}
+                {i18n._(
+                  msg({
+                    message: "Collections",
+                    comment: "@context: Collections page heading",
+                  }),
+                )}
               </h1>
             </div>
             <div class="page-intro-meta-row">

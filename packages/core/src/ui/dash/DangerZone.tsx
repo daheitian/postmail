@@ -5,8 +5,9 @@
  * consistent styling and confirmation prompts
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC, PropsWithChildren } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import { buildConfirmActionExpression } from "../../lib/confirm.js";
 
 export interface DangerZoneProps extends PropsWithChildren {
@@ -51,21 +52,25 @@ export const DangerZone: FC<DangerZoneProps> = ({
   disabled = false,
   children,
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
-  const defaultTitle = t({
-    message: "Danger Zone",
-    comment: "@context: Section heading for dangerous/destructive actions",
-  });
+  const defaultTitle = i18n._(
+    msg({
+      message: "Danger Zone",
+      comment: "@context: Section heading for dangerous/destructive actions",
+    }),
+  );
 
   const clickHandler = confirmMessage
     ? buildConfirmActionExpression(`@post('${formAction}')`, {
         message: confirmMessage,
         confirmLabel: actionLabel,
-        cancelLabel: t({
-          message: "Cancel",
-          comment: "@context: Button label to dismiss a dialog or action",
-        }),
+        cancelLabel: i18n._(
+          msg({
+            message: "Cancel",
+            comment: "@context: Button label to dismiss a dialog or action",
+          }),
+        ),
         tone: "danger",
       })
     : `@post('${formAction}')`;

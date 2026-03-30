@@ -7,7 +7,7 @@
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
 import { msg } from "@lingui/core/macro";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
@@ -24,7 +24,7 @@ const ResetContent: FC<{
   token: string;
   sitePathPrefix?: string;
 }> = ({ token, sitePathPrefix = "" }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const signals = JSON.stringify({
     password: "",
     confirmPassword: "",
@@ -36,16 +36,20 @@ const ResetContent: FC<{
       <div class="card max-w-md w-full">
         <header>
           <h2>
-            {t({
-              message: "Reset Password",
-              comment: "@context: Password reset page heading",
-            })}
+            {i18n._(
+              msg({
+                message: "Reset Password",
+                comment: "@context: Password reset page heading",
+              }),
+            )}
           </h2>
           <p>
-            {t({
-              message: "Choose a new password.",
-              comment: "@context: Password reset page description",
-            })}
+            {i18n._(
+              msg({
+                message: "Choose a new password.",
+                comment: "@context: Password reset page description",
+              }),
+            )}
           </p>
         </header>
         <section>
@@ -57,10 +61,12 @@ const ResetContent: FC<{
           >
             <div class="field">
               <label class="label">
-                {t({
-                  message: "New Password",
-                  comment: "@context: Password reset form field",
-                })}
+                {i18n._(
+                  msg({
+                    message: "New Password",
+                    comment: "@context: Password reset form field",
+                  }),
+                )}
               </label>
               <input
                 type="password"
@@ -73,10 +79,12 @@ const ResetContent: FC<{
             </div>
             <div class="field">
               <label class="label">
-                {t({
-                  message: "Confirm Password",
-                  comment: "@context: Password reset form field",
-                })}
+                {i18n._(
+                  msg({
+                    message: "Confirm Password",
+                    comment: "@context: Password reset form field",
+                  }),
+                )}
               </label>
               <input
                 type="password"
@@ -103,10 +111,12 @@ const ResetContent: FC<{
               >
                 <path d="M21 12a9 9 0 1 1-6.219-8.56" />
               </svg>
-              {t({
-                message: "Reset Password",
-                comment: "@context: Password reset form submit button",
-              })}
+              {i18n._(
+                msg({
+                  message: "Reset Password",
+                  comment: "@context: Password reset form submit button",
+                }),
+              )}
             </button>
           </form>
         </section>
@@ -116,26 +126,30 @@ const ResetContent: FC<{
 };
 
 const ResetErrorContent: FC = () => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <div class="min-h-screen flex items-center justify-center">
       <div class="card max-w-md w-full">
         <header>
           <h2>
-            {t({
-              message: "This Link Has Expired",
-              comment: "@context: Password reset error heading",
-            })}
+            {i18n._(
+              msg({
+                message: "This Link Has Expired",
+                comment: "@context: Password reset error heading",
+              }),
+            )}
           </h2>
         </header>
         <section>
           <p class="text-muted-foreground">
-            {t({
-              message:
-                "This reset link is no longer valid. Request a new one to continue.",
-              comment: "@context: Password reset error description",
-            })}
+            {i18n._(
+              msg({
+                message:
+                  "This reset link is no longer valid. Request a new one to continue.",
+                comment: "@context: Password reset error description",
+              }),
+            )}
           </p>
         </section>
       </div>

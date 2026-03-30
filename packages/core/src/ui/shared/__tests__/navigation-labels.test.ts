@@ -1,4 +1,4 @@
-import type { MessageDescriptor } from "@lingui/core";
+import type { I18n, MessageDescriptor } from "@lingui/core";
 import { describe, expect, it } from "vitest";
 import {
   getNavItemDisplayLabel,
@@ -6,8 +6,11 @@ import {
   getSystemNavDisplayLabel,
 } from "../navigation-labels.js";
 
-const translate = (descriptor: MessageDescriptor) =>
-  `translated:${descriptor.message}`;
+const i18n = {
+  _(descriptor: MessageDescriptor) {
+    return `translated:${descriptor.message}`;
+  },
+} satisfies Pick<I18n, "_">;
 
 describe("getNavItemDisplayLabel", () => {
   it("translates the built-in collections system item", () => {
@@ -19,7 +22,7 @@ describe("getNavItemDisplayLabel", () => {
           label: "Collections",
           url: "/c",
         },
-        translate,
+        i18n,
       ),
     ).toBe("translated:Collections");
   });
@@ -33,7 +36,7 @@ describe("getNavItemDisplayLabel", () => {
           label: "Archive",
           url: "/blog/archive",
         },
-        translate,
+        i18n,
         "/blog",
       ),
     ).toBe("translated:Archive");
@@ -48,7 +51,7 @@ describe("getNavItemDisplayLabel", () => {
           label: "Sign in",
           url: "/signin",
         },
-        translate,
+        i18n,
       ),
     ).toBe("translated:Sign in");
   });
@@ -57,7 +60,7 @@ describe("getNavItemDisplayLabel", () => {
     expect(
       getNavItemDisplayLabel(
         { type: "system", systemKey: "rss", label: "RSS", url: "/feed" },
-        translate,
+        i18n,
       ),
     ).toBe("RSS");
   });
@@ -66,7 +69,7 @@ describe("getNavItemDisplayLabel", () => {
     expect(
       getNavItemDisplayLabel(
         { type: "link", label: "Collections", url: "/notes" },
-        translate,
+        i18n,
       ),
     ).toBe("Collections");
   });
@@ -75,7 +78,7 @@ describe("getNavItemDisplayLabel", () => {
     expect(
       getNavItemDisplayLabel(
         { type: "link", label: "Collections", url: "/c" },
-        translate,
+        i18n,
       ),
     ).toBe("Collections");
   });
@@ -83,20 +86,20 @@ describe("getNavItemDisplayLabel", () => {
 
 describe("system nav labels", () => {
   it("translates built-in system nav titles but keeps RSS raw", () => {
-    expect(getSystemNavDisplayLabel("collections", translate)).toBe(
+    expect(getSystemNavDisplayLabel("collections", i18n)).toBe(
       "translated:Collections",
     );
-    expect(getSystemNavDisplayLabel("archive", translate)).toBe(
+    expect(getSystemNavDisplayLabel("archive", i18n)).toBe(
       "translated:Archive",
     );
-    expect(getSystemNavDisplayLabel("rss", translate)).toBe("RSS");
+    expect(getSystemNavDisplayLabel("rss", i18n)).toBe("RSS");
   });
 
   it("translates system nav descriptions", () => {
-    expect(getSystemNavDescription("archive", translate)).toBe(
+    expect(getSystemNavDescription("archive", i18n)).toBe(
       "translated:Link to the post archive",
     );
-    expect(getSystemNavDescription("rss", translate)).toBe(
+    expect(getSystemNavDescription("rss", i18n)).toBe(
       "translated:Add a link to your main RSS feed. Change what /feed returns in General.",
     );
   });

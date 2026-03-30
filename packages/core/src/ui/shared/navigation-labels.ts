@@ -1,9 +1,10 @@
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
+import type { I18n } from "../../i18n/i18n.js";
 import { isFullUrl, stripSitePathPrefix } from "../../lib/url.js";
 import type { NavItemType, SystemNavKey } from "../../types.js";
 
-type Translate = (descriptor: MessageDescriptor) => string;
+type Translator = Pick<I18n, "_">;
 
 type NavigationLabelItem = {
   type: NavItemType;
@@ -103,24 +104,24 @@ function getBuiltinNavLabelDescriptor(
 
 export function getNavItemDisplayLabel(
   item: NavigationLabelItem,
-  t: Translate,
+  i18n: Translator,
   sitePathPrefix = "",
 ): string {
   const descriptor = getBuiltinNavLabelDescriptor(item, sitePathPrefix);
-  return descriptor ? t(descriptor) : item.label;
+  return descriptor ? i18n._(descriptor) : item.label;
 }
 
 export function getSystemNavDisplayLabel(
   key: SystemNavKey,
-  t: Translate,
+  i18n: Translator,
 ): string {
   const descriptor = SYSTEM_NAV_TITLES[key];
-  return descriptor ? t(descriptor) : "RSS";
+  return descriptor ? i18n._(descriptor) : "RSS";
 }
 
 export function getSystemNavDescription(
   key: SystemNavKey,
-  t: Translate,
+  i18n: Translator,
 ): string {
-  return t(SYSTEM_NAV_DESCRIPTIONS[key]);
+  return i18n._(SYSTEM_NAV_DESCRIPTIONS[key]);
 }

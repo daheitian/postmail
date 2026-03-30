@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import type { Context } from "hono";
 import { renderToString } from "hono/jsx/dom/server";
 import { describe, expect, it } from "vitest";
@@ -5,13 +6,15 @@ import { I18nProvider, useLingui } from "../context.js";
 import { createI18n } from "../i18n.js";
 
 function InterpolationProbe() {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
-  return t({
-    message: "Use {brandColorName}",
-    comment: "@context: Test string for Lingui interpolation support",
-    values: { brandColorName: "Forest Green" },
-  });
+  return i18n._(
+    msg({
+      message: "Use {brandColorName}",
+      comment: "@context: Test string for Lingui interpolation support",
+    }),
+    { brandColorName: "Forest Green" },
+  );
 }
 
 describe("useLingui", () => {

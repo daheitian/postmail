@@ -4,8 +4,9 @@
  * Full-page create/edit flow for collections.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { CollectionEditorPageProps } from "../../types.js";
 import { toPublicPath } from "../../lib/url.js";
 import {
@@ -22,9 +23,9 @@ export const CollectionEditorPage: FC<CollectionEditorPageProps> = ({
   cancelHref,
   sitePathPrefix = "",
 }) => {
-  const { t } = useLingui();
-  const formLabels = getCollectionFormLabels(t);
-  const mutationLabels = getCollectionMutationLabels(t);
+  const { i18n } = useLingui();
+  const formLabels = getCollectionFormLabels(i18n);
+  const mutationLabels = getCollectionMutationLabels(i18n);
   const collectionsHref = toPublicPath("/c", sitePathPrefix);
   const collectionHref = collection
     ? toPublicPath(`/c/${collection.slug}`, sitePathPrefix)
@@ -44,15 +45,19 @@ export const CollectionEditorPage: FC<CollectionEditorPageProps> = ({
       };
   const title =
     mode === "create"
-      ? t({
-          message: "New Collection",
-          comment: "@context: Page title for new collection",
-        })
+      ? i18n._(
+          msg({
+            message: "New Collection",
+            comment: "@context: Page title for new collection",
+          }),
+        )
       : (collection?.title ??
-        t({
-          message: "Edit",
-          comment: "@context: Per-collection edit action",
-        }));
+        i18n._(
+          msg({
+            message: "Edit",
+            comment: "@context: Per-collection edit action",
+          }),
+        ));
 
   return (
     <div class="py-6" data-page="collection-editor">
@@ -60,18 +65,22 @@ export const CollectionEditorPage: FC<CollectionEditorPageProps> = ({
         <header class="collection-editor-header page-intro">
           <nav
             class="collection-breadcrumb"
-            aria-label={t({
-              message: "Breadcrumb",
-              comment: "@context: Breadcrumb label on collection editor page",
-            })}
+            aria-label={i18n._(
+              msg({
+                message: "Breadcrumb",
+                comment: "@context: Breadcrumb label on collection editor page",
+              }),
+            )}
           >
             <ol>
               <li>
                 <a href={collectionsHref}>
-                  {t({
-                    message: "Collections",
-                    comment: "@context: Breadcrumb link to collections page",
-                  })}
+                  {i18n._(
+                    msg({
+                      message: "Collections",
+                      comment: "@context: Breadcrumb link to collections page",
+                    }),
+                  )}
                 </a>
               </li>
               {mode === "edit" && collectionHref && collection ? (
@@ -114,14 +123,18 @@ export const CollectionEditorPage: FC<CollectionEditorPageProps> = ({
               <li>
                 <span>
                   {mode === "create"
-                    ? t({
-                        message: "New Collection",
-                        comment: "@context: Page title for new collection",
-                      })
-                    : t({
-                        message: "Edit",
-                        comment: "@context: Per-collection edit action",
-                      })}
+                    ? i18n._(
+                        msg({
+                          message: "New Collection",
+                          comment: "@context: Page title for new collection",
+                        }),
+                      )
+                    : i18n._(
+                        msg({
+                          message: "Edit",
+                          comment: "@context: Per-collection edit action",
+                        }),
+                      )}
                 </span>
               </li>
             </ol>

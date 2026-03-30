@@ -1,13 +1,17 @@
 /**
  * i18n Runtime using @lingui/core
  *
- * The SWC Lingui plugin adds hash-based IDs to t() calls when imports come
- * from @lingui/react/macro. The runtimeConfigModule setting rewrites those
- * imports to our custom Hono JSX implementation at build time.
+ * The Lingui SWC plugin compiles message descriptors from `msg()` into
+ * hash-based IDs at build time. The runtime then resolves those IDs against
+ * the active locale catalog for each request.
  */
 
-import type { Messages } from "@lingui/core";
-import { I18n } from "@lingui/core";
+import type {
+  I18n as LinguiI18n,
+  MessageDescriptor,
+  Messages,
+} from "@lingui/core";
+import { I18n as LinguiI18nRuntime } from "@lingui/core";
 import { locales, baseLocale, isLocale, type Locale } from "./locales.js";
 import { messages as messagesEn } from "./locales/en.js";
 import { messages as messagesZhHans } from "./locales/zh-Hans.js";
@@ -15,8 +19,22 @@ import { messages as messagesZhHant } from "./locales/zh-Hant.js";
 
 export { locales, baseLocale, isLocale, type Locale };
 
-// Export I18n type for convenience
-export type { I18n };
+export type TranslationValues = Record<string, unknown>;
+export type TranslationMessage = {
+  id?: string;
+  message?: string;
+  comment?: string;
+};
+
+// Export I18n type for convenience, with the descriptor overloads used in app code.
+export interface I18n extends LinguiI18n {
+  _(
+    id: string,
+    values?: TranslationValues,
+    message?: TranslationMessage,
+  ): string;
+  _(descriptor: MessageDescriptor, values?: TranslationValues): string;
+}
 
 // Pre-compute merged catalogs at module load time (done once, not per request)
 // For non-English locales, merge English as fallback so missing translations
@@ -31,7 +49,7 @@ const catalogZhHant: Messages = { ...messagesEn, ...messagesZhHant };
  * a new instance per request to avoid race conditions. Never use a global instance!
  */
 export function createI18n(locale: Locale): I18n {
-  const i18n = new I18n({});
+  const i18n = new LinguiI18nRuntime({}) as I18n;
 
   i18n.load("en", catalogEn);
   i18n.load("zh-Hans", catalogZhHans);

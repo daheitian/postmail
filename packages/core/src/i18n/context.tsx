@@ -1,36 +1,17 @@
 /**
- * Hono JSX i18n Context System
- *
- * Mimics React's Context API for Hono JSX to provide i18n without prop drilling
+ * Request-scoped i18n access for Hono JSX renders.
  */
 
 import type { Context } from "hono";
 import type { FC, PropsWithChildren } from "hono/jsx";
-import type { I18n, MessageDescriptor } from "@lingui/core";
+import type { I18n } from "./i18n.js";
 import { getI18n as getI18nFromContext } from "./i18n.js";
-
-/**
- * Message descriptor that accepts both pre-macro (without id) and post-macro (with id) formats
- * This allows TypeScript to accept t({ message, comment }) before macro transformation
- */
-type TranslationDescriptor = {
-  id?: string;
-  message: string;
-  comment?: string;
-  values?: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-};
-
-type TranslationInput =
-  | TranslationDescriptor
-  | (MessageDescriptor & {
-      values?: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    });
 
 // Store i18n instance during render
 let currentI18n: I18n | null = null;
 
 /**
- * I18nProvider - wraps your app to provide i18n context
+ * I18nProvider - binds the current request's i18n instance for this render.
  *
  * @example
  * ```tsx
@@ -56,29 +37,24 @@ export const I18nProvider: FC<I18nProviderProps> = ({ c, children }) => {
 };
 
 /**
- * useLingui hook - get i18n instance and translation function
- * Mimics @lingui/react's useLingui() API
+ * useLingui hook - returns the current render's per-request i18n instance.
+ * Application code should prefer `const { i18n } = useLingui();`
+ * and call `i18n._(msg(...), values?)`.
  *
  * @example
  * ```tsx
- * import { t } from "@lingui/core/macro";
+ * import { msg } from "@lingui/core/macro";
  * import { useLingui } from "../i18n/index.js";
  *
  * function MyComponent() {
- *   const { t: _ } = useLingui();  // Use _ to avoid conflict with macro
+ *   const { i18n } = useLingui();
  *
  *   return (
  *     <div>
- *       <h1>{_(t({ message: "Settings", comment: "@context: Page title" }))}</h1>
+ *       <h1>{i18n._(msg({ message: "Settings", comment: "@context: Page title" }))}</h1>
  *     </div>
  *   );
  * }
- * ```
- *
- * Or use the i18n instance directly:
- * ```tsx
- * const { i18n } = useLingui();
- * i18n._(t({ message: "Settings", comment: "@context: Page title" }))
  * ```
  */
 export function useLingui() {
@@ -89,18 +65,7 @@ export function useLingui() {
     );
   }
 
-  const translate = (descriptor: TranslationInput) => {
-    const { values, ...message } = descriptor;
-    const id = message.id ?? message.message ?? "";
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- currentI18n is checked above
-    return currentI18n!._(id, values, message);
-  };
-
   return {
     i18n: currentI18n,
-    // t function - can be used with t macro from @lingui/core/macro
-    t: translate,
-    // _ is an alias for t (shorter)
-    _: translate,
   };
 }

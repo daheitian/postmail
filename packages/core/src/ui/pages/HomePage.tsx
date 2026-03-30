@@ -4,8 +4,9 @@
  * Timeline feed with per-type card components and thread previews.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { HomePageProps } from "../../types.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
 import { PaginatedPageHeader } from "../shared/PaginatedPageHeader.js";
@@ -16,15 +17,17 @@ export const HomePage: FC<HomePageProps> = ({
   currentPage,
   totalPages,
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <div data-page="home">
       <PaginatedPageHeader
-        title={t({
-          message: "Latest",
-          comment: "@context: Page heading for the latest posts feed",
-        })}
+        title={i18n._(
+          msg({
+            message: "Latest",
+            comment: "@context: Page heading for the latest posts feed",
+          }),
+        )}
         currentPage={currentPage}
         totalPages={totalPages}
         hideOnFirstPage
@@ -38,10 +41,12 @@ export const HomePage: FC<HomePageProps> = ({
                 id="empty-timeline"
                 class="py-12 text-center text-muted-foreground"
               >
-                {t({
-                  message: "Nothing here yet.",
-                  comment: "@context: Empty state message on home page",
-                })}
+                {i18n._(
+                  msg({
+                    message: "Nothing here yet.",
+                    comment: "@context: Empty state message on home page",
+                  }),
+                )}
               </p>
             </div>
           </div>

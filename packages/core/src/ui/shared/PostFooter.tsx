@@ -28,7 +28,7 @@ const CompactCollectionTags: FC<{
   detail?: boolean;
   showSeparator?: boolean;
 }> = ({ collections, detail = false, showSeparator = true }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   if (collections.length === 0) return null;
 
@@ -69,14 +69,14 @@ const CompactCollectionTags: FC<{
             class="post-collection-more"
             data-collection-popover-trigger
           >
-            {t({
-              ...msg({
+            {i18n._(
+              msg({
                 message: "and {count} more",
                 comment:
                   "@context: Button label for opening the hidden collection list in the post footer",
               }),
-              values: { count: rest.length },
-            })}
+              { count: rest.length },
+            )}
           </button>
           <div class="post-collection-popover" data-collection-popover>
             {rest.map((c) => (
@@ -103,18 +103,18 @@ export const PostPublishedLink: FC<PostPublishedLinkProps> = ({
   post,
   className,
 }) => {
-  const { t } = useLingui();
-  const publishedLabel = t({
-    ...msg({
+  const { i18n } = useLingui();
+  const publishedLabel = i18n._(
+    msg({
       message: "Published on {date} at {time}",
       comment:
         "@context: Tooltip text for the published timestamp in post metadata",
     }),
-    values: {
+    {
       date: post.publishedAtFormatted,
       time: post.publishedAtTime,
     },
-  });
+  );
 
   return (
     <a href={post.permalink} class={className}>
@@ -132,14 +132,14 @@ export const PostPublishedLink: FC<PostPublishedLinkProps> = ({
 export const PostMenuTriggerButton: FC<{ className?: string }> = ({
   className = "post-menu-trigger",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   return (
     <button
       type="button"
       class={className}
       aria-haspopup="menu"
-      aria-label={t(
+      aria-label={i18n._(
         msg({
           message: "More actions",
           comment: "@context: Post menu trigger label in post actions",
@@ -164,21 +164,21 @@ export const PostMenuTriggerButton: FC<{ className?: string }> = ({
 };
 
 export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const featuredLabel =
     post.featuredAtFormatted && post.featuredAtTime
-      ? t({
-          ...msg({
+      ? i18n._(
+          msg({
             message: "Featured on {date} at {time}",
             comment:
               "@context: Tooltip and screen reader label for the featured-post icon in the post footer",
           }),
-          values: {
+          {
             date: post.featuredAtFormatted,
             time: post.featuredAtTime,
           },
-        })
-      : t(
+        )
+      : i18n._(
           msg({
             message: "Featured",
             comment:
@@ -230,7 +230,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             class="post-footer-external-link"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={t(
+            aria-label={i18n._(
               msg({
                 message: "Open external link",
                 comment:
@@ -264,7 +264,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             <button
               type="button"
               class="reply-trigger"
-              aria-label={t(
+              aria-label={i18n._(
                 msg({
                   message: "Reply",
                   comment: "@context: Reply button label in the post footer",

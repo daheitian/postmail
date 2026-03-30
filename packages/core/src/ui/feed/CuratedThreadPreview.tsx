@@ -1,5 +1,6 @@
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { TimelineItemView } from "../../types.js";
 import { TimelineItem, TimelineItemFromPost } from "./TimelineItem.js";
 
@@ -19,7 +20,7 @@ interface CuratedThreadPreviewProps {
 export const CuratedThreadPreview: FC<CuratedThreadPreviewProps> = ({
   curatedThread,
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const { segments } = curatedThread;
 
   if (segments.length === 0) {
@@ -35,15 +36,17 @@ export const CuratedThreadPreview: FC<CuratedThreadPreviewProps> = ({
             class="thread-item thread-item-gap"
           >
             <a href={segment.post.permalink} class="thread-gap-link">
-              {t({
-                message:
-                  "{count, plural, one {# hidden post} other {# hidden posts}}",
-                comment:
-                  "@context: Link showing count of hidden thread posts between curated posts",
-                values: {
+              {i18n._(
+                msg({
+                  message:
+                    "{count, plural, one {# hidden post} other {# hidden posts}}",
+                  comment:
+                    "@context: Link showing count of hidden thread posts between curated posts",
+                }),
+                {
                   count: segment.hiddenBeforeCount,
                 },
-              })}
+              )}
             </a>
           </div>
         ) : null,

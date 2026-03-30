@@ -1,5 +1,6 @@
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
+import { useLingui } from "../../i18n/context.js";
 import type { CollectionDirectoryItem } from "../../types.js";
 import { toPublicPath } from "../../lib/url.js";
 import { CollectionDirectory } from "./CollectionDirectory.js";
@@ -20,7 +21,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
   items,
   sitePathPrefix = "",
 }) => {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
   const collectionsHref = toPublicPath("/c", sitePathPrefix);
   const newCollectionHref = toPublicPath(
     `/c/new?returnTo=${encodeURIComponent(collectionsHref)}`,
@@ -29,85 +30,124 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
   const collectionCount = countCollections(items);
   const collectionCountLabel = `${collectionCount} ${
     collectionCount === 1
-      ? t({
-          message: "collection",
-          comment: "@context: Singular collection count label",
-        })
-      : t({
-          message: "collections",
-          comment: "@context: Plural collection count label",
-        })
+      ? i18n._(
+          msg({
+            message: "collection",
+            comment: "@context: Singular collection count label",
+          }),
+        )
+      : i18n._(
+          msg({
+            message: "collections",
+            comment: "@context: Plural collection count label",
+          }),
+        )
   }`;
-  const mutationLabels = getCollectionMutationLabels(t);
+  const mutationLabels = getCollectionMutationLabels(i18n);
 
   const labels = {
-    collectionsTitle: t({
-      message: "Collections",
-      comment: "@context: Collections page heading",
-    }),
-    collectionSingular: t({
-      message: "collection",
-      comment: "@context: Singular collection count label",
-    }),
-    collectionPlural: t({
-      message: "collections",
-      comment: "@context: Plural collection count label",
-    }),
-    organize: t({
-      message: "Organize",
-      comment: "@context: Menu action to organize collections",
-    }),
-    done: t({
-      message: "Done",
-      comment: "@context: Button to exit collection organize mode",
-    }),
-    organizeHint: t({
-      message: "Drag collections, links, and dividers into the order you want.",
-      comment: "@context: Helper text shown while organizing collections",
-    }),
-    newDivider: t({
-      message: "New Divider",
-      comment: "@context: Menu action to create a divider on collections page",
-    }),
-    newLink: t({
-      message: "New Link",
-      comment:
-        "@context: Menu action to create a custom link on collections page",
-    }),
-    dividerLabel: t({
-      message: "Divider",
-      comment:
-        "@context: Label for a divider item while organizing collections",
-    }),
-    dividerLabelPlaceholder: t({
-      message: "Label (optional)",
-      comment:
-        "@context: Placeholder for an optional divider label in collections organize mode",
-    }),
-    newCollection: t({
-      message: "New Collection",
-      comment: "@context: Button to create a collection from collections page",
-    }),
-    deleteDivider: t({
-      message: "Remove Divider",
-      comment: "@context: Tooltip for divider delete button",
-    }),
-    entrySingular: t({
-      message: "entry",
-      comment: "@context: Singular entry count label",
-    }),
-    entryPlural: t({
-      message: "entries",
-      comment: "@context: Plural entry count label",
-    }),
-    emptyState: t({
-      message: "No collections yet. Start one to organize posts by topic.",
-      comment: "@context: Empty state message on collections page",
-    }),
-    orderSaved: t({
-      message: "Collection order updated.",
-      comment: "@context: Toast after reordering collections",
-    }),
+    collectionsTitle: i18n._(
+      msg({
+        message: "Collections",
+        comment: "@context: Collections page heading",
+      }),
+    ),
+    collectionSingular: i18n._(
+      msg({
+        message: "collection",
+        comment: "@context: Singular collection count label",
+      }),
+    ),
+    collectionPlural: i18n._(
+      msg({
+        message: "collections",
+        comment: "@context: Plural collection count label",
+      }),
+    ),
+    organize: i18n._(
+      msg({
+        message: "Organize",
+        comment: "@context: Menu action to organize collections",
+      }),
+    ),
+    done: i18n._(
+      msg({
+        message: "Done",
+        comment: "@context: Button to exit collection organize mode",
+      }),
+    ),
+    organizeHint: i18n._(
+      msg({
+        message:
+          "Drag collections, links, and dividers into the order you want.",
+        comment: "@context: Helper text shown while organizing collections",
+      }),
+    ),
+    newDivider: i18n._(
+      msg({
+        message: "New Divider",
+        comment:
+          "@context: Menu action to create a divider on collections page",
+      }),
+    ),
+    newLink: i18n._(
+      msg({
+        message: "New Link",
+        comment:
+          "@context: Menu action to create a custom link on collections page",
+      }),
+    ),
+    dividerLabel: i18n._(
+      msg({
+        message: "Divider",
+        comment:
+          "@context: Label for a divider item while organizing collections",
+      }),
+    ),
+    dividerLabelPlaceholder: i18n._(
+      msg({
+        message: "Label (optional)",
+        comment:
+          "@context: Placeholder for an optional divider label in collections organize mode",
+      }),
+    ),
+    newCollection: i18n._(
+      msg({
+        message: "New Collection",
+        comment:
+          "@context: Button to create a collection from collections page",
+      }),
+    ),
+    deleteDivider: i18n._(
+      msg({
+        message: "Remove Divider",
+        comment: "@context: Tooltip for divider delete button",
+      }),
+    ),
+    entrySingular: i18n._(
+      msg({
+        message: "entry",
+        comment: "@context: Singular entry count label",
+      }),
+    ),
+    entryPlural: i18n._(
+      msg({
+        message: "entries",
+        comment: "@context: Plural entry count label",
+      }),
+    ),
+    emptyState: i18n._(
+      msg({
+        message: "No collections yet. Start one to organize posts by topic.",
+        comment: "@context: Empty state message on collections page",
+      }),
+    ),
+    orderSaved: i18n._(
+      msg({
+        message: "Collection order updated.",
+        comment: "@context: Toast after reordering collections",
+      }),
+    ),
     ...mutationLabels,
   };
 

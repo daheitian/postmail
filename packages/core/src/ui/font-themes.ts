@@ -6,7 +6,7 @@
  * typography tokens so the overall feel is more distinct.
  *
  * Name and description are MessageDescriptor objects for i18n support.
- * Pass them to t() from useLingui() when rendering.
+ * Pass them to `i18n._(...)` when rendering.
  */
 
 import type { MessageDescriptor } from "@lingui/core";
@@ -17,7 +17,7 @@ import type { MessageDescriptor } from "@lingui/core";
 export interface FontTheme {
   /** Stored in DB settings, e.g. "classic-editorial" */
   id: string;
-  /** Display name — pass to t() for translation */
+  /** Display name — pass to `i18n._(...)` for translation */
   name: MessageDescriptor;
   /** CSS font-family stack for headings (h1-h6, site logo) */
   headingFontFamily: string;
@@ -25,7 +25,7 @@ export interface FontTheme {
   bodyFontFamily: string;
   /** Optional typography token overrides applied with the theme */
   cssVariables?: Record<string, string>;
-  /** Short description for the picker UI — pass to t() for translation */
+  /** Short description for the picker UI — pass to `i18n._(...)` for translation */
   description: MessageDescriptor;
 }
 

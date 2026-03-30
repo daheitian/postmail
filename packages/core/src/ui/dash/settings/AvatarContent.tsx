@@ -4,7 +4,8 @@
  * Wraps the <jant-settings-avatar> Lit component with translated labels.
  */
 
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "../../../i18n/context.js";
 
 export function AvatarContent({
   siteAvatarUrl,
@@ -13,51 +14,71 @@ export function AvatarContent({
   siteAvatarUrl: string;
   showHeaderAvatar: boolean;
 }) {
-  const { t } = useLingui();
+  const { i18n } = useLingui();
 
   const labels = JSON.stringify({
-    blogAvatar: t({
-      message: "Blog Avatar",
-      comment: "@context: Settings section heading for avatar",
-    }),
-    uploadAvatar: t({
-      message: "Upload Avatar",
-      comment: "@context: Button to upload avatar image",
-    }),
-    remove: t({
-      message: "Remove",
-      comment: "@context: Button to remove the blog avatar",
-    }),
-    avatarHelp: t({
-      message:
-        "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels.",
-      comment: "@context: Help text for avatar upload",
-    }),
-    displayInHeader: t({
-      message: "Display avatar in my site header",
-      comment: "@context: Checkbox to show avatar in the site header",
-    }),
-    processing: t({
-      message: "Processing...",
-      comment:
-        "@context: Avatar upload button text while generating favicon variants",
-    }),
-    uploading: t({
-      message: "Uploading...",
-      comment: "@context: Avatar upload button text while uploading",
-    }),
-    uploadError: t({
-      message: "Upload failed. Please try again.",
-      comment: "@context: Error message when avatar upload fails",
-    }),
-    save: t({
-      message: "Save",
-      comment: "@context: Button to save settings changes",
-    }),
-    cancel: t({
-      message: "Cancel",
-      comment: "@context: Button to cancel settings changes",
-    }),
+    blogAvatar: i18n._(
+      msg({
+        message: "Blog Avatar",
+        comment: "@context: Settings section heading for avatar",
+      }),
+    ),
+    uploadAvatar: i18n._(
+      msg({
+        message: "Upload Avatar",
+        comment: "@context: Button to upload avatar image",
+      }),
+    ),
+    remove: i18n._(
+      msg({
+        message: "Remove",
+        comment: "@context: Button to remove the blog avatar",
+      }),
+    ),
+    avatarHelp: i18n._(
+      msg({
+        message:
+          "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels.",
+        comment: "@context: Help text for avatar upload",
+      }),
+    ),
+    displayInHeader: i18n._(
+      msg({
+        message: "Display avatar in my site header",
+        comment: "@context: Checkbox to show avatar in the site header",
+      }),
+    ),
+    processing: i18n._(
+      msg({
+        message: "Processing...",
+        comment:
+          "@context: Avatar upload button text while generating favicon variants",
+      }),
+    ),
+    uploading: i18n._(
+      msg({
+        message: "Uploading...",
+        comment: "@context: Avatar upload button text while uploading",
+      }),
+    ),
+    uploadError: i18n._(
+      msg({
+        message: "Upload failed. Please try again.",
+        comment: "@context: Error message when avatar upload fails",
+      }),
+    ),
+    save: i18n._(
+      msg({
+        message: "Save",
+        comment: "@context: Button to save settings changes",
+      }),
+    ),
+    cancel: i18n._(
+      msg({
+        message: "Cancel",
+        comment: "@context: Button to cancel settings changes",
+      }),
+    ),
   }).replace(/</g, "\\u003c");
 
   return (
