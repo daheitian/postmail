@@ -96,7 +96,50 @@ describe("Internal site admin routes", () => {
     expect(domainRows).toEqual([{ host: "demo-cloud.example.com" }]);
     expect(settingRows).toEqual([
       { key: "ONBOARDING_STATUS", value: "completed" },
+      { key: "SITE_LANGUAGE", value: "en" },
       { key: "SITE_NAME", value: "Demo Cloud" },
+    ]);
+  });
+
+  it("stores locale defaults passed by the control plane", async () => {
+    const { app, sqlite } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const res = await app.request("/api/internal/sites", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer internal-secret",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        key: "locale-demo",
+        primaryHost: "locale-demo.example.com",
+        siteName: "Locale Demo",
+        siteLanguage: "en-US",
+        timeZone: "Asia/Shanghai",
+      }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      siteId: string;
+    };
+
+    const settingRows = sqlite
+      .prepare(
+        'SELECT "key", "value" FROM "site_setting" WHERE "site_id" = ? ORDER BY "key" ASC',
+      )
+      .all(body.siteId) as { key: string; value: string }[];
+
+    expect(settingRows).toEqual([
+      { key: "ONBOARDING_STATUS", value: "completed" },
+      { key: "SITE_LANGUAGE", value: "en" },
+      { key: "SITE_NAME", value: "Locale Demo" },
+      { key: "TIME_ZONE", value: "Asia/Shanghai" },
     ]);
   });
 

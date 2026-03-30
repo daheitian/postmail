@@ -31,6 +31,8 @@ const CreateManagedSiteSchema = z.object({
       "Primary host must be a valid hostname.",
     ),
   siteName: z.string().trim().min(1).max(120),
+  siteLanguage: z.string().trim().max(35).optional(),
+  timeZone: z.string().trim().max(100).optional(),
 });
 
 const ManagedSiteDomainSchema = z.object({

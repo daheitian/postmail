@@ -18,6 +18,8 @@ import { getConfiguredSingleSiteUrl } from "../lib/env.js";
 import { resolveConfig } from "../lib/resolve-config.js";
 import { buildThemeStyle } from "../lib/theme.js";
 import { now } from "../lib/time.js";
+import { detectLocaleFromHeader } from "../i18n/detect.js";
+import { baseLocale } from "../i18n/locales.js";
 import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
 import {
   BUILTIN_FONT_THEMES,
@@ -40,6 +42,8 @@ export interface CreateManagedSiteInput {
   key: string;
   primaryHost: string;
   siteName: string;
+  siteLanguage?: string | null;
+  timeZone?: string | null;
 }
 
 export interface ManagedSiteResult {
@@ -277,6 +281,17 @@ export function createSiteAdminService(
       siteId,
       databaseSchema,
       databaseDialect,
+    );
+    await settingsService.updateLocaleSettings(
+      {
+        siteLanguage: input.siteLanguage?.trim()
+          ? detectLocaleFromHeader(input.siteLanguage)
+          : baseLocale,
+        timeZone: input.timeZone?.trim() ?? "",
+      },
+      {
+        oldLanguage: "",
+      },
     );
     await settingsService.completeOnboarding();
 
