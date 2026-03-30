@@ -10,10 +10,16 @@ import type { BootstrapService } from "../../../services/bootstrap.js";
  * Reproduces the shell bootstrap logic from POST /setup to verify
  * setup stays idempotent even when managed shell data already exists.
  */
-async function runSetupBootstrap(services: { bootstrap: BootstrapService }) {
+async function runSetupBootstrap(
+  services: { bootstrap: BootstrapService },
+  overrides: Partial<
+    Parameters<BootstrapService["completeInitialSetup"]>[0]
+  > = {},
+) {
   await services.bootstrap.completeInitialSetup({
     ownerUserId: "usr_test-owner",
     siteName: "Jant Demo",
+    ...overrides,
   });
 }
 
@@ -52,6 +58,21 @@ describe("Setup bootstrap logic", () => {
     const rows = await services.db.select().from(settings);
     const onboardingRow = rows.find((row) => row.key === "ONBOARDING_STATUS");
     expect(onboardingRow?.value).toBe("completed");
+  });
+
+  it("stores the initial language and timezone during setup", async () => {
+    await runSetupBootstrap(services, {
+      siteLanguage: "zh-Hans",
+      timeZone: "Asia/Shanghai",
+    });
+
+    const rows = await services.db.select().from(settings);
+    expect(rows.find((row) => row.key === "SITE_LANGUAGE")?.value).toBe(
+      "zh-Hans",
+    );
+    expect(rows.find((row) => row.key === "TIME_ZONE")?.value).toBe(
+      "Asia/Shanghai",
+    );
   });
 
   it("is idempotent when default navigation already exists", async () => {

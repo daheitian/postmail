@@ -206,7 +206,7 @@ export function GeneralContent({
     { value: "en", label: "English" },
     { value: "zh-Hans", label: "\u7B80\u4F53\u4E2D\u6587" },
     { value: "zh-Hant", label: "\u7E41\u9AD4\u4E2D\u6587" },
-  ]);
+  ]).replace(/</g, "\\u003c");
 
   const initialData = JSON.stringify({
     siteName,

@@ -53,14 +53,8 @@ export function createBootstrapService(
       await siteMembers.ensure(site.id, data.ownerUserId, "owner");
       await navItems.ensureSystemDefaults();
       await settings.set("SITE_NAME", data.siteName.trim());
-
-      if (data.timeZone) {
-        await settings.set("TIME_ZONE", data.timeZone);
-      }
-
-      if (data.siteLanguage) {
-        await settings.set("SITE_LANGUAGE", data.siteLanguage);
-      }
+      await settings.set("TIME_ZONE", data.timeZone ?? "UTC");
+      await settings.set("SITE_LANGUAGE", data.siteLanguage ?? "en");
 
       await settings.completeOnboarding();
     },

@@ -277,7 +277,7 @@ settingsRoutes.post("/general/language-time", async (c) => {
   );
   const { languageChanged } =
     await c.var.services.settings.updateLocaleSettings(body, {
-      oldLanguage: c.var.allSettings["SITE_LANGUAGE"] ?? "en",
+      oldLanguage: c.var.appConfig.siteLanguage,
     });
 
   const wantsJson = c.req.header("accept")?.includes("application/json");

@@ -9,6 +9,7 @@ describe("normalizeDisplayText", () => {
   it("returns undefined for empty or whitespace-only values", () => {
     expect(normalizeDisplayText("")).toBeUndefined();
     expect(normalizeDisplayText("   ")).toBeUndefined();
+    expect(normalizeDisplayText("\u200B\u2060")).toBeUndefined();
     expect(normalizeDisplayText(undefined)).toBeUndefined();
   });
 });

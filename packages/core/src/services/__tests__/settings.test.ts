@@ -405,6 +405,21 @@ describe("SettingsService", () => {
       expect(await settingsService.get("TIME_ZONE")).toBe("America/New_York");
     });
 
+    it("stores the base locale when language input is blank", async () => {
+      const result = await settingsService.updateLocaleSettings(
+        {
+          siteLanguage: "",
+          timeZone: "UTC",
+        },
+        {
+          oldLanguage: "zh-Hans",
+        },
+      );
+
+      expect(result.languageChanged).toBe(true);
+      expect(await settingsService.get("SITE_LANGUAGE")).toBe("en");
+    });
+
     it("updates grouped feed, home, and search settings independently", async () => {
       await settingsService.updateFeedSettings({ mainRssFeed: "latest" });
       await settingsService.updateHomeBranding(true);

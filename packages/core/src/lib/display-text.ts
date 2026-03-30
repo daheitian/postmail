@@ -1,8 +1,9 @@
 /**
  * Normalize a user-visible text value.
  *
- * Trims surrounding whitespace and collapses empty results to `undefined` so
- * callers can distinguish missing display copy from intentionally present text.
+ * Trims surrounding whitespace and collapses empty or visually empty results
+ * to `undefined` so callers can distinguish missing display copy from
+ * intentionally present text.
  *
  * @param value - Candidate display text
  * @returns Trimmed text, or `undefined` when empty
@@ -12,11 +13,19 @@
  * // Returns: "Hosted account"
  * ```
  */
+const VISUALLY_EMPTY_FORMATTING_CHARS = /\u200B|\u200C|\u200D|\u2060|\uFEFF/g;
+
 export function normalizeDisplayText(
   value: string | null | undefined,
 ): string | undefined {
   const normalized = value?.trim();
-  return normalized ? normalized : undefined;
+  if (!normalized) {
+    return undefined;
+  }
+
+  return normalized.replace(VISUALLY_EMPTY_FORMATTING_CHARS, "")
+    ? normalized
+    : undefined;
 }
 
 /**

@@ -1,3 +1,4 @@
+import { normalizeDisplayText } from "./display-text.js";
 import { buildSiteUrl, normalizeSitePathPrefix } from "./url.js";
 
 type EnvSource = object | undefined | null;
@@ -172,7 +173,9 @@ export function getHostedControlPlaneProviderName(
 export function getHostedControlPlaneProviderLabel(
   env: EnvSource,
 ): string | undefined {
-  const configuredName = getHostedControlPlaneProviderName(env)?.trim();
+  const configuredName = normalizeDisplayText(
+    getHostedControlPlaneProviderName(env),
+  );
   if (configuredName) {
     return configuredName;
   }

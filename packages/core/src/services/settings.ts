@@ -17,6 +17,7 @@ import {
   ONBOARDING_STATUS,
   type SettingsKey,
 } from "../lib/constants.js";
+import { baseLocale } from "../i18n/locales.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
 import {
@@ -276,7 +277,8 @@ export function createSettingsService(
     },
 
     async updateLocaleSettings(data, opts) {
-      await this.set("SITE_LANGUAGE", data.siteLanguage);
+      const trimmedLanguage = data.siteLanguage.trim() || baseLocale;
+      await this.set("SITE_LANGUAGE", trimmedLanguage);
 
       if (data.timeZone) {
         if (!isSupportedTimeZone(data.timeZone)) {
@@ -294,7 +296,7 @@ export function createSettingsService(
       }
 
       return {
-        languageChanged: opts.oldLanguage !== data.siteLanguage,
+        languageChanged: opts.oldLanguage !== trimmedLanguage,
       };
     },
 

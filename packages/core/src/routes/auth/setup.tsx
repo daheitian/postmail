@@ -209,21 +209,11 @@ setupRoutes.post("/setup", async (c) => {
       );
     }
 
-    let timeZone: string | undefined;
-    if (browserTimezone) {
-      const tz = mapIanaToTimezone(browserTimezone);
-      if (tz !== "UTC") {
-        timeZone = tz;
-      }
-    }
-
-    let siteLanguage: string | undefined;
-    if (browserLanguage) {
-      const detectedLang = detectLocaleFromHeader(browserLanguage);
-      if (detectedLang !== baseLocale) {
-        siteLanguage = detectedLang;
-      }
-    }
+    const timeZone = mapIanaToTimezone(browserTimezone ?? "");
+    const siteLanguage =
+      browserLanguage && browserLanguage.trim()
+        ? detectLocaleFromHeader(browserLanguage)
+        : baseLocale;
 
     await c.var.services.bootstrap.completeInitialSetup({
       ownerUserId,

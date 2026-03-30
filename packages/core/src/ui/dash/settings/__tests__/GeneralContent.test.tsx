@@ -1,24 +1,33 @@
 import { renderToString } from "hono/jsx/dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@lingui/react/macro", () => ({
-  useLingui: () => ({
-    t: ({
-      message,
-    }: {
-      message: string;
-      comment?: string;
-      values?: Record<string, unknown>;
-    }) => message,
-  }),
-}));
+vi.mock("@lingui/react/macro", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@lingui/react/macro")>();
+  return {
+    ...actual,
+    useLingui: () => ({
+      t: ({
+        message,
+      }: {
+        message: string;
+        comment?: string;
+        values?: Record<string, unknown>;
+      }) => message,
+    }),
+  };
+});
 
 async function loadGeneralContent() {
   const { GeneralContent } = await import("../GeneralContent.js");
   return GeneralContent;
 }
 
-function createProps(demoMode: boolean) {
+function createProps(
+  demoMode: boolean,
+  overrides: Partial<
+    Parameters<Awaited<ReturnType<typeof loadGeneralContent>>>[0]
+  > = {},
+) {
   return {
     siteName: "My Blog",
     siteDescription: "A test blog",
@@ -42,6 +51,7 @@ function createProps(demoMode: boolean) {
         iana: ["UTC"],
       },
     ],
+    ...overrides,
   };
 }
 

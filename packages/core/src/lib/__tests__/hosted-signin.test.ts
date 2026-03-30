@@ -93,6 +93,15 @@ describe("getHostedControlPlaneSigninUrl", () => {
     ).toBe("cloud-jant.localtest.me");
   });
 
+  it("falls back to the provider host when the provider name is visually blank", () => {
+    expect(
+      getHostedControlPlaneProviderLabel({
+        HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
+        HOSTED_CONTROL_PLANE_PROVIDER_NAME: "\u200B\u2060",
+      }),
+    ).toBe("cloud-jant.localtest.me");
+  });
+
   it("disables hosted auth without a hosted auth base URL", () => {
     expect(
       isHostedControlPlaneEnabled({
