@@ -9,13 +9,12 @@ import { marked } from "marked";
 // Configure marked for security and simplicity
 marked.setOptions({
   gfm: true,
-  breaks: true,
 });
 
 /**
  * Renders Markdown content to HTML using the marked library.
  *
- * Configured with GitHub Flavored Markdown (GFM) support and line breaks enabled.
+ * Configured with GitHub Flavored Markdown (GFM) support.
  * Uses synchronous parsing for simplicity and consistency in server-side rendering.
  *
  * @param markdown - The Markdown string to convert to HTML

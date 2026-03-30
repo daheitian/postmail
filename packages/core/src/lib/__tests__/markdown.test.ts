@@ -34,8 +34,14 @@ describe("render", () => {
     expect(html).toContain("<code>console.log()</code>");
   });
 
-  it("supports GFM line breaks", () => {
+  it("treats single newlines as paragraph whitespace", () => {
     const html = render("Line 1\nLine 2");
+    expect(html).toContain("<p>Line 1\nLine 2</p>");
+    expect(html).not.toContain("<br>");
+  });
+
+  it("renders explicit hard breaks", () => {
+    const html = render("Line 1  \nLine 2");
     expect(html).toContain("<br>");
   });
 

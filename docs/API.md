@@ -131,6 +131,12 @@ Jant renders stored content into:
 
 Markdown support includes headings, lists, links, images, tables, fenced code blocks, blockquotes, and `<!--more-->` excerpt breaks.
 
+Line breaks follow standard Markdown rules:
+
+- A single newline stays within the same paragraph.
+- A blank line starts a new paragraph.
+- Use two trailing spaces or a backslash before the newline to create a hard line break.
+
 ### Quote post field mapping
 
 Quote posts use quote-specific names in the API:

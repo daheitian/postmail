@@ -118,6 +118,24 @@ describe("markdownToTiptapJson", () => {
   });
 
   describe("inline elements", () => {
+    it("keeps single newlines as plain text inside a paragraph", () => {
+      const doc = parse("Line 1\nLine 2");
+      const content = doc.content[0].content;
+
+      expect(content).toHaveLength(1);
+      expect(content[0].text).toBe("Line 1\nLine 2");
+    });
+
+    it("converts explicit hard breaks", () => {
+      const doc = parse("Line 1  \nLine 2");
+      const content = doc.content[0].content;
+
+      expect(content).toHaveLength(3);
+      expect(content[0].text).toBe("Line 1");
+      expect(content[1].type).toBe("hardBreak");
+      expect(content[2].text).toBe("Line 2");
+    });
+
     it("converts bold text", () => {
       const doc = parse("This is **bold** text");
       const content = doc.content[0].content;
@@ -242,6 +260,18 @@ describe("end-to-end: Markdown → markdownToTiptapJson → renderTiptapJson", (
     const json = markdownToTiptapJson("Hello world");
     const html = renderTiptapJson(json);
     expect(html).toBe("<p>Hello world</p>");
+  });
+
+  it("does not render single newlines as hard breaks", () => {
+    const json = markdownToTiptapJson("Line 1\nLine 2");
+    const html = renderTiptapJson(json);
+    expect(html).toBe("<p>Line 1\nLine 2</p>");
+  });
+
+  it("renders explicit hard breaks correctly", () => {
+    const json = markdownToTiptapJson("Line 1  \nLine 2");
+    const html = renderTiptapJson(json);
+    expect(html).toBe("<p>Line 1<br>Line 2</p>");
   });
 
   it("renders headings correctly", () => {

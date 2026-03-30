@@ -469,6 +469,45 @@ describe("Posts API Routes", () => {
       expect(body.bodyHtml).toContain("<strong>bold</strong>");
     });
 
+    it("treats single newlines in bodyMarkdown as paragraph whitespace", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "note",
+          bodyMarkdown: "第一行\n第二行",
+        }),
+      });
+
+      expect(res.status).toBe(201);
+
+      const body = await res.json();
+      expect(body.bodyHtml).toContain("<p>第一行\n第二行</p>");
+      expect(body.bodyHtml).not.toContain("<br>");
+    });
+
+    it("preserves explicit hard breaks in bodyMarkdown", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "note",
+          bodyMarkdown: "第一行  \n第二行",
+        }),
+      });
+
+      expect(res.status).toBe(201);
+
+      const body = await res.json();
+      expect(body.bodyHtml).toContain("<p>第一行<br>第二行</p>");
+    });
+
     it("returns 400 when both body and bodyMarkdown are provided", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);

@@ -38,7 +38,7 @@ interface TiptapNode {
  * ```
  */
 export function markdownToTiptapJson(markdown: string): string {
-  const tokens = marked.lexer(markdown, { gfm: true, breaks: true });
+  const tokens = marked.lexer(markdown, { gfm: true });
   const content = tokens.flatMap(blockTokenToNodes);
   // Ensure at least one node so the doc is valid
   if (content.length === 0) {
