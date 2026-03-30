@@ -2335,6 +2335,30 @@
     color: var(--site-text-primary);
   }
 
+  .post-collection-primary-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.82rem;
+    height: 0.82rem;
+    color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 78%,
+      var(--site-divider)
+    );
+    flex-shrink: 0;
+  }
+
+  .post-collection-primary-icon svg {
+    width: 0.82rem;
+    height: 0.82rem;
+    overflow: visible;
+  }
+
+  .post-footer-detail .post-collection-tag:hover .post-collection-primary-icon {
+    color: currentColor;
+  }
+
   .post-collection-tag-text {
     display: block;
     min-width: 0;

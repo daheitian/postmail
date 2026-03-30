@@ -1447,7 +1447,17 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
       {% if show_collection_separator %}
       <span class="post-collection-sep" aria-hidden="true">&middot;</span>
       {% endif %}
-      <a href="{{ get_taxonomy_url(kind='c', name=first_collection) }}" class="post-collection-tag">{{ first_collection_meta.title | default(value=first_collection) }}</a>
+      <a href="{{ get_taxonomy_url(kind='c', name=first_collection) }}" class="post-collection-tag">
+        {% if detail %}
+        <span class="post-collection-primary-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5.05" width="10" height="8.15" rx="2.2" />
+            <path d="M5.1 5.05V4.2a1.1 1.1 0 0 1 1.1-1.1h3.6a1.1 1.1 0 0 1 1.1 1.1v.85" />
+          </svg>
+        </span>
+        {% endif %}
+        <span class="post-collection-tag-text">{{ first_collection_meta.title | default(value=first_collection) }}</span>
+      </a>
       {% if hidden_collection_count > 1 %}
       <span class="post-collection-more-wrap">
         <button type="button" class="post-collection-more" aria-haspopup="menu" data-collection-popover-trigger>
@@ -2677,19 +2687,46 @@ article[data-post-featured] .post-footer-featured {
 }
 
 .post-collection-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   color: var(--site-text-secondary);
   text-decoration: none;
   min-width: 0;
   max-width: min(100%, 22ch);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .post-collection-tag:hover {
   color: var(--site-text-primary);
   text-decoration: underline;
+}
+
+.post-collection-primary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.82rem;
+  height: 0.82rem;
+  color: color-mix(in srgb, var(--site-text-secondary) 78%, var(--site-divider));
+  flex-shrink: 0;
+}
+
+.post-collection-primary-icon svg {
+  width: 0.82rem;
+  height: 0.82rem;
+  overflow: visible;
+}
+
+.post-footer-detail .post-collection-tag:hover .post-collection-primary-icon {
+  color: currentColor;
+}
+
+.post-collection-tag-text {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .post-collection-more-wrap {
