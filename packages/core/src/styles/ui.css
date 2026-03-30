@@ -4845,8 +4845,12 @@
   .compose-publish-panel {
     position: absolute;
     right: 0;
-    top: calc(100% + 8px);
+    bottom: calc(100% + 8px);
     width: min(21rem, calc(100vw - 1.5rem));
+    max-height: min(
+      26rem,
+      calc(100dvh - var(--compose-margin-top) - env(safe-area-inset-top) - 5rem)
+    );
     padding: 0.75rem;
     background-color: var(--compose-floating-bg);
     border: 1px solid var(--compose-control-border);
@@ -4854,6 +4858,9 @@
     box-shadow:
       0 10px 28px rgba(0, 0, 0, 0.08),
       0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     z-index: 120;
     animation: compose-fade-up 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
