@@ -554,6 +554,9 @@ export class JantComposeDialog extends LitElement {
         this._scheduleDraftSave();
       }
     }
+    if (this._showPublishPanel) {
+      this._updatePublishPanelLayout();
+    }
   }
 
   reset() {
@@ -1046,17 +1049,19 @@ export class JantComposeDialog extends LitElement {
       this._confirmForAttachedText = false;
       this._doneAttachedPanel();
     } else if (this._confirmForDrafts) {
-      this._dispatchSubmit("draft");
       this._confirmPanelOpen = false;
-      this.reset();
-      this._openDraftsPanel();
+      if (!this._editor?.hasPendingInlineImageUploads()) {
+        this._finishDraftSaveAndOpenDrafts();
+      } else {
+        void this._saveDraftAndOpenDrafts();
+      }
     } else if (this._editPostId) {
       // Editing a published post — publish the update directly
       this._confirmPanelOpen = false;
-      this._submit("published");
+      void this._submit("published");
     } else {
       this._confirmPanelOpen = false;
-      this._submit("draft");
+      void this._submit("draft");
     }
   }
 
@@ -1209,16 +1214,58 @@ export class JantComposeDialog extends LitElement {
     return true;
   }
 
-  private _submit(status: "published" | "draft") {
-    this._showPublishPanel = false;
+  private async _waitForPendingInlineImageUploads(): Promise<boolean> {
+    const editor = this._editor;
+    if (!editor?.hasPendingInlineImageUploads()) {
+      return true;
+    }
+
+    this._loading = true;
+    try {
+      await editor.waitForPendingInlineImageUploads();
+      return this._editor === editor;
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  private async _saveDraftAndOpenDrafts() {
+    if (!(await this._waitForPendingInlineImageUploads())) {
+      return;
+    }
+    this._finishDraftSaveAndOpenDrafts();
+  }
+
+  private _finishDraftSaveAndOpenDrafts() {
+    if (!this._dispatchSubmit("draft")) return;
     this._clearDraftFromStorage();
+    this.reset();
+    void this._openDraftsPanel();
+  }
+
+  private _finishSubmit(status: "published" | "draft") {
     if (!this._dispatchSubmit(status)) return;
+    this._clearDraftFromStorage();
     if (this.pageMode) {
       this._loading = true;
       return;
     }
     this._closeDialog();
     this.reset();
+  }
+
+  private _submit(status: "published" | "draft") {
+    this._showPublishPanel = false;
+    if (!this._editor?.hasPendingInlineImageUploads()) {
+      this._finishSubmit(status);
+      return;
+    }
+    void (async () => {
+      if (!(await this._waitForPendingInlineImageUploads())) {
+        return;
+      }
+      this._finishSubmit(status);
+    })();
   }
 
   private _toggleCollection(id: string) {
@@ -1453,6 +1500,18 @@ export class JantComposeDialog extends LitElement {
 
     // Flush pending draft save before page unload (covers refresh/close mid-debounce)
     window.addEventListener("beforeunload", this._onBeforeUnload);
+    window.addEventListener("resize", this._handleViewportChange);
+    window.addEventListener("scroll", this._handleViewportChange, {
+      passive: true,
+    });
+    globalThis.visualViewport?.addEventListener(
+      "resize",
+      this._handleViewportChange,
+    );
+    globalThis.visualViewport?.addEventListener(
+      "scroll",
+      this._handleViewportChange,
+    );
 
     // Intercept native dialog cancel (ESC) to route through requestClose
     this._dialogEl = this.closest("dialog");
@@ -1497,6 +1556,16 @@ export class JantComposeDialog extends LitElement {
       this._handleFullscreenClose as EventListener,
     );
     window.removeEventListener("beforeunload", this._onBeforeUnload);
+    window.removeEventListener("resize", this._handleViewportChange);
+    window.removeEventListener("scroll", this._handleViewportChange);
+    globalThis.visualViewport?.removeEventListener(
+      "resize",
+      this._handleViewportChange,
+    );
+    globalThis.visualViewport?.removeEventListener(
+      "scroll",
+      this._handleViewportChange,
+    );
     this._cancelSlugTimers();
     this._destroyAttachedEditor();
     this._cancelDraftSaveTimer();
@@ -1522,6 +1591,11 @@ export class JantComposeDialog extends LitElement {
 
   private _handlePointerDown = () => {
     this._clearFilePickerEscapeState();
+  };
+
+  private _handleViewportChange = () => {
+    if (!this._showPublishPanel) return;
+    this._updatePublishPanelLayout();
   };
 
   private _handleDialogCancel = (e: Event) => {
@@ -1639,7 +1713,7 @@ export class JantComposeDialog extends LitElement {
         this._focusBlockedSubmitField("published");
         return;
       }
-      this._submit("published");
+      void this._submit("published");
     }
   };
 
@@ -3358,6 +3432,7 @@ export class JantComposeDialog extends LitElement {
         class="compose-publish-panel"
         role="dialog"
         aria-label=${this.labels.publishSettings}
+        data-position="up"
         data-compose-publish-panel
       >
         ${this._visibilityLocked
@@ -3403,6 +3478,46 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private _updatePublishPanelLayout() {
+    const publishGroup = this.querySelector<HTMLElement>(
+      ".compose-publish-group",
+    );
+    const panel = this.querySelector<HTMLElement>(
+      "[data-compose-publish-panel]",
+    );
+    if (!publishGroup || !panel) return;
+
+    const visualViewport = globalThis.visualViewport;
+    const viewportTop = visualViewport?.offsetTop ?? 0;
+    const viewportBottom =
+      viewportTop + (visualViewport?.height ?? globalThis.innerHeight);
+    const dialogRect = this._dialogEl?.getBoundingClientRect();
+    const groupRect = publishGroup.getBoundingClientRect();
+    const edgePadding = 12;
+    const gap = 8;
+    const topBoundary = Math.max(
+      viewportTop + edgePadding,
+      dialogRect ? dialogRect.top + edgePadding : Number.NEGATIVE_INFINITY,
+    );
+    const bottomBoundary = Math.min(
+      viewportBottom - edgePadding,
+      dialogRect ? dialogRect.bottom - edgePadding : Number.POSITIVE_INFINITY,
+    );
+    const availableAbove = Math.max(0, groupRect.top - topBoundary - gap);
+    const availableBelow = Math.max(0, bottomBoundary - groupRect.bottom - gap);
+    const direction = availableAbove >= availableBelow ? "up" : "down";
+    const maxHeight = Math.max(
+      1,
+      Math.floor(direction === "up" ? availableAbove : availableBelow),
+    );
+
+    panel.dataset.position = direction;
+    panel.style.setProperty(
+      "--compose-publish-panel-max-height",
+      `${maxHeight}px`,
+    );
+  }
+
   private _renderPublishButton() {
     const spinner = html`<svg
       class="animate-spin size-4"
@@ -3443,7 +3558,7 @@ export class JantComposeDialog extends LitElement {
               "compose-publish-main-loading": this._loading,
             })}
             ?disabled=${!canPublish}
-            @click=${() => this._submit("published")}
+            @click=${() => void this._submit("published")}
           >
             ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
           </button>
@@ -3543,7 +3658,13 @@ export class JantComposeDialog extends LitElement {
             : editor}
         ${isOpeningEdit
           ? nothing
-          : html`<div class="compose-action-row">
+          : html`<div
+              class=${classMap({
+                "compose-action-row": true,
+                "compose-action-row-overlay-open":
+                  this._showPublishPanel || this._showCollection,
+              })}
+            >
               ${this._renderCollectionSelector()} ${this._renderPublishButton()}
             </div>`}
         ${this._renderAttachedPanel()} ${this._renderAltPanel()}

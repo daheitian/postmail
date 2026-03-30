@@ -197,6 +197,8 @@ export class JantComposeEditor extends LitElement {
   private _scrollBufferApplied = false;
   private _filePickerCleanup: (() => void) | null = null;
   private _suppressAttachedTextOpenUntil = 0;
+  #inlineImageUploadGeneration = 0;
+  #inlineImageUploadPromises = new Set<Promise<void>>();
   #sortable: { destroy(): void } | null = null;
   #revertNextSibling: globalThis.Node | null = null;
 
@@ -234,6 +236,7 @@ export class JantComposeEditor extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.#clearPendingInlineImageUploads();
     this._editor?.destroy();
     this._editor = null;
     this.#sortable?.destroy();
@@ -275,8 +278,36 @@ export class JantComposeEditor extends LitElement {
 
   private _uploadAndInsertImage(file: File) {
     const editor = this._editor;
-    if (!editor) return;
-    void uploadAndInsertInlineImage(editor, file);
+    if (!editor) return Promise.resolve();
+
+    const generation = this.#inlineImageUploadGeneration;
+    const uploadPromise = uploadAndInsertInlineImage(editor, file).finally(
+      () => {
+        if (generation !== this.#inlineImageUploadGeneration) return;
+        this.#inlineImageUploadPromises.delete(uploadPromise);
+      },
+    );
+    this.#inlineImageUploadPromises.add(uploadPromise);
+    return uploadPromise;
+  }
+
+  hasPendingInlineImageUploads(): boolean {
+    return this.#inlineImageUploadPromises.size > 0;
+  }
+
+  async waitForPendingInlineImageUploads(): Promise<void> {
+    const generation = this.#inlineImageUploadGeneration;
+    while (
+      generation === this.#inlineImageUploadGeneration &&
+      this.#inlineImageUploadPromises.size > 0
+    ) {
+      await Promise.allSettled(Array.from(this.#inlineImageUploadPromises));
+    }
+  }
+
+  #clearPendingInlineImageUploads() {
+    this.#inlineImageUploadGeneration += 1;
+    this.#inlineImageUploadPromises.clear();
   }
 
   private _dispatchFilePickerEvent(
@@ -421,6 +452,7 @@ export class JantComposeEditor extends LitElement {
   }
 
   reset() {
+    this.#clearPendingInlineImageUploads();
     this._title = "";
     this._bodyJson = null;
     this._editor?.commands.clearContent();
@@ -609,6 +641,7 @@ export class JantComposeEditor extends LitElement {
       },
       pasteMedia: {
         shouldInsertInline: (file) => this._shouldPasteInlineImage(file),
+        uploadInlineImage: (file) => this._uploadAndInsertImage(file),
         onPasteFiles: (files) => {
           this.addFiles(files);
         },
@@ -644,6 +677,7 @@ export class JantComposeEditor extends LitElement {
   }
 
   private _destroyEditor() {
+    this.#clearPendingInlineImageUploads();
     this._editor?.destroy();
     this._editor = null;
   }

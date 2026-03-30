@@ -1676,7 +1676,7 @@ const STYLE_CSS = `/* Jant Export Theme */
   --feed-note-summary-leading: var(--type-body-leading);
   --feed-note-summary-gap: 0.56rem;
   --type-body-size: var(--text-base);
-  --type-body-leading: 1.66;
+  --type-body-leading: 1.72;
   --type-body-tracking: 0.002em;
   --type-heading-weight: var(--fw-medium);
   --type-heading-leading: 1.26;

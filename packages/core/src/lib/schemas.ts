@@ -77,6 +77,56 @@ function sanitizeSettingText(maxLength: number) {
     .transform((s) => s.replace(CONTROL_CHAR_RE, ""));
 }
 
+/** Trim and strip control characters, preserving omitted fields and using null to clear values on update. */
+function sanitizeNullableUpdateText(maxLength: number) {
+  return z
+    .union([
+      z
+        .string()
+        .trim()
+        .max(maxLength)
+        .transform((s) => {
+          const sanitized = s.replace(CONTROL_CHAR_RE, "");
+          return sanitized === "" ? null : sanitized;
+        }),
+      z.null(),
+    ])
+    .optional();
+}
+
+/** Accept update-time URL clears as null while still validating non-empty URLs. */
+function sanitizeNullableUpdateUrl() {
+  return z
+    .union([
+      z
+        .string()
+        .trim()
+        .url()
+        .refine((val) => sanitizeUrl(val) !== "", {
+          message: "URL must use http:, https:, or mailto: protocol",
+        }),
+      z
+        .string()
+        .trim()
+        .length(0)
+        .transform(() => null),
+      z.null(),
+    ])
+    .optional();
+}
+
+/** Preserve omitted ratings and normalize explicit clears to null on update. */
+function createNullableUpdateRatingSchema() {
+  return z
+    .union([
+      z.coerce.number().int().min(0).max(5),
+      z.literal("").transform(() => null),
+      z.null(),
+    ])
+    .optional()
+    .transform((value) => (value === 0 ? null : value));
+}
+
 /**
  * Post format enum schema
  * Based on FORMATS from types.ts
@@ -252,7 +302,7 @@ const ApiPostFieldsSchema = PostFieldsSchema.omit({
 
 /** Mutual exclusivity: body and bodyMarkdown cannot both be provided */
 function refineBodyExclusivity<
-  T extends { body?: string; bodyMarkdown?: string },
+  T extends { body?: string | null; bodyMarkdown?: string | null },
 >(schema: z.ZodType<T>) {
   return schema.refine((data) => !(data.body && data.bodyMarkdown), {
     message: "Provide either body or bodyMarkdown, not both",
@@ -400,12 +450,34 @@ export const CreatePostApiSchema = refineSlugPathExclusivity(
 /**
  * API request body schema for updating a post
  */
+const UpdatePostFieldsSchema = PostFieldsSchema.partial().extend({
+  title: sanitizeNullableUpdateText(300),
+  sourceName: sanitizeNullableUpdateText(300),
+  body: z.string().nullable().optional(),
+  bodyMarkdown: z.string().nullable().optional(),
+  url: sanitizeNullableUpdateUrl(),
+  sourceUrl: sanitizeNullableUpdateUrl(),
+  quoteText: z.string().nullable().optional(),
+  rating: createNullableUpdateRatingSchema(),
+});
+
+const UpdatePostApiFieldsSchema = ApiPostFieldsSchema.partial().extend({
+  title: sanitizeNullableUpdateText(300),
+  sourceName: sanitizeNullableUpdateText(300),
+  body: z.string().nullable().optional(),
+  bodyMarkdown: z.string().nullable().optional(),
+  url: sanitizeNullableUpdateUrl(),
+  sourceUrl: sanitizeNullableUpdateUrl(),
+  quoteText: z.string().nullable().optional(),
+  rating: createNullableUpdateRatingSchema(),
+});
+
 export const UpdatePostSchema = refineSlugPathExclusivity(
-  refineBodyExclusivity(PostFieldsSchema.partial()),
+  refineBodyExclusivity(UpdatePostFieldsSchema),
 );
 
 export const UpdatePostApiSchema = refineSlugPathExclusivity(
-  refineBodyExclusivity(ApiPostFieldsSchema.partial()),
+  refineBodyExclusivity(UpdatePostApiFieldsSchema),
 );
 
 /**

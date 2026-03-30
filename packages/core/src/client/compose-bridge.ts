@@ -420,20 +420,53 @@ function buildPostBody(
 ) {
   const isQuote = detail.format === "quote";
   const isLink = detail.format === "link";
+  const isEdit = !!detail.editPostId;
+  const optionalTextValue = (value: string) => value || undefined;
+  const nullableTextValue = (value: string) => value || null;
 
   return {
     format: detail.format,
-    title: !isQuote ? detail.title || undefined : undefined,
-    body: detail.body || undefined,
-    url: isLink ? detail.url || undefined : undefined,
-    sourceName: isQuote ? detail.quoteAuthor || undefined : undefined,
-    sourceUrl: isQuote ? detail.url || undefined : undefined,
-    quoteText: detail.quoteText || undefined,
+    title: !isQuote
+      ? isEdit
+        ? nullableTextValue(detail.title)
+        : optionalTextValue(detail.title)
+      : undefined,
+    body: isEdit
+      ? nullableTextValue(detail.body)
+      : optionalTextValue(detail.body),
+    url: isLink
+      ? isEdit
+        ? nullableTextValue(detail.url)
+        : optionalTextValue(detail.url)
+      : isEdit
+        ? null
+        : undefined,
+    sourceName: isQuote
+      ? isEdit
+        ? nullableTextValue(detail.quoteAuthor)
+        : optionalTextValue(detail.quoteAuthor)
+      : undefined,
+    sourceUrl: isQuote
+      ? isEdit
+        ? nullableTextValue(detail.url)
+        : optionalTextValue(detail.url)
+      : undefined,
+    quoteText: isQuote
+      ? isEdit
+        ? nullableTextValue(detail.quoteText)
+        : optionalTextValue(detail.quoteText)
+      : isEdit
+        ? null
+        : undefined,
     slug: detail.slug || undefined,
     status: detail.status,
     publishedAt: detail.status === "published" ? detail.publishedAt : undefined,
     visibility: detail.visibility || undefined,
-    rating: detail.rating || undefined,
+    rating: isEdit
+      ? detail.rating > 0
+        ? detail.rating
+        : null
+      : detail.rating || undefined,
     collectionIds: detail.collectionIds,
     attachments: attachments.length > 0 ? attachments : undefined,
     replyToId: detail.replyToId || undefined,

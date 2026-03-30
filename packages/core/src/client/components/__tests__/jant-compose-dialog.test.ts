@@ -954,6 +954,122 @@ describe("JantComposeDialog", () => {
     expect(el.querySelector(".compose-publish-slug-input")).not.toBeNull();
   });
 
+  it("constrains the publish settings panel to the visible space above the action row", async () => {
+    const el = await createElement();
+    (
+      el as unknown as {
+        _dialogEl: Pick<
+          HTMLDialogElement,
+          "addEventListener" | "getBoundingClientRect" | "removeEventListener"
+        > | null;
+      }
+    )._dialogEl = {
+      addEventListener: () => {},
+      getBoundingClientRect: () =>
+        ({
+          x: 0,
+          y: 80,
+          width: 480,
+          height: 340,
+          top: 80,
+          right: 480,
+          bottom: 420,
+          left: 0,
+          toJSON: () => ({}),
+        }) as never,
+      removeEventListener: () => {},
+    };
+
+    const publishGroup = requireElement(
+      el.querySelector<HTMLElement>(".compose-publish-group"),
+      "expected publish button group",
+    );
+    vi.spyOn(publishGroup, "getBoundingClientRect").mockReturnValue({
+      x: 320,
+      y: 340,
+      width: 120,
+      height: 40,
+      top: 340,
+      right: 440,
+      bottom: 380,
+      left: 320,
+      toJSON: () => ({}),
+    } as never);
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    ).click();
+    await el.updateComplete;
+
+    const panel = requireElement(
+      el.querySelector<HTMLElement>("[data-compose-publish-panel]"),
+      "expected publish settings panel",
+    );
+    expect(panel.dataset.position).toBe("up");
+    expect(
+      panel.style.getPropertyValue("--compose-publish-panel-max-height"),
+    ).toBe("240px");
+  });
+
+  it("flips the publish settings panel below when there is more room underneath", async () => {
+    const el = await createElement();
+    (
+      el as unknown as {
+        _dialogEl: Pick<
+          HTMLDialogElement,
+          "addEventListener" | "getBoundingClientRect" | "removeEventListener"
+        > | null;
+      }
+    )._dialogEl = {
+      addEventListener: () => {},
+      getBoundingClientRect: () =>
+        ({
+          x: 0,
+          y: 80,
+          width: 480,
+          height: 340,
+          top: 80,
+          right: 480,
+          bottom: 420,
+          left: 0,
+          toJSON: () => ({}),
+        }) as never,
+      removeEventListener: () => {},
+    };
+
+    const publishGroup = requireElement(
+      el.querySelector<HTMLElement>(".compose-publish-group"),
+      "expected publish button group",
+    );
+    vi.spyOn(publishGroup, "getBoundingClientRect").mockReturnValue({
+      x: 320,
+      y: 130,
+      width: 120,
+      height: 40,
+      top: 130,
+      right: 440,
+      bottom: 170,
+      left: 320,
+      toJSON: () => ({}),
+    } as never);
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    ).click();
+    await el.updateComplete;
+
+    const panel = requireElement(
+      el.querySelector<HTMLElement>("[data-compose-publish-panel]"),
+      "expected publish settings panel",
+    );
+    expect(panel.dataset.position).toBe("down");
+    expect(
+      panel.style.getPropertyValue("--compose-publish-panel-max-height"),
+    ).toBe("230px");
+  });
+
   it("shows a slug error and blocks publish when the custom link is invalid", async () => {
     mockSlugApi(() => ({ body: { slug: "hello-world" } }));
 
@@ -2094,6 +2210,84 @@ describe("JantComposeDialog", () => {
     ).toHaveLength(1);
 
     URL.revokeObjectURL(previewUrl);
+  });
+
+  it("waits for pending inline image uploads before dispatching submit", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "image",
+          attrs: {
+            src: "blob:inline-preview",
+            alt: "",
+            title: "",
+            caption: "",
+          },
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    const pendingUpload = deferred<void>();
+    (
+      editor as unknown as {
+        hasPendingInlineImageUploads: () => boolean;
+        waitForPendingInlineImageUploads: () => Promise<void>;
+      }
+    ).hasPendingInlineImageUploads = () => true;
+    (
+      editor as unknown as {
+        hasPendingInlineImageUploads: () => boolean;
+        waitForPendingInlineImageUploads: () => Promise<void>;
+      }
+    ).waitForPendingInlineImageUploads = () => pendingUpload.promise;
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+      "expected post button",
+    ).click();
+    await flushUpdates(el);
+
+    expect(receivedDetail).toBeNull();
+    expect(el._loading).toBe(true);
+
+    const finalBodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "image",
+          attrs: {
+            src: "/uploads/final-image.webp",
+            alt: "",
+            title: "",
+            caption: "",
+          },
+        },
+      ],
+    };
+    editor._bodyJson = finalBodyJson;
+    await editor.updateComplete;
+
+    pendingUpload.resolve();
+    await flushUpdates(el);
+    await flushUpdates(el);
+
+    expect(receivedDetail).not.toBeNull();
+    expect((receivedDetail as unknown as ComposeSubmitDetail).body).toBe(
+      JSON.stringify(finalBodyJson),
+    );
   });
 
   // ── Close confirmation ─────────────────────────────────────────────

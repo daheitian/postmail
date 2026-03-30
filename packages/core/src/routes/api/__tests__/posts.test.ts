@@ -883,6 +883,34 @@ describe("Posts API Routes", () => {
       expect(body).not.toHaveProperty("title");
       expect(body).not.toHaveProperty("url");
     });
+
+    it("clears quote attribution when sourceName is set to null", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "quote",
+        title: "Marcus Aurelius",
+        url: "https://example.com/meditations",
+        quoteText: "What stands in the way becomes the way.",
+      });
+
+      const res = await app.request(`/api/posts/${post.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceName: null,
+        }),
+      });
+
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.sourceName).toBeNull();
+      expect(body.sourceUrl).toBe("https://example.com/meditations");
+      expect(body).not.toHaveProperty("title");
+      expect(body).not.toHaveProperty("url");
+    });
   });
 
   describe("DELETE /api/posts/:id", () => {

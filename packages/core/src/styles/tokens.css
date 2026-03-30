@@ -51,7 +51,7 @@
   --feed-note-summary-gap: 0.56rem;
   --leading: 1.5;
   --type-body-size: var(--text-base);
-  --type-body-leading: 1.66;
+  --type-body-leading: 1.72;
   --type-body-tracking: 0.002em;
   --type-heading-weight: var(--fw-medium);
   --type-heading-leading: 1.26;
@@ -218,7 +218,7 @@
     transparent
   );
   --site-thread-item-spacing: 14px;
-  --site-thread-context-max-height: 188px;
+  --site-thread-context-max-height: clamp(196px, 24vh, 224px);
   --site-thread-dot-ring: color-mix(
     in srgb,
     var(--site-accent) 16%,

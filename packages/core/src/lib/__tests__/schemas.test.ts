@@ -603,6 +603,11 @@ describe("UpdatePostSchema", () => {
   it("still validates field types", () => {
     expect(() => UpdatePostSchema.parse({ format: "invalid" })).toThrow();
   });
+
+  it("normalizes blank sourceName to null so quote attribution can be cleared", () => {
+    const result = UpdatePostSchema.parse({ sourceName: "   " });
+    expect(result.sourceName).toBeNull();
+  });
 });
 
 describe("CreatePostApiSchema", () => {
@@ -721,6 +726,18 @@ describe("UpdatePostApiSchema", () => {
 
     expect(result.sourceName).toBe("Epictetus");
     expect(result.sourceUrl).toBe("https://example.com/discourses");
+  });
+
+  it("normalizes blank update fields to null when they clear existing values", () => {
+    const result = UpdatePostApiSchema.parse({
+      sourceName: "   ",
+      sourceUrl: "",
+      rating: 0,
+    });
+
+    expect(result.sourceName).toBeNull();
+    expect(result.sourceUrl).toBeNull();
+    expect(result.rating).toBeNull();
   });
 });
 

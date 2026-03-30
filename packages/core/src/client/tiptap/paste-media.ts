@@ -20,6 +20,7 @@ export interface ClipboardDataLike {
 export interface PasteMediaOptions {
   shouldInsertInline?: (file: File) => boolean;
   onPasteFiles?: (files: File[]) => void;
+  uploadInlineImage?: (file: File) => void | Promise<void>;
 }
 
 const pasteMediaPluginKey = new PluginKey("pasteMedia");
@@ -101,6 +102,11 @@ export const PasteMedia = Extension.create<PasteMediaOptions>({
             event.preventDefault();
 
             for (const file of inlineFiles) {
+              const uploadInlineImage = extension.options.uploadInlineImage;
+              if (uploadInlineImage) {
+                void uploadInlineImage(file);
+                continue;
+              }
               void uploadAndInsertInlineImage(extension.editor, file);
             }
 

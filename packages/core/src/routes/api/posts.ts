@@ -29,6 +29,10 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const postsApiRoutes = new Hono<Env>();
 const ATTACHED_TEXT_MIME_TYPE = "text/x-tiptap+json";
 
+function hasOwnField<T extends object>(value: T, key: keyof T): boolean {
+  return Object.prototype.hasOwnProperty.call(value, key);
+}
+
 /**
  * Converts a Media record to an ordered attachment API response shape.
  */
@@ -332,13 +336,15 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   const id = parseIdParam(c.req.param("id"), ID_PREFIX.post);
 
   const body = parseValidated(UpdatePostApiSchema, await c.req.json());
+  const title = hasOwnField(body, "sourceName") ? body.sourceName : body.title;
+  const url = hasOwnField(body, "sourceUrl") ? body.sourceUrl : body.url;
 
   const post = assertFound(
     await c.var.services.posts.updateWithAttachments(
       id,
       {
         format: body.format,
-        title: body.sourceName ?? body.title,
+        title,
         body: body.body,
         bodyMarkdown: body.bodyMarkdown,
         slug: body.slug,
@@ -346,9 +352,9 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
         visibility: body.visibility,
         pinned: body.pinned,
         featured: body.featured,
-        url: body.sourceUrl ?? body.url,
+        url,
         quoteText: body.quoteText,
-        rating: body.rating || undefined,
+        rating: body.rating,
         collectionIds: body.collectionIds,
         publishedAt: body.publishedAt,
       },

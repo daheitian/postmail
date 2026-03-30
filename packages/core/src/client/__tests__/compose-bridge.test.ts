@@ -340,4 +340,87 @@ describe("compose bridge", () => {
 
     expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
+
+  it("sends nulls for cleared quote attribution fields when editing", async () => {
+    const composeEl = document.createElement(
+      "jant-compose-dialog",
+    ) as ComposeHarness;
+    composeEl.refreshCollections = vi.fn(async () => true);
+    composeEl.pageMode = false;
+    document.body.appendChild(composeEl);
+
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (input, init) => {
+        const raw =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url;
+        const url = new URL(raw, "http://localhost");
+
+        if (url.pathname === "/api/posts/pst_123") {
+          expect(init?.method).toBe("PUT");
+
+          const body = JSON.parse(String(init?.body)) as {
+            format: string;
+            body: null;
+            sourceName: null;
+            sourceUrl: null;
+            quoteText: string;
+            rating: null;
+          };
+
+          expect(body).toMatchObject({
+            format: "quote",
+            body: null,
+            sourceName: null,
+            sourceUrl: null,
+            quoteText: "The obstacle is the way.",
+            rating: null,
+          });
+
+          return new Response(
+            JSON.stringify({
+              status: "draft",
+              toast: "Draft saved.",
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
+
+        throw new Error(`Unexpected fetch: ${url.pathname}`);
+      });
+
+    composeEl.dispatchEvent(
+      new CustomEvent("jant:compose-submit-deferred", {
+        bubbles: true,
+        detail: {
+          format: "quote",
+          title: "",
+          body: "",
+          url: "",
+          quoteText: "The obstacle is the way.",
+          quoteAuthor: "",
+          slug: "",
+          status: "draft",
+          visibility: "public",
+          rating: 0,
+          collectionIds: [],
+          attachments: [],
+          pendingAttachments: [],
+          editPostId: "pst_123",
+        },
+      }),
+    );
+
+    await flushAsyncWork();
+    await flushAsyncWork();
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
 });

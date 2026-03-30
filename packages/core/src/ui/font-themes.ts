@@ -142,7 +142,7 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
     bodyFontFamily: SANS,
     cssVariables: {
       "--type-body-size": "0.95rem",
-      "--type-body-leading": "1.66",
+      "--type-body-leading": "1.72",
       "--type-body-tracking": "0.002em",
       "--type-heading-weight": "var(--fw-medium)",
       "--type-heading-leading": "1.26",

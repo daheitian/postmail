@@ -4265,6 +4265,10 @@
     background-color: var(--compose-paper-bg);
   }
 
+  .compose-action-row-overlay-open {
+    z-index: 6;
+  }
+
   @media (min-width: 700px) {
     .compose-action-row {
       padding: 8px 16px 12px;
@@ -4845,11 +4849,15 @@
   .compose-publish-panel {
     position: absolute;
     right: 0;
-    bottom: calc(100% + 8px);
     width: min(21rem, calc(100vw - 1.5rem));
-    max-height: min(
-      26rem,
-      calc(100dvh - var(--compose-margin-top) - env(safe-area-inset-top) - 5rem)
+    max-height: var(
+      --compose-publish-panel-max-height,
+      min(
+        26rem,
+        calc(
+          100dvh - var(--compose-margin-top) - env(safe-area-inset-top) - 5rem
+        )
+      )
     );
     padding: 0.75rem;
     background-color: var(--compose-floating-bg);
@@ -4863,6 +4871,14 @@
     -webkit-overflow-scrolling: touch;
     z-index: 120;
     animation: compose-fade-up 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .compose-publish-panel[data-position="up"] {
+    bottom: calc(100% + 8px);
+  }
+
+  .compose-publish-panel[data-position="down"] {
+    top: calc(100% + 8px);
   }
 
   .compose-publish-section {

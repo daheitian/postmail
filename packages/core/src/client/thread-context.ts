@@ -11,10 +11,19 @@ function parsePixelValue(value: string, fallback: number): number {
 }
 
 function getCollapsedMaxHeight(container: HTMLElement): number {
-  const value = getComputedStyle(container).getPropertyValue(
-    "--site-thread-context-max-height",
-  );
-  return parsePixelValue(value, 188);
+  const wasExpanded = container.classList.contains("expanded");
+  if (wasExpanded) {
+    container.classList.remove("expanded");
+  }
+
+  const value = getComputedStyle(container).maxHeight;
+  const maxHeight = parsePixelValue(value, 188);
+
+  if (wasExpanded) {
+    container.classList.add("expanded");
+  }
+
+  return maxHeight;
 }
 
 function getPendingImages(container: HTMLElement): HTMLImageElement[] {
