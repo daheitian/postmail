@@ -111,6 +111,31 @@ describe("timeline cards", () => {
     );
   });
 
+  it("resets default prose quote marks for editorial blockquotes", () => {
+    const css = readFileSync(
+      new URL("../../../preset.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /blockquote\s*:where\(p:first-of-type\)::before,\s*[\s\S]*blockquote\s*:where\(p:last-of-type\)::after\s*\{[\s\S]*content:\s*none;/,
+    );
+  });
+
+  it("uses inset-note styling for compose editor blockquotes", () => {
+    const css = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.compose-tiptap-body\s+\.tiptap\s+blockquote\s*\{[\s\S]*background:\s*linear-gradient\(/,
+    );
+    expect(css).toMatch(
+      /\.compose-tiptap-body\s+\.tiptap\s+blockquote:focus-within\s*\{/,
+    );
+  });
+
   it("keeps link and quote attachments hidden in compact mode", () => {
     const linkPost = createPostView({ format: "link" });
     const quotePost = createPostView({ format: "quote" });

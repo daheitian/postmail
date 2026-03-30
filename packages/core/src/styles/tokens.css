@@ -57,7 +57,7 @@
   --type-label-tracking: 0.08em;
 
   /* Layout */
-  --site-width: 34rem;
+  --site-width: 36rem;
   --site-padding: 1.5rem;
   --content-gap: 1rem;
   --space-xl: 2rem;
@@ -157,6 +157,36 @@
     var(--site-accent) 10%,
     transparent
   );
+  --site-blockquote-rail: color-mix(
+    in srgb,
+    var(--site-accent) 22%,
+    var(--site-divider)
+  );
+  --site-blockquote-bg: color-mix(
+    in srgb,
+    var(--site-feed-quote-tint) 62%,
+    var(--site-page-bg)
+  );
+  --site-blockquote-text: color-mix(
+    in oklch,
+    var(--site-text-primary) 92%,
+    black
+  );
+  --site-summary-blockquote-bg: color-mix(
+    in srgb,
+    var(--site-feed-quote-tint) 42%,
+    var(--site-page-bg)
+  );
+  --site-reading-blockquote-rail: color-mix(
+    in srgb,
+    var(--site-reading-link) 18%,
+    var(--site-reading-meta)
+  );
+  --site-reading-blockquote-bg: color-mix(
+    in srgb,
+    var(--site-accent) 6%,
+    var(--site-page-bg)
+  );
   --site-thread-context-bg: color-mix(
     in srgb,
     var(--site-nav-hover-bg) 58%,
@@ -194,6 +224,26 @@
     in srgb,
     var(--site-column-outline) 68%,
     transparent
+  );
+  --compose-blockquote-rail: color-mix(
+    in srgb,
+    var(--site-accent) 24%,
+    var(--compose-control-border)
+  );
+  --compose-blockquote-bg: color-mix(
+    in srgb,
+    var(--compose-control-bg) 56%,
+    var(--compose-paper-bg)
+  );
+  --compose-blockquote-bg-focus: color-mix(
+    in srgb,
+    var(--compose-control-bg-strong) 70%,
+    var(--compose-paper-bg)
+  );
+  --compose-blockquote-text: color-mix(
+    in srgb,
+    var(--site-text-primary) 88%,
+    var(--site-text-secondary)
   );
   --compose-floating-bg: color-mix(
     in srgb,

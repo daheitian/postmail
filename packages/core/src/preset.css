@@ -182,6 +182,53 @@
   figure[data-layout="full"] img {
     border-radius: 0;
   }
+
+  /* Editorial blockquotes */
+  blockquote {
+    --_blockquote-rail: var(--site-blockquote-rail);
+    --_blockquote-bg: var(--site-blockquote-bg);
+    --_blockquote-text: var(--site-blockquote-text);
+    margin: 1.35em 0;
+    padding: 0.9em 1.05em 0.95em 1.15em;
+    border: none;
+    border-radius: 0 0.95rem 0.95rem 0;
+    background: linear-gradient(
+      90deg,
+      var(--_blockquote-rail) 0,
+      var(--_blockquote-rail) 2px,
+      var(--_blockquote-bg) 2px,
+      var(--_blockquote-bg) 100%
+    );
+    color: var(--_blockquote-text);
+    font-style: normal;
+    font-weight: inherit;
+    quotes: none;
+    text-wrap: pretty;
+  }
+
+  blockquote :where(p:first-of-type)::before,
+  blockquote :where(p:last-of-type)::after {
+    content: none;
+  }
+
+  blockquote > :first-child {
+    margin-top: 0;
+  }
+
+  blockquote > :last-child {
+    margin-bottom: 0;
+  }
+
+  blockquote p {
+    margin: 0;
+  }
+
+  blockquote p + p,
+  blockquote ul,
+  blockquote ol,
+  blockquote pre {
+    margin-top: 0.6em;
+  }
 }
 
 /*
@@ -256,6 +303,14 @@
     var(--site-divider) 82%,
     transparent
   );
+}
+
+[data-page="post"] .post-detail-body.prose blockquote {
+  --_blockquote-rail: var(--site-reading-blockquote-rail);
+  --_blockquote-bg: var(--site-reading-blockquote-bg);
+  --_blockquote-text: var(--site-reading-quote);
+  margin: 1.5em 0;
+  padding: 1rem 1.15rem 1.05rem 1.25rem;
 }
 
 [data-page="post"] .post-detail-body.prose a:hover {

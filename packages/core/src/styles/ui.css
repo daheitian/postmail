@@ -1609,6 +1609,21 @@
     opacity: 0.72;
   }
 
+  [data-post]:not([data-page="post"]) [data-post-body].prose blockquote,
+  .compose-reply-context-body .prose blockquote {
+    --_blockquote-bg: var(--site-summary-blockquote-bg);
+    --_blockquote-text: color-mix(
+      in srgb,
+      var(--site-text-secondary) 84%,
+      var(--site-text-primary)
+    );
+    margin: 0.72rem 0;
+    padding: 0.72rem 0.9rem 0.76rem 1rem;
+    border-radius: 0 0.8rem 0.8rem 0;
+    font-size: 0.96em;
+    line-height: 1.58;
+  }
+
   .feed-link-summary {
     margin-top: 0.75rem;
   }
@@ -1670,10 +1685,8 @@
   }
 
   .feed-card-link .feed-link-summary.prose blockquote {
-    padding-left: 0.85rem;
-    border-left: 2px solid
-      color-mix(in srgb, var(--site-divider) 75%, transparent);
-    color: var(--site-text-secondary);
+    margin-top: var(--feed-link-summary-gap);
+    margin-bottom: 0;
   }
 
   .feed-card-link .feed-link-summary.prose :is(h1, h2, h3, h4) {
@@ -5920,6 +5933,14 @@
     font-size: inherit;
   }
 
+  .compose-reply-context-body .prose blockquote {
+    margin-top: 0.55rem;
+    margin-bottom: 0.55rem;
+    padding: 0.62rem 0.8rem 0.66rem 0.9rem;
+    font-size: 0.95em;
+    line-height: 1.54;
+  }
+
   .compose-reply-context-body img,
   .compose-reply-context-body video {
     max-height: 120px;
@@ -6997,10 +7018,49 @@
   }
 
   .compose-tiptap-body .tiptap blockquote {
-    border-left: 3px solid var(--site-divider);
-    padding-left: 1em;
-    margin: 0.5em 0;
-    color: var(--site-text-secondary);
+    --_blockquote-rail: var(--compose-blockquote-rail);
+    --_blockquote-bg: var(--compose-blockquote-bg);
+    --_blockquote-text: var(--compose-blockquote-text);
+    margin: 0.72em 0;
+    padding: 0.72em 0.9em 0.76em 1em;
+    border: none;
+    border-radius: 0 0.85rem 0.85rem 0;
+    background: linear-gradient(
+      90deg,
+      var(--_blockquote-rail) 0,
+      var(--_blockquote-rail) 2px,
+      var(--_blockquote-bg) 2px,
+      var(--_blockquote-bg) 100%
+    );
+    color: var(--_blockquote-text);
+    text-wrap: pretty;
+    transition:
+      background 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .compose-tiptap-body .tiptap blockquote:focus-within {
+    --_blockquote-bg: var(--compose-blockquote-bg-focus);
+    color: var(--site-text-primary);
+  }
+
+  .compose-tiptap-body .tiptap blockquote > :first-child {
+    margin-top: 0;
+  }
+
+  .compose-tiptap-body .tiptap blockquote > :last-child {
+    margin-bottom: 0;
+  }
+
+  .compose-tiptap-body .tiptap blockquote p {
+    margin: 0;
+  }
+
+  .compose-tiptap-body .tiptap blockquote p + p,
+  .compose-tiptap-body .tiptap blockquote ul,
+  .compose-tiptap-body .tiptap blockquote ol,
+  .compose-tiptap-body .tiptap blockquote pre {
+    margin-top: 0.45em;
   }
 
   .compose-tiptap-body .tiptap pre {
