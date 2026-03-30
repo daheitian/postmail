@@ -122,6 +122,19 @@ describe("timeline cards", () => {
     );
   });
 
+  it("keeps feed summary prose overrides outside component layers", () => {
+    const css = readFileSync(
+      new URL("../../../preset.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toContain(".post-body-summary.prose");
+    expect(css).toContain(".feed-card-link .feed-link-summary.prose");
+    expect(css).toContain(
+      '[data-post]:not([data-page="post"]) [data-post-body].prose blockquote',
+    );
+  });
+
   it("uses inset-note styling for compose editor blockquotes", () => {
     const css = readFileSync(
       new URL("../../../styles/ui.css", import.meta.url),

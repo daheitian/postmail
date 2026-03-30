@@ -263,6 +263,121 @@
 }
 
 /*
+ * Feed-summary prose
+ *
+ * Keep these overrides outside cascade layers so they can outrank the base
+ * `.prose` typography declared above.
+ */
+.post-body-summary.prose {
+  font-size: var(--feed-note-summary-size);
+  line-height: var(--feed-note-summary-leading);
+  color: color-mix(
+    in srgb,
+    var(--site-text-secondary) 88%,
+    var(--site-text-primary)
+  );
+}
+
+article .post-body-summary.prose p,
+article .post-body-summary.prose ul,
+article .post-body-summary.prose ol,
+article .post-body-summary.prose blockquote,
+article .post-body-summary.prose pre {
+  font-size: var(--feed-note-summary-size);
+  line-height: var(--feed-note-summary-leading);
+}
+
+.post-body-summary.prose p + p,
+.post-body-summary.prose ul,
+.post-body-summary.prose ol,
+.post-body-summary.prose blockquote,
+.post-body-summary.prose pre {
+  margin-top: var(--feed-note-summary-gap);
+}
+
+.post-body-summary.prose ul,
+.post-body-summary.prose ol {
+  padding-left: 1.15rem;
+}
+
+.post-body-summary.prose li {
+  margin: 0.18rem 0;
+}
+
+.post-body-summary.prose :is(h1, h2, h3, h4) {
+  margin: 0.78rem 0 0.24rem;
+  font-size: 1em;
+  line-height: 1.35;
+}
+
+.feed-card-link .feed-link-summary.prose {
+  max-width: 35rem;
+  margin-top: 0.55rem;
+  font-size: var(--feed-link-summary-size);
+  line-height: var(--feed-link-summary-leading);
+}
+
+.feed-card-link .feed-link-summary.prose > :first-child {
+  margin-top: 0;
+}
+
+.feed-card-link .feed-link-summary.prose > :last-child {
+  margin-bottom: 0;
+}
+
+article.feed-card-link .feed-link-summary.prose p,
+article.feed-card-link .feed-link-summary.prose ul,
+article.feed-card-link .feed-link-summary.prose ol,
+article.feed-card-link .feed-link-summary.prose blockquote,
+article.feed-card-link .feed-link-summary.prose pre {
+  font-size: var(--feed-link-summary-size);
+  line-height: var(--feed-link-summary-leading);
+}
+
+.feed-card-link .feed-link-summary.prose p {
+  margin: 0;
+}
+
+.feed-card-link .feed-link-summary.prose p + p,
+.feed-card-link .feed-link-summary.prose ul,
+.feed-card-link .feed-link-summary.prose ol,
+.feed-card-link .feed-link-summary.prose blockquote,
+.feed-card-link .feed-link-summary.prose pre {
+  margin-top: var(--feed-link-summary-gap);
+}
+
+.feed-card-link .feed-link-summary.prose ul,
+.feed-card-link .feed-link-summary.prose ol {
+  padding-left: 1.15rem;
+}
+
+.feed-card-link .feed-link-summary.prose li {
+  margin: 0.18rem 0;
+}
+
+.feed-card-link .feed-link-summary.prose blockquote,
+[data-post]:not([data-page="post"]) [data-post-body].prose blockquote,
+.compose-reply-context-body .prose blockquote {
+  --_blockquote-bg: var(--site-summary-blockquote-bg);
+  --_blockquote-text: color-mix(
+    in srgb,
+    var(--site-text-secondary) 84%,
+    var(--site-text-primary)
+  );
+  margin: 0.72rem 0;
+  padding: 0.72rem 0.9rem 0.76rem 1rem;
+  border-radius: 0 0.8rem 0.8rem 0;
+  font-size: 0.96em;
+  line-height: 1.58;
+}
+
+.feed-card-link .feed-link-summary.prose :is(h1, h2, h3, h4) {
+  margin: 0.7rem 0 0.2rem;
+  font-size: 0.92em;
+  line-height: 1.35;
+}
+
+/*
  * Detail-page reading prose
  *
  * Keep these overrides outside cascade layers so they can outrank the base
