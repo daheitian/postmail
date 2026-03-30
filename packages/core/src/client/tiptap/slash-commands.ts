@@ -95,12 +95,7 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
     keywords: ["excerpt", "continue", "teaser", "more", "break"],
     icon: ICONS.readMore,
     command: (editor, range) => {
-      editor
-        .chain()
-        .focus()
-        .deleteRange(range)
-        .insertContent({ type: "moreBreak" })
-        .run();
+      editor.chain().focus().deleteRange(range).insertMoreBreak().run();
     },
   },
   {

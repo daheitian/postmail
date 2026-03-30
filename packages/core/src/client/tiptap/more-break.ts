@@ -6,7 +6,8 @@
  * Server-side renders to <!--more--> for excerpt splitting.
  */
 
-import { Node } from "@tiptap/core";
+import { canInsertNode, isNodeSelection, Node } from "@tiptap/core";
+import { moveSelectionAfterBlockInsertion } from "./block-insertion.js";
 
 const MORE_BREAK_MARKER = "<!--more-->";
 const MORE_BREAK_COMMENT = "more";
@@ -129,8 +130,29 @@ export const MoreBreak = Node.create({
     return {
       insertMoreBreak:
         () =>
-        ({ commands }) => {
-          return commands.insertContent({ type: this.name });
+        ({ chain, state }) => {
+          if (!canInsertNode(state, state.schema.nodes[this.name])) {
+            return false;
+          }
+
+          const { $to: $originTo } = state.selection;
+          const currentChain = chain();
+
+          if (isNodeSelection(state.selection)) {
+            currentChain.insertContentAt($originTo.pos, { type: this.name });
+          } else {
+            currentChain.insertContent({ type: this.name });
+          }
+
+          return currentChain
+            .command(({ state: chainState, tr, dispatch }) => {
+              if (dispatch) {
+                moveSelectionAfterBlockInsertion(tr, chainState.schema);
+              }
+
+              return true;
+            })
+            .run();
         },
     };
   },

@@ -8,8 +8,14 @@
  * - Toolbar shown on selection
  */
 
-import { Node, type Editor } from "@tiptap/core";
+import {
+  canInsertNode,
+  isNodeSelection,
+  Node,
+  type Editor,
+} from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import { moveSelectionAfterBlockInsertion } from "./block-insertion.js";
 import type { EditorView } from "@tiptap/pm/view";
 import { uploadWithMetadata } from "../upload-with-metadata.js";
 
@@ -460,11 +466,35 @@ export const ImageNode = Node.create({
     return {
       setImage:
         (options) =>
-        ({ commands }) => {
-          return commands.insertContent({
-            type: this.name,
-            attrs: options,
-          });
+        ({ chain, state }) => {
+          if (!canInsertNode(state, state.schema.nodes[this.name])) {
+            return false;
+          }
+
+          const { $to: $originTo } = state.selection;
+          const currentChain = chain();
+
+          if (isNodeSelection(state.selection)) {
+            currentChain.insertContentAt($originTo.pos, {
+              type: this.name,
+              attrs: options,
+            });
+          } else {
+            currentChain.insertContent({
+              type: this.name,
+              attrs: options,
+            });
+          }
+
+          return currentChain
+            .command(({ state: chainState, tr, dispatch }) => {
+              if (dispatch) {
+                moveSelectionAfterBlockInsertion(tr, chainState.schema);
+              }
+
+              return true;
+            })
+            .run();
         },
     };
   },
