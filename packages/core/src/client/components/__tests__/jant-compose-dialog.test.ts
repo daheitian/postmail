@@ -161,6 +161,8 @@ const labels: ComposeLabels = {
   publishDateInvalid: "Enter a valid date.",
   publishDateFutureError:
     "Choose today or an earlier date, or leave it blank to publish now.",
+  publishDateSummaryNow: "Publish now",
+  publishDateSummaryAction: "Edit publish date",
   publishSlugLabel: "Custom link",
   publishSlugPlaceholder: "your-post-link",
   publishSlugHint: "Leave blank to generate one automatically.",
@@ -683,6 +685,111 @@ describe("JantComposeDialog", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("shows a publish date summary near the submit controls after the date changes", async () => {
+    const el = await createElement();
+
+    const publishToggle = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    );
+    publishToggle.click();
+    await el.updateComplete;
+
+    const publishedAtInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-publish-date-input"),
+      "expected publish date input",
+    );
+    publishedAtInput.value = "2024-01-15";
+    publishedAtInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    publishToggle.click();
+    await el.updateComplete;
+
+    const summary = requireElement(
+      el.querySelector<HTMLButtonElement>(
+        "[data-compose-publish-date-summary]",
+      ),
+      "expected publish date summary",
+    );
+    expect(summary.dataset.publishDate).toBe("2024-01-15");
+    expect(summary.textContent).toContain("2024");
+
+    summary.click();
+    await el.updateComplete;
+    await flushUpdates(el);
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLInputElement>(".compose-publish-date-input"),
+        "expected publish date input after reopening publish settings",
+      ),
+    ).toBe(document.activeElement);
+  });
+
+  it("does not show a publish date summary for an unchanged date while editing a post", async () => {
+    const el = await createElement();
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialPublishedAtInput: string;
+        _publishedAtInput: string;
+      }
+    )._editPostId = "pst_existing";
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialPublishedAtInput: string;
+        _publishedAtInput: string;
+      }
+    )._initialPublishedAtInput = "2024-01-15";
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialPublishedAtInput: string;
+        _publishedAtInput: string;
+      }
+    )._publishedAtInput = "2024-01-15";
+    el.requestUpdate();
+    await el.updateComplete;
+
+    expect(el.querySelector("[data-compose-publish-date-summary]")).toBeNull();
+  });
+
+  it("shows a publish now summary after clearing the publish date while editing a post", async () => {
+    const el = await createElement();
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialPublishedAtInput: string;
+        _publishedAtInput: string;
+      }
+    )._editPostId = "pst_existing";
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialPublishedAtInput: string;
+        _publishedAtInput: string;
+      }
+    )._initialPublishedAtInput = "2024-01-15";
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialPublishedAtInput: string;
+        _publishedAtInput: string;
+      }
+    )._publishedAtInput = "";
+    el.requestUpdate();
+    await el.updateComplete;
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLElement>("[data-compose-publish-date-summary]"),
+        "expected publish now summary",
+      ).textContent,
+    ).toContain("Publish now");
   });
 
   it("blocks publishing with a future publish date", async () => {

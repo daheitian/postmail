@@ -1105,6 +1105,11 @@ msgstr "编辑链接"
 msgid "Edit post"
 msgstr "编辑帖子"
 
+#. @context: Compose action to reopen the publish date field from the action row summary
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Edit publish date"
+msgstr "编辑发布日期"
+
 #. @context: Sample link post title on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Editorial interfaces worth borrowing from"
@@ -2187,6 +2192,11 @@ msgstr "公开"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Publish"
 msgstr "发布"
+
+#. @context: Compose summary shown near the submit controls when an edited post no longer has a custom publish date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Publish now"
+msgstr "立即发布"
 
 #. @context: Compose publish settings panel title
 #: src/ui/compose/ComposeDialog.tsx

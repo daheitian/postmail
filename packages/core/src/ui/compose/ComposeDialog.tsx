@@ -558,6 +558,20 @@ export const ComposeForm: FC<ComposeFormProps> = ({
           "@context: Compose publish settings validation error when a future publish date is selected",
       }),
     ),
+    publishDateSummaryNow: i18n._(
+      msg({
+        message: "Publish now",
+        comment:
+          "@context: Compose summary shown near the submit controls when an edited post no longer has a custom publish date",
+      }),
+    ),
+    publishDateSummaryAction: i18n._(
+      msg({
+        message: "Edit publish date",
+        comment:
+          "@context: Compose action to reopen the publish date field from the action row summary",
+      }),
+    ),
     publishSlugLabel: i18n._(
       msg({
         message: "Custom link",

@@ -167,6 +167,8 @@ export interface ComposeLabels {
   publishDateReset: string;
   publishDateInvalid: string;
   publishDateFutureError: string;
+  publishDateSummaryNow: string;
+  publishDateSummaryAction: string;
   publishSlugLabel: string;
   publishSlugPlaceholder: string;
   publishSlugHint: string;

@@ -240,6 +240,8 @@ const labels: ComposeLabels = {
   publishDateInvalid: "Enter a valid date.",
   publishDateFutureError:
     "Choose today or an earlier date, or leave it blank to publish now.",
+  publishDateSummaryNow: "Publish now",
+  publishDateSummaryAction: "Edit publish date",
   publishSlugLabel: "Custom link",
   publishSlugPlaceholder: "your-post-link",
   publishSlugHint: "Leave blank to generate one automatically.",

@@ -459,6 +459,7 @@ export class JantComposeDialog extends LitElement {
     | null = null;
   private _replyRefreshId: string | null = null;
   private _publishedAtTimeMinutes: number | null = null;
+  private _initialPublishedAtInput = "";
   private _slugCheckTimer: ReturnType<typeof setTimeout> | null = null;
   private _slugSuggestTimer: ReturnType<typeof setTimeout> | null = null;
   private _slugSuggestRequestId = 0;
@@ -512,6 +513,7 @@ export class JantComposeDialog extends LitElement {
     this._slug = "";
     this._publishedAtInput = "";
     this._publishedAtTimeMinutes = null;
+    this._initialPublishedAtInput = "";
     this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
     this._suggestedSlug = "";
@@ -665,6 +667,7 @@ export class JantComposeDialog extends LitElement {
       this._publishedAtTimeMinutes = post.publishedAt
         ? getTimestampTimeMinutes(post.publishedAt)
         : null;
+      this._initialPublishedAtInput = this._publishedAtInput;
       this._visibility = post.visibility ?? "public";
       this._visibilityLocked = Boolean(post.replyToId);
 
@@ -3101,6 +3104,36 @@ export class JantComposeDialog extends LitElement {
     return null;
   }
 
+  private _getPublishedAtSummary(): { input: string; text: string } | null {
+    if (this._editPostId) {
+      if (this._publishedAtInput === this._initialPublishedAtInput) {
+        return null;
+      }
+      if (!this._hasPublishedAtValue()) {
+        return {
+          input: "",
+          text: this.labels.publishDateSummaryNow,
+        };
+      }
+    }
+
+    if (this._getPublishedAtValidationMessage() !== null) return null;
+
+    const parsedDate = parseLocalDateInputValue(this._publishedAtInput);
+    if (parsedDate === null) return null;
+
+    return {
+      input: this._publishedAtInput,
+      text: new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(
+        new Date(parsedDate.year, parsedDate.monthIndex, parsedDate.day),
+      ),
+    };
+  }
+
   private _getPublishedAtSubmitValue(
     status: "published" | "draft",
   ): number | undefined {
@@ -3478,6 +3511,43 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private _renderPublishDateSummary() {
+    const summary = this._getPublishedAtSummary();
+    if (summary === null) return nothing;
+
+    return html`
+      <button
+        type="button"
+        class="compose-publish-summary"
+        data-compose-publish-date-summary
+        data-publish-date=${summary.input}
+        aria-label=${this.labels.publishDateSummaryAction}
+        title=${this.labels.publishDateSummaryAction}
+        ?disabled=${this._loading}
+        @click=${() => this._revealPublishedAtField()}
+      >
+        <span class="compose-publish-summary-icon" aria-hidden="true">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.35"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2.75" y="3.45" width="10.5" height="9.8" rx="2.2" />
+            <path d="M5.35 2.55v2.1" />
+            <path d="M10.65 2.55v2.1" />
+            <path d="M2.75 6.2h10.5" />
+          </svg>
+        </span>
+        <span class="compose-publish-summary-text">${summary.text}</span>
+      </button>
+    `;
+  }
+
   private _updatePublishPanelLayout() {
     const publishGroup = this.querySelector<HTMLElement>(
       ".compose-publish-group",
@@ -3535,53 +3605,56 @@ export class JantComposeDialog extends LitElement {
     const canPublish = this._canPublish();
 
     return html`
-      <div class="compose-publish-group">
-        ${this._showPublishPanel
-          ? html`<div
-              class="compose-dropdown-backdrop"
-              @click=${() => {
-                this._showPublishPanel = false;
-              }}
-            ></div>`
-          : nothing}
-        <div
-          role="group"
-          class=${classMap({
-            "compose-publish-buttons": true,
-            "compose-publish-buttons-inactive": !canPublish && !this._loading,
-          })}
-        >
-          <button
-            type="button"
+      <div class="compose-publish-shell">
+        ${this._renderPublishDateSummary()}
+        <div class="compose-publish-group">
+          ${this._showPublishPanel
+            ? html`<div
+                class="compose-dropdown-backdrop"
+                @click=${() => {
+                  this._showPublishPanel = false;
+                }}
+              ></div>`
+            : nothing}
+          <div
+            role="group"
             class=${classMap({
-              "compose-publish-main": true,
-              "compose-publish-main-loading": this._loading,
+              "compose-publish-buttons": true,
+              "compose-publish-buttons-inactive": !canPublish && !this._loading,
             })}
-            ?disabled=${!canPublish}
-            @click=${() => void this._submit("published")}
           >
-            ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
-          </button>
-          <button
-            type="button"
-            class=${classMap({
-              "compose-publish-toggle": true,
-              "compose-publish-toggle-loading": this._loading,
-            })}
-            ?disabled=${this._loading}
-            aria-haspopup="dialog"
-            aria-expanded=${this._showPublishPanel ? "true" : "false"}
-            aria-label=${this.labels.publishSettings}
-            title=${this.labels.publishSettings}
-            @click=${() => this._togglePublishPanel()}
-          >
-            ${renderComposePublishActionIcon(
-              COMPOSE_PUBLISH_ACTION_ICONS.chevron,
-              "compose-publish-toggle-chevron",
-            )}
-          </button>
+            <button
+              type="button"
+              class=${classMap({
+                "compose-publish-main": true,
+                "compose-publish-main-loading": this._loading,
+              })}
+              ?disabled=${!canPublish}
+              @click=${() => void this._submit("published")}
+            >
+              ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
+            </button>
+            <button
+              type="button"
+              class=${classMap({
+                "compose-publish-toggle": true,
+                "compose-publish-toggle-loading": this._loading,
+              })}
+              ?disabled=${this._loading}
+              aria-haspopup="dialog"
+              aria-expanded=${this._showPublishPanel ? "true" : "false"}
+              aria-label=${this.labels.publishSettings}
+              title=${this.labels.publishSettings}
+              @click=${() => this._togglePublishPanel()}
+            >
+              ${renderComposePublishActionIcon(
+                COMPOSE_PUBLISH_ACTION_ICONS.chevron,
+                "compose-publish-toggle-chevron",
+              )}
+            </button>
+          </div>
+          ${this._renderPublishPanel()}
         </div>
-        ${this._renderPublishPanel()}
       </div>
     `;
   }
