@@ -372,6 +372,7 @@ export class JantComposeDialog extends LitElement {
     _format: { state: true },
     _status: { state: true },
     _loading: { state: true },
+    _openingEdit: { state: true },
     _collectionIds: { state: true },
     _showCollection: { state: true },
     _collectionSearch: { state: true },
@@ -411,6 +412,7 @@ export class JantComposeDialog extends LitElement {
   declare _format: ComposeFormat;
   declare _status: "published" | "draft";
   declare _loading: boolean;
+  declare _openingEdit: boolean;
   declare _collectionIds: string[];
   declare _showCollection: boolean;
   declare _collectionSearch: string;
@@ -466,6 +468,7 @@ export class JantComposeDialog extends LitElement {
   private _dialogEl: HTMLDialogElement | null = null;
   private _filePickerActive = false;
   private _ignoreNextEscapeClose = false;
+  private _openEditRequestId = 0;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -483,6 +486,7 @@ export class JantComposeDialog extends LitElement {
     this._format = "note";
     this._status = "published";
     this._loading = false;
+    this._openingEdit = false;
     this._collectionIds = [];
     this._showCollection = false;
     this._collectionSearch = "";
@@ -553,9 +557,11 @@ export class JantComposeDialog extends LitElement {
   }
 
   reset() {
+    this._openEditRequestId += 1;
     this._format = "note";
     this._status = "published";
     this._loading = false;
+    this._openingEdit = false;
     this._collectionIds = [];
     this._showCollection = false;
     this._collectionSearch = "";
@@ -626,111 +632,128 @@ export class JantComposeDialog extends LitElement {
 
   async openEdit(id: string) {
     this.reset();
-
-    const res = await fetch(`/api/posts/${id}`);
-    if (!res.ok) return;
-    const post = (await res.json()) as ComposePostResponse;
-
+    const requestId = ++this._openEditRequestId;
+    this._openingEdit = true;
     this._editPostId = id;
-    this._format = post.format;
-    this._slug = post.slug ?? "";
-    this._slugTaken = false;
-    this._slugCheckLoading = false;
-    this._suggestedSlug = "";
-    this._suggestedSlugLoading = false;
-    this._slugSuggestionKey = "";
-    this._publishedAtInput = post.publishedAt
-      ? toLocalDateInputValue(post.publishedAt)
-      : "";
-    this._publishedAtTimeMinutes = post.publishedAt
-      ? getTimestampTimeMinutes(post.publishedAt)
-      : null;
-    this._visibility = post.visibility ?? "public";
-    this._visibilityLocked = Boolean(post.replyToId);
 
-    // Pre-fill collection memberships if present
-    if (post.collectionIds?.length) {
-      this._collectionIds = post.collectionIds;
+    const dialog = this.closest("dialog");
+    if (dialog && !dialog.open) {
+      dialog.showModal();
     }
-
-    // Wait for Lit to render with the new format before populating editor
     await this.updateComplete;
+    this._focusDialogShell();
 
-    // Separate text media items from other media attachments
-    const allMedia = post.mediaAttachments ?? [];
-    const nonTextMedia = allMedia.filter(
-      (m: { mimeType: string }) => !m.mimeType.startsWith("text/"),
-    );
-    const textMedia = allMedia.filter(
-      (m: { mimeType: string }) => m.mimeType === "text/x-tiptap+json",
-    );
+    try {
+      const res = await fetch(`/api/posts/${id}`);
+      if (!res.ok) throw new Error("Failed to load post");
+      const post = (await res.json()) as ComposePostResponse;
+      if (requestId !== this._openEditRequestId) return;
 
-    // Fetch text content for TipTap text media items (stored as { json, html } envelope)
-    const textAttachments = await Promise.all(
-      textMedia.map(
-        async (m: { id: string; url?: string; summary?: string }) => {
-          try {
-            const textRes = await fetch(`/api/media/${m.id}/content`);
-            if (textRes.ok) {
-              const raw = await textRes.text();
-              const envelope = JSON.parse(raw) as {
-                json?: unknown;
-                html?: string;
-              };
-              return {
-                bodyJson: JSON.stringify(envelope.json ?? {}),
-                bodyHtml: envelope.html ?? "",
-                summary: m.summary ?? "",
-                mediaId: m.id,
-              };
+      this._format = post.format;
+      this._slug = post.slug ?? "";
+      this._slugTaken = false;
+      this._slugCheckLoading = false;
+      this._suggestedSlug = "";
+      this._suggestedSlugLoading = false;
+      this._slugSuggestionKey = "";
+      this._publishedAtInput = post.publishedAt
+        ? toLocalDateInputValue(post.publishedAt)
+        : "";
+      this._publishedAtTimeMinutes = post.publishedAt
+        ? getTimestampTimeMinutes(post.publishedAt)
+        : null;
+      this._visibility = post.visibility ?? "public";
+      this._visibilityLocked = Boolean(post.replyToId);
+
+      if (post.collectionIds?.length) {
+        this._collectionIds = post.collectionIds;
+      }
+
+      const allMedia = post.mediaAttachments ?? [];
+      const nonTextMedia = allMedia.filter(
+        (m: { mimeType: string }) => !m.mimeType.startsWith("text/"),
+      );
+      const textMedia = allMedia.filter(
+        (m: { mimeType: string }) => m.mimeType === "text/x-tiptap+json",
+      );
+
+      const textAttachments = await Promise.all(
+        textMedia.map(
+          async (m: { id: string; url?: string; summary?: string }) => {
+            try {
+              const textRes = await fetch(`/api/media/${m.id}/content`);
+              if (textRes.ok) {
+                const raw = await textRes.text();
+                const envelope = JSON.parse(raw) as {
+                  json?: unknown;
+                  html?: string;
+                };
+                return {
+                  bodyJson: JSON.stringify(envelope.json ?? {}),
+                  bodyHtml: envelope.html ?? "",
+                  summary: m.summary ?? "",
+                  mediaId: m.id,
+                };
+              }
+            } catch {
+              // Fetch failed — skip
             }
-          } catch {
-            // Fetch failed — skip
-          }
-          return {
-            bodyJson: "{}",
-            bodyHtml: "",
-            summary: m.summary ?? "",
-            mediaId: m.id,
-          };
-        },
-      ),
-    );
+            return {
+              bodyJson: "{}",
+              bodyHtml: "",
+              summary: m.summary ?? "",
+              mediaId: m.id,
+            };
+          },
+        ),
+      );
+      if (requestId !== this._openEditRequestId) return;
 
-    this._editor?.populate({
-      format: post.format,
-      title: post.format === "quote" ? undefined : (post.title ?? undefined),
-      bodyJson: post.body ?? undefined,
-      url:
-        post.format === "quote"
-          ? (post.sourceUrl ?? undefined)
-          : (post.url ?? undefined),
-      quoteText: post.quoteText ?? undefined,
-      quoteAuthor:
-        post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
-      rating: post.rating ?? undefined,
-      media: nonTextMedia.map(
-        (m: {
-          id: string;
-          previewUrl: string;
-          alt?: string;
-          mimeType: string;
-        }) => ({
-          id: m.id,
-          previewUrl: m.previewUrl,
-          alt: m.alt,
-          mimeType: m.mimeType,
-        }),
-      ),
-      textAttachments,
-      attachmentOrder: allMedia.map((m: { id: string }) => m.id),
-    });
+      this._openingEdit = false;
+      await this.updateComplete;
+      if (requestId !== this._openEditRequestId) return;
 
-    this.closest("dialog")?.showModal();
-    globalThis.requestAnimationFrame(() => {
-      this._focusDialogShell();
-      this._captureInitialSnapshot();
-    });
+      this._editor?.populate({
+        format: post.format,
+        title: post.format === "quote" ? undefined : (post.title ?? undefined),
+        bodyJson: post.body ?? undefined,
+        url:
+          post.format === "quote"
+            ? (post.sourceUrl ?? undefined)
+            : (post.url ?? undefined),
+        quoteText: post.quoteText ?? undefined,
+        quoteAuthor:
+          post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
+        rating: post.rating ?? undefined,
+        media: nonTextMedia.map(
+          (m: {
+            id: string;
+            previewUrl: string;
+            alt?: string;
+            mimeType: string;
+          }) => ({
+            id: m.id,
+            previewUrl: m.previewUrl,
+            alt: m.alt,
+            mimeType: m.mimeType,
+          }),
+        ),
+        textAttachments,
+        attachmentOrder: allMedia.map((m: { id: string }) => m.id),
+      });
+
+      globalThis.requestAnimationFrame(() => {
+        if (requestId !== this._openEditRequestId) return;
+        this._focusDialogShell();
+        this._captureInitialSnapshot();
+      });
+    } catch {
+      if (requestId !== this._openEditRequestId) return;
+      this._openingEdit = false;
+      this._closeDialog();
+      this.reset();
+      showToast(this.labels.loadPostFailed, "error");
+    }
   }
 
   async openNew(options?: ComposeOpenOptions) {
@@ -3448,8 +3471,45 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private _renderEditLoadingState() {
+    return html`
+      <div
+        class="compose-edit-loading"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div class="compose-edit-loading-status">
+          <svg
+            class="animate-spin size-4"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+          <span>${this.labels.loadingPost}</span>
+        </div>
+        <div class="compose-edit-loading-skeleton">
+          <div class="skel-input compose-edit-loading-title"></div>
+          <div class="skel-section-lg compose-edit-loading-body"></div>
+          <div class="compose-edit-loading-footer">
+            <div class="skel-input compose-edit-loading-chip"></div>
+            <div class="skel-input compose-edit-loading-submit"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   render() {
     const isReply = !!(this._replyToId && this._replyToData);
+    const isOpeningEdit = this._openingEdit;
     const editor = html`<jant-compose-editor
       .format=${this._format}
       .labels=${this.labels}
@@ -3468,21 +3528,24 @@ export class JantComposeDialog extends LitElement {
         ?inert=${this._addCollectionPanelOpen}
       >
         ${this._renderHeader()}
-        ${isReply
-          ? html`
-              <div class="compose-thread-layout">
-                ${this._renderReplyContext()}
-                <div class="compose-editor-row">
-                  <div class="compose-thread-dot"></div>
-                  ${editor}
+        ${isOpeningEdit
+          ? this._renderEditLoadingState()
+          : isReply
+            ? html`
+                <div class="compose-thread-layout">
+                  ${this._renderReplyContext()}
+                  <div class="compose-editor-row">
+                    <div class="compose-thread-dot"></div>
+                    ${editor}
+                  </div>
                 </div>
-              </div>
-            `
-          : editor}
-
-        <div class="compose-action-row">
-          ${this._renderCollectionSelector()} ${this._renderPublishButton()}
-        </div>
+              `
+            : editor}
+        ${isOpeningEdit
+          ? nothing
+          : html`<div class="compose-action-row">
+              ${this._renderCollectionSelector()} ${this._renderPublishButton()}
+            </div>`}
         ${this._renderAttachedPanel()} ${this._renderAltPanel()}
         ${this._renderDraftsPanel()} ${this._renderConfirmPanel()}
       </div>

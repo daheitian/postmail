@@ -169,6 +169,7 @@ describe("createExportService", () => {
     );
     expect(macrosTemplate).toContain("data-collection-popover-trigger");
     expect(macrosTemplate).toContain('class="post-collection-popover-item"');
+    expect(macrosTemplate).toContain("post-body-summary");
     expect(styleCss).toContain(".collection-list-sequence::before");
     expect(styleCss).toContain(
       ".post-collection-more-wrap:hover .post-collection-popover",
@@ -176,6 +177,8 @@ describe("createExportService", () => {
     expect(styleCss).toContain(".post-collection-more-wrap::after");
     expect(styleCss).toContain(".site-header-top-home");
     expect(styleCss).toContain(".site-content-home");
+    expect(styleCss).toContain("--feed-note-summary-size:");
+    expect(styleCss).toContain(".post-body-summary.prose");
     expect(styleCss).toContain("padding-top: 0.75rem;");
     expect(styleCss).toContain(
       "border-bottom-color: color-mix(in srgb, var(--site-divider) 72%, transparent);",

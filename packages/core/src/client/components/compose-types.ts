@@ -121,6 +121,8 @@ export interface ComposeLabels {
   addMore: string;
   removeAttachment: string;
   uploading: string;
+  loadingPost: string;
+  loadPostFailed: string;
   published: string;
   view: string;
   retryAll: string;

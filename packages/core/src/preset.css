@@ -111,7 +111,7 @@
  * We override them to use BaseCoat's CSS variables so that:
  *   - Light/dark mode switches automatically
  *   - Prose text matches the rest of the theme
- *   - Links use the theme accent without reading like UI chrome
+ *   - Links read like editorial text instead of UI chrome
  *
  * Design reference: editorial reading surfaces where links feel
  * integrated into the text, not like product controls.
@@ -120,7 +120,10 @@
   --tw-prose-body: inherit;
   --tw-prose-headings: var(--color-foreground);
   --tw-prose-lead: var(--color-muted-foreground);
-  --tw-prose-links: var(--site-accent);
+  --tw-prose-links: var(--site-content-link);
+  --site-prose-link-color: var(--site-content-link);
+  --site-prose-link-hover: var(--site-content-link-hover);
+  --site-prose-link-underline: var(--site-content-link-underline);
   --tw-prose-bold: inherit;
   --tw-prose-counters: var(--color-muted-foreground);
   --tw-prose-bullets: var(--color-muted-foreground);
@@ -239,13 +242,12 @@
  */
 .content-link,
 .prose a {
-  color: var(--site-accent);
+  color: var(--site-prose-link-color, var(--site-content-link));
   font-weight: inherit;
   text-decoration: underline;
-  text-decoration-color: color-mix(
-    in srgb,
-    var(--site-accent) 58%,
-    transparent
+  text-decoration-color: var(
+    --site-prose-link-underline,
+    var(--site-content-link-underline)
   );
   text-decoration-thickness: 1px;
   text-underline-offset: 0.14em;
@@ -256,7 +258,7 @@
 
 .content-link:hover,
 .prose a:hover {
-  color: color-mix(in srgb, var(--site-accent) 84%, var(--color-foreground));
+  color: var(--site-prose-link-hover, var(--site-content-link-hover));
   text-decoration-color: currentColor;
 }
 
@@ -275,6 +277,9 @@
     var(--site-reading-meta)
   );
   --tw-prose-links: var(--site-reading-link);
+  --site-prose-link-color: var(--site-reading-link);
+  --site-prose-link-hover: var(--site-reading-link-hover);
+  --site-prose-link-underline: var(--site-reading-link-underline);
   --tw-prose-bold: var(--site-reading-heading);
   --tw-prose-counters: var(--site-reading-meta);
   --tw-prose-bullets: var(--site-reading-meta);
@@ -311,12 +316,4 @@
   --_blockquote-text: var(--site-reading-quote);
   margin: 1.5em 0;
   padding: 1rem 1.15rem 1.05rem 1.25rem;
-}
-
-[data-page="post"] .post-detail-body.prose a:hover {
-  color: color-mix(
-    in oklch,
-    var(--site-reading-link) 78%,
-    var(--site-reading-heading)
-  );
 }

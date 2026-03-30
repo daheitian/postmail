@@ -273,6 +273,18 @@ export const ComposeForm: FC<ComposeFormProps> = ({
         comment: "@context: Toast shown during background upload",
       }),
     ),
+    loadingPost: i18n._(
+      msg({
+        message: "Loading post...",
+        comment: "@context: Status text while opening the post editor",
+      }),
+    ),
+    loadPostFailed: i18n._(
+      msg({
+        message: "Couldn't load this post. Try again.",
+        comment: "@context: Toast shown when edit mode fails to load a post",
+      }),
+    ),
     published: i18n._(
       msg({
         message: "Published!",

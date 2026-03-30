@@ -1479,6 +1479,48 @@
     text-wrap: pretty;
   }
 
+  .post-body-summary.prose {
+    font-size: var(--feed-note-summary-size);
+    line-height: var(--feed-note-summary-leading);
+    color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 88%,
+      var(--site-text-primary)
+    );
+  }
+
+  article .post-body-summary.prose p,
+  article .post-body-summary.prose ul,
+  article .post-body-summary.prose ol,
+  article .post-body-summary.prose blockquote,
+  article .post-body-summary.prose pre {
+    font-size: var(--feed-note-summary-size);
+    line-height: var(--feed-note-summary-leading);
+  }
+
+  .post-body-summary.prose p + p,
+  .post-body-summary.prose ul,
+  .post-body-summary.prose ol,
+  .post-body-summary.prose blockquote,
+  .post-body-summary.prose pre {
+    margin-top: var(--feed-note-summary-gap);
+  }
+
+  .post-body-summary.prose ul,
+  .post-body-summary.prose ol {
+    padding-left: 1.15rem;
+  }
+
+  .post-body-summary.prose li {
+    margin: 0.18rem 0;
+  }
+
+  .post-body-summary.prose :is(h1, h2, h3, h4) {
+    margin: 0.78rem 0 0.24rem;
+    font-size: 1em;
+    line-height: 1.35;
+  }
+
   .post-header-block {
     margin-bottom: 1rem;
   }
@@ -3544,6 +3586,60 @@
     position: relative;
   }
 
+  .compose-edit-loading {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    gap: 18px;
+    padding: 16px 18px 20px;
+  }
+
+  .compose-edit-loading-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--site-text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .compose-edit-loading-skeleton {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .compose-edit-loading-title {
+    width: min(240px, 62%);
+    border-radius: 14px;
+  }
+
+  .compose-edit-loading-body {
+    flex: 1;
+    min-height: clamp(220px, 42dvh, 420px);
+    border-radius: 22px;
+  }
+
+  .compose-edit-loading-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .compose-edit-loading-chip {
+    width: min(170px, 40%);
+    border-radius: 999px;
+  }
+
+  .compose-edit-loading-submit {
+    width: min(156px, 34%);
+    border-radius: 999px;
+    margin-left: auto;
+  }
+
   /* --- Header ------------------------------------------------------------- */
 
   .compose-dialog-header {
@@ -3680,6 +3776,13 @@
       min-height: 100dvh;
       max-height: 100dvh;
       border-radius: 0;
+    }
+
+    .compose-edit-loading {
+      padding-top: 18px;
+      padding-right: calc(20px + env(safe-area-inset-right));
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+      padding-left: calc(20px + env(safe-area-inset-left));
     }
 
     .compose-dialog-inner > jant-compose-editor,

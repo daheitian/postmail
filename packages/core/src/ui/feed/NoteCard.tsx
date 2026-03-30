@@ -78,7 +78,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
         ))}
       {displayHtml && (
         <div
-          class={`e-content prose ${isCompact ? "prose-sm" : isDetail ? "post-detail-body" : isArticle ? "text-muted-foreground" : ""}`}
+          class={`e-content prose ${isCompact ? "prose-sm" : isDetail ? "post-detail-body" : isArticle ? "post-body-summary" : ""}`}
           data-post-body
           dangerouslySetInnerHTML={{ __html: displayHtml }}
         />

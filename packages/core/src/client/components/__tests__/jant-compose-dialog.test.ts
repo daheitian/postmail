@@ -39,6 +39,14 @@ async function flushUpdates(el?: JantComposeDialog) {
   }
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((res) => {
+    resolve = res;
+  });
+  return { promise, resolve };
+}
+
 function mockSlugApi(
   handler: (url: URL) => { status?: number; body: unknown },
 ): ReturnType<typeof vi.spyOn> {
@@ -103,6 +111,8 @@ const labels: ComposeLabels = {
   addMore: "Add",
   removeAttachment: "Remove attachment",
   uploading: "Uploading...",
+  loadingPost: "Loading post...",
+  loadPostFailed: "Couldn't load this post. Try again.",
   published: "Published!",
   view: "View",
   retryAll: "Tap to retry",
@@ -345,6 +355,49 @@ describe("JantComposeDialog", () => {
 
     expect(focusSpy).not.toHaveBeenCalled();
     expect(shellFocusSpy).toHaveBeenCalled();
+  });
+
+  it("shows a loading state while edit data is still loading", async () => {
+    const postResponse = deferred<Response>();
+    vi.spyOn(globalThis, "fetch").mockImplementation(
+      () => postResponse.promise,
+    );
+
+    const compose = await createElement();
+    const opening = compose.openEdit("pst_123");
+    await flushUpdates(compose);
+
+    expect(compose.textContent).toContain("Loading post...");
+    expect(compose.querySelector("jant-compose-editor")).toBeNull();
+
+    postResponse.resolve(
+      new Response(
+        JSON.stringify({
+          id: "pst_123",
+          format: "note",
+          title: "Loaded later",
+          body: JSON.stringify({
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Loaded body text" }],
+              },
+            ],
+          }),
+          mediaAttachments: [],
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    await opening;
+    await flushUpdates(compose);
+
+    expect(compose.textContent).not.toContain("Loading post...");
+    expect(compose.querySelector("jant-compose-editor")).not.toBeNull();
   });
 
   it("opens publish settings even when publish is disabled", async () => {

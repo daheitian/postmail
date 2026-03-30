@@ -1665,9 +1665,16 @@ const STYLE_CSS = `/* Jant Export Theme */
   --fw-medium: 500;
   --fw-semibold: 600;
   --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
   --feed-note-title-size: 1.25rem;
   --feed-note-title-leading: 1.3;
+  --feed-note-summary-size: max(
+    0.9rem,
+    calc(var(--type-body-size) - 0.0625rem)
+  );
+  --feed-note-summary-leading: var(--type-body-leading);
+  --feed-note-summary-gap: 0.56rem;
   --type-body-size: var(--text-base);
   --type-body-leading: 1.66;
   --type-body-tracking: 0.002em;
@@ -1729,10 +1736,19 @@ const STYLE_CSS = `/* Jant Export Theme */
     var(--site-text-secondary) 88%,
     var(--site-text-primary)
   );
-  --site-reading-link: color-mix(
-    in oklch,
-    var(--site-accent) 72%,
-    var(--site-reading-body)
+  --site-content-link: inherit;
+  --site-content-link-hover: var(--site-text-primary);
+  --site-content-link-underline: color-mix(
+    in srgb,
+    var(--site-text-secondary) 58%,
+    transparent
+  );
+  --site-reading-link: var(--site-reading-body);
+  --site-reading-link-hover: var(--site-reading-heading);
+  --site-reading-link-underline: color-mix(
+    in srgb,
+    var(--site-reading-meta) 58%,
+    transparent
   );
   --site-text-placeholder: oklch(from var(--muted-foreground) l c h / 0.5);
   --site-divider: var(--border);
@@ -1797,11 +1813,7 @@ const STYLE_CSS = `/* Jant Export Theme */
       var(--site-text-secondary) 96%,
       var(--site-text-primary)
     );
-    --site-reading-link: color-mix(
-      in oklch,
-      var(--site-accent) 76%,
-      var(--site-text-primary)
-    );
+    --site-reading-link: var(--site-reading-body);
   }
 }
 
@@ -2135,6 +2147,43 @@ img {
   text-wrap: pretty;
 }
 
+.post-body-summary.prose {
+  font-size: var(--feed-note-summary-size);
+  line-height: var(--feed-note-summary-leading);
+}
+
+article .post-body-summary.prose p,
+article .post-body-summary.prose ul,
+article .post-body-summary.prose ol,
+article .post-body-summary.prose blockquote,
+article .post-body-summary.prose pre {
+  font-size: var(--feed-note-summary-size);
+  line-height: var(--feed-note-summary-leading);
+}
+
+.post-body-summary.prose p + p,
+.post-body-summary.prose ul,
+.post-body-summary.prose ol,
+.post-body-summary.prose blockquote,
+.post-body-summary.prose pre {
+  margin-top: var(--feed-note-summary-gap);
+}
+
+.post-body-summary.prose ul,
+.post-body-summary.prose ol {
+  padding-left: 1.15rem;
+}
+
+.post-body-summary.prose li {
+  margin: 0.18rem 0;
+}
+
+.post-body-summary.prose :is(h1, h2, h3, h4) {
+  margin: 0.78rem 0 0.24rem;
+  font-size: 1em;
+  line-height: 1.35;
+}
+
 .post-header-block {
   margin-bottom: 1rem;
 }
@@ -2199,6 +2248,9 @@ img {
 
 [data-page="post"] .post-detail-body,
 [data-page="post"] .post-detail-body.prose {
+  --site-prose-link-color: var(--site-reading-link);
+  --site-prose-link-hover: var(--site-reading-link-hover);
+  --site-prose-link-underline: var(--site-reading-link-underline);
   color: var(--site-reading-body);
 }
 
@@ -2415,6 +2467,9 @@ article[data-post-featured] .post-footer-featured {
 }
 
 .prose {
+  --site-prose-link-color: var(--site-content-link);
+  --site-prose-link-hover: var(--site-content-link-hover);
+  --site-prose-link-underline: var(--site-content-link-underline);
   max-width: 35rem;
   font-size: var(--type-body-size);
   line-height: var(--type-body-leading);
@@ -2426,16 +2481,26 @@ article[data-post-featured] .post-footer-featured {
   color: color-mix(in srgb, var(--site-text-secondary) 88%, var(--site-text-primary));
 }
 
-[data-page="post"] .post-detail-body.prose a {
-  color: var(--site-reading-link);
+.content-link,
+.prose a {
+  color: var(--site-prose-link-color, var(--site-content-link));
+  font-weight: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(
+    --site-prose-link-underline,
+    var(--site-content-link-underline)
+  );
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+  transition:
+    color 0.18s ease,
+    text-decoration-color 0.18s ease;
 }
 
-[data-page="post"] .post-detail-body.prose a:hover {
-  color: color-mix(
-    in oklch,
-    var(--site-reading-link) 78%,
-    var(--site-reading-heading)
-  );
+.content-link:hover,
+.prose a:hover {
+  color: var(--site-prose-link-hover, var(--site-content-link-hover));
+  text-decoration-color: currentColor;
 }
 
 .prose > :first-child {

@@ -190,6 +190,8 @@ const labels: ComposeLabels = {
   addMore: "Add",
   removeAttachment: "Remove attachment",
   uploading: "Uploading...",
+  loadingPost: "Loading post...",
+  loadPostFailed: "Couldn't load this post. Try again.",
   published: "Published!",
   view: "View",
   retryAll: "Tap to retry",

@@ -191,6 +191,19 @@ describe("timeline cards", () => {
     );
   });
 
+  it("renders titled note feed summaries as secondary prose without shrinking detail reading", () => {
+    const post = createPostView({
+      format: "note",
+      summaryHtml: "<p>Summary</p>",
+    });
+
+    const feedHtml = renderWithI18n(NoteCard({ post, mode: "feed" }));
+    const detailHtml = renderWithI18n(NoteCard({ post, mode: "detail" }));
+
+    expect(feedHtml).toContain('class="e-content prose post-body-summary"');
+    expect(detailHtml).toContain('class="e-content prose post-detail-body"');
+  });
+
   it("moves rated link detail cards into the title block without changing feed ordering", () => {
     const post = createPostView({
       format: "link",

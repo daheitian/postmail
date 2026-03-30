@@ -700,6 +700,11 @@ msgstr "无法创建您的账户. 请检查详细信息并重试."
 msgid "Couldn't delete. Try again in a moment."
 msgstr "无法删除. 请稍后再试."
 
+#. @context: Toast shown when edit mode fails to load a post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Couldn't load this post. Try again."
+msgstr "无法载入这篇文章。请重试。"
+
 #. @context: Toast when publish fails and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Couldn't publish. Saved as draft."
@@ -1671,6 +1676,11 @@ msgstr "实时主题控制"
 #: src/ui/shared/Pagination.tsx
 msgid "Load more"
 msgstr "加载更多"
+
+#. @context: Status text while opening the post editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Loading post..."
+msgstr "正在载入文章..."
 
 #. @context: Asset keyword on the public brand asset page
 #. @context: Asset keyword on the public brand asset page

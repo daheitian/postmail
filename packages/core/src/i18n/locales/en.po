@@ -700,6 +700,11 @@ msgstr "Couldn't create your account. Check the details and try again."
 msgid "Couldn't delete. Try again in a moment."
 msgstr "Couldn't delete. Try again in a moment."
 
+#. @context: Toast shown when edit mode fails to load a post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Couldn't load this post. Try again."
+msgstr "Couldn't load this post. Try again."
+
 #. @context: Toast when publish fails and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Couldn't publish. Saved as draft."
@@ -1671,6 +1676,11 @@ msgstr "live theme controls"
 #: src/ui/shared/Pagination.tsx
 msgid "Load more"
 msgstr "Load more"
+
+#. @context: Status text while opening the post editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Loading post..."
+msgstr "Loading post..."
 
 #. @context: Asset keyword on the public brand asset page
 #. @context: Asset keyword on the public brand asset page
