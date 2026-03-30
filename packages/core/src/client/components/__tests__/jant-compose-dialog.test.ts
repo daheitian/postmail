@@ -2508,14 +2508,14 @@ describe("JantComposeDialog", () => {
     URL.revokeObjectURL(previewUrl);
   });
 
-  it("waits for pending inline image uploads before dispatching submit", async () => {
+  it("dispatches submit immediately even with pending inline image uploads", async () => {
     const el = await createElement();
     const editor = requireElement(
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
       "expected compose editor",
     );
 
-    editor._bodyJson = {
+    const bodyJson = {
       type: "doc",
       content: [
         {
@@ -2529,21 +2529,8 @@ describe("JantComposeDialog", () => {
         },
       ],
     };
+    editor._bodyJson = bodyJson;
     await editor.updateComplete;
-
-    const pendingUpload = deferred<void>();
-    (
-      editor as unknown as {
-        hasPendingInlineImageUploads: () => boolean;
-        waitForPendingInlineImageUploads: () => Promise<void>;
-      }
-    ).hasPendingInlineImageUploads = () => true;
-    (
-      editor as unknown as {
-        hasPendingInlineImageUploads: () => boolean;
-        waitForPendingInlineImageUploads: () => Promise<void>;
-      }
-    ).waitForPendingInlineImageUploads = () => pendingUpload.promise;
 
     let receivedDetail: ComposeSubmitDetail | null = null;
     el.addEventListener("jant:compose-submit-deferred", (event) => {
@@ -2556,33 +2543,10 @@ describe("JantComposeDialog", () => {
     ).click();
     await flushUpdates(el);
 
-    expect(receivedDetail).toBeNull();
-    expect(el._loading).toBe(true);
-
-    const finalBodyJson = {
-      type: "doc",
-      content: [
-        {
-          type: "image",
-          attrs: {
-            src: "/uploads/final-image.webp",
-            alt: "",
-            title: "",
-            caption: "",
-          },
-        },
-      ],
-    };
-    editor._bodyJson = finalBodyJson;
-    await editor.updateComplete;
-
-    pendingUpload.resolve();
-    await flushUpdates(el);
-    await flushUpdates(el);
-
+    // Submit fires immediately — blob URL resolution is handled by compose-bridge
     expect(receivedDetail).not.toBeNull();
     expect((receivedDetail as unknown as ComposeSubmitDetail).body).toBe(
-      JSON.stringify(finalBodyJson),
+      JSON.stringify(bodyJson),
     );
   });
 

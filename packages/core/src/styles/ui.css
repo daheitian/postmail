@@ -4924,6 +4924,11 @@
 
   .compose-publish-single,
   .compose-publish-main {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    white-space: nowrap;
     min-width: 5rem;
     padding: 0 16px;
     background-color: var(--site-text-primary);

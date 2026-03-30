@@ -1235,25 +1235,7 @@ export class JantComposeDialog extends LitElement {
     return true;
   }
 
-  private async _waitForPendingInlineImageUploads(): Promise<boolean> {
-    const editor = this._editor;
-    if (!editor?.hasPendingInlineImageUploads()) {
-      return true;
-    }
-
-    this._loading = true;
-    try {
-      await editor.waitForPendingInlineImageUploads();
-      return this._editor === editor;
-    } finally {
-      this._loading = false;
-    }
-  }
-
-  private async _saveDraftAndOpenDrafts() {
-    if (!(await this._waitForPendingInlineImageUploads())) {
-      return;
-    }
+  private _saveDraftAndOpenDrafts() {
     this._finishDraftSaveAndOpenDrafts();
   }
 
@@ -1277,16 +1259,7 @@ export class JantComposeDialog extends LitElement {
 
   private _submit(status: "published" | "draft") {
     this._showPublishPanel = false;
-    if (!this._editor?.hasPendingInlineImageUploads()) {
-      this._finishSubmit(status);
-      return;
-    }
-    void (async () => {
-      if (!(await this._waitForPendingInlineImageUploads())) {
-        return;
-      }
-      this._finishSubmit(status);
-    })();
+    this._finishSubmit(status);
   }
 
   private _toggleCollection(id: string) {
@@ -1785,6 +1758,9 @@ export class JantComposeDialog extends LitElement {
         e.detail.showTitle,
         e.detail.selection,
       );
+      // Adopt any in-flight inline image uploads from the fullscreen editor
+      // so blob: placeholder URLs get replaced when uploads complete.
+      editor.adoptPendingUploads();
       this.updateComplete.then(() => editor.focusSelection(e.detail.selection));
     }
     this._replyExpanded = e.detail.replyExpanded;

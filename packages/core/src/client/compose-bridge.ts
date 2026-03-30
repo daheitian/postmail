@@ -31,6 +31,7 @@ import { publicPath } from "./runtime-paths.js";
 import { setupThreadContexts } from "./thread-context.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import { getMediaCategory } from "../lib/upload.js";
+import { resolveInlineImageUrls } from "./tiptap/inline-image-upload.js";
 
 function getComposeEditorFromEventTarget(
   target: globalThis.EventTarget | null,
@@ -538,7 +539,8 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
   // Get labels for toast messages
   const labels = composeEl?.labels;
   const uploadingMsg = labels?.uploading ?? "Uploading...";
-  const hasPending = detail.pendingAttachments.length > 0;
+  const hasInlineBlobs = detail.body.includes('"blob:');
+  const hasPending = detail.pendingAttachments.length > 0 || hasInlineBlobs;
   const publishedMsg = labels?.published ?? "Published!";
   const viewLabel = labels?.view ?? "View";
 
@@ -621,6 +623,17 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       detail,
       mediaClientIdMap,
     );
+
+    // Resolve any blob: inline image URLs to real URLs before submitting
+    if (hasInlineBlobs) {
+      try {
+        const bodyJson = JSON.parse(detail.body);
+        const resolved = await resolveInlineImageUrls(bodyJson);
+        detail.body = resolved ? JSON.stringify(resolved) : "";
+      } catch {
+        // If resolution fails, keep original body — server will handle invalid URLs
+      }
+    }
 
     const endpoint = isEdit ? `/api/posts/${detail.editPostId}` : "/compose";
     const method = isEdit ? "PUT" : "POST";

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Editor, JSONContent } from "@tiptap/core";
+import type { Editor } from "@tiptap/core";
 import type {
   ComposeFullscreenCloseDetail,
   ComposeLabels,
@@ -26,14 +26,6 @@ async function flush(el?: JantComposeFullscreen) {
   if (el) {
     await el.updateComplete;
   }
-}
-
-function deferred<T>() {
-  let resolve!: (value: T) => void;
-  const promise = new Promise<T>((res) => {
-    resolve = res;
-  });
-  return { promise, resolve };
 }
 
 function requireEditor(el: JantComposeFullscreen): Editor {
@@ -365,7 +357,7 @@ describe("JantComposeFullscreen", () => {
     expect(el.querySelector(".compose-fullscreen-dialog")).toBeNull();
   });
 
-  it("waits for pending inline image uploads before closing", async () => {
+  it("closes immediately without waiting for pending inline image uploads", async () => {
     const el = document.createElement(
       "jant-compose-fullscreen",
     ) as JantComposeFullscreen;
@@ -398,20 +390,6 @@ describe("JantComposeFullscreen", () => {
     );
     await flush(el);
 
-    const pendingUpload = deferred<void>();
-    vi.spyOn(
-      el as unknown as {
-        _hasPendingInlineImageUploads: () => boolean;
-      },
-      "_hasPendingInlineImageUploads",
-    ).mockReturnValue(true);
-    vi.spyOn(
-      el as unknown as {
-        _waitForPendingInlineImageUploads: () => Promise<void>;
-      },
-      "_waitForPendingInlineImageUploads",
-    ).mockReturnValue(pendingUpload.promise);
-
     let detail: ComposeFullscreenCloseDetail | null = null;
     document.addEventListener(
       "jant:fullscreen-close",
@@ -421,32 +399,11 @@ describe("JantComposeFullscreen", () => {
       { once: true },
     );
 
+    // Click Done — should close immediately even with pending uploads
     el.querySelector<HTMLButtonElement>(".compose-fullscreen-done")?.click();
     await flush(el);
 
-    expect(detail).toBeNull();
-
-    const editor = requireEditor(el);
-    const finalJson: JSONContent = {
-      type: "doc",
-      content: [
-        {
-          type: "image",
-          attrs: {
-            src: "/uploads/final-image.webp",
-            alt: "",
-            title: "",
-            caption: "",
-          },
-        },
-      ],
-    };
-    editor.commands.setContent(finalJson);
-
-    pendingUpload.resolve();
-    await flush(el);
-    await flush(el);
-
+    // Close event fires right away with current content (blob URLs intact)
     if (!detail) {
       throw new Error("expected fullscreen close detail");
     }
@@ -456,7 +413,7 @@ describe("JantComposeFullscreen", () => {
         expect.objectContaining({
           type: "image",
           attrs: expect.objectContaining({
-            src: "/uploads/final-image.webp",
+            src: "blob:inline-preview",
           }),
         }),
       ]),

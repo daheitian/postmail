@@ -38,7 +38,10 @@ import {
 import type { MediaCategory } from "../../lib/upload.js";
 import { showToast } from "../toast.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
-import { uploadAndInsertInlineImage } from "../tiptap/inline-image-upload.js";
+import {
+  uploadAndInsertInlineImage,
+  adoptPendingInlineImageUploads,
+} from "../tiptap/inline-image-upload.js";
 import { isSafeAbsoluteUrl } from "../../lib/url.js";
 
 interface ComposeFilePickerCloseDetail {
@@ -308,6 +311,20 @@ export class JantComposeEditor extends LitElement {
   #clearPendingInlineImageUploads() {
     this.#inlineImageUploadGeneration += 1;
     this.#inlineImageUploadPromises.clear();
+  }
+
+  /** Adopt in-flight inline image uploads from another editor (e.g. fullscreen). */
+  adoptPendingUploads() {
+    if (!this._editor) return;
+    const generation = this.#inlineImageUploadGeneration;
+    const adopted = adoptPendingInlineImageUploads(this._editor);
+    for (const promise of adopted) {
+      const tracked = promise.finally(() => {
+        if (generation !== this.#inlineImageUploadGeneration) return;
+        this.#inlineImageUploadPromises.delete(tracked);
+      });
+      this.#inlineImageUploadPromises.add(tracked);
+    }
   }
 
   private _dispatchFilePickerEvent(

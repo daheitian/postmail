@@ -45,7 +45,6 @@ export class JantComposeFullscreen extends LitElement {
   private _content: JSONContent | null = null;
   private _selection: ComposeEditorSelection | null = null;
   private _fileInput: HTMLInputElement | null = null;
-  private _closing = false;
   #inlineImageUploadPromises = new Set<Promise<void>>();
 
   createRenderRoot() {
@@ -207,16 +206,6 @@ export class JantComposeFullscreen extends LitElement {
     ).some((el) => getComputedStyle(el).display !== "none");
   }
 
-  private async _waitForPendingInlineImageUploads() {
-    while (this.#inlineImageUploadPromises.size > 0) {
-      await Promise.allSettled(Array.from(this.#inlineImageUploadPromises));
-    }
-  }
-
-  private _hasPendingInlineImageUploads() {
-    return this.#inlineImageUploadPromises.size > 0;
-  }
-
   private _finishClose() {
     const json = this._editor?.getJSON() ?? this._content;
     const selection = this._editor
@@ -251,21 +240,8 @@ export class JantComposeFullscreen extends LitElement {
   }
 
   private _close() {
-    if (this._closing) return;
-    if (!this._hasPendingInlineImageUploads()) {
-      this._finishClose();
-      return;
-    }
-
-    this._closing = true;
-    void (async () => {
-      try {
-        await this._waitForPendingInlineImageUploads();
-        this._finishClose();
-      } finally {
-        this._closing = false;
-      }
-    })();
+    if (!this._open) return;
+    this._finishClose();
   }
 
   private _revealTitle() {
