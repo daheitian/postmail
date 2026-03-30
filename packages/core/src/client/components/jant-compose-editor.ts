@@ -1599,7 +1599,7 @@ export class JantComposeEditor extends LitElement {
     return html`
       <div class="compose-field-enter">
         <div class="compose-quote-wrap">
-          <span class="compose-quote-mark">"</span>
+          <span class="compose-quote-mark" aria-hidden="true">“</span>
           <textarea
             .value=${this._quoteText}
             @input=${(e: Event) => this._onInput("_quoteText", e)}
@@ -1610,7 +1610,7 @@ export class JantComposeEditor extends LitElement {
           ></textarea>
         </div>
         <div class="compose-quote-author-row">
-          <span class="compose-quote-dash">—</span>
+          <span class="compose-quote-dash" aria-hidden="true">—</span>
           <input
             type="text"
             .value=${this._quoteAuthor}
@@ -1629,7 +1629,7 @@ export class JantComposeEditor extends LitElement {
             @blur=${() => {
               this._showUrlValidation = true;
             }}
-            class="compose-input compose-url-input text-[0.78rem]"
+            class="compose-input compose-url-input compose-quote-source-input"
             placeholder=${this.labels.sourcePlaceholder}
             aria-invalid=${urlError ? "true" : "false"}
             aria-describedby=${ifDefined(
@@ -1646,7 +1646,10 @@ export class JantComposeEditor extends LitElement {
               </p>`
             : nothing}
         </div>
-        <div class="compose-divider"></div>
+        <div
+          class="compose-divider compose-divider-quote"
+          aria-hidden="true"
+        ></div>
         <div
           class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-thoughts-quote"
         ></div>

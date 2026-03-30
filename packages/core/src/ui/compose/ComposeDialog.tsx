@@ -597,6 +597,20 @@ export const ComposeForm: FC<ComposeFormProps> = ({
           "@context: Compose publish settings slug summary when no custom slug is set",
       }),
     ),
+    publishSlugSummaryAuto: i18n._(
+      msg({
+        message: "Auto link",
+        comment:
+          "@context: Compose summary shown near the submit controls when a manual custom link is cleared",
+      }),
+    ),
+    publishSlugSummaryAction: i18n._(
+      msg({
+        message: "Edit custom link",
+        comment:
+          "@context: Compose action to reopen the custom link field from the action row summary",
+      }),
+    ),
     publishSlugReset: i18n._(
       msg({
         message: "Reset link",

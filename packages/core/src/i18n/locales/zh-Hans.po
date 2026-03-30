@@ -362,6 +362,11 @@ msgstr "作者（可选）"
 msgid "Auto"
 msgstr "自动"
 
+#. @context: Compose summary shown near the submit controls when a manual custom link is cleared
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Auto link"
+msgstr "自动链接"
+
 #. @context: Description after theming guide link on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "available CSS variables, data attributes, and examples."
@@ -1094,6 +1099,11 @@ msgstr "例如 iOS Shortcuts"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Edit"
 msgstr "编辑"
+
+#. @context: Compose action to reopen the custom link field from the action row summary
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Edit custom link"
+msgstr "编辑自定义链接"
 
 #. @context: Button to manually edit the collection link
 #: src/ui/shared/collection-management-labels.ts

@@ -173,6 +173,8 @@ export interface ComposeLabels {
   publishSlugPlaceholder: string;
   publishSlugHint: string;
   publishSlugAuto: string;
+  publishSlugSummaryAuto: string;
+  publishSlugSummaryAction: string;
   publishSlugReset: string;
   publishSlugSuggested: string;
   publishSlugGenerating: string;

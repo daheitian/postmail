@@ -149,6 +149,21 @@ describe("timeline cards", () => {
     );
   });
 
+  it("keeps quote compose aligned with quote-card typography", () => {
+    const css = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.compose-quote-wrap\s*\{[\s\S]*background-color:\s*color-mix\(/,
+    );
+    expect(css).toMatch(
+      /\.compose-quote-text\s*\{[\s\S]*font-family:\s*var\(--font-serif\);/,
+    );
+    expect(css).toContain(".compose-divider-quote");
+  });
+
   it("keeps link and quote attachments hidden in compact mode", () => {
     const linkPost = createPostView({ format: "link" });
     const quotePost = createPostView({ format: "quote" });

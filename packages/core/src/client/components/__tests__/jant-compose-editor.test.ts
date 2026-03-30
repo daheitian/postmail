@@ -246,6 +246,8 @@ const labels: ComposeLabels = {
   publishSlugPlaceholder: "your-post-link",
   publishSlugHint: "Leave blank to generate one automatically.",
   publishSlugAuto: "Generate automatically",
+  publishSlugSummaryAuto: "Auto link",
+  publishSlugSummaryAction: "Edit custom link",
   publishSlugReset: "Reset link",
   publishSlugSuggested: "Suggested link",
   publishSlugGenerating: "Generating a link...",

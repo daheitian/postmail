@@ -47,6 +47,23 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
+function mockMatchMedia(matches: boolean) {
+  Object.defineProperty(globalThis, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+}
+
 function mockSlugApi(
   handler: (url: URL) => { status?: number; body: unknown },
 ): ReturnType<typeof vi.spyOn> {
@@ -167,6 +184,8 @@ const labels: ComposeLabels = {
   publishSlugPlaceholder: "your-post-link",
   publishSlugHint: "Leave blank to generate one automatically.",
   publishSlugAuto: "Generate automatically",
+  publishSlugSummaryAuto: "Auto link",
+  publishSlugSummaryAction: "Edit custom link",
   publishSlugReset: "Reset link",
   publishSlugSuggested: "Suggested link",
   publishSlugGenerating: "Generating a link...",
@@ -225,6 +244,16 @@ describe("JantComposeDialog", () => {
     vi.restoreAllMocks();
     document.body.innerHTML = "";
     globalThis.localStorage.clear();
+    Object.defineProperty(globalThis, "matchMedia", {
+      configurable: true,
+      writable: true,
+      value: undefined,
+    });
+    Object.defineProperty(globalThis, "visualViewport", {
+      configurable: true,
+      writable: true,
+      value: undefined,
+    });
     (
       customElements.get("jant-compose-dialog") as typeof HTMLElement & {
         _lastNewPostVisibility: string;
@@ -792,6 +821,123 @@ describe("JantComposeDialog", () => {
     ).toContain("Publish now");
   });
 
+  it("shows a custom link summary near the submit controls after the link changes", async () => {
+    mockSlugApi((url) => {
+      if (url.searchParams.get("mode") === "suggest") {
+        return { body: { slug: "configured-post" } };
+      }
+      if (url.searchParams.get("mode") === "check") {
+        return { body: { slug: "reading-notes", available: true } };
+      }
+      throw new Error(`Unexpected slug mode: ${url.search}`);
+    });
+
+    const el = await createElement();
+    const publishToggle = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    );
+
+    publishToggle.click();
+    await el.updateComplete;
+    await flushUpdates(el);
+
+    const slugInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-publish-slug-input"),
+      "expected custom link input",
+    );
+    slugInput.value = "reading-notes";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await el.updateComplete;
+
+    publishToggle.click();
+    await el.updateComplete;
+
+    const summary = requireElement(
+      el.querySelector<HTMLButtonElement>(
+        "[data-compose-publish-slug-summary]",
+      ),
+      "expected custom link summary",
+    );
+    expect(summary.dataset.publishSlug).toBe("reading-notes");
+    expect(summary.textContent).toContain("/reading-notes");
+
+    summary.click();
+    await el.updateComplete;
+    await flushUpdates(el);
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLInputElement>(".compose-publish-slug-input"),
+        "expected custom link input after reopening publish settings",
+      ),
+    ).toBe(document.activeElement);
+  });
+
+  it("does not show a custom link summary for an unchanged link while editing a post", async () => {
+    const el = await createElement();
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialSlug: string;
+        _slug: string;
+      }
+    )._editPostId = "pst_existing";
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialSlug: string;
+        _slug: string;
+      }
+    )._initialSlug = "reading-notes";
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialSlug: string;
+        _slug: string;
+      }
+    )._slug = "reading-notes";
+    el.requestUpdate();
+    await el.updateComplete;
+
+    expect(el.querySelector("[data-compose-publish-slug-summary]")).toBeNull();
+  });
+
+  it("shows an auto link summary after clearing the custom link while editing a post", async () => {
+    const el = await createElement();
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialSlug: string;
+        _slug: string;
+      }
+    )._editPostId = "pst_existing";
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialSlug: string;
+        _slug: string;
+      }
+    )._initialSlug = "reading-notes";
+    (
+      el as unknown as {
+        _editPostId: string | null;
+        _initialSlug: string;
+        _slug: string;
+      }
+    )._slug = "";
+    el.requestUpdate();
+    await el.updateComplete;
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLElement>("[data-compose-publish-slug-summary]"),
+        "expected auto link summary",
+      ).textContent,
+    ).toContain("Auto link");
+  });
+
   it("blocks publishing with a future publish date", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-28T12:34:00Z"));
@@ -1061,8 +1207,20 @@ describe("JantComposeDialog", () => {
     expect(el.querySelector(".compose-publish-slug-input")).not.toBeNull();
   });
 
-  it("constrains the publish settings panel to the visible space above the action row", async () => {
+  it("keeps the desktop publish settings panel attached to the publish button when space below is tight", async () => {
     const el = await createElement();
+    Object.defineProperty(globalThis, "visualViewport", {
+      configurable: true,
+      writable: true,
+      value: {
+        offsetLeft: 0,
+        offsetTop: 0,
+        width: 500,
+        height: 420,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      },
+    });
     (
       el as unknown as {
         _dialogEl: Pick<
@@ -1110,17 +1268,30 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     const panel = requireElement(
-      el.querySelector<HTMLElement>("[data-compose-publish-panel]"),
+      el.querySelector<HTMLElement>("[data-compose-publish-panel-desktop]"),
       "expected publish settings panel",
     );
     expect(panel.dataset.position).toBe("up");
+    expect(publishGroup.contains(panel)).toBe(true);
     expect(
       panel.style.getPropertyValue("--compose-publish-panel-max-height"),
-    ).toBe("240px");
+    ).toBe("318px");
   });
 
-  it("flips the publish settings panel below when there is more room underneath", async () => {
+  it("opens the desktop publish settings panel below the publish button when the viewport has room", async () => {
     const el = await createElement();
+    Object.defineProperty(globalThis, "visualViewport", {
+      configurable: true,
+      writable: true,
+      value: {
+        offsetLeft: 0,
+        offsetTop: 0,
+        width: 500,
+        height: 420,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      },
+    });
     (
       el as unknown as {
         _dialogEl: Pick<
@@ -1168,13 +1339,31 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     const panel = requireElement(
-      el.querySelector<HTMLElement>("[data-compose-publish-panel]"),
+      el.querySelector<HTMLElement>("[data-compose-publish-panel-desktop]"),
       "expected publish settings panel",
     );
     expect(panel.dataset.position).toBe("down");
+    expect(publishGroup.contains(panel)).toBe(true);
     expect(
       panel.style.getPropertyValue("--compose-publish-panel-max-height"),
-    ).toBe("230px");
+    ).toBe("228px");
+  });
+
+  it("renders publish settings as a fullscreen subview on compact viewports", async () => {
+    mockMatchMedia(true);
+
+    const el = await createElement();
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    ).click();
+    await el.updateComplete;
+
+    expect(el.querySelector("[data-compose-publish-panel-desktop]")).toBeNull();
+    expect(
+      el.querySelector("[data-compose-publish-panel-mobile]"),
+    ).not.toBeNull();
   });
 
   it("shows a slug error and blocks publish when the custom link is invalid", async () => {

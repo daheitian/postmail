@@ -118,6 +118,16 @@ interface ComposeFilePickerCloseDetail {
   cancelled?: boolean;
 }
 
+interface ComposePublishSummaryChip {
+  kind: "publishedAt" | "slug";
+  text: string;
+  actionLabel: string;
+  value: string;
+}
+
+const COMPOSE_PUBLISH_PANEL_FULLSCREEN_QUERY =
+  "(max-width: 700px), (max-height: 760px), (hover: none) and (pointer: coarse)";
+
 const COMPOSE_DIALOG_HEADER_ICONS = {
   drafts: `
     <rect x="3.85" y="3.45" width="7.85" height="8.35" rx="2.35" />
@@ -396,6 +406,7 @@ export class JantComposeDialog extends LitElement {
     _publishedAtInput: { state: true },
     _visibility: { state: true },
     _showPublishPanel: { state: true },
+    _publishPanelFullscreen: { state: true },
     _suggestedSlug: { state: true },
     _suggestedSlugLoading: { state: true },
     _slugCheckLoading: { state: true },
@@ -436,6 +447,7 @@ export class JantComposeDialog extends LitElement {
   declare _publishedAtInput: string;
   declare _visibility: ComposeVisibility;
   declare _showPublishPanel: boolean;
+  declare _publishPanelFullscreen: boolean;
   declare _suggestedSlug: string;
   declare _suggestedSlugLoading: boolean;
   declare _slugCheckLoading: boolean;
@@ -460,6 +472,7 @@ export class JantComposeDialog extends LitElement {
   private _replyRefreshId: string | null = null;
   private _publishedAtTimeMinutes: number | null = null;
   private _initialPublishedAtInput = "";
+  private _initialSlug = "";
   private _slugCheckTimer: ReturnType<typeof setTimeout> | null = null;
   private _slugSuggestTimer: ReturnType<typeof setTimeout> | null = null;
   private _slugSuggestRequestId = 0;
@@ -514,8 +527,10 @@ export class JantComposeDialog extends LitElement {
     this._publishedAtInput = "";
     this._publishedAtTimeMinutes = null;
     this._initialPublishedAtInput = "";
+    this._initialSlug = "";
     this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
+    this._publishPanelFullscreen = false;
     this._suggestedSlug = "";
     this._suggestedSlugLoading = false;
     this._slugCheckLoading = false;
@@ -592,6 +607,8 @@ export class JantComposeDialog extends LitElement {
     this._slug = "";
     this._publishedAtInput = "";
     this._publishedAtTimeMinutes = null;
+    this._initialPublishedAtInput = "";
+    this._initialSlug = "";
     this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
     this._suggestedSlug = "";
@@ -668,6 +685,7 @@ export class JantComposeDialog extends LitElement {
         ? getTimestampTimeMinutes(post.publishedAt)
         : null;
       this._initialPublishedAtInput = this._publishedAtInput;
+      this._initialSlug = this._slug.trim();
       this._visibility = post.visibility ?? "public";
       this._visibilityLocked = Boolean(post.replyToId);
 
@@ -1474,6 +1492,7 @@ export class JantComposeDialog extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this._syncPublishPanelPresentation();
     this.addEventListener("keydown", this._handleKeydown);
     this.addEventListener("jant:alt-panel-open", this._handleAltPanelOpen);
     this.addEventListener("jant:alt-panel-close", this._handleAltPanelClose);
@@ -1596,9 +1615,19 @@ export class JantComposeDialog extends LitElement {
     this._clearFilePickerEscapeState();
   };
 
+  private _syncPublishPanelPresentation() {
+    const nextValue =
+      globalThis.matchMedia?.(COMPOSE_PUBLISH_PANEL_FULLSCREEN_QUERY)
+        ?.matches ?? false;
+    if (nextValue !== this._publishPanelFullscreen) {
+      this._publishPanelFullscreen = nextValue;
+    }
+  }
+
   private _handleViewportChange = () => {
+    this._syncPublishPanelPresentation();
     if (!this._showPublishPanel) return;
-    this._updatePublishPanelLayout();
+    this.updateComplete.then(() => this._updatePublishPanelLayout());
   };
 
   private _handleDialogCancel = (e: Event) => {
@@ -1663,8 +1692,7 @@ export class JantComposeDialog extends LitElement {
     }
 
     if (this._showPublishPanel) {
-      this._showPublishPanel = false;
-      this._restorePageEditorFocus();
+      this._closePublishPanel(true);
       return true;
     }
 
@@ -1945,6 +1973,8 @@ export class JantComposeDialog extends LitElement {
     this._publishedAtTimeMinutes = post.publishedAt
       ? getTimestampTimeMinutes(post.publishedAt)
       : null;
+    this._initialPublishedAtInput = this._publishedAtInput;
+    this._initialSlug = this._slug.trim();
     this._visibility = post.visibility ?? "public";
     this._visibilityLocked = Boolean(post.replyToId);
 
@@ -3105,7 +3135,7 @@ export class JantComposeDialog extends LitElement {
   }
 
   private _getPublishedAtSummary(): { input: string; text: string } | null {
-    if (this._editPostId) {
+    if (this._editPostId || this._draftSourceId) {
       if (this._publishedAtInput === this._initialPublishedAtInput) {
         return null;
       }
@@ -3132,6 +3162,58 @@ export class JantComposeDialog extends LitElement {
         new Date(parsedDate.year, parsedDate.monthIndex, parsedDate.day),
       ),
     };
+  }
+
+  private _getSlugSummary(): ComposePublishSummaryChip | null {
+    const currentSlug = this._slug.trim();
+
+    if (currentSlug && this._getSlugValidationMessage() !== null) {
+      return null;
+    }
+
+    if (this._editPostId || this._draftSourceId) {
+      if (currentSlug === this._initialSlug) {
+        return null;
+      }
+
+      if (!currentSlug) {
+        return {
+          kind: "slug",
+          text: this.labels.publishSlugSummaryAuto,
+          actionLabel: this.labels.publishSlugSummaryAction,
+          value: currentSlug,
+        };
+      }
+    }
+
+    if (!currentSlug) return null;
+
+    return {
+      kind: "slug",
+      text: `/${currentSlug}`,
+      actionLabel: this.labels.publishSlugSummaryAction,
+      value: currentSlug,
+    };
+  }
+
+  private _getPublishSummaryChips(): ComposePublishSummaryChip[] {
+    const chips: ComposePublishSummaryChip[] = [];
+    const publishedAtSummary = this._getPublishedAtSummary();
+    if (publishedAtSummary !== null) {
+      chips.push({
+        kind: "publishedAt",
+        text: publishedAtSummary.text,
+        actionLabel: this.labels.publishDateSummaryAction,
+        value: publishedAtSummary.input,
+      });
+    }
+
+    const slugSummary = this._getSlugSummary();
+    if (slugSummary !== null) {
+      chips.push(slugSummary);
+    }
+
+    return chips;
   }
 
   private _getPublishedAtSubmitValue(
@@ -3165,7 +3247,7 @@ export class JantComposeDialog extends LitElement {
     this._confirmPanelOpen = false;
     this._scheduleSuggestedSlugRefresh(true);
     this.updateComplete.then(() => {
-      this.querySelector<HTMLInputElement>(selector)?.focus();
+      this.querySelector<HTMLElement>(selector)?.focus();
     });
   }
 
@@ -3196,6 +3278,21 @@ export class JantComposeDialog extends LitElement {
     return this._hasContent();
   }
 
+  private _focusPublishPanelInitialField() {
+    const selector = this._visibilityLocked
+      ? ".compose-publish-date-input"
+      : ".compose-publish-option[role='radio']";
+    this.querySelector<HTMLElement>(selector)?.focus();
+  }
+
+  private _closePublishPanel(restoreFocus = false) {
+    if (!this._showPublishPanel) return;
+    this._showPublishPanel = false;
+    if (restoreFocus) {
+      this.updateComplete.then(() => this._restorePageEditorFocus());
+    }
+  }
+
   private _togglePublishPanel() {
     this._showCollection = false;
     this._collectionSearch = "";
@@ -3203,6 +3300,7 @@ export class JantComposeDialog extends LitElement {
     this._showPublishPanel = nextOpen;
     if (nextOpen) {
       this._scheduleSuggestedSlugRefresh(true);
+      this.updateComplete.then(() => this._focusPublishPanelInitialField());
     }
   }
 
@@ -3212,7 +3310,6 @@ export class JantComposeDialog extends LitElement {
     if (!this._editPostId && !this._draftSourceId && !this._replyToId) {
       JantComposeDialog._lastNewPostVisibility = visibility;
     }
-    this._showPublishPanel = false;
   }
 
   private _onSlugInput(e: Event) {
@@ -3457,103 +3554,193 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
-  private _renderPublishPanel() {
-    if (!this._showPublishPanel) return nothing;
+  private _renderPublishPanelSections() {
+    return html`
+      ${this._visibilityLocked
+        ? nothing
+        : html`
+            <section class="compose-publish-section">
+              <div class="compose-publish-section-header">
+                <div class="compose-publish-section-copy">
+                  <p class="compose-publish-section-label">
+                    ${this.labels.publishVisibilityLabel}
+                  </p>
+                </div>
+              </div>
+              <div class="compose-publish-list" role="radiogroup">
+                ${this._renderPublishVisibilityOption(
+                  "public",
+                  this.labels.publishVisibilityPublic,
+                  this.labels.publishVisibilityPublicHint,
+                )}
+                ${this._renderPublishVisibilityOption(
+                  "latest_hidden",
+                  this.labels.publishVisibilityHiddenFromLatest,
+                  this.labels.publishVisibilityHiddenFromLatestHint,
+                )}
+                ${this._renderPublishVisibilityOption(
+                  "private",
+                  this.labels.publishVisibilityPrivate,
+                  this.labels.publishVisibilityPrivateHint,
+                )}
+              </div>
+            </section>
+          `}
+      ${this._visibilityLocked
+        ? nothing
+        : html`<div class="compose-publish-divider" aria-hidden="true"></div>`}
+      ${this._renderPublishDateSection()}
+      <div class="compose-publish-divider" aria-hidden="true"></div>
+      ${this._renderPublishSlugSection()}
+    `;
+  }
+
+  private _renderDesktopPublishPanel() {
+    if (!this._showPublishPanel || this._publishPanelFullscreen) {
+      return nothing;
+    }
 
     return html`
       <div
-        class="compose-publish-panel"
+        class="compose-publish-panel compose-publish-panel-desktop"
         role="dialog"
         aria-label=${this.labels.publishSettings}
         data-position="up"
         data-compose-publish-panel
+        data-compose-publish-panel-desktop
       >
-        ${this._visibilityLocked
-          ? nothing
-          : html`
-              <section class="compose-publish-section">
-                <div class="compose-publish-section-header">
-                  <div class="compose-publish-section-copy">
-                    <p class="compose-publish-section-label">
-                      ${this.labels.publishVisibilityLabel}
-                    </p>
-                  </div>
-                </div>
-                <div class="compose-publish-list" role="radiogroup">
-                  ${this._renderPublishVisibilityOption(
-                    "public",
-                    this.labels.publishVisibilityPublic,
-                    this.labels.publishVisibilityPublicHint,
-                  )}
-                  ${this._renderPublishVisibilityOption(
-                    "latest_hidden",
-                    this.labels.publishVisibilityHiddenFromLatest,
-                    this.labels.publishVisibilityHiddenFromLatestHint,
-                  )}
-                  ${this._renderPublishVisibilityOption(
-                    "private",
-                    this.labels.publishVisibilityPrivate,
-                    this.labels.publishVisibilityPrivateHint,
-                  )}
-                </div>
-              </section>
-            `}
-        ${this._visibilityLocked
-          ? nothing
-          : html`<div
-              class="compose-publish-divider"
-              aria-hidden="true"
-            ></div>`}
-        ${this._renderPublishDateSection()}
-        <div class="compose-publish-divider" aria-hidden="true"></div>
-        ${this._renderPublishSlugSection()}
+        ${this._renderPublishPanelSections()}
       </div>
     `;
   }
 
-  private _renderPublishDateSummary() {
-    const summary = this._getPublishedAtSummary();
-    if (summary === null) return nothing;
+  private _renderMobilePublishPanel() {
+    if (!this._showPublishPanel || !this._publishPanelFullscreen) {
+      return nothing;
+    }
+
+    return html`
+      <div
+        class="compose-publish-panel compose-publish-panel-mobile"
+        role="dialog"
+        aria-label=${this.labels.publishSettings}
+        aria-modal="true"
+        data-compose-publish-panel
+        data-compose-publish-panel-mobile
+      >
+        <div class="compose-alt-header compose-publish-mobile-header">
+          <button
+            type="button"
+            class="compose-attached-panel-back"
+            @click=${() => this._closePublishPanel(true)}
+          >
+            <svg
+              class="icon-fine"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 3L6 8l5 5" />
+            </svg>
+          </button>
+          <span class="compose-alt-title">${this.labels.publishSettings}</span>
+          <button
+            type="button"
+            class="compose-attached-cancel compose-publish-mobile-done"
+            @click=${() => this._closePublishPanel(true)}
+          >
+            ${this.labels.done}
+          </button>
+        </div>
+        <div class="compose-publish-mobile-body">
+          ${this._renderPublishPanelSections()}
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderPublishSummary(summary: ComposePublishSummaryChip) {
+    const isPublishedAt = summary.kind === "publishedAt";
 
     return html`
       <button
         type="button"
         class="compose-publish-summary"
-        data-compose-publish-date-summary
-        data-publish-date=${summary.input}
-        aria-label=${this.labels.publishDateSummaryAction}
-        title=${this.labels.publishDateSummaryAction}
+        data-compose-publish-summary=${summary.kind}
+        data-compose-publish-date-summary=${isPublishedAt ? "" : nothing}
+        data-compose-publish-slug-summary=${isPublishedAt ? nothing : ""}
+        data-publish-summary-value=${summary.value}
+        data-publish-date=${isPublishedAt ? summary.value : nothing}
+        data-publish-slug=${isPublishedAt ? nothing : summary.value}
+        aria-label=${summary.actionLabel}
+        title=${summary.actionLabel}
         ?disabled=${this._loading}
-        @click=${() => this._revealPublishedAtField()}
+        @click=${() =>
+          isPublishedAt
+            ? this._revealPublishedAtField()
+            : this._revealSlugField()}
       >
         <span class="compose-publish-summary-icon" aria-hidden="true">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.35"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="2.75" y="3.45" width="10.5" height="9.8" rx="2.2" />
-            <path d="M5.35 2.55v2.1" />
-            <path d="M10.65 2.55v2.1" />
-            <path d="M2.75 6.2h10.5" />
-          </svg>
+          ${isPublishedAt
+            ? html`<svg
+                width="14"
+                height="14"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.35"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="2.75" y="3.45" width="10.5" height="9.8" rx="2.2" />
+                <path d="M5.35 2.55v2.1" />
+                <path d="M10.65 2.55v2.1" />
+                <path d="M2.75 6.2h10.5" />
+              </svg>`
+            : html`<svg
+                width="14"
+                height="14"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.35"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9.75 4.15h1.35a2.75 2.75 0 0 1 0 5.5H9.75" />
+                <path d="M6.25 9.65H4.9a2.75 2.75 0 1 1 0-5.5h1.35" />
+                <path d="M5.65 8h4.7" />
+              </svg>`}
         </span>
         <span class="compose-publish-summary-text">${summary.text}</span>
       </button>
     `;
   }
 
+  private _renderPublishSummaries() {
+    const summaries = this._getPublishSummaryChips();
+    if (summaries.length === 0) return nothing;
+
+    return html`
+      <div class="compose-publish-summaries">
+        ${summaries.map((summary) => this._renderPublishSummary(summary))}
+      </div>
+    `;
+  }
+
   private _updatePublishPanelLayout() {
+    if (this._publishPanelFullscreen) return;
+
     const publishGroup = this.querySelector<HTMLElement>(
       ".compose-publish-group",
     );
     const panel = this.querySelector<HTMLElement>(
-      "[data-compose-publish-panel]",
+      "[data-compose-publish-panel-desktop]",
     );
     if (!publishGroup || !panel) return;
 
@@ -3561,21 +3748,14 @@ export class JantComposeDialog extends LitElement {
     const viewportTop = visualViewport?.offsetTop ?? 0;
     const viewportBottom =
       viewportTop + (visualViewport?.height ?? globalThis.innerHeight);
-    const dialogRect = this._dialogEl?.getBoundingClientRect();
     const groupRect = publishGroup.getBoundingClientRect();
     const edgePadding = 12;
-    const gap = 8;
-    const topBoundary = Math.max(
-      viewportTop + edgePadding,
-      dialogRect ? dialogRect.top + edgePadding : Number.NEGATIVE_INFINITY,
-    );
-    const bottomBoundary = Math.min(
-      viewportBottom - edgePadding,
-      dialogRect ? dialogRect.bottom - edgePadding : Number.POSITIVE_INFINITY,
-    );
+    const gap = 10;
+    const topBoundary = viewportTop + edgePadding;
+    const bottomBoundary = viewportBottom - edgePadding;
     const availableAbove = Math.max(0, groupRect.top - topBoundary - gap);
     const availableBelow = Math.max(0, bottomBoundary - groupRect.bottom - gap);
-    const direction = availableAbove >= availableBelow ? "up" : "down";
+    const direction = availableBelow >= availableAbove ? "down" : "up";
     const maxHeight = Math.max(
       1,
       Math.floor(direction === "up" ? availableAbove : availableBelow),
@@ -3606,14 +3786,17 @@ export class JantComposeDialog extends LitElement {
 
     return html`
       <div class="compose-publish-shell">
-        ${this._renderPublishDateSummary()}
-        <div class="compose-publish-group">
-          ${this._showPublishPanel
+        ${this._renderPublishSummaries()}
+        <div
+          class=${classMap({
+            "compose-publish-group": true,
+            "compose-publish-group-open": this._showPublishPanel,
+          })}
+        >
+          ${this._showPublishPanel && !this._publishPanelFullscreen
             ? html`<div
                 class="compose-dropdown-backdrop"
-                @click=${() => {
-                  this._showPublishPanel = false;
-                }}
+                @click=${() => this._closePublishPanel(true)}
               ></div>`
             : nothing}
           <div
@@ -3653,7 +3836,7 @@ export class JantComposeDialog extends LitElement {
               )}
             </button>
           </div>
-          ${this._renderPublishPanel()}
+          ${this._renderDesktopPublishPanel()}
         </div>
       </div>
     `;
@@ -3740,8 +3923,9 @@ export class JantComposeDialog extends LitElement {
             >
               ${this._renderCollectionSelector()} ${this._renderPublishButton()}
             </div>`}
-        ${this._renderAttachedPanel()} ${this._renderAltPanel()}
-        ${this._renderDraftsPanel()} ${this._renderConfirmPanel()}
+        ${this._renderMobilePublishPanel()} ${this._renderAttachedPanel()}
+        ${this._renderAltPanel()} ${this._renderDraftsPanel()}
+        ${this._renderConfirmPanel()}
       </div>
       ${this._renderAddCollectionPanel()}
     `;

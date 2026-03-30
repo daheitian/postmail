@@ -3934,77 +3934,139 @@
 
   .compose-quote-wrap {
     position: relative;
+    margin-bottom: 0.95rem;
+    padding: 28px 20px 18px;
     background-color: color-mix(
       in srgb,
       var(--compose-control-bg) 86%,
       var(--compose-paper-bg)
     );
     border: 1px solid var(--compose-control-border);
-    border-radius: 14px;
-    padding: 16px 18px 14px 36px;
-    margin-bottom: 10px;
+    border-radius: 1rem;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .compose-quote-wrap:hover {
+    background-color: color-mix(
+      in srgb,
+      var(--compose-control-bg-strong) 64%,
+      var(--compose-paper-bg)
+    );
+  }
+
+  .compose-quote-wrap:focus-within {
+    background-color: color-mix(
+      in srgb,
+      var(--compose-control-bg-strong) 74%,
+      var(--compose-paper-bg)
+    );
+    border-color: color-mix(in srgb, var(--site-border-light) 72%, transparent);
+    box-shadow: 0 0 0 1px
+      color-mix(in srgb, var(--site-border-light) 14%, transparent);
   }
 
   @media (min-width: 700px) {
     .compose-quote-wrap {
-      padding: 20px 22px 16px 40px;
+      padding: 30px 24px 20px;
+      border-radius: 1.05rem;
     }
   }
 
   .compose-quote-mark {
     position: absolute;
-    top: 10px;
-    left: 14px;
-    font-size: 36px;
-    font-family: var(--font-heading);
-    color: var(--site-text-secondary);
-    opacity: 0.5;
+    top: 0.7rem;
+    left: 1rem;
+    font-size: clamp(2.1rem, 1.96rem + 0.48vw, 2.55rem);
+    font-family: var(--font-serif);
+    color: color-mix(in srgb, var(--site-accent) 14%, var(--site-divider));
+    opacity: 0.6;
     line-height: 1;
     user-select: none;
   }
 
   .compose-quote-text {
-    font-family: var(--font-heading);
-    font-size: var(--type-body-size);
+    font-family: var(--font-serif);
+    font-size: clamp(1.16rem, 1.08rem + 0.36vw, 1.34rem);
     font-style: normal;
-    font-weight: var(--type-heading-weight);
-    line-height: var(--type-body-leading);
-    letter-spacing: var(--type-body-tracking);
-    min-height: 9rem;
+    font-weight: var(--fw-regular);
+    line-height: 1.42;
+    letter-spacing: -0.016em;
+    min-height: 7.5rem;
+    padding-top: 0.35rem;
+    text-wrap: pretty;
   }
 
   @media (min-width: 700px) {
     .compose-quote-text {
-      font-size: 1rem;
+      font-size: clamp(1.2rem, 1.12rem + 0.28vw, 1.42rem);
+      min-height: 8rem;
+      padding-top: 0.45rem;
     }
   }
 
   .compose-quote-author-row {
+    position: relative;
     display: flex;
     align-items: baseline;
-    gap: 8px;
-    padding-left: 6px;
-    margin-bottom: 4px;
+    gap: 0.5rem;
+    padding-left: 1.35rem;
+    margin-bottom: 0.2rem;
+    color: var(--site-text-secondary);
+  }
+
+  .compose-quote-author-row::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.82em;
+    width: 0.95rem;
+    height: 1px;
+    background: color-mix(
+      in srgb,
+      var(--site-text-secondary) 38%,
+      var(--site-divider)
+    );
   }
 
   .compose-quote-dash {
-    color: var(--site-text-secondary);
-    font-size: 1rem;
-    font-family: var(--font-heading);
-    user-select: none;
+    display: none;
   }
 
   .compose-quote-author {
-    font-size: var(--text-sm);
-    font-weight: var(--fw-medium);
-    letter-spacing: 0.01em;
+    font-size: 0.82rem;
+    font-weight: var(--fw-regular);
+    line-height: 1.45;
+    letter-spacing: 0.02em;
+    color: inherit;
   }
 
   .compose-quote-source {
-    padding-left: 22px;
-    margin-bottom: 14px;
+    padding-left: 1.35rem;
+    margin-bottom: 0.95rem;
+  }
+
+  .compose-quote-source-input {
     font-size: 0.78rem;
-    letter-spacing: 0.01em;
+    line-height: 1.45;
+    letter-spacing: 0.015em;
+    color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 88%,
+      var(--site-text-primary)
+    );
+  }
+
+  .compose-quote-author-row:focus-within .compose-quote-author,
+  .compose-quote-source:focus-within .compose-quote-source-input {
+    color: var(--site-text-primary);
+  }
+
+  .compose-quote-source .compose-url-status {
+    margin: 4px 0 0;
+    padding-left: 0;
   }
 
   .compose-url-input {
@@ -4042,6 +4104,20 @@
 
   .compose-divider {
     display: none;
+  }
+
+  .compose-divider-quote {
+    display: block;
+    height: 1px;
+    margin: 0 0 1rem;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--site-divider) 48%, transparent) 16%,
+      color-mix(in srgb, var(--site-divider) 78%, transparent) 50%,
+      color-mix(in srgb, var(--site-divider) 48%, transparent) 84%,
+      transparent 100%
+    );
   }
 
   .compose-thoughts {
@@ -4676,12 +4752,20 @@
     min-width: 0;
   }
 
+  .compose-publish-summaries {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    width: 100%;
+  }
+
   .compose-publish-summary {
     display: inline-flex;
     align-items: center;
     gap: 0.42rem;
     min-height: 1.85rem;
-    max-width: min(100%, 15rem);
+    max-width: min(100%, 15.5rem);
     padding: 0.32rem 0.62rem;
     border: 1px solid var(--compose-control-border);
     border-radius: 999px;
@@ -4751,6 +4835,10 @@
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
+  }
+
+  .compose-publish-group-open {
+    z-index: 100;
   }
 
   .compose-publish-single,
@@ -4926,18 +5014,6 @@
   }
 
   .compose-publish-panel {
-    position: absolute;
-    right: 0;
-    width: min(21rem, calc(100vw - 1.5rem));
-    max-height: var(
-      --compose-publish-panel-max-height,
-      min(
-        26rem,
-        calc(
-          100dvh - var(--compose-margin-top) - env(safe-area-inset-top) - 5rem
-        )
-      )
-    );
     padding: 0.75rem;
     background-color: var(--compose-floating-bg);
     border: 1px solid var(--compose-control-border);
@@ -4948,16 +5024,66 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    z-index: 120;
     animation: compose-fade-up 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .compose-publish-panel[data-position="up"] {
-    bottom: calc(100% + 8px);
+  .compose-publish-panel-desktop {
+    position: absolute;
+    right: 0;
+    width: min(24rem, calc(100vw - 1.5rem));
+    max-height: var(
+      --compose-publish-panel-max-height,
+      min(
+        28rem,
+        calc(
+          100dvh - var(--compose-margin-top) - env(safe-area-inset-top) - 5rem
+        )
+      )
+    );
+    z-index: 120;
   }
 
-  .compose-publish-panel[data-position="down"] {
-    top: calc(100% + 8px);
+  .compose-publish-panel-desktop[data-position="up"] {
+    bottom: calc(100% + 10px);
+    transform-origin: bottom right;
+  }
+
+  .compose-publish-panel-desktop[data-position="down"] {
+    top: calc(100% + 10px);
+    transform-origin: top right;
+  }
+
+  .compose-publish-panel-mobile {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    border: none;
+    border-radius: inherit;
+    background-color: var(--compose-paper-bg);
+    box-shadow: none;
+    overflow: hidden;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .compose-publish-mobile-header {
+    background-color: var(--compose-paper-bg);
+    border-bottom: 1px solid var(--site-divider);
+  }
+
+  .compose-publish-mobile-done {
+    margin-left: auto;
+  }
+
+  .compose-publish-mobile-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-top: 1rem;
+    padding-right: calc(1rem + env(safe-area-inset-right));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    padding-left: calc(1rem + env(safe-area-inset-left));
   }
 
   .compose-publish-section {
