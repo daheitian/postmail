@@ -2,9 +2,12 @@
 
 FROM node:24-bookworm-slim AS build
 
+ARG JANT_BUILD_ID=""
+
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 ENV HUSKY=0
+ENV JANT_BUILD_ID=$JANT_BUILD_ID
 
 RUN corepack enable
 

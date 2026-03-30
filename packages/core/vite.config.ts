@@ -9,7 +9,7 @@ import { defineConfig } from "vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { parsePortValue } from "./src/lib/env.js";
-import { pkg, clientBuildOptions, swcPlugin } from "./vite.shared";
+import { buildVersion, clientBuildOptions, swcPlugin } from "./vite.shared";
 import { linguiAutoExtract, ssrReload } from "./vite.dev-plugins";
 
 export default defineConfig({
@@ -29,7 +29,7 @@ export default defineConfig({
 
   define: {
     __JANT_DEV__: "true",
-    __JANT_VERSION__: JSON.stringify(pkg.version),
+    __JANT_VERSION__: JSON.stringify(buildVersion),
   },
 
   environments: {

@@ -3,6 +3,7 @@
  *
  * Exports:
  * - pkg: package.json data (version, dependencies)
+ * - buildVersion: cache-busting version token for deployed assets
  * - CLIENT_TARGET: browser target for client asset compilation
  * - clientBuildOptions: rollup input/output for public/auth JS and CSS assets
  * - swcPlugin: SWC with Hono JSX + Lingui macro transforms
@@ -21,6 +22,17 @@ const dir = import.meta.dirname;
 export const pkg = JSON.parse(
   readFileSync(resolve(dir, "package.json"), "utf-8"),
 );
+
+const rawBuildId = (process.env.JANT_BUILD_ID ?? "").trim();
+const safeBuildId = rawBuildId.replace(/[^0-9A-Za-z._-]/g, "").slice(0, 16);
+
+/**
+ * Deployed assets are cached as immutable, so semver alone is not a stable
+ * cache-buster for hosted builds that ship unreleased commits.
+ */
+export const buildVersion = safeBuildId
+  ? `${pkg.version}-${safeBuildId}`
+  : pkg.version;
 
 /** Browser target for client assets. */
 export const CLIENT_TARGET = "es2022" as const;

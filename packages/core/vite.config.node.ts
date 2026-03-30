@@ -17,7 +17,7 @@ import {
   resolvePort,
 } from "./src/node/request-handler.js";
 import type { Bindings } from "./src/types/bindings.js";
-import { pkg, swcPlugin } from "./vite.shared";
+import { buildVersion, swcPlugin } from "./vite.shared";
 import { linguiAutoExtract, ssrReload } from "./vite.dev-plugins";
 
 function nodeMiddleware(): Plugin {
@@ -103,7 +103,7 @@ export default defineConfig(async ({ command, mode }) => {
 
     define: {
       __JANT_DEV__: "true",
-      __JANT_VERSION__: JSON.stringify(pkg.version),
+      __JANT_VERSION__: JSON.stringify(buildVersion),
     },
 
     plugins: [

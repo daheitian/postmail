@@ -10,7 +10,7 @@
 
 import { defineConfig } from "vite";
 import { resolve } from "path";
-import { pkg, swcPlugin } from "./vite.shared";
+import { buildVersion, pkg, swcPlugin } from "./vite.shared";
 
 const dir = import.meta.dirname;
 
@@ -19,7 +19,7 @@ export default defineConfig({
   oxc: false,
 
   define: {
-    __JANT_VERSION__: JSON.stringify(pkg.version),
+    __JANT_VERSION__: JSON.stringify(buildVersion),
     // __JANT_DEV__ intentionally omitted — typeof check evaluates to false
   },
 
