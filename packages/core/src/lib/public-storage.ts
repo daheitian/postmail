@@ -5,7 +5,12 @@
  * older legacy keys kept readable for backwards compatibility.
  */
 
-const CURRENT_MEDIA_SEGMENTS = ["files", "posters", "assets"] as const;
+const CURRENT_MEDIA_SEGMENTS = [
+  "files",
+  "posters",
+  "assets",
+  "previews",
+] as const;
 const LEGACY_SITE_STORAGE_SEGMENTS = ["media", "site-assets"] as const;
 
 /**

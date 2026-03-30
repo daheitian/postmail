@@ -60,6 +60,9 @@ export interface Post {
   quoteText: string | null;
   summary: string | null;
   rating: number | null;
+  previewImageKey: string | null;
+  previewKind: string | null;
+  previewProvider: string | null;
   replyToId: string | null;
   threadId: string;
   deletedAt: number | null;

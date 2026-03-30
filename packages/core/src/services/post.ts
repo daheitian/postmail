@@ -65,6 +65,12 @@ import {
   NotFoundError,
 } from "../lib/errors.js";
 import { createPathService, type PathService } from "./path.js";
+import {
+  extractYouTubeVideoId,
+  getYouTubeThumbnailUrls,
+} from "../lib/youtube.js";
+import { getPreviewStorageKey } from "../lib/upload.js";
+import { generateRandomId } from "../lib/nanoid.js";
 
 /** Dependencies for operations that coordinate with other services */
 export interface PostDeleteDeps {
@@ -508,6 +514,87 @@ export function createPostService(
     return [...new Set(collectionIds)];
   }
 
+  /**
+   * Fetch a link preview thumbnail and store it.
+   * Silently returns without updating if the URL is not a recognized provider
+   * or if the fetch fails.
+   */
+  async function resolveAndStorePreview(
+    postId: string,
+    format: string,
+    url: string | null | undefined,
+    storage: StorageDriver | null | undefined,
+  ): Promise<void> {
+    if (!storage || format !== "link" || !url) return;
+
+    const videoId = extractYouTubeVideoId(url);
+    if (!videoId) return;
+
+    const thumbnailUrls = getYouTubeThumbnailUrls(videoId);
+    let imageBytes: Uint8Array | null = null;
+    let contentType = "image/jpeg";
+
+    for (const thumbUrl of thumbnailUrls) {
+      try {
+        const response = await fetch(thumbUrl);
+        if (response.ok) {
+          const ct = response.headers.get("content-type");
+          // YouTube returns a grey placeholder (120×90) when maxresdefault
+          // is not available. Detect it by checking content-length.
+          const cl = response.headers.get("content-length");
+          if (cl && parseInt(cl, 10) < 5000) {
+            // Too small — likely a placeholder, try next quality
+            continue;
+          }
+          imageBytes = new Uint8Array(await response.arrayBuffer());
+          if (ct) contentType = ct;
+          break;
+        }
+      } catch {
+        // Network failure — try next URL
+      }
+    }
+
+    if (!imageBytes) return;
+
+    const ext = contentType.includes("webp")
+      ? "webp"
+      : contentType.includes("png")
+        ? "png"
+        : "jpg";
+    const suffix = generateRandomId(8);
+    const storageKey = getPreviewStorageKey(siteId, postId, suffix, ext);
+
+    try {
+      await storage.put(storageKey, imageBytes, { contentType });
+      await db
+        .update(posts)
+        .set({
+          previewImageKey: storageKey,
+          previewKind: "video",
+          previewProvider: "youtube",
+        })
+        .where(and(eq(posts.siteId, siteId), eq(posts.id, postId)));
+    } catch {
+      // Storage or DB failure — preview is best-effort
+    }
+  }
+
+  /**
+   * Delete a preview image from storage if it exists.
+   */
+  async function deletePreviewImage(
+    previewImageKey: string | null | undefined,
+    storage: StorageDriver | null | undefined,
+  ): Promise<void> {
+    if (!storage || !previewImageKey) return;
+    try {
+      await storage.delete(previewImageKey);
+    } catch {
+      // Best-effort cleanup
+    }
+  }
+
   function buildCollectionMembershipCondition(
     collectionIds: readonly string[],
   ): SQL<unknown> {
@@ -801,6 +888,9 @@ export function createPostService(
       quoteText: row.quoteText,
       summary: row.summary,
       rating: ensurePostRating(row.rating, Error),
+      previewImageKey: row.previewImageKey,
+      previewKind: row.previewKind,
+      previewProvider: row.previewProvider,
       replyToId: row.replyToId,
       threadId: row.threadId,
       deletedAt: row.deletedAt,
@@ -1479,6 +1569,15 @@ export function createPostService(
             await deps.media.attachToPost(post.id, orderedMediaIds);
           }
           await applyAttachmentAltUpdates(attachmentInputs, deps);
+
+          // Best-effort: fetch and store link preview thumbnail
+          await resolveAndStorePreview(
+            post.id,
+            post.format,
+            post.url,
+            deps.storage,
+          );
+
           return post;
         } catch (error) {
           await deps.media.attachToPost(post.id, []).catch(() => undefined);
@@ -1849,7 +1948,32 @@ export function createPostService(
 
     async updateWithAttachments(id, data, attachments, deps, summaryConfig) {
       if (attachments === undefined) {
-        return this.update(id, data, summaryConfig);
+        const existing = await this.getById(id);
+        const post = await this.update(id, data, summaryConfig);
+        if (post && existing) {
+          const urlChanged =
+            data.url !== undefined && data.url !== existing.url;
+          const formatChanged =
+            data.format !== undefined && data.format !== existing.format;
+          if (urlChanged || formatChanged) {
+            await deletePreviewImage(existing.previewImageKey, deps.storage);
+            await db
+              .update(posts)
+              .set({
+                previewImageKey: null,
+                previewKind: null,
+                previewProvider: null,
+              })
+              .where(and(eq(posts.siteId, siteId), eq(posts.id, post.id)));
+            await resolveAndStorePreview(
+              post.id,
+              post.format,
+              post.url,
+              deps.storage,
+            );
+          }
+        }
+        return post;
       }
 
       const existingPost = await this.getById(id);
@@ -1898,6 +2022,34 @@ export function createPostService(
           .deleteByIds(removedTextAttachmentIds, deps.storage)
           .catch(() => undefined);
 
+        // Best-effort: update link preview when URL changes
+        const urlChanged =
+          data.url !== undefined && data.url !== existingPost.url;
+        const formatChanged =
+          data.format !== undefined && data.format !== existingPost.format;
+        if (urlChanged || formatChanged) {
+          // Clean up old preview image
+          await deletePreviewImage(existingPost.previewImageKey, deps.storage);
+
+          // Clear preview fields first (may be re-set by resolveAndStorePreview)
+          await db
+            .update(posts)
+            .set({
+              previewImageKey: null,
+              previewKind: null,
+              previewProvider: null,
+            })
+            .where(and(eq(posts.siteId, siteId), eq(posts.id, post.id)));
+
+          // Fetch new preview if applicable
+          await resolveAndStorePreview(
+            post.id,
+            post.format,
+            post.url,
+            deps.storage,
+          );
+        }
+
         return post;
       } catch (error) {
         if (replacedAttachments) {
@@ -1925,23 +2077,29 @@ export function createPostService(
       const existing = await this.getById(id);
       if (!existing) return false;
 
-      // Clean up media for all affected posts
+      // Clean up media and preview images for all affected posts
       if (deps?.media) {
-        let postIds: string[];
+        let affectedPosts: Post[];
         if (!isThreadReply(existing)) {
-          const thread = await this.getThread(id);
-          postIds = thread.map((p) => p.id);
+          affectedPosts = await this.getThread(id);
         } else {
-          postIds = [id];
+          affectedPosts = [existing];
         }
 
-        const mediaMap = await deps.media.getByPostIds(postIds);
+        const mediaMap = await deps.media.getByPostIds(
+          affectedPosts.map((p) => p.id),
+        );
         const allMedia = [...mediaMap.values()].flat();
         if (allMedia.length > 0) {
           await deps.media.deleteByIds(
             allMedia.map((m) => m.id),
             deps.storage,
           );
+        }
+
+        // Clean up preview images
+        for (const p of affectedPosts) {
+          await deletePreviewImage(p.previewImageKey, deps.storage);
         }
       }
 

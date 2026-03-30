@@ -12,6 +12,7 @@ import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 import { sanitizeUrl, extractDisplayDomain } from "../../lib/url.js";
 import { MediaGallery } from "../shared/MediaGallery.js";
+import { LinkPreview } from "./LinkPreview.js";
 
 export const LinkCard: FC<TimelineCardProps> = ({
   post,
@@ -95,6 +96,14 @@ export const LinkCard: FC<TimelineCardProps> = ({
             </a>
           </h2>
         ))}
+      {!isCompact && post.previewImageUrl && (
+        <LinkPreview
+          imageUrl={post.previewImageUrl}
+          linkUrl={safeUrl}
+          kind={post.previewKind}
+          provider={post.previewProvider}
+        />
+      )}
       {!isCompact && post.bodyHtml && (
         <div
           class={`e-content prose feed-link-summary${isDetail ? " post-detail-body" : " text-muted-foreground"}`}

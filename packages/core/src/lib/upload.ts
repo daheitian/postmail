@@ -11,6 +11,7 @@ const MEDIA_ROOT_PREFIX = "media";
 const MEDIA_FILES_STORAGE_PREFIX = "files";
 const MEDIA_POSTERS_STORAGE_PREFIX = "posters";
 const MEDIA_ASSET_STORAGE_PREFIX = "assets";
+const MEDIA_PREVIEWS_STORAGE_PREFIX = "previews";
 
 /** MIME types — images */
 const IMAGE_MIME_TYPES = [
@@ -522,4 +523,30 @@ export function getSiteStorageKey(
   filename: string,
 ): string {
   return `${MEDIA_ROOT_PREFIX}/${siteId}/${MEDIA_ASSET_STORAGE_PREFIX}/${assetKind}/${filename}`;
+}
+
+/**
+ * Generates a storage key for a link preview image.
+ *
+ * Uses a unique suffix to avoid cache staleness when the preview is replaced.
+ *
+ * @param siteId - The site ID
+ * @param postId - The post ID
+ * @param suffix - A short random string to make the key unique across updates
+ * @param ext - File extension (default: "jpg")
+ * @returns Storage key like `media/{siteId}/previews/{postId}-{suffix}.jpg`
+ *
+ * @example
+ * ```ts
+ * getPreviewStorageKey("sit_123", "pst_456", "a3k9m");
+ * // "media/sit_123/previews/pst_456-a3k9m.jpg"
+ * ```
+ */
+export function getPreviewStorageKey(
+  siteId: string,
+  postId: string,
+  suffix: string,
+  ext = "jpg",
+): string {
+  return `${MEDIA_ROOT_PREFIX}/${siteId}/${MEDIA_PREVIEWS_STORAGE_PREFIX}/${postId}-${suffix}.${ext}`;
 }

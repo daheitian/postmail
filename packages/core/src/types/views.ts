@@ -66,6 +66,14 @@ export interface PostView {
   featuredAtTime?: string;
   rating?: number;
 
+  // Link preview
+  /** Preview kind: "video", "image", etc. */
+  previewKind?: string;
+  /** Preview provider: "youtube", "vimeo", etc. */
+  previewProvider?: string;
+  /** Pre-computed preview image URL */
+  previewImageUrl?: string;
+
   // Time -- pre-formatted
   /** ISO 8601 string */
   publishedAt: string;

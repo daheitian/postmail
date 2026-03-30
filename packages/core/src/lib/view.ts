@@ -49,6 +49,8 @@ export interface MediaContext {
   localPublicUrl?: string;
   sitePathPrefix?: string;
   timeZone?: string;
+  /** Active storage driver name — used to resolve CDN URLs for server-stored assets like previews. */
+  storageDriver?: string;
 }
 
 /**
@@ -65,6 +67,7 @@ export function createMediaContext(appConfig: AppConfig): MediaContext {
     localPublicUrl: appConfig.localPublicUrl || undefined,
     sitePathPrefix: appConfig.sitePathPrefix || undefined,
     timeZone: appConfig.timeZone || undefined,
+    storageDriver: appConfig.storageDriver || undefined,
   };
 }
 
@@ -269,6 +272,24 @@ export function toPostView(
     featuredAtTime:
       featuredAt !== null ? formatTime(featuredAt, timeZone) : undefined,
     rating: post.rating ?? undefined,
+    previewKind: post.previewKind ?? undefined,
+    previewProvider: post.previewProvider ?? undefined,
+    previewImageUrl: post.previewImageKey
+      ? getImageUrl(
+          getMediaUrl(
+            post.previewImageKey,
+            getPublicUrlForProvider(
+              ctx.storageDriver ?? "r2",
+              ctx.r2PublicUrl,
+              ctx.s3PublicUrl,
+              ctx.localPublicUrl,
+            ),
+            ctx.sitePathPrefix,
+          ),
+          ctx.imageTransformUrl,
+          { width: 1280, quality: 80, format: "auto", fit: "scale-down" },
+        )
+      : undefined,
     publishedAt: toISOString(publishedAt),
     publishedAtFormatted: formatDate(publishedAt, timeZone),
     publishedAtTime: formatTime(publishedAt, timeZone),
