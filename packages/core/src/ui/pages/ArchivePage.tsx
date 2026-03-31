@@ -1151,6 +1151,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
   isAuthenticated,
   sitePathPrefix = "",
   timeZone = "UTC",
+  feedHref,
 }) => {
   const { i18n } = useLingui();
   const currentView: ArchiveView = filters.view ?? "grid";
@@ -1184,6 +1185,26 @@ export const ArchivePage: FC<ArchivePageProps> = ({
               }),
             )}
           </h1>
+          {feedHref && (
+            <a
+              href={toPublicPath(feedHref, sitePathPrefix)}
+              class="archive-feed-link"
+              title={i18n._(
+                msg({
+                  message: "RSS feed for this view",
+                  comment:
+                    "@context: Tooltip for the RSS feed button on the archive page",
+                }),
+              )}
+              rel="noopener noreferrer"
+            >
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: getIconSvg("rss") ?? "",
+                }}
+              />
+            </a>
+          )}
         </div>
         <p
           class="page-intro-meta archive-page-meta"

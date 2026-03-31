@@ -321,9 +321,11 @@ msgstr "Apple 觸控圖示"
 msgid "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
 msgstr "套用到整個網站，包括管理頁面。先選擇配色，再決定要依系統顯示還是固定模式。"
 
+#. @context: Archive feed title prefix
 #. @context: Archive page title
 #. @context: Built-in navigation label for the archive page
 #. @context: Inactive nav link label on sample page
+#: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/navigation-labels.ts
@@ -1662,7 +1664,9 @@ msgstr "連結到你的選集頁"
 msgid "Link updated."
 msgstr "連結已更新."
 
+#. @context: Archive feed title segment for link format filter
 #. @context: Post format label plural - links
+#: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Links"
 msgstr "連結"
@@ -1982,7 +1986,9 @@ msgstr "筆記"
 msgid "note treatment"
 msgstr "筆記樣式"
 
+#. @context: Archive feed title segment for note format filter
 #. @context: Post format label plural - notes
+#: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Notes"
 msgstr "筆記"
@@ -2276,8 +2282,10 @@ msgstr "引用"
 msgid "Quoted or highlighted passages should feel like annotations, not warnings."
 msgstr "引用或凸顯的段落應該感覺像註解，而不是警告。"
 
+#. @context: Archive feed title segment for quote format filter
 #. @context: Placeholder for the custom collections link label
 #. @context: Post format label plural - quotes
+#: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/shared/collection-management-labels.ts
 msgid "Quotes"
@@ -2412,6 +2420,11 @@ msgstr "撤銷"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "撤銷此權杖？任何使用它的腳本將會停止運作。"
+
+#. @context: Tooltip for the RSS feed button on the archive page
+#: src/ui/pages/ArchivePage.tsx
+msgid "RSS feed for this view"
+msgstr ""
 
 #. @context: Button to save collection
 #. @context: Button to save settings
@@ -2796,11 +2809,6 @@ msgstr "最好的預設顏色是那種只有閱讀一段時間後才會注意到
 #: src/ui/pages/BrandPage.tsx
 msgid "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image."
 msgstr "品牌套件包含 SVG 標誌、透明方形 PNG、圓角、方形與圓形圖塊、favicon、Apple touch icon，以及預設的社交預覽圖片。"
-
-#. @context: Custom URL path help text
-#: src/routes/dash/custom-urls.tsx
-msgid "The custom URL path (without leading slash)"
-msgstr "自訂 URL 路徑（不含前導斜線）"
 
 #. @context: Plain-text body fallback for the sample note post
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -3294,6 +3302,26 @@ msgstr "白色 logo 放在 Jant 綠色方形圖塊上，適用於需要真正從
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Why the default accent should feel written, not branded"
 msgstr "為什麼預設強調色應該像書寫，而不是品牌標記"
+
+#. @context: Archive feed title segment for hasMedia=1 filter
+#: src/routes/pages/archive.tsx
+msgid "with media"
+msgstr ""
+
+#. @context: Archive feed title segment for hasTitle=1 filter
+#: src/routes/pages/archive.tsx
+msgid "with title"
+msgstr ""
+
+#. @context: Archive feed title segment for hasMedia=0 filter
+#: src/routes/pages/archive.tsx
+msgid "without media"
+msgstr ""
+
+#. @context: Archive feed title segment for hasTitle=0 filter
+#: src/routes/pages/archive.tsx
+msgid "without title"
+msgstr ""
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx

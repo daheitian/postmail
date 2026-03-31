@@ -384,7 +384,9 @@ export class JantComposeEditor extends LitElement {
     return json.content.every(
       (node) =>
         node.type === "paragraph" &&
-        (!node.content || node.content.length === 0),
+        (!node.content ||
+          node.content.length === 0 ||
+          node.content.every((child) => child.type === "hardBreak")),
     );
   }
 

@@ -334,21 +334,18 @@ function NewCustomUrlContent({
               }),
             )}
           </label>
-          <input
-            type="text"
-            data-bind="path"
-            class="input"
-            placeholder="blog/my-post"
-            required
-          />
-          <p class="text-xs text-muted-foreground mt-1">
-            {i18n._(
-              msg({
-                message: "The custom URL path (without leading slash)",
-                comment: "@context: Custom URL path help text",
-              }),
-            )}
-          </p>
+          <div class="flex items-center">
+            <span class="flex items-center justify-center h-9 px-3 border border-r-0 border-input rounded-l-md bg-muted text-muted-foreground text-sm">
+              /
+            </span>
+            <input
+              type="text"
+              data-bind="path"
+              class="input rounded-l-none"
+              placeholder="blog/my-post"
+              required
+            />
+          </div>
         </div>
 
         <div class="field">

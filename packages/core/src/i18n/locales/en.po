@@ -321,9 +321,11 @@ msgstr "Apple touch icon"
 msgid "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
 msgstr "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
 
+#. @context: Archive feed title prefix
 #. @context: Archive page title
 #. @context: Built-in navigation label for the archive page
 #. @context: Inactive nav link label on sample page
+#: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/navigation-labels.ts
@@ -1662,7 +1664,9 @@ msgstr "Link to your collections page"
 msgid "Link updated."
 msgstr "Link updated."
 
+#. @context: Archive feed title segment for link format filter
 #. @context: Post format label plural - links
+#: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Links"
 msgstr "Links"
@@ -1982,7 +1986,9 @@ msgstr "Note"
 msgid "note treatment"
 msgstr "note treatment"
 
+#. @context: Archive feed title segment for note format filter
 #. @context: Post format label plural - notes
+#: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Notes"
 msgstr "Notes"
@@ -2276,8 +2282,10 @@ msgstr "Quote"
 msgid "Quoted or highlighted passages should feel like annotations, not warnings."
 msgstr "Quoted or highlighted passages should feel like annotations, not warnings."
 
+#. @context: Archive feed title segment for quote format filter
 #. @context: Placeholder for the custom collections link label
 #. @context: Post format label plural - quotes
+#: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/shared/collection-management-labels.ts
 msgid "Quotes"
@@ -2412,6 +2420,11 @@ msgstr "Revoke"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "Revoke this token? Any scripts using it will stop working."
+
+#. @context: Tooltip for the RSS feed button on the archive page
+#: src/ui/pages/ArchivePage.tsx
+msgid "RSS feed for this view"
+msgstr "RSS feed for this view"
 
 #. @context: Button to save collection
 #. @context: Button to save settings
@@ -2796,11 +2809,6 @@ msgstr "The best default color is the one you notice only after reading for a wh
 #: src/ui/pages/BrandPage.tsx
 msgid "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image."
 msgstr "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image."
-
-#. @context: Custom URL path help text
-#: src/routes/dash/custom-urls.tsx
-msgid "The custom URL path (without leading slash)"
-msgstr "The custom URL path (without leading slash)"
 
 #. @context: Plain-text body fallback for the sample note post
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -3294,6 +3302,26 @@ msgstr "White logo on the Jant green square tile for platforms and layouts that 
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Why the default accent should feel written, not branded"
 msgstr "Why the default accent should feel written, not branded"
+
+#. @context: Archive feed title segment for hasMedia=1 filter
+#: src/routes/pages/archive.tsx
+msgid "with media"
+msgstr "with media"
+
+#. @context: Archive feed title segment for hasTitle=1 filter
+#: src/routes/pages/archive.tsx
+msgid "with title"
+msgstr "with title"
+
+#. @context: Archive feed title segment for hasMedia=0 filter
+#: src/routes/pages/archive.tsx
+msgid "without media"
+msgstr "without media"
+
+#. @context: Archive feed title segment for hasTitle=0 filter
+#: src/routes/pages/archive.tsx
+msgid "without title"
+msgstr "without title"
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx

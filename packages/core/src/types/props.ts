@@ -73,6 +73,8 @@ export interface ArchivePageProps {
   isAuthenticated: boolean;
   sitePathPrefix?: string;
   timeZone?: string;
+  /** Href for the RSS feed matching current filters */
+  feedHref?: string;
 }
 
 /** Props for the search page component */
