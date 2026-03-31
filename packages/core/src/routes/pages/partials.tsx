@@ -12,6 +12,7 @@ import { TimelineItemFromPost } from "../../ui/feed/TimelineItem.js";
 import { PostPage } from "../../ui/pages/PostPage.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
+import { CORE_VERSION } from "../../lib/version.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -27,6 +28,10 @@ async function getIsAuthenticated(c: Context<Env>): Promise<boolean> {
     return false;
   }
 }
+
+partialPageRoutes.get("/_/version", (c) => {
+  return c.json({ version: CORE_VERSION });
+});
 
 partialPageRoutes.get("/_/timeline-item/:threadRootId", async (c) => {
   const threadRootId = parseIdParam(
