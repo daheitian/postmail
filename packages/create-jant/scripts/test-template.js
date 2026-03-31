@@ -91,10 +91,10 @@ async function main() {
 
   const assetFiles = await fs.readdir(assetDir).catch(() => []);
   const hasClientJs = assetFiles.some(
-    (f) => f === "client.js" || /^client-[a-zA-Z0-9]+\.js$/.test(f),
+    (f) => f === "client.js" || /^client[-\w]+\.js$/.test(f),
   );
   const hasClientCss = assetFiles.some(
-    (f) => f === "client.css" || /^client-[a-zA-Z0-9]+\.css$/.test(f),
+    (f) => f === "client.css" || /^client[-\w]+\.css$/.test(f),
   );
 
   if (!hasClientJs) {
