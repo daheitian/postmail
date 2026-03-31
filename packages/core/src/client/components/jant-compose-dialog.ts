@@ -844,6 +844,7 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshKind = refreshTarget?.kind ?? null;
     this._replyRefreshId = refreshTarget?.id ?? null;
     this._replyToData = replyData ?? null;
+    this._visibilityLocked = true;
     this._format = "note";
 
     this.closest("dialog")?.showModal();
@@ -2583,6 +2584,7 @@ export class JantComposeDialog extends LitElement {
     // Restore reply context if this draft was a reply
     if (draft.replyToId) {
       this._replyToId = draft.replyToId;
+      this._visibilityLocked = true;
       await this._fetchReplyContext(draft.replyToId);
     }
 
