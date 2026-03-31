@@ -22,7 +22,7 @@ describe("getHostedControlPlaneSigninUrl", () => {
     );
 
     expect(url).toBe(
-      "https://cloud-jant.localtest.me/auth/handoff/start?host=site7.localtest.me&redirect=%2Fsettings",
+      "https://cloud-jant.localtest.me/auth/handoff/start?host=site7.localtest.me&redirect=%2F",
     );
   });
 
@@ -48,7 +48,7 @@ describe("getHostedControlPlaneSigninUrl", () => {
     );
 
     expect(url).toBe(
-      "https://cloud-jant.localtest.me/reset?next=%2Fauth%2Fhandoff%2Fstart%3Fhost%3Dsite7.localtest.me%26redirect%3D%252Fsettings",
+      "https://cloud-jant.localtest.me/reset?next=%2Fauth%2Fhandoff%2Fstart%3Fhost%3Dsite7.localtest.me%26redirect%3D%252F",
     );
   });
 
