@@ -1163,13 +1163,8 @@
   }
 
   @media (min-width: 640px) {
-    .collection-editor-primary-grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-      align-items: start;
-    }
-
+    .collection-editor-primary-grid,
     .collection-editor-secondary-grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
       align-items: start;
     }
   }
