@@ -1140,18 +1140,11 @@ export class JantComposeEditor extends LitElement {
     this._rating = this._rating === star ? 0 : star;
   }
 
-  private _shouldPasteInlineImage(file: File): boolean {
-    if (!file.type.startsWith("image/")) return false;
-
-    if (this.format === "quote") {
-      return false;
-    }
-
-    if (this.format === "note") {
-      return this._showTitle && this._title.trim().length > 0;
-    }
-
-    return this._title.trim().length > 0;
+  private _shouldPasteInlineImage(_file: File): boolean {
+    // Always route pasted images to attachments in compose editor.
+    // Inline images are inserted via /media slash command instead.
+    // Fullscreen editor has its own handler that allows inline paste.
+    return false;
   }
 
   private _openFilePicker() {

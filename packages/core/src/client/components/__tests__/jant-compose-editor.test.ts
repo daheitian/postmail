@@ -1067,13 +1067,7 @@ describe("JantComposeEditor", () => {
     ).toEqual(["clipboard.png", "clipboard.mp4"]);
   });
 
-  it("pastes images inline and videos as attachments when a title is present", async () => {
-    const uploadWithMetadataMock = vi.mocked(uploadWithMetadata);
-    uploadWithMetadataMock.mockResolvedValue({
-      id: "media-inline",
-      url: "/uploads/clipboard.webp",
-    });
-
+  it("pastes all media as attachments even when a title is present", async () => {
     const el = await createElement("note");
     el._showTitle = true;
     el._title = "Essay";
@@ -1088,15 +1082,9 @@ describe("JantComposeEditor", () => {
 
     expect(handled).toBe(true);
     expect(event.defaultPrevented).toBe(true);
-    expect(uploadWithMetadataMock).toHaveBeenCalledTimes(1);
-    expect(uploadWithMetadataMock).toHaveBeenCalledWith(image);
     expect(el._attachments.map((attachment) => attachment.file.name)).toEqual([
+      "clipboard.png",
       "clipboard.mp4",
     ]);
-    expect(
-      JSON.stringify(
-        (el as unknown as { _editor?: Editor | null })._editor?.getJSON(),
-      ),
-    ).toContain("/uploads/clipboard.webp");
   });
 });

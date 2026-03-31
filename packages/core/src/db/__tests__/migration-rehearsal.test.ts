@@ -29,7 +29,11 @@ function queryLocalCount(persistDir: string, sql: string) {
       encoding: "utf-8",
     },
   );
-  const parsed = JSON.parse(stdout);
+  // Wrangler may prepend non-JSON lines (e.g. proxy warnings) to stdout
+  const jsonStart = Math.min(
+    ...[stdout.indexOf("["), stdout.indexOf("{")].filter((i) => i !== -1),
+  );
+  const parsed = JSON.parse(jsonStart > 0 ? stdout.slice(jsonStart) : stdout);
   const statement = Array.isArray(parsed) ? parsed[0] : parsed;
   return Number(statement?.results?.[0]?.count ?? 0);
 }

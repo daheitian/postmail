@@ -75,6 +75,19 @@ export function isRetryableWranglerD1Failure(output, error) {
   ].some((fragment) => combined.includes(fragment));
 }
 
+/**
+ * Strip non-JSON preamble that Wrangler sometimes writes to stdout
+ * (e.g. "Proxy environment variables detected…") before the actual JSON payload.
+ */
+function extractJson(raw) {
+  const idx = raw.indexOf("[");
+  const idx2 = raw.indexOf("{");
+  if (idx === -1 && idx2 === -1) return raw;
+  const start =
+    idx === -1 ? idx2 : idx2 === -1 ? idx : Math.min(idx, idx2);
+  return raw.slice(start);
+}
+
 function runWrangler(args, options = {}) {
   const retryAttempts = Math.max(
     1,
@@ -124,7 +137,7 @@ export function executeD1(sql, runtime, options = {}) {
 
   if (options.quiet) {
     const output = runWrangler([...args, "--json"]);
-    const parsed = JSON.parse(output);
+    const parsed = JSON.parse(extractJson(output));
     const statements = Array.isArray(parsed) ? parsed : [parsed];
 
     for (const statement of statements) {
@@ -153,7 +166,7 @@ export function queryD1(sql, runtime, options = {}) {
       options,
     ),
   );
-  const parsed = JSON.parse(output);
+  const parsed = JSON.parse(extractJson(output));
   const statement = Array.isArray(parsed) ? parsed[0] : parsed;
 
   if (statement?.error?.text) {
@@ -178,7 +191,7 @@ export function executeD1File(filePath, runtime, options = {}) {
 
   if (options.quiet) {
     const output = runWrangler([...args, "--json"]);
-    const parsed = JSON.parse(output);
+    const parsed = JSON.parse(extractJson(output));
     const statements = Array.isArray(parsed) ? parsed : [parsed];
 
     for (const statement of statements) {
