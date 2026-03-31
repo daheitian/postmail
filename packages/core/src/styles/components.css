@@ -513,6 +513,27 @@ svg[stroke-width].icon-fine {
     );
   }
 
+  .settings-root-version {
+    text-align: center;
+    font-size: 0.72rem;
+    font-family: var(--font-mono, monospace);
+    color: var(--color-muted-foreground);
+    opacity: 0.45;
+    margin: 0 0 0.6rem;
+    user-select: all;
+  }
+
+  .settings-root-version-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+  }
+
+  .settings-root-version-link:hover {
+    opacity: 0.75;
+  }
+
   .settings-root-signout {
     @apply flex justify-center;
     padding-top: 0.1rem;
@@ -704,6 +725,10 @@ svg[stroke-width].icon-fine {
     .settings-directory-item-icon {
       width: 2.38rem;
       height: 2.38rem;
+    }
+
+    .settings-root-version {
+      text-align: left;
     }
 
     .settings-root-signout {

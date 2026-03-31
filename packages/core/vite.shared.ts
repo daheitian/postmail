@@ -12,6 +12,7 @@
 import swc from "unplugin-swc";
 import { resolve } from "path";
 import { readFileSync } from "fs";
+import { execSync } from "child_process";
 import {
   ASSET_BASE_SEGMENT,
   ASSET_CHUNK_SEGMENT,
@@ -23,7 +24,17 @@ export const pkg = JSON.parse(
   readFileSync(resolve(dir, "package.json"), "utf-8"),
 );
 
-const rawBuildId = (process.env.JANT_BUILD_ID ?? "").trim();
+function resolveRawBuildId(): string {
+  const fromEnv = (process.env.JANT_BUILD_ID ?? "").trim();
+  if (fromEnv) return fromEnv;
+  try {
+    return execSync("git rev-parse HEAD", { encoding: "utf-8" }).trim();
+  } catch {
+    return "";
+  }
+}
+
+const rawBuildId = resolveRawBuildId();
 const safeBuildId = rawBuildId.replace(/[^0-9A-Za-z._-]/g, "").slice(0, 16);
 
 /**

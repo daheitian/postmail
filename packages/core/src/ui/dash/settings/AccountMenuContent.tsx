@@ -6,6 +6,7 @@ import { msg } from "@lingui/core/macro";
 import { coalesceDisplayText } from "../../../lib/display-text.js";
 import { useLingui } from "../../../i18n/context.js";
 import { extractDomain, toPublicPath } from "../../../lib/url.js";
+import { CORE_VERSION } from "../../../lib/version.js";
 import {
   SettingsDirectoryItemContent,
   SettingsDirectoryLink,
@@ -14,6 +15,7 @@ import {
 
 const BACKUPS_DOCS_URL =
   "https://github.com/jant-me/jant/blob/main/docs/backups.md";
+const GITHUB_COMMIT_BASE = "https://github.com/jant-me/jant/tree";
 
 const ICONS = {
   monitor: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>`,
@@ -336,6 +338,30 @@ export function AccountMenuContent({
           />
         </SettingsDirectorySection>
       )}
+
+      <p class="settings-root-version">
+        {(() => {
+          const idx = CORE_VERSION.indexOf("-");
+          if (idx === -1) return `Build ${CORE_VERSION}`;
+          const semver = CORE_VERSION.slice(0, idx);
+          const buildId = CORE_VERSION.slice(idx + 1);
+          return (
+            <>
+              {"Build "}
+              {semver}
+              {" · "}
+              <a
+                href={`${GITHUB_COMMIT_BASE}/${buildId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="settings-root-version-link"
+              >
+                {buildId}
+              </a>
+            </>
+          );
+        })()}
+      </p>
     </div>
   );
 }
