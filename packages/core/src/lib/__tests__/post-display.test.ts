@@ -23,11 +23,12 @@ describe("post display assembly", () => {
   let postService: ReturnType<typeof createPostService>;
   let mediaService: ReturnType<typeof createMediaService>;
   let collectionService: ReturnType<typeof createCollectionService>;
+  let pathService: ReturnType<typeof createPathService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    const pathService = createPathService(db, DEFAULT_TEST_SITE_ID);
+    pathService = createPathService(db, DEFAULT_TEST_SITE_ID);
     postService = createPostService(
       db,
       { slugIdLength: 5 },
@@ -49,6 +50,7 @@ describe("post display assembly", () => {
           posts: postService,
           media: mediaService,
           collections: collectionService,
+          paths: pathService,
         },
         appConfig: {
           pageSize: 20,

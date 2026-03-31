@@ -41,11 +41,13 @@ async function buildTimelineItems(
   // Batch load media, collections, and latest-reply contexts in parallel
   const postIds = posts.map((p) => p.id);
   const mediaCtx = createMediaContext(c.var.appConfig);
-  const [rawMediaMap, collectionsMap, threadContexts] = await Promise.all([
-    c.var.services.media.getByPostIds(postIds),
-    c.var.services.collections.getCollectionsByPostIds(postIds),
-    c.var.services.posts.getThreadTimelineContext(postIds),
-  ]);
+  const [rawMediaMap, collectionsMap, threadContexts, aliasesMap] =
+    await Promise.all([
+      c.var.services.media.getByPostIds(postIds),
+      c.var.services.collections.getCollectionsByPostIds(postIds),
+      c.var.services.posts.getThreadTimelineContext(postIds),
+      c.var.services.paths.getPostAliases(postIds),
+    ]);
   const mediaMap = buildMediaMap(
     rawMediaMap,
     mediaCtx.r2PublicUrl,
@@ -63,7 +65,7 @@ async function buildTimelineItems(
       contextPostIds.push(ctx.parentReply.id);
     }
   }
-  const [contextMediaMap, contextCollectionsMap] =
+  const [contextMediaMap, contextCollectionsMap, contextAliasesMap] =
     contextPostIds.length > 0
       ? await Promise.all([
           c.var.services.media
@@ -79,8 +81,12 @@ async function buildTimelineItems(
               ),
             ),
           c.var.services.collections.getCollectionsByPostIds(contextPostIds),
+          c.var.services.paths.getPostAliases(contextPostIds),
         ])
-      : [new Map(), new Map()];
+      : [new Map(), new Map(), new Map<string, string[]>()];
+
+  const firstAlias = (id: string) => aliasesMap.get(id)?.[0];
+  const firstContextAlias = (id: string) => contextAliasesMap.get(id)?.[0];
 
   // Assemble timeline items with View Models
   return posts.map((post) => {
@@ -91,6 +97,8 @@ async function buildTimelineItems(
       },
       mediaCtx,
       collectionsMap.get(post.id),
+      undefined,
+      firstAlias(post.id),
     );
 
     const threadCtx = threadContexts.get(post.id);
@@ -107,6 +115,7 @@ async function buildTimelineItems(
         mediaCtx,
         contextCollectionsMap.get(threadCtx.latestReply.id),
         true, // latestReply is the last post in the thread
+        firstContextAlias(threadCtx.latestReply.id),
       );
 
       const parentReplyView = threadCtx.parentReply
@@ -119,6 +128,7 @@ async function buildTimelineItems(
             mediaCtx,
             contextCollectionsMap.get(threadCtx.parentReply.id),
             false, // parentReply is not the last post
+            firstContextAlias(threadCtx.parentReply.id),
           )
         : undefined;
 
@@ -171,9 +181,10 @@ async function buildCuratedThreadItems(
   const postIds = orderedThreads.flatMap((thread) =>
     thread.map((post) => post.id),
   );
-  const [rawMediaMap, collectionsMap] = await Promise.all([
+  const [rawMediaMap, collectionsMap, curatedAliasesMap] = await Promise.all([
     c.var.services.media.getByPostIds(postIds),
     c.var.services.collections.getCollectionsByPostIds(postIds),
+    c.var.services.paths.getPostAliases(postIds),
   ]);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -200,6 +211,7 @@ async function buildCuratedThreadItems(
         mediaCtx,
         collectionsMap.get(post.id),
         post.id === lastPostId,
+        curatedAliasesMap.get(post.id)?.[0],
       ),
     );
     const rootView = postViews[0];

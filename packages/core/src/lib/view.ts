@@ -30,9 +30,8 @@ import {
   formatRelativeTime,
 } from "./time.js";
 import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
-import { getHtmlExcerpt } from "./excerpt.js";
+import { extractSummaryHtml } from "./summary.js";
 import { highlightText } from "./search-snippet.js";
-import { escapeHtml } from "./html.js";
 import { toPublicPath } from "./url.js";
 
 // =============================================================================
@@ -184,9 +183,13 @@ export function toPostView(
   ctx: MediaContext,
   postCollections?: Collection[],
   isLastInThread?: boolean,
+  aliasPath?: string,
 ): PostView {
   const id = post.id;
-  const permalink = toPublicPath(`/${post.slug}`, ctx.sitePathPrefix);
+  const permalink = toPublicPath(
+    aliasPath ? `/${aliasPath}` : `/${post.slug}`,
+    ctx.sitePathPrefix,
+  );
   const timeZone = ctx.timeZone ?? "UTC";
   const publishedAt = post.publishedAt ?? post.updatedAt;
   const featuredAt = post.featuredAt;
@@ -199,23 +202,17 @@ export function toPostView(
   let summaryHtml: string | undefined;
   let summaryHasMore: boolean | undefined;
   let bodyHtmlWithAnchor = post.bodyHtml;
-  if (post.title && post.bodyHtml) {
-    if (post.summary) {
-      // Use stored summary (generated from Tiptap JSON)
-      summaryHtml = post.summary
-        .split("\n\n")
-        .map((p) => `<p>${escapeHtml(p)}</p>`)
-        .join("");
-      summaryHasMore = true;
-    } else {
-      // Fallback: extract from rendered HTML
-      const result = getHtmlExcerpt(post.bodyHtml);
-      summaryHtml = result.excerpt;
+  if (post.title && post.body) {
+    const result = extractSummaryHtml(post.body);
+    if (result) {
+      summaryHtml = result.html;
       summaryHasMore = result.hasMore;
 
-      // Inject #continue anchor at the excerpt boundary for scroll targeting
-      if (result.hasMore) {
-        const pos = result.excerptEnd;
+      // Inject #continue anchor at the excerpt boundary for scroll targeting.
+      // Both summaryHtml and bodyHtml are rendered by the same renderTiptapJson,
+      // so the excerpt HTML is a prefix of bodyHtml.
+      if (result.hasMore && post.bodyHtml) {
+        const pos = result.html.length;
         bodyHtmlWithAnchor =
           post.bodyHtml.slice(0, pos) +
           '<span id="continue"></span>' +
@@ -315,9 +312,16 @@ export function toPostViews(
   posts: PostWithMedia[],
   ctx: MediaContext,
   isLastInThreadMap?: Map<string, boolean>,
+  aliasMap?: Map<string, string>,
 ): PostView[] {
   return posts.map((p) =>
-    toPostView(p, ctx, undefined, isLastInThreadMap?.get(p.id)),
+    toPostView(
+      p,
+      ctx,
+      undefined,
+      isLastInThreadMap?.get(p.id),
+      aliasMap?.get(p.id),
+    ),
   );
 }
 
@@ -328,12 +332,14 @@ export function toPostViewFromPost(
   post: Post,
   ctx: MediaContext,
   isLastInThread?: boolean,
+  aliasPath?: string,
 ): PostView {
   return toPostView(
     { ...post, mediaAttachments: [] },
     ctx,
     undefined,
     isLastInThread,
+    aliasPath,
   );
 }
 
@@ -344,9 +350,15 @@ export function toPostViewsFromPosts(
   posts: Post[],
   ctx: MediaContext,
   isLastInThreadMap?: Map<string, boolean>,
+  aliasMap?: Map<string, string>,
 ): PostView[] {
   return posts.map((p) =>
-    toPostViewFromPost(p, ctx, isLastInThreadMap?.get(p.id)),
+    toPostViewFromPost(
+      p,
+      ctx,
+      isLastInThreadMap?.get(p.id),
+      aliasMap?.get(p.id),
+    ),
   );
 }
 
@@ -435,8 +447,9 @@ export function toSearchResultView(
   result: SearchResult,
   ctx: MediaContext,
   query?: string,
+  aliasPath?: string,
 ): SearchResultView {
-  const post = toPostViewFromPost(result.post, ctx);
+  const post = toPostViewFromPost(result.post, ctx, undefined, aliasPath);
 
   let titleHighlighted: string | undefined;
   let quoteHighlighted: string | undefined;
@@ -475,8 +488,11 @@ export function toSearchResultViews(
   results: SearchResult[],
   ctx: MediaContext,
   query?: string,
+  aliasMap?: Map<string, string>,
 ): SearchResultView[] {
-  return results.map((r) => toSearchResultView(r, ctx, query));
+  return results.map((r) =>
+    toSearchResultView(r, ctx, query, aliasMap?.get(r.post.id)),
+  );
 }
 
 // =============================================================================
@@ -489,6 +505,7 @@ export function toSearchResultViews(
 export function toArchiveGroups(
   grouped: Map<string, Post[]>,
   ctx: MediaContext,
+  aliasMap?: Map<string, string>,
 ): ArchiveGroup[] {
   const groups: ArchiveGroup[] = [];
   for (const [yearMonth, posts] of grouped) {
@@ -505,7 +522,7 @@ export function toArchiveGroups(
       year,
       month,
       label,
-      posts: toPostViewsFromPosts(posts, ctx),
+      posts: toPostViewsFromPosts(posts, ctx, undefined, aliasMap),
     });
   }
   return groups;
@@ -522,6 +539,7 @@ export function toArchiveGroups(
 export function toArchiveGroupsWithMedia(
   grouped: Map<string, PostWithMedia[]>,
   ctx: MediaContext,
+  aliasMap?: Map<string, string>,
 ): ArchiveGroup[] {
   const groups: ArchiveGroup[] = [];
   for (const [yearMonth, posts] of grouped) {
@@ -538,7 +556,7 @@ export function toArchiveGroupsWithMedia(
       year,
       month,
       label,
-      posts: toPostViews(posts, ctx),
+      posts: toPostViews(posts, ctx, undefined, aliasMap),
     });
   }
   return groups;

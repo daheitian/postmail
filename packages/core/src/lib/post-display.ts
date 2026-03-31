@@ -50,11 +50,13 @@ export async function assemblePostCardView(
   }
 
   const mediaCtx = createMediaContext(c.var.appConfig);
-  const [rawMediaMap, collectionsMap, lastPostMap] = await Promise.all([
-    c.var.services.media.getByPostIds([post.id]),
-    c.var.services.collections.getCollectionsByPostIds([post.id]),
-    c.var.services.posts.getLastPostIdsByThread([post.threadId]),
-  ]);
+  const [rawMediaMap, collectionsMap, lastPostMap, aliasesMap] =
+    await Promise.all([
+      c.var.services.media.getByPostIds([post.id]),
+      c.var.services.collections.getCollectionsByPostIds([post.id]),
+      c.var.services.posts.getLastPostIdsByThread([post.threadId]),
+      c.var.services.paths.getPostAliases([post.id]),
+    ]);
 
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -69,6 +71,7 @@ export async function assemblePostCardView(
     mediaCtx,
     collectionsMap.get(post.id),
     lastPostMap.get(post.threadId) === post.id,
+    aliasesMap.get(post.id)?.[0],
   );
 
   return view;
@@ -104,9 +107,10 @@ export async function assemblePostPageDisplay(
 
   const allPostIds =
     threadPosts.length > 1 ? threadPosts.map((p) => p.id) : [post.id];
-  const [rawMediaMap, collectionsMap] = await Promise.all([
+  const [rawMediaMap, collectionsMap, aliasesMap] = await Promise.all([
     c.var.services.media.getByPostIds(allPostIds),
     c.var.services.collections.getCollectionsByPostIds(allPostIds),
+    c.var.services.paths.getPostAliases(allPostIds),
   ]);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -116,11 +120,14 @@ export async function assemblePostPageDisplay(
     mediaCtx.localPublicUrl,
     mediaCtx.sitePathPrefix,
   );
+  const firstAlias = (id: string) => aliasesMap.get(id)?.[0];
 
   const postView = toPostView(
     { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
     mediaCtx,
     collectionsMap.get(post.id),
+    undefined,
+    firstAlias(post.id),
   );
 
   const threadPostViews =
@@ -134,6 +141,7 @@ export async function assemblePostPageDisplay(
             mediaCtx,
             collectionsMap.get(threadPost.id),
             index === threadPosts.length - 1,
+            firstAlias(threadPost.id),
           ),
         )
       : undefined;

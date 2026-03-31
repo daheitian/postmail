@@ -177,13 +177,24 @@ archiveRoutes.get("/", async (c) => {
     monthlyCounts.map((row) => [row.yearMonth, row.count] as const),
   );
   const mediaCtx = createMediaContext(appConfig);
+  const allPostIds = posts.map((p) => p.id);
+  const archiveAliasesMap =
+    await c.var.services.paths.getPostAliases(allPostIds);
+  const archiveAliasMap = new Map<string, string>();
+  for (const [id, aliases] of archiveAliasesMap) {
+    if (aliases[0]) archiveAliasMap.set(id, aliases[0]);
+  }
   const groups =
     view === "list"
       ? await (async () => {
           const items = await assembleTimelineItems(c, posts);
           const itemsById = new Map(items.map((item) => [item.post.id, item]));
 
-          return toArchiveGroupsWithMedia(grouped, mediaCtx).map((group) => ({
+          return toArchiveGroupsWithMedia(
+            grouped,
+            mediaCtx,
+            archiveAliasMap,
+          ).map((group) => ({
             ...group,
             posts: [],
             items: group.posts
@@ -219,7 +230,11 @@ archiveRoutes.get("/", async (c) => {
             );
           }
 
-          return toArchiveGroupsWithMedia(grouped, mediaCtx).map((group) => ({
+          return toArchiveGroupsWithMedia(
+            grouped,
+            mediaCtx,
+            archiveAliasMap,
+          ).map((group) => ({
             ...group,
             posts: group.posts.map((post) => ({
               ...post,

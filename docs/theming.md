@@ -160,6 +160,7 @@ Target specific pages or elements using data attributes:
 | `data-page`          | Page wrapper   | `home`, `post`, `search`, `archive`, `collection`, `collections`, `featured` |
 | `data-post`          | `<article>`    | Present on every post                                                        |
 | `data-format`        | `<article>`    | `note`, `link`, `quote`                                                      |
+| `data-post-slug`     | `<article>`    | Post slug (useful for debugging and per-post styling)                        |
 | `data-post-body`     | Content div    | Post body text                                                               |
 | `data-post-meta`     | Meta div       | Post metadata (date, tags)                                                   |
 | `data-post-media`    | Media div      | Post images/videos                                                           |

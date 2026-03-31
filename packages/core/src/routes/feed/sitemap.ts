@@ -27,7 +27,14 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
 
   // Transform to View Models
   const mediaCtx = createMediaContext(appConfig);
-  const postViews = toPostViewsFromPosts(posts, mediaCtx);
+  const aliasesMap = await c.var.services.paths.getPostAliases(
+    posts.map((p) => p.id),
+  );
+  const aliasMap = new Map<string, string>();
+  for (const [id, aliases] of aliasesMap) {
+    if (aliases[0]) aliasMap.set(id, aliases[0]);
+  }
+  const postViews = toPostViewsFromPosts(posts, mediaCtx, undefined, aliasMap);
 
   const xml = defaultSitemapRenderer({
     siteUrl,

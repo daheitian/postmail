@@ -50,7 +50,13 @@ searchRoutes.get("/", async (c) => {
 
   // Transform to View Models
   const mediaCtx = createMediaContext(c.var.appConfig);
-  const resultViews = toSearchResultViews(results, mediaCtx, query);
+  const postIds = results.map((r) => r.post.id);
+  const aliasesMap = await c.var.services.paths.getPostAliases(postIds);
+  const aliasMap = new Map<string, string>();
+  for (const [id, aliases] of aliasesMap) {
+    if (aliases[0]) aliasMap.set(id, aliases[0]);
+  }
+  const resultViews = toSearchResultViews(results, mediaCtx, query, aliasMap);
 
   return renderPublicPage(c, {
     title: buildPageTitle(

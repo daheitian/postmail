@@ -150,11 +150,20 @@ describe("toPostView", () => {
     expect(longView.excerpt).toBe("A".repeat(160) + "...");
   });
 
-  it("computes summaryHtml for posts with title and bodyHtml", () => {
+  it("computes summaryHtml for posts with title and body", () => {
+    const body = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Short article body" }],
+        },
+      ],
+    });
     const view = toPostView(
       makePostWithMedia({
         title: "My Article",
-        body: "Short article body",
+        body,
         bodyHtml: "<p>Short article body</p>",
       }),
       EMPTY_CTX,
@@ -164,12 +173,27 @@ describe("toPostView", () => {
   });
 
   it("truncates summaryHtml for long articles", () => {
-    const p1 = `<p>${"A".repeat(300)}</p>`;
-    const p2 = `<p>${"B".repeat(300)}</p>`;
+    const textA = "A".repeat(300);
+    const textB = "B".repeat(300);
+    const body = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: textA }],
+        },
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: textB }],
+        },
+      ],
+    });
+    const p1 = `<p>${textA}</p>`;
+    const p2 = `<p>${textB}</p>`;
     const view = toPostView(
       makePostWithMedia({
         title: "Long Article",
-        body: "A".repeat(300) + "B".repeat(300),
+        body,
         bodyHtml: p1 + p2,
       }),
       EMPTY_CTX,
@@ -190,10 +214,11 @@ describe("toPostView", () => {
     expect(view.summaryHasMore).toBeUndefined();
   });
 
-  it("does not compute summaryHtml for posts without bodyHtml", () => {
+  it("does not compute summaryHtml for posts without body", () => {
     const view = toPostView(
       makePostWithMedia({
         title: "Title Only",
+        body: null,
         bodyHtml: null,
       }),
       EMPTY_CTX,

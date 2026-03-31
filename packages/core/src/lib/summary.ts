@@ -1,9 +1,11 @@
 /**
  * Summary Extraction from Tiptap JSON
  *
- * Extracts a plain-text summary from a Tiptap JSON document for use
- * in feeds, meta descriptions, and article previews.
+ * Extracts plain-text and HTML summaries from a Tiptap JSON document
+ * for use in feeds, meta descriptions, and article previews.
  */
+
+import { renderTiptapJson } from "./tiptap-render.js";
 
 interface TiptapNode {
   type: string;
@@ -12,6 +14,20 @@ interface TiptapNode {
   marks?: unknown[];
   attrs?: Record<string, unknown>;
 }
+
+/**
+ * Block node types that carry user-visible content for summary extraction.
+ * Structural nodes (horizontalRule, moreBreak, image) are excluded.
+ */
+const SUMMARY_BLOCK_TYPES = new Set([
+  "paragraph",
+  "heading",
+  "bulletList",
+  "orderedList",
+  "blockquote",
+  "codeBlock",
+  "table",
+]);
 
 /**
  * Recursively extracts plain text from a Tiptap node, ignoring marks.
@@ -109,7 +125,7 @@ export function extractBodyText(bodyJson: string): string | null {
 
 export function extractSummary(
   bodyJson: string,
-  maxParagraphs: number,
+  maxBlocks: number,
   maxChars: number,
 ): string | null {
   let doc: TiptapNode;
@@ -123,36 +139,116 @@ export function extractSummary(
 
   const nodes = doc.content;
 
-  // Check for moreBreak — collect paragraph text before it
+  // Check for moreBreak — collect text from all content nodes before it
   const moreBreakIdx = nodes.findIndex((n) => n.type === "moreBreak");
   if (moreBreakIdx !== -1) {
-    const paragraphs: string[] = [];
+    const blocks: string[] = [];
     for (let i = 0; i < moreBreakIdx; i++) {
       const node = nodes[i];
-      if (!node) continue;
-      if (node.type === "paragraph") {
-        const text = extractPlainText(node).trim();
-        if (text) paragraphs.push(text);
-      }
+      if (!node || !SUMMARY_BLOCK_TYPES.has(node.type)) continue;
+      const text = extractPlainText(node).trim();
+      if (text) blocks.push(text);
     }
-    return paragraphs.length > 0 ? paragraphs.join("\n\n") : null;
+    return blocks.length > 0 ? blocks.join("\n\n") : null;
   }
 
-  // No moreBreak — accumulate paragraphs up to limits
-  const paragraphs: string[] = [];
+  // No moreBreak — accumulate content blocks up to limits
+  const blocks: string[] = [];
   let totalChars = 0;
 
   for (const node of nodes) {
-    if (node.type !== "paragraph") continue;
+    if (!SUMMARY_BLOCK_TYPES.has(node.type)) continue;
 
     const text = extractPlainText(node).trim();
     if (!text) continue;
 
-    if (paragraphs.length >= maxParagraphs || totalChars >= maxChars) break;
+    if (
+      (blocks.length >= maxBlocks || totalChars + text.length > maxChars) &&
+      blocks.length > 0
+    )
+      break;
 
-    paragraphs.push(text);
+    blocks.push(text);
     totalChars += text.length;
   }
 
-  return paragraphs.length > 0 ? paragraphs.join("\n\n") : null;
+  return blocks.length > 0 ? blocks.join("\n\n") : null;
+}
+
+/**
+ * Extracts an HTML summary from a Tiptap JSON body by taking the first
+ * N content-bearing block nodes and rendering them as HTML.
+ *
+ * Unlike the plain-text `extractSummary`, this preserves the original
+ * structure (lists, blockquotes, headings, etc.) for rich previews.
+ *
+ * @param bodyJson - Tiptap JSON string
+ * @param maxBlocks - Maximum number of top-level blocks to include
+ * @param maxChars - Maximum total plain-text character count
+ * @returns HTML summary and whether content was truncated, or null
+ *
+ * @example
+ * ```ts
+ * const result = extractSummaryHtml(body, 5, 500);
+ * // { html: "<ul><li><p>Item</p></li></ul>", hasMore: true }
+ * ```
+ */
+export function extractSummaryHtml(
+  bodyJson: string,
+  maxBlocks: number = 5,
+  maxChars: number = 500,
+): { html: string; hasMore: boolean } | null {
+  let doc: TiptapNode;
+  try {
+    doc = JSON.parse(bodyJson) as TiptapNode;
+  } catch {
+    return null;
+  }
+
+  if (doc.type !== "doc" || !doc.content) return null;
+
+  const nodes = doc.content;
+  const totalContentNodes = nodes.filter((n) =>
+    SUMMARY_BLOCK_TYPES.has(n.type),
+  ).length;
+
+  // Check for moreBreak — take all content nodes before it
+  const moreBreakIdx = nodes.findIndex((n) => n.type === "moreBreak");
+  if (moreBreakIdx !== -1) {
+    const selected = nodes
+      .slice(0, moreBreakIdx)
+      .filter((n) => SUMMARY_BLOCK_TYPES.has(n.type));
+    if (selected.length === 0) return null;
+    const subDoc: TiptapNode = { type: "doc", content: selected };
+    return {
+      html: renderTiptapJson(JSON.stringify(subDoc)),
+      hasMore: true,
+    };
+  }
+
+  // No moreBreak — accumulate blocks up to limits
+  const selected: TiptapNode[] = [];
+  let totalChars = 0;
+
+  for (const node of nodes) {
+    if (!SUMMARY_BLOCK_TYPES.has(node.type)) continue;
+
+    const text = extractPlainText(node).trim();
+    if (
+      (selected.length >= maxBlocks || totalChars + text.length > maxChars) &&
+      selected.length > 0
+    )
+      break;
+
+    selected.push(node);
+    totalChars += text.length;
+  }
+
+  if (selected.length === 0) return null;
+
+  const subDoc: TiptapNode = { type: "doc", content: selected };
+  return {
+    html: renderTiptapJson(JSON.stringify(subDoc)),
+    hasMore: selected.length < totalContentNodes,
+  };
 }

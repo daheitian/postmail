@@ -223,9 +223,12 @@ collectionRoutes.get("/:slug/feed", async (c) => {
     );
   const posts = entries.map((entry) => entry.post);
 
-  // Batch load media for enclosures
+  // Batch load media and aliases for enclosures
   const postIds = posts.map((p) => p.id);
-  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
+  const [rawMediaMap, aliasesMap] = await Promise.all([
+    c.var.services.media.getByPostIds(postIds),
+    c.var.services.paths.getPostAliases(postIds),
+  ]);
   const mediaCtx = createMediaContext(appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -235,6 +238,10 @@ collectionRoutes.get("/:slug/feed", async (c) => {
     mediaCtx.localPublicUrl,
     mediaCtx.sitePathPrefix,
   );
+  const aliasMap = new Map<string, string>();
+  for (const [id, aliases] of aliasesMap) {
+    if (aliases[0]) aliasMap.set(id, aliases[0]);
+  }
 
   const postViews = toPostViews(
     posts.map((p) => ({
@@ -242,6 +249,8 @@ collectionRoutes.get("/:slug/feed", async (c) => {
       mediaAttachments: mediaMap.get(p.id) ?? [],
     })),
     mediaCtx,
+    undefined,
+    aliasMap,
   ).map((post, index) => {
     const collectedAt = entries[index]?.collectedAt;
     if (!collectedAt) return post;

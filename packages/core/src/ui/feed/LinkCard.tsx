@@ -129,6 +129,7 @@ export const LinkCard: FC<TimelineCardProps> = ({
       data-post
       data-format="link"
       data-post-id={post.id}
+      data-post-slug={post.slug}
       data-thread-root-id={post.threadRootId ?? post.id}
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       {...(post.featured ? { "data-post-featured": "" } : {})}

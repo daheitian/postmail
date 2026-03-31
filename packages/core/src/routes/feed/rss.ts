@@ -64,7 +64,10 @@ async function buildFeedData(
 
   // Batch load media for enclosures
   const postIds = posts.map((p) => p.id);
-  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
+  const [rawMediaMap, aliasesMap] = await Promise.all([
+    c.var.services.media.getByPostIds(postIds),
+    c.var.services.paths.getPostAliases(postIds),
+  ]);
   const mediaCtx = createMediaContext(appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -75,6 +78,12 @@ async function buildFeedData(
     mediaCtx.sitePathPrefix,
   );
 
+  // Build alias map (postId → first alias path)
+  const aliasMap = new Map<string, string>();
+  for (const [id, aliases] of aliasesMap) {
+    if (aliases[0]) aliasMap.set(id, aliases[0]);
+  }
+
   // Transform to PostView[] with media
   const postViews = toPostViews(
     posts.map((p) => ({
@@ -82,6 +91,8 @@ async function buildFeedData(
       mediaAttachments: mediaMap.get(p.id) ?? [],
     })),
     mediaCtx,
+    undefined,
+    aliasMap,
   ).map((post, index) => {
     const featuredAt = kind === "featured" ? posts[index]?.featuredAt : null;
     if (!featuredAt) return post;
