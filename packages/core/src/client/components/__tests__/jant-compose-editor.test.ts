@@ -257,6 +257,8 @@ const labels: ComposeLabels = {
   publishSlugReserved: "This link is reserved. Choose something else.",
   postHiddenFromLatest: "Post hidden",
   postPrivately: "Post privately",
+  quietReplyLabel: "Reply quietly",
+  quietReplyHint: "Won't move the thread to the top of latest.",
   showMore: "Show more",
   showLess: "Show less",
   newThread: "New Thread",

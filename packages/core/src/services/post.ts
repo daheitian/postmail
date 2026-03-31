@@ -1572,7 +1572,7 @@ export function createPostService(
       }
 
       // Bump thread root's lastActivityAt when creating a published reply
-      if (data.replyToId && status === "published") {
+      if (data.replyToId && status === "published" && !data.quietReply) {
         await recalculateThreadLastActivity(threadId);
       }
 

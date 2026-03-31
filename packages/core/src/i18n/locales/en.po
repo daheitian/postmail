@@ -2384,6 +2384,11 @@ msgstr "Replies"
 msgid "Reply"
 msgstr "Reply"
 
+#. @context: Compose publish settings switch label — reply without bumping thread to top of timeline
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Reply quietly"
+msgstr "Reply quietly"
+
 #. @context: Button to restore the automatically generated collection link from the title
 #. @context: Compose custom slug action that clears the manual slug and falls back to automatic generation
 #: src/ui/compose/ComposeDialog.tsx
@@ -3322,6 +3327,11 @@ msgstr "without media"
 #: src/routes/pages/archive.tsx
 msgid "without title"
 msgstr "without title"
+
+#. @context: Compose publish settings hint for quiet reply switch
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Won't move the thread to the top of latest."
+msgstr "Won't move the thread to the top of latest."
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx

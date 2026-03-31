@@ -87,6 +87,7 @@ composeRoutes.post("/", async (c) => {
       rating: data.rating || undefined,
       collectionIds: data.collectionIds,
       replyToId: data.replyToId,
+      quietReply: data.quietReply,
       publishedAt: data.publishedAt,
     },
     data.attachments,

@@ -5236,6 +5236,19 @@
     outline-offset: 2px;
   }
 
+  .compose-publish-switch-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    cursor: pointer;
+  }
+
+  .compose-publish-switch-row > .input[role="switch"] {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
   .compose-publish-divider {
     height: 1px;
     margin: 0.75rem 0;
@@ -9344,8 +9357,13 @@
   }
 
   .theme-preview-link {
-    color: var(--preview-primary-light);
+    color: inherit;
     text-decoration: underline;
+    text-decoration-color: color-mix(
+      in srgb,
+      var(--preview-muted-light) 58%,
+      transparent
+    );
     text-underline-offset: 3px;
   }
 
@@ -9358,7 +9376,12 @@
   }
 
   .theme-preview-panel[data-theme-preview-mode="dark"] .theme-preview-link {
-    color: var(--preview-primary-dark);
+    color: inherit;
+    text-decoration-color: color-mix(
+      in srgb,
+      var(--preview-muted-dark) 58%,
+      transparent
+    );
   }
 
   /* --- Public brand page ------------------------------------------------- */
@@ -9891,7 +9914,12 @@
     }
 
     .theme-preview-panel[data-theme-preview-mode="auto"] .theme-preview-link {
-      color: var(--preview-primary-dark);
+      color: inherit;
+      text-decoration-color: color-mix(
+        in srgb,
+        var(--preview-muted-dark) 58%,
+        transparent
+      );
     }
   }
 

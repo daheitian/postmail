@@ -290,6 +290,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
       rating: body.rating || undefined,
       collectionIds: body.collectionIds,
       replyToId: body.replyToId,
+      quietReply: body.quietReply,
       publishedAt: body.publishedAt,
     },
     body.attachments,

@@ -487,6 +487,7 @@ function buildPostBody(
     collectionIds: detail.collectionIds,
     attachments: attachments.length > 0 ? attachments : undefined,
     replyToId: detail.replyToId || undefined,
+    quietReply: detail.quietReply || undefined,
   };
 }
 

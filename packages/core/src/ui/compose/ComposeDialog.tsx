@@ -455,6 +455,20 @@ export const ComposeForm: FC<ComposeFormProps> = ({
         comment: "@context: Compose button - reply to post",
       }),
     ),
+    quietReplyLabel: i18n._(
+      msg({
+        message: "Reply quietly",
+        comment:
+          "@context: Compose publish settings switch label — reply without bumping thread to top of timeline",
+      }),
+    ),
+    quietReplyHint: i18n._(
+      msg({
+        message: "Won't move the thread to the top of latest.",
+        comment:
+          "@context: Compose publish settings hint for quiet reply switch",
+      }),
+    ),
     publishHideFromLatest: i18n._(
       msg({
         message: "Hide from Latest",

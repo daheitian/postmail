@@ -200,6 +200,8 @@ export interface ComposeLabels {
   publishSlugReserved: string;
   postHiddenFromLatest: string;
   postPrivately: string;
+  quietReplyLabel: string;
+  quietReplyHint: string;
   showMore: string;
   showLess: string;
   newThread: string;
@@ -268,6 +270,7 @@ export interface ComposeSubmitDetail {
   attachments: ComposeSubmitAttachment[];
   editPostId?: string;
   replyToId?: string;
+  quietReply?: boolean;
   replyThreadRootId?: string;
   replyRefreshKind?: "timeline-item" | "post-card" | "post-view";
   replyRefreshId?: string;

@@ -49,6 +49,7 @@ export interface CreatePost {
   rating?: number;
   collectionIds?: string[];
   replyToId?: string;
+  quietReply?: boolean;
   publishedAt?: number;
   attachments?: PostAttachmentInput[];
 }

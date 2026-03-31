@@ -250,6 +250,7 @@ const PostFieldsSchema = z.object({
     .optional()
     .or(z.literal("").transform(() => undefined)),
   replyToId: PostIdSchema.optional(),
+  quietReply: z.boolean().optional(),
   publishedAt: z.number().int().positive().optional(),
   mediaIds: z.array(MediaIdSchema).max(MAX_MEDIA_ATTACHMENTS).optional(),
   mediaAlts: z.record(MediaIdSchema, z.string()).optional(),

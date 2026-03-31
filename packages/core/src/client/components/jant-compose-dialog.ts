@@ -419,6 +419,7 @@ export class JantComposeDialog extends LitElement {
     _slugCheckLoading: { state: true },
     _slugTaken: { state: true },
     _visibilityLocked: { state: true },
+    _quietReply: { state: true },
   };
 
   declare collections: ComposeCollection[];
@@ -462,6 +463,7 @@ export class JantComposeDialog extends LitElement {
   declare _slugCheckLoading: boolean;
   declare _slugTaken: boolean;
   declare _visibilityLocked: boolean;
+  declare _quietReply: boolean;
 
   private _attachedEditor: Editor | null = null;
   private _attachedTextSnapshot: JSONContent | null = null;
@@ -551,6 +553,7 @@ export class JantComposeDialog extends LitElement {
     this._slugCheckLoading = false;
     this._slugTaken = false;
     this._visibilityLocked = false;
+    this._quietReply = false;
   }
 
   private get _editor(): JantComposeEditor | null {
@@ -636,6 +639,7 @@ export class JantComposeDialog extends LitElement {
     this._slugTaken = false;
     this._slugSuggestionKey = "";
     this._visibilityLocked = false;
+    this._quietReply = false;
     this._confirmForDrafts = false;
     this._confirmForAttachedText = false;
     this._initialSnapshot = null;
@@ -1271,6 +1275,7 @@ export class JantComposeDialog extends LitElement {
       attachments: orderedAttachments,
       editPostId: this._editPostId ?? this._draftSourceId ?? undefined,
       replyToId: this._replyToId ?? undefined,
+      quietReply: this._quietReply || undefined,
       replyThreadRootId: this._replyThreadRootId ?? undefined,
       replyRefreshKind: this._replyRefreshKind ?? undefined,
       replyRefreshId: this._replyRefreshId ?? undefined,
@@ -3981,8 +3986,37 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private _renderQuietReplySection() {
+    if (!this._replyToId) return nothing;
+
+    return html`
+      <section class="compose-publish-section">
+        <label class="compose-publish-switch-row">
+          <div class="compose-publish-section-copy">
+            <p class="compose-publish-section-label">
+              ${this.labels.quietReplyLabel}
+            </p>
+            <p class="compose-publish-section-hint">
+              ${this.labels.quietReplyHint}
+            </p>
+          </div>
+          <input
+            type="checkbox"
+            role="switch"
+            class="input"
+            .checked=${this._quietReply}
+            @change=${(e: Event) => {
+              this._quietReply = (e.target as HTMLInputElement).checked;
+            }}
+          />
+        </label>
+      </section>
+    `;
+  }
+
   private _renderPublishPanelSections() {
     return html`
+      ${this._replyToId ? this._renderQuietReplySection() : nothing}
       ${this._visibilityLocked
         ? nothing
         : html`
@@ -4013,7 +4047,7 @@ export class JantComposeDialog extends LitElement {
               </div>
             </section>
           `}
-      ${this._visibilityLocked
+      ${this._visibilityLocked && !this._replyToId
         ? nothing
         : html`<div class="compose-publish-divider" aria-hidden="true"></div>`}
       ${this._renderPublishDateSection()}
