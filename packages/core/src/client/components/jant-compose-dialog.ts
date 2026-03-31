@@ -35,9 +35,12 @@ import { getSlugValidationIssue } from "../../lib/slug-format.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 
 interface ReplyToMedia {
+  url: string;
   previewUrl: string;
   alt?: string;
   mimeType: string;
+  width?: number;
+  height?: number;
 }
 
 interface ReplyToData {
@@ -888,12 +891,23 @@ export class JantComposeDialog extends LitElement {
             day: "numeric",
           })
         : "";
-      const media: ReplyToMedia[] = (post.mediaAttachments ?? [])
-        .filter((m: { mimeType: string }) => !m.mimeType.startsWith("text/"))
-        .map((m: { previewUrl: string; alt?: string; mimeType: string }) => ({
-          previewUrl: m.previewUrl,
-          alt: m.alt,
-          mimeType: m.mimeType,
+      // API returns "attachments", not "mediaAttachments"
+      const rawAttachments =
+        ((post as Record<string, unknown>).attachments as
+          | Array<Record<string, unknown>>
+          | undefined) ?? [];
+      const media: ReplyToMedia[] = rawAttachments
+        .filter(
+          (m) =>
+            typeof m.mimeType === "string" && !m.mimeType.startsWith("text/"),
+        )
+        .map((m) => ({
+          url: (m.url as string) ?? (m.previewUrl as string),
+          previewUrl: m.previewUrl as string,
+          alt: m.alt as string | undefined,
+          mimeType: m.mimeType as string,
+          width: m.width as number | undefined,
+          height: m.height as number | undefined,
         }));
       this._replyToData = {
         contentHtml: (post.bodyHtml as string) ?? "",
@@ -2866,15 +2880,33 @@ export class JantComposeDialog extends LitElement {
           <div class="compose-reply-context-body">
             ${unsafeHTML(contentHtml)}
             ${media?.length
-              ? html`<div class="compose-reply-context-media">
+              ? html`<div
+                  class="compose-reply-context-media"
+                  data-post-media
+                  data-lightbox-group=${JSON.stringify(
+                    media.map((m) => ({
+                      url: m.url,
+                      alt: m.alt ?? "",
+                      width: m.width,
+                      height: m.height,
+                      mimeType: m.mimeType,
+                    })),
+                  )}
+                >
                   ${media.map(
-                    (m) => html`
-                      <img
-                        src=${m.previewUrl}
-                        alt=${m.alt ?? ""}
-                        class="compose-reply-context-media-img"
-                        loading="lazy"
-                      />
+                    (m, i) => html`
+                      <a
+                        href=${m.url}
+                        data-lightbox-index=${i}
+                        class="compose-reply-context-media-link"
+                      >
+                        <img
+                          src=${m.previewUrl}
+                          alt=${m.alt ?? ""}
+                          class="compose-reply-context-media-img"
+                          loading="lazy"
+                        />
+                      </a>
                     `,
                   )}
                 </div>`

@@ -1604,7 +1604,9 @@ export class JantComposeEditor extends LitElement {
             </p>`
           : nothing}
         <div class="compose-divider"></div>
-        <div class="compose-tiptap-body compose-tiptap-thoughts"></div>
+        <div
+          class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-link"
+        ></div>
       </div>
     `;
   }
