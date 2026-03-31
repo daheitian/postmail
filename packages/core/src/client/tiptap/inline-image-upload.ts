@@ -18,6 +18,14 @@ type InlineImageUpload = (file: File) => Promise<{ url: string }>;
  */
 const inflightUploads = new Map<string, Promise<string>>();
 
+/**
+ * Registry of adopted inline image uploads.
+ * When another editor takes ownership of an upload via adoptPendingInlineImageUploads,
+ * the promise is moved here so resolveInlineImageUrls can still find it at submit time.
+ * Entries are removed when the upload settles.
+ */
+const adoptedUploads = new Map<string, Promise<string>>();
+
 function replaceInlineImage(editor: Editor, blobUrl: string, realUrl: string) {
   if (editor.isDestroyed) return;
   const { doc } = editor.state;
@@ -123,8 +131,11 @@ export function adoptPendingInlineImageUploads(
     const uploaded = inflightUploads.get(src);
     if (!uploaded) return;
 
-    // Take ownership — prevents original editor's finally from revoking
+    // Take ownership — prevents original editor's finally from revoking the URL.
+    // Move to adoptedUploads so resolveInlineImageUrls can still find the promise
+    // if the user submits before the upload completes.
     inflightUploads.delete(src);
+    adoptedUploads.set(src, uploaded);
 
     const promise = uploaded
       .then(
@@ -132,6 +143,7 @@ export function adoptPendingInlineImageUploads(
         () => removeInlineImage(editor, src),
       )
       .finally(() => {
+        adoptedUploads.delete(src);
         URL.revokeObjectURL(src);
       });
     adopted.push(promise);
@@ -180,7 +192,8 @@ function collectBlobUrls(node: JSONContent, out: Map<string, Promise<string>>) {
     typeof node.attrs?.src === "string" &&
     node.attrs.src.startsWith("blob:")
   ) {
-    const promise = inflightUploads.get(node.attrs.src);
+    const promise =
+      inflightUploads.get(node.attrs.src) ?? adoptedUploads.get(node.attrs.src);
     if (promise) {
       out.set(node.attrs.src, promise);
     }

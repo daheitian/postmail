@@ -82,6 +82,8 @@ export function getHtmlExcerpt(bodyHtml: string): HtmlExcerpt {
   let excerpt = "";
   let charCount = 0;
   let paraCount = 0;
+  let excerptEnd = 0;
+  let searchFrom = 0;
 
   for (const p of paragraphs) {
     const textLen = stripHtml(p).length;
@@ -89,8 +91,15 @@ export function getHtmlExcerpt(bodyHtml: string): HtmlExcerpt {
     excerpt += p;
     charCount += textLen;
     paraCount++;
+    // Track the actual end position in bodyHtml, not just the excerpt string length.
+    // The HTML may contain non-<p> blocks (e.g. <figure>) before or between paragraphs.
+    const idx = bodyHtml.indexOf(p, searchFrom);
+    if (idx >= 0) {
+      excerptEnd = idx + p.length;
+      searchFrom = excerptEnd;
+    }
   }
 
-  const hasMore = excerpt.length < bodyHtml.length;
-  return { excerpt, hasMore, excerptEnd: excerpt.length };
+  const hasMore = excerptEnd < bodyHtml.length;
+  return { excerpt, hasMore, excerptEnd };
 }
