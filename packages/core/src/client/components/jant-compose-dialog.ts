@@ -480,6 +480,8 @@ export class JantComposeDialog extends LitElement {
     | null = null;
   private _replyRefreshId: string | null = null;
   private _publishedAtTimeMinutes: number | null = null;
+  private _originalPublishedAt: number | null = null;
+  private _initialPublishedAtTimeMinutes: number | null = null;
   private _initialPublishedAtInput = "";
   private _initialSlug = "";
   private _slugCheckTimer: ReturnType<typeof setTimeout> | null = null;
@@ -537,6 +539,8 @@ export class JantComposeDialog extends LitElement {
     this._slug = "";
     this._publishedAtInput = "";
     this._publishedAtTimeMinutes = null;
+    this._originalPublishedAt = null;
+    this._initialPublishedAtTimeMinutes = null;
     this._initialPublishedAtInput = "";
     this._initialSlug = "";
     this._visibility = JantComposeDialog._lastNewPostVisibility;
@@ -620,6 +624,8 @@ export class JantComposeDialog extends LitElement {
     this._slug = "";
     this._publishedAtInput = "";
     this._publishedAtTimeMinutes = null;
+    this._originalPublishedAt = null;
+    this._initialPublishedAtTimeMinutes = null;
     this._initialPublishedAtInput = "";
     this._initialSlug = "";
     this._visibility = JantComposeDialog._lastNewPostVisibility;
@@ -697,6 +703,8 @@ export class JantComposeDialog extends LitElement {
       this._publishedAtTimeMinutes = post.publishedAt
         ? getTimestampTimeMinutes(post.publishedAt)
         : null;
+      this._originalPublishedAt = post.publishedAt ?? null;
+      this._initialPublishedAtTimeMinutes = this._publishedAtTimeMinutes;
       this._initialPublishedAtInput = this._publishedAtInput;
       this._initialSlug = this._slug.trim();
       this._visibility = post.visibility ?? "public";
@@ -2169,6 +2177,8 @@ export class JantComposeDialog extends LitElement {
     this._publishedAtTimeMinutes = post.publishedAt
       ? getTimestampTimeMinutes(post.publishedAt)
       : null;
+    this._originalPublishedAt = post.publishedAt ?? null;
+    this._initialPublishedAtTimeMinutes = this._publishedAtTimeMinutes;
     this._initialPublishedAtInput = this._publishedAtInput;
     this._initialSlug = this._slug.trim();
     this._visibility = post.visibility ?? "public";
@@ -3608,6 +3618,15 @@ export class JantComposeDialog extends LitElement {
       this._getPublishedAtTimeMinutes(),
     );
     if (publishedAt !== null) {
+      // If editing and the user didn't change date or time, preserve the
+      // original timestamp (including seconds) to avoid silent truncation.
+      if (
+        this._originalPublishedAt !== null &&
+        this._publishedAtInput === this._initialPublishedAtInput &&
+        this._publishedAtTimeMinutes === this._initialPublishedAtTimeMinutes
+      ) {
+        return Math.min(this._originalPublishedAt, this._getCurrentTimestamp());
+      }
       return Math.min(publishedAt, this._getCurrentTimestamp());
     }
 
