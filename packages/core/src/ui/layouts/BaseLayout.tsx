@@ -10,6 +10,7 @@
 
 import type { FC, PropsWithChildren } from "hono/jsx";
 import type { Context } from "hono";
+import { raw } from "hono/utils/html";
 import { msg } from "@lingui/core/macro";
 import {
   getPublicAssetBasePath,
@@ -193,146 +194,156 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
       : { href: latestFeedHref, title: latestFeedTitle };
 
   return (
-    <html
-      lang={resolvedLang}
-      data-theme-mode={themeMode}
-      data-site-path-prefix={sitePathPrefix}
-      data-asset-base-path={assetBasePath}
-    >
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        {themeMode === "dark" ? (
-          <meta name="theme-color" content={browserThemeColors.dark} />
-        ) : themeMode === "light" ? (
-          <meta name="theme-color" content={browserThemeColors.light} />
-        ) : (
-          <>
-            <meta name="theme-color" content={browserThemeColors.light} />
-            <meta
-              name="theme-color"
-              content={browserThemeColors.light}
-              media="(prefers-color-scheme: light)"
-            />
-            <meta
-              name="theme-color"
-              content={browserThemeColors.dark}
-              media="(prefers-color-scheme: dark)"
-            />
-          </>
-        )}
-        <title>{title}</title>
-        {description && <meta name="description" content={description} />}
-        <meta property="og:title" content={title} />
-        <meta property="og:type" content="website" />
-        {description && (
-          <meta property="og:description" content={description} />
-        )}
-        {socialImageHref && (
-          <meta property="og:image" content={socialImageHref} />
-        )}
-        {siteName && <meta property="og:site_name" content={siteName} />}
-        {currentUrl && <meta property="og:url" content={currentUrl} />}
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content={title} />
-        {description && (
-          <meta name="twitter:description" content={description} />
-        )}
-        {socialImageHref && (
-          <meta name="twitter:image" content={socialImageHref} />
-        )}
-        {resolvedNoindex && <meta name="robots" content="noindex, nofollow" />}
-        <link rel="icon" href={resolvedFaviconHref} sizes="16x16 32x32" />
-        <link rel="apple-touch-icon" href={resolvedAppleTouchHref} />
-        {mainFeedHref && (
-          <link
-            rel="alternate"
-            type="application/rss+xml"
-            title={mainFeedTitle}
-            href={mainFeedHref}
-          />
-        )}
-        {alternateFeed.href && (
-          <link
-            rel="alternate"
-            type="application/rss+xml"
-            title={alternateFeed.title}
-            href={alternateFeed.href}
-          />
-        )}
-        {IS_VITE_DEV && (
-          <script type="module" src={assetPath("/@vite/client")} />
-        )}
-        <link
-          rel="stylesheet"
-          href={
-            IS_VITE_DEV
-              ? assetPath("/src/style.css")
-              : toPublicAssetPath(CLIENT_CSS_FILE, assetBasePath)
-          }
-        />
-        {cjkStylesheetPath && (
-          <link rel="stylesheet" href={cjkStylesheetPath} />
-        )}
-        {themeStyle && (
-          <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
-        )}
-        {customCSS && <style dangerouslySetInnerHTML={{ __html: customCSS }} />}
-        <script type="module" src={clientScriptPath} />
-      </head>
-      <body
-        class="bg-background text-foreground antialiased"
-        {...(isAuthenticated ? { "data-authenticated": true } : {})}
+    <>
+      {raw("<!DOCTYPE html>")}
+      <html
+        lang={resolvedLang}
+        data-theme-mode={themeMode}
+        data-site-path-prefix={sitePathPrefix}
+        data-asset-base-path={assetBasePath}
       >
-        {content}
-        <div id="toast-container" class="toast-container" popover="manual">
-          {toast && (
-            <div
-              class={`toast ${toast.type === "error" ? "toast-error" : "toast-success"}`}
-              data-init="el.closest('[popover]').showPopover(); history.replaceState({}, '', location.pathname); setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove()) }, 3000)"
-            >
-              {toast.type === "error" ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2"
-                  stroke="currentColor"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="m15 9-6 6M9 9l6 6" />
-                </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2"
-                  stroke="currentColor"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="m9 12 2 2 4-4" />
-                </svg>
-              )}
-              <span>{toast.message}</span>
-              <button
-                class="toast-close"
-                data-on:click="el.closest('.toast').classList.add('toast-out'); el.closest('.toast').addEventListener('animationend', () => el.closest('.toast').remove())"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2"
-                  stroke="currentColor"
-                >
-                  <path d="M18 6 6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+        <head>
+          <meta charset="UTF-8" />
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+          />
+          {themeMode === "dark" ? (
+            <meta name="theme-color" content={browserThemeColors.dark} />
+          ) : themeMode === "light" ? (
+            <meta name="theme-color" content={browserThemeColors.light} />
+          ) : (
+            <>
+              <meta name="theme-color" content={browserThemeColors.light} />
+              <meta
+                name="theme-color"
+                content={browserThemeColors.light}
+                media="(prefers-color-scheme: light)"
+              />
+              <meta
+                name="theme-color"
+                content={browserThemeColors.dark}
+                media="(prefers-color-scheme: dark)"
+              />
+            </>
           )}
-        </div>
-      </body>
-    </html>
+          <title>{title}</title>
+          {description && <meta name="description" content={description} />}
+          <meta property="og:title" content={title} />
+          <meta property="og:type" content="website" />
+          {description && (
+            <meta property="og:description" content={description} />
+          )}
+          {socialImageHref && (
+            <meta property="og:image" content={socialImageHref} />
+          )}
+          {siteName && <meta property="og:site_name" content={siteName} />}
+          {currentUrl && <meta property="og:url" content={currentUrl} />}
+          <meta name="twitter:card" content="summary" />
+          <meta name="twitter:title" content={title} />
+          {description && (
+            <meta name="twitter:description" content={description} />
+          )}
+          {socialImageHref && (
+            <meta name="twitter:image" content={socialImageHref} />
+          )}
+          {resolvedNoindex && (
+            <meta name="robots" content="noindex, nofollow" />
+          )}
+          <link rel="icon" href={resolvedFaviconHref} sizes="16x16 32x32" />
+          <link rel="apple-touch-icon" href={resolvedAppleTouchHref} />
+          {mainFeedHref && (
+            <link
+              rel="alternate"
+              type="application/rss+xml"
+              title={mainFeedTitle}
+              href={mainFeedHref}
+            />
+          )}
+          {alternateFeed.href && (
+            <link
+              rel="alternate"
+              type="application/rss+xml"
+              title={alternateFeed.title}
+              href={alternateFeed.href}
+            />
+          )}
+          {IS_VITE_DEV && (
+            <script type="module" src={assetPath("/@vite/client")} />
+          )}
+          <link
+            rel="stylesheet"
+            href={
+              IS_VITE_DEV
+                ? assetPath("/src/style.css")
+                : toPublicAssetPath(CLIENT_CSS_FILE, assetBasePath)
+            }
+          />
+          {cjkStylesheetPath && (
+            <link rel="stylesheet" href={cjkStylesheetPath} />
+          )}
+          {themeStyle && (
+            <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
+          )}
+          {customCSS && (
+            <style dangerouslySetInnerHTML={{ __html: customCSS }} />
+          )}
+          <script type="module" src={clientScriptPath} />
+        </head>
+        <body
+          class="bg-background text-foreground antialiased"
+          {...(isAuthenticated ? { "data-authenticated": true } : {})}
+        >
+          {content}
+          <div id="toast-container" class="toast-container" popover="manual">
+            {toast && (
+              <div
+                class={`toast ${toast.type === "error" ? "toast-error" : "toast-success"}`}
+                data-init="el.closest('[popover]').showPopover(); history.replaceState({}, '', location.pathname); setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove()) }, 3000)"
+              >
+                {toast.type === "error" ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m15 9-6 6M9 9l6 6" />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                )}
+                <span>{toast.message}</span>
+                <button
+                  class="toast-close"
+                  data-on:click="el.closest('.toast').classList.add('toast-out'); el.closest('.toast').addEventListener('animationend', () => el.closest('.toast').remove())"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                  >
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+        </body>
+      </html>
+    </>
   );
 };

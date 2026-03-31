@@ -1012,7 +1012,7 @@ export function createCollectionService(
             eq(postCollections.postId, postId),
           ),
         )
-        .orderBy(asc(collections.createdAt));
+        .orderBy(asc(postCollections.createdAt));
 
       return hydrateCollections(rows.map((row) => row.collection));
     },
@@ -1039,7 +1039,7 @@ export function createCollectionService(
               inArray(postCollections.postId, chunk),
             ),
           )
-          .orderBy(asc(collections.createdAt)),
+          .orderBy(asc(postCollections.createdAt)),
       );
 
       const collectionRows = rows.map((row) => row.collection);
