@@ -187,7 +187,7 @@ export function toPostView(
 ): PostView {
   const id = post.id;
   const permalink = toPublicPath(
-    aliasPath ? `/${aliasPath}` : `/${post.slug}`,
+    aliasPath ?? `/${post.slug}`,
     ctx.sitePathPrefix,
   );
   const timeZone = ctx.timeZone ?? "UTC";
@@ -333,11 +333,12 @@ export function toPostViewFromPost(
   ctx: MediaContext,
   isLastInThread?: boolean,
   aliasPath?: string,
+  postCollections?: Collection[],
 ): PostView {
   return toPostView(
     { ...post, mediaAttachments: [] },
     ctx,
-    undefined,
+    postCollections,
     isLastInThread,
     aliasPath,
   );
@@ -448,8 +449,15 @@ export function toSearchResultView(
   ctx: MediaContext,
   query?: string,
   aliasPath?: string,
+  postCollections?: Collection[],
 ): SearchResultView {
-  const post = toPostViewFromPost(result.post, ctx, undefined, aliasPath);
+  const post = toPostViewFromPost(
+    result.post,
+    ctx,
+    undefined,
+    aliasPath,
+    postCollections,
+  );
 
   let titleHighlighted: string | undefined;
   let quoteHighlighted: string | undefined;
@@ -489,9 +497,16 @@ export function toSearchResultViews(
   ctx: MediaContext,
   query?: string,
   aliasMap?: Map<string, string>,
+  collectionsMap?: Map<string, Collection[]>,
 ): SearchResultView[] {
   return results.map((r) =>
-    toSearchResultView(r, ctx, query, aliasMap?.get(r.post.id)),
+    toSearchResultView(
+      r,
+      ctx,
+      query,
+      aliasMap?.get(r.post.id),
+      collectionsMap?.get(r.post.id),
+    ),
   );
 }
 

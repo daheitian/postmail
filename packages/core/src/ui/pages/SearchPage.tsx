@@ -11,6 +11,10 @@ import { useLingui } from "../../i18n/context.js";
 import type { SearchPageProps, SearchResultView } from "../../types.js";
 import { toPublicPath } from "../../lib/url.js";
 import { PagePagination } from "../shared/Pagination.js";
+import {
+  CompactCollectionTags,
+  PostMenuTriggerButton,
+} from "../shared/PostFooter.js";
 
 // External link icon (shared by LinkCard)
 const ExternalLinkIcon = () => (
@@ -26,7 +30,10 @@ const ExternalLinkIcon = () => (
   </svg>
 );
 
-const SearchResultCard: FC<{ result: SearchResultView }> = ({ result }) => {
+const SearchResultCard: FC<{
+  result: SearchResultView;
+  isAuthenticated?: boolean;
+}> = ({ result, isAuthenticated }) => {
   const { post, snippet, titleHighlighted, quoteHighlighted } = result;
 
   // Extract domain for link posts
@@ -39,19 +46,45 @@ const SearchResultCard: FC<{ result: SearchResultView }> = ({ result }) => {
     }
   }
 
+  const hasCollections = post.collections.length > 0;
+
+  // Data attributes required by the client-side post menu component
+  const postAttrs = {
+    "data-post": "",
+    "data-format": post.format,
+    "data-post-id": post.id,
+    "data-post-slug": post.slug,
+    "data-thread-root-id": post.threadRootId ?? post.id,
+    ...(post.pinned ? { "data-post-pinned": "" } : {}),
+    ...(post.featured ? { "data-post-featured": "" } : {}),
+    "data-post-visibility": post.visibility,
+    ...(post.threadRootId ? { "data-post-reply": "" } : {}),
+  };
+
   const footer = (
-    <footer class="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-      <span class="badge-outline">{post.format}</span>
-      <a href={post.permalink} class="hover:underline">
-        <time datetime={post.publishedAt}>{post.publishedAtFormatted}</time>
-      </a>
+    <footer class="post-menu-footer mt-2">
+      <div class="flex items-center gap-2 text-xs text-muted-foreground">
+        <span class="badge-outline">{post.format}</span>
+        <a href={post.permalink} class="hover:underline">
+          <time datetime={post.publishedAt}>{post.publishedAtFormatted}</time>
+        </a>
+        <CompactCollectionTags
+          collections={post.collections}
+          showSeparator={hasCollections}
+        />
+      </div>
+      {isAuthenticated && (
+        <div class="post-menu-actions">
+          <PostMenuTriggerButton />
+        </div>
+      )}
     </footer>
   );
 
   // ── Link ──────────────────────────────────────────────────────────────────
   if (post.format === "link") {
     return (
-      <article data-post data-format="link">
+      <article {...postAttrs}>
         {domain && (
           <div class="flex items-center gap-1 text-xs text-muted-foreground mb-1">
             <ExternalLinkIcon />
@@ -94,7 +127,7 @@ const SearchResultCard: FC<{ result: SearchResultView }> = ({ result }) => {
   // ── Quote ─────────────────────────────────────────────────────────────────
   if (post.format === "quote") {
     return (
-      <article data-post data-format="quote">
+      <article {...postAttrs}>
         {quoteHighlighted && (
           <blockquote class="feed-quote mb-1">
             <p
@@ -133,7 +166,7 @@ const SearchResultCard: FC<{ result: SearchResultView }> = ({ result }) => {
   // ── Note with title (article) ─────────────────────────────────────────────
   if (post.title) {
     return (
-      <article data-post data-format="note">
+      <article {...postAttrs}>
         <h3 class="font-semibold text-base mb-1">
           {titleHighlighted ? (
             <a
@@ -160,7 +193,7 @@ const SearchResultCard: FC<{ result: SearchResultView }> = ({ result }) => {
 
   // ── Untitled note ─────────────────────────────────────────────────────────
   return (
-    <article data-post data-format="note">
+    <article {...postAttrs}>
       {snippet ? (
         <a href={post.permalink} class="block hover:opacity-80">
           <p
@@ -188,6 +221,7 @@ export const SearchPage: FC<SearchPageProps> = ({
   hasMore,
   page,
   sitePathPrefix = "",
+  isAuthenticated,
 }) => {
   const { i18n } = useLingui();
 
@@ -269,7 +303,10 @@ export const SearchPage: FC<SearchPageProps> = ({
                 {results.map((result, i) => (
                   <div key={result.post.id}>
                     {i > 0 && <hr class="feed-divider" />}
-                    <SearchResultCard result={result} />
+                    <SearchResultCard
+                      result={result}
+                      isAuthenticated={isAuthenticated}
+                    />
                   </div>
                 ))}
               </div>

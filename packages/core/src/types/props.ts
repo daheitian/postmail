@@ -85,6 +85,7 @@ export interface SearchPageProps {
   hasMore: boolean;
   page: number;
   sitePathPrefix?: string;
+  isAuthenticated?: boolean;
 }
 
 /** Props for the single collection page component */

@@ -23,7 +23,7 @@ interface PostFooterProps {
   display?: PostFooterDisplayOptions;
 }
 
-const CompactCollectionTags: FC<{
+export const CompactCollectionTags: FC<{
   collections: CollectionTagView[];
   detail?: boolean;
   showSeparator?: boolean;
