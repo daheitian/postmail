@@ -88,15 +88,21 @@ async function main() {
     "node_modules/@jant/core/dist/client",
   );
   const assetDir = path.join(clientDir, "_assets");
-  const clientJs = path.join(assetDir, "client.js");
-  const clientCss = path.join(assetDir, "client.css");
 
-  if (!(await fs.pathExists(clientJs))) {
-    console.error(`  client.js not found at ${clientJs}`);
+  const assetFiles = await fs.readdir(assetDir).catch(() => []);
+  const hasClientJs = assetFiles.some(
+    (f) => f === "client.js" || /^client-[a-zA-Z0-9]+\.js$/.test(f),
+  );
+  const hasClientCss = assetFiles.some(
+    (f) => f === "client.css" || /^client-[a-zA-Z0-9]+\.css$/.test(f),
+  );
+
+  if (!hasClientJs) {
+    console.error(`  client.js not found in ${assetDir}`);
     process.exit(1);
   }
-  if (!(await fs.pathExists(clientCss))) {
-    console.error(`  client.css not found at ${clientCss}`);
+  if (!hasClientCss) {
+    console.error(`  client.css not found in ${assetDir}`);
     process.exit(1);
   }
   console.log("  _assets/client.js and _assets/client.css found\n");
@@ -107,7 +113,11 @@ async function main() {
     cwd: projectDir,
   });
   const publicAssetDir = path.join(projectDir, "dist/public/_assets");
-  if (!(await fs.pathExists(path.join(publicAssetDir, "client.js")))) {
+  const preparedFiles = await fs.readdir(publicAssetDir).catch(() => []);
+  const hasPreparedClientJs = preparedFiles.some(
+    (f) => f === "client.js" || /^client-[a-zA-Z0-9]+\.js$/.test(f),
+  );
+  if (!hasPreparedClientJs) {
     console.error(`  prepared client.js not found at ${publicAssetDir}`);
     process.exit(1);
   }
