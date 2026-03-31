@@ -17,6 +17,7 @@ export default [
       "**/i18n/locales/*.ts",
       "**/src/assets/**",
       "**/bin/**",
+      "references/**",
     ],
   },
   {

@@ -287,12 +287,12 @@ Auth: `Session or token`
 
 Query parameters:
 
-| Parameter | Type                        | Default     | Notes                                         |
-| --------- | --------------------------- | ----------- | --------------------------------------------- |
-| `format`  | `note` \| `link` \| `quote` | all         | Optional format filter                        |
-| `status`  | `draft` \| `published`      | `published` | Optional status filter                        |
-| `cursor`  | string                      | none        | Pass the previous `nextCursor` back unchanged |
-| `limit`   | integer                     | `100`       | Maximum `100`                                 |
+| Parameter | Type                        | Required | Default     | Notes                                         |
+| --------- | --------------------------- | -------- | ----------- | --------------------------------------------- |
+| `format`  | `note` \| `link` \| `quote` | no       | all         | Format filter                                 |
+| `status`  | `draft` \| `published`      | no       | `published` | Status filter                                 |
+| `cursor`  | string                      | no       | none        | Pass the previous `nextCursor` back unchanged |
+| `limit`   | integer                     | no       | `100`       | `1` to `100`                                  |
 
 Response:
 
@@ -435,27 +435,27 @@ Request body:
 
 Fields:
 
-| Field           | Type                                     | Required         | Notes                                                       |
-| --------------- | ---------------------------------------- | ---------------- | ----------------------------------------------------------- |
-| `format`        | `note` \| `link` \| `quote`              | yes              | Post format                                                 |
-| `title`         | string                                   | format-dependent | Required for `link`; max `300`; not allowed for `quote`     |
-| `sourceName`    | string                                   | no               | Quote attribution name, max `300`                           |
-| `body`          | string                                   | no               | TipTap JSON string                                          |
-| `bodyMarkdown`  | string                                   | no               | Recommended for scripts                                     |
-| `slug`          | string                                   | no               | Canonical slug                                              |
-| `path`          | string                                   | no               | Create-time path helper; mutually exclusive with `slug`     |
-| `status`        | `draft` \| `published`                   | no               | Defaults to `published`                                     |
-| `visibility`    | `public` \| `latest_hidden` \| `private` | no               | Defaults to `public`                                        |
-| `pinned`        | boolean                                  | no               | Pin the post                                                |
-| `featured`      | boolean                                  | no               | Mark as featured                                            |
-| `url`           | absolute URL                             | format-dependent | Required for `link`; allows `http:`, `https:`, or `mailto:` |
-| `sourceUrl`     | absolute URL                             | no               | Quote attribution URL                                       |
-| `quoteText`     | string                                   | format-dependent | Required for `quote`                                        |
-| `rating`        | integer                                  | no               | `1` to `5`; send `0` to clear on update                     |
-| `collectionIds` | string[]                                 | no               | Collection TypeIDs                                          |
-| `replyToId`     | string                                   | no               | Make this post a thread reply                               |
-| `publishedAt`   | integer                                  | no               | Unix seconds; only valid for published posts                |
-| `attachments`   | attachment[]                             | no               | Ordered attachments, max `20`                               |
+| Field           | Type                                     | Required             | Default        | Notes                                                                     |
+| --------------- | ---------------------------------------- | -------------------- | -------------- | ------------------------------------------------------------------------- |
+| `format`        | `note` \| `link` \| `quote`              | yes                  | —              | Post format                                                               |
+| `title`         | string                                   | required for `link`  | —              | Max `300`; not allowed for `quote`                                        |
+| `sourceName`    | string                                   | no                   | `null`         | Quote attribution name, max `300`; only for `quote`                       |
+| `body`          | string                                   | no                   | `null`         | TipTap JSON string; mutually exclusive with `bodyMarkdown`                |
+| `bodyMarkdown`  | string                                   | no                   | `null`         | Recommended for scripts; mutually exclusive with `body`                   |
+| `slug`          | string                                   | no                   | auto-generated | Canonical slug; mutually exclusive with `path`                            |
+| `path`          | string                                   | no                   | —              | Create-time path helper; mutually exclusive with `slug`                   |
+| `status`        | `draft` \| `published`                   | no                   | `published`    | Post status                                                               |
+| `visibility`    | `public` \| `latest_hidden` \| `private` | no                   | `public`       | Post visibility                                                           |
+| `pinned`        | boolean                                  | no                   | `false`        | Pin the post; not allowed on replies                                      |
+| `featured`      | boolean                                  | no                   | `false`        | Mark as featured                                                          |
+| `url`           | absolute URL                             | required for `link`  | —              | Allows `http:`, `https:`, or `mailto:`; not allowed for `note` or `quote` |
+| `sourceUrl`     | absolute URL                             | no                   | `null`         | Quote attribution URL; not allowed for non-quote                          |
+| `quoteText`     | string                                   | required for `quote` | —              | Not allowed for `note` or `link`                                          |
+| `rating`        | integer                                  | no                   | `null`         | `1` to `5`; send `0` to clear on update                                   |
+| `collectionIds` | `col_*` string[]                         | no                   | `[]`           | Collection TypeIDs; max `20`                                              |
+| `replyToId`     | `pst_*` string                           | no                   | `null`         | Make this post a thread reply                                             |
+| `publishedAt`   | integer                                  | no                   | current time   | Unix seconds; only valid when `status` is `published`                     |
+| `attachments`   | attachment[]                             | no                   | `[]`           | Ordered attachments, max `20`                                             |
 
 Important rules:
 
@@ -464,6 +464,7 @@ Important rules:
 - `path` is only available on create. Post updates only support `slug`.
 - `link` posts require `title` and `url`.
 - `quote` posts require `quoteText` and must use `sourceName` / `sourceUrl` instead of `title` / `url`.
+- `note` posts do not accept `url`, `quoteText`, `sourceName`, or `sourceUrl`.
 - Replies cannot be pinned.
 - Replies inherit thread visibility.
 - Replies inherit the root status unless you explicitly create the reply as `draft`.
@@ -498,11 +499,17 @@ Input shapes:
 }
 ```
 
-Notes:
+Fields:
 
-- `contentFormat` currently only supports `markdown`.
-- Media attachment `alt` is optional and limited to `500` characters.
-- Text attachment `summary` is optional and limited to `300` characters.
+| Field           | Type           | Required | Default | Notes                                  |
+| --------------- | -------------- | -------- | ------- | -------------------------------------- |
+| `type`          | `"media"`      | yes      | —       | Media attachment                       |
+| `mediaId`       | `med_*` string | yes      | —       | Previously uploaded media ID           |
+| `alt`           | string         | no       | `null`  | Alt text, max `500`                    |
+| `type`          | `"text"`       | yes      | —       | Text attachment                        |
+| `contentFormat` | `"markdown"`   | yes      | —       | Currently only `markdown` is supported |
+| `content`       | string         | yes      | —       | Non-empty text content                 |
+| `summary`       | string         | no       | `null`  | Optional summary, max `300`            |
 
 Response shapes:
 
@@ -581,7 +588,7 @@ Example:
 
 Request body fields:
 
-This endpoint accepts the same JSON fields as `POST /api/posts`, except `path`. All fields are optional.
+This endpoint accepts the same JSON fields as `POST /api/posts`, except `path`. All fields are optional. Additionally, update accepts `null` to clear `title`, `sourceName`, `body`, `bodyMarkdown`, `url`, `sourceUrl`, `quoteText`, and `rating`.
 
 Attachment replacement rules:
 
@@ -659,12 +666,12 @@ Request body:
 
 Fields:
 
-| Field            | Type    | Required | Notes                           |
-| ---------------- | ------- | -------- | ------------------------------- |
-| `filename`       | string  | yes      | Original filename               |
-| `contentType`    | string  | yes      | MIME type                       |
-| `size`           | integer | yes      | File size in bytes              |
-| `checksumSha256` | string  | no       | Base64-encoded SHA-256 checksum |
+| Field            | Type    | Required | Default | Notes                           |
+| ---------------- | ------- | -------- | ------- | ------------------------------- |
+| `filename`       | string  | yes      | —       | Original filename               |
+| `contentType`    | string  | yes      | —       | MIME type                       |
+| `size`           | integer | yes      | —       | File size in bytes              |
+| `checksumSha256` | string  | no       | `null`  | Base64-encoded SHA-256 checksum |
 
 The response includes an upload session ID (`upl_*`) and one of three transport kinds.
 
@@ -777,15 +784,15 @@ Request body:
 
 Fields:
 
-| Field      | Type    | Required            | Notes                          |
-| ---------- | ------- | ------------------- | ------------------------------ |
-| `width`    | integer | no                  | Image/video width              |
-| `height`   | integer | no                  | Image/video height             |
-| `blurhash` | string  | no                  | Optional blurhash              |
-| `waveform` | string  | no                  | Optional audio waveform        |
-| `summary`  | string  | no                  | Mainly useful for text uploads |
-| `chars`    | integer | no                  | Mainly useful for text uploads |
-| `parts`    | array   | transport-dependent | Required for `multipartRelay`  |
+| Field      | Type    | Required                      | Default | Notes                                 |
+| ---------- | ------- | ----------------------------- | ------- | ------------------------------------- |
+| `width`    | integer | no                            | `null`  | Image/video width; positive           |
+| `height`   | integer | no                            | `null`  | Image/video height; positive          |
+| `blurhash` | string  | no                            | `null`  | Blurhash string, max `200`            |
+| `waveform` | string  | no                            | `null`  | Audio waveform, max `2000`            |
+| `summary`  | string  | no                            | `null`  | Mainly for text uploads, max `500`    |
+| `chars`    | integer | no                            | `null`  | Mainly for text uploads; non-negative |
+| `parts`    | array   | required for `multipartRelay` | —       | `[{partNumber, etag}]`                |
 
 Response:
 
@@ -823,16 +830,16 @@ Content type: `multipart/form-data`
 
 Form fields:
 
-| Field      | Type    | Required | Notes                          |
-| ---------- | ------- | -------- | ------------------------------ |
-| `file`     | file    | yes      | Main file                      |
-| `width`    | integer | no       | Image/video width              |
-| `height`   | integer | no       | Image/video height             |
-| `alt`      | string  | no       | Alt text                       |
-| `blurhash` | string  | no       | Blurhash                       |
-| `waveform` | string  | no       | Audio waveform                 |
-| `summary`  | string  | no       | Summary for text uploads       |
-| `poster`   | file    | no       | Poster frame for video uploads |
+| Field      | Type    | Required | Default | Notes                          |
+| ---------- | ------- | -------- | ------- | ------------------------------ |
+| `file`     | file    | yes      | —       | Main file                      |
+| `width`    | integer | no       | `null`  | Image/video width              |
+| `height`   | integer | no       | `null`  | Image/video height             |
+| `alt`      | string  | no       | `null`  | Alt text                       |
+| `blurhash` | string  | no       | `null`  | Blurhash                       |
+| `waveform` | string  | no       | `null`  | Audio waveform                 |
+| `summary`  | string  | no       | `null`  | Summary for text uploads       |
+| `poster`   | file    | no       | —       | Poster frame for video uploads |
 
 Response:
 
@@ -854,9 +861,9 @@ If the request sends `Accept: text/event-stream`, the endpoint may return SSE pa
 
 Query parameters:
 
-| Parameter | Type    | Default |
-| --------- | ------- | ------- |
-| `limit`   | integer | `50`    |
+| Parameter | Type    | Required | Default |
+| --------- | ------- | -------- | ------- |
+| `limit`   | integer | no       | `50`    |
 
 Response:
 
@@ -939,9 +946,9 @@ Content type: `multipart/form-data`
 
 Form field:
 
-| Field    | Type | Required |
-| -------- | ---- | -------- |
-| `poster` | file | yes      |
+| Field    | Type | Required | Default | Notes             |
+| -------- | ---- | -------- | ------- | ----------------- |
+| `poster` | file | yes      | —       | WebP poster frame |
 
 Response:
 
@@ -1056,9 +1063,9 @@ Auth: `Public`
 
 Query parameters:
 
-| Parameter | Type      | Default | Notes                                              |
-| --------- | --------- | ------- | -------------------------------------------------- |
-| `view`    | `compose` | none    | Specialized compose view sorted by recent activity |
+| Parameter | Type      | Required | Default | Notes                                              |
+| --------- | --------- | -------- | ------- | -------------------------------------------------- |
+| `view`    | `compose` | no       | none    | Specialized compose view sorted by recent activity |
 
 Default response:
 
@@ -1139,12 +1146,12 @@ Request body:
 
 Fields:
 
-| Field         | Type                                  | Required | Notes                                                                        |
-| ------------- | ------------------------------------- | -------- | ---------------------------------------------------------------------------- |
-| `slug`        | string                                | yes      | Canonical collection slug, max `200`, lowercase letters/numbers/hyphens only |
-| `title`       | string                                | yes      | Display title, max `120`                                                     |
-| `description` | string                                | no       | Optional description, max `500`                                              |
-| `sortOrder`   | `newest` \| `oldest` \| `rating_desc` | no       | Defaults to `newest`                                                         |
+| Field         | Type                                  | Required | Default  | Notes                                                                        |
+| ------------- | ------------------------------------- | -------- | -------- | ---------------------------------------------------------------------------- |
+| `slug`        | string                                | yes      | —        | Canonical collection slug, max `200`, lowercase letters/numbers/hyphens only |
+| `title`       | string                                | yes      | —        | Display title, max `120`                                                     |
+| `description` | string                                | no       | `null`   | Optional description, max `500`                                              |
+| `sortOrder`   | `newest` \| `oldest` \| `rating_desc` | no       | `newest` | Per-collection post sort order                                               |
 
 Notes:
 
@@ -1163,12 +1170,12 @@ This is a partial update.
 
 Request body fields:
 
-| Field         | Type                                  | Required | Notes                              |
-| ------------- | ------------------------------------- | -------- | ---------------------------------- |
-| `slug`        | string                                | no       | Same rules as create               |
-| `title`       | string                                | no       | Max `120`                          |
-| `description` | string \| `null`                      | no       | Set to `null` to clear             |
-| `sortOrder`   | `newest` \| `oldest` \| `rating_desc` | no       | Replaces the collection sort order |
+| Field         | Type                                  | Required | Default   | Notes                              |
+| ------------- | ------------------------------------- | -------- | --------- | ---------------------------------- |
+| `slug`        | string                                | no       | unchanged | Same rules as create               |
+| `title`       | string                                | no       | unchanged | Max `120`                          |
+| `description` | string \| `null`                      | no       | unchanged | Send `null` to clear               |
+| `sortOrder`   | `newest` \| `oldest` \| `rating_desc` | no       | unchanged | Replaces the collection sort order |
 
 Response: `200 OK` with the updated collection object, including `siteId`.
 
@@ -1217,13 +1224,13 @@ Link:
 
 Fields by type:
 
-| Field   | Type             | Required | Notes                                                         |
-| ------- | ---------------- | -------- | ------------------------------------------------------------- |
-| `type`  | `divider`        | yes      | Creates a divider item                                        |
-| `label` | string \| `null` | no       | Divider label, max `60`; blank values are stored as `null`    |
-| `type`  | `link`           | yes      | Creates a custom link item                                    |
-| `label` | string           | yes      | Link label, 1-60 chars after trim                             |
-| `url`   | string           | yes      | Relative path or absolute `http:`, `https:`, or `mailto:` URL |
+| Field   | Type             | Required         | Default | Notes                                                         |
+| ------- | ---------------- | ---------------- | ------- | ------------------------------------------------------------- |
+| `type`  | `divider`        | yes              | —       | Creates a divider item                                        |
+| `label` | string \| `null` | no               | `null`  | Divider label, max `60`; blank values are stored as `null`    |
+| `type`  | `link`           | yes              | —       | Creates a custom link item                                    |
+| `label` | string           | yes (for `link`) | —       | Link label, 1-60 chars after trim                             |
+| `url`   | string           | yes (for `link`) | —       | Relative path or absolute `http:`, `https:`, or `mailto:` URL |
 
 Notes:
 
@@ -1262,10 +1269,10 @@ This is a partial update.
 
 Request body fields:
 
-| Field   | Type             | Required | Notes                                              |
-| ------- | ---------------- | -------- | -------------------------------------------------- |
-| `label` | string \| `null` | no       | For dividers: update label, or set `null` to clear |
-| `url`   | string           | no       | For links: update URL                              |
+| Field   | Type             | Required | Default   | Notes                                               |
+| ------- | ---------------- | -------- | --------- | --------------------------------------------------- |
+| `label` | string \| `null` | no       | unchanged | For dividers: update label, or send `null` to clear |
+| `url`   | string           | no       | unchanged | For links: update URL                               |
 
 Notes:
 
@@ -1293,10 +1300,10 @@ Request body:
 
 Fields:
 
-| Field    | Type                     | Required | Notes                               |
-| -------- | ------------------------ | -------- | ----------------------------------- |
-| `after`  | `cdi_*` string \| `null` | no       | Place the item after this neighbor  |
-| `before` | `cdi_*` string \| `null` | no       | Place the item before this neighbor |
+| Field    | Type                     | Required | Default | Notes                               |
+| -------- | ------------------------ | -------- | ------- | ----------------------------------- |
+| `after`  | `cdi_*` string \| `null` | no       | `null`  | Place the item after this neighbor  |
+| `before` | `cdi_*` string \| `null` | no       | `null`  | Place the item before this neighbor |
 
 Notes:
 
@@ -1333,9 +1340,9 @@ Request body:
 
 Fields:
 
-| Field    | Type           | Required | Notes   |
-| -------- | -------------- | -------- | ------- |
-| `postId` | `pst_*` string | yes      | Post ID |
+| Field    | Type           | Required | Default | Notes   |
+| -------- | -------------- | -------- | ------- | ------- |
+| `postId` | `pst_*` string | yes      | —       | Post ID |
 
 Response:
 
@@ -1430,13 +1437,13 @@ Create a built-in item:
 
 Fields by type:
 
-| Field       | Type                                              | Required | Notes                                                         |
-| ----------- | ------------------------------------------------- | -------- | ------------------------------------------------------------- |
-| `type`      | `link`                                            | yes      | Creates a custom nav link                                     |
-| `label`     | string                                            | yes      | Link label, 1-100 chars after trim                            |
-| `url`       | string                                            | yes      | Relative path or absolute `http:`, `https:`, or `mailto:` URL |
-| `type`      | `system`                                          | yes      | Creates a built-in nav item                                   |
-| `systemKey` | `rss` \| `settings` \| `collections` \| `archive` | yes      | Built-in destination key                                      |
+| Field       | Type                                              | Required           | Default | Notes                                                         |
+| ----------- | ------------------------------------------------- | ------------------ | ------- | ------------------------------------------------------------- |
+| `type`      | `link`                                            | yes                | —       | Creates a custom nav link                                     |
+| `label`     | string                                            | yes (for `link`)   | —       | Link label, 1-100 chars after trim                            |
+| `url`       | string                                            | yes (for `link`)   | —       | Relative path or absolute `http:`, `https:`, or `mailto:` URL |
+| `type`      | `system`                                          | yes                | —       | Creates a built-in nav item                                   |
+| `systemKey` | `rss` \| `settings` \| `collections` \| `archive` | yes (for `system`) | —       | Built-in destination key                                      |
 
 System keys:
 
@@ -1543,9 +1550,9 @@ Auth: `Session or token`
 
 Query parameters:
 
-| Parameter | Type    | Default |
-| --------- | ------- | ------- |
-| `page`    | integer | `1`     |
+| Parameter | Type    | Required | Default |
+| --------- | ------- | -------- | ------- |
+| `page`    | integer | no       | `1`     |
 
 Response:
 
@@ -1602,13 +1609,13 @@ Request body:
 
 Fields:
 
-| Field          | Type                                 | Required      | Notes                                                                         |
-| -------------- | ------------------------------------ | ------------- | ----------------------------------------------------------------------------- |
-| `path`         | string                               | yes           | Must start with `/`; max `512`; lowercase letters, numbers, `-`, and `/` only |
-| `targetType`   | `post` \| `collection` \| `redirect` | yes           | Target kind                                                                   |
-| `targetId`     | string                               | alias only    | For `post` and `collection`, send the canonical slug, not the TypeID          |
-| `toPath`       | string                               | redirect only | Internal destination path such as `/new-path`; normalized before storage      |
-| `redirectType` | `"301"` \| `"302"`                   | redirect only | Defaults to `301`                                                             |
+| Field          | Type                                 | Required                            | Default | Notes                                                                         |
+| -------------- | ------------------------------------ | ----------------------------------- | ------- | ----------------------------------------------------------------------------- |
+| `path`         | string                               | yes                                 | —       | Must start with `/`; max `512`; lowercase letters, numbers, `-`, and `/` only |
+| `targetType`   | `post` \| `collection` \| `redirect` | yes                                 | —       | Target kind                                                                   |
+| `targetId`     | string                               | required for `post` or `collection` | —       | Send the canonical slug, not the TypeID                                       |
+| `toPath`       | string                               | required for `redirect`             | —       | Internal destination path such as `/new-path`; normalized before storage      |
+| `redirectType` | `"301"` \| `"302"`                   | no                                  | `301`   | Only used for `redirect`                                                      |
 
 Examples:
 
@@ -1809,11 +1816,11 @@ Content type: `multipart/form-data`
 
 Form fields:
 
-| Field        | Type | Required | Notes                  |
-| ------------ | ---- | -------- | ---------------------- |
-| `file`       | file | yes      | Main avatar image      |
-| `favicon`    | file | no       | Favicon `.ico` payload |
-| `appleTouch` | file | no       | Apple touch icon       |
+| Field        | Type | Required | Default | Notes                  |
+| ------------ | ---- | -------- | ------- | ---------------------- |
+| `file`       | file | yes      | —       | Main avatar image      |
+| `favicon`    | file | no       | —       | Favicon `.ico` payload |
+| `appleTouch` | file | no       | —       | Apple touch icon       |
 
 Response:
 
@@ -2020,9 +2027,9 @@ Request body:
 
 Fields:
 
-| Field   | Type    | Required | Notes                           |
-| ------- | ------- | -------- | ------------------------------- |
-| `limit` | integer | no       | Positive integer, maximum `500` |
+| Field   | Type    | Required | Default     | Notes                           |
+| ------- | ------- | -------- | ----------- | ------------------------------- |
+| `limit` | integer | no       | unspecified | Positive integer, maximum `500` |
 
 Notes:
 
@@ -2067,11 +2074,11 @@ Request body:
 
 Fields:
 
-| Field         | Type   | Required | Notes                                                     |
-| ------------- | ------ | -------- | --------------------------------------------------------- |
-| `key`         | string | yes      | Lowercase site key, `3-40` chars, letters/numbers/hyphens |
-| `primaryHost` | string | yes      | Lowercase hostname, max `255`                             |
-| `siteName`    | string | yes      | Display name, `1-120` chars after trim                    |
+| Field         | Type   | Required | Default | Notes                                                     |
+| ------------- | ------ | -------- | ------- | --------------------------------------------------------- |
+| `key`         | string | yes      | —       | Lowercase site key, `3-40` chars, letters/numbers/hyphens |
+| `primaryHost` | string | yes      | —       | Lowercase hostname, max `255`                             |
+| `siteName`    | string | yes      | —       | Display name, `1-120` chars after trim                    |
 
 Response:
 
@@ -2206,10 +2213,10 @@ Request body:
 
 Fields:
 
-| Field         | Type    | Required | Notes                                         |
-| ------------- | ------- | -------- | --------------------------------------------- |
-| `host`        | string  | yes      | Lowercase hostname, max `255`                 |
-| `makePrimary` | boolean | no       | When true, demotes the current primary domain |
+| Field         | Type    | Required | Default | Notes                                         |
+| ------------- | ------- | -------- | ------- | --------------------------------------------- |
+| `host`        | string  | yes      | —       | Lowercase hostname, max `255`                 |
+| `makePrimary` | boolean | no       | `false` | When true, demotes the current primary domain |
 
 Notes:
 
