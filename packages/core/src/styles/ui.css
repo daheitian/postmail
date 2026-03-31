@@ -3780,6 +3780,10 @@
       border-top: 1px solid var(--compose-control-border);
     }
 
+    .compose-dialog::backdrop {
+      background-color: transparent;
+    }
+
     .compose-confirm-panel {
       border-radius: 0;
     }
