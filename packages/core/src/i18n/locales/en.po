@@ -961,11 +961,6 @@ msgstr "Display avatar in my site header"
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
 msgstr "Displayed at the bottom of all posts and pages. Markdown supported."
 
-#. @context: Theme group heading on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Distinctive Mood"
-msgstr "Distinctive Mood"
-
 #. @context: Label for a divider item while organizing collections
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Divider"
@@ -1724,11 +1719,6 @@ msgstr "Logos"
 msgid "Look at the footer metadata last, to make sure the accent is not fighting the typography."
 msgstr "Look at the footer metadata last, to make sure the accent is not fighting the typography."
 
-#. @context: Theme group description on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Low-distraction palettes for a cleaner, calmer reading rhythm."
-msgstr "Low-distraction palettes for a cleaner, calmer reading rhythm."
-
 #. @context: Label for the canonical /feed URL
 #. @context: RSS autodiscovery title for the site's main feed
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1790,11 +1780,6 @@ msgstr "Media"
 msgid "More actions"
 msgstr "More actions"
 
-#. @context: Theme group description on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "More atmospheric palettes with a stronger sense of time, place, or tone."
-msgstr "More atmospheric palettes with a stronger sense of time, place, or tone."
-
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
 msgid "More links"
@@ -1804,11 +1789,6 @@ msgstr "More links"
 #: src/ui/shared/collection-management-labels.ts
 msgid "More options are available after you create it."
 msgstr "More options are available after you create it."
-
-#. @context: Fallback theme group heading on color theme page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "More Palettes"
-msgstr "More Palettes"
 
 #. @context: Secondary badge label on sample page
 #. @context: Token label on sample page
@@ -2065,11 +2045,6 @@ msgstr "Outline"
 msgid "Palette, surface tone, and overall mood"
 msgstr "Palette, surface tone, and overall mood"
 
-#. @context: Theme group description on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Paper-first palettes with warmer surfaces and a softer, handwritten feel."
-msgstr "Paper-first palettes with warmer surfaces and a softer, handwritten feel."
-
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
@@ -2257,11 +2232,6 @@ msgstr "quiet design"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Quiet metadata"
 msgstr "Quiet metadata"
-
-#. @context: Theme group heading on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Quiet Neutral"
-msgstr "Quiet Neutral"
 
 #. @context: Color theme preview card secondary sentence
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2862,11 +2832,6 @@ msgstr "Theme"
 msgid "Theme sample"
 msgstr "Theme sample"
 
-#. @context: Fallback theme group description on color theme page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Themes that have not been assigned to a named group yet."
-msgstr "Themes that have not been assigned to a named group yet."
-
 #. @context: Link to theming documentation on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Theming guide"
@@ -3232,11 +3197,6 @@ msgstr "Visibility"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
 msgstr "Want more control?"
-
-#. @context: Theme group heading on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Warm Editorial"
-msgstr "Warm Editorial"
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx

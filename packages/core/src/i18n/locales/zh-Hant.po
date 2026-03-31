@@ -961,11 +961,6 @@ msgstr "在我的網站標頭顯示頭像"
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
 msgstr "顯示於所有文章與頁面的底部。支援 Markdown."
 
-#. @context: Theme group heading on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Distinctive Mood"
-msgstr "鮮明氛圍"
-
 #. @context: Label for a divider item while organizing collections
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Divider"
@@ -1724,11 +1719,6 @@ msgstr "標誌"
 msgid "Look at the footer metadata last, to make sure the accent is not fighting the typography."
 msgstr "最後檢查頁尾的資訊，確保強調元素不會與排版相互衝突。"
 
-#. @context: Theme group description on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Low-distraction palettes for a cleaner, calmer reading rhythm."
-msgstr "低干擾配色，帶來更乾淨、更平靜的閱讀節奏。"
-
 #. @context: Label for the canonical /feed URL
 #. @context: RSS autodiscovery title for the site's main feed
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1790,11 +1780,6 @@ msgstr "媒體"
 msgid "More actions"
 msgstr "更多操作"
 
-#. @context: Theme group description on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "More atmospheric palettes with a stronger sense of time, place, or tone."
-msgstr "氛圍感更強的配色，時間、地點和情緒感更鮮明。"
-
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
 msgid "More links"
@@ -1804,11 +1789,6 @@ msgstr "更多連結"
 #: src/ui/shared/collection-management-labels.ts
 msgid "More options are available after you create it."
 msgstr "建立後還可設定更多選項。"
-
-#. @context: Fallback theme group heading on color theme page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "More Palettes"
-msgstr "更多配色"
 
 #. @context: Secondary badge label on sample page
 #. @context: Token label on sample page
@@ -2065,11 +2045,6 @@ msgstr "外框"
 msgid "Palette, surface tone, and overall mood"
 msgstr "調色盤、表面色調與整體氛圍"
 
-#. @context: Theme group description on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Paper-first palettes with warmer surfaces and a softer, handwritten feel."
-msgstr "以紙感為先的配色，介面更溫暖，也更有手寫感。"
-
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
@@ -2257,11 +2232,6 @@ msgstr "低調設計"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Quiet metadata"
 msgstr "低調中繼資料"
-
-#. @context: Theme group heading on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Quiet Neutral"
-msgstr "克制中性色"
 
 #. @context: Color theme preview card secondary sentence
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2862,11 +2832,6 @@ msgstr "主題"
 msgid "Theme sample"
 msgstr "主題範例"
 
-#. @context: Fallback theme group description on color theme page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Themes that have not been assigned to a named group yet."
-msgstr "尚未歸入已命名分組的主題。"
-
 #. @context: Link to theming documentation on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Theming guide"
@@ -3232,11 +3197,6 @@ msgstr "可見性"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
 msgstr "想自訂得更細？"
-
-#. @context: Theme group heading on color theme settings page
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Warm Editorial"
-msgstr "暖調編輯風"
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx

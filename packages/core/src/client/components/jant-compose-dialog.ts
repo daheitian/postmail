@@ -34,9 +34,16 @@ import { getMediaCategory } from "../../lib/upload.js";
 import { getSlugValidationIssue } from "../../lib/slug-format.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 
+interface ReplyToMedia {
+  previewUrl: string;
+  alt?: string;
+  mimeType: string;
+}
+
 interface ReplyToData {
   contentHtml: string;
   dateText: string;
+  media?: ReplyToMedia[];
 }
 
 interface ThreadItem {
@@ -714,6 +721,12 @@ export class JantComposeDialog extends LitElement {
       this._visibility = post.visibility ?? "public";
       this._visibilityLocked = Boolean(post.replyToId);
 
+      if (post.replyToId) {
+        this._replyToId = post.replyToId;
+        await this._fetchReplyContext(post.replyToId);
+        if (requestId !== this._openEditRequestId) return;
+      }
+
       if (post.collectionIds?.length) {
         this._collectionIds = post.collectionIds;
       }
@@ -875,9 +888,17 @@ export class JantComposeDialog extends LitElement {
             day: "numeric",
           })
         : "";
+      const media: ReplyToMedia[] = (post.mediaAttachments ?? [])
+        .filter((m: { mimeType: string }) => !m.mimeType.startsWith("text/"))
+        .map((m: { previewUrl: string; alt?: string; mimeType: string }) => ({
+          previewUrl: m.previewUrl,
+          alt: m.alt,
+          mimeType: m.mimeType,
+        }));
       this._replyToData = {
         contentHtml: (post.bodyHtml as string) ?? "",
         dateText,
+        media: media.length > 0 ? media : undefined,
       };
     } catch {
       // Parent unavailable — reply mode still works, just no preview
@@ -2830,7 +2851,7 @@ export class JantComposeDialog extends LitElement {
   private _renderReplyContext() {
     if (!this._replyToId || !this._replyToData) return nothing;
 
-    const { contentHtml, dateText } = this._replyToData;
+    const { contentHtml, dateText, media } = this._replyToData;
     const isExpanded = this._replyExpanded;
 
     return html`
@@ -2844,6 +2865,20 @@ export class JantComposeDialog extends LitElement {
         >
           <div class="compose-reply-context-body">
             ${unsafeHTML(contentHtml)}
+            ${media?.length
+              ? html`<div class="compose-reply-context-media">
+                  ${media.map(
+                    (m) => html`
+                      <img
+                        src=${m.previewUrl}
+                        alt=${m.alt ?? ""}
+                        class="compose-reply-context-media-img"
+                        loading="lazy"
+                      />
+                    `,
+                  )}
+                </div>`
+              : nothing}
           </div>
           ${!isExpanded
             ? html`<div class="compose-reply-fade"></div>`

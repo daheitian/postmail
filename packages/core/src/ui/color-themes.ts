@@ -18,11 +18,6 @@ export interface ColorTheme {
   dark: Record<string, string>;
 }
 
-export interface ColorThemeGroup {
-  id: string;
-  themeIds: string[];
-}
-
 interface ThemeModeColors {
   bg: string;
   fg: string;
@@ -183,6 +178,7 @@ function defineTheme(opts: {
 }
 
 export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
+  // Warm cream with green accent — the signature Jant palette
   defineTheme({
     id: "linen",
     name: "Linen",
@@ -220,76 +216,39 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
+  // Near-white with minimal warm tint — clean paper feel
   defineTheme({
-    id: "dune",
-    name: "Dune",
+    id: "bone",
+    name: "Bone",
     light: {
-      bg: "oklch(0.972 0.01 82)",
-      fg: "oklch(0.29 0.018 55)",
-      primary: "oklch(0.44 0.085 200)",
-      primaryFg: "oklch(0.985 0.004 82)",
-      siteAccent: "oklch(0.53 0.075 187)",
-      muted: "oklch(0.934 0.013 82)",
-      mutedFg: "oklch(0.52 0.014 55)",
-      border: "oklch(0.885 0.015 82)",
-      destructive: "oklch(0.54 0.18 20)",
-      success: "oklch(0.49 0.11 175)",
-      searchMarkBg: "oklch(0.91 0.045 190 / 0.45)",
-      searchMarkColor: "oklch(0.32 0.03 198)",
-      dashBg: "oklch(0.952 0.008 82)",
+      bg: "oklch(0.98 0.008 75)",
+      fg: "oklch(0.22 0.008 60)",
+      primary: "oklch(0.38 0.04 55)",
+      primaryFg: "oklch(0.985 0.005 75)",
+      siteAccent: "oklch(0.46 0.035 50)",
+      muted: "oklch(0.948 0.008 78)",
+      mutedFg: "oklch(0.5 0.006 60)",
+      border: "oklch(0.905 0.008 78)",
+      readingTitle: "oklch(0.18 0.006 55)",
+      readingHeading: "oklch(0.2 0.007 58)",
+      readingBody: "oklch(0.25 0.008 60)",
+      readingQuote: "oklch(0.38 0.006 55)",
+      dashBg: "oklch(0.965 0.006 75)",
     },
     dark: {
-      bg: "oklch(0.265 0.02 210)",
-      fg: "oklch(0.88 0.012 82)",
-      primary: "oklch(0.8 0.08 190)",
-      primaryFg: "oklch(0.22 0.018 210)",
-      siteAccent: "oklch(0.77 0.09 178)",
-      muted: "oklch(0.325 0.018 210)",
-      mutedFg: "oklch(0.67 0.012 82)",
-      border: "oklch(0.38 0.016 210)",
-      destructive: "oklch(0.68 0.17 18)",
-      success: "oklch(0.65 0.12 175)",
-      searchMarkBg: "oklch(0.44 0.05 188 / 0.5)",
-      searchMarkColor: "oklch(0.93 0.018 84)",
-      dashBg: "oklch(0.24 0.016 210)",
+      bg: "oklch(0.175 0.005 70)",
+      fg: "oklch(0.9 0.006 78)",
+      primary: "oklch(0.78 0.04 60)",
+      primaryFg: "oklch(0.16 0.004 70)",
+      siteAccent: "oklch(0.76 0.035 55)",
+      muted: "oklch(0.23 0.005 70)",
+      mutedFg: "oklch(0.65 0.005 78)",
+      border: "oklch(0.295 0.005 70)",
+      dashBg: "oklch(0.155 0.004 70)",
     },
   }),
 
-  defineTheme({
-    id: "clay",
-    name: "Clay",
-    light: {
-      bg: "oklch(0.973 0.011 45)",
-      fg: "oklch(0.29 0.022 35)",
-      primary: "oklch(0.49 0.085 34)",
-      primaryFg: "oklch(0.986 0.006 45)",
-      siteAccent: "oklch(0.56 0.09 28)",
-      muted: "oklch(0.936 0.013 45)",
-      mutedFg: "oklch(0.53 0.016 35)",
-      border: "oklch(0.888 0.014 45)",
-      destructive: "oklch(0.54 0.18 20)",
-      success: "oklch(0.5 0.1 145)",
-      searchMarkBg: "oklch(0.9 0.05 42 / 0.55)",
-      searchMarkColor: "oklch(0.33 0.03 34)",
-      dashBg: "oklch(0.954 0.009 45)",
-    },
-    dark: {
-      bg: "oklch(0.19 0.017 28)",
-      fg: "oklch(0.88 0.011 45)",
-      primary: "oklch(0.76 0.08 34)",
-      primaryFg: "oklch(0.17 0.015 28)",
-      siteAccent: "oklch(0.78 0.1 26)",
-      muted: "oklch(0.25 0.016 28)",
-      mutedFg: "oklch(0.65 0.01 45)",
-      border: "oklch(0.31 0.016 28)",
-      destructive: "oklch(0.67 0.18 18)",
-      success: "oklch(0.63 0.11 145)",
-      searchMarkBg: "oklch(0.4 0.05 40 / 0.5)",
-      searchMarkColor: "oklch(0.93 0.025 45)",
-      dashBg: "oklch(0.17 0.014 28)",
-    },
-  }),
-
+  // Warm yellow-tinted parchment — old-world classical feel
   defineTheme({
     id: "parchment",
     name: "Parchment",
@@ -325,6 +284,43 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
+  // Warm sand with blue primary — desert warmth, ocean contrast
+  defineTheme({
+    id: "dune",
+    name: "Dune",
+    light: {
+      bg: "oklch(0.972 0.01 82)",
+      fg: "oklch(0.29 0.018 55)",
+      primary: "oklch(0.44 0.085 200)",
+      primaryFg: "oklch(0.985 0.004 82)",
+      siteAccent: "oklch(0.53 0.075 187)",
+      muted: "oklch(0.934 0.013 82)",
+      mutedFg: "oklch(0.52 0.014 55)",
+      border: "oklch(0.885 0.015 82)",
+      destructive: "oklch(0.54 0.18 20)",
+      success: "oklch(0.49 0.11 175)",
+      searchMarkBg: "oklch(0.91 0.045 190 / 0.45)",
+      searchMarkColor: "oklch(0.32 0.03 198)",
+      dashBg: "oklch(0.952 0.008 82)",
+    },
+    dark: {
+      bg: "oklch(0.265 0.02 210)",
+      fg: "oklch(0.88 0.012 82)",
+      primary: "oklch(0.8 0.08 190)",
+      primaryFg: "oklch(0.22 0.018 210)",
+      siteAccent: "oklch(0.77 0.09 178)",
+      muted: "oklch(0.325 0.018 210)",
+      mutedFg: "oklch(0.67 0.012 82)",
+      border: "oklch(0.38 0.016 210)",
+      destructive: "oklch(0.68 0.17 18)",
+      success: "oklch(0.65 0.12 175)",
+      searchMarkBg: "oklch(0.44 0.05 188 / 0.5)",
+      searchMarkColor: "oklch(0.93 0.018 84)",
+      dashBg: "oklch(0.24 0.016 210)",
+    },
+  }),
+
+  // Near-colorless neutral — minimal distraction
   defineTheme({
     id: "ink",
     name: "Ink",
@@ -360,76 +356,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
-  defineTheme({
-    id: "stone",
-    name: "Stone",
-    light: {
-      bg: "oklch(0.96 0.002 90)",
-      fg: "oklch(0.31 0.005 90)",
-      primary: "oklch(0.42 0.008 248)",
-      primaryFg: "oklch(0.97 0.002 90)",
-      siteAccent: "oklch(0.5 0.018 230)",
-      muted: "oklch(0.92 0.002 90)",
-      mutedFg: "oklch(0.56 0.004 90)",
-      border: "oklch(0.87 0.002 90)",
-      destructive: "oklch(0.55 0.2 24)",
-      success: "oklch(0.5 0.1 170)",
-      searchMarkBg: "oklch(0.88 0.01 240 / 0.4)",
-      searchMarkColor: "oklch(0.28 0.01 240)",
-      dashBg: "oklch(0.94 0.002 90)",
-    },
-    dark: {
-      bg: "oklch(0.19 0.004 250)",
-      fg: "oklch(0.84 0.003 90)",
-      primary: "oklch(0.78 0.012 240)",
-      primaryFg: "oklch(0.19 0.004 250)",
-      siteAccent: "oklch(0.8 0.022 222)",
-      muted: "oklch(0.25 0.004 250)",
-      mutedFg: "oklch(0.62 0.003 90)",
-      border: "oklch(0.31 0.004 250)",
-      destructive: "oklch(0.67 0.18 22)",
-      success: "oklch(0.62 0.1 170)",
-      searchMarkBg: "oklch(0.38 0.012 240 / 0.45)",
-      searchMarkColor: "oklch(0.92 0.01 90)",
-      dashBg: "oklch(0.17 0.004 250)",
-    },
-  }),
-
-  defineTheme({
-    id: "mist",
-    name: "Mist",
-    light: {
-      bg: "oklch(0.978 0.006 230)",
-      fg: "oklch(0.29 0.015 240)",
-      primary: "oklch(0.46 0.055 232)",
-      primaryFg: "oklch(0.986 0.003 230)",
-      siteAccent: "oklch(0.54 0.05 220)",
-      muted: "oklch(0.94 0.008 230)",
-      mutedFg: "oklch(0.53 0.012 240)",
-      border: "oklch(0.89 0.008 230)",
-      destructive: "oklch(0.55 0.19 22)",
-      success: "oklch(0.5 0.09 185)",
-      searchMarkBg: "oklch(0.91 0.03 225 / 0.45)",
-      searchMarkColor: "oklch(0.32 0.025 240)",
-      dashBg: "oklch(0.958 0.006 230)",
-    },
-    dark: {
-      bg: "oklch(0.205 0.014 240)",
-      fg: "oklch(0.87 0.008 230)",
-      primary: "oklch(0.79 0.055 228)",
-      primaryFg: "oklch(0.19 0.012 240)",
-      siteAccent: "oklch(0.79 0.07 216)",
-      muted: "oklch(0.265 0.013 240)",
-      mutedFg: "oklch(0.66 0.008 230)",
-      border: "oklch(0.325 0.013 240)",
-      destructive: "oklch(0.67 0.18 20)",
-      success: "oklch(0.64 0.1 185)",
-      searchMarkBg: "oklch(0.41 0.035 228 / 0.45)",
-      searchMarkColor: "oklch(0.93 0.02 230)",
-      dashBg: "oklch(0.18 0.012 240)",
-    },
-  }),
-
+  // Cool blue-gray — slate-like composure
   defineTheme({
     id: "slate",
     name: "Slate",
@@ -465,6 +392,75 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
+  // Soft sage green — calm, natural, Nordic
+  defineTheme({
+    id: "sage",
+    name: "Sage",
+    light: {
+      bg: "oklch(0.97 0.012 145)",
+      fg: "oklch(0.26 0.015 150)",
+      primary: "oklch(0.42 0.05 155)",
+      primaryFg: "oklch(0.98 0.008 145)",
+      siteAccent: "oklch(0.5 0.045 148)",
+      muted: "oklch(0.935 0.014 148)",
+      mutedFg: "oklch(0.5 0.012 150)",
+      border: "oklch(0.89 0.014 148)",
+      readingTitle: "oklch(0.2 0.012 148)",
+      readingHeading: "oklch(0.22 0.014 150)",
+      readingBody: "oklch(0.28 0.015 150)",
+      readingQuote: "oklch(0.36 0.012 148)",
+      dashBg: "oklch(0.95 0.01 145)",
+    },
+    dark: {
+      bg: "oklch(0.18 0.01 150)",
+      fg: "oklch(0.88 0.01 145)",
+      primary: "oklch(0.74 0.045 150)",
+      primaryFg: "oklch(0.16 0.008 150)",
+      siteAccent: "oklch(0.72 0.04 145)",
+      muted: "oklch(0.235 0.01 150)",
+      mutedFg: "oklch(0.64 0.008 145)",
+      border: "oklch(0.3 0.01 150)",
+      dashBg: "oklch(0.16 0.008 150)",
+    },
+  }),
+
+  // Warm terra cotta — earthy red-brown
+  defineTheme({
+    id: "clay",
+    name: "Clay",
+    light: {
+      bg: "oklch(0.973 0.011 45)",
+      fg: "oklch(0.29 0.022 35)",
+      primary: "oklch(0.49 0.085 34)",
+      primaryFg: "oklch(0.986 0.006 45)",
+      siteAccent: "oklch(0.56 0.09 28)",
+      muted: "oklch(0.936 0.013 45)",
+      mutedFg: "oklch(0.53 0.016 35)",
+      border: "oklch(0.888 0.014 45)",
+      destructive: "oklch(0.54 0.18 20)",
+      success: "oklch(0.5 0.1 145)",
+      searchMarkBg: "oklch(0.9 0.05 42 / 0.55)",
+      searchMarkColor: "oklch(0.33 0.03 34)",
+      dashBg: "oklch(0.954 0.009 45)",
+    },
+    dark: {
+      bg: "oklch(0.19 0.017 28)",
+      fg: "oklch(0.88 0.011 45)",
+      primary: "oklch(0.76 0.08 34)",
+      primaryFg: "oklch(0.17 0.015 28)",
+      siteAccent: "oklch(0.78 0.1 26)",
+      muted: "oklch(0.25 0.016 28)",
+      mutedFg: "oklch(0.65 0.01 45)",
+      border: "oklch(0.31 0.016 28)",
+      destructive: "oklch(0.67 0.18 18)",
+      success: "oklch(0.63 0.11 145)",
+      searchMarkBg: "oklch(0.4 0.05 40 / 0.5)",
+      searchMarkColor: "oklch(0.93 0.025 45)",
+      dashBg: "oklch(0.17 0.014 28)",
+    },
+  }),
+
+  // Warm orange — the warmest palette
   defineTheme({
     id: "ember",
     name: "Ember",
@@ -500,152 +496,35 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
+  // Deep coffee brown — rich and grounded
   defineTheme({
-    id: "moss",
-    name: "Moss",
+    id: "espresso",
+    name: "Espresso",
     light: {
-      bg: "oklch(0.882 0.026 125)",
-      fg: "oklch(0.27 0.032 140)",
-      primary: "oklch(0.36 0.055 148)",
-      primaryFg: "oklch(0.94 0.016 125)",
-      siteAccent: "oklch(0.44 0.05 138)",
-      muted: "oklch(0.84 0.028 125)",
-      mutedFg: "oklch(0.46 0.024 140)",
-      border: "oklch(0.79 0.028 125)",
-      destructive: "oklch(0.54 0.17 24)",
-      success: "oklch(0.5 0.09 210)",
-      searchMarkBg: "oklch(0.81 0.05 100 / 0.65)",
-      searchMarkColor: "oklch(0.31 0.03 130)",
-      dashBg: "oklch(0.855 0.023 125)",
+      bg: "oklch(0.972 0.01 70)",
+      fg: "oklch(0.26 0.018 50)",
+      primary: "oklch(0.4 0.055 50)",
+      primaryFg: "oklch(0.985 0.007 70)",
+      siteAccent: "oklch(0.48 0.05 45)",
+      muted: "oklch(0.938 0.012 72)",
+      mutedFg: "oklch(0.5 0.014 50)",
+      border: "oklch(0.892 0.012 72)",
+      readingTitle: "oklch(0.2 0.016 48)",
+      readingHeading: "oklch(0.22 0.016 50)",
+      readingBody: "oklch(0.28 0.018 52)",
+      readingQuote: "oklch(0.38 0.014 48)",
+      dashBg: "oklch(0.952 0.008 70)",
     },
     dark: {
-      bg: "oklch(0.19 0.015 145)",
-      fg: "oklch(0.825 0.017 126)",
-      primary: "oklch(0.77 0.052 145)",
-      primaryFg: "oklch(0.16 0.015 145)",
-      siteAccent: "oklch(0.79 0.058 150)",
-      muted: "oklch(0.248 0.015 145)",
-      mutedFg: "oklch(0.63 0.013 126)",
-      border: "oklch(0.315 0.015 145)",
-      destructive: "oklch(0.65 0.16 22)",
-      success: "oklch(0.61 0.09 210)",
-      searchMarkBg: "oklch(0.4 0.04 112 / 0.5)",
-      searchMarkColor: "oklch(0.91 0.026 126)",
-      dashBg: "oklch(0.17 0.014 145)",
-    },
-  }),
-
-  defineTheme({
-    id: "iris",
-    name: "Iris",
-    light: {
-      bg: "oklch(0.972 0.01 320)",
-      fg: "oklch(0.28 0.018 315)",
-      primary: "oklch(0.49 0.09 315)",
-      primaryFg: "oklch(0.985 0.006 320)",
-      siteAccent: "oklch(0.58 0.08 320)",
-      muted: "oklch(0.934 0.012 320)",
-      mutedFg: "oklch(0.53 0.012 315)",
-      border: "oklch(0.885 0.013 320)",
-      destructive: "oklch(0.56 0.19 15)",
-      success: "oklch(0.49 0.12 165)",
-      searchMarkBg: "oklch(0.9 0.05 315 / 0.45)",
-      searchMarkColor: "oklch(0.32 0.03 312)",
-      dashBg: "oklch(0.952 0.008 320)",
-    },
-    dark: {
-      bg: "oklch(0.185 0.018 305)",
-      fg: "oklch(0.88 0.01 320)",
-      primary: "oklch(0.8 0.09 312)",
-      primaryFg: "oklch(0.18 0.015 305)",
-      siteAccent: "oklch(0.79 0.11 318)",
-      muted: "oklch(0.245 0.016 305)",
-      mutedFg: "oklch(0.64 0.01 320)",
-      border: "oklch(0.305 0.016 305)",
-      destructive: "oklch(0.68 0.18 18)",
-      success: "oklch(0.62 0.13 165)",
-      searchMarkBg: "oklch(0.4 0.06 300 / 0.45)",
-      searchMarkColor: "oklch(0.92 0.03 320)",
-      dashBg: "oklch(0.165 0.015 305)",
-    },
-  }),
-
-  defineTheme({
-    id: "nocturne",
-    name: "Nocturne",
-    light: {
-      bg: "oklch(0.962 0.01 280)",
-      fg: "oklch(0.27 0.018 276)",
-      primary: "oklch(0.45 0.05 266)",
-      primaryFg: "oklch(0.986 0.005 282)",
-      siteAccent: "oklch(0.56 0.06 258)",
-      muted: "oklch(0.924 0.011 280)",
-      mutedFg: "oklch(0.51 0.014 276)",
-      border: "oklch(0.86 0.011 280)",
-      destructive: "oklch(0.55 0.19 18)",
-      success: "oklch(0.49 0.1 185)",
-      searchMarkBg: "oklch(0.9 0.04 265 / 0.45)",
-      searchMarkColor: "oklch(0.31 0.03 272)",
-      dashBg: "oklch(0.944 0.009 280)",
-    },
-    dark: {
-      bg: "oklch(0.155 0.018 270)",
-      fg: "oklch(0.9 0.009 286)",
-      primary: "oklch(0.77 0.055 258)",
-      primaryFg: "oklch(0.16 0.015 270)",
-      siteAccent: "oklch(0.81 0.07 246)",
-      muted: "oklch(0.215 0.016 270)",
-      mutedFg: "oklch(0.64 0.01 286)",
-      border: "oklch(0.28 0.016 270)",
-      destructive: "oklch(0.67 0.18 18)",
-      success: "oklch(0.62 0.1 185)",
-      searchMarkBg: "oklch(0.37 0.04 258 / 0.5)",
-      searchMarkColor: "oklch(0.93 0.02 286)",
-      dashBg: "oklch(0.145 0.016 270)",
+      bg: "oklch(0.17 0.012 45)",
+      fg: "oklch(0.87 0.01 70)",
+      primary: "oklch(0.75 0.05 55)",
+      primaryFg: "oklch(0.15 0.01 45)",
+      siteAccent: "oklch(0.72 0.045 48)",
+      muted: "oklch(0.225 0.012 45)",
+      mutedFg: "oklch(0.63 0.008 70)",
+      border: "oklch(0.29 0.012 45)",
+      dashBg: "oklch(0.15 0.01 45)",
     },
   }),
 ];
-
-export const COLOR_THEME_GROUPS: ColorThemeGroup[] = [
-  {
-    id: "warm-editorial",
-    themeIds: ["linen", "dune", "clay", "parchment"],
-  },
-  {
-    id: "quiet-neutral",
-    themeIds: ["ink", "stone", "mist", "slate"],
-  },
-  {
-    id: "distinctive-mood",
-    themeIds: ["ember", "moss", "iris", "nocturne"],
-  },
-];
-
-function isColorTheme(theme: ColorTheme | undefined): theme is ColorTheme {
-  return !!theme;
-}
-
-export function getGroupedColorThemes(
-  themes: ColorTheme[] = BUILTIN_COLOR_THEMES,
-): Array<{ id: string; themes: ColorTheme[] }> {
-  const themeById = new Map(themes.map((theme) => [theme.id, theme]));
-  const assignedIds = new Set(
-    COLOR_THEME_GROUPS.flatMap((group) => group.themeIds),
-  );
-
-  const groups = COLOR_THEME_GROUPS.map((group) => ({
-    id: group.id,
-    themes: group.themeIds.map((id) => themeById.get(id)).filter(isColorTheme),
-  })).filter((group) => group.themes.length > 0);
-
-  const ungroupedThemes = themes.filter((theme) => !assignedIds.has(theme.id));
-
-  if (ungroupedThemes.length > 0) {
-    groups.push({
-      id: "other",
-      themes: ungroupedThemes,
-    });
-  }
-
-  return groups;
-}

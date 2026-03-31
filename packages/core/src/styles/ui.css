@@ -6253,6 +6253,20 @@
     border-radius: 6px;
   }
 
+  .compose-reply-context-media {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .compose-reply-context-media-img {
+    max-height: 80px;
+    max-width: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
   .compose-reply-fade {
     position: absolute;
     bottom: 0;
