@@ -6,7 +6,7 @@ import {
 
 function getHostedAdminContinuationPath(publicRequestUrl: string): string {
   const currentHost = new URL(publicRequestUrl).host;
-  return `/auth/handoff/start?host=${encodeURIComponent(currentHost)}&redirect=${encodeURIComponent("/settings")}`;
+  return `/auth/handoff/start?host=${encodeURIComponent(currentHost)}&redirect=${encodeURIComponent("/")}`;
 }
 
 function buildHostedControlPlaneUrl(
