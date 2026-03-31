@@ -503,6 +503,7 @@ export class JantComposeDialog extends LitElement {
   private _slugSuggestionKey = "";
   private _suppressBeforeUnload = false;
   private _dialogEl: HTMLDialogElement | null = null;
+  private _mousedownOnBackdrop = false;
   private _filePickerActive = false;
   private _ignoreNextEscapeClose = false;
   private _openEditRequestId = 0;
@@ -1698,6 +1699,7 @@ export class JantComposeDialog extends LitElement {
     this._dialogEl = this.closest("dialog");
     if (this._dialogEl) {
       this._dialogEl.addEventListener("cancel", this._handleDialogCancel);
+      this._dialogEl.addEventListener("mousedown", this._handleDialogMousedown);
       this._dialogEl.addEventListener("click", this._handleDialogClick);
     }
 
@@ -1753,6 +1755,10 @@ export class JantComposeDialog extends LitElement {
 
     if (this._dialogEl) {
       this._dialogEl.removeEventListener("cancel", this._handleDialogCancel);
+      this._dialogEl.removeEventListener(
+        "mousedown",
+        this._handleDialogMousedown,
+      );
       this._dialogEl.removeEventListener("click", this._handleDialogClick);
       this._dialogEl = null;
     }
@@ -1796,8 +1802,19 @@ export class JantComposeDialog extends LitElement {
     this.requestClose();
   };
 
+  private _handleDialogMousedown = (e: Event) => {
+    // Track whether the mousedown originated on the backdrop (the <dialog>
+    // itself). When the user drag-selects text inside the editor and the
+    // pointer overshoots to the backdrop, the subsequent click event fires
+    // with target === dialog. Without this guard, that click triggers
+    // requestClose() and the unsaved-changes confirmation pops up.
+    this._mousedownOnBackdrop = e.target === this._dialogEl;
+  };
+
   private _handleDialogClick = (e: Event) => {
     if (!this._dialogEl || e.target !== this._dialogEl) return;
+    // Only treat as backdrop click when mousedown also started on the backdrop
+    if (!this._mousedownOnBackdrop) return;
 
     const mouseEvent = e as MouseEvent;
     const hitTarget = document.elementFromPoint(
