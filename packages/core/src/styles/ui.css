@@ -6340,18 +6340,20 @@
   .compose-thread-add-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     font-size: var(--text-sm);
     font-family: var(--font-body);
     color: var(--site-text-secondary);
-    padding: 4px 8px;
-    border-radius: 8px;
-    border: none;
+    padding: 4px 12px 4px 9px;
+    border-radius: 20px;
+    border: 1.5px dashed
+      color-mix(in srgb, var(--site-threadline) 70%, transparent);
     background: transparent;
     cursor: pointer;
     transition:
       color 0.15s ease,
-      background-color 0.15s ease;
+      background-color 0.15s ease,
+      border-color 0.15s ease;
   }
 
   .compose-thread-compose-layout .compose-thread-add-btn {
@@ -6361,6 +6363,8 @@
   .compose-thread-add-btn:hover:not(:disabled) {
     color: var(--site-text-primary);
     background-color: var(--compose-control-bg);
+    border-color: var(--site-threadline);
+    border-style: solid;
   }
 
   .compose-thread-add-btn:disabled,
@@ -6385,60 +6389,111 @@
   .compose-add-thread-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     font-size: var(--text-sm);
     font-family: var(--font-body);
     color: var(--site-text-secondary);
-    padding: 4px 8px;
-    border-radius: 8px;
-    border: none;
+    padding: 4px 12px 4px 9px;
+    border-radius: 20px;
+    border: 1.5px dashed
+      color-mix(in srgb, var(--site-threadline) 70%, transparent);
     background: transparent;
     cursor: pointer;
     transition:
       color 0.15s ease,
-      background-color 0.15s ease;
+      background-color 0.15s ease,
+      border-color 0.15s ease;
   }
 
   .compose-add-thread-btn:hover:not(:disabled) {
     color: var(--site-text-primary);
     background-color: var(--compose-control-bg);
+    border-color: var(--site-threadline);
+    border-style: solid;
   }
 
-  /* --- Thread post header: segmented format switcher + × on right --------- */
+  /* --- Thread post header: format tag switcher + × on right --------------- */
 
   .compose-thread-post-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 0 2px;
+    padding: 6px 0 4px;
   }
 
-  /* Slightly more compact than the dialog header version */
+  /* Thread format selector: pill-tag style (lighter than the main segmented) */
+  .compose-thread-segmented {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    gap: 4px;
+  }
+
+  .compose-thread-segmented .compose-format-pill {
+    display: none;
+  }
+
   .compose-thread-segmented .compose-segmented-item {
-    padding: 5px 14px;
+    flex: none;
+    font-size: 11.5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1.5px solid
+      color-mix(in srgb, var(--site-text-secondary) 22%, transparent);
+    letter-spacing: 0.01em;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease,
+      background-color 0.15s ease;
   }
 
-  /* Remove button (×) — shown only when 2+ posts exist */
+  .compose-thread-segmented
+    .compose-segmented-item:hover:not(.compose-segmented-item-active) {
+    border-color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 50%,
+      transparent
+    );
+    color: var(--site-text-primary);
+    background: transparent;
+  }
+
+  .compose-thread-segmented .compose-segmented-item-active {
+    color: var(--site-text-primary);
+    font-weight: var(--fw-medium);
+    border-color: color-mix(in srgb, var(--site-text-primary) 55%, transparent);
+    background: color-mix(in srgb, var(--site-text-primary) 7%, transparent);
+  }
+
+  /* Remove button (×) — hidden by default, revealed on thread post hover/focus */
   .compose-thread-post-remove {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 8px;
     border: none;
     background: transparent;
     color: var(--site-text-secondary);
     cursor: pointer;
     flex-shrink: 0;
-    opacity: 0.5;
+    opacity: 0;
+    pointer-events: none;
     transition:
-      opacity 0.13s ease,
+      opacity 0.15s ease,
       background-color 0.13s ease,
       color 0.13s ease;
   }
 
-  .compose-thread-post-remove:hover {
+  .compose-thread-post:hover .compose-thread-post-remove,
+  .compose-thread-post:focus-within .compose-thread-post-remove {
+    opacity: 0.45;
+    pointer-events: auto;
+  }
+
+  .compose-thread-post:hover .compose-thread-post-remove:hover,
+  .compose-thread-post:focus-within .compose-thread-post-remove:hover {
     opacity: 1;
     background-color: var(--compose-control-bg);
     color: var(--site-text-primary);
