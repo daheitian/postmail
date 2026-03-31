@@ -34,6 +34,10 @@ run = "pnpm --filter @jant/core i18n:build && pnpm --filter @jant/core dev"
 description = "Start the Node runtime with Vite-managed HMR"
 run = "pnpm --filter @jant/core i18n:build && pnpm --filter @jant/core dev:node"
 
+[tasks.serve-node]
+description = "Serve the production Node runtime locally (reads packages/core/.env.node)"
+run = "HOST=0.0.0.0 node --env-file packages/core/.env.node packages/core/bin/jant.js start"
+
 [tasks.build-lib]
 description = "Build @jant/core library for publishing"
 run = "pnpm --filter @jant/core build:lib"
@@ -57,6 +61,10 @@ run = 'node dev/scripts/setup-dev-auth.mjs "$usage_password"'
 [tasks.build]
 description = "Build @jant/core (lib + client assets)"
 run = "pnpm --filter @jant/core build"
+
+[tasks.upload-assets]
+description = "Upload built static assets to S3-compatible storage (reads packages/core/.env.node)"
+run = "node --env-file packages/core/.env.node packages/core/bin/jant.js assets upload"
 
 [tasks.brand-export]
 description = "Export the default Jant brand assets to a local directory"

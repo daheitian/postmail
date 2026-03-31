@@ -9,10 +9,54 @@
  */
 
 import { defineConfig } from "vite";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
+import { ASSET_BASE_PATH } from "./src/lib/asset-path.js";
 import { buildVersion, pkg, swcPlugin } from "./vite.shared";
 
 const dir = import.meta.dirname;
+
+/**
+ * Read the client build manifest to get a content-hashed asset file path.
+ * Returns a `/_assets/<fallbackName><ext>` fallback when the manifest is not yet built.
+ */
+function readClientManifestFile(
+  entryKey: string,
+  fallbackName: string,
+  ext: string,
+): string {
+  const manifestPath = resolve(dir, "dist/client/.vite/manifest.json");
+  if (existsSync(manifestPath)) {
+    try {
+      const manifest = JSON.parse(
+        readFileSync(manifestPath, "utf-8"),
+      ) as Record<string, { file?: string }>;
+      const file = manifest[entryKey]?.file;
+      if (file) return `${ASSET_BASE_PATH}/${file.replace(/^_assets\//, "")}`;
+    } catch {
+      // Fall through to default
+    }
+  }
+  return `${ASSET_BASE_PATH}/${fallbackName}${ext}`;
+}
+
+const clientJsFile = readClientManifestFile("src/client.ts", "client", ".js");
+const clientAuthJsFile = readClientManifestFile(
+  "src/client-auth.ts",
+  "client-auth",
+  ".js",
+);
+const clientCssFile = readClientManifestFile("src/style.css", "client", ".css");
+const clientCjkCssFile = readClientManifestFile(
+  "src/style-cjk.css",
+  "client-cjk",
+  ".css",
+);
+const clientCjkTcCssFile = readClientManifestFile(
+  "src/style-cjk-tc.css",
+  "client-cjk-tc",
+  ".css",
+);
 
 export default defineConfig({
   // SWC handles the server/library transforms in this build.
@@ -20,6 +64,11 @@ export default defineConfig({
 
   define: {
     __JANT_VERSION__: JSON.stringify(buildVersion),
+    __CLIENT_JS_FILE__: JSON.stringify(clientJsFile),
+    __CLIENT_AUTH_JS_FILE__: JSON.stringify(clientAuthJsFile),
+    __CLIENT_CSS_FILE__: JSON.stringify(clientCssFile),
+    __CLIENT_CJK_CSS_FILE__: JSON.stringify(clientCjkCssFile),
+    __CLIENT_CJK_TC_CSS_FILE__: JSON.stringify(clientCjkTcCssFile),
     // __JANT_DEV__ intentionally omitted — typeof check evaluates to false
   },
 
@@ -45,7 +94,10 @@ export default defineConfig({
     },
     target: "esnext",
     minify: false,
-    emptyOutDir: true,
+    // Do not wipe the outDir — client assets live in dist/client/ (a
+    // subdirectory) and must not be deleted when the lib rebuilds.
+    // The lib emits fixed-name entry files that overwrite in-place.
+    emptyOutDir: false,
   },
 
   plugins: [swcPlugin()],

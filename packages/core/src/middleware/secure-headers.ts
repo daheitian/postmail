@@ -96,21 +96,30 @@ function buildContentSecurityPolicy(
   path: string,
   env: Bindings,
 ): ContentSecurityPolicyOptions {
+  const assetOrigin = tryGetOrigin(getEnvString(env, "ASSET_BASE_URL"));
+
+  const scriptSrc = [
+    "'self'",
+    // Datastar evaluates expressions in data-on-* / data-signals attributes
+    "'unsafe-eval'",
+  ];
+  const styleSrc = [
+    "'self'",
+    // Theme styles and custom CSS are injected as inline <style> tags
+    "'unsafe-inline'",
+  ];
+  const fontSrc = ["'self'"];
+  appendUniqueSource(scriptSrc, assetOrigin);
+  appendUniqueSource(styleSrc, assetOrigin);
+  appendUniqueSource(fontSrc, assetOrigin);
+
   const contentSecurityPolicy: ContentSecurityPolicyOptions = {
     defaultSrc: ["'self'"],
-    scriptSrc: [
-      "'self'",
-      // Datastar evaluates expressions in data-on-* / data-signals attributes
-      "'unsafe-eval'",
-    ],
-    styleSrc: [
-      "'self'",
-      // Theme styles and custom CSS are injected as inline <style> tags
-      "'unsafe-inline'",
-    ],
+    scriptSrc,
+    styleSrc,
     imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
     mediaSrc: ["'self'", "data:", "blob:", "https:", "http:"],
-    fontSrc: ["'self'"],
+    fontSrc,
     connectSrc: getDirectUploadConnectSources(env),
     objectSrc: ["'none'"],
     baseUri: ["'self'"],

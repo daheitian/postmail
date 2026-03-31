@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.stubGlobal("__JANT_DEV__", false);
 vi.stubGlobal("__JANT_VERSION__", "test-version");
+vi.stubGlobal("__CLIENT_JS_FILE__", "/_assets/client.js");
+vi.stubGlobal("__CLIENT_AUTH_JS_FILE__", "/_assets/client-auth.js");
 
 function createContext(
   mainRssFeed: "featured" | "latest",
@@ -154,7 +156,7 @@ describe("BaseLayout", () => {
   });
 
   it("uses the public asset base path from appConfig in production", async () => {
-    const { CORE_VERSION, BaseLayout } = await loadBaseLayout();
+    const { BaseLayout } = await loadBaseLayout();
     const html = renderToString(
       BaseLayout({
         title: "Jant",
@@ -167,8 +169,8 @@ describe("BaseLayout", () => {
       }),
     );
 
-    expect(html).toContain(`src="/blog/_assets/client.js?v=${CORE_VERSION}"`);
-    expect(html).toContain(`href="/blog/_assets/client.css?v=${CORE_VERSION}"`);
+    expect(html).toContain(`src="/blog/_assets/client.js"`);
+    expect(html).toContain(`href="/blog/_assets/client.css"`);
     expect(html).toContain('data-asset-base-path="/blog/_assets"');
   });
 

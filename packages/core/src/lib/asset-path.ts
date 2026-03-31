@@ -16,6 +16,9 @@ function normalizeAssetBasePath(basePath: string): string {
   if (!trimmed) {
     return ASSET_BASE_PATH;
   }
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
   return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
 }
 
@@ -67,14 +70,29 @@ export function isAssetPath(path: string, basePath = ASSET_BASE_PATH): boolean {
 /**
  * Convert an internal asset path into its public deployment path.
  *
+ * When `publicAssetBasePath` is an absolute URL (starts with `http://` or
+ * `https://`), the internal `/_assets` prefix is replaced with that URL,
+ * producing a fully-qualified CDN URL.
+ *
  * @param path - Internal or already-public asset path
- * @param publicAssetBasePath - Public asset base path for the current site
- * @returns Public-facing asset path
+ * @param publicAssetBasePath - Public asset base path or absolute CDN URL
+ * @returns Public-facing asset path or absolute CDN URL
  */
 export function toPublicAssetPath(
   path: string,
   publicAssetBasePath: string,
 ): string {
+  const isAbsolute =
+    publicAssetBasePath.startsWith("http://") ||
+    publicAssetBasePath.startsWith("https://");
+
+  if (isAbsolute) {
+    if (!isAssetPath(path)) return path;
+    const rel = path.slice(ASSET_BASE_PATH.length).replace(/^\/+/, "");
+    const base = publicAssetBasePath.replace(/\/+$/, "");
+    return rel ? `${base}/${rel}` : base;
+  }
+
   if (isAssetPath(path, publicAssetBasePath)) {
     return path;
   }

@@ -198,15 +198,16 @@ Use S3-compatible storage when:
 - you prefer S3, Backblaze B2, MinIO, DigitalOcean Spaces, or another compatible service
 - you want browser direct uploads through presigned URLs
 
-| Variable               | Description                                |
-| ---------------------- | ------------------------------------------ |
-| `STORAGE_DRIVER`       | Set to `s3`                                |
-| `S3_ENDPOINT`          | S3 API endpoint                            |
-| `S3_BUCKET`            | Bucket name                                |
-| `S3_REGION`            | Bucket region, defaults to `auto`          |
-| `S3_PUBLIC_URL`        | Public URL where uploaded files are served |
-| `S3_ACCESS_KEY_ID`     | Access key, keep secret                    |
-| `S3_SECRET_ACCESS_KEY` | Secret key, keep secret                    |
+| Variable               | Description                                                                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `STORAGE_DRIVER`       | Set to `s3`                                                                                                                            |
+| `S3_ENDPOINT`          | S3 API endpoint                                                                                                                        |
+| `S3_BUCKET`            | Bucket name                                                                                                                            |
+| `S3_REGION`            | Bucket region, defaults to `auto`                                                                                                      |
+| `S3_PUBLIC_URL`        | Public URL where uploaded files are served                                                                                             |
+| `S3_ACCESS_KEY_ID`     | Access key, keep secret                                                                                                                |
+| `S3_SECRET_ACCESS_KEY` | Secret key, keep secret                                                                                                                |
+| `ASSET_BASE_URL`       | CDN root URL for built JS/CSS assets, e.g. `https://cdn.example.com` (see [CDN Static Assets](deployment-docker.md#cdn-static-assets)) |
 
 Example:
 

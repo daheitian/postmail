@@ -86,6 +86,83 @@ Use local media when you want the simplest possible setup or are testing on one 
 
 Use S3-compatible storage when you want the recommended long-term setup for Docker or Node. It keeps media outside the app host and makes it easier to move or rebuild the app later without treating uploaded files as container-local state.
 
+## CDN Static Assets
+
+This is an **optional** feature for deployments where zero asset 404s during updates matter. Without it, Jant works normally — assets are served from the container itself. The only downside is a brief window during a deploy where a user who already has an old page open might get a 404 on a stale asset reference. For most personal sites this is acceptable.
+
+If you want to eliminate that window, upload assets to S3-compatible object storage before deploying the new container. Assets accumulate there indefinitely — old versions are never deleted — so stale pages can always find the files they reference.
+
+### Setup
+
+**1. Add S3 credentials and `ASSET_BASE_URL` to your environment.**
+
+In your `docker-compose.yml` (or `.env` file):
+
+```env
+ASSET_BASE_URL=https://cdn.example.com
+
+S3_ENDPOINT=https://s3.us-east-1.amazonaws.com
+S3_BUCKET=my-bucket
+S3_REGION=us-east-1
+S3_ACCESS_KEY_ID=...
+S3_SECRET_ACCESS_KEY=...
+```
+
+`ASSET_BASE_URL` is the public root URL of your CDN/bucket — Jant appends `/_assets` internally.
+
+**2. Add an `upload-assets` service to your `docker-compose.yml`.**
+
+Add a one-off service and wire it to your app with `depends_on`:
+
+```yaml
+services:
+  upload-assets:
+    image: owenyoung/jant:latest # same image as your app
+    env_file: .env
+    command: ["node", "bin/jant.js", "assets", "upload"]
+    restart: "no"
+
+  app:
+    image: owenyoung/jant:latest
+    depends_on:
+      upload-assets:
+        condition: service_completed_successfully
+    # ... rest of your app config
+```
+
+**3. Deploy as usual.**
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+`docker compose up -d` automatically runs the upload first and starts the app only after it completes. If S3 is not configured, the upload step exits cleanly and the app starts normally — no manual step, no extra commands to remember.
+
+### If you build from source (CI/CD)
+
+```bash
+mise run build
+mise run upload-assets   # reads S3_* from packages/core/.env.node
+docker build .
+docker compose up -d
+```
+
+### Sharing a bucket with media storage
+
+You can reuse the same S3 bucket as your media storage. Assets land under the `_assets/` prefix, media under its own keys — they don't conflict.
+
+If you need to namespace assets (e.g. multiple sites sharing one bucket), use a sub-path prefix that ends with `_assets`:
+
+```bash
+docker compose run --rm --no-deps app node bin/jant.js assets upload --prefix mysite/_assets
+# then set ASSET_BASE_URL=https://cdn.example.com/mysite
+```
+
+### Bucket permissions
+
+The asset bucket (or prefix) must be publicly readable — browsers fetch JS and CSS directly. CORS configuration is not required for static `<link>` and `<script>` fetches.
+
 ## Running Without Compose
 
 Use `docker run` when you want one container and will manage the rest yourself:

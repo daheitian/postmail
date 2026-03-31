@@ -71,6 +71,29 @@ describe("secureHeadersMiddleware", () => {
     );
   });
 
+  it("adds ASSET_BASE_URL origin to script-src, style-src, and font-src", async () => {
+    const app = new Hono<Env>();
+
+    app.use("*", async (_c, next) => {
+      await next();
+    });
+    app.use("*", secureHeadersMiddleware());
+    app.get("/", (c) => c.text("ok"));
+
+    const response = await app.request("/", undefined, {
+      ASSET_BASE_URL: "https://cdn.example.com",
+    } as Bindings);
+    const csp = response.headers.get("content-security-policy");
+
+    expect(csp).toContain(
+      "script-src 'self' 'unsafe-eval' https://cdn.example.com",
+    );
+    expect(csp).toContain(
+      "style-src 'self' 'unsafe-inline' https://cdn.example.com",
+    );
+    expect(csp).toContain("font-src 'self' https://cdn.example.com");
+  });
+
   it("keeps public pages embeddable with a smaller header set", async () => {
     const app = new Hono<Env>();
 

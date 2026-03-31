@@ -59,16 +59,20 @@ export const clientBuildOptions = {
       "style-cjk-tc": resolve(dir, "src/style-cjk-tc.css"),
     },
     output: {
-      entryFileNames: `${ASSET_BASE_SEGMENT}/[name].js`,
+      // Content-hashed entry names so cross-bundle ES module imports always
+      // resolve to the correct version. Without hashes, the bare ./client.js
+      // import in client-auth.js hits the immutably-cached old file after a
+      // deploy that changes the shared exports.
+      entryFileNames: `${ASSET_BASE_SEGMENT}/[name]-[hash].js`,
       chunkFileNames: `${ASSET_BASE_SEGMENT}/${ASSET_CHUNK_SEGMENT}/[name]-[hash].js`,
       assetFileNames: (assetInfo) => {
         switch (assetInfo.name) {
           case "style.css":
-            return `${ASSET_BASE_SEGMENT}/client.css`;
+            return `${ASSET_BASE_SEGMENT}/client-[hash].css`;
           case "style-cjk.css":
-            return `${ASSET_BASE_SEGMENT}/client-cjk.css`;
+            return `${ASSET_BASE_SEGMENT}/client-cjk-[hash].css`;
           case "style-cjk-tc.css":
-            return `${ASSET_BASE_SEGMENT}/client-cjk-tc.css`;
+            return `${ASSET_BASE_SEGMENT}/client-cjk-tc-[hash].css`;
           default:
             return `${ASSET_BASE_SEGMENT}/${ASSET_CHUNK_SEGMENT}/[name]-[hash][extname]`;
         }

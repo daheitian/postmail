@@ -153,6 +153,11 @@ export const CONFIG_FIELDS = {
     envOnly: true,
     envKeys: ["S3_PUBLIC_URL"],
   },
+  ASSET_BASE_URL: {
+    defaultValue: "",
+    envOnly: true,
+    envKeys: ["ASSET_BASE_URL"],
+  },
   UPLOAD_MAX_FILE_SIZE_MB: {
     defaultValue: "500",
     envOnly: true,

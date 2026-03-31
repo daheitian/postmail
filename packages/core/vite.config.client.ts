@@ -22,6 +22,9 @@ export default defineConfig({
     assetInlineLimit: 0,
     emptyOutDir: true,
     minify: true,
+    // Manifest maps entry source paths → hashed output filenames so the
+    // Worker build can embed the correct content-addressed paths.
+    manifest: true,
   },
 
   plugins: [tailwindcss()],

@@ -104,6 +104,10 @@ export default defineConfig(async ({ command, mode }) => {
     define: {
       __JANT_DEV__: "true",
       __JANT_VERSION__: JSON.stringify(buildVersion),
+      // Not used in dev (IS_VITE_DEV=true skips these paths), but required for
+      // the TypeScript declarations in version.ts to compile.
+      __CLIENT_JS_FILE__: JSON.stringify("/_assets/client.js"),
+      __CLIENT_AUTH_JS_FILE__: JSON.stringify("/_assets/client-auth.js"),
     },
 
     plugins: [

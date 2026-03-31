@@ -5,17 +5,29 @@
  * If Context is provided, automatically wraps children with I18nProvider.
  *
  * In dev mode (Vite), serves assets via Vite's dev server.
- * In production, serves pre-built assets with version cache-busting.
+ * In production, serves pre-built assets with content-hashed filenames.
  */
 
 import type { FC, PropsWithChildren } from "hono/jsx";
 import type { Context } from "hono";
 import { msg } from "@lingui/core/macro";
-import { getPublicAssetBasePath, toAssetPath } from "../../lib/asset-path.js";
+import {
+  getPublicAssetBasePath,
+  toAssetPath,
+  toPublicAssetPath,
+} from "../../lib/asset-path.js";
 import { getJantIconHref } from "../../lib/jant-branding.js";
 import { getThemeBrowserColors, resolveBuiltinTheme } from "../../lib/theme.js";
 import { isFullUrl, toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
-import { CORE_VERSION, IS_VITE_DEV } from "../../lib/version.js";
+import {
+  CLIENT_AUTH_JS_FILE,
+  CLIENT_CJK_CSS_FILE,
+  CLIENT_CJK_TC_CSS_FILE,
+  CLIENT_CSS_FILE,
+  CLIENT_JS_FILE,
+  CORE_VERSION,
+  IS_VITE_DEV,
+} from "../../lib/version.js";
 import { I18nProvider } from "../../i18n/index.js";
 
 export interface ToastProps {
@@ -101,22 +113,26 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     fontLanguage === "zh-sg"
       ? IS_VITE_DEV
         ? assetPath("/src/style-cjk.css")
-        : assetPath(`/client-cjk.css?v=${CORE_VERSION}`)
+        : toPublicAssetPath(CLIENT_CJK_CSS_FILE, assetBasePath)
       : fontLanguage === "zh-hant" ||
           fontLanguage === "zh-tw" ||
           fontLanguage === "zh-hk" ||
           fontLanguage === "zh-mo"
         ? IS_VITE_DEV
           ? assetPath("/src/style-cjk-tc.css")
-          : assetPath(`/client-cjk-tc.css?v=${CORE_VERSION}`)
+          : toPublicAssetPath(CLIENT_CJK_TC_CSS_FILE, assetBasePath)
         : null;
   const clientScriptPath = IS_VITE_DEV
     ? resolvedClientBundle === "full"
       ? assetPath("/src/client-auth.ts")
       : assetPath("/src/client.ts")
-    : resolvedClientBundle === "full"
-      ? assetPath(`/client-auth.js?v=${CORE_VERSION}`)
-      : assetPath(`/client.js?v=${CORE_VERSION}`);
+    : // Content-hashed filenames embedded from the Vite client manifest; the
+      // hash changes whenever the bundle content changes, so the import path in
+      // client-auth.js always references the correct (not stale-cached) client.js.
+      toPublicAssetPath(
+        resolvedClientBundle === "full" ? CLIENT_AUTH_JS_FILE : CLIENT_JS_FILE,
+        assetBasePath,
+      );
   const faviconAssetVersion = resolvedFaviconVersion || CORE_VERSION;
   const resolvedFaviconHref =
     faviconHref ??
@@ -252,7 +268,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           href={
             IS_VITE_DEV
               ? assetPath("/src/style.css")
-              : assetPath(`/client.css?v=${CORE_VERSION}`)
+              : toPublicAssetPath(CLIENT_CSS_FILE, assetBasePath)
           }
         />
         {cjkStylesheetPath && (

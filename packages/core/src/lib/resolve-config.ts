@@ -12,7 +12,7 @@
 import type { Bindings } from "../types/bindings.js";
 import type { AppConfig } from "../types/config.js";
 import { CONFIG_FIELDS } from "../types/config.js";
-import { getPublicAssetBasePath } from "./asset-path.js";
+import { ASSET_BASE_SEGMENT, getPublicAssetBasePath } from "./asset-path.js";
 import {
   getAuthSecret,
   getConfiguredSingleSiteUrl,
@@ -161,7 +161,14 @@ export function resolveConfig(
     siteUrl,
     siteOrigin,
     sitePathPrefix,
-    assetBasePath: getPublicAssetBasePath(sitePathPrefix),
+    assetBasePath: (() => {
+      const assetBaseUrl = (getEnvString(env, "ASSET_BASE_URL") ?? "")
+        .trim()
+        .replace(/\/+$/, "");
+      return assetBaseUrl
+        ? `${assetBaseUrl}/${ASSET_BASE_SEGMENT}`
+        : getPublicAssetBasePath(sitePathPrefix);
+    })(),
     authConfigured: !!getAuthSecret(env),
 
     // Media (ENV only)
