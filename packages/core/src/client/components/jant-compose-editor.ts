@@ -150,6 +150,8 @@ export class JantComposeEditor extends LitElement {
     format: { type: String },
     labels: { type: Object },
     uploadMaxFileSize: { type: Number },
+    threadItem: { type: Boolean, attribute: "thread-item" },
+    removable: { type: Boolean },
     _title: { state: true },
     _bodyJson: { state: true },
     _url: { state: true },
@@ -171,6 +173,8 @@ export class JantComposeEditor extends LitElement {
   declare format: ComposeFormat;
   declare labels: ComposeLabels;
   declare uploadMaxFileSize: number;
+  declare threadItem: boolean;
+  declare removable: boolean;
   declare _title: string;
   declare _bodyJson: JSONContent | null;
   declare _url: string;
@@ -214,6 +218,8 @@ export class JantComposeEditor extends LitElement {
     this.format = "note";
     this.labels = {} as ComposeLabels;
     this.uploadMaxFileSize = 500;
+    this.threadItem = false;
+    this.removable = false;
     this._title = "";
     this._bodyJson = null;
     this._url = "";
@@ -2147,6 +2153,78 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
+  private _renderThreadPostHeader() {
+    const formatLabels: Record<ComposeFormat, string> = {
+      note: this.labels.note,
+      link: this.labels.link,
+      quote: this.labels.quote,
+    };
+    const formats: ComposeFormat[] = ["note", "link", "quote"];
+    const CLOSE_ICON = `<path d="M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5"/>`;
+
+    return html`
+      <div class="compose-thread-post-header">
+        <div class="compose-segmented compose-thread-segmented">
+          <div
+            class=${classMap({
+              "compose-format-pill": true,
+              "compose-format-pill-link": this.format === "link",
+              "compose-format-pill-quote": this.format === "quote",
+            })}
+          ></div>
+          ${formats.map(
+            (f) => html`
+              <button
+                type="button"
+                class=${classMap({
+                  "compose-segmented-item": true,
+                  "compose-segmented-item-active": this.format === f,
+                })}
+                @click=${() => {
+                  if (this.format !== f) {
+                    this.dispatchEvent(
+                      new CustomEvent("jant:thread-format-change", {
+                        bubbles: true,
+                        detail: { format: f },
+                      }),
+                    );
+                  }
+                }}
+              >
+                ${formatLabels[f]}
+              </button>
+            `,
+          )}
+        </div>
+        ${this.removable
+          ? html`<button
+              type="button"
+              class="compose-thread-post-remove"
+              title="Remove post"
+              @click=${() => {
+                this.dispatchEvent(
+                  new CustomEvent("jant:thread-remove", { bubbles: true }),
+                );
+              }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                ${unsafeSVG(CLOSE_ICON)}
+              </svg>
+            </button>`
+          : nothing}
+      </div>
+    `;
+  }
+
   openFullscreen() {
     if (this.format !== "note") return;
     const state = this.getEditorState();
@@ -2160,6 +2238,7 @@ export class JantComposeEditor extends LitElement {
 
   render() {
     return html`
+      ${this.threadItem ? this._renderThreadPostHeader() : nothing}
       <section class="compose-body">
         ${this.format === "note"
           ? this._renderNoteFields()

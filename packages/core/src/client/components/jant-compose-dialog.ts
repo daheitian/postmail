@@ -39,6 +39,11 @@ interface ReplyToData {
   dateText: string;
 }
 
+interface ThreadItem {
+  id: string;
+  format: ComposeFormat;
+}
+
 interface ComposeMediaAttachmentResponse {
   id: string;
   previewUrl: string;
@@ -402,6 +407,8 @@ export class JantComposeDialog extends LitElement {
     _replyToId: { state: true },
     _replyToData: { state: true },
     _replyExpanded: { state: true },
+    _threadItems: { state: true },
+    _focusedThreadIndex: { state: true },
     _slug: { state: true },
     _publishedAtInput: { state: true },
     _visibility: { state: true },
@@ -443,6 +450,8 @@ export class JantComposeDialog extends LitElement {
   declare _replyToId: string | null;
   declare _replyToData: ReplyToData | null;
   declare _replyExpanded: boolean;
+  declare _threadItems: ThreadItem[];
+  declare _focusedThreadIndex: number;
   declare _slug: string;
   declare _publishedAtInput: string;
   declare _visibility: ComposeVisibility;
@@ -520,6 +529,8 @@ export class JantComposeDialog extends LitElement {
     this._replyToId = null;
     this._replyToData = null;
     this._replyExpanded = false;
+    this._threadItems = [];
+    this._focusedThreadIndex = 0;
     this._replyThreadRootId = null;
     this._replyRefreshKind = null;
     this._replyRefreshId = null;
@@ -601,6 +612,8 @@ export class JantComposeDialog extends LitElement {
     this._replyToId = null;
     this._replyToData = null;
     this._replyExpanded = false;
+    this._threadItems = [];
+    this._focusedThreadIndex = 0;
     this._replyThreadRootId = null;
     this._replyRefreshKind = null;
     this._replyRefreshId = null;
@@ -906,6 +919,22 @@ export class JantComposeDialog extends LitElement {
   }
 
   private _hasContent(): boolean {
+    if (this._threadItems.length > 0) {
+      // Thread mode: check the first editor for content
+      const firstEditor = this.querySelector<JantComposeEditor>(
+        "jant-compose-editor",
+      );
+      if (!firstEditor) return false;
+      const data = firstEditor.getData();
+      return (
+        !!data.body ||
+        !!data.title.trim() ||
+        !!data.url.trim() ||
+        !!data.quoteText.trim() ||
+        data.attachments.length > 0
+      );
+    }
+
     const editor = this._editor;
     if (!editor) return false;
 
@@ -1104,6 +1133,75 @@ export class JantComposeDialog extends LitElement {
     }
   }
 
+  /** Build the submit payload for a single thread editor (index-aware). */
+  private _buildEditorPostDetail(
+    editor: JantComposeEditor,
+    format: ComposeFormat,
+    index: number,
+    status: "published" | "draft",
+  ): ComposeSubmitDetail {
+    const editorData = editor.getData();
+    const mediaAttachments = new Map(
+      (editorData.attachments ?? []).map((a) => [a.clientId, a]),
+    );
+    const textAttachments = new Map(
+      editorData.attachedTexts.map((t) => [t.clientId, t]),
+    );
+    const orderedAttachments: ComposeSubmitAttachment[] = [];
+    for (const clientId of editorData.attachmentOrder) {
+      const media = mediaAttachments.get(clientId);
+      if (media) {
+        orderedAttachments.push({
+          type: "media",
+          clientId,
+          mediaId: media.mediaId,
+          alt: media.alt || undefined,
+        });
+        continue;
+      }
+      const text = textAttachments.get(clientId);
+      if (text?.bodyJson) {
+        orderedAttachments.push({
+          type: "text",
+          clientId,
+          bodyJson: text.bodyJson,
+          summary: text.summary,
+          mediaId: text.mediaId,
+          originalBodyJson: normalizeComposeDoc(text.originalBodyJson ?? null),
+        });
+      }
+    }
+    // Only root post (index 0) carries shared publish settings
+    const isRoot = index === 0;
+    return {
+      format,
+      title: editorData.title,
+      body: editorData.body,
+      url: editorData.url,
+      quoteText: editorData.quoteText,
+      quoteAuthor: editorData.quoteAuthor,
+      status,
+      slug: isRoot ? this._slug.trim() || undefined : undefined,
+      publishedAt: isRoot ? this._getPublishedAtSubmitValue(status) : undefined,
+      visibility: isRoot
+        ? this._visibilityLocked
+          ? undefined
+          : this._visibility
+        : undefined,
+      rating: editorData.rating,
+      collectionIds: isRoot ? [...this._collectionIds] : [],
+      attachments: orderedAttachments,
+      replyToId: isRoot ? (this._replyToId ?? undefined) : undefined,
+      replyThreadRootId: isRoot
+        ? (this._replyThreadRootId ?? undefined)
+        : undefined,
+      replyRefreshKind: isRoot
+        ? (this._replyRefreshKind ?? undefined)
+        : undefined,
+      replyRefreshId: isRoot ? (this._replyRefreshId ?? undefined) : undefined,
+    };
+  }
+
   private _buildSubmitDetail(
     status: "published" | "draft",
   ): ComposeSubmitDetail | null {
@@ -1209,17 +1307,56 @@ export class JantComposeDialog extends LitElement {
 
   private _dispatchSubmit(status: "published" | "draft"): boolean {
     if (this._loading) return false;
+    if (this._focusBlockedSubmitField(status)) return false;
+
+    // ── Thread mode ────────────────────────────────────────────────────
+    if (this._threadItems.length > 0) {
+      const editors = Array.from(
+        this.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
+      );
+      if (editors.length !== this._threadItems.length) return false;
+
+      const threadPosts: ComposeSubmitDetail[] = [];
+      const allPending: ComposeAttachment[] = [];
+
+      for (let i = 0; i < this._threadItems.length; i++) {
+        const item = this._threadItems[i];
+        const editor = editors[i];
+        if (!editor) return false;
+        threadPosts.push(
+          this._buildEditorPostDetail(editor, item.format, i, status),
+        );
+        allPending.push(
+          ...(editor._attachments ?? []).filter(
+            (a) =>
+              a.status === "pending" ||
+              a.status === "processing" ||
+              a.status === "uploading",
+          ),
+        );
+      }
+      this.dispatchEvent(
+        new CustomEvent("jant:compose-submit-deferred", {
+          bubbles: true,
+          detail: {
+            ...threadPosts[0],
+            editPostId: this._editPostId ?? this._draftSourceId ?? undefined,
+            threadPosts,
+            pendingAttachments: allPending,
+          },
+        }),
+      );
+      return true;
+    }
+
+    // ── Single-post mode ───────────────────────────────────────────────
     const editor = this._editor;
     if (!editor) return false;
-    if (this._focusBlockedSubmitField(status)) {
-      return false;
-    }
 
     const detail = this._buildSubmitDetail(status);
     if (!detail) return false;
 
-    const attachments = editor._attachments ?? [];
-    const pendingAttachments = attachments.filter(
+    const pendingAttachments = (editor._attachments ?? []).filter(
       (a) =>
         a.status === "pending" ||
         a.status === "processing" ||
@@ -1885,7 +2022,7 @@ export class JantComposeDialog extends LitElement {
         | DraftsResponse
         | Record<string, unknown>[];
       const posts = Array.isArray(json) ? json : (json.posts ?? []);
-      this._drafts = (posts as Record<string, unknown>[]).map(
+      const allDraftItems = (posts as Record<string, unknown>[]).map(
         (p): DraftItem => ({
           id: p.id as string,
           format: p.format as ComposeFormat,
@@ -1912,6 +2049,12 @@ export class JantComposeDialog extends LitElement {
           })),
         }),
       );
+      // Filter out thread reply drafts: posts whose replyToId points to another
+      // draft in the same list are inner thread posts — only the root should appear.
+      const draftIds = new Set(allDraftItems.map((d) => d.id));
+      this._drafts = allDraftItems.filter(
+        (d) => !d.replyToId || !draftIds.has(d.replyToId),
+      );
     } catch {
       this._draftsError = "Could not load drafts. Try again.";
       this._drafts = [];
@@ -1924,6 +2067,83 @@ export class JantComposeDialog extends LitElement {
     this._draftsPanelOpen = false;
     this._draftMenuOpenId = null;
     this.updateComplete.then(() => this._editor?.focusInput());
+  }
+
+  /**
+   * Resolve text attachments for a post's media list and call editor.populate().
+   * Shared between single-post and thread draft loading.
+   */
+  private async _populateEditorFromPost(
+    editor: JantComposeEditor,
+    post: ComposePostResponse,
+  ) {
+    const allMedia = post.mediaAttachments ?? [];
+    const nonTextMedia = allMedia.filter(
+      (m: { mimeType: string }) => !m.mimeType.startsWith("text/"),
+    );
+    const textMedia = allMedia.filter(
+      (m: { mimeType: string }) => m.mimeType === "text/x-tiptap+json",
+    );
+
+    const textAttachments = await Promise.all(
+      textMedia.map(
+        async (m: { id: string; url?: string; summary?: string }) => {
+          try {
+            const textRes = await fetch(`/api/media/${m.id}/content`);
+            if (textRes.ok) {
+              const raw = await textRes.text();
+              const envelope = JSON.parse(raw) as {
+                json?: unknown;
+                html?: string;
+              };
+              return {
+                bodyJson: JSON.stringify(envelope.json ?? {}),
+                bodyHtml: envelope.html ?? "",
+                summary: m.summary ?? "",
+                mediaId: m.id,
+              };
+            }
+          } catch {
+            // Fetch failed — skip
+          }
+          return {
+            bodyJson: "{}",
+            bodyHtml: "",
+            summary: m.summary ?? "",
+            mediaId: m.id,
+          };
+        },
+      ),
+    );
+
+    editor.populate({
+      format: post.format,
+      title: post.format === "quote" ? undefined : (post.title ?? undefined),
+      bodyJson: post.body ?? undefined,
+      url:
+        post.format === "quote"
+          ? (post.sourceUrl ?? undefined)
+          : (post.url ?? undefined),
+      quoteText: post.quoteText ?? undefined,
+      quoteAuthor:
+        post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
+      rating: post.rating ?? undefined,
+      media: nonTextMedia.map(
+        (m: {
+          id: string;
+          previewUrl: string;
+          alt?: string;
+          mimeType: string;
+        }) => ({
+          id: m.id,
+          previewUrl: m.previewUrl,
+          alt: m.alt,
+          mimeType: m.mimeType,
+        }),
+      ),
+      textAttachments,
+      attachmentOrder: allMedia.map((m: { id: string }) => m.id),
+    });
   }
 
   private async _loadDraft(id: string) {
@@ -1958,83 +2178,129 @@ export class JantComposeDialog extends LitElement {
       this._collectionIds = post.collectionIds;
     }
 
-    // Restore reply context if this draft was a reply
+    // Restore reply context if this draft was a reply to a published post
     if (post.replyToId) {
       this._replyToId = post.replyToId;
       await this._fetchReplyContext(post.replyToId);
     }
 
+    // ── Thread draft: check if this root has other draft posts in its thread ──
+    const isThreadRoot =
+      post.threadId === post.id || post.threadId === undefined;
+    if (isThreadRoot) {
+      // Fetch all drafts to find other posts in this thread
+      try {
+        const draftsRes = await fetch("/api/posts?status=draft&limit=50");
+        if (draftsRes.ok) {
+          const draftsJson = (await draftsRes.json()) as
+            | { posts?: Record<string, unknown>[] }
+            | Record<string, unknown>[];
+          const allDrafts = Array.isArray(draftsJson)
+            ? draftsJson
+            : (draftsJson.posts ?? []);
+          // Collect other posts in the same thread, sorted by their implied order
+          // (they have replyToId chains starting from the root)
+          const threadDrafts = (allDrafts as Record<string, unknown>[])
+            .filter(
+              (p) =>
+                p.id !== post.id &&
+                p.threadId === post.id &&
+                p.status === "draft",
+            )
+            .map((p) => ({
+              id: p.id as string,
+              format: p.format as ComposeFormat,
+              replyToId: (p.replyToId as string) ?? null,
+              title: (p.title as string) ?? null,
+              body: (p.body as string) ?? null,
+              url: (p.url as string) ?? null,
+              sourceUrl: (p.sourceUrl as string) ?? null,
+              sourceName: (p.sourceName as string) ?? null,
+              quoteText: (p.quoteText as string) ?? null,
+              rating: (p.rating as number) ?? null,
+              mediaAttachments:
+                (p.mediaAttachments as ComposeMediaAttachmentResponse[]) ?? [],
+              visibility: (p.visibility as ComposeVisibility) ?? null,
+            }));
+
+          if (threadDrafts.length > 0) {
+            // Sort by reply chain: walk replyToId to get ordered list
+            const ordered: typeof threadDrafts = [];
+            let prevId: string = post.id;
+            for (let i = 0; i < threadDrafts.length; i++) {
+              const next = threadDrafts.find((p) => p.replyToId === prevId);
+              if (!next) break;
+              ordered.push(next);
+              prevId = next.id;
+            }
+            // Any remaining posts not in chain (shouldn't happen, but be safe)
+            for (const p of threadDrafts) {
+              if (!ordered.includes(p)) ordered.push(p);
+            }
+
+            // Enter thread mode
+            this._threadItems = [
+              { id: crypto.randomUUID(), format: post.format },
+              ...ordered.map((p) => ({
+                id: crypto.randomUUID(),
+                format: p.format,
+              })),
+            ];
+            this._focusedThreadIndex = 0;
+
+            await this.updateComplete;
+
+            const editors = Array.from(
+              this.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
+            );
+
+            // Populate root editor
+            const rootEditor = editors[0];
+            if (rootEditor) {
+              await this._populateEditorFromPost(rootEditor, post);
+            }
+
+            // Populate reply editors
+            for (let i = 0; i < ordered.length; i++) {
+              const replyEditor = editors[i + 1];
+              if (!replyEditor) continue;
+              const p = ordered[i];
+              await this._populateEditorFromPost(replyEditor, {
+                id: p.id,
+                threadId: post.id,
+                format: p.format,
+                replyToId: p.replyToId,
+                title: p.title,
+                body: p.body,
+                url: p.url,
+                sourceUrl: p.sourceUrl,
+                sourceName: p.sourceName,
+                quoteText: p.quoteText,
+                rating: p.rating,
+                mediaAttachments: p.mediaAttachments,
+                visibility: p.visibility,
+              });
+            }
+
+            globalThis.requestAnimationFrame(() => {
+              editors[0]?.focusInput();
+              this._captureInitialSnapshot();
+            });
+            return;
+          }
+        }
+      } catch {
+        // Fall through to single-post load if thread fetch fails
+      }
+    }
+
+    // ── Single-post draft ─────────────────────────────────────────────
     await this.updateComplete;
 
-    // Separate text media items from other media attachments
-    const allMedia = post.mediaAttachments ?? [];
-    const nonTextMedia = allMedia.filter(
-      (m: { mimeType: string }) => !m.mimeType.startsWith("text/"),
-    );
-    const textMedia = allMedia.filter(
-      (m: { mimeType: string }) => m.mimeType === "text/x-tiptap+json",
-    );
-
-    // Fetch text content for TipTap text media items (stored as { json, html } envelope)
-    const textAttachments = await Promise.all(
-      textMedia.map(
-        async (m: { id: string; url?: string; summary?: string }) => {
-          try {
-            const textRes = await fetch(`/api/media/${m.id}/content`);
-            if (textRes.ok) {
-              const raw = await textRes.text();
-              const envelope = JSON.parse(raw) as {
-                json?: unknown;
-                html?: string;
-              };
-              return {
-                bodyJson: JSON.stringify(envelope.json ?? {}),
-                bodyHtml: envelope.html ?? "",
-                summary: m.summary ?? "",
-                mediaId: m.id,
-              };
-            }
-          } catch {
-            // Fetch failed — skip
-          }
-          return {
-            bodyJson: "{}",
-            bodyHtml: "",
-            summary: m.summary ?? "",
-            mediaId: m.id,
-          };
-        },
-      ),
-    );
-
-    this._editor?.populate({
-      format: post.format,
-      title: post.format === "quote" ? undefined : (post.title ?? undefined),
-      bodyJson: post.body ?? undefined,
-      url:
-        post.format === "quote"
-          ? (post.sourceUrl ?? undefined)
-          : (post.url ?? undefined),
-      quoteText: post.quoteText ?? undefined,
-      quoteAuthor:
-        post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
-      rating: post.rating ?? undefined,
-      media: nonTextMedia.map(
-        (m: {
-          id: string;
-          previewUrl: string;
-          alt?: string;
-          mimeType: string;
-        }) => ({
-          id: m.id,
-          previewUrl: m.previewUrl,
-          alt: m.alt,
-          mimeType: m.mimeType,
-        }),
-      ),
-      textAttachments,
-      attachmentOrder: allMedia.map((m: { id: string }) => m.id),
-    });
+    const editor = this._editor;
+    if (editor) {
+      await this._populateEditorFromPost(editor, post);
+    }
 
     globalThis.requestAnimationFrame(() => {
       this._editor?.focusInput();
@@ -2123,6 +2389,86 @@ export class JantComposeDialog extends LitElement {
   };
 
   private _saveDraftToStorage() {
+    // ── Thread mode ────────────────────────────────────────────────────
+    if (this._threadItems.length > 0) {
+      const editors = Array.from(
+        this.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
+      );
+      const hasContent = editors.some((editor) => {
+        const data = editor.getData();
+        return (
+          !!data.body ||
+          !!data.title.trim() ||
+          !!data.url.trim() ||
+          !!data.quoteText.trim() ||
+          data.rating > 0 ||
+          data.attachedTexts.length > 0 ||
+          data.attachments.length > 0
+        );
+      });
+
+      if (!hasContent) {
+        globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
+        return;
+      }
+
+      const threadItems = this._threadItems
+        .map((item, i) => {
+          const editor = editors[i];
+          if (!editor) return null;
+          const data = editor.getData();
+          return {
+            format: item.format,
+            title: data.title,
+            bodyJson: editor.getNormalizedBodyJson(),
+            url: data.url,
+            quoteText: data.quoteText,
+            quoteAuthor: data.quoteAuthor,
+            attachedTexts: data.attachedTexts.map((t) => ({
+              clientId: t.clientId,
+              bodyJson: t.bodyJson,
+              bodyHtml: t.bodyHtml,
+              summary: t.summary,
+            })),
+            attachmentOrder: [...data.attachmentOrder],
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      const draft: LocalDraft = {
+        format: this._threadItems[0]?.format ?? this._format,
+        title: "",
+        bodyJson: null,
+        url: "",
+        quoteText: "",
+        quoteAuthor: "",
+        slug: this._slug,
+        publishedAtInput: this._publishedAtInput,
+        publishedAtTimeMinutes: this._publishedAtTimeMinutes,
+        visibility: this._visibility,
+        rating: 0,
+        showTitle: false,
+        showRating: false,
+        collectionIds: [...this._collectionIds],
+        replyToId: this._replyToId,
+        attachedTexts: [],
+        attachmentOrder: [],
+        threadItems,
+        savedAt: Date.now(),
+      };
+
+      try {
+        globalThis.localStorage.setItem(
+          JantComposeDialog._DRAFT_KEY,
+          JSON.stringify(draft),
+        );
+      } catch {
+        // Storage full or unavailable — silently ignore
+      }
+      return;
+    }
+
+    // ── Single-post mode ───────────────────────────────────────────────
     const editor = this._editor;
     if (!editor) return;
 
@@ -2213,7 +2559,6 @@ export class JantComposeDialog extends LitElement {
       return;
     }
 
-    this._format = draft.format;
     this._collectionIds = [...(draft.collectionIds ?? [])];
     this._slug = draft.slug ?? "";
     this._slugTaken = false;
@@ -2230,6 +2575,63 @@ export class JantComposeDialog extends LitElement {
       this._replyToId = draft.replyToId;
       await this._fetchReplyContext(draft.replyToId);
     }
+
+    // ── Thread draft restore ─────────────────────────────────────────
+    if (draft.threadItems && draft.threadItems.length >= 2) {
+      this._format = draft.threadItems[0].format;
+      this._threadItems = draft.threadItems.map((item) => ({
+        id: crypto.randomUUID(),
+        format: item.format,
+      }));
+      this._focusedThreadIndex = 0;
+
+      await this.updateComplete;
+
+      const editors = Array.from(
+        this.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
+      );
+      for (let i = 0; i < draft.threadItems.length; i++) {
+        const item = draft.threadItems[i];
+        const editor = editors[i];
+        if (!editor) continue;
+
+        const textAttachments = item.attachedTexts?.flatMap((t) => {
+          const bodyJson = normalizeComposeDoc(t.bodyJson);
+          if (!bodyJson) return [];
+          return [
+            {
+              clientId: t.clientId,
+              bodyJson: JSON.stringify(bodyJson),
+              bodyHtml: t.bodyHtml,
+              summary: t.summary,
+            },
+          ];
+        });
+
+        editor.populate({
+          format: item.format,
+          title: item.title || undefined,
+          bodyJson: item.bodyJson ? JSON.stringify(item.bodyJson) : undefined,
+          url: item.url || undefined,
+          quoteText: item.quoteText || undefined,
+          quoteAuthor: item.quoteAuthor || undefined,
+          textAttachments: textAttachments?.length
+            ? textAttachments
+            : undefined,
+          attachmentOrder: item.attachmentOrder,
+        });
+      }
+
+      this._draftRestored = true;
+      showToast(this.labels.draftRestored);
+      globalThis.requestAnimationFrame(() => {
+        this._captureInitialSnapshot();
+      });
+      return;
+    }
+
+    // ── Single-post draft restore ────────────────────────────────────
+    this._format = draft.format;
 
     await this.updateComplete;
 
@@ -2474,37 +2876,41 @@ export class JantComposeDialog extends LitElement {
             ? html`<span class="compose-dialog-title"
                 >${this.labels.editPost}</span
               >`
-            : html`
-                <div class="compose-segmented">
-                  <div
-                    class=${classMap({
-                      "compose-format-pill": true,
-                      "compose-format-pill-link": this._format === "link",
-                      "compose-format-pill-quote": this._format === "quote",
-                    })}
-                  ></div>
-                  ${formats.map(
-                    (f) => html`
-                      <button
-                        type="button"
-                        class=${classMap({
-                          "compose-segmented-item": true,
-                          "compose-segmented-item-active": this._format === f,
-                        })}
-                        @click=${() => {
-                          this._format = f;
-                          this._showPublishPanel = false;
-                          globalThis.requestAnimationFrame(() =>
-                            this._editor?.focusInput(),
-                          );
-                        }}
-                      >
-                        ${formatLabels[f]}
-                      </button>
-                    `,
-                  )}
-                </div>
-              `}
+            : this._threadItems.length > 0
+              ? html`<span class="compose-dialog-title"
+                  >${this.labels.newThread}</span
+                >`
+              : html`
+                  <div class="compose-segmented">
+                    <div
+                      class=${classMap({
+                        "compose-format-pill": true,
+                        "compose-format-pill-link": this._format === "link",
+                        "compose-format-pill-quote": this._format === "quote",
+                      })}
+                    ></div>
+                    ${formats.map(
+                      (f) => html`
+                        <button
+                          type="button"
+                          class=${classMap({
+                            "compose-segmented-item": true,
+                            "compose-segmented-item-active": this._format === f,
+                          })}
+                          @click=${() => {
+                            this._format = f;
+                            this._showPublishPanel = false;
+                            globalThis.requestAnimationFrame(() =>
+                              this._editor?.focusInput(),
+                            );
+                          }}
+                        >
+                          ${formatLabels[f]}
+                        </button>
+                      `,
+                    )}
+                  </div>
+                `}
         </div>
 
         <div class="compose-dialog-header-actions">
@@ -3237,10 +3643,34 @@ export class JantComposeDialog extends LitElement {
 
   private _canPublish(): boolean {
     if (this._loading) return false;
-    const editor = this._editor;
-    if (!editor) return false;
     if (this._getPublishedAtValidationMessage()) return false;
     if (this._getSlugValidationMessage()) return false;
+
+    if (this._threadItems.length > 0) {
+      // Thread mode: validate all editors
+      const editors = Array.from(
+        this.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
+      );
+      if (editors.length === 0) return false;
+      for (const editor of editors) {
+        if (editor.getUrlValidationMessage()) return false;
+        if (editor.getLinkTitleValidationMessage()) return false;
+      }
+      // At least one editor must have content
+      return editors.some((editor) => {
+        const data = editor.getData();
+        return (
+          !!data.body ||
+          !!data.title.trim() ||
+          !!data.url.trim() ||
+          !!data.quoteText.trim() ||
+          data.attachments.length > 0
+        );
+      });
+    }
+
+    const editor = this._editor;
+    if (!editor) return false;
     if (editor.getUrlValidationMessage()) return false;
     if (editor.getLinkTitleValidationMessage()) return false;
 
@@ -3854,8 +4284,302 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  // ── Thread compose ───────────────────────────────────────────────
+
+  private _addThreadItem() {
+    const lastFormat =
+      this._threadItems.length > 0
+        ? this._threadItems[this._threadItems.length - 1].format
+        : this._format;
+
+    if (this._threadItems.length === 0) {
+      // Entering thread mode: snapshot current single editor's state
+      const currentEditor = this._editor;
+      const editorState = currentEditor?.getEditorState() ?? null;
+      const editorData = currentEditor?.getData();
+      const bodyJson = currentEditor?.getNormalizedBodyJson() ?? null;
+
+      this._threadItems = [
+        { id: crypto.randomUUID(), format: this._format },
+        { id: crypto.randomUUID(), format: lastFormat },
+      ];
+
+      // Capture rating state before re-render (these can't change asynchronously)
+      const capturedRating = currentEditor?._rating ?? 0;
+      const capturedShowRating = currentEditor?._showRating ?? false;
+
+      // Restore first thread item's content from the snapshot
+      if (editorState || editorData) {
+        this.updateComplete.then(() => {
+          const editors = this.querySelectorAll<JantComposeEditor>(
+            "jant-compose-editor",
+          );
+          const firstEditor = editors[0];
+          if (!firstEditor) return;
+          if (editorState) {
+            firstEditor.setEditorState(
+              editorState.json,
+              editorState.title,
+              editorState.showTitle,
+              editorState.selection,
+            );
+          }
+          if (editorData) {
+            if (this._format === "link" && editorData.url) {
+              firstEditor._url = editorData.url;
+            } else if (this._format === "quote") {
+              if (editorData.quoteText)
+                firstEditor._quoteText = editorData.quoteText;
+              if (editorData.quoteAuthor)
+                firstEditor._quoteAuthor = editorData.quoteAuthor;
+            }
+            if (bodyJson) {
+              firstEditor._bodyJson = bodyJson;
+            }
+          }
+          // Read attachment state from the old editor NOW (after re-render) so
+          // we get the latest mediaId for any uploads that completed during the
+          // render cycle. The old editor element is still in memory even though
+          // it has been removed from the DOM.
+          const latestAttachments = currentEditor?._attachments ?? [];
+          const latestAttachmentOrder = currentEditor?._attachmentOrder ?? [];
+          const latestAttachedTexts = currentEditor?._attachedTexts ?? [];
+          if (latestAttachments.length > 0) {
+            firstEditor._attachments = [...latestAttachments];
+            firstEditor._attachmentOrder = [...latestAttachmentOrder];
+          }
+          if (latestAttachedTexts.length > 0) {
+            firstEditor._attachedTexts = [...latestAttachedTexts];
+          }
+          if (capturedRating > 0) {
+            firstEditor._rating = capturedRating;
+            firstEditor._showRating = capturedShowRating;
+          }
+        });
+      }
+    } else {
+      this._threadItems = [
+        ...this._threadItems,
+        { id: crypto.randomUUID(), format: lastFormat },
+      ];
+    }
+
+    this._focusedThreadIndex = this._threadItems.length - 1;
+    this.updateComplete.then(() => {
+      const editors = this.querySelectorAll<JantComposeEditor>(
+        "jant-compose-editor",
+      );
+      editors[this._focusedThreadIndex]?.focusInput();
+    });
+  }
+
+  private _removeThreadItem(index: number) {
+    if (this._threadItems.length <= 1) return;
+    const newItems = this._threadItems.filter((_, i) => i !== index);
+
+    if (newItems.length === 1) {
+      // Exiting thread mode: capture remaining thread editor's state and restore
+      // it to the single-post editor after thread mode is cleared.
+      const editors = this.querySelectorAll<JantComposeEditor>(
+        "jant-compose-editor",
+      );
+      const remainingIndex = index === 0 ? 1 : 0;
+      const remainingEditor = editors[remainingIndex] ?? null;
+      const editorState = remainingEditor?.getEditorState() ?? null;
+      const editorData = remainingEditor?.getData();
+      const bodyJson = remainingEditor?.getNormalizedBodyJson() ?? null;
+      const remainingFormat = newItems[0].format;
+      // Capture rating state before re-render (can't change asynchronously)
+      const capturedRating = remainingEditor?._rating ?? 0;
+      const capturedShowRating = remainingEditor?._showRating ?? false;
+
+      this._threadItems = [];
+      this._focusedThreadIndex = 0;
+      this._format = remainingFormat;
+
+      this.updateComplete.then(() => {
+        const singleEditor = this._editor;
+        if (!singleEditor) return;
+        singleEditor.format = remainingFormat;
+        if (editorState) {
+          singleEditor.setEditorState(
+            editorState.json,
+            editorState.title,
+            editorState.showTitle,
+            editorState.selection,
+          );
+        }
+        if (editorData) {
+          if (remainingFormat === "link" && editorData.url) {
+            singleEditor._url = editorData.url;
+          } else if (remainingFormat === "quote") {
+            if (editorData.quoteText)
+              singleEditor._quoteText = editorData.quoteText;
+            if (editorData.quoteAuthor)
+              singleEditor._quoteAuthor = editorData.quoteAuthor;
+          }
+          if (bodyJson) {
+            singleEditor._bodyJson = bodyJson;
+          }
+        }
+        // Read attachment state from the old editor NOW so we capture any
+        // mediaIds set by uploads that completed during the render cycle.
+        const latestAttachments = remainingEditor?._attachments ?? [];
+        const latestAttachmentOrder = remainingEditor?._attachmentOrder ?? [];
+        const latestAttachedTexts = remainingEditor?._attachedTexts ?? [];
+        if (latestAttachments.length > 0) {
+          singleEditor._attachments = [...latestAttachments];
+          singleEditor._attachmentOrder = [...latestAttachmentOrder];
+        }
+        if (latestAttachedTexts.length > 0) {
+          singleEditor._attachedTexts = [...latestAttachedTexts];
+        }
+        if (capturedRating > 0) {
+          singleEditor._rating = capturedRating;
+          singleEditor._showRating = capturedShowRating;
+        }
+        singleEditor.focusInput();
+      });
+    } else {
+      this._threadItems = newItems;
+      this._focusedThreadIndex = Math.min(
+        this._focusedThreadIndex,
+        newItems.length - 1,
+      );
+    }
+  }
+
+  private _renderThreadPost(
+    item: ThreadItem,
+    index: number,
+    showRemove: boolean,
+  ) {
+    return html`
+      <div
+        class="compose-editor-row compose-thread-post"
+        data-thread-index=${index}
+        @focusin=${() => {
+          this._focusedThreadIndex = index;
+        }}
+        @jant:thread-format-change=${(
+          e: CustomEvent<{ format: ComposeFormat }>,
+        ) => {
+          e.stopPropagation();
+          this._threadItems = this._threadItems.map((it, i) =>
+            i === index ? { ...it, format: e.detail.format } : it,
+          );
+          this._format = e.detail.format;
+        }}
+        @jant:thread-remove=${(e: Event) => {
+          e.stopPropagation();
+          this._removeThreadItem(index);
+        }}
+      >
+        <div class="compose-thread-dot"></div>
+        <jant-compose-editor
+          .format=${item.format}
+          .labels=${this.labels}
+          .uploadMaxFileSize=${this.uploadMaxFileSize}
+          .threadItem=${true}
+          .removable=${showRemove}
+          data-thread-id=${item.id}
+        ></jant-compose-editor>
+      </div>
+    `;
+  }
+
+  private _renderAddToThreadRow() {
+    const PLUS_ICON = `<circle cx="8" cy="8" r="5.7"/><path d="M8 5.55v4.9M5.55 8h4.9"/>`;
+    const editors = this.querySelectorAll<JantComposeEditor>(
+      "jant-compose-editor",
+    );
+    const lastEditor = editors[editors.length - 1];
+    const lastData = lastEditor?.getData();
+    const lastEmpty =
+      !lastData ||
+      (!lastData.body &&
+        !lastData.title.trim() &&
+        !lastData.url.trim() &&
+        !lastData.quoteText.trim() &&
+        lastData.attachments.length === 0);
+    return html`
+      <div class="compose-thread-add-row">
+        <div class="compose-thread-add-dot"></div>
+        <button
+          type="button"
+          class="compose-thread-add-btn"
+          ?disabled=${lastEmpty}
+          @click=${() => this._addThreadItem()}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.65"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            ${unsafeSVG(PLUS_ICON)}
+          </svg>
+          Add to thread
+        </button>
+      </div>
+    `;
+  }
+
+  private _renderThreadComposeLayout() {
+    const isReply = !!(this._replyToId && this._replyToData);
+    const items = this._threadItems;
+    const showRemove = items.length > 1;
+
+    return html`
+      <div
+        class="compose-thread-layout compose-thread-compose-layout"
+        @jant:compose-content-changed=${() => this._scheduleDraftSave()}
+      >
+        ${isReply ? this._renderReplyContext() : nothing}
+        ${items.map((item, i) => this._renderThreadPost(item, i, showRemove))}
+        ${this._renderAddToThreadRow()}
+      </div>
+    `;
+  }
+
+  private _renderAddThreadTrigger() {
+    const PLUS_ICON = `<circle cx="8" cy="8" r="5.7"/><path d="M8 5.55v4.9M5.55 8h4.9"/>`;
+    const disabled = !this._hasContent();
+    return html`
+      <div class="compose-add-thread-trigger">
+        <button
+          type="button"
+          class="compose-add-thread-btn"
+          ?disabled=${disabled}
+          @click=${() => this._addThreadItem()}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.65"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            ${unsafeSVG(PLUS_ICON)}
+          </svg>
+          Add to thread
+        </button>
+      </div>
+    `;
+  }
+
   render() {
     const isReply = !!(this._replyToId && this._replyToData);
+    const isThreadMode = this._threadItems.length > 0;
     const isOpeningEdit = this._openingEdit;
     const editor = html`<jant-compose-editor
       .format=${this._format}
@@ -3877,17 +4601,22 @@ export class JantComposeDialog extends LitElement {
         ${this._renderHeader()}
         ${isOpeningEdit
           ? this._renderEditLoadingState()
-          : isReply
-            ? html`
-                <div class="compose-thread-layout">
-                  ${this._renderReplyContext()}
-                  <div class="compose-editor-row">
-                    <div class="compose-thread-dot"></div>
-                    ${editor}
+          : isThreadMode
+            ? this._renderThreadComposeLayout()
+            : isReply
+              ? html`
+                  <div class="compose-thread-layout">
+                    ${this._renderReplyContext()}
+                    <div class="compose-editor-row">
+                      <div class="compose-thread-dot"></div>
+                      ${editor}
+                    </div>
                   </div>
-                </div>
-              `
-            : editor}
+                `
+              : editor}
+        ${isOpeningEdit || isThreadMode || this._editPostId
+          ? nothing
+          : this._renderAddThreadTrigger()}
         ${isOpeningEdit
           ? nothing
           : html`<div

@@ -1069,6 +1069,8 @@ msgstr "Draft restored."
 
 #. @context: Toast after saving a draft post
 #. @context: Toast after saving a draft post
+#. @context: Toast after saving a draft post
+#: src/routes/compose.tsx
 #: src/routes/compose.tsx
 #: src/routes/compose.tsx
 msgid "Draft saved."
@@ -1890,6 +1892,11 @@ msgstr "New Password"
 msgid "New post"
 msgstr "New post"
 
+#. @context: Compose dialog header title when composing a thread
+#: src/ui/compose/ComposeDialog.tsx
+msgid "New Thread"
+msgstr "New Thread"
+
 #. @context: Collection sort order option
 #. @context: Collection sort order option
 #: src/ui/pages/CollectionPage.tsx
@@ -2652,9 +2659,11 @@ msgstr "Some uploads failed. Saved as draft."
 #. @context: Fallback validation error for password reset form
 #. @context: Fallback validation error for setup form
 #. @context: Fallback validation error for sign-in form
+#. @context: Fallback validation error for thread compose form
 #: src/routes/auth/reset.tsx
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/signin.tsx
+#: src/routes/compose.tsx
 #: src/routes/compose.tsx
 msgid "Something doesn't look right. Check the form and try again."
 msgstr "Something doesn't look right. Check the form and try again."

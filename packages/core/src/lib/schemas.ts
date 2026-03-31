@@ -448,6 +448,16 @@ export const CreatePostApiSchema = refineSlugPathExclusivity(
 );
 
 /**
+ * API request body schema for creating a thread (multiple chained posts atomically).
+ * posts[0] is the root; subsequent posts are sequential replies.
+ */
+export const CreateThreadApiSchema = z.object({
+  posts: z.array(CreatePostApiSchema).min(2).max(10),
+  /** When re-editing a thread draft, the root post ID of the old thread to replace */
+  replaceThreadId: createTypeIdSchema(ID_PREFIX.post).optional(),
+});
+
+/**
  * API request body schema for updating a post
  */
 const UpdatePostFieldsSchema = PostFieldsSchema.partial().extend({

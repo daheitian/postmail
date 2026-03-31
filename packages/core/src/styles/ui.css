@@ -6180,6 +6180,11 @@
     );
   }
 
+  /* In thread compose mode, dot aligns with the post header row */
+  .compose-thread-compose-layout .compose-editor-row .compose-thread-dot {
+    margin-top: 1.05rem;
+  }
+
   .compose-reply-context {
     flex: 1;
     min-width: 0;
@@ -6273,6 +6278,175 @@
 
   .compose-reply-toggle:hover {
     color: var(--site-text-primary);
+  }
+
+  /* --- Thread compose layout (multi-post, scrollable) --------------------- */
+
+  /* Scrollable variant for composing a new thread (vs reply thread which is
+     fixed-height). Each editor item grows naturally; the whole layout scrolls. */
+  .compose-thread-compose-layout {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .compose-thread-compose-layout .compose-editor-row {
+    flex: none;
+    overflow: visible;
+    align-items: flex-start;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .compose-thread-compose-layout .compose-editor-row > jant-compose-editor {
+    overflow: visible;
+    min-width: 0;
+  }
+
+  .compose-thread-compose-layout .compose-body {
+    flex: none;
+    overflow-y: visible;
+    min-height: 72px;
+  }
+
+  /* Focused thread post gets a subtle left accent */
+  .compose-thread-post:focus-within > jant-compose-editor {
+    border-left: 2px solid transparent;
+  }
+
+  /* "Add to thread" row inside thread compose layout */
+  .compose-thread-add-row {
+    display: flex;
+    align-items: center;
+    gap: var(--compose-thread-gap);
+    padding-right: var(--compose-thread-padding-right);
+    padding-left: var(--compose-thread-padding-left);
+    padding-top: 2px;
+    padding-bottom: 10px;
+  }
+
+  .compose-thread-add-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px dashed
+      color-mix(in srgb, var(--site-threadline) 60%, transparent);
+    flex-shrink: 0;
+    margin-top: 1px;
+    margin-left: calc(
+      (var(--site-thread-marker-hero-size) - var(--site-thread-marker-size)) / 2
+    );
+  }
+
+  .compose-thread-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: var(--text-sm);
+    font-family: var(--font-body);
+    color: var(--site-text-secondary);
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .compose-thread-compose-layout .compose-thread-add-btn {
+    margin-inline-start: -8px;
+  }
+
+  .compose-thread-add-btn:hover:not(:disabled) {
+    color: var(--site-text-primary);
+    background-color: var(--compose-control-bg);
+  }
+
+  .compose-thread-add-btn:disabled,
+  .compose-add-thread-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  /* "Add to thread" trigger below single-post editor */
+  .compose-add-thread-trigger {
+    padding: 1px 10px 4px;
+    display: flex;
+    align-items: center;
+  }
+
+  @media (min-width: 700px) {
+    .compose-add-thread-trigger {
+      padding-inline: 16px;
+    }
+  }
+
+  .compose-add-thread-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: var(--text-sm);
+    font-family: var(--font-body);
+    color: var(--site-text-secondary);
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .compose-add-thread-btn:hover:not(:disabled) {
+    color: var(--site-text-primary);
+    background-color: var(--compose-control-bg);
+  }
+
+  /* --- Thread post header: segmented format switcher + × on right --------- */
+
+  .compose-thread-post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0 2px;
+  }
+
+  /* Slightly more compact than the dialog header version */
+  .compose-thread-segmented .compose-segmented-item {
+    padding: 5px 14px;
+  }
+
+  /* Remove button (×) — shown only when 2+ posts exist */
+  .compose-thread-post-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--site-text-secondary);
+    cursor: pointer;
+    flex-shrink: 0;
+    opacity: 0.5;
+    transition:
+      opacity 0.13s ease,
+      background-color 0.13s ease,
+      color 0.13s ease;
+  }
+
+  .compose-thread-post-remove:hover {
+    opacity: 1;
+    background-color: var(--compose-control-bg);
+    color: var(--site-text-primary);
+  }
+
+  /* In thread compose, toolbar padding matches thread indent */
+  .compose-thread-compose-layout .compose-tools-row {
+    padding-inline-start: 0;
   }
 
   /* --- Alt text overlay panel (Threads-style, covers entire dialog) ------- */

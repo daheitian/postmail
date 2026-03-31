@@ -174,6 +174,19 @@ const uploadPromises = new Map<string, Promise<string | null>>();
 const removedClientIds = new Set<string>();
 
 /**
+ * Track completed upload mediaIds by clientId.
+ *
+ * When an attachment is migrated between editor instances (e.g. entering thread
+ * mode while an upload is in-flight), `updateAttachmentStatus` fires on the old
+ * detached editor — not the new thread editor. By the time the user submits,
+ * the upload promise has been deleted from `uploadPromises`, so the deferred
+ * handler can't look it up. This map provides a fallback: we record the result
+ * here as soon as any upload succeeds, and `buildRequestAttachments` reads it
+ * when `attachment.mediaId` is null and the clientId isn't in `uploadPromises`.
+ */
+const completedMediaIds = new Map<string, string>();
+
+/**
  * Upload a single file: process locally, then send it through the upload
  * session API so the backend can choose relay vs direct transport.
  * Returns the mediaId on success, null on failure.
@@ -323,6 +336,7 @@ async function uploadFile(
     );
 
     editor?.updateAttachmentStatus(clientId, "done", result.id, null);
+    completedMediaIds.set(clientId, result.id);
     return result.id;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Upload failed";
@@ -364,6 +378,8 @@ document.addEventListener("jant:attachment-removed", (e: Event) => {
   const { clientId, mediaId } = (
     e as CustomEvent<{ clientId: string; mediaId: string | null }>
   ).detail;
+
+  completedMediaIds.delete(clientId);
 
   if (mediaId) {
     // Upload already finished — fire-and-forget delete
@@ -492,7 +508,9 @@ function buildRequestAttachments(
   for (const attachment of detail.attachments) {
     if (attachment.type === "media") {
       const mediaId =
-        attachment.mediaId ?? pendingMediaIds.get(attachment.clientId);
+        attachment.mediaId ??
+        pendingMediaIds.get(attachment.clientId) ??
+        completedMediaIds.get(attachment.clientId);
       if (!mediaId) continue;
 
       requestAttachments.push({
@@ -539,7 +557,9 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
   // Get labels for toast messages
   const labels = composeEl?.labels;
   const uploadingMsg = labels?.uploading ?? "Uploading...";
-  const hasInlineBlobs = detail.body.includes('"blob:');
+  const hasInlineBlobs = detail.threadPosts
+    ? detail.threadPosts.some((p) => p.body.includes('"blob:'))
+    : detail.body.includes('"blob:');
   const hasPending = detail.pendingAttachments.length > 0 || hasInlineBlobs;
   const publishedMsg = labels?.published ?? "Published!";
   const viewLabel = labels?.view ?? "View";
@@ -587,21 +607,27 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     return true;
   };
   const isEdit = !!detail.editPostId;
+  const isThread = !!(detail.threadPosts && detail.threadPosts.length >= 2);
   let draftFallback: "upload" | "server" | null = null;
 
   try {
-    // Wait for all pending uploads to complete
+    // Wait for all pending uploads to complete (for thread mode, pendingAttachments
+    // already contains combined attachments from all posts).
+    // Use Promise.resolve(null) for uploads whose promise was already consumed
+    // (e.g. completed before thread-mode migration) to keep indices aligned.
     const pendingClientIds = detail.pendingAttachments.map((a) => a.clientId);
-    const pendingPromises = pendingClientIds
-      .map((id) => uploadPromises.get(id))
-      .filter((p): p is Promise<string | null> => p !== undefined);
+    const pendingPromises = pendingClientIds.map(
+      (id) => uploadPromises.get(id) ?? Promise.resolve(null as string | null),
+    );
 
     const results = await Promise.all(pendingPromises);
 
-    // If any pending upload failed:
-    // - For new publishes: filter out failed uploads and save as draft
-    // - Otherwise: abort
-    const failedCount = results.filter((id) => id === null).length;
+    // If any pending upload failed (null result where we expected a mediaId
+    // AND the upload wasn't already tracked in completedMediaIds):
+    const failedCount = results.filter(
+      (id, i) =>
+        id === null && !completedMediaIds.has(pendingClientIds[i] ?? ""),
+    ).length;
     if (failedCount > 0) {
       if (detail.status === "published" && !isEdit) {
         draftFallback = "upload";
@@ -613,12 +639,124 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     }
 
     // Build clientId → mediaId map for file attachments completed by this submit
+    // For thread mode, this covers attachments from ALL posts (they were combined).
     const mediaClientIdMap = new Map<string, string>();
-    for (const att of detail.pendingAttachments) {
-      const idx = pendingClientIds.indexOf(att.clientId);
-      const mediaId = results[idx];
-      if (mediaId) mediaClientIdMap.set(att.clientId, mediaId);
+    for (let i = 0; i < pendingClientIds.length; i++) {
+      const clientId = pendingClientIds[i];
+      const mediaId = results[i];
+      if (clientId && mediaId) mediaClientIdMap.set(clientId, mediaId);
     }
+
+    // ── Thread submission ────────────────────────────────────────────
+    if (isThread && detail.threadPosts) {
+      const threadPosts = detail.threadPosts;
+      const effectiveStatus = draftFallback ? "draft" : detail.status;
+
+      // Resolve inline blob URLs in each post's body
+      const resolvedPosts = await Promise.all(
+        threadPosts.map(async (post) => {
+          let body = post.body;
+          if (body.includes('"blob:')) {
+            try {
+              const bodyJson = JSON.parse(body);
+              const resolved = await resolveInlineImageUrls(bodyJson);
+              body = resolved ? JSON.stringify(resolved) : "";
+            } catch {
+              // keep original
+            }
+          }
+          return { ...post, body, status: effectiveStatus };
+        }),
+      );
+
+      const postsPayload = resolvedPosts.map((post) =>
+        buildPostBody(post, buildRequestAttachments(post, mediaClientIdMap)),
+      );
+
+      const threadBody: Record<string, unknown> = { posts: postsPayload };
+      if (isEdit && detail.editPostId) {
+        threadBody.replaceThreadId = detail.editPostId;
+      }
+
+      const res = await fetch("/compose/thread", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(threadBody),
+      });
+
+      if (!res.ok) {
+        // Server error on publish: retry as draft
+        if (detail.status === "published" && !draftFallback) {
+          const retryPayload = {
+            posts: postsPayload.map((p) => ({ ...p, status: "draft" })),
+          };
+          const retryRes = await fetch("/compose/thread", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(retryPayload),
+          });
+          if (retryRes.ok) {
+            draftFallback = "server";
+            const fallbackMsg =
+              labels?.publishFailedDraft ?? "Couldn't publish. Saved as draft.";
+            await refreshComposeCollections();
+            if (!leavePageAfterConfirmSave()) resetPageCompose();
+            toastMsg(fallbackMsg);
+            return;
+          }
+        }
+        const data = await readJsonObject(res);
+        clearPageLoading();
+        toastMsg(
+          getJsonString(data, "error") ?? "Something went wrong",
+          "error",
+        );
+        return;
+      }
+
+      if (draftFallback === "upload") {
+        const fallbackMsg =
+          labels?.uploadFailedDraft ?? "Some uploads failed. Saved as draft.";
+        await refreshComposeCollections();
+        resetPageCompose();
+        toastMsg(fallbackMsg);
+        return;
+      }
+
+      const threadData = await readJsonObject(res);
+      const threadStatus = getJsonString(threadData, "status");
+      const threadPermalink = getJsonString(threadData, "permalink");
+      const threadToast = getJsonString(threadData, "toast");
+
+      if (threadStatus === "published") {
+        if (isPageMode && threadPermalink) {
+          queueSuccessToast(publishedMsg);
+          composeEl?.preparePageLeave?.();
+          globalThis.location.assign(threadPermalink);
+        } else {
+          queueSuccessToast(
+            publishedMsg,
+            threadPermalink
+              ? { label: viewLabel, href: threadPermalink }
+              : undefined,
+          );
+          globalThis.location.reload();
+        }
+      } else {
+        await refreshComposeCollections();
+        if (!leavePageAfterConfirmSave()) resetPageCompose();
+        toastMsg(threadToast ?? "Draft saved.");
+      }
+      return;
+    }
+
+    // ── Single-post submission ───────────────────────────────────────
     const requestAttachments = buildRequestAttachments(
       detail,
       mediaClientIdMap,

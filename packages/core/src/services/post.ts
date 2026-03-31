@@ -181,6 +181,24 @@ export interface PostService {
     deps: PostAttachmentDeps,
     summaryConfig?: SummaryConfig,
   ): Promise<Post>;
+  /**
+   * Atomically create a thread of posts. The first item is the root; each
+   * subsequent item is automatically chained as a reply to the previous one.
+   * On failure, all already-created posts are rolled back.
+   *
+   * @param items - Ordered list of (data, attachments) pairs; at least 2 required
+   * @param deps - Media/storage dependencies
+   * @param summaryConfig - Optional summary extraction config
+   * @returns Ordered list of created posts; posts[0] is the root
+   */
+  createThreadWithAttachments(
+    items: Array<{
+      data: CreatePost;
+      attachments: PostAttachmentInput[] | undefined;
+    }>,
+    deps: PostAttachmentDeps,
+    summaryConfig?: SummaryConfig,
+  ): Promise<Post[]>;
   update(
     id: string,
     data: UpdatePost,
@@ -201,6 +219,11 @@ export interface PostService {
    * @param deps - Media service and optional storage driver for file cleanup
    */
   delete(id: string, deps?: PostDeleteDeps): Promise<boolean>;
+  /**
+   * Delete a thread draft and release its slug paths so they can be reused.
+   * Used when replacing a saved thread draft with a new version.
+   */
+  deleteThreadDraft(id: string, deps?: PostDeleteDeps): Promise<boolean>;
   getThread(rootId: string): Promise<Post[]>;
   updateThreadStatusAndVisibility(
     rootId: string,
@@ -1594,6 +1617,47 @@ export function createPostService(
       }
     },
 
+    async createThreadWithAttachments(items, deps, summaryConfig) {
+      if (items.length < 2) {
+        throw new ValidationError("A thread requires at least 2 posts.");
+      }
+
+      const created: Post[] = [];
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item) continue;
+        const { data, attachments } = item;
+        const prevPost = created[i - 1];
+        const postData: CreatePost = {
+          ...data,
+          // Chain each post as a reply to the previous one (server-side chaining)
+          replyToId: i === 0 ? data.replyToId : prevPost?.id,
+        };
+
+        try {
+          const post = await this.createWithAttachments(
+            postData,
+            attachments,
+            deps,
+            summaryConfig,
+          );
+          created.push(post);
+        } catch (error) {
+          // Rollback: delete all already-created posts in reverse order
+          for (const p of [...created].reverse()) {
+            await this.delete(p.id, {
+              media: deps.media,
+              storage: deps.storage,
+            }).catch(() => undefined);
+          }
+          throw error;
+        }
+      }
+
+      return created;
+    },
+
     async update(id, data, summaryConfig) {
       const existing = await this.getById(id);
       if (!existing) return null;
@@ -2077,15 +2141,13 @@ export function createPostService(
       const existing = await this.getById(id);
       if (!existing) return false;
 
-      // Clean up media and preview images for all affected posts
-      if (deps?.media) {
-        let affectedPosts: Post[];
-        if (!isThreadReply(existing)) {
-          affectedPosts = await this.getThread(id);
-        } else {
-          affectedPosts = [existing];
-        }
+      const isRoot = !isThreadReply(existing);
+      const affectedPosts: Post[] = isRoot
+        ? await this.getThread(id)
+        : [existing];
 
+      // Clean up media and preview images
+      if (deps?.media) {
         const mediaMap = await deps.media.getByPostIds(
           affectedPosts.map((p) => p.id),
         );
@@ -2097,7 +2159,6 @@ export function createPostService(
           );
         }
 
-        // Clean up preview images
         for (const p of affectedPosts) {
           await deletePreviewImage(p.previewImageKey, deps.storage);
         }
@@ -2105,19 +2166,34 @@ export function createPostService(
 
       const timestamp = now();
 
-      // If this is a thread root, soft delete all posts in the thread
-      if (!isThreadReply(existing)) {
+      if (isRoot) {
         await db
           .update(posts)
           .set({ deletedAt: timestamp, updatedAt: timestamp })
           .where(and(eq(posts.siteId, siteId), eq(posts.threadId, id)));
       } else {
-        // Soft-delete the single reply
         await db
           .update(posts)
           .set({ deletedAt: timestamp, updatedAt: timestamp })
           .where(and(eq(posts.siteId, siteId), eq(posts.id, id)));
         await recalculateThreadLastActivity(existing.threadId);
+      }
+
+      return true;
+    },
+
+    async deleteThreadDraft(id, deps) {
+      const deleted = await this.delete(id, deps);
+      if (!deleted) return false;
+
+      // Release path_registry entries for all posts in the thread so slugs
+      // can be reused by the replacement thread.
+      const threadRows = await db
+        .select({ id: posts.id })
+        .from(posts)
+        .where(and(eq(posts.siteId, siteId), eq(posts.threadId, id)));
+      for (const row of threadRows) {
+        await resolvedPaths.deleteByPostId(row.id);
       }
 
       return true;

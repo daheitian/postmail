@@ -705,6 +705,13 @@ export const ComposeForm: FC<ComposeFormProps> = ({
           "@context: Toast shown when a local draft is restored on compose open",
       }),
     ),
+    newThread: i18n._(
+      msg({
+        message: "New Thread",
+        comment:
+          "@context: Compose dialog header title when composing a thread",
+      }),
+    ),
     collectionFormLabels: getCollectionFormLabels(i18n),
   }).replace(/</g, "\\u003c");
 

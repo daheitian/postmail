@@ -197,6 +197,7 @@ const labels: ComposeLabels = {
   postPrivately: "Post privately",
   showMore: "Show more",
   showLess: "Show less",
+  newThread: "New Thread",
   collectionFormLabels: {
     titleLabel: "Title",
     titlePlaceholder: "My Collection",

@@ -18,6 +18,7 @@ const labels = {
   bodyPlaceholder: "What's on your mind...",
   showMore: "Show more",
   showLess: "Show less",
+  newThread: "New Thread",
 } as ComposeLabels;
 
 async function flush(el?: JantComposeFullscreen) {

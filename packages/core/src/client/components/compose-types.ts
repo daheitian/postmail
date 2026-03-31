@@ -78,6 +78,22 @@ export interface LocalDraft {
     summary: string;
   }>;
   attachmentOrder?: string[];
+  /** Present when the draft is a multi-post thread */
+  threadItems?: Array<{
+    format: ComposeFormat;
+    title: string;
+    bodyJson: JSONContent | null;
+    url: string;
+    quoteText: string;
+    quoteAuthor: string;
+    attachedTexts: Array<{
+      clientId: string;
+      bodyJson: JSONContent | null;
+      bodyHtml: string;
+      summary: string;
+    }>;
+    attachmentOrder?: string[];
+  }>;
   savedAt: number;
 }
 
@@ -186,6 +202,7 @@ export interface ComposeLabels {
   postPrivately: string;
   showMore: string;
   showLess: string;
+  newThread: string;
   collectionFormLabels: CollectionFormLabels;
 }
 
@@ -254,6 +271,8 @@ export interface ComposeSubmitDetail {
   replyThreadRootId?: string;
   replyRefreshKind?: "timeline-item" | "post-card" | "post-view";
   replyRefreshId?: string;
+  /** Present when submitting a multi-post thread; index 0 is the root */
+  threadPosts?: ComposeSubmitDetail[];
 }
 
 export interface ComposeCollection {
