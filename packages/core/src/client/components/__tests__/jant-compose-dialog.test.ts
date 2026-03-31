@@ -473,7 +473,7 @@ describe("JantComposeDialog", () => {
     expect(draftButton.getAttribute("aria-label")).toBe("Save as draft");
   });
 
-  it("shows visibility hints in the publish settings panel", async () => {
+  it("shows the selected visibility hint in the publish settings panel", async () => {
     const el = await createElement();
 
     requireElement(
@@ -482,10 +482,19 @@ describe("JantComposeDialog", () => {
     ).click();
     await el.updateComplete;
 
-    expect(el.textContent).toContain(
-      "Doesn't appear in Latest. Still appears in collections you add it to.",
+    // Default is public — only public hint shown
+    expect(el.textContent).toContain("Appears in Latest.");
+    expect(el.textContent).not.toContain("Only visible when signed in.");
+
+    // Switch to private — hint updates
+    const chips = el.querySelectorAll<HTMLButtonElement>(
+      ".compose-publish-chip[role='radio']",
     );
+    chips[2]?.click();
+    await el.updateComplete;
+
     expect(el.textContent).toContain("Only visible when signed in.");
+    expect(el.textContent).not.toContain("Appears in Latest.");
   });
 
   it("format switching updates active state", async () => {
@@ -620,7 +629,7 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     const options = el.querySelectorAll<HTMLButtonElement>(
-      ".compose-publish-option[role='radio']",
+      ".compose-publish-chip[role='radio']",
     );
     expect(options).toHaveLength(3);
     options[1]?.click();
@@ -1000,7 +1009,7 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     const options = el.querySelectorAll<HTMLButtonElement>(
-      ".compose-publish-option[role='radio']",
+      ".compose-publish-chip[role='radio']",
     );
     expect(options).toHaveLength(3);
     options[2]?.click();
@@ -1024,7 +1033,7 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     const options = el.querySelectorAll<HTMLButtonElement>(
-      ".compose-publish-option[role='radio']",
+      ".compose-publish-chip[role='radio']",
     );
     expect(options).toHaveLength(3);
     options[1]?.click();
@@ -1054,7 +1063,7 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     const options = el.querySelectorAll<HTMLButtonElement>(
-      ".compose-publish-option[role='radio']",
+      ".compose-publish-chip[role='radio']",
     );
     options[1]?.click();
     await el.updateComplete;

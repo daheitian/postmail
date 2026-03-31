@@ -3789,10 +3789,9 @@ export class JantComposeDialog extends LitElement {
     );
   }
 
-  private _renderPublishVisibilityOption(
+  private _renderPublishVisibilityChip(
     visibility: ComposeVisibility,
     label: string,
-    hint: string,
   ) {
     const selected = this._visibility === visibility;
 
@@ -3800,8 +3799,8 @@ export class JantComposeDialog extends LitElement {
       <button
         type="button"
         class=${classMap({
-          "compose-publish-option": true,
-          "compose-publish-option-selected": selected,
+          "compose-publish-chip": true,
+          "compose-publish-chip-selected": selected,
         })}
         role="radio"
         aria-checked=${selected ? "true" : "false"}
@@ -3809,18 +3808,20 @@ export class JantComposeDialog extends LitElement {
         @click=${() => this._setVisibility(visibility)}
       >
         ${this._renderVisibilityIcon(visibility)}
-        <span class="compose-publish-copy">
-          <span class="compose-publish-row-label">${label}</span>
-          <span class="compose-publish-row-hint">${hint}</span>
-        </span>
-        ${selected
-          ? renderComposePublishActionIcon(
-              COMPOSE_PUBLISH_ACTION_ICONS.check,
-              "compose-publish-row-check",
-            )
-          : nothing}
+        <span class="compose-publish-chip-label">${label}</span>
       </button>
     `;
+  }
+
+  private _getVisibilityHint(): string {
+    switch (this._visibility) {
+      case "public":
+        return this.labels.publishVisibilityPublicHint;
+      case "latest_hidden":
+        return this.labels.publishVisibilityHiddenFromLatestHint;
+      case "private":
+        return this.labels.publishVisibilityPrivateHint;
+    }
   }
 
   private _renderPublishDateSection() {
@@ -4028,23 +4029,23 @@ export class JantComposeDialog extends LitElement {
                   </p>
                 </div>
               </div>
-              <div class="compose-publish-list" role="radiogroup">
-                ${this._renderPublishVisibilityOption(
+              <div class="compose-publish-chips" role="radiogroup">
+                ${this._renderPublishVisibilityChip(
                   "public",
                   this.labels.publishVisibilityPublic,
-                  this.labels.publishVisibilityPublicHint,
                 )}
-                ${this._renderPublishVisibilityOption(
+                ${this._renderPublishVisibilityChip(
                   "latest_hidden",
                   this.labels.publishVisibilityHiddenFromLatest,
-                  this.labels.publishVisibilityHiddenFromLatestHint,
                 )}
-                ${this._renderPublishVisibilityOption(
+                ${this._renderPublishVisibilityChip(
                   "private",
                   this.labels.publishVisibilityPrivate,
-                  this.labels.publishVisibilityPrivateHint,
                 )}
               </div>
+              <p class="compose-publish-chip-hint">
+                ${this._getVisibilityHint()}
+              </p>
             </section>
           `}
       ${this._visibilityLocked && !this._replyToId
@@ -4071,6 +4072,15 @@ export class JantComposeDialog extends LitElement {
         data-compose-publish-panel-desktop
       >
         ${this._renderPublishPanelSections()}
+        <div class="compose-publish-panel-footer">
+          <button
+            type="button"
+            class="compose-publish-done"
+            @click=${() => this._closePublishPanel(true)}
+          >
+            ${this.labels.done}
+          </button>
+        </div>
       </div>
     `;
   }
