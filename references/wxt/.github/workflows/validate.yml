@@ -1,0 +1,136 @@
+name: 🛡️ Validate
+on:
+  workflow_call:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Basic Checks
+        run: pnpm check
+
+  builds:
+    name: Builds
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Build All Packages
+        run: pnpm buildc all
+
+  build-demo:
+    name: Build Demo
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Build
+        run: pnpm build:all
+        working-directory: packages/wxt-demo
+
+      - name: ZIP
+        run: pnpm wxt zip
+        working-directory: packages/wxt-demo
+
+  tests:
+    name: Tests (${{ matrix.title }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - title: 'Linux'
+            os: ubuntu-22.04
+            coverage: true
+          - title: 'Windows'
+            os: windows-latest
+            coverage: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
+
+      - name: Run Tests
+        if: ${{ ! matrix.coverage }}
+        run: pnpm test
+
+      - name: Run Tests (Coverage)
+        if: matrix.coverage
+        run: pnpm test:coverage --reporter=default --reporter=hanging-process
+
+      - name: Upload Coverage
+        if: matrix.coverage
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  template:
+    name: Template
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        template:
+          - react
+          - solid
+          - svelte
+          - vanilla
+          - vue
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Pack WXT package
+        run: pnpm pack
+        working-directory: packages/wxt
+
+      - name: Install Dependencies
+        run: npm i
+        working-directory: templates/${{ matrix.template }}
+
+      - name: Install Packed WXT
+        run: npm i -D ../../packages/wxt/wxt-*.tgz
+        working-directory: templates/${{ matrix.template }}
+
+      - name: Type Check Template
+        run: pnpm compile
+        if: matrix.template != 'svelte'
+        working-directory: templates/${{ matrix.template }}
+
+      - name: Type Check Template
+        run: pnpm check
+        if: matrix.template == 'svelte'
+        working-directory: templates/${{ matrix.template }}
+
+      - name: Build Template
+        run: pnpm build
+        working-directory: templates/${{ matrix.template }}

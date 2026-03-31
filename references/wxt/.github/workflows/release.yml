@@ -1,0 +1,73 @@
+name: 🚀 Release
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package to release
+        default: wxt
+        type: choice
+        options:
+          - analytics
+          - auto-icons
+          - i18n
+          - is-background
+          - module-react
+          - module-solid
+          - module-svelte
+          - module-vue
+          - runner
+          - storage
+          - unocss
+          - webextension-polyfill
+          - wxt
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate
+    uses: './.github/workflows/validate.yml'
+    secrets: inherit
+
+  publish:
+    name: Publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # Push version changes
+      id-token: write # OIDC for NPM publishing
+    needs:
+      - validate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ssh-key: ${{ secrets.DEPLOY_KEY }} # https://github.com/sbellone/release-workflow-example
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Configure Git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global push.followTags true
+
+      - name: Bump and Tag
+        run: |
+          pnpm tsx scripts/bump-package-version.ts ${{ inputs.package }}
+          git push
+          git push --tags
+
+      - name: Publish to NPM
+        working-directory: packages/${{ inputs.package }}
+        run: |
+          pnpm pack
+          sudo npm i -g npm@latest
+          /usr/local/bin/npm publish *.tgz
+
+      - name: Create GitHub release
+        run: pnpm tsx scripts/create-github-release.ts ${{ inputs.package }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

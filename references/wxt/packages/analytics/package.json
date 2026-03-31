@@ -1,0 +1,64 @@
+{
+  "name": "@wxt-dev/analytics",
+  "version": "0.5.4",
+  "description": "Add analytics to your web extension",
+  "type": "module",
+  "scripts": {
+    "dev": "buildc --deps-only -- wxt",
+    "dev:build": "buildc --deps-only -- wxt build",
+    "check": "pnpm build && check",
+    "build": "buildc -- tsdown",
+    "prepack": "pnpm build",
+    "prepare": "buildc --deps-only -- wxt prepare"
+  },
+  "dependencies": {
+    "@wxt-dev/browser": "workspace:^",
+    "@wxt-dev/is-background": "workspace:^",
+    "ua-parser-js": "^1.0.40"
+  },
+  "peerDependencies": {
+    "wxt": ">=0.20.0"
+  },
+  "devDependencies": {
+    "@types/ua-parser-js": "^0.7.39",
+    "publint": "^0.3.18",
+    "typescript": "^5.9.3",
+    "wxt": "workspace:*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wxt-dev/wxt.git",
+    "directory": "packages/analytics"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./module": {
+      "types": "./dist/module.d.mts",
+      "default": "./dist/module.mjs"
+    },
+    "./background-plugin": {
+      "types": "./dist/background-plugin.d.mts",
+      "default": "./dist/background-plugin.mjs"
+    },
+    "./types": {
+      "types": "./dist/types.d.mts"
+    },
+    "./providers/google-analytics-4": {
+      "types": "./dist/providers/google-analytics-4.d.mts",
+      "default": "./dist/providers/google-analytics-4.mjs"
+    },
+    "./providers/umami": {
+      "types": "./dist/providers/umami.d.mts",
+      "default": "./dist/providers/umami.mjs"
+    }
+  },
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ]
+}

@@ -1,0 +1,102 @@
+# Changelog
+
+## v1.1.4
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-solid-v1.1.3...module-solid-v1.1.4)
+
+### 🩹 Fixes
+
+- Add support for WXT v0.20.0 ([c9dca022](https://github.com/wxt-dev/wxt/commit/c9dca022))
+
+### 🏡 Chore
+
+- **deps-dev:** Bump solid-js from 1.9.3 to 1.9.4 ([#1391](https://github.com/wxt-dev/wxt/pull/1391))
+- Add funding links to `package.json` files ([#1446](https://github.com/wxt-dev/wxt/pull/1446))
+- **deps:** Bump vite-plugin-solid from 2.10.2 to 2.11.6 ([#1491](https://github.com/wxt-dev/wxt/pull/1491))
+- Use PNPM 10's new catelog feature ([#1493](https://github.com/wxt-dev/wxt/pull/1493))
+- Move production dependencies to PNPM 10 catelog ([#1494](https://github.com/wxt-dev/wxt/pull/1494))
+- **deps:** Upgrade to Vite 6 and related dependencies ([#1496](https://github.com/wxt-dev/wxt/pull/1496))
+- Stop using PNPM catalog ([#1644](https://github.com/wxt-dev/wxt/pull/1644))
+- Upgrade `@aklinker1/check` to v2 ([#1647](https://github.com/wxt-dev/wxt/pull/1647))
+- **deps:** Update all dependencies ([#1648](https://github.com/wxt-dev/wxt/pull/1648))
+- **deps:** Upgrade typescript from 5.8.3 to 5.9.2 ([a6eef643](https://github.com/wxt-dev/wxt/commit/a6eef643))
+- Create script for managing dependency upgrades ([#1875](https://github.com/wxt-dev/wxt/pull/1875))
+- **deps:** Upgrade all dev dependencies ([#1876](https://github.com/wxt-dev/wxt/pull/1876))
+
+### ❤️ Contributors
+
+- Aaron ([@aklinker1](https://github.com/aklinker1))
+- Okinea Dev <hi@okinea.dev>
+
+## v1.1.3
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-solid-v1.1.2...module-solid-v1.1.3)
+
+### 🩹 Fixes
+
+- Use `config:resolved` hook to update config instead of `ready` ([#1178](https://github.com/wxt-dev/wxt/pull/1178))
+
+### 🏡 Chore
+
+- Add  `oxlint` for linting ([#947](https://github.com/wxt-dev/wxt/pull/947))
+- Upgrade all non-major dependencies ([#1040](https://github.com/wxt-dev/wxt/pull/1040))
+- **deps:** Upgrade all non-major dependencies ([#1164](https://github.com/wxt-dev/wxt/pull/1164))
+
+### ❤️ Contributors
+
+- Aaron ([@aklinker1](http://github.com/aklinker1))
+
+## v1.1.2
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-solid-v1.1.1...module-solid-v1.1.2)
+
+### 🏡 Chore
+
+- **deps:** Bump all non-major dependencies ([#834](https://github.com/wxt-dev/wxt/pull/834))
+- **deps:** Upgrade all dependencies ([#869](https://github.com/wxt-dev/wxt/pull/869))
+- Add more metadata for npm ([#885](https://github.com/wxt-dev/wxt/pull/885))
+
+### ❤️ Contributors
+
+- Florian Metz ([@Timeraa](http://github.com/Timeraa))
+
+## v1.1.1
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-solid-v1.1.0...module-solid-v1.1.1)
+
+### 🩹 Fixes
+
+- Use `prepare` instead of `postinstall` for local dev setup ([#788](https://github.com/wxt-dev/wxt/pull/788))
+
+## v1.1.0
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-solid-v1.0.1...module-solid-v1.1.0)
+
+### 🚀 Enhancements
+
+- Enable auto-imports for JSX/TSX files ([#773](https://github.com/wxt-dev/wxt/pull/773))
+
+### 🩹 Fixes
+
+- Upgrade wxt peer to >= 0.18.6 ([7edf1c8](https://github.com/wxt-dev/wxt/commit/7edf1c8))
+
+### 🏡 Chore
+
+- Extract build cache script to NPM package ([#737](https://github.com/wxt-dev/wxt/pull/737))
+- **deps:** Upgrade non-major deps ([#778](https://github.com/wxt-dev/wxt/pull/778))
+
+## v1.0.1
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-solid-v1.0.0...module-solid-v1.0.1)
+
+### 🩹 Fixes
+
+- Add `target: esnext` by default ([#733](https://github.com/wxt-dev/wxt/pull/733))
+
+### 🏡 Chore
+
+- Add changelog ([21e8ca0](https://github.com/wxt-dev/wxt/commit/21e8ca0))
+
+## v1.0.0
+
+Initial release 🎉

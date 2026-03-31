@@ -1,0 +1,139 @@
+# Changelog
+
+## v2.0.5
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-svelte-v2.0.4...module-svelte-v2.0.5)
+
+### 🩹 Fixes
+
+- Update `@sveltejs/vite-plugin-svelte` version range to support Vite 8 ([48571f50](https://github.com/wxt-dev/wxt/commit/48571f50))
+
+### 🏡 Chore
+
+- Upgrade dev and non-major prod dependencies ([#2000](https://github.com/wxt-dev/wxt/pull/2000))
+- Use `tsdown` to build packages ([#2006](https://github.com/wxt-dev/wxt/pull/2006))
+- Move script-only dev dependencies to top-level `package.json` ([#2007](https://github.com/wxt-dev/wxt/pull/2007))
+- Update dependencies ([#2069](https://github.com/wxt-dev/wxt/pull/2069))
+- **deps:** Upgrade deps ([#2175](https://github.com/wxt-dev/wxt/pull/2175))
+- Add prepack script to all packages ([032f7931](https://github.com/wxt-dev/wxt/commit/032f7931))
+
+### ❤️ Contributors
+
+- Aaron ([@aklinker1](https://github.com/aklinker1))
+
+## v2.0.4
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-svelte-v2.0.3...module-svelte-v2.0.4)
+
+### 🩹 Fixes
+
+- Add support for @sveltejs/vite-plugin-svelte@6 ([459f73fd](https://github.com/wxt-dev/wxt/commit/459f73fd))
+
+### 🏡 Chore
+
+- Add funding links to `package.json` files ([#1446](https://github.com/wxt-dev/wxt/pull/1446))
+- Use PNPM 10's new catelog feature ([#1493](https://github.com/wxt-dev/wxt/pull/1493))
+- Move production dependencies to PNPM 10 catelog ([#1494](https://github.com/wxt-dev/wxt/pull/1494))
+- Stop using PNPM catalog ([#1644](https://github.com/wxt-dev/wxt/pull/1644))
+- Upgrade `@aklinker1/check` to v2 ([#1647](https://github.com/wxt-dev/wxt/pull/1647))
+- **deps:** Upgrade typescript from 5.8.3 to 5.9.2 ([a6eef643](https://github.com/wxt-dev/wxt/commit/a6eef643))
+- Create script for managing dependency upgrades ([#1875](https://github.com/wxt-dev/wxt/pull/1875))
+- **deps:** Upgrade all dev dependencies ([#1876](https://github.com/wxt-dev/wxt/pull/1876))
+
+### ❤️ Contributors
+
+- Aaron ([@aklinker1](https://github.com/aklinker1))
+- Okinea Dev <hi@okinea.dev>
+
+## v2.0.3
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-svelte-v2.0.2...module-svelte-v2.0.3)
+
+### 🩹 Fixes
+
+- Upgrade `vite-plugin-svelte` to support Vite 6 ([#1375](https://github.com/wxt-dev/wxt/pull/1375))
+
+### ❤️ Contributors
+
+- Eli ([@lishaduck](http://github.com/lishaduck))
+
+## v2.0.2
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-svelte-v2.0.1...module-svelte-v2.0.2)
+
+### 🩹 Fixes
+
+- Svelte production errors and warnings on resolve conditions ([#1283](https://github.com/wxt-dev/wxt/pull/1283))
+
+### ❤️ Contributors
+
+- Aaron ([@aklinker1](http://github.com/aklinker1))
+
+## v2.0.1
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-svelte-v2.0.0...module-svelte-v2.0.1)
+
+### 🩹 Fixes
+
+- Modify dev `vite.resolve.conditions` to support Vite 6 + Svelte 5 ([#1230](https://github.com/wxt-dev/wxt/pull/1230))
+
+### 🏡 Chore
+
+- **deps:** Upgrade all non-major dependencies ([#1164](https://github.com/wxt-dev/wxt/pull/1164))
+
+### ❤️ Contributors
+
+- Aaron ([@aklinker1](http://github.com/aklinker1))
+
+## v2.0.0
+
+[⚠️ breaking changes](https://wxt.dev/guide/upgrade-guide/wxt) &bull; [compare changes](https://github.com/wxt-dev/wxt/compare/module-svelte-v1.0.1...module-svelte-v2.0.0)
+
+### 🚀 Enhancements
+
+- ⚠️  Svelte 5 support ([#1104](https://github.com/wxt-dev/wxt/pull/1104))
+
+### 🏡 Chore
+
+- Add  `oxlint` for linting ([#947](https://github.com/wxt-dev/wxt/pull/947))
+- Upgrade all non-major dependencies ([#1040](https://github.com/wxt-dev/wxt/pull/1040))
+
+#### ⚠️ Breaking Changes
+
+Upgraded `@sveltejs/vite-plugin-svelte` from v3 to v4. This drops support for Svelte 4 and below. To continue using older versions of Svelte, use v1 of this module.
+
+To upgrade to svelte 5, just install `svelte@5`.
+
+### ❤️ Contributors
+
+- Aaron ([@aklinker1](http://github.com/aklinker1))
+
+## v1.0.1
+
+[compare changes](https://github.com/wxt-dev/wxt/compare/module-svelte-v1.0.0...module-svelte-v1.0.1)
+
+### 🩹 Fixes
+
+- Upgrade wxt peer to >= 0.18.6 ([7edf1c8](https://github.com/wxt-dev/wxt/commit/7edf1c8))
+
+### 📖 Documentation
+
+- Fix link to unimport ([#826](https://github.com/wxt-dev/wxt/pull/826))
+
+### 🏡 Chore
+
+- Add changelog ([21e8ca0](https://github.com/wxt-dev/wxt/commit/21e8ca0))
+- Extract build cache script to NPM package ([#737](https://github.com/wxt-dev/wxt/pull/737))
+- **deps:** Upgrade non-major deps ([#778](https://github.com/wxt-dev/wxt/pull/778))
+- **deps:** Bump all non-major dependencies ([#834](https://github.com/wxt-dev/wxt/pull/834))
+- **deps:** Upgrade all dependencies ([#869](https://github.com/wxt-dev/wxt/pull/869))
+- Add more metadata for npm ([#885](https://github.com/wxt-dev/wxt/pull/885))
+
+### ❤️ Contributors
+
+- Florian Metz ([@Timeraa](http://github.com/Timeraa))
+- Eetann ([@eetann](http://github.com/eetann))
+
+## v1.0.0
+
+Initial release 🎉
