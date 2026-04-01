@@ -218,7 +218,7 @@
     transparent
   );
   --site-thread-item-spacing: 14px;
-  --site-thread-context-max-height: clamp(196px, 24vh, 224px);
+  --site-thread-context-max-height: clamp(196px, 40vh, 400px);
   --site-thread-dot-ring: color-mix(
     in srgb,
     var(--site-accent) 16%,
