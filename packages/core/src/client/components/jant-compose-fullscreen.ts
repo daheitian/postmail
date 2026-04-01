@@ -324,9 +324,25 @@ export class JantComposeFullscreen extends LitElement {
               <button
                 type="button"
                 class="compose-fullscreen-done"
+                title=${this.labels.exitFullscreen || "Exit fullscreen"}
+                aria-label=${this.labels.exitFullscreen || "Exit fullscreen"}
                 @click=${() => void this._close()}
               >
-                ${this.labels.done || "Done"}
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.48"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 6.85h2.85V4" />
+                  <path d="M15 6.85h-2.85V4" />
+                  <path d="M6.85 15V12.15H4" />
+                  <path d="M11.15 15V12.15H14" />
+                </svg>
               </button>
             </div>
           </header>

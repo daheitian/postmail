@@ -167,6 +167,8 @@ describe("createExportService", () => {
     expect(taxonomyListTemplate).toContain("term.pages | length");
     expect(taxonomyListTemplate).toContain("latest_page.updated");
     expect(macrosTemplate).toContain("first_collection = collections | first");
+    expect(macrosTemplate).toContain("hidden_collection_count == 2");
+    expect(macrosTemplate).toContain("hidden_collection_count > 2");
     expect(macrosTemplate).toContain(
       "and {{ hidden_collection_count - 1 }} more",
     );

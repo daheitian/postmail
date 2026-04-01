@@ -12,6 +12,7 @@ import type { JantComposeFullscreen } from "../jant-compose-fullscreen.js";
 const labels = {
   note: "Note",
   fullscreen: "Fullscreen",
+  exitFullscreen: "Exit fullscreen",
   done: "Done",
   title: "Title",
   titlePlaceholder: "Title",

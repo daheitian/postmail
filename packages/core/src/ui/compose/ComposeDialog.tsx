@@ -199,6 +199,13 @@ export const ComposeForm: FC<ComposeFormProps> = ({
         comment: "@context: Compose dialog - open fullscreen editor",
       }),
     ),
+    exitFullscreen: i18n._(
+      msg({
+        message: "Exit fullscreen",
+        comment:
+          "@context: Compose fullscreen - button tooltip to collapse back to normal editor",
+      }),
+    ),
     collection: i18n._(
       msg({
         message: "Collection",

@@ -1182,6 +1182,11 @@ msgstr "大多数人需要的所有内容都在一个 ZIP 文件中。"
 msgid "Everything on this page is ready to use for articles, launch posts, directories, and product coverage."
 msgstr "本页的所有内容均可直接用于文章、发布帖、目录和产品报道。"
 
+#. @context: Compose fullscreen - button tooltip to collapse back to normal editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Exit fullscreen"
+msgstr ""
+
 #. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Export and demo limits"

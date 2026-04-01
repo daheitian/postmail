@@ -1458,7 +1458,14 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
         {% endif %}
         <span class="post-collection-tag-text">{{ first_collection_meta.title | default(value=first_collection) }}</span>
       </a>
-      {% if hidden_collection_count > 1 %}
+      {% if hidden_collection_count == 2 %}
+      {% set second_collection = collections | nth(n=1) %}
+      {% set second_collection_meta = get_section(path='c/' ~ second_collection ~ '/_index.md') %}
+      <span class="post-collection-second-sep" aria-hidden="true">, </span>
+      <a href="{{ get_taxonomy_url(kind='c', name=second_collection) }}" class="post-collection-tag">
+        <span class="post-collection-tag-text">{{ second_collection_meta.title | default(value=second_collection) }}</span>
+      </a>
+      {% elif hidden_collection_count > 2 %}
       <span class="post-collection-more-wrap">
         <button type="button" class="post-collection-more" aria-haspopup="menu" data-collection-popover-trigger>
           and {{ hidden_collection_count - 1 }} more

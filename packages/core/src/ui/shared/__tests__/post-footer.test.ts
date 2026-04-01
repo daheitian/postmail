@@ -74,7 +74,24 @@ describe("PostFooter", () => {
     expect(html).toContain('class="post-collection-primary-icon"');
   });
 
-  it("shows only hidden collections inside the more popover", () => {
+  it("shows both collections inline when exactly two are assigned", () => {
+    const post = createPostView({
+      collections: [
+        createCollection("notes", "Notes"),
+        createCollection("writing", "Writing"),
+      ],
+    });
+    const html = renderPostFooter(post);
+
+    expect(html).toContain('href="/c/notes"');
+    expect(html).toContain('href="/c/writing"');
+    expect(html).toContain("Notes");
+    expect(html).toContain("Writing");
+    expect(html).not.toContain("more");
+    expect(html).not.toContain("data-collection-popover-trigger");
+  });
+
+  it("shows only hidden collections inside the more popover when three or more", () => {
     const html = renderPostFooter(createPostView());
 
     expect(html).toContain("and 2 more");

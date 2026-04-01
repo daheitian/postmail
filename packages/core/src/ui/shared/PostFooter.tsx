@@ -34,7 +34,8 @@ export const CompactCollectionTags: FC<{
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length checked above
   const first = collections[0]!;
-  const rest = collections.slice(1);
+  const second = collections.length === 2 ? collections[1] : undefined;
+  const rest = collections.length > 2 ? collections.slice(1) : [];
 
   return (
     <span class="post-collection-tags">
@@ -62,6 +63,16 @@ export const CompactCollectionTags: FC<{
         )}
         <span class="post-collection-tag-text">{first.title}</span>
       </a>
+      {second && (
+        <span class="post-collection-second-sep" aria-hidden="true">
+          ,{" "}
+        </span>
+      )}
+      {second && (
+        <a href={second.url} class="post-collection-tag">
+          <span class="post-collection-tag-text">{second.title}</span>
+        </a>
+      )}
       {rest.length > 0 && (
         <span class="post-collection-more-wrap">
           <button

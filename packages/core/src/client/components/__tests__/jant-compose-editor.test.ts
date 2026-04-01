@@ -178,6 +178,7 @@ const labels: ComposeLabels = {
   emoji: "Emoji",
   title: "Title",
   fullscreen: "Fullscreen",
+  exitFullscreen: "Exit fullscreen",
   collection: "Collection",
   searchCollections: "Search...",
   noCollections: "No collections match that search. Try a different name.",

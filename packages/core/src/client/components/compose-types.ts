@@ -125,6 +125,7 @@ export interface ComposeLabels {
   emoji: string;
   title: string;
   fullscreen: string;
+  exitFullscreen: string;
   collection: string;
   searchCollections: string;
   noCollections: string;

@@ -674,6 +674,9 @@ export class JantComposeDialog extends LitElement {
     if (this._showPublishPanel) {
       this._updatePublishPanelLayout();
     }
+    if (this._showCollection) {
+      this._updateCollectionPopoverSide();
+    }
   }
 
   reset() {
@@ -1478,9 +1481,41 @@ export class JantComposeDialog extends LitElement {
     const first = collections.find((c) => c.id === ids[0]);
     if (!first) return "";
     if (ids.length === 1) return first.title;
+    if (ids.length === 2) {
+      const second = collections.find((c) => c.id === ids[1]);
+      return second ? `${first.title}, ${second.title}` : first.title;
+    }
     return this.labels.collectionCountLabel
       .replace("%name%", first.title)
       .replace("%count%", String(ids.length - 1));
+  }
+
+  private _updateCollectionPopoverSide() {
+    const trigger = this.querySelector<HTMLElement>(
+      ".compose-collection-trigger",
+    );
+    const popover = this.querySelector<HTMLElement>(
+      ".compose-collection-popover[data-popover]",
+    );
+    if (!trigger || !popover) return;
+
+    const visualViewport = globalThis.visualViewport;
+    const viewportTop = visualViewport?.offsetTop ?? 0;
+    const viewportBottom =
+      viewportTop + (visualViewport?.height ?? globalThis.innerHeight);
+    const triggerRect = trigger.getBoundingClientRect();
+    const edgePadding = 12;
+    const gap = 4;
+    const availableBelow = Math.max(
+      0,
+      viewportBottom - edgePadding - triggerRect.bottom - gap,
+    );
+    const availableAbove = Math.max(
+      0,
+      triggerRect.top - viewportTop - edgePadding - gap,
+    );
+
+    popover.dataset.side = availableBelow >= availableAbove ? "bottom" : "top";
   }
 
   private _cancelSlugTimers() {
@@ -1807,8 +1842,12 @@ export class JantComposeDialog extends LitElement {
 
   private _handleViewportChange = () => {
     this._syncPublishPanelPresentation();
-    if (!this._showPublishPanel) return;
-    this.updateComplete.then(() => this._updatePublishPanelLayout());
+    if (this._showPublishPanel) {
+      this.updateComplete.then(() => this._updatePublishPanelLayout());
+    }
+    if (this._showCollection) {
+      this.updateComplete.then(() => this._updateCollectionPopoverSide());
+    }
   };
 
   private _handleDialogCancel = (e: Event) => {
@@ -3059,7 +3098,6 @@ export class JantComposeDialog extends LitElement {
           <div
             class="compose-collection-popover"
             data-popover
-            data-side="bottom"
             aria-hidden=${this._showCollection ? "false" : "true"}
           >
             ${collections.length > 0
