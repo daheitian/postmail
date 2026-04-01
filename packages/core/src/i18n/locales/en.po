@@ -636,6 +636,13 @@ msgstr "Color theme"
 msgid "Color Theme"
 msgstr "Color Theme"
 
+#. @context: Page heading when viewing multiple collections together
+#. @context: Page title when viewing multiple collections together
+#: src/routes/pages/collection.tsx
+#: src/ui/pages/CollectionPage.tsx
+msgid "Combined Collections"
+msgstr "Combined Collections"
+
 #. @context: Inline link label in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Compare it against the theme controls"

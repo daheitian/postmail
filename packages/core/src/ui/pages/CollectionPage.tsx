@@ -35,9 +35,15 @@ export const CollectionPage: FC<CollectionPageProps> = ({
 
   const { i18n } = useLingui();
   const isAggregate = collections.length > 1;
-  const selectionTitle = collections
-    .map((collection) => collection.title)
-    .join(" + ");
+  const selectionTitle = isAggregate
+    ? i18n._(
+        msg({
+          message: "Combined Collections",
+          comment:
+            "@context: Page heading when viewing multiple collections together",
+        }),
+      )
+    : collections.map((collection) => collection.title).join(" + ");
   const collectionUrl = toPublicPath(pagePath, sitePathPrefix);
   const editCollectionUrl = toPublicPath(
     `/c/${primaryCollection.slug}/edit?returnTo=${encodeURIComponent(collectionUrl)}`,

@@ -23,6 +23,9 @@ import { buildMediaMap } from "../../lib/media-helpers.js";
 import { toISOString } from "../../lib/time.js";
 import { createMediaContext, toPostViews } from "../../lib/view.js";
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
+import type { I18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -30,7 +33,17 @@ export const collectionRoutes = new Hono<Env>();
 
 function buildCollectionSelectionTitle(
   collections: { title: string }[],
+  i18n: I18n,
 ): string {
+  if (collections.length > 1) {
+    return i18n._(
+      msg({
+        message: "Combined Collections",
+        comment:
+          "@context: Page title when viewing multiple collections together",
+      }),
+    );
+  }
   return collections.map((collection) => collection.title).join(" + ");
 }
 
@@ -148,7 +161,11 @@ collectionRoutes.get("/:slug", async (c) => {
     isAuthenticated: navData.isAuthenticated,
     sortOrder: currentSort,
   });
-  const selectionTitle = buildCollectionSelectionTitle(selection.collections);
+  const i18n = getI18n(c);
+  const selectionTitle = buildCollectionSelectionTitle(
+    selection.collections,
+    i18n,
+  );
 
   return renderPublicPage(c, {
     title:
@@ -262,7 +279,11 @@ collectionRoutes.get("/:slug/feed", async (c) => {
       feedUpdatedAt: feedTimestamp,
     };
   });
-  const selectionTitle = buildCollectionSelectionTitle(selection.collections);
+  const i18nRss = getI18n(c);
+  const selectionTitle = buildCollectionSelectionTitle(
+    selection.collections,
+    i18nRss,
+  );
 
   const xml = defaultRssRenderer({
     siteName: buildPageTitle(selectionTitle, siteName),
