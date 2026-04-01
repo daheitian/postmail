@@ -2611,9 +2611,12 @@ describe("JantComposeDialog", () => {
     (
       el as unknown as {
         _dialogEl: HTMLDialogElement | null;
+        _mousedownOnBackdrop: boolean;
         _handleDialogClick: (event: Event) => void;
       }
     )._dialogEl = dialog;
+    (el as unknown as { _mousedownOnBackdrop: boolean })._mousedownOnBackdrop =
+      true;
     vi.spyOn(document, "elementFromPoint").mockReturnValue(dialog);
 
     (

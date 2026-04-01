@@ -18,22 +18,22 @@ API_TOKEN = YOUR_API_TOKEN
   "url": "当前网页的完整 URL",
   "slug": "自定义生成的-slug",
   "bodyMarkdown": "描述内容，直接用 markdown 列表格式",
-  "collectionId": "匹配到的 collection ID 或 ID 数组"
+  "collectionIds": ["col_xxx", "col_yyy"]
 }
 ```
 
 字段说明：
 
-| 字段           | 说明                                                              |
-| -------------- | ----------------------------------------------------------------- |
-| `format`       | 固定为 `"link"`                                                   |
-| `title`        | **必填**，清理后的网页标题，最长 300 字符                         |
-| `url`          | **必填**，当前网页完整 URL，支持 `http:`、`https:`、`mailto:`     |
-| `slug`         | 可选，自定义 slug，不传则由服务端生成                             |
-| `bodyMarkdown` | 可选，描述内容，用 markdown 格式                                  |
-| `collectionId` | 可选，归属的 collection ID；多个时传数组 `["col_xxx", "col_yyy"]` |
-| `status`       | 可选，`draft` \| `published`, 默认 `"published"`                  |
-| `visibility`   | 可选，`public` \| `latest_hidden` \| `private`, 默认 `"public"`   |
+| 字段            | 说明                                                            |
+| --------------- | --------------------------------------------------------------- |
+| `format`        | 固定为 `"link"`                                                 |
+| `title`         | **必填**，清理后的网页标题，最长 300 字符                       |
+| `url`           | **必填**，当前网页完整 URL，支持 `http:`、`https:`、`mailto:`   |
+| `slug`          | 可选，自定义 slug，不传则由服务端自动生成                       |
+| `bodyMarkdown`  | 可选，描述内容，用 markdown 格式；与 `body`（TipTap JSON）互斥  |
+| `collectionIds` | 可选，归属的 collection ID 数组，最多 20 个                     |
+| `status`        | 可选，`draft` \| `published`，默认 `"published"`                |
+| `visibility`    | 可选，`public` \| `latest_hidden` \| `private`，默认 `"public"` |
 
 **成功响应：** `201 Created`，返回完整 post 对象。
 
@@ -43,11 +43,27 @@ API_TOKEN = YOUR_API_TOKEN
 
 ## 第一步：生成标题
 
-使用网页原始标题，仅做清理：
+根据标题类型做不同处理：
+
+**清理（所有标题都做）：**
 
 - 去掉站点后缀（" - Medium"" | GitHub"" — Substack"" - YouTube" 等）
 - 去掉营销修饰词
-- 不重新创作
+
+**判断是否需要翻译：**
+
+- 产品名、项目名、品牌名、人名 → 保持原文，不翻译
+  - 例：`Linear` → `Linear`
+  - 例：`tRPC` → `tRPC`
+- 英文描述性标题（能看出在说一件事、一个观点） → 翻译成中文，简洁自然
+  - 例：`Zero to Internet: Your First Website` → `从零开始搭建你的第一个网站`
+  - 例：`How React Server Components Work` → `React Server Components 的工作原理`
+  - 例：`Chinchilla's Wild Implications` → `Chinchilla 论文的深远影响`
+- 中文标题 → 保持原文
+- 混合型（描述性标题里含专有名词） → 翻译句子结构，保留专有名词原文
+  - 例：`Why SQLite Does Not Use Git` → `为什么 SQLite 不用 Git`
+
+**不要重新创作**——翻译是转述，不是起新标题。
 
 ## 第二步：生成 slug
 
@@ -175,18 +191,24 @@ Authorization: Bearer {API_TOKEN}
    - 例：一个有启发的个人博客 → `Sources`
    - 例：一篇关于 RSS、Bluesky、Mastodon、indie web 的内容 → `Open Web`
    - 一个链接可以同时属于多个 collection，比如一篇关于 indie web 的文章 → `Articles` + `Open Web`
-3. 如果没有任何 collection 合适，就不传 `collectionId`——不要硬塞
+3. 如果没有任何 collection 合适，就不传 `collectionIds`——不要硬塞
 
 **取到匹配的 collection 后：**
 
-- 把它们的 `id`（形如 `col_xxx`）作为 `collectionId` 写入请求体
-- 单个时传字符串，多个时传数组：`"collectionId": ["col_xxx", "col_yyy"]`
+- 把它们的 `id`（形如 `col_xxx`）组成数组，作为 `collectionIds` 写入请求体
 
 ---
 
 ## 第五步：构造请求体并发送
 
 将描述直接作为 markdown 列表放入 `bodyMarkdown` 字段，发送 POST 请求到 `{API_BASE}/api/posts`。
+
+**Headers：**
+
+```
+Authorization: Bearer {API_TOKEN}
+Content-Type: application/json
+```
 
 例如 tRPC 的请求体（假设匹配到 `Tools` 和 `Articles` 两个 collection）：
 
@@ -197,7 +219,7 @@ Authorization: Bearer {API_TOKEN}
   "url": "https://trpc.io",
   "slug": "trpc",
   "bodyMarkdown": "- 去掉全栈 TS 项目里前后端之间重复的 API 定义\n- 后端写函数，前端直接调，类型自动贯通，不需要写接口定义或跑 codegen\n- 要求前后端在同一个 monorepo，锁定 TypeScript",
-  "collectionId": [
+  "collectionIds": [
     "col_01kmygbgnmesj9njhgsf4tadxq",
     "col_01kmygbhaeesj9njmnxfyw8479"
   ]
