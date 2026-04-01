@@ -54,14 +54,29 @@ interface ThreadItem {
   format: ComposeFormat;
 }
 
-interface ComposeMediaAttachmentResponse {
+interface ApiMediaAttachment {
+  type: "media";
   id: string;
   previewUrl: string;
   alt?: string;
   mimeType: string;
   url?: string;
+  width?: number;
+  height?: number;
   summary?: string;
+  chars?: number;
+  originalName?: string;
 }
+
+interface ApiTextAttachment {
+  type: "text";
+  id: string;
+  contentUrl: string;
+  summary?: string;
+  chars?: number;
+}
+
+type ApiAttachment = ApiMediaAttachment | ApiTextAttachment;
 
 interface ComposePostResponse {
   id: string;
@@ -71,7 +86,7 @@ interface ComposePostResponse {
   visibility?: ComposeVisibility | null;
   replyToId?: string | null;
   collectionIds?: string[];
-  mediaAttachments?: ComposeMediaAttachmentResponse[];
+  attachments?: ApiAttachment[];
   title?: string | null;
   body?: string | null;
   url?: string | null;
@@ -382,6 +397,62 @@ function buildTimestampFromLocalDate(
       0,
     ).getTime() / 1000,
   );
+}
+
+/**
+ * Split API attachments into media items and resolved text attachments
+ * for use with `editor.populate()`.
+ */
+async function resolveApiAttachments(allAttachments: ApiAttachment[]) {
+  const mediaItems = allAttachments.filter(
+    (a): a is ApiMediaAttachment => a.type === "media",
+  );
+  const textItems = allAttachments.filter(
+    (a): a is ApiTextAttachment => a.type === "text",
+  );
+
+  const media = mediaItems.map((m) => ({
+    id: m.id,
+    previewUrl: m.previewUrl,
+    alt: m.alt,
+    mimeType: m.mimeType,
+    originalName: m.originalName,
+    summary: m.summary,
+    chars: m.chars,
+  }));
+
+  const textAttachments = await Promise.all(
+    textItems.map(async (m) => {
+      try {
+        const textRes = await fetch(`/api/media/${m.id}/content`);
+        if (textRes.ok) {
+          const raw = await textRes.text();
+          const envelope = JSON.parse(raw) as {
+            json?: unknown;
+            html?: string;
+          };
+          return {
+            bodyJson: JSON.stringify(envelope.json ?? {}),
+            bodyHtml: envelope.html ?? "",
+            summary: m.summary ?? "",
+            mediaId: m.id,
+          };
+        }
+      } catch {
+        // Fetch failed — skip
+      }
+      return {
+        bodyJson: "{}",
+        bodyHtml: "",
+        summary: m.summary ?? "",
+        mediaId: m.id,
+      };
+    }),
+  );
+
+  const attachmentOrder = allAttachments.map((a) => a.id);
+
+  return { media, textAttachments, attachmentOrder };
 }
 
 export class JantComposeDialog extends LitElement {
@@ -735,44 +806,9 @@ export class JantComposeDialog extends LitElement {
         this._collectionIds = post.collectionIds;
       }
 
-      const allMedia = post.mediaAttachments ?? [];
-      const nonTextMedia = allMedia.filter(
-        (m: { mimeType: string }) => !m.mimeType.startsWith("text/"),
-      );
-      const textMedia = allMedia.filter(
-        (m: { mimeType: string }) => m.mimeType === "text/x-tiptap+json",
-      );
-
-      const textAttachments = await Promise.all(
-        textMedia.map(
-          async (m: { id: string; url?: string; summary?: string }) => {
-            try {
-              const textRes = await fetch(`/api/media/${m.id}/content`);
-              if (textRes.ok) {
-                const raw = await textRes.text();
-                const envelope = JSON.parse(raw) as {
-                  json?: unknown;
-                  html?: string;
-                };
-                return {
-                  bodyJson: JSON.stringify(envelope.json ?? {}),
-                  bodyHtml: envelope.html ?? "",
-                  summary: m.summary ?? "",
-                  mediaId: m.id,
-                };
-              }
-            } catch {
-              // Fetch failed — skip
-            }
-            return {
-              bodyJson: "{}",
-              bodyHtml: "",
-              summary: m.summary ?? "",
-              mediaId: m.id,
-            };
-          },
-        ),
-      );
+      const allAttachments = post.attachments ?? [];
+      const { media, textAttachments, attachmentOrder } =
+        await resolveApiAttachments(allAttachments);
       if (requestId !== this._openEditRequestId) return;
 
       this._openingEdit = false;
@@ -791,21 +827,9 @@ export class JantComposeDialog extends LitElement {
         quoteAuthor:
           post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
         rating: post.rating ?? undefined,
-        media: nonTextMedia.map(
-          (m: {
-            id: string;
-            previewUrl: string;
-            alt?: string;
-            mimeType: string;
-          }) => ({
-            id: m.id,
-            previewUrl: m.previewUrl,
-            alt: m.alt,
-            mimeType: m.mimeType,
-          }),
-        ),
+        media,
         textAttachments,
-        attachmentOrder: allMedia.map((m: { id: string }) => m.id),
+        attachmentOrder,
       });
 
       globalThis.requestAnimationFrame(() => {
@@ -892,23 +916,15 @@ export class JantComposeDialog extends LitElement {
             day: "numeric",
           })
         : "";
-      // API returns "attachments", not "mediaAttachments"
-      const rawAttachments =
-        ((post as Record<string, unknown>).attachments as
-          | Array<Record<string, unknown>>
-          | undefined) ?? [];
-      const media: ReplyToMedia[] = rawAttachments
-        .filter(
-          (m) =>
-            typeof m.mimeType === "string" && !m.mimeType.startsWith("text/"),
-        )
+      const media: ReplyToMedia[] = (post.attachments ?? [])
+        .filter((a): a is ApiMediaAttachment => a.type === "media")
         .map((m) => ({
-          url: (m.url as string) ?? (m.previewUrl as string),
-          previewUrl: m.previewUrl as string,
-          alt: m.alt as string | undefined,
-          mimeType: m.mimeType as string,
-          width: m.width as number | undefined,
-          height: m.height as number | undefined,
+          url: m.url ?? m.previewUrl,
+          previewUrl: m.previewUrl,
+          alt: m.alt,
+          mimeType: m.mimeType,
+          width: m.width,
+          height: m.height,
         }));
       this._replyToData = {
         contentHtml: (post.bodyHtml as string) ?? "",
@@ -2106,13 +2122,15 @@ export class JantComposeDialog extends LitElement {
           replyToId: (p.replyToId as string) ?? null,
           updatedAt: p.updatedAt as number,
           mediaAttachments: (
-            (p.mediaAttachments as DraftItem["mediaAttachments"]) ?? []
-          ).map((m) => ({
-            id: m.id,
-            previewUrl: m.previewUrl,
-            alt: m.alt,
-            mimeType: m.mimeType,
-          })),
+            (p.attachments as ApiAttachment[] | undefined) ?? []
+          )
+            .filter((a): a is ApiMediaAttachment => a.type === "media")
+            .map((m) => ({
+              id: m.id,
+              previewUrl: m.previewUrl,
+              alt: m.alt ?? null,
+              mimeType: m.mimeType,
+            })),
         }),
       );
       // Filter out thread reply drafts: posts whose replyToId points to another
@@ -2143,44 +2161,9 @@ export class JantComposeDialog extends LitElement {
     editor: JantComposeEditor,
     post: ComposePostResponse,
   ) {
-    const allMedia = post.mediaAttachments ?? [];
-    const nonTextMedia = allMedia.filter(
-      (m: { mimeType: string }) => !m.mimeType.startsWith("text/"),
-    );
-    const textMedia = allMedia.filter(
-      (m: { mimeType: string }) => m.mimeType === "text/x-tiptap+json",
-    );
-
-    const textAttachments = await Promise.all(
-      textMedia.map(
-        async (m: { id: string; url?: string; summary?: string }) => {
-          try {
-            const textRes = await fetch(`/api/media/${m.id}/content`);
-            if (textRes.ok) {
-              const raw = await textRes.text();
-              const envelope = JSON.parse(raw) as {
-                json?: unknown;
-                html?: string;
-              };
-              return {
-                bodyJson: JSON.stringify(envelope.json ?? {}),
-                bodyHtml: envelope.html ?? "",
-                summary: m.summary ?? "",
-                mediaId: m.id,
-              };
-            }
-          } catch {
-            // Fetch failed — skip
-          }
-          return {
-            bodyJson: "{}",
-            bodyHtml: "",
-            summary: m.summary ?? "",
-            mediaId: m.id,
-          };
-        },
-      ),
-    );
+    const allAttachments = post.attachments ?? [];
+    const { media, textAttachments, attachmentOrder } =
+      await resolveApiAttachments(allAttachments);
 
     editor.populate({
       format: post.format,
@@ -2194,21 +2177,9 @@ export class JantComposeDialog extends LitElement {
       quoteAuthor:
         post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
       rating: post.rating ?? undefined,
-      media: nonTextMedia.map(
-        (m: {
-          id: string;
-          previewUrl: string;
-          alt?: string;
-          mimeType: string;
-        }) => ({
-          id: m.id,
-          previewUrl: m.previewUrl,
-          alt: m.alt,
-          mimeType: m.mimeType,
-        }),
-      ),
+      media,
       textAttachments,
-      attachmentOrder: allMedia.map((m: { id: string }) => m.id),
+      attachmentOrder,
     });
   }
 
@@ -2286,8 +2257,7 @@ export class JantComposeDialog extends LitElement {
               sourceName: (p.sourceName as string) ?? null,
               quoteText: (p.quoteText as string) ?? null,
               rating: (p.rating as number) ?? null,
-              mediaAttachments:
-                (p.mediaAttachments as ComposeMediaAttachmentResponse[]) ?? [],
+              attachments: (p.attachments as ApiAttachment[] | undefined) ?? [],
               visibility: (p.visibility as ComposeVisibility) ?? null,
             }));
 
@@ -2345,7 +2315,7 @@ export class JantComposeDialog extends LitElement {
                 sourceName: p.sourceName,
                 quoteText: p.quoteText,
                 rating: p.rating,
-                mediaAttachments: p.mediaAttachments,
+                attachments: p.attachments,
                 visibility: p.visibility,
               });
             }

@@ -60,7 +60,7 @@ import { requireOnboarding } from "./middleware/onboarding.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { withConfig } from "./middleware/config.js";
 import { secureHeadersMiddleware } from "./middleware/secure-headers.js";
-import { extensionCors } from "./middleware/cors.js";
+import { apiCors } from "./middleware/cors.js";
 
 import { getConfiguredSingleSitePathPrefix } from "./lib/env.js";
 import { getRuntimeSitePathPrefix } from "./lib/site-resolution.js";
@@ -308,8 +308,8 @@ export function createApp(): App {
   // Security headers (CSP, X-Frame-Options, etc.)
   app.use("*", secureHeadersMiddleware());
 
-  // CORS for Chrome extension API access
-  app.use("/api/*", extensionCors());
+  // CORS for cross-origin API access (controlled by CORS_ORIGINS env var)
+  app.use("/api/*", apiCors());
 
   // --- Routes that don't need config/theme ---
 

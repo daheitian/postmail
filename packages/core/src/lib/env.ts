@@ -231,6 +231,39 @@ export function getConfiguredStorageDriver(env: EnvSource): string {
   return getStorageDriverEnv(env) ?? getDefaultStorageDriver(env);
 }
 
+/**
+ * Returns the parsed CORS origins configuration.
+ *
+ * @param env - Runtime environment bindings
+ * @returns `"*"` to allow all origins, an array of allowed origin strings,
+ *          or `undefined` when CORS is disabled
+ *
+ * @example
+ * ```ts
+ * getCorsOrigins({ CORS_ORIGINS: "*" }); // "*"
+ * getCorsOrigins({ CORS_ORIGINS: "https://a.com,chrome-extension://id" });
+ * // ["https://a.com", "chrome-extension://id"]
+ * getCorsOrigins({}); // "*"
+ * ```
+ */
+export function getCorsOrigins(env: EnvSource): "*" | string[] | undefined {
+  const raw = getEnvString(env, "CORS_ORIGINS") ?? "*";
+  if (!raw) {
+    return undefined;
+  }
+
+  if (raw === "*") {
+    return "*";
+  }
+
+  const origins = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  return origins.length > 0 ? origins : undefined;
+}
+
 export function shouldTrustProxy(env: EnvSource): boolean {
   return getEnvString(env, "TRUST_PROXY") === "true";
 }

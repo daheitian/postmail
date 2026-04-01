@@ -1,34 +1,49 @@
 /**
  * CORS Middleware
  *
- * Allows cross-origin API requests from Chrome extensions.
- * Applied to `/api/*` routes only.
+ * Allows cross-origin API requests when `CORS_ORIGINS` is configured.
+ *
+ * - Not set → CORS disabled
+ * - `*` → allow all origins
+ * - Comma-separated origins → allow only those
+ *   (e.g. `https://example.com,chrome-extension://abcdef`)
  */
 
+import type { MiddlewareHandler } from "hono";
 import { cors } from "hono/cors";
+import type { Bindings } from "../types.js";
+import type { AppVariables } from "../types/app-context.js";
+import { getCorsOrigins } from "../lib/env.js";
+
+type Env = { Bindings: Bindings; Variables: AppVariables };
 
 /**
- * Creates CORS middleware that allows Chrome extension origins.
+ * Creates CORS middleware driven by the `CORS_ORIGINS` environment variable.
  *
- * @returns Hono CORS middleware configured for extension access
+ * @returns Hono middleware that applies CORS headers when configured
  *
  * @example
  * ```ts
- * app.use("/api/*", extensionCors());
+ * app.use("/api/*", apiCors());
  * ```
  */
-export function extensionCors() {
-  return cors({
-    origin: (origin) => {
-      if (origin.startsWith("chrome-extension://")) {
-        return origin;
-      }
-      return null;
-    },
-    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
-    exposeHeaders: ["Content-Type"],
-    credentials: true,
-    maxAge: 86400,
-  });
+export function apiCors(): MiddlewareHandler<Env> {
+  return async (c, next) => {
+    const origins = getCorsOrigins(c.env);
+    if (!origins) {
+      await next();
+      return;
+    }
+
+    const handler = cors({
+      origin: origins,
+      allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type", "Authorization"],
+      exposeHeaders: ["Content-Type"],
+      credentials: origins !== "*",
+      maxAge: 86400,
+    });
+
+    return handler(c, next);
+  };
 }

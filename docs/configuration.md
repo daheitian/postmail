@@ -304,6 +304,29 @@ npx jant uploads cleanup --url https://your-site.example --limit 50
 
 Images keep their own tighter limits. This setting mainly affects video, audio, and PDF uploads.
 
+### Cross-Origin API Access (Optional)
+
+| Variable       | Default | Description                                        |
+| -------------- | ------- | -------------------------------------------------- |
+| `CORS_ORIGINS` | `*`     | Allowed origins for cross-origin `/api/*` requests |
+
+When set to `*` (the default), all origins are allowed but credentials are not forwarded.
+
+Values:
+
+- `*` — allow all origins (credentials are not forwarded)
+- comma-separated origins — allow only those origins, with credentials
+
+Examples:
+
+```env
+# Allow any origin
+CORS_ORIGINS=*
+
+# Allow a specific site and a Chrome extension
+CORS_ORIGINS=https://dashboard.example.com,chrome-extension://abcdef1234567890
+```
+
 ### Content Summary and RSS Limits (Optional)
 
 | Variable                 | Default | Description                                   |

@@ -85,6 +85,7 @@ export interface Bindings {
   // postgres:/postgresql: URLs.
   DATABASE_URL?: string;
   SITE_RESOLUTION_MODE?: EnvBindingValue;
+  CORS_ORIGINS?: EnvBindingValue;
   HOST?: string;
   PORT?: string;
 }

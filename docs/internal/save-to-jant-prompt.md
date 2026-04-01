@@ -26,7 +26,8 @@ Authorization: Bearer {API_TOKEN}
   "title": "清理后的标题",
   "url": "当前网页的完整 URL",
   "slug": "自定义生成的-slug",
-  "bodyMarkdown": "描述内容，直接用 markdown 列表格式"
+  "bodyMarkdown": "描述内容，直接用 markdown 列表格式",
+  "collectionId": "匹配到的 collection ID"
 }
 ```
 
@@ -39,12 +40,9 @@ Authorization: Bearer {API_TOKEN}
 | `url`          | **必填**，当前网页完整 URL，支持 `http:`、`https:`、`mailto:` |
 | `slug`         | 可选，自定义 slug，不传则由服务端生成                         |
 | `bodyMarkdown` | 可选，描述内容，用 markdown 格式                              |
+| `collectionId` | 可选，归属的 collection ID                                    |
 | `status`       | 可选，默认 `"published"`                                      |
 | `visibility`   | 可选，默认 `"public"`                                         |
-
-**成功响应：** `201 Created`，返回完整 post 对象。
-
-**创建后的文章地址：** `{API_BASE}/{slug}`
 
 ---
 
@@ -169,13 +167,37 @@ slug：git-rebase-in-depth
 
 ---
 
-## 第四步：构造请求体并发送
+## 第四步：匹配 Collection
+
+在发布之前，先获取所有 collection，把链接归入最合适的一个。
+
+**请求：** `GET {API_BASE}/api/collections`
+
+**Headers：**
+
+```
+Authorization: Bearer {API_TOKEN}
+```
+
+**匹配规则：**
+
+1. 从响应的 `collections` 数组中，根据每个 collection 的 `title`、`description` 和 `slug`，结合当前网页的内容类型和主题，选出最匹配的一个
+2. 匹配时优先看语义相关性，不要只做关键词匹配
+   - 例：一篇 React 技术文章 → 如果有 `"前端"` 或 `"开发"` 相关的 collection 就归入
+   - 例：一本书的笔记 → 归入 `"Reading"` 而不是按书的主题归入技术类
+3. 如果没有任何 collection 合适，就不传 `collectionId`——不要硬塞
+
+**取到匹配的 collection 后：**
+
+- 把它的 `id`（形如 `col_xxx`）作为 `collectionId` 写入请求体
+
+---
+
+## 第五步：构造请求体并发送
 
 将描述直接作为 markdown 列表放入 `bodyMarkdown` 字段，发送 POST 请求到 `{API_BASE}/api/posts`。
 
-**注意：浏览器环境下 fetch 会被 CORS 拦截，直接在后台用 curl 发送请求。**
-
-例如 tRPC 的请求体：
+例如 tRPC 的请求体（假设匹配到 collection `col_01jpyx5qds8y79w2dd6sv4rznj`）：
 
 ```json
 {
@@ -183,11 +205,12 @@ slug：git-rebase-in-depth
   "title": "tRPC",
   "url": "https://trpc.io",
   "slug": "trpc",
-  "bodyMarkdown": "- 解决的问题：全栈 TS 项目里前后端之间的 API 定义本质是重复劳动\n   - 写接口、对类型、跑 codegen，两边用的其实是同一套类型系统\n- 做法：去掉这层，后端写函数，前端直接调，类型自动贯通\n- 限制\n   - 前后端必须同一个 monorepo\n   - 锁定 TypeScript\n   - 不适合前后端分属不同团队的场景"
+  "bodyMarkdown": "- 解决的问题：全栈 TS 项目里前后端之间的 API 定义本质是重复劳动\n   - 写接口、对类型、跑 codegen，两边用的其实是同一套类型系统\n- 做法：去掉这层，后端写函数，前端直接调，类型自动贯通\n- 限制\n   - 前后端必须同一个 monorepo\n   - 锁定 TypeScript\n   - 不适合前后端分属不同团队的场景",
+  "collectionId": "col_01jpyx5qds8y79w2dd6sv4rznj"
 }
 ```
 
-## 第五步：返回结果
+## 第六步：返回结果
 
 请求成功（`201`）后，从响应中取出 `slug`，返回：
 
