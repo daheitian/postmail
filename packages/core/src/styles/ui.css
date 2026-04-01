@@ -7513,8 +7513,8 @@
   }
 
   .compose-tiptap-link .tiptap {
-    font-size: var(--feed-link-summary-size);
-    line-height: var(--feed-link-summary-leading);
+    font-size: 0.875rem;
+    line-height: 1.55;
     color: var(--muted-foreground);
   }
 
