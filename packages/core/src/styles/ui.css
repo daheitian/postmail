@@ -271,8 +271,13 @@
   }
 
   .site-header-more [data-popover] {
+    display: none;
     min-width: 170px;
     max-width: calc(100vw - (var(--site-padding) * 2));
+  }
+
+  .site-header-more [data-popover][aria-hidden="false"] {
+    display: block;
   }
 
   .site-header-more [data-popover] [role="menuitem"] {
@@ -1720,6 +1725,8 @@
   /* Individual post in a thread group */
   .thread-item {
     position: relative;
+    min-width: 0;
+    max-width: 100%;
     padding: 8px 0;
   }
 

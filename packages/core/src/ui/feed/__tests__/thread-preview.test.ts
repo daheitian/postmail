@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { PostView } from "../../../types.js";
 import {
@@ -103,5 +104,16 @@ describe("getThreadPreviewState", () => {
         hiddenCount: 0,
       }),
     ).toBe(false);
+  });
+
+  it("keeps thread preview items shrinkable within the grid track", () => {
+    const css = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.thread-item\s*\{[\s\S]*min-width:\s*0;[\s\S]*max-width:\s*100%;/,
+    );
   });
 });

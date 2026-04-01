@@ -1,11 +1,30 @@
 // @vitest-environment happy-dom
 
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type SiteHeaderInit =
   typeof import("../site-header-nav.js").initSiteHeaderMenus;
 
-function rect({ left = 0, top = 0, width = 0, height = 0 }) {
+function rect({
+  left = 0,
+  top = 0,
+  width = 0,
+  height = 0,
+  right,
+  bottom,
+}: {
+  left?: number;
+  top?: number;
+  width?: number;
+  height?: number;
+  right?: number;
+  bottom?: number;
+} = {}) {
+  const resolvedRight = right ?? left + width;
+  const resolvedBottom = bottom ?? top + height;
+
   return {
     x: left,
     y: top,
@@ -13,8 +32,8 @@ function rect({ left = 0, top = 0, width = 0, height = 0 }) {
     top,
     width,
     height,
-    right: left + width,
-    bottom: top + height,
+    right: resolvedRight,
+    bottom: resolvedBottom,
     toJSON() {
       return this;
     },
@@ -272,5 +291,25 @@ describe("site header nav", () => {
     expect(popover.dataset.align).toBe("end");
     // right offset = menuRoot.right(310) - (viewport(375) - padding(30)) = -35
     expect(popover.style.right).toBe("-35px");
+  });
+
+  it("keeps the closed overflow popover out of layout", () => {
+    const cssPath = [
+      resolve(process.cwd(), "src/styles/ui.css"),
+      resolve(process.cwd(), "packages/core/src/styles/ui.css"),
+    ].find((path) => existsSync(path));
+
+    if (!cssPath) {
+      throw new Error("Expected to find src/styles/ui.css");
+    }
+
+    const css = readFileSync(cssPath, "utf8");
+
+    expect(css).toMatch(
+      /\.site-header-more \[data-popover\]\s*\{[\s\S]*display:\s*none;/,
+    );
+    expect(css).toMatch(
+      /\.site-header-more \[data-popover\]\[aria-hidden="false"\]\s*\{[\s\S]*display:\s*block;/,
+    );
   });
 });
