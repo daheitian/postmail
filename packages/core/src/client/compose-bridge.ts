@@ -187,6 +187,75 @@ const removedClientIds = new Set<string>();
 const completedMediaIds = new Map<string, string>();
 
 /**
+ * Quickly grab the very first decoded frame of a video as a small poster.
+ * Uses a 3s timeout — returns null on any failure so callers don't stall.
+ */
+function captureQuickPoster(file: File): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      cleanup();
+      resolve(null);
+    }, 3000);
+
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "auto";
+
+    function cleanup() {
+      clearTimeout(timeout);
+      video.removeAttribute("src");
+      video.load();
+      URL.revokeObjectURL(url);
+    }
+
+    video.onloadeddata = () => {
+      try {
+        const w = video.videoWidth;
+        const h = video.videoHeight;
+        if (!w || !h) {
+          cleanup();
+          resolve(null);
+          return;
+        }
+        const scale = Math.min(640 / w, 1);
+        const pw = Math.round(w * scale);
+        const ph = Math.round(h * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = pw;
+        canvas.height = ph;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          cleanup();
+          resolve(null);
+          return;
+        }
+        ctx.drawImage(video, 0, 0, pw, ph);
+        canvas.toBlob(
+          (blob) => {
+            cleanup();
+            resolve(blob);
+          },
+          "image/webp",
+          0.6,
+        );
+      } catch {
+        cleanup();
+        resolve(null);
+      }
+    };
+
+    video.onerror = () => {
+      cleanup();
+      resolve(null);
+    };
+
+    video.src = url;
+  });
+}
+
+/**
  * Upload a single file: process locally, then send it through the upload
  * session API so the backend can choose relay vs direct transport.
  * Returns the mediaId on success, null on failure.
@@ -216,6 +285,13 @@ async function uploadFile(
         return null;
       }
 
+      // Capture the first frame quickly so Safari shows a preview while
+      // the heavy transcoding runs. Chrome shows it natively via
+      // <video preload="metadata">, Safari does not.
+      captureQuickPoster(file).then((blob) => {
+        if (blob) editor?.updateAttachmentPoster(clientId, blob);
+      });
+
       editor?.updateAttachmentStatus(clientId, "processing", null, null);
       const result = await VideoProcessor.processToFile(file, (progress) => {
         editor?.updateAttachmentProgress(clientId, progress);
@@ -225,6 +301,9 @@ async function uploadFile(
       height = result.height;
       blurhash = result.blurhash;
       poster = result.poster;
+      if (poster) {
+        editor?.updateAttachmentPoster(clientId, poster);
+      }
     } else if (file.type.startsWith("audio/")) {
       // Audio: transcode to AAC (.m4a) (requires WebCodecs)
       if (!AudioProcessor.isSupported()) {
@@ -294,7 +373,10 @@ async function uploadFile(
       height ??= meta.height;
       blurhash ??= meta.blurhash;
       waveform ??= meta.waveform;
-      poster ??= meta.poster;
+      if (!poster && meta.poster) {
+        poster = meta.poster;
+        editor?.updateAttachmentPoster(clientId, poster);
+      }
     }
 
     // Text attachments keep summary/chars in the media record.

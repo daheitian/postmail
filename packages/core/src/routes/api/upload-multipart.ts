@@ -20,7 +20,9 @@ import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
 import {
+  detectPosterMimeType,
   generateStorageKey,
+  getPosterExtension,
   getStoredUploadPolicy,
   getStoredUploadSignaturePeekLength,
   getPosterStorageKey,
@@ -318,16 +320,19 @@ multipartUploadApiRoutes.put("/:id/poster", async (c) => {
     throw new ValidationError("No poster file provided");
   }
 
-  if (!posterFile.type.startsWith("image/")) {
+  const posterBytes = new Uint8Array(await posterFile.arrayBuffer());
+  const posterMime = detectPosterMimeType(posterBytes);
+  if (!posterMime) {
     throw new ValidationError(
-      `Invalid file type "${posterFile.type}". Only image files are accepted for poster frames.`,
+      "Unsupported poster format. Only WebP and PNG are accepted.",
     );
   }
 
-  const posterKey = getPosterStorageKey(c.var.currentSite.id, id);
+  const posterExt = getPosterExtension(posterMime)!;
+  const posterKey = getPosterStorageKey(c.var.currentSite.id, id, posterExt);
 
-  await storage.put(posterKey, posterFile.stream(), {
-    contentType: "image/webp",
+  await storage.put(posterKey, posterBytes, {
+    contentType: posterMime,
   });
 
   return c.json({ posterKey });

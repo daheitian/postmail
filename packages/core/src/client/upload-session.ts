@@ -131,7 +131,7 @@ async function initiateUpload(file: File): Promise<InitiateResponse> {
 async function uploadPoster(uploadId: string, poster: Blob): Promise<void> {
   const response = await fetch(publicPath(`/api/uploads/${uploadId}/poster`), {
     method: "PUT",
-    headers: { "Content-Type": "image/webp" },
+    headers: { "Content-Type": poster.type || "image/webp" },
     body: poster,
   });
   if (!response.ok) {

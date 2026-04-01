@@ -417,20 +417,20 @@ export class JantNavManager extends LitElement {
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
+                              width="15"
+                              height="15"
                               viewBox="0 0 24 24"
                               fill="currentColor"
                             >
-                              <circle cx="5" cy="12" r="2" />
-                              <circle cx="12" cy="12" r="2" />
-                              <circle cx="19" cy="12" r="2" />
+                              <circle cx="5" cy="12" r="2.2" />
+                              <circle cx="12" cy="12" r="2.2" />
+                              <circle cx="19" cy="12" r="2.2" />
                             </svg>
                           </button>
                           ${this._showOverflow
                             ? html`<div
                                 data-popover
-                                data-align="end"
+                                data-align="start"
                                 aria-hidden="false"
                               >
                                 <div role="menu">

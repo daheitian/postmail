@@ -196,7 +196,7 @@ async function process(
 
   ctx.restore();
 
-  // Export as WebP
+  // Export as WebP (falls back to PNG on browsers that don't support WebP encoding)
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (b) => {
@@ -223,12 +223,13 @@ async function processToFile(
 ): Promise<ProcessToFileResult> {
   const { blob, width, height } = await process(file, options);
 
-  // Generate new filename with .webp extension
+  // Use actual blob type — Safari may fall back to PNG when WebP encoding isn't supported
+  const ext = blob.type === "image/webp" ? "webp" : "png";
   const originalName = file.name.replace(/\.[^.]+$/, "");
-  const newName = `${originalName}.webp`;
+  const newName = `${originalName}.${ext}`;
 
   return {
-    file: new File([blob], newName, { type: "image/webp" }),
+    file: new File([blob], newName, { type: blob.type }),
     width,
     height,
   };

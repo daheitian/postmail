@@ -19,6 +19,8 @@ import {
 } from "../lib/errors.js";
 import { createEntityId } from "../lib/ids.js";
 import {
+  detectPosterMimeType,
+  getPosterExtension,
   getPosterStorageKey,
   getStoredUploadPolicy,
   getStoredUploadSignaturePeekLength,
@@ -327,27 +329,34 @@ export function createUploadSessionService(
   async function validatePoster(
     storage: StorageDriver,
     uploadId: string,
-  ): Promise<boolean> {
-    const posterTempKey = getTemporaryPosterStorageKey(siteId, uploadId);
-    const posterHead = await storage.head(posterTempKey);
-    if (!posterHead) {
-      return false;
+  ): Promise<{ contentType: string; ext: string } | null> {
+    // Try each supported poster format
+    for (const ext of ["webp", "png"] as const) {
+      const posterTempKey = getTemporaryPosterStorageKey(siteId, uploadId, ext);
+      const posterHead = await storage.head(posterTempKey);
+      if (!posterHead) continue;
+
+      const contentType =
+        ext === "webp" ? "image/webp" : ("image/png" as string);
+      if (posterHead.contentType !== contentType) {
+        throw new ValidationError(
+          "Poster content type does not match file extension.",
+        );
+      }
+
+      const posterBytes = await readBytes(storage, posterTempKey, 32);
+      const posterError = validateStoredUploadSignature(
+        contentType,
+        posterBytes,
+      );
+      if (posterError) {
+        throw new ValidationError(posterError);
+      }
+
+      return { contentType, ext };
     }
 
-    if (posterHead.contentType !== "image/webp") {
-      throw new ValidationError("Video posters must be WebP images.");
-    }
-
-    const posterBytes = await readBytes(storage, posterTempKey, 32);
-    const posterError = validateStoredUploadSignature(
-      "image/webp",
-      posterBytes,
-    );
-    if (posterError) {
-      throw new ValidationError(posterError);
-    }
-
-    return true;
+    return null;
   }
 
   async function cleanupExpiredSessionArtifacts(
@@ -374,14 +383,19 @@ export function createUploadSessionService(
     }
 
     const deletedSource = await tryDelete(storage, session.tempStorageKey);
-    const deletedPoster = await tryDelete(
+    const deletedPosterWebp = await tryDelete(
       storage,
-      getTemporaryPosterStorageKey(siteId, session.id),
+      getTemporaryPosterStorageKey(siteId, session.id, "webp"),
+    );
+    const deletedPosterPng = await tryDelete(
+      storage,
+      getTemporaryPosterStorageKey(siteId, session.id, "png"),
     );
 
     return {
       abortedMultipartUpload,
-      cleaned: cleaned && deletedSource && deletedPoster,
+      cleaned:
+        cleaned && deletedSource && (deletedPosterWebp || deletedPosterPng),
     };
   }
 
@@ -523,15 +537,22 @@ export function createUploadSessionService(
       const session = await getSessionOrThrow(id);
       assertSessionActive(session);
 
-      const posterError = validateStoredUploadSignature("image/webp", bytes);
-      if (posterError) {
-        throw new ValidationError(posterError);
+      const detectedType = detectPosterMimeType(bytes);
+      if (!detectedType) {
+        throw new ValidationError(
+          "Unsupported poster format. Only WebP and PNG are accepted.",
+        );
       }
 
-      await deps.storage.put(getTemporaryPosterStorageKey(siteId, id), bytes, {
-        contentType: "image/webp",
-        cacheControl: IMMUTABLE_CACHE_CONTROL,
-      });
+      const ext = getPosterExtension(detectedType)!;
+      await deps.storage.put(
+        getTemporaryPosterStorageKey(siteId, id, ext),
+        bytes,
+        {
+          contentType: detectedType,
+          cacheControl: IMMUTABLE_CACHE_CONTROL,
+        },
+      );
     },
 
     async complete(id, data, deps) {
@@ -564,7 +585,7 @@ export function createUploadSessionService(
           await validateStoredChecksum(deps.storage, session);
         }
         await validateStoredObject(deps.storage, session);
-        const hasPoster = await validatePoster(deps.storage, id);
+        const posterInfo = await validatePoster(deps.storage, id);
 
         const objectOptions = getObjectOptions(session);
         await copyObject(
@@ -575,14 +596,18 @@ export function createUploadSessionService(
         );
 
         let posterKey: string | undefined;
-        if (hasPoster) {
-          posterKey = getPosterStorageKey(siteId, session.mediaId);
+        if (posterInfo) {
+          posterKey = getPosterStorageKey(
+            siteId,
+            session.mediaId,
+            posterInfo.ext,
+          );
           await copyObject(
             deps.storage,
-            getTemporaryPosterStorageKey(siteId, id),
+            getTemporaryPosterStorageKey(siteId, id, posterInfo.ext),
             posterKey,
             {
-              contentType: "image/webp",
+              contentType: posterInfo.contentType,
               cacheControl: IMMUTABLE_CACHE_CONTROL,
             },
           );
@@ -610,7 +635,11 @@ export function createUploadSessionService(
         await deleteIfPresent(deps.storage, session.tempStorageKey);
         await deleteIfPresent(
           deps.storage,
-          getTemporaryPosterStorageKey(siteId, id),
+          getTemporaryPosterStorageKey(siteId, id, "webp"),
+        );
+        await deleteIfPresent(
+          deps.storage,
+          getTemporaryPosterStorageKey(siteId, id, "png"),
         );
         await updateSession(id, { state: "completed" });
 
@@ -647,7 +676,11 @@ export function createUploadSessionService(
       await deleteIfPresent(deps.storage, session.tempStorageKey);
       await deleteIfPresent(
         deps.storage,
-        getTemporaryPosterStorageKey(siteId, id),
+        getTemporaryPosterStorageKey(siteId, id, "webp"),
+      );
+      await deleteIfPresent(
+        deps.storage,
+        getTemporaryPosterStorageKey(siteId, id, "png"),
       );
       await updateSession(id, { state: "aborted" });
     },

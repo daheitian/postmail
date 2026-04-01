@@ -186,6 +186,7 @@ const ATTACHMENT_ONLY_MIME_TYPES = new Set([
 
 const INLINE_SIGNATURE_MIME_TYPES = new Set([
   "image/webp",
+  "image/png",
   "video/mp4",
   "audio/mp4",
   "application/pdf",
@@ -332,7 +333,8 @@ export function getStoredUploadPolicy(
   contentType: string,
 ): StoredUploadPolicy | null {
   if (contentType.startsWith("image/")) {
-    if (contentType !== "image/webp") return null;
+    if (contentType !== "image/webp" && contentType !== "image/png")
+      return null;
     return {
       contentDisposition: "inline",
       mediaKind: "image",
@@ -414,7 +416,13 @@ export function validateStoredUploadSignature(
         readAscii(bytes, 0, 4) === "RIFF" &&
         readAscii(bytes, 8, 4) === "WEBP"
         ? null
-        : "Only WebP images are supported.";
+        : "File does not match the expected WebP format.";
+    case "image/png":
+      return bytes.length >= 8 &&
+        bytes[0] === 0x89 &&
+        readAscii(bytes, 1, 3) === "PNG"
+        ? null
+        : "File does not match the expected PNG format.";
     case "video/mp4":
     case "audio/mp4":
       return bytes.length >= 12 && readAscii(bytes, 4, 4) === "ftyp"
@@ -427,6 +435,47 @@ export function validateStoredUploadSignature(
     default:
       return null;
   }
+}
+
+/** Allowed poster MIME types and their file extensions. */
+const POSTER_FORMATS: Record<string, string> = {
+  "image/webp": "webp",
+  "image/png": "png",
+};
+
+/**
+ * Returns the file extension for a poster MIME type, or null if unsupported.
+ *
+ * @param contentType - The MIME type to check
+ * @returns File extension string or null
+ */
+export function getPosterExtension(contentType: string): string | null {
+  return POSTER_FORMATS[contentType] ?? null;
+}
+
+/**
+ * Detects the poster image format from the first bytes of the file.
+ * Returns the MIME type if recognized, null otherwise.
+ *
+ * @param bytes - First few bytes of the file
+ * @returns MIME type string or null
+ */
+export function detectPosterMimeType(bytes: Uint8Array): string | null {
+  if (
+    bytes.length >= 12 &&
+    readAscii(bytes, 0, 4) === "RIFF" &&
+    readAscii(bytes, 8, 4) === "WEBP"
+  ) {
+    return "image/webp";
+  }
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    readAscii(bytes, 1, 3) === "PNG"
+  ) {
+    return "image/png";
+  }
+  return null;
 }
 
 function readAscii(bytes: Uint8Array, start: number, length: number): string {
@@ -497,8 +546,12 @@ export function generateSiteAssetStorageKey(
   return { id, filename, storageKey };
 }
 
-export function getPosterStorageKey(siteId: string, mediaId: string): string {
-  return `${MEDIA_ROOT_PREFIX}/${siteId}/${MEDIA_POSTERS_STORAGE_PREFIX}/${mediaId}.webp`;
+export function getPosterStorageKey(
+  siteId: string,
+  mediaId: string,
+  ext = "webp",
+): string {
+  return `${MEDIA_ROOT_PREFIX}/${siteId}/${MEDIA_POSTERS_STORAGE_PREFIX}/${mediaId}.${ext}`;
 }
 
 export function getTemporaryUploadStorageKey(
@@ -513,8 +566,9 @@ export function getTemporaryUploadStorageKey(
 export function getTemporaryPosterStorageKey(
   siteId: string,
   uploadSessionId: string,
+  ext = "webp",
 ): string {
-  return `${MEDIA_ROOT_PREFIX}/${siteId}/tmp/${uploadSessionId}/poster.webp`;
+  return `${MEDIA_ROOT_PREFIX}/${siteId}/tmp/${uploadSessionId}/poster.${ext}`;
 }
 
 export function getSiteStorageKey(

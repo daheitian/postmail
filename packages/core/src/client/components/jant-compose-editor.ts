@@ -492,6 +492,7 @@ export class JantComposeEditor extends LitElement {
     // Revoke preview URLs before clearing
     for (const a of this._attachments) {
       URL.revokeObjectURL(a.previewUrl);
+      if (a.posterUrl) URL.revokeObjectURL(a.posterUrl);
     }
     this._attachments = [];
     this._attachmentOrder = [];
@@ -517,8 +518,21 @@ export class JantComposeEditor extends LitElement {
     this._attachments = this._attachments.map((a) => {
       if (a.clientId !== clientId) return a;
       URL.revokeObjectURL(a.previewUrl);
-      return { ...a, file, previewUrl: URL.createObjectURL(file) };
+      if (a.posterUrl) URL.revokeObjectURL(a.posterUrl);
+      return {
+        ...a,
+        file,
+        previewUrl: URL.createObjectURL(file),
+        posterUrl: null,
+      };
     });
+  }
+
+  updateAttachmentPoster(clientId: string, poster: Blob) {
+    const posterUrl = URL.createObjectURL(poster);
+    this._attachments = this._attachments.map((a) =>
+      a.clientId === clientId ? { ...a, posterUrl } : a,
+    );
   }
 
   updateAttachmentProgress(clientId: string, progress: number) {
@@ -836,6 +850,7 @@ export class JantComposeEditor extends LitElement {
         clientId: crypto.randomUUID(),
         file: new File([], m.originalName ?? "existing", { type: m.mimeType }),
         previewUrl: m.previewUrl,
+        posterUrl: null,
         status: "done" as const,
         progress: null,
         mediaId: m.id,
@@ -1193,6 +1208,7 @@ export class JantComposeEditor extends LitElement {
         clientId,
         file,
         previewUrl,
+        posterUrl: null,
         status: "pending",
         progress: null,
         mediaId: null,
@@ -1243,6 +1259,7 @@ export class JantComposeEditor extends LitElement {
     const attachment = this._attachments[index];
     if (attachment) {
       URL.revokeObjectURL(attachment.previewUrl);
+      if (attachment.posterUrl) URL.revokeObjectURL(attachment.posterUrl);
       this.dispatchEvent(
         new CustomEvent("jant:attachment-removed", {
           bubbles: true,
@@ -1947,9 +1964,11 @@ export class JantComposeEditor extends LitElement {
                     ? html`
                         <video
                           src=${a.previewUrl}
+                          poster=${a.posterUrl ?? nothing}
                           class="compose-attachment-img"
                           preload="metadata"
-                          muted
+                          .playsInline=${true}
+                          .muted=${true}
                         ></video>
                         <div class="compose-attachment-play-icon">
                           <svg

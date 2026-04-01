@@ -45,30 +45,53 @@ function getLastInlineItem(nav, menuRoot) {
 function positionPopover(trigger, popover) {
   if (popover.getAttribute("aria-hidden") === "true") return;
 
-  popover.dataset.align = "end";
-
   const viewportWidth =
     document.documentElement.clientWidth || globalThis.innerWidth;
-  const popoverRect = popover.getBoundingClientRect();
-  const triggerRect = trigger.getBoundingClientRect();
 
-  const fitsEnd =
-    triggerRect.right - popoverRect.width >= VIEWPORT_EDGE_MARGIN;
-  const fitsStart =
-    triggerRect.left + popoverRect.width <=
-    viewportWidth - VIEWPORT_EDGE_MARGIN;
-
-  if (!fitsEnd && fitsStart) {
-    popover.dataset.align = "start";
+  // On mobile, pin the popover's right edge to the page content edge
+  // so the menu is easy to reach with the right thumb.
+  if (viewportWidth < 700) {
+    const menuRoot = popover.parentElement;
+    if (menuRoot) {
+      const menuRootRect = menuRoot.getBoundingClientRect();
+      const sitePadding = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--site-padding",
+        ),
+      );
+      const pageRight = viewportWidth - (sitePadding || 0);
+      const offset = menuRootRect.right - pageRight;
+      popover.dataset.align = "end";
+      popover.style.right = `${offset}px`;
+    }
     return;
   }
 
-  if (fitsEnd || !fitsStart) {
+  // Desktop: clear any mobile inline offset
+  popover.style.right = "";
+
+  popover.dataset.align = "start";
+
+  const popoverRect = popover.getBoundingClientRect();
+  const triggerRect = trigger.getBoundingClientRect();
+
+  const fitsStart =
+    triggerRect.left + popoverRect.width <=
+    viewportWidth - VIEWPORT_EDGE_MARGIN;
+  const fitsEnd =
+    triggerRect.right - popoverRect.width >= VIEWPORT_EDGE_MARGIN;
+
+  if (!fitsStart && fitsEnd) {
     popover.dataset.align = "end";
     return;
   }
 
-  popover.dataset.align = "start";
+  if (fitsStart || !fitsEnd) {
+    popover.dataset.align = "start";
+    return;
+  }
+
+  popover.dataset.align = "end";
 }
 
 export function initSiteHeaderMenus(root = document) {

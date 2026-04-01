@@ -14,6 +14,8 @@ export interface ComposeAttachment {
   clientId: string;
   file: File;
   previewUrl: string;
+  /** Blob URL for a video poster frame (used as `<video poster>` on Safari) */
+  posterUrl: string | null;
   status: "pending" | "processing" | "uploading" | "done" | "error";
   progress: number | null;
   mediaId: string | null;

@@ -46,7 +46,7 @@ function renderHeader() {
         >
           More
         </button>
-        <div data-popover aria-hidden="true" data-align="end">
+        <div data-popover aria-hidden="true" data-align="start">
           <div role="menu">
             <a href="/settings" role="menuitem">Settings</a>
           </div>
@@ -191,15 +191,15 @@ describe("site header nav", () => {
     ).toEqual(["Settings"]);
   });
 
-  it("switches the popover to start alignment when end alignment would overflow", () => {
+  it("defaults to start alignment on desktop when it fits", () => {
     const { nav, menuRoot, trigger, popover } = renderHeader();
 
     Object.defineProperty(document.documentElement, "clientWidth", {
       configurable: true,
-      value: 240,
+      value: 800,
     });
 
-    setRect(nav, () => rect({ width: 240, height: 32 }));
+    setRect(nav, () => rect({ width: 800, height: 32 }));
     setRect(menuRoot, () => rect({ left: 8, width: 32, height: 32 }));
     setRect(trigger, () => rect({ left: 8, width: 32, height: 32 }));
     setRect(popover, () => rect({ width: 180, height: 120 }));
@@ -211,5 +211,66 @@ describe("site header nav", () => {
 
     expect(popover.getAttribute("aria-hidden")).toBe("false");
     expect(popover.dataset.align).toBe("start");
+  });
+
+  it("switches to end alignment on desktop when start would overflow", () => {
+    const { nav, menuRoot, trigger, popover } = renderHeader();
+
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      configurable: true,
+      value: 800,
+    });
+
+    // Trigger near the right edge — start alignment would push popover past viewport
+    setRect(nav, () => rect({ width: 800, height: 32 }));
+    setRect(menuRoot, () => rect({ left: 700, width: 32, height: 32 }));
+    setRect(trigger, () => rect({ left: 700, width: 32, height: 32 }));
+    setRect(popover, () => rect({ width: 180, height: 120 }));
+
+    initSiteHeaderMenus();
+
+    menuRoot.hidden = false;
+    trigger.click();
+
+    expect(popover.getAttribute("aria-hidden")).toBe("false");
+    expect(popover.dataset.align).toBe("end");
+  });
+
+  it("pins popover to page right edge on mobile", () => {
+    const { nav, menuRoot, trigger, popover } = renderHeader();
+
+    Object.defineProperty(document.documentElement, "clientWidth", {
+      configurable: true,
+      value: 375,
+    });
+
+    // Stub --site-padding as 30px (1.875rem at 16px base)
+    const originalGetComputedStyle = globalThis.getComputedStyle;
+    vi.stubGlobal("getComputedStyle", (el: globalThis.Element) => {
+      const style = originalGetComputedStyle(el);
+      return {
+        ...style,
+        getPropertyValue: (prop: string) =>
+          prop === "--site-padding" ? "30" : style.getPropertyValue(prop),
+      };
+    });
+
+    setRect(nav, () => rect({ width: 375, height: 32 }));
+    // menuRoot right edge at 310 (375 - 30 padding - 34 search - 1 gap)
+    setRect(menuRoot, () =>
+      rect({ left: 278, width: 32, height: 32, right: 310 }),
+    );
+    setRect(trigger, () => rect({ left: 278, width: 32, height: 32 }));
+    setRect(popover, () => rect({ width: 200, height: 120 }));
+
+    initSiteHeaderMenus();
+
+    menuRoot.hidden = false;
+    trigger.click();
+
+    expect(popover.getAttribute("aria-hidden")).toBe("false");
+    expect(popover.dataset.align).toBe("end");
+    // right offset = menuRoot.right(310) - (viewport(375) - padding(30)) = -35
+    expect(popover.style.right).toBe("-35px");
   });
 });

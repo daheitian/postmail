@@ -18,6 +18,8 @@ import {
 } from "../../lib/image.js";
 import { sse } from "../../lib/sse.js";
 import {
+  detectPosterMimeType,
+  getPosterExtension,
   getStoredUploadPolicy,
   getStoredUploadSignaturePeekLength,
   generateStorageKey,
@@ -286,10 +288,15 @@ uploadApiRoutes.post("/", async (c) => {
     let posterKey: string | undefined;
     const posterFile = formData.get("poster") as File | null;
     if (posterFile && file.type.startsWith("video/")) {
-      posterKey = getPosterStorageKey(c.var.currentSite.id, id);
-      await storage.put(posterKey, posterFile.stream(), {
-        contentType: "image/webp",
-      });
+      const posterBytes = new Uint8Array(await posterFile.arrayBuffer());
+      const posterMime = detectPosterMimeType(posterBytes);
+      if (posterMime) {
+        const posterExt = getPosterExtension(posterMime)!;
+        posterKey = getPosterStorageKey(c.var.currentSite.id, id, posterExt);
+        await storage.put(posterKey, posterBytes, {
+          contentType: posterMime,
+        });
+      }
     }
 
     // Save to database

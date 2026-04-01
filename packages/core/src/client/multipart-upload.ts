@@ -77,7 +77,8 @@ export async function uploadMultipart(
     let posterKey: string | undefined;
     if (metadata.poster) {
       const posterForm = new FormData();
-      posterForm.append("poster", metadata.poster, "poster.webp");
+      const posterExt = metadata.poster.type === "image/png" ? "png" : "webp";
+      posterForm.append("poster", metadata.poster, `poster.${posterExt}`);
 
       const posterRes = await fetch(`/api/upload/multipart/${id}/poster`, {
         method: "PUT",
