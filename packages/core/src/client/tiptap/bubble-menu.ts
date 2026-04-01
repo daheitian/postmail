@@ -7,7 +7,7 @@
  */
 
 import { Extension, type Editor } from "@tiptap/core";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Plugin, PluginKey, Selection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import { isLinkToolbarInputActive } from "./link-toolbar.js";
 import {
@@ -268,7 +268,27 @@ export const BubbleMenu = Extension.create({
         view(editorView) {
           create();
           const dialog = editorView.dom.closest("dialog");
-          if (el) (dialog ?? document.body).appendChild(el);
+          const container = dialog ?? document.body;
+          if (el) container.appendChild(el);
+
+          // Dismiss bubble menu when clicking outside the editor
+          function onContainerMousedown(e: Event) {
+            const target = e.target as HTMLElement | null;
+            if (!target) return;
+            // Ignore clicks inside the editor itself
+            if (editorView.dom.contains(target)) return;
+            // Ignore clicks on floating UI (bubble menu, link toolbar)
+            if (target.closest("[data-editor-floating-ui]")) return;
+            if (el?.contains(target)) return;
+            // Collapse selection to dismiss the bubble menu
+            const { state } = editorView;
+            const pos = state.selection.from;
+            editorView.dispatch(
+              state.tr.setSelection(Selection.near(state.doc.resolve(pos))),
+            );
+            editorView.dom.blur();
+          }
+          container.addEventListener("mousedown", onContainerMousedown);
 
           return {
             update(view) {
@@ -279,6 +299,7 @@ export const BubbleMenu = Extension.create({
               }
             },
             destroy() {
+              container.removeEventListener("mousedown", onContainerMousedown);
               el?.remove();
               el = null;
             },

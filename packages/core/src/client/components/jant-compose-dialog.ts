@@ -3781,8 +3781,8 @@ export class JantComposeDialog extends LitElement {
         if (editor.getUrlValidationMessage()) return false;
         if (editor.getLinkTitleValidationMessage()) return false;
       }
-      // At least one editor must have content
-      return editors.some((editor) => {
+      // Every editor in the thread must have content
+      return editors.every((editor) => {
         const data = editor.getData();
         return (
           !!data.body ||
@@ -4603,6 +4603,7 @@ export class JantComposeDialog extends LitElement {
           singleEditor._showRating = capturedShowRating;
         }
         singleEditor.focusInput();
+        this.requestUpdate();
       });
     } else {
       this._threadItems = newItems;

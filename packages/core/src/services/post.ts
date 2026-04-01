@@ -389,8 +389,10 @@ function ensurePostRating(
 function assertPostFormatShape(data: {
   format: Format;
   title?: string | null;
+  body?: unknown;
   url?: string | null;
   quoteText?: string | null;
+  hasAttachments?: boolean;
 }): void {
   const hasTitle = hasNonEmptyText(data.title);
   const hasUrl = hasNonEmptyText(data.url);
@@ -402,6 +404,18 @@ function assertPostFormatShape(data: {
     }
     if (hasQuoteText) {
       throw new ValidationError("Notes can't include quoted text.");
+    }
+    // hasAttachments === undefined means unknown (e.g. update without
+    // attachment changes) — skip the empty-content check in that case.
+    if (
+      !hasTitle &&
+      !data.body &&
+      data.hasAttachments !== undefined &&
+      !data.hasAttachments
+    ) {
+      throw new ValidationError(
+        "Notes need a title, body, or at least one attachment.",
+      );
     }
     return;
   }
@@ -1329,16 +1343,21 @@ export function createPostService(
           : undefined;
       const rating = ensurePostRating(data.rating);
 
-      assertPostFormatShape({
-        format,
-        title: data.title,
-        url: data.url,
-        quoteText: data.quoteText,
-      });
-
       const body = data.bodyMarkdown
         ? markdownToTiptapJson(data.bodyMarkdown)
         : (data.body ?? null);
+
+      assertPostFormatShape({
+        format,
+        title: data.title,
+        body,
+        url: data.url,
+        quoteText: data.quoteText,
+        hasAttachments: data.attachments
+          ? data.attachments.length > 0
+          : undefined,
+      });
+
       const bodyHtml = body ? renderTiptapJson(body) : null;
       const bodyText = body ? extractBodyText(body) : null;
 
@@ -1605,7 +1624,10 @@ export function createPostService(
         await createAttachmentMediaIds(attachmentInputs, deps);
 
       try {
-        const post = await this.create(data, summaryConfig);
+        const post = await this.create(
+          { ...data, attachments: attachmentInputs },
+          summaryConfig,
+        );
 
         try {
           if (orderedMediaIds.length > 0) {
@@ -1704,8 +1726,20 @@ export function createPostService(
       assertPostFormatShape({
         format: nextFormat,
         title: data.title !== undefined ? data.title : existing.title,
+        body:
+          data.body !== undefined || data.bodyMarkdown !== undefined
+            ? data.bodyMarkdown
+              ? markdownToTiptapJson(data.bodyMarkdown)
+              : (data.body ?? null)
+            : existing.body,
         url: nextUrl,
         quoteText: nextQuoteText,
+        // During update we can't cheaply resolve final attachment state;
+        // existing posts already passed creation validation, so we only
+        // guard against clearing all text fields here.
+        hasAttachments: data.attachments
+          ? data.attachments.length > 0
+          : undefined,
       });
       assertDraftPublishedAt(nextStatus, data.publishedAt);
 
