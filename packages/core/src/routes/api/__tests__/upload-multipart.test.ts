@@ -600,8 +600,14 @@ describe("multipart upload API routes", () => {
           originalName: string;
         };
 
-      // Upload poster
-      const posterBlob = new Blob([new Uint8Array(100)], {
+      // Upload poster — bytes must contain valid WebP magic header
+      const posterBytes = new Uint8Array(100);
+      // RIFF....WEBP
+      const riffHeader = new TextEncoder().encode("RIFF");
+      const webpMarker = new TextEncoder().encode("WEBP");
+      posterBytes.set(riffHeader, 0);
+      posterBytes.set(webpMarker, 8);
+      const posterBlob = new Blob([posterBytes], {
         type: "image/webp",
       });
       const formData = new FormData();
