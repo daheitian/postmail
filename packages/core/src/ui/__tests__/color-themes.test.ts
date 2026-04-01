@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { BUILTIN_COLOR_THEMES } from "../color-themes.js";
 
 describe("BUILTIN_COLOR_THEMES", () => {
-  it("contains 12 themes", () => {
-    expect(BUILTIN_COLOR_THEMES).toHaveLength(12);
+  it("contains 13 themes", () => {
+    expect(BUILTIN_COLOR_THEMES).toHaveLength(13);
   });
 
   it("keeps Linen as the first theme", () => {

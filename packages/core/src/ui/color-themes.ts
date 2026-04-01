@@ -560,6 +560,38 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
+  // Near-white warm paper with near-black ink — maximum contrast, minimal color
+  defineTheme({
+    id: "paper",
+    name: "Paper",
+    light: {
+      bg: "oklch(0.998 0.008 105)",
+      fg: "oklch(0.155 0.004 85)",
+      primary: "oklch(0.3 0.02 85)",
+      primaryFg: "oklch(0.995 0.006 105)",
+      siteAccent: "oklch(0.4 0.018 80)",
+      muted: "oklch(0.96 0.006 100)",
+      mutedFg: "oklch(0.46 0.006 85)",
+      border: "oklch(0.925 0.006 100)",
+      readingTitle: "oklch(0.13 0.003 85)",
+      readingHeading: "oklch(0.155 0.004 85)",
+      readingBody: "oklch(0.19 0.004 85)",
+      readingQuote: "oklch(0.35 0.005 85)",
+      dashBg: "oklch(0.98 0.006 100)",
+    },
+    dark: {
+      bg: "oklch(0.155 0.004 85)",
+      fg: "oklch(0.92 0.006 100)",
+      primary: "oklch(0.82 0.012 95)",
+      primaryFg: "oklch(0.14 0.003 85)",
+      siteAccent: "oklch(0.78 0.01 90)",
+      muted: "oklch(0.215 0.004 85)",
+      mutedFg: "oklch(0.62 0.005 95)",
+      border: "oklch(0.28 0.004 85)",
+      dashBg: "oklch(0.135 0.003 85)",
+    },
+  }),
+
   // Deep coffee brown — rich and grounded
   defineTheme({
     id: "espresso",
