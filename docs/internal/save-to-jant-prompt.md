@@ -39,6 +39,16 @@ API_TOKEN = YOUR_API_TOKEN
 
 **创建后的文章地址：** `{API_BASE}/{slug}`
 
+## 执行约束
+
+- **读取网页内容：** 直接读取当前页面的内容（标题、正文、meta 等），不要导航到其他页面或刷新当前页面
+- **所有 API 调用（GET collections、POST 创建）：** 必须用 `fetch()` 发请求，不要通过导航到 API URL 来获取数据
+  - ❌ 不要：导航到 `{API_BASE}/api/collections` 再提取页面文本
+  - ✅ 要：`fetch("{API_BASE}/api/collections", { headers: { "Authorization": "Bearer {API_TOKEN}" } })`
+  - ❌ 不要：导航到 `{API_BASE}/api/posts` 来发送请求
+  - ✅ 要：`fetch("{API_BASE}/api/posts", { method: "POST", headers: { ... }, body: JSON.stringify({...}) })`
+- **整个流程中不应发生任何页面导航**，用户应始终停留在当前收藏的网页上
+
 ---
 
 ## 第一步：生成标题

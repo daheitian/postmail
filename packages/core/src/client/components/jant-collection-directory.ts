@@ -495,6 +495,7 @@ export class JantCollectionsManager extends LitElement {
       const res = await fetch("/api/collections/directory-items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "divider" }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const item = (await res.json()) as { id: string };
