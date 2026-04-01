@@ -5,17 +5,8 @@
 ## 配置
 
 ```
-API_BASE = https://saved.jant.blog
+API_BASE = https://owen.jant.blog
 API_TOKEN = YOUR_API_TOKEN
-```
-
-**Endpoint：** `POST {API_BASE}/api/posts`
-
-**Headers：**
-
-```
-Content-Type: application/json
-Authorization: Bearer {API_TOKEN}
 ```
 
 **请求体（JSON）：**
@@ -27,22 +18,26 @@ Authorization: Bearer {API_TOKEN}
   "url": "当前网页的完整 URL",
   "slug": "自定义生成的-slug",
   "bodyMarkdown": "描述内容，直接用 markdown 列表格式",
-  "collectionId": "匹配到的 collection ID"
+  "collectionId": "匹配到的 collection ID 或 ID 数组"
 }
 ```
 
 字段说明：
 
-| 字段           | 说明                                                          |
-| -------------- | ------------------------------------------------------------- |
-| `format`       | 固定为 `"link"`                                               |
-| `title`        | **必填**，清理后的网页标题，最长 300 字符                     |
-| `url`          | **必填**，当前网页完整 URL，支持 `http:`、`https:`、`mailto:` |
-| `slug`         | 可选，自定义 slug，不传则由服务端生成                         |
-| `bodyMarkdown` | 可选，描述内容，用 markdown 格式                              |
-| `collectionId` | 可选，归属的 collection ID                                    |
-| `status`       | 可选，默认 `"published"`                                      |
-| `visibility`   | 可选，默认 `"public"`                                         |
+| 字段           | 说明                                                              |
+| -------------- | ----------------------------------------------------------------- |
+| `format`       | 固定为 `"link"`                                                   |
+| `title`        | **必填**，清理后的网页标题，最长 300 字符                         |
+| `url`          | **必填**，当前网页完整 URL，支持 `http:`、`https:`、`mailto:`     |
+| `slug`         | 可选，自定义 slug，不传则由服务端生成                             |
+| `bodyMarkdown` | 可选，描述内容，用 markdown 格式                                  |
+| `collectionId` | 可选，归属的 collection ID；多个时传数组 `["col_xxx", "col_yyy"]` |
+| `status`       | 可选，`draft` \| `published`, 默认 `"published"`                  |
+| `visibility`   | 可选，`public` \| `latest_hidden` \| `private`, 默认 `"public"`   |
+
+**成功响应：** `201 Created`，返回完整 post 对象。
+
+**创建后的文章地址：** `{API_BASE}/{slug}`
 
 ---
 
@@ -68,18 +63,21 @@ Authorization: Bearer {API_TOKEN}
 
 ### 写什么
 
-- 产品/工具： 原来的做法痛在哪 → 它怎么解决的 → 做了什么取舍
-- 文章/观点： 作者的核心论点 → 凭什么立住的（证据、逻辑链、关键数字直接写出来，不要概括成"研究表明有效"）
-- 教程/技术： 核心心智模型 → 容易踩的坑
+- 产品/工具：解决什么问题 → 怎么做的 → 有什么限制或取舍
+- 文章/观点：核心发现或论点 → 关键证据和数字直接写出来
+- 教程/技术：核心机制 → 容易踩的坑
 
 ### 怎么写
 
-- 先让人感受到问题，再说解决方式，不要跳过"为什么需要这个东西"直接讲机制
+- 解决什么问题一句话带过，不要展开铺垫痛点细节
+- 重心放在描述这个东西本身怎么运作
 - 保留原文的独特术语，不替换成通用说法
 - 语气平实，像笔记本里给自己写的批注
 
 ### 不要
 
+- 痛点展开："原来的做法是…""哪怕一个组件只是…"
+- 意义/影响："直接改变了…""这意味着…"
 - 推荐语气："值得一读""强烈推荐"
 - 夸张用词："颠覆/宝藏/神器/必备"
 - 第二人称："你/你会/适合你"
@@ -87,9 +85,9 @@ Authorization: Bearer {API_TOKEN}
 
 ### 写完自测
 
-- 半年后只看这段，能想起最关键的点吗？
-- 有没有跳过痛点直接讲机制？
-- "研究表明"后面跟了具体发现吗？没有就是空话
+- 半年后只看这段，能想起这东西具体怎么运作吗？
+- 有没有在展开铺垫痛点或吹影响？删掉
+- 每一行是不是都在描述机制或事实？
 
 ### 示例
 
@@ -101,10 +99,8 @@ slug：linear
 描述：
 
 - 项目管理工具，主打键盘操作和响应速度
-- 和 Jira 设计哲学相反
-  - Jira：最大灵活性，什么都能配，但配置本身变成负担
-  - Linear：给一套固定的 opinionated workflow，不让你折腾
-- 用约束换速度，适合不想在工具本身花时间的中小团队
+- 固定的 opinionated workflow，不提供 Jira 式的自由配置
+- 面向中小团队
 
 **技术文章**
 
@@ -113,13 +109,9 @@ slug：react-server-components
 
 描述：
 
-- 原来的痛点：React 组件全在浏览器跑
-  - 哪怕一个组件只是读数据库渲染静态文本，它的代码和依赖也得全部打包发给用户
-  - 页面越复杂，bundle 越臃肿，但其中大量代码用户根本不需要交互
-- RSC 的做法：把组件分成 server 和 client 两类
-  - server 组件在服务端执行，渲染结果以一种中间格式（RSC Payload）传给浏览器
-  - 到了浏览器端再和 client 组件拼接成完整页面
-- 效果：该交互的部分照样动，不该发给用户的代码就不发了
+- 把 React 组件分成 server 和 client 两类，让不需要交互的代码不进 bundle
+- server 组件在服务端执行，渲染结果以 RSC Payload 格式传给浏览器
+- 浏览器端再和 client 组件拼接成完整页面
 
 **研究/观点文章**
 
@@ -128,12 +120,11 @@ slug：chinchilla-wild-implications
 
 描述：
 
-- 核心发现：模型参数量和训练数据量应该等比扩大
-  - 之前的做法是拼命堆参数，GPT-3 1750 亿参数但只训练了 3000 亿 token
-  - Chinchilla 用 700 亿参数 + 1.4 万亿 token，效果反而更好
-- 推论：之前大多数大模型都严重训练不足
-- 影响：直接改变了后续模型的训练策略
-  - LLaMA 就是按这个思路做的——更小的模型，喂更多数据
+- 模型参数量和训练数据量应该等比扩大
+  - GPT-3：1750 亿参数，3000 亿 token
+  - Chinchilla：700 亿参数，1.4 万亿 token，效果更好
+- 推论：之前大多数大模型训练数据量不足
+- LLaMA 按这个思路做——更小的模型，喂更多数据
 
 **工具/库**
 
@@ -142,13 +133,9 @@ slug：trpc
 
 描述：
 
-- 解决的问题：全栈 TS 项目里前后端之间的 API 定义本质是重复劳动
-  - 写接口、对类型、跑 codegen，两边用的其实是同一套类型系统
-- 做法：去掉这层，后端写函数，前端直接调，类型自动贯通
-- 限制
-  - 前后端必须同一个 monorepo
-  - 锁定 TypeScript
-  - 不适合前后端分属不同团队的场景
+- 去掉全栈 TS 项目里前后端之间重复的 API 定义
+- 后端写函数，前端直接调，类型自动贯通，不需要写接口定义或跑 codegen
+- 要求前后端在同一个 monorepo，锁定 TypeScript
 
 **教程**
 
@@ -157,19 +144,18 @@ slug：git-rebase-in-depth
 
 描述：
 
-- 核心心智模型：逐个重放选定的 commit，每一步都可以暂停
+- 逐个重放选定的 commit，每一步可以暂停
   - reword：改提交信息
-  - squash：把几个琐碎提交合成一个
-  - edit：暂停在某个 commit 上，可以拆分、修改内容
-- 重要的坑
-  - 冲突时 ours/theirs 指向和 merge 相反
-  - 原因：rebase 是站在目标分支上重放你的变更，所以"ours"是目标分支
+  - squash：合并多个提交
+  - edit：暂停在某个 commit，可以拆分或修改
+- 冲突时 ours/theirs 指向和 merge 相反
+  - rebase 站在目标分支上重放变更，所以 "ours" 是目标分支
 
 ---
 
 ## 第四步：匹配 Collection
 
-在发布之前，先获取所有 collection，把链接归入最合适的一个。
+在发布之前，先获取所有 collection，把链接归入最合适的分类。可以归入多个 collection。
 
 **请求：** `GET {API_BASE}/api/collections`
 
@@ -181,15 +167,20 @@ Authorization: Bearer {API_TOKEN}
 
 **匹配规则：**
 
-1. 从响应的 `collections` 数组中，根据每个 collection 的 `title`、`description` 和 `slug`，结合当前网页的内容类型和主题，选出最匹配的一个
+1. 从响应的 `collections` 数组中，根据每个 collection 的 `title`、`description` 和 `slug`，结合当前网页的内容类型和主题，选出匹配的 collection（可以多个）
 2. 匹配时优先看语义相关性，不要只做关键词匹配
-   - 例：一篇 React 技术文章 → 如果有 `"前端"` 或 `"开发"` 相关的 collection 就归入
-   - 例：一本书的笔记 → 归入 `"Reading"` 而不是按书的主题归入技术类
+   - 例：一篇文章（博文、评论、分析等内容型页面） → `Articles`
+   - 例：一个有意思的产品或服务 → `Products`
+   - 例：一个有启发的作品集、Side Project → `Inspired Links`
+   - 例：一个有启发的个人博客 → `Sources`
+   - 例：一篇关于 RSS、Bluesky、Mastodon、indie web 的内容 → `Open Web`
+   - 一个链接可以同时属于多个 collection，比如一篇关于 indie web 的文章 → `Articles` + `Open Web`
 3. 如果没有任何 collection 合适，就不传 `collectionId`——不要硬塞
 
 **取到匹配的 collection 后：**
 
-- 把它的 `id`（形如 `col_xxx`）作为 `collectionId` 写入请求体
+- 把它们的 `id`（形如 `col_xxx`）作为 `collectionId` 写入请求体
+- 单个时传字符串，多个时传数组：`"collectionId": ["col_xxx", "col_yyy"]`
 
 ---
 
@@ -197,7 +188,7 @@ Authorization: Bearer {API_TOKEN}
 
 将描述直接作为 markdown 列表放入 `bodyMarkdown` 字段，发送 POST 请求到 `{API_BASE}/api/posts`。
 
-例如 tRPC 的请求体（假设匹配到 collection `col_01jpyx5qds8y79w2dd6sv4rznj`）：
+例如 tRPC 的请求体（假设匹配到 `Tools` 和 `Articles` 两个 collection）：
 
 ```json
 {
@@ -205,8 +196,11 @@ Authorization: Bearer {API_TOKEN}
   "title": "tRPC",
   "url": "https://trpc.io",
   "slug": "trpc",
-  "bodyMarkdown": "- 解决的问题：全栈 TS 项目里前后端之间的 API 定义本质是重复劳动\n   - 写接口、对类型、跑 codegen，两边用的其实是同一套类型系统\n- 做法：去掉这层，后端写函数，前端直接调，类型自动贯通\n- 限制\n   - 前后端必须同一个 monorepo\n   - 锁定 TypeScript\n   - 不适合前后端分属不同团队的场景",
-  "collectionId": "col_01jpyx5qds8y79w2dd6sv4rznj"
+  "bodyMarkdown": "- 去掉全栈 TS 项目里前后端之间重复的 API 定义\n- 后端写函数，前端直接调，类型自动贯通，不需要写接口定义或跑 codegen\n- 要求前后端在同一个 monorepo，锁定 TypeScript",
+  "collectionId": [
+    "col_01kmygbgnmesj9njhgsf4tadxq",
+    "col_01kmygbhaeesj9njmnxfyw8479"
+  ]
 }
 ```
 
