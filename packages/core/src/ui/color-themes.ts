@@ -216,6 +216,70 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
+  // Mint-white with deep indigo text — cool, refined tension
+  defineTheme({
+    id: "frost",
+    name: "Frost",
+    light: {
+      bg: "oklch(0.993 0.006 158)",
+      fg: "oklch(0.22 0.035 272)",
+      primary: "oklch(0.3 0.14 272)",
+      primaryFg: "oklch(0.99 0.005 158)",
+      siteAccent: "oklch(0.42 0.12 265)",
+      muted: "oklch(0.96 0.008 160)",
+      mutedFg: "oklch(0.45 0.03 270)",
+      border: "oklch(0.92 0.01 162)",
+      readingTitle: "oklch(0.18 0.04 274)",
+      readingHeading: "oklch(0.21 0.035 273)",
+      readingBody: "oklch(0.25 0.03 272)",
+      readingQuote: "oklch(0.38 0.025 270)",
+      dashBg: "oklch(0.975 0.005 158)",
+    },
+    dark: {
+      bg: "oklch(0.17 0.03 272)",
+      fg: "oklch(0.92 0.006 160)",
+      primary: "oklch(0.75 0.1 268)",
+      primaryFg: "oklch(0.15 0.025 272)",
+      siteAccent: "oklch(0.72 0.09 260)",
+      muted: "oklch(0.23 0.025 272)",
+      mutedFg: "oklch(0.65 0.01 158)",
+      border: "oklch(0.3 0.025 272)",
+      dashBg: "oklch(0.15 0.025 272)",
+    },
+  }),
+
+  // Warm ivory white with amber accent — barely-there warmth
+  defineTheme({
+    id: "cotton",
+    name: "Cotton",
+    light: {
+      bg: "oklch(0.997 0.005 95)",
+      fg: "oklch(0.23 0.02 55)",
+      primary: "oklch(0.42 0.07 55)",
+      primaryFg: "oklch(0.995 0.004 95)",
+      siteAccent: "oklch(0.5 0.065 48)",
+      muted: "oklch(0.965 0.006 95)",
+      mutedFg: "oklch(0.5 0.012 55)",
+      border: "oklch(0.93 0.006 95)",
+      readingTitle: "oklch(0.19 0.018 52)",
+      readingHeading: "oklch(0.21 0.018 54)",
+      readingBody: "oklch(0.26 0.016 55)",
+      readingQuote: "oklch(0.4 0.012 52)",
+      dashBg: "oklch(0.98 0.004 95)",
+    },
+    dark: {
+      bg: "oklch(0.175 0.01 55)",
+      fg: "oklch(0.91 0.005 90)",
+      primary: "oklch(0.76 0.06 58)",
+      primaryFg: "oklch(0.16 0.008 55)",
+      siteAccent: "oklch(0.74 0.055 50)",
+      muted: "oklch(0.23 0.008 55)",
+      mutedFg: "oklch(0.64 0.006 90)",
+      border: "oklch(0.295 0.008 55)",
+      dashBg: "oklch(0.155 0.008 55)",
+    },
+  }),
+
   // Near-white with minimal warm tint — clean paper feel
   defineTheme({
     id: "bone",

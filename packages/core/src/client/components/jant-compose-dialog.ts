@@ -3251,6 +3251,7 @@ export class JantComposeDialog extends LitElement {
       const created = (await res.json().catch(() => null)) as {
         id: string;
         title: string;
+        slug?: string;
         error?: string;
       } | null;
 

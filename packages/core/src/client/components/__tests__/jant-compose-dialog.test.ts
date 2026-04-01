@@ -1961,13 +1961,15 @@ describe("JantComposeDialog", () => {
   });
 
   it("refreshes collections from the compose-sorted endpoint", async () => {
-    const el = await createElement([{ id: "col-1", title: "Books" }]);
+    const el = await createElement([
+      { id: "col-1", title: "Books", slug: "books" },
+    ]);
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
         JSON.stringify({
           collections: [
-            { id: "col-2", title: "Movies" },
-            { id: "col-1", title: "Books" },
+            { id: "col-2", title: "Movies", slug: "movies" },
+            { id: "col-1", title: "Books", slug: "books" },
           ],
         }),
         {
@@ -1984,8 +1986,8 @@ describe("JantComposeDialog", () => {
       headers: { Accept: "application/json" },
     });
     expect(el.collections).toEqual([
-      { id: "col-2", title: "Movies" },
-      { id: "col-1", title: "Books" },
+      { id: "col-2", title: "Movies", slug: "movies" },
+      { id: "col-1", title: "Books", slug: "books" },
     ]);
   });
 
@@ -2092,7 +2094,7 @@ describe("JantComposeDialog", () => {
 
         if (url.pathname === "/api/collections" && method === "POST") {
           return new Response(
-            JSON.stringify({ id: "col-3", title: "Travel" }),
+            JSON.stringify({ id: "col-3", title: "Travel", slug: "travel" }),
             {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -2107,9 +2109,9 @@ describe("JantComposeDialog", () => {
           return new Response(
             JSON.stringify({
               collections: [
-                { id: "col-3", title: "Travel" },
-                { id: "col-1", title: "Books" },
-                { id: "col-2", title: "Movies" },
+                { id: "col-3", title: "Travel", slug: "travel" },
+                { id: "col-1", title: "Books", slug: "books" },
+                { id: "col-2", title: "Movies", slug: "movies" },
               ],
             }),
             {
@@ -2158,9 +2160,9 @@ describe("JantComposeDialog", () => {
     ).toBe(false);
     expect(el._collectionIds).toContain("col-3");
     expect(el.collections).toEqual([
-      { id: "col-3", title: "Travel" },
-      { id: "col-1", title: "Books" },
-      { id: "col-2", title: "Movies" },
+      { id: "col-3", title: "Travel", slug: "travel" },
+      { id: "col-1", title: "Books", slug: "books" },
+      { id: "col-2", title: "Movies", slug: "movies" },
     ]);
   });
 
