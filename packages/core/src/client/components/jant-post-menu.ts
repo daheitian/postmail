@@ -320,6 +320,37 @@ export class JantPostMenu extends LitElement {
     }
   }
 
+  // --- Public API (for keyboard shortcuts) ---
+
+  /**
+   * Open the collection picker for the given post, positioning the menu
+   * relative to the post's menu trigger button.
+   */
+  openCollectionsForPost(article: HTMLElement) {
+    const postId = article.dataset.postId;
+    if (!postId) return;
+
+    this._data = {
+      id: postId,
+      pinned: article.hasAttribute("data-post-pinned"),
+      featured: article.hasAttribute("data-post-featured"),
+      visibility: article.dataset.postVisibility ?? "public",
+      isReply: article.hasAttribute("data-post-reply"),
+    };
+
+    const trigger = article.querySelector<HTMLElement>(
+      "[data-post-menu-trigger]",
+    );
+    if (trigger) {
+      this._triggerEl = trigger;
+      this.#syncPositionFromTrigger();
+      trigger.setAttribute("aria-expanded", "true");
+    }
+
+    this._open = true;
+    this.#openCollectionPicker();
+  }
+
   // --- Actions ---
 
   async #edit() {
