@@ -850,7 +850,11 @@ export class JantPostMenu extends LitElement {
     const collections = this._collections ?? [];
     const search = this._collectionSearch.toLowerCase();
     const filtered = search
-      ? collections.filter((c) => c.title.toLowerCase().includes(search))
+      ? collections.filter(
+          (c) =>
+            c.title.toLowerCase().includes(search) ||
+            c.slug.toLowerCase().includes(search),
+        )
       : collections;
 
     return html`

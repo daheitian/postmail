@@ -225,8 +225,8 @@ const labels: ComposeLabels = {
 };
 
 const collections: ComposeCollection[] = [
-  { id: "col-1", title: "Books" },
-  { id: "col-2", title: "Movies" },
+  { id: "col-1", title: "Books", slug: "books" },
+  { id: "col-2", title: "Movies", slug: "movies" },
 ];
 
 async function createElement(

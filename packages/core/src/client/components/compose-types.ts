@@ -282,4 +282,5 @@ export interface ComposeSubmitDetail {
 export interface ComposeCollection {
   id: string;
   title: string;
+  slug: string;
 }

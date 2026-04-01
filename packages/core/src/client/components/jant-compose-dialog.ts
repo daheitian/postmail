@@ -316,9 +316,10 @@ function toComposeCollections(value: unknown): ComposeCollection[] {
 
     const id = Reflect.get(item, "id");
     const title = Reflect.get(item, "title");
+    const slug = Reflect.get(item, "slug");
     if (typeof id !== "string" || typeof title !== "string") return [];
 
-    return [{ id, title }];
+    return [{ id, title, slug: typeof slug === "string" ? slug : "" }];
   });
 }
 
@@ -3045,7 +3046,11 @@ export class JantComposeDialog extends LitElement {
     const collections = this.collections ?? [];
     const search = this._collectionSearch.toLowerCase();
     const filtered = search
-      ? collections.filter((c) => c.title.toLowerCase().includes(search))
+      ? collections.filter(
+          (c) =>
+            c.title.toLowerCase().includes(search) ||
+            c.slug.toLowerCase().includes(search),
+        )
       : collections;
     const selectedCount = this._collectionIds.length;
     const selectedLabel =
@@ -3260,6 +3265,7 @@ export class JantComposeDialog extends LitElement {
       const newCollection: ComposeCollection = {
         id: created.id,
         title: created.title,
+        slug: created.slug ?? "",
       };
 
       const refreshed = await this.refreshCollections();
