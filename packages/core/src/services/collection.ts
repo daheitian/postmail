@@ -364,20 +364,6 @@ export function createCollectionService(
       .filter((row): row is Collection => row !== null);
   }
 
-  async function getPostCollectionIds(postId: string): Promise<string[]> {
-    const rows = await db
-      .select({ collectionId: postCollections.collectionId })
-      .from(postCollections)
-      .where(
-        and(
-          eq(postCollections.siteId, siteId),
-          eq(postCollections.postId, postId),
-        ),
-      );
-
-    return rows.map((row) => row.collectionId);
-  }
-
   async function listDirectoryCollections(): Promise<
     CollectionDirectoryCollection[]
   > {
@@ -979,9 +965,27 @@ export function createCollectionService(
     },
 
     async addPost(collectionId, postId) {
+      const [maxRow] = await db
+        .select({
+          maxPos: sql<number>`COALESCE(MAX(${postCollections.position}), -1)`,
+        })
+        .from(postCollections)
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.postId, postId),
+          ),
+        );
+      const nextPosition = (maxRow?.maxPos ?? -1) + 1;
       await db
         .insert(postCollections)
-        .values({ siteId, postId, collectionId, createdAt: now() })
+        .values({
+          siteId,
+          postId,
+          collectionId,
+          createdAt: now(),
+          position: nextPosition,
+        })
         .onConflictDoNothing();
     },
 
@@ -1012,7 +1016,7 @@ export function createCollectionService(
             eq(postCollections.postId, postId),
           ),
         )
-        .orderBy(asc(postCollections.createdAt));
+        .orderBy(asc(postCollections.position), asc(postCollections.createdAt));
 
       return hydrateCollections(rows.map((row) => row.collection));
     },
@@ -1039,7 +1043,10 @@ export function createCollectionService(
               inArray(postCollections.postId, chunk),
             ),
           )
-          .orderBy(asc(postCollections.createdAt)),
+          .orderBy(
+            asc(postCollections.position),
+            asc(postCollections.createdAt),
+          ),
       );
 
       const collectionRows = rows.map((row) => row.collection);
@@ -1074,47 +1081,53 @@ export function createCollectionService(
 
     async syncPostCollections(postId, collectionIds) {
       const nextCollectionIds = [...new Set(collectionIds)];
-      const existingCollectionIds = await getPostCollectionIds(postId);
-      const existingIds = new Set(existingCollectionIds);
-      const nextIds = new Set(nextCollectionIds);
-      const removedIds = existingCollectionIds.filter((id) => !nextIds.has(id));
-      const addedIds = nextCollectionIds.filter((id) => !existingIds.has(id));
 
-      if (removedIds.length === 0 && addedIds.length === 0) {
+      // Fetch existing rows to preserve createdAt for retained collections
+      const existingRows = await db
+        .select({
+          collectionId: postCollections.collectionId,
+          createdAt: postCollections.createdAt,
+        })
+        .from(postCollections)
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.postId, postId),
+          ),
+        );
+
+      if (existingRows.length === 0 && nextCollectionIds.length === 0) {
         return;
       }
 
+      const existingTimestamps = new Map(
+        existingRows.map((r) => [r.collectionId, r.createdAt]),
+      );
+      const timestamp = now();
+      const insertValues = nextCollectionIds.map((collectionId, index) => ({
+        siteId,
+        postId,
+        collectionId,
+        createdAt: existingTimestamps.get(collectionId) ?? timestamp,
+        position: index,
+      }));
+
+      // Delete all and re-insert to preserve user-specified ordering
+      const deleteQuery = db
+        .delete(postCollections)
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.postId, postId),
+          ),
+        );
+
       if (usesBatchWrites) {
         const writeQueries = [];
-
-        if (removedIds.length > 0) {
-          writeQueries.push(
-            db
-              .delete(postCollections)
-              .where(
-                and(
-                  eq(postCollections.siteId, siteId),
-                  eq(postCollections.postId, postId),
-                  inArray(postCollections.collectionId, removedIds),
-                ),
-              ),
-          );
+        writeQueries.push(deleteQuery);
+        if (insertValues.length > 0) {
+          writeQueries.push(db.insert(postCollections).values(insertValues));
         }
-
-        if (addedIds.length > 0) {
-          const timestamp = now();
-          writeQueries.push(
-            db.insert(postCollections).values(
-              addedIds.map((collectionId) => ({
-                siteId,
-                postId,
-                collectionId,
-                createdAt: timestamp,
-              })),
-            ),
-          );
-        }
-
         await db.batch(
           writeQueries as [
             (typeof writeQueries)[number],
@@ -1125,28 +1138,16 @@ export function createCollectionService(
       }
 
       await db.transaction(async (tx) => {
-        if (removedIds.length > 0) {
-          await tx
-            .delete(postCollections)
-            .where(
-              and(
-                eq(postCollections.siteId, siteId),
-                eq(postCollections.postId, postId),
-                inArray(postCollections.collectionId, removedIds),
-              ),
-            );
-        }
-
-        if (addedIds.length > 0) {
-          const timestamp = now();
-          await tx.insert(postCollections).values(
-            addedIds.map((collectionId) => ({
-              siteId,
-              postId,
-              collectionId,
-              createdAt: timestamp,
-            })),
+        await tx
+          .delete(postCollections)
+          .where(
+            and(
+              eq(postCollections.siteId, siteId),
+              eq(postCollections.postId, postId),
+            ),
           );
+        if (insertValues.length > 0) {
+          await tx.insert(postCollections).values(insertValues);
         }
       });
     },

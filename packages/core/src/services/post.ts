@@ -1105,6 +1105,24 @@ export function createPostService(
     return rows.map((row) => row.collectionId);
   }
 
+  async function getPostCollectionTimestamps(
+    postId: string,
+  ): Promise<Map<string, number>> {
+    const rows = await db
+      .select({
+        collectionId: postCollections.collectionId,
+        createdAt: postCollections.createdAt,
+      })
+      .from(postCollections)
+      .where(
+        and(
+          eq(postCollections.siteId, siteId),
+          eq(postCollections.postId, postId),
+        ),
+      );
+    return new Map(rows.map((r) => [r.collectionId, r.createdAt]));
+  }
+
   function buildRollbackUpdate(
     post: Post,
     collectionIds: string[],
@@ -1474,11 +1492,12 @@ export function createPostService(
           if (collectionIds.length > 0) {
             writeQueries.push(
               db.insert(postCollections).values(
-                collectionIds.map((collectionId) => ({
+                collectionIds.map((collectionId, index) => ({
                   siteId,
                   postId: id,
                   collectionId,
                   createdAt: timestamp,
+                  position: index,
                 })),
               ),
             );
@@ -1546,11 +1565,12 @@ export function createPostService(
 
             if (collectionIds.length > 0) {
               await tx.insert(postCollections).values(
-                collectionIds.map((collectionId) => ({
+                collectionIds.map((collectionId, index) => ({
                   siteId,
                   postId: id,
                   collectionId,
                   createdAt: timestamp,
+                  position: index,
                 })),
               );
             }
@@ -1819,9 +1839,9 @@ export function createPostService(
       }
 
       // Complex case: cascade + update + collection sync atomically
-      const existingCollectionIds = needsCollectionSync
-        ? await getCollectionIdsForPost(id)
-        : [];
+      const existingCollectionTimestamps = needsCollectionSync
+        ? await getPostCollectionTimestamps(id)
+        : new Map<string, number>();
       let updateResult: (typeof posts.$inferSelect)[] | undefined;
 
       if (usesBatchWrites) {
@@ -1876,38 +1896,30 @@ export function createPostService(
         );
 
         if (needsCollectionSync) {
-          const existingIds = new Set(existingCollectionIds);
-          const nextIds = new Set(nextCollectionIds);
-          const removedIds = existingCollectionIds.filter(
-            (cid) => !nextIds.has(cid),
-          );
-          const addedIds = nextCollectionIds.filter(
-            (cid) => !existingIds.has(cid),
-          );
-
-          if (removedIds.length > 0) {
-            writeQueries.push(
-              db
-                .delete(postCollections)
-                .where(
-                  and(
-                    eq(postCollections.siteId, siteId),
-                    eq(postCollections.postId, id),
-                    inArray(postCollections.collectionId, removedIds),
-                  ),
+          // Delete all and re-insert to preserve user-specified ordering
+          writeQueries.push(
+            db
+              .delete(postCollections)
+              .where(
+                and(
+                  eq(postCollections.siteId, siteId),
+                  eq(postCollections.postId, id),
                 ),
-            );
-          }
+              ),
+          );
 
-          if (addedIds.length > 0) {
+          if (nextCollectionIds.length > 0) {
             const collectionTimestamp = now();
             writeQueries.push(
               db.insert(postCollections).values(
-                addedIds.map((collectionId) => ({
+                nextCollectionIds.map((collectionId, index) => ({
                   siteId,
                   postId: id,
                   collectionId,
-                  createdAt: collectionTimestamp,
+                  createdAt:
+                    existingCollectionTimestamps.get(collectionId) ??
+                    collectionTimestamp,
+                  position: index,
                 })),
               ),
             );
@@ -1967,35 +1979,27 @@ export function createPostService(
             .returning();
 
           if (needsCollectionSync) {
-            const existingIds = new Set(existingCollectionIds);
-            const nextIds = new Set(nextCollectionIds);
-            const removedIds = existingCollectionIds.filter(
-              (cid) => !nextIds.has(cid),
-            );
-            const addedIds = nextCollectionIds.filter(
-              (cid) => !existingIds.has(cid),
-            );
+            // Delete all and re-insert to preserve user-specified ordering
+            await tx
+              .delete(postCollections)
+              .where(
+                and(
+                  eq(postCollections.siteId, siteId),
+                  eq(postCollections.postId, id),
+                ),
+              );
 
-            if (removedIds.length > 0) {
-              await tx
-                .delete(postCollections)
-                .where(
-                  and(
-                    eq(postCollections.siteId, siteId),
-                    eq(postCollections.postId, id),
-                    inArray(postCollections.collectionId, removedIds),
-                  ),
-                );
-            }
-
-            if (addedIds.length > 0) {
+            if (nextCollectionIds.length > 0) {
               const collectionTimestamp = now();
               await tx.insert(postCollections).values(
-                addedIds.map((collectionId) => ({
+                nextCollectionIds.map((collectionId, index) => ({
                   siteId,
                   postId: id,
                   collectionId,
-                  createdAt: collectionTimestamp,
+                  createdAt:
+                    existingCollectionTimestamps.get(collectionId) ??
+                    collectionTimestamp,
+                  position: index,
                 })),
               );
             }
