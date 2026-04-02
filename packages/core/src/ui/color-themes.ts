@@ -248,16 +248,16 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
-  // Warm ivory white with amber accent — barely-there warmth
+  // Warm ivory white with tea-green accent — barely-there warmth
   defineTheme({
     id: "cotton",
     name: "Cotton",
     light: {
       bg: "oklch(0.997 0.005 95)",
       fg: "oklch(0.23 0.02 55)",
-      primary: "oklch(0.42 0.07 55)",
+      primary: "oklch(0.42 0.055 146)",
       primaryFg: "oklch(0.995 0.004 95)",
-      siteAccent: "oklch(0.5 0.065 48)",
+      siteAccent: "oklch(0.5 0.05 148)",
       muted: "oklch(0.965 0.006 95)",
       mutedFg: "oklch(0.5 0.012 55)",
       border: "oklch(0.93 0.006 95)",
@@ -270,9 +270,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.175 0.01 55)",
       fg: "oklch(0.91 0.005 90)",
-      primary: "oklch(0.76 0.06 58)",
+      primary: "oklch(0.76 0.05 148)",
       primaryFg: "oklch(0.16 0.008 55)",
-      siteAccent: "oklch(0.74 0.055 50)",
+      siteAccent: "oklch(0.74 0.045 150)",
       muted: "oklch(0.23 0.008 55)",
       mutedFg: "oklch(0.64 0.006 90)",
       border: "oklch(0.295 0.008 55)",
@@ -287,9 +287,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.98 0.008 75)",
       fg: "oklch(0.22 0.008 60)",
-      primary: "oklch(0.38 0.04 55)",
+      primary: "oklch(0.38 0.028 138)",
       primaryFg: "oklch(0.985 0.005 75)",
-      siteAccent: "oklch(0.46 0.035 50)",
+      siteAccent: "oklch(0.46 0.024 140)",
       muted: "oklch(0.948 0.008 78)",
       mutedFg: "oklch(0.5 0.006 60)",
       border: "oklch(0.905 0.008 78)",
@@ -302,9 +302,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.175 0.005 70)",
       fg: "oklch(0.9 0.006 78)",
-      primary: "oklch(0.78 0.04 60)",
+      primary: "oklch(0.78 0.028 140)",
       primaryFg: "oklch(0.16 0.004 70)",
-      siteAccent: "oklch(0.76 0.035 55)",
+      siteAccent: "oklch(0.76 0.024 142)",
       muted: "oklch(0.23 0.005 70)",
       mutedFg: "oklch(0.65 0.005 78)",
       border: "oklch(0.295 0.005 70)",
@@ -312,16 +312,16 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
-  // Warm yellow-tinted parchment — old-world classical feel
+  // Warm yellow-tinted parchment with olive-green accent — old-world classical feel
   defineTheme({
     id: "parchment",
     name: "Parchment",
     light: {
       bg: "oklch(0.978 0.018 87)",
       fg: "oklch(0.31 0.014 72)",
-      primary: "oklch(0.5 0.055 78)",
+      primary: "oklch(0.5 0.06 142)",
       primaryFg: "oklch(0.987 0.01 88)",
-      siteAccent: "oklch(0.58 0.06 72)",
+      siteAccent: "oklch(0.58 0.055 145)",
       muted: "oklch(0.946 0.018 88)",
       mutedFg: "oklch(0.55 0.012 72)",
       border: "oklch(0.898 0.018 89)",
@@ -334,9 +334,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.205 0.016 72)",
       fg: "oklch(0.89 0.012 88)",
-      primary: "oklch(0.79 0.06 82)",
+      primary: "oklch(0.79 0.065 144)",
       primaryFg: "oklch(0.18 0.014 72)",
-      siteAccent: "oklch(0.82 0.065 76)",
+      siteAccent: "oklch(0.82 0.06 146)",
       muted: "oklch(0.265 0.014 74)",
       mutedFg: "oklch(0.66 0.01 88)",
       border: "oklch(0.33 0.015 76)",
@@ -348,16 +348,16 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
-  // Warm sand with blue primary — desert warmth, ocean contrast
+  // Warm sand with herb-green accent — desert warmth, dry-growth contrast
   defineTheme({
     id: "dune",
     name: "Dune",
     light: {
       bg: "oklch(0.972 0.01 82)",
       fg: "oklch(0.29 0.018 55)",
-      primary: "oklch(0.44 0.085 200)",
+      primary: "oklch(0.44 0.075 160)",
       primaryFg: "oklch(0.985 0.004 82)",
-      siteAccent: "oklch(0.53 0.075 187)",
+      siteAccent: "oklch(0.53 0.065 158)",
       muted: "oklch(0.934 0.013 82)",
       mutedFg: "oklch(0.52 0.014 55)",
       border: "oklch(0.885 0.015 82)",
@@ -370,9 +370,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.265 0.02 210)",
       fg: "oklch(0.88 0.012 82)",
-      primary: "oklch(0.8 0.08 190)",
+      primary: "oklch(0.8 0.07 162)",
       primaryFg: "oklch(0.22 0.018 210)",
-      siteAccent: "oklch(0.77 0.09 178)",
+      siteAccent: "oklch(0.77 0.075 158)",
       muted: "oklch(0.325 0.018 210)",
       mutedFg: "oklch(0.67 0.012 82)",
       border: "oklch(0.38 0.016 210)",
@@ -560,16 +560,16 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     },
   }),
 
-  // Near-white warm paper with near-black ink — maximum contrast, minimal color
+  // Near-white warm paper with quiet moss accents — maximum contrast, minimal color
   defineTheme({
     id: "paper",
     name: "Paper",
     light: {
       bg: "oklch(0.998 0.008 105)",
       fg: "oklch(0.155 0.004 85)",
-      primary: "oklch(0.3 0.02 85)",
+      primary: "oklch(0.3 0.012 148)",
       primaryFg: "oklch(0.995 0.006 105)",
-      siteAccent: "oklch(0.4 0.018 80)",
+      siteAccent: "oklch(0.4 0.012 146)",
       muted: "oklch(0.96 0.006 100)",
       mutedFg: "oklch(0.46 0.006 85)",
       border: "oklch(0.925 0.006 100)",
@@ -582,9 +582,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.155 0.004 85)",
       fg: "oklch(0.92 0.006 100)",
-      primary: "oklch(0.82 0.012 95)",
+      primary: "oklch(0.82 0.009 148)",
       primaryFg: "oklch(0.14 0.003 85)",
-      siteAccent: "oklch(0.78 0.01 90)",
+      siteAccent: "oklch(0.78 0.01 146)",
       muted: "oklch(0.215 0.004 85)",
       mutedFg: "oklch(0.62 0.005 95)",
       border: "oklch(0.28 0.004 85)",
