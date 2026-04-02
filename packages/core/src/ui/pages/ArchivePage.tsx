@@ -1225,7 +1225,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
       </header>
 
       <main>
-        {groups.length === 0 ? (
+        {groups.length === 0 && (!items || items.length === 0) ? (
           <p class="text-muted-foreground py-8 text-center">
             {i18n._(
               msg({
