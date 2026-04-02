@@ -225,11 +225,16 @@ archiveRoutes.get("/", async (c) => {
   });
 
   // --- Parallel data fetches ------------------------------------------------
+  // List view doesn't need month-based grouping, so skip countByYearMonth.
+
+  const isListView = params.view === "list";
 
   const [totalCount, monthlyCounts, posts, availableYears, allCollections] =
     await Promise.all([
       services.posts.count(filters),
-      services.posts.countByYearMonth(filters),
+      isListView
+        ? Promise.resolve([] as { yearMonth: string; count: number }[])
+        : services.posts.countByYearMonth(filters),
       services.posts.list({
         ...filters,
         limit: pageSize,
@@ -244,25 +249,6 @@ archiveRoutes.get("/", async (c) => {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  // --- Group posts by year-month --------------------------------------------
-
-  const grouped = new Map<string, PostWithMedia[]>();
-  for (const post of posts) {
-    const publishedAt = post.publishedAt ?? post.updatedAt;
-    const key = formatYearMonth(publishedAt, appConfig.timeZone);
-    if (!grouped.has(key)) {
-      grouped.set(key, []);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Map.set() above guarantees key exists
-    grouped.get(key)!.push({
-      ...post,
-      mediaAttachments: [],
-    });
-  }
-
-  const monthlyCountMap = new Map(
-    monthlyCounts.map((row) => [row.yearMonth, row.count] as const),
-  );
   const mediaCtx = createMediaContext(appConfig);
   const allPostIds = posts.map((p) => p.id);
   const archiveAliasesMap =
@@ -271,67 +257,72 @@ archiveRoutes.get("/", async (c) => {
   for (const [id, aliases] of archiveAliasesMap) {
     if (aliases[0]) archiveAliasMap.set(id, aliases[0]);
   }
-  const groups =
-    params.view === "list"
-      ? await (async () => {
-          const items = await assembleTimelineItems(c, posts);
-          const itemsById = new Map(items.map((item) => [item.post.id, item]));
 
-          return toArchiveGroupsWithMedia(
-            grouped,
-            mediaCtx,
-            archiveAliasMap,
-          ).map((group) => ({
-            ...group,
-            posts: [],
-            items: group.posts
-              .map((post) => itemsById.get(post.id))
-              .filter((item): item is NonNullable<typeof item> => !!item),
-            totalCount:
-              monthlyCountMap.get(`${group.year}-${group.month}`) ??
-              group.posts.length,
-          }));
-        })()
-      : await (async () => {
-          const postIds = posts.map((p) => p.id);
-          const [rawMediaMap, replyCounts] = await Promise.all([
-            services.media.getByPostIds(postIds),
-            services.posts.getReplyCounts(postIds),
-          ]);
-          const mediaMap = buildMediaMap(
-            rawMediaMap,
-            mediaCtx.r2PublicUrl,
-            mediaCtx.imageTransformUrl,
-            mediaCtx.s3PublicUrl,
-            mediaCtx.localPublicUrl,
-            mediaCtx.sitePathPrefix,
-          );
+  // --- List view: flat timeline items (no month grouping) ------------------
 
-          for (const [key, monthPosts] of grouped) {
-            grouped.set(
-              key,
-              monthPosts.map((post) => ({
-                ...post,
-                mediaAttachments: mediaMap.get(post.id) ?? [],
-              })),
-            );
-          }
+  let groups: Awaited<ReturnType<typeof toArchiveGroupsWithMedia>> = [];
+  let flatItems: Awaited<ReturnType<typeof assembleTimelineItems>> | undefined;
 
-          return toArchiveGroupsWithMedia(
-            grouped,
-            mediaCtx,
-            archiveAliasMap,
-          ).map((group) => ({
-            ...group,
-            posts: group.posts.map((post) => ({
-              ...post,
-              replyCount: replyCounts.get(post.id) ?? undefined,
-            })),
-            totalCount:
-              monthlyCountMap.get(`${group.year}-${group.month}`) ??
-              group.posts.length,
-          }));
-        })();
+  if (isListView) {
+    flatItems = await assembleTimelineItems(c, posts);
+  } else {
+    // --- Grid view: group posts by year-month --------------------------------
+
+    const grouped = new Map<string, PostWithMedia[]>();
+    for (const post of posts) {
+      const publishedAt = post.publishedAt ?? post.updatedAt;
+      const key = formatYearMonth(publishedAt, appConfig.timeZone);
+      if (!grouped.has(key)) {
+        grouped.set(key, []);
+      }
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Map.set() above guarantees key exists
+      grouped.get(key)!.push({
+        ...post,
+        mediaAttachments: [],
+      });
+    }
+
+    const monthlyCountMap = new Map(
+      monthlyCounts.map((row) => [row.yearMonth, row.count] as const),
+    );
+
+    const postIds = posts.map((p) => p.id);
+    const [rawMediaMap, replyCounts] = await Promise.all([
+      services.media.getByPostIds(postIds),
+      services.posts.getReplyCounts(postIds),
+    ]);
+    const mediaMap = buildMediaMap(
+      rawMediaMap,
+      mediaCtx.r2PublicUrl,
+      mediaCtx.imageTransformUrl,
+      mediaCtx.s3PublicUrl,
+      mediaCtx.localPublicUrl,
+      mediaCtx.sitePathPrefix,
+    );
+
+    for (const [key, monthPosts] of grouped) {
+      grouped.set(
+        key,
+        monthPosts.map((post) => ({
+          ...post,
+          mediaAttachments: mediaMap.get(post.id) ?? [],
+        })),
+      );
+    }
+
+    groups = toArchiveGroupsWithMedia(grouped, mediaCtx, archiveAliasMap).map(
+      (group) => ({
+        ...group,
+        posts: group.posts.map((post) => ({
+          ...post,
+          replyCount: replyCounts.get(post.id) ?? undefined,
+        })),
+        totalCount:
+          monthlyCountMap.get(`${group.year}-${group.month}`) ??
+          group.posts.length,
+      }),
+    );
+  }
 
   // --- Build active filter state for UI -------------------------------------
 
@@ -366,6 +357,7 @@ archiveRoutes.get("/", async (c) => {
     content: (
       <ArchivePage
         groups={groups}
+        items={flatItems}
         totalCount={totalCount}
         currentPage={params.currentPage}
         totalPages={totalPages}

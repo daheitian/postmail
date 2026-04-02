@@ -1142,6 +1142,7 @@ const ArchiveTile: FC<{ post: PostView; timeZone?: string }> = ({
 
 export const ArchivePage: FC<ArchivePageProps> = ({
   groups,
+  items,
   totalCount,
   currentPage,
   totalPages,
@@ -1257,26 +1258,13 @@ export const ArchivePage: FC<ArchivePageProps> = ({
           </div>
         ) : (
           <div data-feed>
-            <div class="archive-list-groups">
-              {groups.map((group) => (
-                <div key={`list-${group.year}-${group.month}`}>
-                  <ArchiveMonthHeader
-                    class="archive-list-month-header"
-                    label={group.label}
-                    count={group.totalCount}
-                  />
-                  <div class="archive-list-items">
-                    {(group.items ?? group.posts.map((post) => ({ post }))).map(
-                      (item, itemIndex) => (
-                        <TimelineFeedItem
-                          key={item.post.id}
-                          item={item}
-                          showDivider={itemIndex > 0}
-                        />
-                      ),
-                    )}
-                  </div>
-                </div>
+            <div class="archive-list-items">
+              {(items ?? []).map((item, itemIndex) => (
+                <TimelineFeedItem
+                  key={item.post.id}
+                  item={item}
+                  showDivider={itemIndex > 0}
+                />
               ))}
             </div>
           </div>

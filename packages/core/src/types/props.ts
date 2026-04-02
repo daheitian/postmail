@@ -63,7 +63,10 @@ export interface ArchiveFilters {
 
 /** Props for the archive page component */
 export interface ArchivePageProps {
+  /** Month-based groups used by grid view */
   groups: ArchiveGroup[];
+  /** Flat timeline items used by list view (skips month grouping) */
+  items?: TimelineItemView[];
   totalCount: number;
   currentPage: number;
   totalPages: number;
