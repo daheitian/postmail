@@ -86,7 +86,7 @@ describe("secureHeadersMiddleware", () => {
     const csp = response.headers.get("content-security-policy");
 
     expect(csp).toContain(
-      "script-src 'self' 'unsafe-eval' https://cdn.example.com",
+      "script-src 'self' 'unsafe-eval' blob: https://cdn.example.com",
     );
     expect(csp).toContain(
       "style-src 'self' 'unsafe-inline' https://cdn.example.com",

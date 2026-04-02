@@ -119,6 +119,55 @@ describe("feed renderers", () => {
     expect(rssXml).toContain("https://example.com/meditations");
   });
 
+  it("link posts point <link> to original URL with ★ permalink back to blog", () => {
+    const post = makePostView({
+      format: "link",
+      title: "Interesting Article",
+      url: "https://external.com/article",
+      bodyHtml: "<p>My thoughts on this.</p>",
+    });
+    const data = makeFeedData(post);
+
+    const rssXml = defaultRssRenderer(data);
+    // RSS <link> should point to external URL
+    expect(rssXml).toContain("<link>https://external.com/article</link>");
+    // RSS <guid> should remain the blog permalink
+    expect(rssXml).toContain(
+      '<guid isPermaLink="true">https://example.com/post-1</guid>',
+    );
+    // Should contain ★ permalink
+    expect(rssXml).toContain(
+      '<a href="https://example.com/post-1" title="Permalink">&nbsp;★&nbsp;</a>',
+    );
+
+    const atomXml = defaultAtomRenderer(data);
+    // Atom <link rel="alternate"> should point to external URL
+    expect(atomXml).toContain(
+      '<link href="https://external.com/article" rel="alternate"/>',
+    );
+    // Atom should have <link rel="related"> back to blog
+    expect(atomXml).toContain(
+      '<link href="https://example.com/post-1" rel="related"/>',
+    );
+    // Atom <id> should remain the blog permalink
+    expect(atomXml).toContain("<id>https://example.com/post-1</id>");
+    // Should contain ★ permalink
+    expect(atomXml).toContain(
+      '<a href="https://example.com/post-1" title="Permalink">&nbsp;★&nbsp;</a>',
+    );
+  });
+
+  it("note posts still link to blog permalink without ★", () => {
+    const post = makePostView({
+      format: "note",
+      title: "A thought",
+      bodyHtml: "<p>Just thinking.</p>",
+    });
+    const rssXml = defaultRssRenderer(makeFeedData(post));
+    expect(rssXml).toContain("<link>https://example.com/post-1</link>");
+    expect(rssXml).not.toContain("★");
+  });
+
   it("uses feed-specific timestamps when provided", () => {
     const rssXml = defaultRssRenderer(
       makeFeedData(

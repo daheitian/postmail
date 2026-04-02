@@ -102,6 +102,8 @@ function buildContentSecurityPolicy(
     "'self'",
     // Datastar evaluates expressions in data-on-* / data-signals attributes
     "'unsafe-eval'",
+    // Client-side media processing (heic-to, mediabunny) uses blob workers
+    "blob:",
   ];
   const styleSrc = [
     "'self'",

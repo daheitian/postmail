@@ -77,8 +77,11 @@ function renderRatingHtml(rating: number): string {
 /**
  * Build the full HTML content for a feed item, combining format-specific
  * fields (quote text, source URL) with body and rating.
+ *
+ * @param post - Post view data
+ * @param permalinkUrl - Absolute permalink URL back to the blog post (used for ★ on link posts)
  */
-function buildFeedContent(post: PostView): string {
+function buildFeedContent(post: PostView, permalinkUrl?: string): string {
   const parts: string[] = [];
 
   if (post.format === "quote" && post.quoteText) {
@@ -115,6 +118,13 @@ function buildFeedContent(post: PostView): string {
     parts.push(`<p>${escapeXml(getFeedSummaryText(post))}</p>`);
   }
 
+  // For link posts, append a ★ permalink back to the blog post (Daring Fireball style)
+  if (post.format === "link" && permalinkUrl) {
+    parts.push(
+      `<p><a href="${escapeXml(permalinkUrl)}" title="Permalink">&nbsp;★&nbsp;</a></p>`,
+    );
+  }
+
   return parts.join("\n");
 }
 
@@ -138,7 +148,13 @@ export function defaultRssRenderer(data: FeedData): string {
 
   const items = posts
     .map((post) => {
-      const link = escapeXml(new URL(post.permalink, siteUrl).toString());
+      const permalinkUrl = new URL(post.permalink, siteUrl).toString();
+      const escapedPermalink = escapeXml(permalinkUrl);
+      // Link-format posts point <link> to the original URL (Daring Fireball style)
+      const itemLink =
+        post.format === "link" && post.url
+          ? escapeXml(post.url)
+          : escapedPermalink;
       const pubDate = new Date(
         post.feedPublishedAt ?? post.publishedAt,
       ).toUTCString();
@@ -152,10 +168,10 @@ export function defaultRssRenderer(data: FeedData): string {
 
       return `
     <item>
-      ${itemTitle ? `<title><![CDATA[${escapeCdata(itemTitle)}]]></title>\n      ` : ""}<link>${link}</link>
-      <guid isPermaLink="true">${link}</guid>
+      ${itemTitle ? `<title><![CDATA[${escapeCdata(itemTitle)}]]></title>\n      ` : ""}<link>${itemLink}</link>
+      <guid isPermaLink="true">${escapedPermalink}</guid>
       <pubDate>${pubDate}</pubDate>
-      <description><![CDATA[${escapeCdata(buildFeedContent(post))}]]></description>${enclosure}
+      <description><![CDATA[${escapeCdata(buildFeedContent(post, post.format === "link" ? permalinkUrl : undefined))}]]></description>${enclosure}
     </item>`;
     })
     .join("");
@@ -185,21 +201,32 @@ export function defaultAtomRenderer(data: FeedData): string {
 
   const entries = posts
     .map((post) => {
-      const link = escapeXml(new URL(post.permalink, siteUrl).toString());
+      const permalinkUrl = new URL(post.permalink, siteUrl).toString();
+      const escapedPermalink = escapeXml(permalinkUrl);
+      // Link-format posts point <link rel="alternate"> to the original URL
+      const isLinkWithUrl = post.format === "link" && post.url;
+      const alternateLink = isLinkWithUrl
+        ? escapeXml(post.url!)
+        : escapedPermalink;
       const title = getAtomTitle(post);
       const summary = getFeedSummaryText(post);
       const publishedAt = post.feedPublishedAt ?? post.publishedAt;
       const updatedAt = post.feedUpdatedAt ?? post.updatedAt;
 
+      // For link posts, add a <link rel="related"> back to the blog permalink
+      const relatedLink = isLinkWithUrl
+        ? `\n    <link href="${escapedPermalink}" rel="related"/>`
+        : "";
+
       return `
   <entry>
     <title>${escapeXml(title)}</title>
-    <link href="${link}" rel="alternate"/>
-    <id>${link}</id>
+    <link href="${alternateLink}" rel="alternate"/>${relatedLink}
+    <id>${escapedPermalink}</id>
     <published>${publishedAt}</published>
     <updated>${updatedAt}</updated>
     <summary type="text">${escapeXml(summary)}</summary>
-    <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post))}]]></content>
+    <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post, isLinkWithUrl ? permalinkUrl : undefined))}]]></content>
   </entry>`;
     })
     .join("");
