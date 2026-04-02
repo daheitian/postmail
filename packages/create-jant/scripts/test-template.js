@@ -115,7 +115,7 @@ async function main() {
   const publicAssetDir = path.join(projectDir, "dist/public/_assets");
   const preparedFiles = await fs.readdir(publicAssetDir).catch(() => []);
   const hasPreparedClientJs = preparedFiles.some(
-    (f) => f === "client.js" || /^client-[a-zA-Z0-9]+\.js$/.test(f),
+    (f) => f === "client.js" || /^client[-\w]+\.js$/.test(f),
   );
   if (!hasPreparedClientJs) {
     console.error(`  prepared client.js not found at ${publicAssetDir}`);
