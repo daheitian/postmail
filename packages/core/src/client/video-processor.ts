@@ -203,21 +203,30 @@ async function processToFile(
     const buffer = target.buffer;
     if (!buffer) throw new Error("Video processing produced no output");
 
-    // mediabunny bakes rotation into the pixel data (correct) but may also
-    // write a rotation display matrix into the MP4 container. The browser
-    // then applies the matrix on top of the already-rotated pixels, causing
-    // a double-rotation.  Strip the matrix to fix this.
-    if (rotation) {
-      resetMp4DisplayMatrix(buffer);
-    }
-
+    // Detect whether this browser double-rotates.  Chrome's WebCodecs
+    // bakes rotation into the pixel data AND mediabunny writes a display
+    // matrix → the browser applies the matrix again (double-rotation).
+    // Safari's WebCodecs does NOT bake rotation, so the matrix is needed.
+    // Strategy: probe the output as-is; if the dimensions already match
+    // the expected display size, leave the file alone.  Otherwise strip
+    // the matrix and re-probe.
     const originalName = file.name.replace(/\.[^.]+$/, "");
-    const mp4File = new File([buffer], `${originalName}.mp4`, {
+    let mp4File = new File([buffer], `${originalName}.mp4`, {
       type: "video/mp4",
     });
+    let actual = await probeVideoDimensions(mp4File);
 
-    // Read actual output dimensions from the browser's perspective.
-    const actual = await probeVideoDimensions(mp4File);
+    const dimsMatch =
+      Math.abs(actual.width - targetW) <= 2 &&
+      Math.abs(actual.height - targetH) <= 2;
+
+    if (rotation && !dimsMatch) {
+      resetMp4DisplayMatrix(buffer);
+      mp4File = new File([buffer], `${originalName}.mp4`, {
+        type: "video/mp4",
+      });
+      actual = await probeVideoDimensions(mp4File);
+    }
 
     return {
       file: mp4File,
