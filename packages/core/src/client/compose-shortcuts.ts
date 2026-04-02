@@ -7,6 +7,7 @@ import {
 } from "./compose-launch.js";
 import { markComposeOpenShortcutDiscovered } from "./compose-discovery.js";
 import type { JantPostMenu } from "./components/jant-post-menu.js";
+import { showToast } from "./toast.js";
 
 const INTERACTIVE_TARGET_SELECTOR = [
   "input",
@@ -41,9 +42,34 @@ function shouldIgnoreShortcut(event: globalThis.KeyboardEvent): boolean {
   );
 }
 
+async function toggleFeatured(
+  postId: string,
+  featured: boolean,
+  article: HTMLElement,
+) {
+  try {
+    const res = await fetch(`/api/posts/${postId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ featured }),
+    });
+    if (!res.ok) throw new Error();
+
+    if (featured) {
+      article.setAttribute("data-post-featured", "");
+    } else {
+      article.removeAttribute("data-post-featured");
+    }
+    showToast(featured ? "Added to Featured." : "Removed from Featured.");
+  } catch {
+    showToast("Could not update post. Try again.", "error");
+  }
+}
+
 document.addEventListener("keydown", (event: globalThis.KeyboardEvent) => {
   const key = event.key.toLowerCase();
-  if (key !== "n" && key !== "r" && key !== "e" && key !== "c") return;
+  if (key !== "n" && key !== "r" && key !== "e" && key !== "c" && key !== "f")
+    return;
   if (shouldIgnoreShortcut(event)) return;
 
   if (key === "n") {
@@ -80,6 +106,15 @@ document.addEventListener("keydown", (event: globalThis.KeyboardEvent) => {
     if (postMenu) {
       postMenu.openCollectionsForPost(article);
     }
+    return;
+  }
+
+  if (key === "f") {
+    const postId = article.dataset.postId;
+    if (!postId) return;
+    event.preventDefault();
+    const isFeatured = article.hasAttribute("data-post-featured");
+    void toggleFeatured(postId, !isFeatured, article);
     return;
   }
 });
