@@ -5,13 +5,17 @@
  * for use in feeds, meta descriptions, and article previews.
  */
 
-import { renderTiptapJson } from "./tiptap-render.js";
+import type { JSONContent } from "@tiptap/core";
+import { renderTiptapDocument } from "./tiptap-render.js";
 
 interface TiptapNode {
   type: string;
   content?: TiptapNode[];
   text?: string;
-  marks?: unknown[];
+  marks?: Array<{
+    type: string;
+    attrs?: Record<string, unknown>;
+  }>;
   attrs?: Record<string, unknown>;
 }
 
@@ -219,9 +223,12 @@ export function extractSummaryHtml(
       .slice(0, moreBreakIdx)
       .filter((n) => SUMMARY_BLOCK_TYPES.has(n.type));
     if (selected.length === 0) return null;
-    const subDoc: TiptapNode = { type: "doc", content: selected };
+    const subDoc: JSONContent = {
+      type: "doc",
+      content: selected as JSONContent[],
+    };
     return {
-      html: renderTiptapJson(JSON.stringify(subDoc)),
+      html: renderTiptapDocument(subDoc),
       hasMore: true,
     };
   }
@@ -246,9 +253,12 @@ export function extractSummaryHtml(
 
   if (selected.length === 0) return null;
 
-  const subDoc: TiptapNode = { type: "doc", content: selected };
+  const subDoc: JSONContent = {
+    type: "doc",
+    content: selected as JSONContent[],
+  };
   return {
-    html: renderTiptapJson(JSON.stringify(subDoc)),
+    html: renderTiptapDocument(subDoc),
     hasMore: selected.length < totalContentNodes,
   };
 }

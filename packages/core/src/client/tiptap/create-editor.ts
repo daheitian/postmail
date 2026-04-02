@@ -5,19 +5,10 @@
  */
 
 import { Editor, type JSONContent } from "@tiptap/core";
-import StarterKit from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
-import {
-  Table,
-  TableRow,
-  TableCell,
-  TableHeader,
-} from "@tiptap/extension-table";
 import { createEditorExtensions } from "./extensions.js";
-import { ImageNode } from "./image-node.js";
-import { MoreBreak } from "./more-break.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
 import type { PasteMediaOptions } from "./paste-media.js";
+import { tiptapJsonToMarkdown } from "../../lib/tiptap-to-markdown.js";
 
 export interface CreateEditorOptions {
   element: HTMLElement;
@@ -76,24 +67,5 @@ export function createTiptapEditor(options: CreateEditorOptions): Editor {
  * const md = jsonToMarkdown({ type: "doc", content: [...] });
  */
 export function jsonToMarkdown(json: JSONContent): string {
-  const editor = new Editor({
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-        link: { openOnClick: false, autolink: false },
-      }),
-      Markdown,
-      Table.configure({ resizable: false }),
-      TableRow,
-      TableCell,
-      TableHeader,
-      ImageNode,
-      MoreBreak,
-    ],
-    content: json,
-  });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const md = ((editor as any).storage.markdown.getMarkdown as () => string)();
-  editor.destroy();
-  return md;
+  return tiptapJsonToMarkdown(JSON.stringify(json));
 }

@@ -1,21 +1,17 @@
 /**
  * Markdown Rendering
  *
- * Uses marked with minimal configuration
+ * Uses the shared MarkdownManager + TipTap HTML renderer so Markdown parsing,
+ * serialization, HTML rendering, and plain-text extraction all follow the
+ * same document schema.
  */
 
-import { marked } from "marked";
-
-// Configure marked for security and simplicity
-marked.setOptions({
-  gfm: true,
-});
+import { parseMarkdownDocument } from "./markdown-manager.js";
+import { extractBodyText } from "./summary.js";
+import { renderTiptapDocument } from "./tiptap-render.js";
 
 /**
- * Renders Markdown content to HTML using the marked library.
- *
- * Configured with GitHub Flavored Markdown (GFM) support.
- * Uses synchronous parsing for simplicity and consistency in server-side rendering.
+ * Renders Markdown content to HTML using Jant's shared Markdown pipeline.
  *
  * @param markdown - The Markdown string to convert to HTML
  * @returns The rendered HTML string
@@ -23,11 +19,12 @@ marked.setOptions({
  * @example
  * ```ts
  * const html = render("# Hello\n\nThis is **bold** text.");
- * // Returns: "<h1>Hello</h1>\n<p>This is <strong>bold</strong> text.</p>"
+ * // "<h1>Hello</h1><p>This is <strong>bold</strong> text.</p>"
  * ```
  */
 export function render(markdown: string): string {
-  return marked.parse(markdown, { async: false }) as string;
+  if (!markdown.trim()) return "";
+  return renderTiptapDocument(parseMarkdownDocument(markdown));
 }
 
 /**
@@ -47,16 +44,12 @@ export function render(markdown: string): string {
  * ```
  */
 export function toPlainText(markdown: string): string {
-  return markdown
-    .replace(/#{1,6}\s+/g, "") // Remove headers
-    .replace(/\*\*(.+?)\*\*/g, "$1") // Bold
-    .replace(/\*(.+?)\*/g, "$1") // Italic
-    .replace(/\[(.+?)\]\(.+?\)/g, "$1") // Links
-    .replace(/!\[.*?\]\(.+?\)/g, "") // Images
-    .replace(/`{1,3}[^`]*`{1,3}/g, "") // Code
-    .replace(/>\s+/g, "") // Blockquotes
-    .replace(/[-*+]\s+/g, "") // Lists
-    .replace(/\n+/g, " ") // Newlines
+  if (!markdown.trim()) return "";
+
+  const doc = parseMarkdownDocument(markdown);
+  return (extractBodyText(JSON.stringify(doc)) ?? "")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([.,!?;:])/g, "$1")
     .trim();
 }
 

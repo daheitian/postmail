@@ -18,6 +18,7 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { moveSelectionAfterBlockInsertion } from "./block-insertion.js";
 import type { EditorView } from "@tiptap/pm/view";
 import { uploadWithMetadata } from "../upload-with-metadata.js";
+import { renderMarkdownImage } from "../../lib/rich-image.js";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -460,6 +461,18 @@ export const ImageNode = Node.create({
     }
 
     return ["figure", attrs, ...children];
+  },
+
+  parseMarkdown: (token, helpers) => {
+    return helpers.createNode("image", {
+      src: token.href,
+      title: token.title ?? "",
+      alt: token.text ?? "",
+    });
+  },
+
+  renderMarkdown: (node) => {
+    return renderMarkdownImage(node.attrs ?? {});
   },
 
   addCommands() {

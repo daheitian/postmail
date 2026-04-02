@@ -21,6 +21,8 @@ describe("render", () => {
   it("renders links", () => {
     const html = render("[link](https://example.com)");
     expect(html).toContain('href="https://example.com"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer"');
     expect(html).toContain(">link</a>");
   });
 
@@ -43,6 +45,26 @@ describe("render", () => {
   it("renders explicit hard breaks", () => {
     const html = render("Line 1  \nLine 2");
     expect(html).toContain("<br>");
+  });
+
+  it("renders Jant image figures through the shared pipeline", () => {
+    const html = render(
+      '<figure data-jant-node="image" data-jant-layout="wide"><a href="https://example.com/source"><img src="https://example.com/img.png" alt="Alt text" title="Title"></a><figcaption>Caption</figcaption></figure>',
+    );
+
+    expect(html).toBe(
+      '<figure data-layout="wide"><a href="https://example.com/source"><img src="https://example.com/img.png" alt="Alt text" title="Title"></a><figcaption>Caption</figcaption></figure>',
+    );
+  });
+
+  it("preserves more-break comments", () => {
+    const html = render("Intro\n\n<!--more-->\n\nRest");
+    expect(html).toBe("<p>Intro</p><!--more--><p>Rest</p>");
+  });
+
+  it("escapes raw HTML outside the supported markdown schema", () => {
+    const html = render("<script>alert(1)</script>");
+    expect(html).toBe("<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>");
   });
 
   it("returns a string", () => {
@@ -71,10 +93,8 @@ describe("toPlainText", () => {
     expect(toPlainText("[a link](https://example.com)")).toBe("a link");
   });
 
-  it("removes images (note: link regex runs first, leaving ! prefix)", () => {
-    // Known behavior: the link regex \[(.+?)\]\(.+?\) captures [alt](url) before
-    // the image regex !\[.*?\]\(.+?\) can match, leaving the "!" prefix
-    expect(toPlainText("![alt](image.png)")).toBe("!alt");
+  it("removes images from plain text output", () => {
+    expect(toPlainText("![alt](image.png)")).toBe("");
   });
 
   it("removes blockquotes", () => {

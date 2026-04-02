@@ -444,12 +444,12 @@ describe("JantComposeEditor", () => {
     expect(states).toEqual(["open", "cancelled"]);
   });
 
-  it("converts typed markdown link syntax into a link mark", async () => {
+  it("parses inserted markdown link syntax into a link mark", async () => {
     const el = await createElement("note");
     const editor = requireEditor(el);
 
     editor.commands.insertContent("[OpenAI](https://openai.com)", {
-      applyInputRules: true,
+      contentType: "markdown",
     });
 
     const paragraph = editor.getJSON().content?.[0];
@@ -468,12 +468,12 @@ describe("JantComposeEditor", () => {
     });
   });
 
-  it("autolinks typed bare URLs", async () => {
+  it("linkifies inserted bare URLs in markdown mode", async () => {
     const el = await createElement("note");
     const editor = requireEditor(el);
 
-    editor.commands.insertContent("https://openai.com ", {
-      applyInputRules: true,
+    editor.commands.insertContent("https://openai.com", {
+      contentType: "markdown",
     });
 
     const paragraph = editor.getJSON().content?.[0];

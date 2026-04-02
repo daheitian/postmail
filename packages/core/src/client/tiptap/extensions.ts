@@ -5,17 +5,8 @@
  */
 
 import type { Extensions } from "@tiptap/core";
-import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { Markdown } from "tiptap-markdown";
-import {
-  Table,
-  TableRow,
-  TableCell,
-  TableHeader,
-} from "@tiptap/extension-table";
-import { ImageNode } from "./image-node.js";
-import { MoreBreak } from "./more-break.js";
+import { Markdown } from "@tiptap/markdown";
 import { SlashCommands } from "./slash-commands.js";
 import { PasteMedia } from "./paste-media.js";
 import type { PasteMediaOptions } from "./paste-media.js";
@@ -24,6 +15,13 @@ import { LinkToolbar } from "./link-toolbar.js";
 import { ExitableMarks } from "./exitable-marks.js";
 import { LinkInputRules } from "./link-input-rules.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
+import { ImageNode } from "./image-node.js";
+import { MoreBreak } from "./more-break.js";
+import { MarkdownClipboard } from "./markdown-clipboard.js";
+import {
+  MARKDOWN_MARKED_OPTIONS,
+  createMarkdownContentExtensions,
+} from "../../lib/markdown-manager.js";
 
 export interface EditorExtensionOptions {
   placeholder?: string;
@@ -41,28 +39,18 @@ export function createEditorExtensions(
   options: EditorExtensionOptions = {},
 ): Extensions {
   return [
-    StarterKit.configure({
-      heading: { levels: [1, 2, 3] },
-      link: { openOnClick: false, autolink: false },
+    ...createMarkdownContentExtensions({
+      imageExtension: ImageNode,
+      moreBreakExtension: MoreBreak,
+    }),
+    Markdown.configure({
+      markedOptions: MARKDOWN_MARKED_OPTIONS,
     }),
     Placeholder.configure({
       placeholder: options.placeholder ?? "Write something…",
     }),
-    Markdown.configure({
-      linkify: true,
-      transformPastedText: true,
-      transformCopiedText: false,
-    }),
     LinkInputRules,
-    Table.configure({
-      resizable: false,
-      HTMLAttributes: { class: "tiptap-table" },
-    }),
-    TableRow,
-    TableCell,
-    TableHeader,
-    ImageNode,
-    MoreBreak,
+    MarkdownClipboard,
     SlashCommands,
     PasteMedia.configure(options.pasteMedia ?? {}),
     BubbleMenu.configure({
