@@ -76,16 +76,19 @@ describe("timeline cards", () => {
     expect(detailHtml).toContain('href="/media/full.jpg"');
   });
 
-  it("renders the link footer outside the feed card shell", () => {
+  it("renders link reference before body and without a card wrapper", () => {
     const post = createPostView({ format: "link" });
 
     const feedHtml = renderWithI18n(LinkCard({ post, mode: "feed" }));
     const detailHtml = renderWithI18n(LinkCard({ post, mode: "detail" }));
 
-    expect(feedHtml).toMatch(
-      /<article[^>]*class="h-entry post-menu-target feed-link-post"[\s\S]*<div class="feed-card feed-card-link">[\s\S]*<\/div><footer class="post-menu-footer"/,
+    // No card wrapper in feed mode
+    expect(feedHtml).not.toContain("feed-card");
+    // Link title comes before body (commentary)
+    expect(feedHtml.indexOf("feed-link-title")).toBeLessThan(
+      feedHtml.indexOf("data-post-body"),
     );
-    expect(detailHtml).not.toContain("feed-link-post");
+    expect(detailHtml).not.toContain("feed-card");
   });
 
   it("renders quote attachments in feed and detail modes", () => {
@@ -129,7 +132,6 @@ describe("timeline cards", () => {
     );
 
     expect(css).toContain(".post-body-summary.prose");
-    expect(css).toContain(".feed-card-link .feed-link-summary.prose");
     expect(css).toContain(
       '[data-post]:not([data-page="post"]) [data-post-body].prose blockquote',
     );
