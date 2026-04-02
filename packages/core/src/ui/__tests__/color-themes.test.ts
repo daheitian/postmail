@@ -3,7 +3,7 @@ import { BUILTIN_COLOR_THEMES } from "../color-themes.js";
 
 describe("BUILTIN_COLOR_THEMES", () => {
   it("contains 13 themes", () => {
-    expect(BUILTIN_COLOR_THEMES).toHaveLength(13);
+    expect(BUILTIN_COLOR_THEMES).toHaveLength(14);
   });
 
   it("keeps Linen as the first theme", () => {

@@ -67,6 +67,15 @@ const NEWSROOM_SERIF = `"Newsreader Variable", Newsreader, "New York Small", "Ne
 const LITERARY_SERIF = `"Literata Variable", Literata, Palatino, "Palatino Linotype", "Book Antiqua", "Source Serif 4", ${CJK_SERIF_FALLBACK_VAR}, ui-serif, serif`;
 
 /**
+ * Tufte serif stack
+ *
+ * Palatino-based old-style serif — closest system match to ET Book.
+ * ET Book derives from Bembo; Palatino shares the old-style proportions
+ * and is pre-installed on macOS, iOS, and Windows.
+ */
+const TUFTE_SERIF = `Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua", "Source Serif 4", ${CJK_SERIF_FALLBACK_VAR}, ui-serif, serif`;
+
+/**
  * Geometric sans stack
  *
  * Futura (macOS); Century Gothic (Windows); clean geometric proportions
@@ -270,6 +279,35 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
       id: "Literata-driven all-serif setting for essays, notes, and quotations",
       message:
         "Literata-driven all-serif setting for essays, notes, and quotations",
+      comment: "@context: Font theme description",
+    },
+  },
+  {
+    id: "tufte",
+    name: {
+      id: "Tufte",
+      message: "Tufte",
+      comment: "@context: Font theme name",
+    },
+    headingFontFamily: TUFTE_SERIF,
+    bodyFontFamily: TUFTE_SERIF,
+    cssVariables: {
+      "--type-body-size": "1.05rem",
+      "--type-body-leading": "1.88",
+      "--type-body-tracking": "0.003em",
+      "--type-heading-weight": "var(--fw-regular)",
+      "--type-heading-leading": "1.18",
+      "--type-heading-tracking": "-0.012em",
+      "--type-display-weight": "var(--fw-regular)",
+      "--type-display-leading": "1.06",
+      "--type-display-tracking": "-0.022em",
+      "--type-label-weight": "var(--fw-medium)",
+      "--type-label-tracking": "0.12em",
+    },
+    description: {
+      id: "Palatino-based old-style serif with generous leading for unhurried reading",
+      message:
+        "Palatino-based old-style serif with generous leading for unhurried reading",
       comment: "@context: Font theme description",
     },
   },

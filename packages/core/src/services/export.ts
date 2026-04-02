@@ -2129,7 +2129,7 @@ img {
 
 .feed-link-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--feed-note-title-size);
   font-weight: var(--type-heading-weight);
   line-height: var(--type-heading-leading);
   letter-spacing: var(--type-heading-tracking);

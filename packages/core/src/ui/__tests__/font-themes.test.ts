@@ -8,7 +8,7 @@ import {
 
 describe("BUILTIN_FONT_THEMES", () => {
   it("contains 6 themes", () => {
-    expect(BUILTIN_FONT_THEMES).toHaveLength(6);
+    expect(BUILTIN_FONT_THEMES).toHaveLength(7);
   });
 
   it("has 'default' as the first theme", () => {
@@ -38,6 +38,7 @@ describe("BUILTIN_FONT_THEMES", () => {
     expect(ids).toContain("humanist-sans");
     expect(ids).toContain("modern-editorial");
     expect(ids).toContain("literary");
+    expect(ids).toContain("tufte");
     expect(ids).toContain("geometric");
   });
 
