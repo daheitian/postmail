@@ -2408,6 +2408,11 @@ msgstr "撤销"
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "撤销此令牌吗？任何使用它的脚本都将停止工作。"
 
+#. @context: Tooltip for the RSS feed link on a collection page
+#: src/ui/pages/CollectionPage.tsx
+msgid "RSS feed"
+msgstr ""
+
 #. @context: Tooltip for the RSS feed button on the archive page
 #: src/ui/pages/ArchivePage.tsx
 msgid "RSS feed for this view"

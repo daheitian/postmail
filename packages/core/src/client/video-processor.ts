@@ -3,7 +3,10 @@
  *
  * Processes videos before upload using mediabunny:
  * - Transcodes to H.264/AAC MP4 (universal playback)
- * - Resizes to max 1920×1080
+ * - Resizes to max 1920px long edge / 1080px short edge
+ * - Strips spurious rotation metadata from the output (mediabunny may
+ *   bake rotation into pixels AND write a display matrix, causing the
+ *   browser to double-rotate)
  * - Extracts poster frame + blurhash during processing
  *
  * Requires WebCodecs API support — check `isSupported()` before use.
@@ -22,8 +25,10 @@ import {
 } from "mediabunny";
 import { encode } from "blurhash";
 
-const MAX_WIDTH = 1920;
-const MAX_HEIGHT = 1080;
+/** Maximum pixels for the long edge of the output video. */
+const MAX_LONG_EDGE = 1920;
+/** Maximum pixels for the short edge of the output video. */
+const MAX_SHORT_EDGE = 1080;
 const POSTER_WIDTH = 640;
 const BLURHASH_SIZE = 32;
 
@@ -58,6 +63,7 @@ async function extractPoster(file: File): Promise<{
   blurhash?: string;
   sourceWidth?: number;
   sourceHeight?: number;
+  rotation?: number;
 }> {
   const input = new Input({
     source: new BlobSource(file),
@@ -69,13 +75,14 @@ async function extractPoster(file: File): Promise<{
 
     const sourceWidth = videoTrack.displayWidth;
     const sourceHeight = videoTrack.displayHeight;
+    const rotation = videoTrack.rotation;
 
     const duration = await input.computeDuration();
     const seekTime = Math.min(duration * 0.1, 3);
 
     const sink = new CanvasSink(videoTrack);
     const wrapped = await sink.getCanvas(seekTime);
-    if (!wrapped) return { sourceWidth, sourceHeight };
+    if (!wrapped) return { sourceWidth, sourceHeight, rotation };
 
     const canvas = wrapped.canvas as HTMLCanvasElement;
 
@@ -116,7 +123,7 @@ async function extractPoster(file: File): Promise<{
     const imageData = bhCtx.getImageData(0, 0, bw, bh);
     const blurhash = encode(imageData.data, bw, bh, 4, 3);
 
-    return { poster, blurhash, sourceWidth, sourceHeight };
+    return { poster, blurhash, sourceWidth, sourceHeight, rotation };
   } catch {
     return {};
   } finally {
@@ -138,24 +145,27 @@ async function processToFile(
 ): Promise<VideoProcessResult> {
   // Extract poster + blurhash + source dimensions (separate Input instance,
   // so the transcoding Input below starts with clean demuxer state).
-  const { poster, blurhash, sourceWidth, sourceHeight } =
+  const { poster, blurhash, sourceWidth, sourceHeight, rotation } =
     await extractPoster(file);
 
-  // Compute output size preserving the original aspect ratio
-  let width = MAX_WIDTH;
-  let height = MAX_HEIGHT;
+  // Compute output size from display dimensions (post-rotation).
+  // Orientation-agnostic: long edge ≤ 1920, short edge ≤ 1080.
+  let targetW = sourceWidth || MAX_LONG_EDGE;
+  let targetH = sourceHeight || MAX_SHORT_EDGE;
   if (sourceWidth && sourceHeight) {
+    const longSide = Math.max(sourceWidth, sourceHeight);
+    const shortSide = Math.min(sourceWidth, sourceHeight);
     const scale = Math.min(
-      MAX_WIDTH / sourceWidth,
-      MAX_HEIGHT / sourceHeight,
+      MAX_LONG_EDGE / longSide,
+      MAX_SHORT_EDGE / shortSide,
       1,
     );
-    width = Math.round(sourceWidth * scale);
-    height = Math.round(sourceHeight * scale);
+    targetW = Math.round(sourceWidth * scale);
+    targetH = Math.round(sourceHeight * scale);
   }
   // H.264 requires even dimensions
-  width += width % 2;
-  height += height % 2;
+  targetW += targetW % 2;
+  targetH += targetH % 2;
 
   // Transcode to MP4 H.264/AAC (fresh Input — not shared with extractPoster)
   const input = new Input({
@@ -174,8 +184,8 @@ async function processToFile(
       output,
       video: {
         codec: "avc",
-        width,
-        height,
+        width: targetW,
+        height: targetH,
         fit: "contain",
         bitrate: QUALITY_HIGH,
       },
@@ -193,15 +203,133 @@ async function processToFile(
     const buffer = target.buffer;
     if (!buffer) throw new Error("Video processing produced no output");
 
+    // mediabunny bakes rotation into the pixel data (correct) but may also
+    // write a rotation display matrix into the MP4 container. The browser
+    // then applies the matrix on top of the already-rotated pixels, causing
+    // a double-rotation.  Strip the matrix to fix this.
+    if (rotation) {
+      resetMp4DisplayMatrix(buffer);
+    }
+
     const originalName = file.name.replace(/\.[^.]+$/, "");
     const mp4File = new File([buffer], `${originalName}.mp4`, {
       type: "video/mp4",
     });
 
-    return { file: mp4File, width, height, poster, blurhash };
+    // Read actual output dimensions from the browser's perspective.
+    const actual = await probeVideoDimensions(mp4File);
+
+    return {
+      file: mp4File,
+      width: actual.width,
+      height: actual.height,
+      poster,
+      blurhash,
+    };
   } finally {
     input.dispose();
   }
+}
+
+// --- MP4 display matrix reset ---
+
+/** Identity transformation matrix for tkhd (no rotation/scaling). */
+const IDENTITY_MATRIX = [0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000];
+
+/**
+ * Walk the box tree of an MP4 file and invoke a callback for each box.
+ * Recurses into standard ISO BMFF container boxes.
+ */
+function walkMp4Boxes(
+  view: DataView,
+  start: number,
+  end: number,
+  cb: (offset: number, size: number, type: string) => void,
+): void {
+  let pos = start;
+  while (pos + 8 <= end) {
+    let size = view.getUint32(pos);
+    const type = String.fromCharCode(
+      view.getUint8(pos + 4),
+      view.getUint8(pos + 5),
+      view.getUint8(pos + 6),
+      view.getUint8(pos + 7),
+    );
+
+    if (size === 0) size = end - pos;
+    if (size < 8 || pos + size > end) break;
+
+    cb(pos, size, type);
+
+    if (
+      type === "moov" ||
+      type === "trak" ||
+      type === "mdia" ||
+      type === "edts"
+    )
+      walkMp4Boxes(view, pos + 8, pos + size, cb);
+
+    pos += size;
+  }
+}
+
+/**
+ * Reset the display matrix in all tkhd boxes to identity.
+ * This removes rotation metadata while preserving the encoded pixel data
+ * and the tkhd width/height (which match the encoded dimensions).
+ * Operates in-place on the buffer.
+ */
+function resetMp4DisplayMatrix(buffer: ArrayBuffer): void {
+  const view = new DataView(buffer);
+
+  walkMp4Boxes(view, 0, buffer.byteLength, (boxOffset, _size, type) => {
+    if (type !== "tkhd") return;
+
+    const dataStart = boxOffset + 8; // past size + type
+    const version = view.getUint8(dataStart);
+    // Matrix offset from data start: version 0 → 40, version 1 → 52
+    const matrixOff = dataStart + (version === 0 ? 40 : 52);
+
+    if (matrixOff + 36 > buffer.byteLength) return;
+
+    // Check if already identity — skip if so
+    let isIdentity = true;
+    for (let i = 0; i < 9; i++) {
+      if (view.getInt32(matrixOff + i * 4) !== IDENTITY_MATRIX[i]) {
+        isIdentity = false;
+        break;
+      }
+    }
+    if (isIdentity) return;
+
+    // Reset to identity (no rotation)
+    for (let i = 0; i < 9; i++) {
+      view.setInt32(matrixOff + i * 4, IDENTITY_MATRIX[i]);
+    }
+  });
+}
+
+/**
+ * Load a video file in a temporary `<video>` element and return the
+ * browser-reported dimensions (which include any rotation metadata).
+ */
+function probeVideoDimensions(
+  file: File,
+): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: video.videoWidth, height: video.videoHeight });
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to probe transcoded video dimensions"));
+    };
+    video.src = url;
+  });
 }
 
 export const VideoProcessor = { isSupported, processToFile };

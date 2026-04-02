@@ -1186,26 +1186,6 @@ export const ArchivePage: FC<ArchivePageProps> = ({
               }),
             )}
           </h1>
-          {feedHref && (
-            <a
-              href={toPublicPath(feedHref, sitePathPrefix)}
-              class="archive-feed-link"
-              title={i18n._(
-                msg({
-                  message: "RSS feed for this view",
-                  comment:
-                    "@context: Tooltip for the RSS feed button on the archive page",
-                }),
-              )}
-              rel="noopener noreferrer"
-            >
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: getIconSvg("rss") ?? "",
-                }}
-              />
-            </a>
-          )}
         </div>
         <p
           class="page-intro-meta archive-page-meta"
@@ -1213,6 +1193,29 @@ export const ArchivePage: FC<ArchivePageProps> = ({
         >
           <span class="archive-page-summary-count">{totalCount}</span>{" "}
           {totalCountUnit}
+          {feedHref && (
+            <>
+              {" "}
+              <a
+                href={toPublicPath(feedHref, sitePathPrefix)}
+                class="feed-link"
+                title={i18n._(
+                  msg({
+                    message: "RSS feed for this view",
+                    comment:
+                      "@context: Tooltip for the RSS feed button on the archive page",
+                  }),
+                )}
+                rel="noopener noreferrer"
+              >
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: getIconSvg("rss") ?? "",
+                  }}
+                />
+              </a>
+            </>
+          )}
         </p>
 
         <FilterBar

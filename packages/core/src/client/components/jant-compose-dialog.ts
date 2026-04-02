@@ -3049,7 +3049,7 @@ export class JantComposeDialog extends LitElement {
       ? collections.filter(
           (c) =>
             c.title.toLowerCase().includes(search) ||
-            c.slug.toLowerCase().includes(search),
+            (c.slug ?? "").toLowerCase().includes(search),
         )
       : collections;
     const selectedCount = this._collectionIds.length;
@@ -3072,7 +3072,11 @@ export class JantComposeDialog extends LitElement {
               }}
             ></div>`
           : nothing}
-        <div class="select compose-collection-select" data-select-initialized>
+        <div
+          class="select compose-collection-select"
+          data-select-initialized
+          data-open=${this._showCollection ? "true" : nothing}
+        >
           <button
             type="button"
             class="compose-collection-trigger"

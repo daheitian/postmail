@@ -315,6 +315,7 @@ article .post-body-summary.prose pre {
   margin-top: 0.55rem;
   font-size: var(--feed-link-summary-size);
   line-height: var(--feed-link-summary-leading);
+  color: var(--feed-link-summary-color);
 }
 
 .feed-card-link .feed-link-summary.prose > :first-child {

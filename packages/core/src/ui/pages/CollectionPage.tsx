@@ -12,6 +12,7 @@ import { formatPageLabel } from "../../lib/pagination.js";
 import { toPublicPath } from "../../lib/url.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
 import { getCollectionMutationLabels } from "../shared/collection-management-labels.js";
+import { getIconSvg } from "../../lib/icons.js";
 
 const escapeJson = (data: unknown) =>
   JSON.stringify(data).replace(/</g, "\\u003c");
@@ -278,7 +279,25 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                         "@context: Plural thread count label on collection detail page",
                     }),
                   )}
-              {pageLabel ? <span> / {pageLabel}</span> : null}
+              {pageLabel ? <span> / {pageLabel}</span> : null}{" "}
+              <a
+                href={toPublicPath(`${pagePath}/feed`, sitePathPrefix)}
+                class="feed-link"
+                title={i18n._(
+                  msg({
+                    message: "RSS feed",
+                    comment:
+                      "@context: Tooltip for the RSS feed link on a collection page",
+                  }),
+                )}
+                rel="noopener noreferrer"
+              >
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: getIconSvg("rss") ?? "",
+                  }}
+                />
+              </a>
             </p>
             <span class="collection-page-meta-divider" aria-hidden="true">
               &middot;

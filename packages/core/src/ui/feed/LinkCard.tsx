@@ -106,7 +106,7 @@ export const LinkCard: FC<TimelineCardProps> = ({
       )}
       {!isCompact && post.bodyHtml && (
         <div
-          class={`e-content prose feed-link-summary${isDetail ? " post-detail-body" : " text-muted-foreground"}`}
+          class={`e-content prose feed-link-summary${isDetail ? " post-detail-body" : ""}`}
           data-post-body
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />

@@ -740,6 +740,7 @@ export const ComposeForm: FC<ComposeFormProps> = ({
     (collections ?? []).map((c) => ({
       id: c.id,
       title: c.title,
+      slug: c.slug,
     })),
   ).replace(/</g, "\\u003c");
 
