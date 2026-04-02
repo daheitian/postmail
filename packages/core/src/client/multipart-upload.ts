@@ -27,6 +27,7 @@ export interface MultipartUploadOptions {
   metadata: {
     width?: number;
     height?: number;
+    durationSeconds?: number;
     blurhash?: string;
     waveform?: string;
     poster?: Blob;
@@ -146,6 +147,7 @@ export async function uploadMultipart(
         size: file.size,
         width: metadata.width,
         height: metadata.height,
+        durationSeconds: metadata.durationSeconds,
         blurhash: metadata.blurhash,
         waveform: metadata.waveform,
         posterKey,

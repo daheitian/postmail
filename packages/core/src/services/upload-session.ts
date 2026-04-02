@@ -65,6 +65,7 @@ export interface InitiateUploadData {
 export interface CompleteUploadData {
   width?: number;
   height?: number;
+  durationSeconds?: number;
   blurhash?: string;
   waveform?: string;
   summary?: string;
@@ -623,6 +624,7 @@ export function createUploadSessionService(
           provider: deps.storageDriver,
           width: data.width,
           height: data.height,
+          durationSeconds: data.durationSeconds,
           blurhash: data.blurhash,
           waveform: data.waveform,
           posterKey,

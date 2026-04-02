@@ -71,6 +71,7 @@ export function buildMediaMap(
           posterUrl,
           width: m.width,
           height: m.height,
+          durationSeconds: m.durationSeconds,
           position: m.position,
           mimeType: m.mimeType,
           originalName: m.originalName,

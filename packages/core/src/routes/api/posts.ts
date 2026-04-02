@@ -87,6 +87,7 @@ function toApiAttachment(
     blurhash: m.blurhash,
     width: m.width,
     height: m.height,
+    durationSeconds: m.durationSeconds,
     mimeType: m.mimeType,
     originalName: m.originalName,
     size: m.size,

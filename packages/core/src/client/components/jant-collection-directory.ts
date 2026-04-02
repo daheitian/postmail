@@ -692,13 +692,17 @@ export class JantCollectionsManager extends LitElement {
     const collection = item.collection;
     if (!collection) return nothing;
 
+    const collectionHref = publicPath(`/c/${collection.slug}`);
+
     const body = html`
       <div class="collection-directory-main">
         <span class="collection-directory-sequence" aria-hidden="true">
           ${String(sequence).padStart(2, "0")}
         </span>
         <div class="collection-directory-title-row">
-          <span class="collection-directory-title">${collection.title}</span>
+          <a href=${collectionHref} class="collection-directory-title-link">
+            <span class="collection-directory-title">${collection.title}</span>
+          </a>
         </div>
         <p class="collection-directory-summary">
           <span class="collection-directory-meta"
@@ -764,12 +768,11 @@ export class JantCollectionsManager extends LitElement {
           if (this._hoveringId === item.id) this._hoveringId = null;
         }}
       >
-        <a
-          href=${publicPath(`/c/${collection.slug}`)}
+        <div
           class="collection-directory-item collection-directory-item-manageable"
         >
           ${body}
-        </a>
+        </div>
         ${this._hoveringId === item.id || this._showItemMenuId === item.id
           ? this.#renderItemMenu(item)
           : nothing}
@@ -842,35 +845,47 @@ export class JantCollectionsManager extends LitElement {
   #renderLinkItem(item: CollectionManagerItem, sequence: number) {
     if (!item.label || !item.url) return nothing;
 
+    const linkHref = publicPath(item.url);
+
     const body = html`
       <div class="collection-directory-main">
         <span class="collection-directory-sequence" aria-hidden="true">
           ${String(sequence).padStart(2, "0")}
         </span>
         <div class="collection-directory-title-row">
-          <span class="collection-directory-title">
-            ${item.label}
-            <span class="collection-directory-title-marker" aria-hidden="true">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+          <a
+            href=${linkHref}
+            class="collection-directory-title-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="collection-directory-title">
+              ${item.label}
+              <span
+                class="collection-directory-title-marker"
+                aria-hidden="true"
               >
-                <path
-                  d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.08L11.7 5.24"
-                />
-                <path
-                  d="M14 11a5 5 0 0 0-7.54-.54l-2.92 2.92a5 5 0 0 0 7.07 7.08l1.69-1.7"
-                />
-              </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.08L11.7 5.24"
+                  />
+                  <path
+                    d="M14 11a5 5 0 0 0-7.54-.54l-2.92 2.92a5 5 0 0 0 7.07 7.08l1.69-1.7"
+                  />
+                </svg>
+              </span>
             </span>
-          </span>
+          </a>
         </div>
         <p class="collection-directory-summary">
           <span class="collection-directory-meta">Link</span>
@@ -925,12 +940,11 @@ export class JantCollectionsManager extends LitElement {
           if (this._hoveringId === item.id) this._hoveringId = null;
         }}
       >
-        <a
-          href=${publicPath(item.url)}
+        <div
           class="collection-directory-item collection-directory-item-link collection-directory-item-manageable"
         >
           ${body}
-        </a>
+        </div>
         ${this._hoveringId === item.id || this._showItemMenuId === item.id
           ? this.#renderItemMenu(item)
           : nothing}

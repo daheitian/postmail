@@ -69,6 +69,7 @@ const CompleteSchema = z.object({
   size: z.number().int().positive(),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
+  durationSeconds: z.number().int().positive().optional(),
   blurhash: z.string().max(200).optional(),
   waveform: z.string().max(2000).optional(),
   posterKey: z.string().optional(),
@@ -262,6 +263,10 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
     provider: c.var.appConfig.storageDriver,
     width: data.width && data.width > 0 ? data.width : undefined,
     height: data.height && data.height > 0 ? data.height : undefined,
+    durationSeconds:
+      data.durationSeconds && data.durationSeconds > 0
+        ? data.durationSeconds
+        : undefined,
     blurhash: data.blurhash,
     waveform: data.waveform,
     posterKey: data.posterKey,

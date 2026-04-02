@@ -249,6 +249,7 @@ export const media = sqliteTable(
     provider: text("provider").notNull().default("r2"),
     width: integer("width"),
     height: integer("height"),
+    durationSeconds: integer("duration_seconds"),
     alt: text("alt"),
     position: text("position").notNull().default("a0"),
     blurhash: text("blurhash"),

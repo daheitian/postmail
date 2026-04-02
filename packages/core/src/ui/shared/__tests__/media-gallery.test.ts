@@ -65,6 +65,7 @@ describe("MediaGallery", () => {
             mimeType: "video/mp4",
             width: 1080,
             height: 1920,
+            durationSeconds: 42,
             blurhash: HASH,
             posterUrl: "/media/video-poster.webp",
           }),
@@ -78,5 +79,31 @@ describe("MediaGallery", () => {
     expect(html).toContain('height="1920"');
     expect(html).toContain("aspect-ratio:1080/1920");
     expect(html).toMatch(/background-image:url\(data:image\/bmp;base64,/);
+  });
+
+  it("marks short videos for feed autoplay instead of the static play overlay", () => {
+    const html = renderToString(
+      MediaGallery({
+        attachments: [
+          createMediaView({
+            id: "media-3",
+            url: "/media/clip.mp4",
+            thumbnailUrl: "/media/clip.mp4",
+            mimeType: "video/mp4",
+            width: 1080,
+            height: 1920,
+            durationSeconds: 12,
+            size: 3_000_000,
+            posterUrl: "/media/clip-poster.webp",
+          }),
+        ],
+      }),
+    );
+
+    expect(html).toContain("data-feed-short-video");
+    expect(html).toContain('data-video-src="/media/clip.mp4"');
+    expect(html).toContain("data-feed-video-mute-toggle");
+    expect(html).not.toContain("media-video-play-overlay");
+    expect(html).not.toContain("media-short-video-progress");
   });
 });

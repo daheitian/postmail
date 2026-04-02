@@ -132,6 +132,7 @@ export interface MediaView {
   altText?: string;
   width?: number;
   height?: number;
+  durationSeconds?: number;
   size?: number;
   blurhash?: string;
   waveform?: string;

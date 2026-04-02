@@ -158,6 +158,7 @@ export interface CreateMediaData {
   provider?: string;
   width?: number;
   height?: number;
+  durationSeconds?: number;
   alt?: string;
   position?: string;
   blurhash?: string;
@@ -215,6 +216,7 @@ export function createMediaService(
       provider: ensureStorageProvider(row.provider, Error),
       width: row.width,
       height: row.height,
+      durationSeconds: row.durationSeconds,
       alt: row.alt,
       position: row.position,
       blurhash: row.blurhash,
@@ -402,6 +404,7 @@ export function createMediaService(
           provider,
           width: data.width ?? null,
           height: data.height ?? null,
+          durationSeconds: data.durationSeconds ?? null,
           alt: data.alt ?? null,
           position:
             data.position ??

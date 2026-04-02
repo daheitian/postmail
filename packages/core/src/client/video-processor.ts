@@ -24,6 +24,7 @@ import {
   ALL_FORMATS,
 } from "mediabunny";
 import { encode } from "blurhash";
+import { normalizeDurationSeconds } from "../lib/video-playback.js";
 
 /** Maximum pixels for the long edge of the output video. */
 const MAX_LONG_EDGE = 1920;
@@ -36,6 +37,7 @@ export interface VideoProcessResult {
   file: File;
   width: number;
   height: number;
+  durationSeconds?: number;
   poster?: Blob;
   blurhash?: string;
 }
@@ -64,6 +66,7 @@ async function extractPoster(file: File): Promise<{
   sourceWidth?: number;
   sourceHeight?: number;
   rotation?: number;
+  durationSeconds?: number;
 }> {
   const input = new Input({
     source: new BlobSource(file),
@@ -78,11 +81,14 @@ async function extractPoster(file: File): Promise<{
     const rotation = videoTrack.rotation;
 
     const duration = await input.computeDuration();
+    const durationSeconds = normalizeDurationSeconds(duration);
     const seekTime = Math.min(duration * 0.1, 3);
 
     const sink = new CanvasSink(videoTrack);
     const wrapped = await sink.getCanvas(seekTime);
-    if (!wrapped) return { sourceWidth, sourceHeight, rotation };
+    if (!wrapped) {
+      return { sourceWidth, sourceHeight, rotation, durationSeconds };
+    }
 
     const canvas = wrapped.canvas as HTMLCanvasElement;
 
@@ -123,7 +129,14 @@ async function extractPoster(file: File): Promise<{
     const imageData = bhCtx.getImageData(0, 0, bw, bh);
     const blurhash = encode(imageData.data, bw, bh, 4, 3);
 
-    return { poster, blurhash, sourceWidth, sourceHeight, rotation };
+    return {
+      poster,
+      blurhash,
+      sourceWidth,
+      sourceHeight,
+      rotation,
+      durationSeconds,
+    };
   } catch {
     return {};
   } finally {
@@ -145,8 +158,14 @@ async function processToFile(
 ): Promise<VideoProcessResult> {
   // Extract poster + blurhash + source dimensions (separate Input instance,
   // so the transcoding Input below starts with clean demuxer state).
-  const { poster, blurhash, sourceWidth, sourceHeight, rotation } =
-    await extractPoster(file);
+  const {
+    poster,
+    blurhash,
+    sourceWidth,
+    sourceHeight,
+    rotation,
+    durationSeconds,
+  } = await extractPoster(file);
 
   // Compute output size from display dimensions (post-rotation).
   // Orientation-agnostic: long edge ≤ 1920, short edge ≤ 1080.
@@ -232,6 +251,7 @@ async function processToFile(
       file: mp4File,
       width: actual.width,
       height: actual.height,
+      durationSeconds,
       poster,
       blurhash,
     };

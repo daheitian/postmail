@@ -517,6 +517,7 @@ describe("multipart upload API routes", () => {
             size: 100_000_000,
             width: 1920,
             height: 1080,
+            durationSeconds: 14,
           }),
         },
       );
@@ -537,6 +538,7 @@ describe("multipart upload API routes", () => {
         mimeType: "video/mp4",
         width: 1920,
         height: 1080,
+        durationSeconds: 14,
       });
     });
 

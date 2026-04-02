@@ -60,20 +60,24 @@ API_TOKEN = YOUR_API_TOKEN
 - 去掉站点后缀（" - Medium"" | GitHub"" — Substack"" - YouTube" 等）
 - 去掉营销修饰词
 
-**判断是否需要翻译：**
+**按内容类型处理：**
 
-- 产品名、项目名、品牌名、人名 → 保持原文，不翻译
-  - 例：`Linear` → `Linear`
-  - 例：`tRPC` → `tRPC`
-- 英文描述性标题（能看出在说一件事、一个观点） → 翻译成中文，简洁自然
+- **产品、工具、服务、库** → 产品名 + 冒号 + 一句话点出核心特性，用中文
+  - 例：`Kosmi` → `Kosmi: 在线一起看视频`
+  - 例：`Sincerely Me` → `Sincerely Me: $2 寄一封真实信件`
+  - 例：`Linear` → `Linear: 键盘驱动的项目管理`
+  - 例：`tRPC` → `tRPC: 全栈 TypeScript 零 API 定义`
+  - 例：`Valibot` → `Valibot: 模块化的 schema 验证`
+  - 冒号后面的描述要极短，抓最区别于同类的一个点，不要写成功能列表
+- **英文描述性标题**（文章、观点、教程） → 翻译成中文，简洁自然
   - 例：`Zero to Internet: Your First Website` → `从零开始搭建你的第一个网站`
   - 例：`How React Server Components Work` → `React Server Components 的工作原理`
   - 例：`Chinchilla's Wild Implications` → `Chinchilla 论文的深远影响`
-- 中文标题 → 保持原文
-- 混合型（描述性标题里含专有名词） → 翻译句子结构，保留专有名词原文
+- **中文标题** → 保持原文
+- **混合型**（描述性标题里含专有名词） → 翻译句子结构，保留专有名词原文
   - 例：`Why SQLite Does Not Use Git` → `为什么 SQLite 不用 Git`
 
-**不要重新创作**——翻译是转述，不是起新标题。
+**不要重新创作**——翻译是转述，不是起新标题。产品标题的冒号后是提炼，不是重新起名。
 
 ## 第二步：生成 slug
 
@@ -113,7 +117,7 @@ API_TOKEN = YOUR_API_TOKEN
 
 **产品页**
 
-标题：Linear
+标题：Linear: 键盘驱动的项目管理
 slug：linear
 
 描述：
@@ -141,7 +145,7 @@ slug：chinchilla-wild-implications
 
 **工具/库**
 
-标题：Valibot
+标题：Valibot: 模块化的 schema 验证
 slug：valibot
 
 描述：
@@ -215,7 +219,7 @@ Content-Type: application/json
 ```json
 {
   "format": "link",
-  "title": "tRPC",
+  "title": "tRPC: 全栈 TypeScript 零 API 定义",
   "url": "https://trpc.io",
   "slug": "trpc",
   "bodyMarkdown": "- 去掉全栈 TS 项目里前后端之间重复的 API 定义\n- 后端写函数，前端直接调，类型自动贯通，不需要写接口定义或跑 codegen\n- 要求前后端在同一个 monorepo，锁定 TypeScript",

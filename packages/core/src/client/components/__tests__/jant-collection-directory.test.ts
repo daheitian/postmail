@@ -350,7 +350,7 @@ describe("JantCollectionsManager", () => {
   it("does not show the raw URL in link rows", async () => {
     const el = await createElementWithItems(itemsWithLink);
 
-    const linkRow = el.querySelector<HTMLAnchorElement>(
+    const linkRow = el.querySelector<HTMLElement>(
       ".collection-directory-item-link",
     );
 

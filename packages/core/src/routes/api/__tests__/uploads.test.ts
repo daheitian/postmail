@@ -181,6 +181,7 @@ describe("Upload Session API Routes", () => {
         body: JSON.stringify({
           width: 1200,
           height: 800,
+          durationSeconds: 12,
           blurhash: "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
         }),
       },
@@ -197,6 +198,7 @@ describe("Upload Session API Routes", () => {
       mimeType: "image/webp",
       width: 1200,
       height: 800,
+      durationSeconds: 12,
     });
 
     const storedObject = storage.files.get(String(media?.storageKey));

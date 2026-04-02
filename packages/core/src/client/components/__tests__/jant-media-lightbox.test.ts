@@ -35,6 +35,20 @@ function installDialogShim() {
   });
 }
 
+function installMediaShim() {
+  Object.defineProperty(globalThis.HTMLMediaElement.prototype, "play", {
+    configurable: true,
+    value() {
+      return Promise.resolve();
+    },
+  });
+
+  Object.defineProperty(globalThis.HTMLMediaElement.prototype, "pause", {
+    configurable: true,
+    value() {},
+  });
+}
+
 function setViewport(width: number, height: number) {
   Object.defineProperty(globalThis, "innerWidth", {
     configurable: true,
@@ -64,6 +78,7 @@ describe("JantMediaLightbox", () => {
     vi.restoreAllMocks();
     document.body.innerHTML = "";
     installDialogShim();
+    installMediaShim();
     setViewport(1280, 800);
   });
 
@@ -166,5 +181,57 @@ describe("JantMediaLightbox", () => {
 
     const stage = el.querySelector(".media-lightbox-stage");
     expect(stage?.classList.contains("media-lightbox-stage-scroll")).toBe(true);
+  });
+
+  it("renders custom controls for short videos", async () => {
+    const el = await createElement();
+
+    el.open(
+      [
+        {
+          url: "https://example.com/clip.mp4",
+          alt: "",
+          mimeType: "video/mp4",
+          durationSeconds: 12,
+          size: 2_000_000,
+        },
+      ],
+      0,
+    );
+    await flush(el);
+
+    const video = el.querySelector<HTMLVideoElement>(".media-lightbox-video");
+    const progress = el.querySelector<HTMLInputElement>(
+      ".media-lightbox-short-progress",
+    );
+    const muteButton = el.querySelector<HTMLButtonElement>(
+      ".media-lightbox-short-mute",
+    );
+
+    expect(video?.hasAttribute("controls")).toBe(false);
+    expect(progress).not.toBeNull();
+    expect(muteButton).not.toBeNull();
+  });
+
+  it("keeps native controls for long videos", async () => {
+    const el = await createElement();
+
+    el.open(
+      [
+        {
+          url: "https://example.com/long.mp4",
+          alt: "",
+          mimeType: "video/mp4",
+          durationSeconds: 45,
+          size: 2_000_000,
+        },
+      ],
+      0,
+    );
+    await flush(el);
+
+    const video = el.querySelector<HTMLVideoElement>(".media-lightbox-video");
+    expect(video?.hasAttribute("controls")).toBe(true);
+    expect(el.querySelector(".media-lightbox-short-controls")).toBeNull();
   });
 });

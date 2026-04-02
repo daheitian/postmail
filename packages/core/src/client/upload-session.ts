@@ -40,6 +40,7 @@ interface InitiateResponse {
 export interface UploadSessionMetadata {
   width?: number;
   height?: number;
+  durationSeconds?: number;
   blurhash?: string;
   waveform?: string;
   poster?: Blob;

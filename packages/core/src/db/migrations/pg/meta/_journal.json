@@ -43,6 +43,13 @@
       "when": 1775027563589,
       "tag": "0005_romantic_mesmero",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775108281543,
+      "tag": "0006_perpetual_bruce_banner",
+      "breakpoints": true
     }
   ]
 }

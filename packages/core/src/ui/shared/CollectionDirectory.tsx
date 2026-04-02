@@ -89,9 +89,8 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
           const sequence = formatSequence(itemIndex);
 
           return (
-            <a
+            <div
               key={item.id}
-              href={toPublicHref(item.url, sitePathPrefix)}
               class="collection-directory-item collection-directory-item-link"
             >
               <div class="collection-directory-main">
@@ -99,34 +98,41 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                   {sequence}
                 </span>
                 <div class="collection-directory-title-row">
-                  <span class="collection-directory-title">
-                    {item.label}
-                    <span
-                      class="collection-directory-title-marker"
-                      aria-hidden="true"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                  <a
+                    href={toPublicHref(item.url, sitePathPrefix)}
+                    class="collection-directory-title-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span class="collection-directory-title">
+                      {item.label}
+                      <span
+                        class="collection-directory-title-marker"
+                        aria-hidden="true"
                       >
-                        <path d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.08L11.7 5.24" />
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-2.92 2.92a5 5 0 0 0 7.07 7.08l1.69-1.7" />
-                      </svg>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.08L11.7 5.24" />
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-2.92 2.92a5 5 0 0 0 7.07 7.08l1.69-1.7" />
+                        </svg>
+                      </span>
                     </span>
-                  </span>
+                  </a>
                 </div>
                 <p class="collection-directory-summary">
                   <span class="collection-directory-meta">Link</span>
                 </p>
               </div>
-            </a>
+            </div>
           );
         }
 
@@ -136,19 +142,20 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
         const sequence = formatSequence(itemIndex);
 
         return (
-          <a
-            key={item.id}
-            href={toPublicPath(`/c/${collection.slug}`, sitePathPrefix)}
-            class="collection-directory-item"
-          >
+          <div key={item.id} class="collection-directory-item">
             <div class="collection-directory-main">
               <span class="collection-directory-sequence" aria-hidden="true">
                 {sequence}
               </span>
               <div class="collection-directory-title-row">
-                <span class="collection-directory-title">
-                  {collection.title}
-                </span>
+                <a
+                  href={toPublicPath(`/c/${collection.slug}`, sitePathPrefix)}
+                  class="collection-directory-title-link"
+                >
+                  <span class="collection-directory-title">
+                    {collection.title}
+                  </span>
+                </a>
               </div>
               <p class="collection-directory-summary">
                 <span class="collection-directory-meta">
@@ -181,7 +188,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                 </time>
               </p>
             </div>
-          </a>
+          </div>
         );
       })}
     </div>

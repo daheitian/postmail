@@ -269,6 +269,7 @@ async function uploadFile(
     let toUpload: File;
     let width: number | undefined;
     let height: number | undefined;
+    let durationSeconds: number | undefined;
     let blurhash: string | undefined;
     let waveform: string | undefined;
     let poster: Blob | undefined;
@@ -299,6 +300,7 @@ async function uploadFile(
       toUpload = result.file;
       width = result.width;
       height = result.height;
+      durationSeconds = result.durationSeconds;
       blurhash = result.blurhash;
       poster = result.poster;
       if (poster) {
@@ -407,6 +409,7 @@ async function uploadFile(
       {
         width,
         height,
+        durationSeconds,
         blurhash,
         waveform,
         poster,

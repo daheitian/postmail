@@ -84,6 +84,7 @@ export interface Media {
   provider: string;
   width: number | null;
   height: number | null;
+  durationSeconds: number | null;
   alt: string | null;
   position: string;
   blurhash: string | null;
@@ -106,6 +107,7 @@ export interface MediaAttachment {
   posterUrl: string | null;
   width: number | null;
   height: number | null;
+  durationSeconds: number | null;
   position: string;
   mimeType: string;
   originalName: string;

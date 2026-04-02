@@ -20,6 +20,7 @@ const InitiateUploadSchema = z.object({
 const CompleteUploadSchema = z.object({
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
+  durationSeconds: z.number().int().positive().optional(),
   blurhash: z.string().max(200).optional(),
   waveform: z.string().max(2000).optional(),
   summary: z.string().max(500).optional(),
