@@ -335,15 +335,15 @@ describe("Upload Session API Routes", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        filename: "photo.jpg",
-        contentType: "image/jpeg",
+        filename: "photo.bmp",
+        contentType: "image/bmp",
         size: 128,
       }),
     });
 
     expect(res.status).toBe(400);
     await expect(res.json()).resolves.toMatchObject({
-      error: 'File type "image/jpeg" is not supported.',
+      error: 'File type "image/bmp" is not supported.',
     });
   });
 

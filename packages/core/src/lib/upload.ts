@@ -187,6 +187,7 @@ const ATTACHMENT_ONLY_MIME_TYPES = new Set([
 const INLINE_SIGNATURE_MIME_TYPES = new Set([
   "image/webp",
   "image/png",
+  "image/jpeg",
   "video/mp4",
   "audio/mp4",
   "application/pdf",
@@ -333,7 +334,11 @@ export function getStoredUploadPolicy(
   contentType: string,
 ): StoredUploadPolicy | null {
   if (contentType.startsWith("image/")) {
-    if (contentType !== "image/webp" && contentType !== "image/png")
+    if (
+      contentType !== "image/webp" &&
+      contentType !== "image/png" &&
+      contentType !== "image/jpeg"
+    )
       return null;
     return {
       contentDisposition: "inline",
@@ -417,6 +422,10 @@ export function validateStoredUploadSignature(
         readAscii(bytes, 8, 4) === "WEBP"
         ? null
         : "File does not match the expected WebP format.";
+    case "image/jpeg":
+      return bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xd8
+        ? null
+        : "File does not match the expected JPEG format.";
     case "image/png":
       return bytes.length >= 8 &&
         bytes[0] === 0x89 &&

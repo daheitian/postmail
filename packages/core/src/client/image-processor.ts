@@ -4,7 +4,7 @@
  * Processes images before upload:
  * - Resizes to max dimensions
  * - Strips all metadata (privacy)
- * - Converts to WebP format
+ * - Converts to WebP format (JPEG fallback when WebP encoding is unavailable)
  *
  * EXIF orientation is handled automatically by the browser — modern
  * engines (Chrome 81+, Safari 13.1+, Firefox 93+) apply orientation
@@ -55,6 +55,39 @@ function calculateDimensions(
   };
 }
 
+/**
+ * Convert canvas to Blob, falling back to JPEG when the requested format
+ * (typically WebP) is not supported by the browser (e.g. Safari).
+ */
+async function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  mimeType: string,
+  quality: number,
+): Promise<Blob> {
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("Failed to create blob"))),
+      mimeType,
+      quality,
+    );
+  });
+
+  // Browser silently falls back to PNG when it can't encode the requested
+  // format. PNG ignores the quality parameter, producing oversized files.
+  // Re-encode as JPEG instead so lossy compression still applies.
+  if (mimeType !== "image/png" && blob.type === "image/png") {
+    return new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("Failed to create blob"))),
+        "image/jpeg",
+        quality,
+      );
+    });
+  }
+
+  return blob;
+}
+
 export interface ProcessResult {
   blob: Blob;
   width: number;
@@ -96,20 +129,7 @@ async function process(
   // drawImage respects EXIF orientation — no manual rotation needed
   ctx.drawImage(img, 0, 0, width, height);
 
-  // Export as WebP (falls back to PNG on browsers that don't support WebP encoding)
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (b) => {
-        if (b) {
-          resolve(b);
-        } else {
-          reject(new Error("Failed to create blob"));
-        }
-      },
-      opts.mimeType,
-      opts.quality,
-    );
-  });
+  const blob = await canvasToBlob(canvas, opts.mimeType, opts.quality);
 
   return { blob, width, height };
 }
@@ -123,8 +143,13 @@ async function processToFile(
 ): Promise<ProcessToFileResult> {
   const { blob, width, height } = await process(file, options);
 
-  // Use actual blob type — Safari may fall back to PNG when WebP encoding isn't supported
-  const ext = blob.type === "image/webp" ? "webp" : "png";
+  // Use actual blob type — Safari falls back to JPEG when WebP encoding isn't supported
+  const EXT_MAP: Record<string, string> = {
+    "image/webp": "webp",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+  };
+  const ext = EXT_MAP[blob.type] ?? "png";
   const originalName = file.name.replace(/\.[^.]+$/, "");
   const newName = `${originalName}.${ext}`;
 
