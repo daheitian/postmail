@@ -11,6 +11,10 @@ const THREAD_CONTEXT_DISPLAY = {
   },
 } as const;
 
+const THREAD_CONTEXT_LAST_DISPLAY = {
+  hideRating: true,
+} as const;
+
 const CURATED_SEGMENT_DISPLAY = {} as const;
 
 interface CuratedThreadPreviewProps {
@@ -29,7 +33,7 @@ export const CuratedThreadPreview: FC<CuratedThreadPreviewProps> = ({
 
   return (
     <div class="thread-group thread-group-preview thread-group-curated">
-      {segments.map((segment) => [
+      {segments.map((segment, index) => [
         segment.hiddenBeforeCount > 0 ? (
           <div
             key={`gap-${segment.post.id}`}
@@ -65,7 +69,11 @@ export const CuratedThreadPreview: FC<CuratedThreadPreviewProps> = ({
             <TimelineItemFromPost
               post={segment.post}
               mode="feed"
-              display={THREAD_CONTEXT_DISPLAY}
+              display={
+                index === segments.length - 1
+                  ? THREAD_CONTEXT_LAST_DISPLAY
+                  : THREAD_CONTEXT_DISPLAY
+              }
             />
           )}
         </div>,
