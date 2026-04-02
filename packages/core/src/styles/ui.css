@@ -9317,10 +9317,18 @@
     color-scheme: light;
   }
 
+  .theme-preview-panel input[type="radio"] {
+    accent-color: var(--preview-primary-light);
+  }
+
   .theme-preview-panel[data-theme-preview-mode="dark"] {
     background: var(--preview-bg-dark);
     color: var(--preview-fg-dark);
     color-scheme: dark;
+  }
+
+  .theme-preview-panel[data-theme-preview-mode="dark"] input[type="radio"] {
+    accent-color: var(--preview-primary-dark);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -9328,6 +9336,10 @@
       background: var(--preview-bg-dark);
       color: var(--preview-fg-dark);
       color-scheme: dark;
+    }
+
+    .theme-preview-panel[data-theme-preview-mode="auto"] input[type="radio"] {
+      accent-color: var(--preview-primary-dark);
     }
   }
 

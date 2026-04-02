@@ -369,97 +369,134 @@ export class JantPostMenu extends LitElement {
     }
   }
 
-  async #setVisibility(newVisibility: string) {
+  #setVisibility(newVisibility: string) {
     if (!this._data) return;
+    const postId = this._data.id;
+    const oldVisibility = this._data.visibility;
 
-    try {
-      const res = await fetch(`/api/posts/${this._data.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ visibility: newVisibility }),
-      });
-      if (!res.ok) throw new Error();
+    // Optimistic update
+    const article = document.querySelector<HTMLElement>(
+      `article[data-post-id="${postId}"]`,
+    );
+    if (article) article.dataset.postVisibility = newVisibility;
+    this._data = { ...this._data, visibility: newVisibility };
 
-      // Update article's data attribute
-      const article = document.querySelector<HTMLElement>(
-        `article[data-post-id="${this._data.id}"]`,
-      );
-      if (article) article.dataset.postVisibility = newVisibility;
-      this._data = { ...this._data, visibility: newVisibility };
-
-      const messages: Record<string, string> = {
-        public: "Post made public.",
-        latest_hidden: "Hidden from Latest.",
-        private: "Post made private.",
-      };
-      showToast(messages[newVisibility] ?? "Visibility updated.");
-    } catch {
-      showToast("Could not update post. Try again.", "error");
-    }
+    const messages: Record<string, string> = {
+      public: "Post made public.",
+      latest_hidden: "Hidden from Latest.",
+      private: "Post made private.",
+    };
+    showToast(messages[newVisibility] ?? "Visibility updated.");
     this.#close();
+
+    // Fire request in background, revert on failure
+    fetch(`/api/posts/${postId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visibility: newVisibility }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error();
+      })
+      .catch(() => {
+        // Revert
+        const el = document.querySelector<HTMLElement>(
+          `article[data-post-id="${postId}"]`,
+        );
+        if (el) el.dataset.postVisibility = oldVisibility;
+        showToast("Could not update visibility. Try again.", "error");
+      });
   }
 
-  async #setFeatured(featured: boolean) {
+  #setFeatured(featured: boolean) {
     if (!this._data) return;
+    const postId = this._data.id;
 
-    try {
-      const res = await fetch(`/api/posts/${this._data.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ featured }),
-      });
-      if (!res.ok) throw new Error();
-
-      // Update article's data attribute
-      const article = document.querySelector<HTMLElement>(
-        `article[data-post-id="${this._data.id}"]`,
-      );
-      if (article) {
-        if (featured) {
-          article.setAttribute("data-post-featured", "");
-        } else {
-          article.removeAttribute("data-post-featured");
-        }
+    // Optimistic update
+    const article = document.querySelector<HTMLElement>(
+      `article[data-post-id="${postId}"]`,
+    );
+    if (article) {
+      if (featured) {
+        article.setAttribute("data-post-featured", "");
+      } else {
+        article.removeAttribute("data-post-featured");
       }
-      this._data = { ...this._data, featured };
-
-      showToast(featured ? "Added to Featured." : "Removed from Featured.");
-    } catch {
-      showToast("Could not update post. Try again.", "error");
     }
+    this._data = { ...this._data, featured };
+
+    showToast(featured ? "Added to Featured." : "Removed from Featured.");
     this.#close();
+
+    // Fire request in background, revert on failure
+    fetch(`/api/posts/${postId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ featured }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error();
+      })
+      .catch(() => {
+        // Revert
+        const el = document.querySelector<HTMLElement>(
+          `article[data-post-id="${postId}"]`,
+        );
+        if (el) {
+          if (featured) {
+            el.removeAttribute("data-post-featured");
+          } else {
+            el.setAttribute("data-post-featured", "");
+          }
+        }
+        showToast("Could not update post. Try again.", "error");
+      });
   }
 
-  async #togglePin() {
+  #togglePin() {
     if (!this._data) return;
+    const postId = this._data.id;
     const newPinned = !this._data.pinned;
 
-    try {
-      const res = await fetch(`/api/posts/${this._data.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pinned: newPinned }),
-      });
-      if (!res.ok) throw new Error();
-
-      // Update article's data attribute
-      const article = document.querySelector<HTMLElement>(
-        `article[data-post-id="${this._data.id}"]`,
-      );
-      if (article) {
-        if (newPinned) {
-          article.setAttribute("data-post-pinned", "");
-        } else {
-          article.removeAttribute("data-post-pinned");
-        }
+    // Optimistic update
+    const article = document.querySelector<HTMLElement>(
+      `article[data-post-id="${postId}"]`,
+    );
+    if (article) {
+      if (newPinned) {
+        article.setAttribute("data-post-pinned", "");
+      } else {
+        article.removeAttribute("data-post-pinned");
       }
-      this._data = { ...this._data, pinned: newPinned };
-
-      showToast(newPinned ? "Post pinned." : "Post unpinned.");
-    } catch {
-      showToast("Could not update post. Try again.", "error");
     }
+    this._data = { ...this._data, pinned: newPinned };
+
+    showToast(newPinned ? "Post pinned." : "Post unpinned.");
     this.#close();
+
+    // Fire request in background, revert on failure
+    fetch(`/api/posts/${postId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pinned: newPinned }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error();
+      })
+      .catch(() => {
+        // Revert
+        const el = document.querySelector<HTMLElement>(
+          `article[data-post-id="${postId}"]`,
+        );
+        if (el) {
+          if (newPinned) {
+            el.removeAttribute("data-post-pinned");
+          } else {
+            el.setAttribute("data-post-pinned", "");
+          }
+        }
+        showToast("Could not update post. Try again.", "error");
+      });
   }
 
   async #delete() {
@@ -536,54 +573,60 @@ export class JantPostMenu extends LitElement {
     );
   }
 
-  async #toggleCollection(collectionId: string) {
+  #toggleCollection(collectionId: string) {
     if (!this._data) return;
+    const postId = this._data.id;
     const isSelected = this._postCollectionIds.includes(collectionId);
 
-    try {
-      if (isSelected) {
-        const res = await fetch(
-          `/api/collections/${collectionId}/posts/${this._data.id}`,
-          { method: "DELETE" },
-        );
-        if (!res.ok) throw new Error();
-        this._postCollectionIds = this._postCollectionIds.filter(
-          (id) => id !== collectionId,
-        );
-        this.#collectionsDirty = true;
-        showToast("Removed from collection.");
-      } else {
-        const res = await fetch(`/api/collections/${collectionId}/posts`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ postId: this._data.id }),
-        });
-        if (!res.ok) {
-          const body = (await res
-            .json()
-            .catch(() => null)) as ErrorResponse | null;
-          if (res.status === 409 || body?.error?.includes("already")) {
-            if (!this._postCollectionIds.includes(collectionId)) {
-              this._postCollectionIds = [
-                ...this._postCollectionIds,
-                collectionId,
-              ];
-            }
-            return;
-          }
-          throw new Error();
-        }
-        this._postCollectionIds = [...this._postCollectionIds, collectionId];
-        this.#collectionsDirty = true;
-        showToast("Added to collection.");
-      }
-    } catch {
-      showToast(
-        isSelected
-          ? "Could not remove from collection. Try again."
-          : "Could not add to collection. Try again.",
-        "error",
+    // Optimistic update
+    if (isSelected) {
+      this._postCollectionIds = this._postCollectionIds.filter(
+        (id) => id !== collectionId,
       );
+    } else {
+      this._postCollectionIds = [...this._postCollectionIds, collectionId];
+    }
+    this.#collectionsDirty = true;
+    showToast(isSelected ? "Removed from collection." : "Added to collection.");
+
+    // Fire request in background, revert on failure
+    if (isSelected) {
+      fetch(`/api/collections/${collectionId}/posts/${postId}`, {
+        method: "DELETE",
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error();
+        })
+        .catch(() => {
+          // Revert: re-add
+          if (!this._postCollectionIds.includes(collectionId)) {
+            this._postCollectionIds = [
+              ...this._postCollectionIds,
+              collectionId,
+            ];
+          }
+          showToast("Could not remove from collection. Try again.", "error");
+        });
+    } else {
+      fetch(`/api/collections/${collectionId}/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId }),
+      })
+        .then((res) => {
+          if (!res.ok) {
+            // 409 means already added — not an error, keep optimistic state
+            if (res.status === 409) return;
+            throw new Error();
+          }
+        })
+        .catch(() => {
+          // Revert: remove
+          this._postCollectionIds = this._postCollectionIds.filter(
+            (id) => id !== collectionId,
+          );
+          showToast("Could not add to collection. Try again.", "error");
+        });
     }
   }
 
