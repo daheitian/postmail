@@ -2113,15 +2113,11 @@ export function createPostService(
         await applyAttachmentAltUpdates(attachments, deps);
 
         const nextAttachmentIds = new Set(orderedMediaIds);
-        const removedTextAttachmentIds = existingAttachments
-          .filter(
-            (attachment) =>
-              attachment.mimeType === "text/x-tiptap+json" &&
-              !nextAttachmentIds.has(attachment.id),
-          )
+        const removedAttachmentIds = existingAttachments
+          .filter((attachment) => !nextAttachmentIds.has(attachment.id))
           .map((attachment) => attachment.id);
         await deps.media
-          .deleteByIds(removedTextAttachmentIds, deps.storage)
+          .deleteByIds(removedAttachmentIds, deps.storage)
           .catch(() => undefined);
 
         // Best-effort: update link preview when URL changes
