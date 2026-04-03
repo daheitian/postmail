@@ -182,6 +182,7 @@
     justify-content: flex-end;
     gap: 0.9rem;
     min-width: 0;
+    font-family: var(--font-ui);
   }
 
   .site-header-link {
@@ -305,6 +306,7 @@
     flex-wrap: wrap;
     gap: 0.55rem;
     padding: 14px 0 4px;
+    font-family: var(--font-ui);
   }
 
   .site-browse-sep {
@@ -686,6 +688,7 @@
     gap: 0.2rem 0.5rem;
     margin: 0;
     color: var(--muted-foreground);
+    font-family: var(--font-ui);
     font-size: 0.8rem;
     line-height: 1.5;
     white-space: nowrap;
@@ -942,6 +945,7 @@
 
   .collection-page-meta {
     margin: 0;
+    font-family: var(--font-ui);
     font-size: var(--text-sm);
     color: var(--muted-foreground);
     line-height: 1.35;
@@ -1399,6 +1403,7 @@
     border-radius: 0;
     background: none;
     color: var(--site-text-secondary);
+    font-family: var(--font-ui);
     font-size: 0.75rem;
     font-weight: var(--type-label-weight);
     line-height: 1;
@@ -1486,6 +1491,7 @@
 
   .post-header-meta-link {
     color: var(--site-text-secondary);
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     text-decoration: none;
     white-space: nowrap;
@@ -1973,6 +1979,7 @@
     flex-wrap: wrap;
     margin-top: 0.95rem;
     color: var(--site-text-secondary);
+    font-family: var(--font-ui);
     font-size: 0.75rem;
     letter-spacing: 0.08em;
     line-height: 1.4;
@@ -2172,6 +2179,7 @@
     gap: 5px;
     flex-wrap: wrap;
     min-width: 0;
+    font-family: var(--font-ui);
     line-height: 1.35;
   }
 
@@ -3160,6 +3168,7 @@
     cursor: pointer;
     text-align: left;
     color: var(--site-text-primary);
+    font-family: var(--font-ui);
     opacity: 0.5;
     transition: opacity 0.15s;
   }
@@ -3300,6 +3309,7 @@
     padding: 0;
     margin-inline-start: 8px;
     color: var(--site-text-secondary);
+    font-family: var(--font-ui);
     font-size: var(--text-sm);
     line-height: 1;
     text-decoration: underline;
@@ -3757,6 +3767,7 @@
     padding: 3px;
     position: relative;
     box-shadow: inset 0 0 0 1px var(--compose-control-border);
+    font-family: var(--font-ui);
   }
 
   .compose-format-pill {
@@ -6370,7 +6381,7 @@
     align-items: center;
     gap: 6px;
     font-size: var(--text-sm);
-    font-family: var(--font-body);
+    font-family: var(--font-ui);
     color: var(--site-text-secondary);
     padding: 4px 12px 4px 9px;
     border-radius: 20px;
@@ -6419,7 +6430,7 @@
     align-items: center;
     gap: 6px;
     font-size: var(--text-sm);
-    font-family: var(--font-body);
+    font-family: var(--font-ui);
     color: var(--site-text-secondary);
     padding: 4px 12px 4px 9px;
     border-radius: 20px;
@@ -9379,6 +9390,7 @@
 
   .archive-tile-summary {
     display: block;
+    font-family: var(--font-body);
     font-size: 0.74rem;
     line-height: 1.48;
   }

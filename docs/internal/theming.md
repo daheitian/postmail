@@ -88,6 +88,19 @@ Define themes in `src/ui/color-themes.ts` using `defineTheme()`. Each theme spec
 
 Optional colors fall back to sensible defaults. Override them when the default clashes with the theme's palette (e.g. green `--success` on the Gameboy green theme).
 
+### Typographic Voice Separation
+
+The font system distinguishes two voices:
+
+- **Content voice** (`--font-heading`, `--font-body`, `--font-serif`) — controlled by the active font theme. Used for post titles, body text, quotes, and anything the user is _reading_.
+- **UI voice** (`--font-ui`) — always system sans-serif, never overridden by font themes. Used for buttons, badges, navigation, timestamps, form labels, admin headings, and anything the user is _operating_.
+
+**Decision rule:** if the user is reading it, use content voice. If the user is interacting with it, use UI voice.
+
+This separation is invisible when the font theme is sans-serif (most themes), but becomes critical with serif themes like Tufte or Bookish — serif buttons and navigation labels look broken.
+
+`--font-ui` is defined in `tokens.css` and wired into BaseCoat via `--default-font-family` in `preset.css`, so all BaseCoat components (`.btn`, `.badge`, `.input`, `.alert`, `.select`) automatically use the UI font. Content elements override with `var(--font-body)` or `var(--font-heading)` as needed.
+
 ### Animation
 
 Transitions use these CSS variables:
