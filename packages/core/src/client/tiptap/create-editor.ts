@@ -8,6 +8,7 @@ import { Editor, type JSONContent } from "@tiptap/core";
 import { createEditorExtensions } from "./extensions.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
 import type { PasteMediaOptions } from "./paste-media.js";
+import { normalizeFootnoteArtifacts } from "../../lib/footnotes.js";
 import { tiptapJsonToMarkdown } from "../../lib/tiptap-to-markdown.js";
 
 export interface CreateEditorOptions {
@@ -41,7 +42,7 @@ export function createTiptapEditor(options: CreateEditorOptions): Editor {
       scrollThreshold: { top: 5, right: 5, bottom: 80, left: 5 },
     },
     onUpdate: ({ editor }) => {
-      options.onUpdate?.(editor.getJSON());
+      options.onUpdate?.(normalizeFootnoteArtifacts(editor.getJSON()));
     },
     onFocus: () => {
       options.onFocus?.();

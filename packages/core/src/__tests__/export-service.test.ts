@@ -352,7 +352,7 @@ describe("createExportService", () => {
       '<sup class="footnote-ref" data-footnote-reference>',
     );
     expect(postMarkdown).toContain(
-      '<section class="footnotes" data-footnotes>',
+      '<section class="footnotes" data-footnotes><hr>',
     );
     expect(postMarkdown).toContain("<em>footnote</em>");
     expect(postMarkdown).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
@@ -439,7 +439,7 @@ describe("createExportService", () => {
       'site_footer_html = "<p>Read the <a href=\\"https://example.com\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">docs</a><sup class=\\"footnote-ref\\" data-footnote-reference><a href=\\"#fn-1\\" id=\\"fnref-1\\">1</a></sup></p>',
     );
     expect(configToml).toContain(
-      '<section class=\\"footnotes\\" data-footnotes><ol><li id=\\"fn-1\\"><p>Footer note <a href=\\"#fnref-1\\" class=\\"footnote-backref\\" aria-label=\\"Back to reference\\">↩</a></p></li></ol></section>"',
+      '<section class=\\"footnotes\\" data-footnotes><hr><ol><li id=\\"fn-1\\"><p>Footer note <a href=\\"#fnref-1\\" class=\\"footnote-backref\\" aria-label=\\"Back to reference\\">↩</a></p></li></ol></section>"',
     );
     expect(configToml).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
   });

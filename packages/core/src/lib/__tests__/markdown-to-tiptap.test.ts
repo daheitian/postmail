@@ -401,7 +401,7 @@ describe("end-to-end: Markdown → markdownToTiptapJson → renderTiptapJson", (
     expect(html).toContain(
       '<sup class="footnote-ref" data-footnote-reference>',
     );
-    expect(html).toContain('<section class="footnotes" data-footnotes>');
+    expect(html).toContain('<section class="footnotes" data-footnotes><hr>');
     expect(html).toContain("Footnote body");
   });
 

@@ -6,7 +6,11 @@
  */
 
 import type { JSONContent } from "@tiptap/core";
-import { getFootnoteDomId, normalizeFootnoteLabel } from "./footnotes.js";
+import {
+  getFootnoteDomId,
+  normalizeFootnoteArtifacts,
+  normalizeFootnoteLabel,
+} from "./footnotes.js";
 import { escapeHtml } from "./html.js";
 import { renderPublishedImageFigure } from "./rich-image.js";
 import { sanitizeUrl } from "./url.js";
@@ -144,7 +148,7 @@ const NODE_RENDERERS: Record<string, NodeRenderer> = {
       )
       .join("");
 
-    return `${bodyHtml}<section class="footnotes" data-footnotes><ol>${footnotesHtml}</ol></section>`;
+    return `${bodyHtml}<section class="footnotes" data-footnotes><hr><ol>${footnotesHtml}</ol></section>`;
   },
   paragraph: (node, context) =>
     `<p>${context.renderChildren(node.content)}</p>`,
@@ -228,7 +232,7 @@ const RENDER_CONTEXT: RenderContext = {
  */
 export function renderTiptapDocument(doc: JSONContent): string {
   if (doc.type !== "doc") return "";
-  return renderNode(doc as TiptapNode);
+  return renderNode(normalizeFootnoteArtifacts(doc) as TiptapNode);
 }
 
 /**

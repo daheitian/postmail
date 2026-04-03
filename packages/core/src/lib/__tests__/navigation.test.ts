@@ -48,7 +48,7 @@ describe("getNavigationData", () => {
       '<sup class="footnote-ref" data-footnote-reference>',
     );
     expect(result.siteFooterHtml).toContain(
-      '<section class="footnotes" data-footnotes>',
+      '<section class="footnotes" data-footnotes><hr>',
     );
     expect(result.siteFooterHtml).toContain("<strong>note</strong>");
     expect(result.siteFooterHtml).toContain(

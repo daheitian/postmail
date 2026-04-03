@@ -18,6 +18,7 @@ import {
   getFootnoteDefinitionLabelText,
   getFootnoteReferenceText,
   indentFootnoteMarkdown,
+  normalizeFootnoteArtifacts,
   normalizeFootnoteLabel,
   parseFootnoteDefinition,
 } from "./footnotes.js";
@@ -641,5 +642,7 @@ export function parseMarkdownDocument(markdown: string): JSONContent {
 }
 
 export function serializeMarkdownDocument(doc: JSONContent): string {
-  return expandCodeBlockFences(getMarkdownManager().serialize(doc));
+  return expandCodeBlockFences(
+    getMarkdownManager().serialize(normalizeFootnoteArtifacts(doc)),
+  );
 }

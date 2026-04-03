@@ -14,6 +14,7 @@ import { BubbleMenu } from "./bubble-menu.js";
 import { LinkToolbar } from "./link-toolbar.js";
 import { ExitableMarks } from "./exitable-marks.js";
 import { LinkInputRules } from "./link-input-rules.js";
+import { Footnotes } from "./footnotes.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
 import { ImageNode } from "./image-node.js";
 import { MoreBreak } from "./more-break.js";
@@ -49,6 +50,7 @@ export function createEditorExtensions(
     Placeholder.configure({
       placeholder: options.placeholder ?? "Write something…",
     }),
+    Footnotes,
     LinkInputRules,
     MarkdownClipboard,
     SlashCommands,

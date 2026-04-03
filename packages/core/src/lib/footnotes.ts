@@ -6,6 +6,8 @@
  * and editor schema.
  */
 
+import type { JSONContent } from "@tiptap/core";
+
 const FOOTNOTE_LABEL_FALLBACK = "footnote";
 const FOOTNOTE_CONTINUATION_PREFIX = /^(?: {4}|\t)/;
 const FOOTNOTE_DEFINITION_PREFIX = /^\[\^([^\]\n]+)\]:(.*)(?:\n|$)/;
@@ -46,6 +48,38 @@ export function indentFootnoteMarkdown(content: string): string {
     .split("\n")
     .map((line) => `    ${line}`)
     .join("\n");
+}
+
+function isEmptyParagraphNode(node: JSONContent | undefined): boolean {
+  return (
+    node?.type === "paragraph" && (!node.content || node.content.length === 0)
+  );
+}
+
+/**
+ * Removes editor-only empty paragraphs that can be left behind after inserting
+ * footnote definitions. They are not meaningful document content.
+ */
+export function normalizeFootnoteArtifacts(doc: JSONContent): JSONContent {
+  if (
+    doc.type !== "doc" ||
+    !Array.isArray(doc.content) ||
+    doc.content.length < 2
+  ) {
+    return doc;
+  }
+
+  const content = [...doc.content];
+
+  while (
+    content.length >= 2 &&
+    isEmptyParagraphNode(content[content.length - 1]) &&
+    content[content.length - 2]?.type === "footnoteDefinition"
+  ) {
+    content.pop();
+  }
+
+  return content.length === doc.content.length ? doc : { ...doc, content };
 }
 
 /**

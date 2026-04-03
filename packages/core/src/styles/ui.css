@@ -8103,20 +8103,35 @@
   }
 
   .compose-tiptap-body .tiptap .tiptap-footnote-definition {
-    position: relative;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: 1rem;
+    align-items: start;
     margin: 1rem 0;
-    padding-inline-start: 3.75rem;
   }
 
   .compose-tiptap-body .tiptap .tiptap-footnote-definition::before {
     content: attr(data-footnote-label);
-    position: absolute;
-    inset-inline-start: 0;
-    top: 0;
+    grid-column: 1;
+    align-self: start;
     color: var(--site-text-secondary);
     font-size: 0.875rem;
     line-height: 1.6;
     white-space: nowrap;
+  }
+
+  .compose-tiptap-body .tiptap .tiptap-footnote-definition > * {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .compose-tiptap-body
+    .tiptap
+    > :not(.tiptap-footnote-definition)
+    + .tiptap-footnote-definition {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--site-divider);
   }
 
   .compose-tiptap-body .tiptap .tiptap-footnote-definition > :first-child {

@@ -80,7 +80,7 @@ describe("renderTiptapDocument", () => {
     );
 
     expect(html).toBe(
-      '<p>Body copy<sup class="footnote-ref" data-footnote-reference><a href="#fn-1" id="fnref-1">1</a></sup></p><section class="footnotes" data-footnotes><ol><li id="fn-1"><p>Footnote body <a href="#fnref-1" class="footnote-backref" aria-label="Back to reference">↩</a></p></li></ol></section>',
+      '<p>Body copy<sup class="footnote-ref" data-footnote-reference><a href="#fn-1" id="fnref-1">1</a></sup></p><section class="footnotes" data-footnotes><hr><ol><li id="fn-1"><p>Footnote body <a href="#fnref-1" class="footnote-backref" aria-label="Back to reference">↩</a></p></li></ol></section>',
     );
   });
 

@@ -93,6 +93,7 @@ HTML rendering behavior:
 
 - Inline references render as linked `<sup>` anchors
 - Definitions render once in a trailing `<section class="footnotes">`
+- The rendered footnote section starts with an `<hr>` separator
 - Back references are emitted automatically
 
 Serialization behavior:
@@ -104,7 +105,14 @@ Current editor behavior:
 
 - Footnotes are preserved structurally in TipTap JSON
 - Pasted/imported Markdown footnotes parse into footnote nodes
-- Dedicated insertion UI is intentionally out of scope for this MVP
+- `/footnote` inserts a paired reference and definition with the next numeric label
+- Typing `[^label]` followed by a delimiter converts to a reference and auto-appends a missing definition
+- Pressing `Enter` at the end of a paragraph after a raw `[^label]` converts it, ensures a definition exists, and moves the cursor into that footnote
+- Once the reference has been converted into a footnote node, `Enter` returns to normal paragraph splitting behavior
+- Typing `[^label]: ` converts the current paragraph into a definition block
+- Typing `[^label]: ` inside an existing footnote definition promotes that paragraph into a sibling definition
+- Deleting the last remaining reference also deletes its definition
+- Deleting a definition deletes all references that point at it
 
 ## Raw HTML Policy
 
