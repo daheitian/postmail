@@ -27,6 +27,10 @@
   --default-mono-font-family: var(--font-mono);
 }
 
+html {
+  font-size: 15px;
+}
+
 :root {
   --success: oklch(0.518 0.16 145.071);
 }
@@ -181,7 +185,12 @@
     line-height: var(--type-heading-leading);
   }
 
-  /* Tufte heading scale */
+  /* Tufte typographic scale — sizes, margins, and rhythm */
+  :where(p) {
+    margin-top: 1.4rem;
+    margin-bottom: 1.4rem;
+  }
+
   :where(h1) {
     font-size: 3.2rem;
     margin-top: 4rem;
@@ -200,6 +209,24 @@
     font-style: italic;
     margin-top: 2rem;
     margin-bottom: 1.4rem;
+  }
+
+  :where(li:not(:first-child), dt:not(:first-child)) {
+    margin-top: 0.25rem;
+  }
+
+  :where(code, pre code) {
+    font-size: 1rem;
+    line-height: 1.42;
+    overflow-wrap: break-word;
+  }
+
+  :where(pre code) {
+    font-size: 0.9rem;
+  }
+
+  :where(h1, h2, h3) :where(code) {
+    font-size: 0.8em;
   }
 
   /* Image figures */
@@ -303,8 +330,8 @@
     --site-prose-link-underline,
     var(--site-content-link-underline)
   );
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.14em;
+  text-decoration-thickness: 0.05em;
+  text-underline-offset: 0.1em;
   transition:
     color 0.18s ease,
     text-decoration-color 0.18s ease;

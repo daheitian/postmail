@@ -99,9 +99,7 @@ export const LinkCard: FC<TimelineCardProps> = ({
     <>
       {domainEl}
       {post.title && (
-        <h2
-          class={`p-name feed-link-title font-semibold ${isCompact ? "text-sm" : ""} mb-1`}
-        >
+        <h2 class={`p-name feed-link-title ${isCompact ? "text-sm" : ""}`}>
           <a
             href={safeUrl || post.permalink}
             class="u-url feed-link-title-link"
