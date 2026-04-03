@@ -73,7 +73,7 @@ const LITERARY_SERIF = `"Literata Variable", Literata, Palatino, "Palatino Linot
  * ET Book derives from Bembo; Palatino shares the old-style proportions
  * and is pre-installed on macOS, iOS, and Windows.
  */
-const TUFTE_SERIF = `Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua", "Source Serif 4", ${CJK_SERIF_FALLBACK_VAR}, ui-serif, serif`;
+const TUFTE_SERIF = `et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua", "Source Serif 4", ${CJK_SERIF_FALLBACK_VAR}, ui-serif, serif`;
 
 /**
  * Geometric sans stack

@@ -209,7 +209,7 @@ export function resolveConfig(
     defaultThemeId:
       getEnvString(env, "DEFAULT_THEME") ||
       CONFIG_FIELDS.DEFAULT_THEME.defaultValue,
-    fontThemeId: allSettings["FONT_THEME"] ?? "",
+    fontThemeId: allSettings["FONT_THEME"] ?? "tufte",
     themeMode:
       allSettings["THEME_MODE"] === "light" ||
       allSettings["THEME_MODE"] === "dark"

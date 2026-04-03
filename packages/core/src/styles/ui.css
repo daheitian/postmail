@@ -9813,10 +9813,6 @@
 
   /* --- Public brand page ------------------------------------------------- */
 
-  body:has([data-page="brand"]) .site-main {
-    max-width: min(1140px, calc(100vw - 1.5rem));
-  }
-
   .brand-page {
     display: flex;
     flex-direction: column;

@@ -59,7 +59,7 @@ export const CONFIG_FIELDS = {
 
   // Environment-only (deployment/infrastructure config)
   DEFAULT_THEME: {
-    defaultValue: "linen",
+    defaultValue: "tufte",
     envOnly: true,
     envKeys: ["DEFAULT_THEME"],
   },

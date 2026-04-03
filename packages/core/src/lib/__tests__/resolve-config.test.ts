@@ -311,7 +311,7 @@ describe("resolveConfig", () => {
 
     // Falls back to default
     const config2 = resolveConfig(makeEnv(), {});
-    expect(config2.defaultThemeId).toBe("linen");
+    expect(config2.defaultThemeId).toBe("tufte");
   });
 
   it("uses unprefixed env names across the config surface", () => {

@@ -43,6 +43,16 @@ html {
   font-size: 15px;
 }
 
+/* CJK characters fill the em square more fully than Latin,
+   so the same rem value appears ~15% larger visually.
+   Scale down the base to keep optical parity. */
+html:lang(zh),
+html:lang(ja),
+html:lang(ko) {
+  font-size: 13px;
+  --layout-body-max-width: 1200px;
+}
+
 :root {
   --success: oklch(0.518 0.16 145.071);
 }
