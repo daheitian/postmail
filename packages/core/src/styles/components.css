@@ -15,7 +15,7 @@ mark {
 
 .search-snippet {
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: var(--type-sm);
   color: var(--muted-foreground);
   line-height: var(--leading);
 }
@@ -163,7 +163,7 @@ svg[stroke-width].icon-fine {
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 0.625rem;
+    font-size: var(--type-2xs);
     font-weight: var(--fw-semibold);
     line-height: 1;
   }
@@ -186,7 +186,7 @@ svg[stroke-width].icon-fine {
   }
 
   .dash-header-link {
-    font-size: 0.8125rem;
+    font-size: var(--type-xs);
     color: var(--color-muted-foreground);
     transition: color 0.15s;
 
@@ -202,7 +202,7 @@ svg[stroke-width].icon-fine {
 
   .dash-header-visit {
     @apply flex items-center gap-3;
-    font-size: 0.875rem;
+    font-size: var(--type-sm);
     color: var(--color-muted-foreground);
     transition: color 0.15s;
 
@@ -256,7 +256,7 @@ svg[stroke-width].icon-fine {
     align-items: center;
     gap: 8px;
     padding: 8px 0;
-    font-size: 0.8125rem;
+    font-size: var(--type-xs);
   }
 
   .dash-breadcrumb-parent {
@@ -352,9 +352,9 @@ svg[stroke-width].icon-fine {
     margin: 0;
     font-family: var(--font-ui);
     color: var(--site-text-secondary);
-    font-size: 0.71rem;
+    font-size: var(--type-xs);
     font-weight: var(--fw-medium);
-    line-height: 1.15;
+    line-height: 1.3;
     letter-spacing: 0.02em;
   }
 
@@ -467,18 +467,17 @@ svg[stroke-width].icon-fine {
 
   .settings-directory-item-name {
     font-family: var(--font-ui);
-    font-size: clamp(0.9rem, 1vw, 0.96rem);
-    font-weight: var(--fw-medium);
+    font-size: var(--type-secondary);
+    font-weight: var(--fw-regular);
     line-height: 1.3;
-    letter-spacing: -0.01em;
     color: var(--color-foreground);
     text-wrap: pretty;
   }
 
   .settings-directory-item-desc {
     font-family: var(--font-ui);
-    font-size: var(--type-secondary);
-    line-height: 1.3;
+    font-size: var(--type-sm);
+    line-height: 1.4;
     color: var(--muted-foreground);
     text-wrap: pretty;
   }
@@ -510,7 +509,7 @@ svg[stroke-width].icon-fine {
 
   .settings-root-version {
     text-align: center;
-    font-size: 0.72rem;
+    font-size: var(--type-2xs);
     font-family: var(--font-mono, monospace);
     color: var(--color-muted-foreground);
     opacity: 0.45;
@@ -541,7 +540,7 @@ svg[stroke-width].icon-fine {
     border: none;
     background: transparent;
     color: var(--color-destructive);
-    font-size: 0.82rem;
+    font-size: var(--type-xs);
     font-weight: var(--fw-medium);
     letter-spacing: -0.01em;
     transition:
@@ -563,7 +562,7 @@ svg[stroke-width].icon-fine {
   .settings-group-label {
     margin: 0 0 0.55rem;
     padding-inline: 0.15rem;
-    font-size: 0.82rem;
+    font-size: var(--type-xs);
     font-weight: var(--fw-medium);
     line-height: 1.3;
     letter-spacing: 0.04em;
@@ -673,18 +672,16 @@ svg[stroke-width].icon-fine {
   }
 
   .settings-item-name {
-    font-size: 0.91rem;
+    font-size: var(--type-base);
     font-weight: var(--fw-medium);
     line-height: 1.3;
-    letter-spacing: -0.01em;
     color: var(--color-foreground);
   }
 
   .settings-item-desc {
     font-family: var(--font-ui);
-    font-size: 0.74rem;
+    font-size: var(--type-xs);
     line-height: 1.4;
-    letter-spacing: 0.01em;
     color: var(--color-muted-foreground);
   }
 
@@ -817,7 +814,7 @@ svg[stroke-width].icon-fine {
     display: block;
     min-width: 0;
     overflow-wrap: anywhere;
-    font-size: 0.95rem;
+    font-size: var(--type-base);
     line-height: 1.3;
     letter-spacing: -0.018em;
     color: color-mix(
@@ -831,7 +828,7 @@ svg[stroke-width].icon-fine {
     display: inline;
     max-width: 100%;
     overflow-wrap: anywhere;
-    font-size: 0.84rem;
+    font-size: var(--type-xs);
     line-height: 1.4;
     letter-spacing: -0.01em;
     color: color-mix(
@@ -926,7 +923,7 @@ svg[stroke-width].icon-fine {
     background: transparent;
     border-radius: 0.6rem;
     padding: 0.58rem 0.72rem;
-    font-size: 0.88rem;
+    font-size: var(--type-sm);
     line-height: 1.35;
     color: var(--color-foreground);
     transition:
@@ -971,7 +968,7 @@ svg[stroke-width].icon-fine {
     display: inline-flex;
     align-items: center;
     gap: 0.26rem;
-    font-size: 0.71rem;
+    font-size: var(--type-2xs);
     line-height: 1.32;
     letter-spacing: 0.02em;
     color: var(--color-muted-foreground);
@@ -988,7 +985,7 @@ svg[stroke-width].icon-fine {
   }
 
   .custom-url-redirect-code {
-    font-size: 0.7rem;
+    font-size: var(--type-2xs);
     line-height: 1.3;
     letter-spacing: 0.05em;
     color: var(--color-muted-foreground);
