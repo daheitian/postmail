@@ -427,7 +427,7 @@ You rarely need to run `mise run db-local-migrate` manually — both `dev` and `
 
 The local development workflow is intentionally simple:
 
-1. **Recreate the local database shell** when you want a clean slate:
+1. **Recreate the local Cloudflare D1 shell** when you want a clean slate:
 
    ```bash
    mise run db-local-rebuild-demo
@@ -435,15 +435,33 @@ The local development workflow is intentionally simple:
 
    This recreates the local database, runs migrations, bootstraps the local shell, and loads the canonical demo snapshot from `sites/demo-source/canonical/snapshot/`.
 
-2. **Reload just the canonical demo snapshot** into the current local shell:
+2. **Recreate the local Node SQLite shell** when you are using the Node runtime:
+
+   ```bash
+   mise run db-node-reset
+   ```
+
+   This resets the configured local SQLite database and local media directory, writes missing dev auth values to `packages/core/.env.node`, bootstraps the local shell, and loads the canonical demo snapshot. This workflow is only for single-site Node development with SQLite and local filesystem storage.
+
+3. **Import the canonical demo site export** into an empty local Node database when you want the portable `site import` path instead of snapshot restore:
+
+   ```bash
+   mise run db-node-import-demo-site-export
+   ```
+
+   This migrates the configured local Node database, bootstraps the local shell, and imports `sites/demo-source/canonical/site-export/`. It is intended for single-site local PostgreSQL or SQLite development with local filesystem storage, and it refuses to run against a non-empty content database.
+
+4. **Reload just the canonical demo snapshot** into the current local shell:
 
    ```bash
    mise run db-local-load-demo-snapshot
    ```
 
-The canonical snapshot is the content truth source for development data. The
-old local SQL export/import workflow was removed to keep the site-aware tool
-chain smaller and less ambiguous.
+The canonical snapshot remains the primary development truth source. The
+canonical `site-export/` fixture is a derived portability fixture for `jant site
+export/import` round-trips and local Node database seeding. The old local SQL
+export/import workflow was removed to keep the site-aware tool chain smaller
+and less ambiguous.
 
 ### Reset
 

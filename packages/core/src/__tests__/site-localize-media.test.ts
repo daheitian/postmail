@@ -53,6 +53,15 @@ describe("site-localize-media helpers", () => {
     ).toBe("https://example.com/media/photo.webp");
   });
 
+  it("resolves protocol-relative media URLs to https", () => {
+    expect(
+      resolveExportUrl(
+        "//media-dev.jant.me/media/photo.webp",
+        "http://localhost:3000",
+      ),
+    ).toBe("https://media-dev.jant.me/media/photo.webp");
+  });
+
   it("updates config media URLs when replacements exist", () => {
     const config = {
       extra: {
@@ -143,6 +152,53 @@ title: "Hello"
 
       const localizedFiles = await readdir(join(rootDir, "static", "media"));
       expect(localizedFiles).toHaveLength(4);
+    } finally {
+      await rm(rootDir, { recursive: true, force: true });
+    }
+  });
+
+  it("localizes protocol-relative media references with https asset URLs", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "jant-localize-test-"));
+
+    try {
+      await mkdir(join(rootDir, "content", "hello"), { recursive: true });
+      await writeFile(
+        join(rootDir, "config.toml"),
+        `base_url = "http://localhost:3000"
+`,
+      );
+      await writeFile(
+        join(rootDir, "content", "hello", "index.md"),
+        `---
+title: "Hello"
+---
+
+![hero](//media-dev.jant.me/media/photo.webp)
+`,
+      );
+
+      const seenResolvedUrls = [];
+      const stats = await localizeSiteExportDirectory(rootDir, {
+        assetLoader: async ({ resolvedUrl }) => {
+          seenResolvedUrls.push(resolvedUrl);
+          return {
+            bytes: new TextEncoder().encode("image"),
+            contentType: "image/webp",
+          };
+        },
+      });
+
+      expect(stats.downloaded).toBe(1);
+      expect(seenResolvedUrls).toEqual([
+        "https://media-dev.jant.me/media/photo.webp",
+      ]);
+
+      const content = await readFile(
+        join(rootDir, "content", "hello", "index.md"),
+        "utf-8",
+      );
+      expect(content).toContain("](/media/");
+      expect(content).not.toContain("//media-dev.jant.me/media/photo.webp");
     } finally {
       await rm(rootDir, { recursive: true, force: true });
     }

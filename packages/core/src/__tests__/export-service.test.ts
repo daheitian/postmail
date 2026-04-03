@@ -412,6 +412,165 @@ describe("createExportService", () => {
     expect(files["static/apple-touch-icon.png"]).toEqual(customAppleTouchBytes);
   });
 
+  it("falls back to the default apple-touch icon when the custom asset is unavailable", async () => {
+    const rootPost: Post = {
+      id: "post-1",
+      format: "note",
+      status: "published",
+      visibility: "public",
+      pinnedAt: null,
+      featuredAt: null,
+      slug: "desk-note",
+      title: "Desk note",
+      url: null,
+      body: null,
+      bodyHtml: null,
+      bodyText: "Export should still succeed.",
+      quoteText: null,
+      summary: "Export should still succeed.",
+      rating: null,
+      previewImageKey: null,
+      previewKind: null,
+      previewProvider: null,
+      replyToId: null,
+      threadId: "post-1",
+      deletedAt: null,
+      publishedAt: 1773014400,
+      lastActivityAt: 1773014400,
+      createdAt: 1773014400,
+      updatedAt: 1773014400,
+    };
+
+    const services = {
+      posts: {
+        list: async () => [rootPost],
+      },
+      paths: {
+        getPostSlugMap: async () => new Map([["post-1", "desk-note"]]),
+        getPostAliases: async () => new Map([["post-1", []]]),
+        getCollectionSlugMap: async () => new Map(),
+      },
+      collections: {
+        list: async () => [],
+        getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+      },
+      media: {
+        getByPostIds: async () => new Map(),
+      },
+    } as unknown as Parameters<typeof createExportService>[0];
+
+    const siteConfig: Parameters<typeof createExportService>[1] = {
+      siteName: "Jant",
+      siteUrl: "https://example.com",
+      siteDescription: "Export test",
+      siteLanguage: "en",
+      showJantBrandingOnHome: true,
+      homeDefaultView: "latest",
+      headerNavMaxVisible: 4,
+      siteFooter: "",
+      showHeaderAvatar: false,
+      siteAvatarUrl: "",
+      appleTouchIconStorageKey: "site/missing-apple-touch-icon.png",
+      themeId: "paper",
+      defaultThemeId: "paper",
+      fontThemeId: "system",
+      themeMode: "auto",
+      noindex: false,
+      navItems: [],
+    };
+
+    const zip = await createExportService(services, siteConfig, {
+      storage: {
+        get: async () => null,
+      } as never,
+    }).generateZolaSite();
+    const files = unzipSync(zip);
+    const configToml = decodeZipEntry(files, "config.toml");
+    const appleTouchFile = files["static/apple-touch-icon.png"];
+
+    expect(configToml).toContain('apple_touch_mode = "default"');
+    expect(appleTouchFile).toBeDefined();
+    expect(appleTouchFile?.byteLength).toBeGreaterThan(0);
+  });
+
+  it("quotes numeric-looking titles in exported front matter", async () => {
+    const rootPost: Post = {
+      id: "post-numeric-title",
+      format: "note",
+      status: "published",
+      visibility: "public",
+      pinnedAt: null,
+      featuredAt: null,
+      slug: "numbers-only",
+      title: "22222",
+      url: null,
+      body: null,
+      bodyHtml: null,
+      bodyText: "Numbers as a title should stay a string.",
+      quoteText: null,
+      summary: "Numbers as a title should stay a string.",
+      rating: null,
+      previewImageKey: null,
+      previewKind: null,
+      previewProvider: null,
+      replyToId: null,
+      threadId: "post-numeric-title",
+      deletedAt: null,
+      publishedAt: 1773014400,
+      lastActivityAt: 1773014400,
+      createdAt: 1773014400,
+      updatedAt: 1773014400,
+    };
+
+    const services = {
+      posts: {
+        list: async () => [rootPost],
+      },
+      paths: {
+        getPostSlugMap: async () =>
+          new Map([["post-numeric-title", "numbers-only"]]),
+        getPostAliases: async () => new Map([["post-numeric-title", []]]),
+        getCollectionSlugMap: async () => new Map(),
+      },
+      collections: {
+        list: async () => [],
+        getCollectionsByPostIds: async () =>
+          new Map([["post-numeric-title", []]]),
+      },
+      media: {
+        getByPostIds: async () => new Map(),
+      },
+    } as unknown as Parameters<typeof createExportService>[0];
+
+    const siteConfig: Parameters<typeof createExportService>[1] = {
+      siteName: "Jant",
+      siteUrl: "https://example.com",
+      siteDescription: "Export test",
+      siteLanguage: "en",
+      showJantBrandingOnHome: true,
+      homeDefaultView: "latest",
+      headerNavMaxVisible: 4,
+      siteFooter: "",
+      showHeaderAvatar: false,
+      siteAvatarUrl: "",
+      themeId: "paper",
+      defaultThemeId: "paper",
+      fontThemeId: "system",
+      themeMode: "auto",
+      noindex: false,
+      navItems: [],
+    };
+
+    const zip = await createExportService(
+      services,
+      siteConfig,
+    ).generateZolaSite();
+    const files = unzipSync(zip);
+    const postMarkdown = decodeZipEntry(files, "content/numbers-only/index.md");
+
+    expect(postMarkdown).toContain('title: "22222"');
+  });
+
   it("exports quote posts with source_name and source_url instead of title", async () => {
     const rootPost: Post = {
       id: "post-quote-1",
@@ -590,11 +749,11 @@ describe("createExportService", () => {
     const postMarkdown = decodeZipEntry(files, "content/thread-root/index.md");
 
     expect(postMarkdown).toContain("aliases:");
-    expect(postMarkdown).toContain("  - /older-root");
-    expect(postMarkdown).toContain("  - /thread-reply");
+    expect(postMarkdown).toContain('  - "/older-root"');
+    expect(postMarkdown).toContain('  - "/thread-reply"');
     expect(postMarkdown).toContain("  jant:");
     expect(postMarkdown).toContain("    root_aliases:");
-    expect(postMarkdown).toContain("      - /older-root");
-    expect(postMarkdown).not.toContain("      - /thread-reply");
+    expect(postMarkdown).toContain('      - "/older-root"');
+    expect(postMarkdown).not.toContain('      - "/thread-reply"');
   });
 });

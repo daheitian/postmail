@@ -285,6 +285,20 @@ node ../../scripts/demo-local/import-canonical.mjs
 echo "Done! Local database is ready."
 """
 
+[tasks.db-node-rebuild-demo]
+alias = "db-node-reset"
+description = "Recreate the local Node SQLite database and media storage, bootstrap the local shell, and load the canonical demo snapshot"
+usage = 'arg "[password]" default="jant-dev-debug-login"'
+dir = "packages/core"
+run = 'pnpm exec tsx dev/scripts/reset-node-dev.ts "$usage_password"'
+
+[tasks.db-node-import-demo-site-export]
+alias = "db-node-load-demo-site-export"
+description = "Bootstrap the local Node runtime and import sites/demo-source/canonical/site-export into an empty local database"
+usage = 'arg "[password]" default="jant-dev-debug-login"'
+dir = "packages/core"
+run = 'pnpm exec tsx dev/scripts/import-node-demo-site-export.ts "$usage_password"'
+
 # =============================================================================
 # i18n (Lingui)
 # =============================================================================
@@ -391,6 +405,10 @@ node scripts/demo-shared/run-with-env.mjs --site demo-source -- pnpm --filter ja
 [tasks.demo-source-export-canonical]
 description = "Refresh sites/demo-source/canonical/snapshot from the remote demo-source Worker"
 run = "node scripts/demo-source/export-canonical.mjs"
+
+[tasks.demo-source-export-canonical-site-export]
+description = "Refresh sites/demo-source/canonical/site-export from the committed canonical snapshot"
+run = "node scripts/demo-source/export-canonical-site-export.mjs"
 
 [tasks.db-demo-source-migrate]
 description = "Run migrations on demo-source"

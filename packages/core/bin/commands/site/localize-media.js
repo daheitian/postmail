@@ -40,7 +40,7 @@ function logLocalizationProgress(event) {
 
   if (event.type === "asset-failed") {
     console.log(
-      `  [${event.index}/${event.total}] Failed ${describeProgressUrl(event.rawUrl)}`,
+      `  [${event.index}/${event.total}] Failed ${describeProgressUrl(event.rawUrl)}${event.error ? ` (${event.error})` : ""}`,
     );
     return;
   }

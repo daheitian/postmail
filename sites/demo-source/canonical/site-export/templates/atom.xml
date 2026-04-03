@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ lang }}">
+  <title>{% if section is defined and section.title %}{{ section.title }} · {% elif term is defined and taxonomy.name == "c" %}{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} · {% elif term is defined and term.name %}{{ term.name }} · {% endif %}{{ config.title }}</title>
+  {% if config.description %}
+  <subtitle>{{ config.description }}</subtitle>
+  {% endif %}
+  <link rel="self" type="application/atom+xml" href="{{ feed_url | safe }}" />
+  <link rel="alternate" type="text/html" href="{% if section is defined %}{{ section.permalink }}{% elif term is defined %}{{ term.permalink }}{% else %}{{ config.base_url }}{% endif %}" />
+  <id>{{ feed_url | safe }}</id>
+  {% if last_updated is defined %}
+  <updated>{{ last_updated | date(format="%+") }}</updated>
+  {% else %}
+  <updated>{{ config.extra.jant_export.generated_at | default(value="1970-01-01T00:00:00Z") }}</updated>
+  {% endif %}
+  {% set author_name = config.author | default(value="") %}
+  {% if author_name %}
+  <author><name>{{ author_name }}</name></author>
+  {% endif %}
+  {% for page in pages %}
+    {% if page.extra.visibility | default(value="public") == "public" %}
+  <entry>
+    {% set entry_title = page.title | default(value="") %}
+    {% set entry_summary = page.extra.summary_text | default(value="") %}
+    {% if entry_summary == "" %}
+      {% set entry_summary = page.summary | default(value=page.content) | striptags | trim %}
+    {% endif %}
+    {% if entry_summary == "" %}
+      {% set entry_summary = page.permalink %}
+    {% endif %}
+    <title>{{ entry_title }}</title>
+    <link rel="alternate" type="text/html" href="{{ page.permalink | safe }}" />
+    <published>{{ page.date | date(format="%+") }}</published>
+    <updated>{{ page.updated | default(value=page.date) | date(format="%+") }}</updated>
+    <id>{{ page.permalink | safe }}</id>
+    <summary type="text">{{ entry_summary }}</summary>
+    <content type="html">&lt;p&gt;{{ entry_summary }}&lt;/p&gt;</content>
+  </entry>
+    {% endif %}
+  {% endfor %}
+</feed>

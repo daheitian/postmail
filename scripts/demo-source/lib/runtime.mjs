@@ -29,6 +29,48 @@ export function readDemoSourceConfig(key) {
   return readWranglerString(DEMO_SOURCE_WRANGLER_PATH, key);
 }
 
+function readOptionalDemoSourceConfig(key) {
+  try {
+    return readDemoSourceConfig(key);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === `Missing ${key} in ${DEMO_SOURCE_WRANGLER_PATH}`
+    ) {
+      return "";
+    }
+
+    throw error;
+  }
+}
+
+export function resolveDemoSourceSiteUrl() {
+  const explicitSiteUrl = process.env.DEMO_SOURCE_URL?.trim();
+  if (explicitSiteUrl) {
+    const parsed = new URL(explicitSiteUrl);
+    const explicitPrefix =
+      parsed.pathname && parsed.pathname !== "/"
+        ? parsed.pathname.replace(/\/+$/, "")
+        : "";
+    return `${parsed.origin}${explicitPrefix}`;
+  }
+
+  const configuredOrigin = readDemoSourceConfig("SITE_ORIGIN");
+  if (configuredOrigin) {
+    const configuredPrefix = readOptionalDemoSourceConfig("SITE_PATH_PREFIX");
+    const origin = new URL(configuredOrigin).origin;
+    const normalizedPrefix =
+      configuredPrefix && configuredPrefix !== "/"
+        ? configuredPrefix.replace(/\/+$/, "").replace(/^([^/])/, "/$1")
+        : "";
+    return `${origin}${normalizedPrefix}`;
+  }
+
+  throw new Error(
+    "demo-source requires DEMO_SOURCE_URL or SITE_ORIGIN in sites/demo-source/wrangler.toml.",
+  );
+}
+
 export function queryDemoSourceRemote(sql) {
   let stdout;
 

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Collections &mdash; {{ config.title }}{% endblock %}
+
+{% block content %}
+<div class="section-shell">
+  <header class="section-header">
+    <h1 class="section-title">Collections</h1>
+    <p class="section-description">Browse exported posts by collection.</p>
+  </header>
+  <ol class="collection-list">
+    {% for term in terms %}
+    {% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}
+    {% set latest_page = term.pages | first %}
+    <li class="collection-list-item">
+      <a href="{{ term.permalink }}" class="collection-list-link">
+        <span class="collection-list-sequence" aria-hidden="true"></span>
+        <span class="collection-list-content">
+          <span class="collection-list-title">{{ term_meta.title | default(value=term.name) }}</span>
+          <span class="collection-list-meta">
+            <span>{{ term.pages | length }} entries</span>
+            {% if latest_page %}
+            <span>Updated {{ latest_page.updated | default(value=latest_page.date) | date(format="%Y-%m-%d") }}</span>
+            {% endif %}
+          </span>
+        </span>
+      </a>
+    </li>
+    {% endfor %}
+  </ol>
+</div>
+{% endblock %}

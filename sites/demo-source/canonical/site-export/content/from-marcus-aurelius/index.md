@@ -1,0 +1,18 @@
+---
+date: 2025-09-03T12:20:00.000Z
+updated: 2026-03-21T23:01:54.000Z
+slug: "from-marcus-aurelius"
+taxonomies:
+  c:
+    - "reading-notes"
+extra:
+  format: quote
+  status: published
+  visibility: public
+  summary_text: "The art of life is more like wrestling than dancing."
+  source_name: "From Marcus Aurelius"
+  source_url: "https://en.wikiquote.org/wiki/Marcus_Aurelius"
+  quote_text: "The art of life is more like wrestling than dancing."
+---
+
+Good sentence for the weeks when nothing arrives in the right order and everything needs a little more effort than expected.

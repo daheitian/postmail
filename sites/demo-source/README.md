@@ -47,6 +47,7 @@ Or use the repo-level tasks:
 mise run dev-demo-source
 mise run deploy-demo-source
 mise run demo-source-export-canonical
+mise run demo-source-export-canonical-site-export
 mise run db-demo-source-migrate
 mise run demo-source-reset
 ```
@@ -96,8 +97,17 @@ Recommended split:
    mise run demo-source-export-canonical
    ```
 
-3. Review and commit `sites/demo-source/canonical/snapshot/`.
-4. Rebuild the public demo from that canonical snapshot:
+3. Optional: refresh the canonical `site-export/` fixture for `jant site import`
+   testing and local Node/Postgres bootstrapping. This is derived from the
+   committed snapshot, not exported separately from the live Worker:
+
+   ```sh
+   mise run demo-source-export-canonical-site-export
+   ```
+
+4. Review and commit `sites/demo-source/canonical/snapshot/` and, when
+   refreshed, `sites/demo-source/canonical/site-export/`.
+5. Rebuild the public demo from the canonical snapshot:
 
    ```sh
    mise run demo-public-rebuild

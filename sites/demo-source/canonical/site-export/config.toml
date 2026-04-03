@@ -1,0 +1,86 @@
+base_url = "https://demo-source.jant.me/"
+title = "Jant"
+description = "Thoughts, links, and quotes — one post at a time"
+default_language = "en"
+generate_feeds = true
+compile_sass = false
+feed_filenames = [ "atom.xml" ]
+
+[extra.jant_export]
+format = "jant-site"
+version = 1
+generated_at = "2026-04-02T14:39:20.000Z"
+
+[extra.jant]
+home_default_view = "latest"
+header_nav_max_visible = 2
+show_jant_branding_on_home = true
+show_header_avatar = false
+noindex = false
+site_avatar_mode = "custom"
+favicon_mode = "custom"
+apple_touch_mode = "custom"
+nav_exported = true
+collections_directory_exported = true
+theme_id = "linen"
+default_theme_id = "linen"
+font_theme_id = ""
+theme_mode = "auto"
+site_avatar_url = "/media/2290b69f5f24-med_01km9a40kte01sj7p9qkabfcbq.png"
+favicon_version = "202603212301"
+
+[[extra.jant.nav]]
+type = "system"
+label = "Collections"
+url = "/c"
+system_key = "collections"
+
+[[extra.jant.nav]]
+type = "system"
+label = "Archive"
+url = "/archive"
+system_key = "archive"
+
+[[extra.jant.nav]]
+type = "system"
+label = "RSS"
+url = "/feed"
+system_key = "rss"
+
+[[extra.jant.nav]]
+type = "system"
+label = "Settings"
+url = "/settings"
+system_key = "settings"
+
+[[extra.jant.collections_directory]]
+type = "collection"
+slug = "city-walks"
+
+[[extra.jant.collections_directory]]
+type = "collection"
+slug = "home-cooking"
+
+[[extra.jant.collections_directory]]
+type = "collection"
+slug = "reading-notes"
+
+[[extra.jant.collections_directory]]
+type = "collection"
+slug = "tiny-projects"
+
+[[extra.jant.collections_directory]]
+type = "collection"
+slug = "useful-links"
+
+[[extra.jant.collections_directory]]
+type = "collection"
+slug = "weekend-notes"
+
+[[taxonomies]]
+name = "c"
+feed = true
+
+[markdown]
+highlight_code = true
+highlight_theme = "css"

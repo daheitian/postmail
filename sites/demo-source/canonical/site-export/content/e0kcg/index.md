@@ -1,0 +1,15 @@
+---
+date: 2025-08-04T07:25:00.000Z
+updated: 2026-03-21T23:01:52.000Z
+slug: "e0kcg"
+taxonomies:
+  c:
+    - "weekend-notes"
+extra:
+  format: note
+  status: published
+  visibility: public
+  summary_text: "Opened every window this morning and the whole place smelled like rain, old wood, and somebody else's toast. Good start."
+---
+
+Opened every window this morning and the whole place smelled like rain, old wood, and somebody else's toast. Good start.

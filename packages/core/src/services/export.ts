@@ -123,6 +123,16 @@ interface SiteIconAssets {
   appleTouchMode: IconExportMode;
 }
 
+function buildDefaultAppleTouchAsset(): Pick<
+  SiteIconAssets,
+  "appleTouchBytes" | "appleTouchMode"
+> {
+  return {
+    appleTouchBytes: getDefaultJantAppleTouchIconBytes(),
+    appleTouchMode: "default",
+  };
+}
+
 export function createExportService(
   services: {
     posts: PostService;
@@ -318,25 +328,38 @@ async function buildSiteIconAssets(
     return {
       faviconBytes,
       faviconMode,
-      appleTouchBytes: getDefaultJantAppleTouchIconBytes(),
-      appleTouchMode: "default",
+      ...buildDefaultAppleTouchAsset(),
     };
   }
 
   if (!storage) {
-    throw new Error(
-      "Custom apple-touch icon is configured but no storage driver is available for export",
-    );
+    return {
+      faviconBytes,
+      faviconMode,
+      ...buildDefaultAppleTouchAsset(),
+    };
   }
 
-  const appleTouchBytes = await readStorageObjectBytes(
-    storage,
-    config.appleTouchIconStorageKey,
-  );
-  if (!appleTouchBytes) {
-    throw new Error(
-      `Custom apple-touch icon "${config.appleTouchIconStorageKey}" is unavailable for export`,
+  let appleTouchBytes: Uint8Array | null;
+  try {
+    appleTouchBytes = await readStorageObjectBytes(
+      storage,
+      config.appleTouchIconStorageKey,
     );
+  } catch {
+    return {
+      faviconBytes,
+      faviconMode,
+      ...buildDefaultAppleTouchAsset(),
+    };
+  }
+
+  if (!appleTouchBytes) {
+    return {
+      faviconBytes,
+      faviconMode,
+      ...buildDefaultAppleTouchAsset(),
+    };
   }
 
   return {
@@ -362,19 +385,7 @@ function escapeToml(value: string): string {
 
 /** Escape a string for use in YAML (wrap in quotes if needed) */
 function yamlString(value: string): string {
-  // If value contains characters that need quoting in YAML
-  if (
-    /[:#{}[\],&*?|>!%@`"'\n\\]/.test(value) ||
-    value.startsWith(" ") ||
-    value.endsWith(" ") ||
-    value === "" ||
-    value === "true" ||
-    value === "false" ||
-    value === "null"
-  ) {
-    return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n")}"`;
-  }
-  return value;
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n")}"`;
 }
 
 function buildPostMarkdown(

@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import http from "node:http";
+import https from "node:https";
 import {
   mkdir,
   mkdtemp,
@@ -37,6 +39,9 @@ export function resolveExportUrl(rawUrl, baseUrl) {
   }
 
   try {
+    if (typeof rawUrl === "string" && rawUrl.startsWith("//")) {
+      return `https:${rawUrl}`;
+    }
     return new URL(rawUrl, baseUrl).toString();
   } catch {
     return null;
@@ -129,20 +134,164 @@ function createLocalizedRelativePath(resolvedUrl, contentType, usedPaths) {
   return relativePath;
 }
 
-async function fetchAsset(resolvedUrl) {
-  try {
-    const response = await fetch(resolvedUrl);
-    if (!response.ok) {
-      return null;
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function formatAssetRequestError(error) {
+  if (!error) {
+    return "Download failed";
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  const code =
+    typeof error === "object" && error && "code" in error ? error.code : "";
+  const message =
+    typeof error === "object" && error && "message" in error
+      ? error.message
+      : "";
+
+  if (code && message) {
+    return `${code}: ${message}`;
+  }
+  if (code) {
+    return String(code);
+  }
+  if (message) {
+    return String(message);
+  }
+  return "Download failed";
+}
+
+function requestAssetWithNode(url, redirectCount = 0) {
+  const maxRedirects = 5;
+
+  return new Promise((resolve) => {
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      resolve({ error: `Invalid URL: ${url}` });
+      return;
     }
 
-    return {
-      bytes: new Uint8Array(await response.arrayBuffer()),
-      contentType: response.headers.get("content-type")?.split(";")[0] || "",
-    };
-  } catch {
-    return null;
+    const client =
+      parsedUrl.protocol === "https:"
+        ? https
+        : parsedUrl.protocol === "http:"
+          ? http
+          : null;
+    if (!client) {
+      resolve({ error: `Unsupported protocol: ${parsedUrl.protocol}` });
+      return;
+    }
+
+    const request = client.get(
+      parsedUrl,
+      {
+        headers: {
+          accept: "*/*",
+          "user-agent": "jant-site-export/1.0",
+        },
+      },
+      (response) => {
+        const status = response.statusCode ?? 0;
+        const location = response.headers.location;
+
+        if (
+          location &&
+          [301, 302, 303, 307, 308].includes(status) &&
+          redirectCount < maxRedirects
+        ) {
+          response.resume();
+          resolve(
+            requestAssetWithNode(
+              new URL(location, parsedUrl).toString(),
+              redirectCount + 1,
+            ),
+          );
+          return;
+        }
+
+        if (status < 200 || status >= 300) {
+          response.resume();
+          resolve({ error: `HTTP ${status}` });
+          return;
+        }
+
+        const chunks = [];
+        let totalLength = 0;
+
+        response.on("data", (chunk) => {
+          const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+          chunks.push(buffer);
+          totalLength += buffer.length;
+        });
+
+        response.on("end", () => {
+          const bytes = new Uint8Array(totalLength);
+          let offset = 0;
+
+          for (const chunk of chunks) {
+            bytes.set(chunk, offset);
+            offset += chunk.length;
+          }
+
+          resolve({
+            bytes,
+            contentType:
+              response.headers["content-type"]?.split(";")[0] || "",
+          });
+        });
+
+        response.on("error", (error) => {
+          resolve({ error: formatAssetRequestError(error) });
+        });
+      },
+    );
+
+    request.on("error", (error) => {
+      resolve({ error: formatAssetRequestError(error) });
+    });
+
+    request.setTimeout(30000, () => {
+      request.destroy(Object.assign(new Error("Request timed out"), { code: "ETIMEDOUT" }));
+    });
+  });
+}
+
+async function fetchAsset(resolvedUrl, options = {}) {
+  const maxAttempts =
+    Number.isInteger(options.maxAttempts) && options.maxAttempts > 0
+      ? options.maxAttempts
+      : 3;
+
+  let lastError = "Unknown download failure";
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const result = await requestAssetWithNode(resolvedUrl);
+    if (!("error" in result)) {
+      return result;
+    }
+
+    lastError = result.error;
+    if (
+      attempt < maxAttempts &&
+      /^(HTTP (408|425|429|500|502|503|504)|E[A-Z_]+:|UND_ERR_)/.test(
+        lastError,
+      )
+    ) {
+      await sleep(150 * attempt);
+      continue;
+    }
+
+    return { error: lastError };
   }
+
+  return { error: lastError };
 }
 
 async function walkFiles(rootDir) {
@@ -345,6 +494,7 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
     }
 
     let asset = null;
+    let assetError = "";
     if (typeof options.assetLoader === "function") {
       asset = await options.assetLoader({
         rawUrl,
@@ -354,7 +504,12 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
       });
     }
     if (!asset) {
-      asset = await fetchAsset(resolvedUrl);
+      const fetched = await fetchAsset(resolvedUrl);
+      if ("error" in fetched) {
+        assetError = fetched.error;
+      } else {
+        asset = fetched;
+      }
     }
     if (!asset) {
       localizedByResolvedUrl.set(resolvedUrl, null);
@@ -364,6 +519,8 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
         index: index + 1,
         total: uniqueReferences.length,
         rawUrl,
+        resolvedUrl,
+        error: assetError || "Download failed",
       });
       continue;
     }
