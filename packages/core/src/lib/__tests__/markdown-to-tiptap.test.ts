@@ -115,6 +115,15 @@ describe("markdownToTiptapJson", () => {
       expect(rows[0].content[0].type).toBe("tableHeader");
       expect(rows[1].content[0].type).toBe("tableCell");
     });
+
+    it("converts footnote definitions into dedicated block nodes", () => {
+      const doc = parse("Body[^1]\n\n[^1]: Footnote body");
+
+      expect(doc.content[1].type).toBe("footnoteDefinition");
+      expect(doc.content[1].attrs.label).toBe("1");
+      expect(doc.content[1].content[0].type).toBe("paragraph");
+      expect(doc.content[1].content[0].content[0].text).toBe("Footnote body");
+    });
   });
 
   describe("inline elements", () => {
@@ -245,6 +254,15 @@ describe("markdownToTiptapJson", () => {
       );
       expect(nested).toBeDefined();
     });
+
+    it("converts footnote references into inline atom nodes", () => {
+      const doc = parse("Body[^1]");
+      const content = doc.content[0].content;
+
+      expect(content[0].text).toBe("Body");
+      expect(content[1].type).toBe("footnoteReference");
+      expect(content[1].attrs.label).toBe("1");
+    });
   });
 
   it("handles empty input", () => {
@@ -374,6 +392,17 @@ describe("end-to-end: Markdown → markdownToTiptapJson → renderTiptapJson", (
     expect(html).toContain('href="https://example.com/source"');
     expect(html).toContain('src="https://example.com/img.png"');
     expect(html).toContain("<figcaption>Caption</figcaption>");
+  });
+
+  it("renders footnotes through the shared document renderer", () => {
+    const json = markdownToTiptapJson("Body[^1]\n\n[^1]: Footnote body");
+    const html = renderTiptapJson(json);
+
+    expect(html).toContain(
+      '<sup class="footnote-ref" data-footnote-reference>',
+    );
+    expect(html).toContain('<section class="footnotes" data-footnotes>');
+    expect(html).toContain("Footnote body");
   });
 
   it("renders a complex document", () => {

@@ -308,6 +308,52 @@ describe("tiptapJsonToMarkdown", () => {
     });
   });
 
+  describe("footnotes", () => {
+    it("converts footnote references and single-paragraph definitions", () => {
+      const json = doc(
+        p(text("Body copy"), {
+          type: "footnoteReference",
+          attrs: { label: "1" },
+        }),
+        {
+          type: "footnoteDefinition",
+          attrs: { label: "1" },
+          content: [p(text("Footnote body"))],
+        },
+      );
+
+      expect(tiptapJsonToMarkdown(json)).toBe(
+        "Body copy[^1]\n\n[^1]: Footnote body",
+      );
+    });
+
+    it("converts multi-block footnote definitions with indented bodies", () => {
+      const json = doc(
+        p(text("Body copy"), {
+          type: "footnoteReference",
+          attrs: { label: "1" },
+        }),
+        {
+          type: "footnoteDefinition",
+          attrs: { label: "1" },
+          content: [
+            p(text("First paragraph")),
+            {
+              type: "bulletList",
+              content: [
+                { type: "listItem", content: [p(text("Nested item"))] },
+              ],
+            },
+          ],
+        },
+      );
+
+      expect(tiptapJsonToMarkdown(json)).toBe(
+        "Body copy[^1]\n\n[^1]:\n    First paragraph\n\n    - Nested item",
+      );
+    });
+  });
+
   describe("hard breaks", () => {
     it("converts hard breaks to trailing spaces + newline", () => {
       const json = doc(
@@ -349,6 +395,11 @@ describe("tiptapJsonToMarkdown", () => {
     it("round-trips a rich image figure", () => {
       const md =
         '<figure data-jant-node="image" data-jant-layout="wide"><a href="https://example.com/source"><img src="https://example.com/img.png" alt="Alt" title="Title"></a><figcaption>Caption</figcaption></figure>';
+      expect(roundtrip(md)).toBe(md);
+    });
+
+    it("round-trips footnotes", () => {
+      const md = "Body copy[^1]\n\n[^1]: Footnote body";
       expect(roundtrip(md)).toBe(md);
     });
   });

@@ -299,6 +299,25 @@ usage = 'arg "[password]" default="jant-dev-debug-login"'
 dir = "packages/core"
 run = 'pnpm exec tsx dev/scripts/import-node-demo-site-export.ts "$usage_password"'
 
+[tasks.import]
+description = "Import sites/demo-source/canonical/site-export into a remote Jant instance"
+usage = 'arg "<url>"'
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Read DEV_API_TOKEN from packages/core/.env.node
+TOKEN=$(grep '^DEV_API_TOKEN=' packages/core/.env.node | cut -d'=' -f2-)
+if [[ -z "$TOKEN" ]]; then
+  echo "DEV_API_TOKEN not found in packages/core/.env.node"
+  exit 1
+fi
+
+export JANT_API_TOKEN="$TOKEN"
+export NODE_TLS_REJECT_UNAUTHORIZED=0
+exec ./packages/core/bin/jant.js site import --url "$usage_url" --path sites/demo-source/canonical/site-export
+"""
+
 # =============================================================================
 # i18n (Lingui)
 # =============================================================================

@@ -6,6 +6,7 @@
  */
 
 import type { JSONContent } from "@tiptap/core";
+import { getFootnoteDomId, normalizeFootnoteLabel } from "./footnotes.js";
 import { escapeHtml } from "./html.js";
 import { renderPublishedImageFigure } from "./rich-image.js";
 import { sanitizeUrl } from "./url.js";
@@ -74,6 +75,39 @@ function renderTableCell(
   return `<${tagName}${colspanAttr}${rowspanAttr}>${context.renderChildren(node.content)}</${tagName}>`;
 }
 
+function appendFootnoteBackref(bodyHtml: string, footnoteId: string): string {
+  const backref = `<a href="#fnref-${escapeHtml(footnoteId)}" class="footnote-backref" aria-label="Back to reference">↩</a>`;
+
+  if (!bodyHtml) {
+    return `<p>${backref}</p>`;
+  }
+
+  if (bodyHtml.trimEnd().endsWith("</p>")) {
+    return bodyHtml.replace(/<\/p>\s*$/, ` ${backref}</p>`);
+  }
+
+  return `${bodyHtml}${backref}`;
+}
+
+function renderFootnoteReference(node: TiptapNode): string {
+  const label = normalizeFootnoteLabel(getStringAttr(node.attrs, "label"));
+  const footnoteId = getFootnoteDomId(label);
+  const visibleLabel = escapeHtml(label);
+
+  return `<sup class="footnote-ref" data-footnote-reference><a href="#fn-${escapeHtml(footnoteId)}" id="fnref-${escapeHtml(footnoteId)}">${visibleLabel}</a></sup>`;
+}
+
+function renderFootnoteDefinitionItem(
+  node: TiptapNode,
+  context: RenderContext,
+): string {
+  const label = normalizeFootnoteLabel(getStringAttr(node.attrs, "label"));
+  const footnoteId = getFootnoteDomId(label);
+  const bodyHtml = context.renderChildren(node.content);
+
+  return `<li id="fn-${escapeHtml(footnoteId)}">${appendFootnoteBackref(bodyHtml, footnoteId)}</li>`;
+}
+
 const MARK_RENDERERS: Record<string, MarkRenderer> = {
   bold: (html) => `<strong>${html}</strong>`,
   italic: (html) => `<em>${html}</em>`,
@@ -90,7 +124,28 @@ const MARK_RENDERERS: Record<string, MarkRenderer> = {
 };
 
 const NODE_RENDERERS: Record<string, NodeRenderer> = {
-  doc: (node, context) => context.renderChildren(node.content),
+  doc: (node, context) => {
+    const content = node.content ?? [];
+    const bodyNodes = content.filter(
+      (child) => child.type !== "footnoteDefinition",
+    );
+    const footnoteNodes = content.filter(
+      (child) => child.type === "footnoteDefinition",
+    );
+    const bodyHtml = context.renderChildren(bodyNodes);
+
+    if (footnoteNodes.length === 0) {
+      return bodyHtml;
+    }
+
+    const footnotesHtml = footnoteNodes
+      .map((footnoteNode) =>
+        renderFootnoteDefinitionItem(footnoteNode, context),
+      )
+      .join("");
+
+    return `${bodyHtml}<section class="footnotes" data-footnotes><ol>${footnotesHtml}</ol></section>`;
+  },
   paragraph: (node, context) =>
     `<p>${context.renderChildren(node.content)}</p>`,
   heading: (node, context) => {
@@ -129,6 +184,8 @@ const NODE_RENDERERS: Record<string, NodeRenderer> = {
   hardBreak: () => "<br>",
   image: (node) => renderPublishedImageFigure(node.attrs ?? {}),
   moreBreak: () => "<!--more-->",
+  footnoteReference: (node) => renderFootnoteReference(node),
+  footnoteDefinition: () => "",
 };
 
 function renderText(text: string, marks: TiptapMark[] = []): string {

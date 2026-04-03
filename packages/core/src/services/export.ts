@@ -95,6 +95,9 @@ type ExportedCollectionDirectoryItem =
   | {
       type: "collection";
       slug: string;
+      title: string;
+      entryCount?: number;
+      recentActivityLabel?: string | null;
     }
   | {
       type: "divider";
@@ -113,6 +116,9 @@ interface ExportCollectionDirectorySourceItem {
   collection?: {
     id: string;
     slug: string;
+    title: string;
+    postCount?: number;
+    recentActivityAt?: number;
   };
 }
 
@@ -121,6 +127,11 @@ interface SiteIconAssets {
   faviconMode: IconExportMode;
   appleTouchBytes: Uint8Array;
   appleTouchMode: IconExportMode;
+}
+
+interface ExportedCollectionMetrics {
+  postCount: number;
+  recentActivityAt: number;
 }
 
 function buildDefaultAppleTouchAsset(): Pick<
@@ -185,6 +196,11 @@ export function createExportService(
         deps.storage,
       );
       const iconAssets = await buildSiteIconAssets(siteConfig, deps.storage);
+      const collectionMetrics = buildExportedCollectionMetrics(
+        allCollections,
+        allPosts,
+        collectionsByPost,
+      );
       const exportedCollectionDirectoryItems =
         buildExportedCollectionDirectoryItems(
           collectionDirectoryData?.items ??
@@ -194,6 +210,7 @@ export function createExportService(
               collection,
             })),
           collectionSlugMap,
+          collectionMetrics,
         );
 
       // 2. Group replies by threadId
@@ -780,6 +797,16 @@ function safeJsonForHtml(value: unknown): string {
     .replace(/&/g, "\\u0026");
 }
 
+function formatCollectionActivityLabel(
+  timestamp: number | undefined,
+): string | null {
+  if (typeof timestamp !== "number") {
+    return null;
+  }
+
+  return toISOString(timestamp).slice(0, 10);
+}
+
 function buildConfigToml(
   config: SiteConfig,
   iconAssets: SiteIconAssets,
@@ -848,6 +875,15 @@ function buildConfigToml(
     parts.push(`type = "${escapeToml(item.type)}"`);
     if (item.type === "collection") {
       parts.push(`slug = "${escapeToml(item.slug)}"`);
+      parts.push(`title = "${escapeToml(item.title)}"`);
+      if (typeof item.entryCount === "number") {
+        parts.push(`entry_count = ${item.entryCount}`);
+      }
+      if (item.recentActivityLabel) {
+        parts.push(
+          `recent_activity_label = "${escapeToml(item.recentActivityLabel)}"`,
+        );
+      }
       continue;
     }
     if (item.type === "divider") {
@@ -868,6 +904,7 @@ function buildConfigToml(
   parts.push("[markdown]");
   parts.push("highlight_code = true");
   parts.push('highlight_theme = "css"');
+  parts.push("bottom_footnotes = true");
 
   return `${parts.join("\n")}
 `;
@@ -975,43 +1012,106 @@ static/
 function buildExportedCollectionDirectoryItems(
   items: readonly ExportCollectionDirectorySourceItem[],
   collectionSlugMap: Map<string, string>,
+  collectionMetrics: Map<string, ExportedCollectionMetrics>,
 ): ExportedCollectionDirectoryItem[] {
-  return items
-    .map((item) => {
-      if (item.type === "divider") {
-        return {
-          type: "divider",
-          label: item.label ?? null,
-        } satisfies ExportedCollectionDirectoryItem;
+  const exportedItems: ExportedCollectionDirectoryItem[] = [];
+
+  for (const item of items) {
+    if (item.type === "divider") {
+      exportedItems.push({
+        type: "divider",
+        label: item.label ?? null,
+      });
+      continue;
+    }
+
+    if (item.type === "link") {
+      if (!item.label || !item.url) {
+        continue;
       }
 
-      if (item.type === "link") {
-        if (!item.label || !item.url) {
-          return null;
-        }
-        return {
-          type: "link",
-          label: item.label,
-          url: item.url,
-        } satisfies ExportedCollectionDirectoryItem;
+      exportedItems.push({
+        type: "link",
+        label: item.label,
+        url: item.url,
+      });
+      continue;
+    }
+
+    const collection = item.collection;
+    if (!collection?.id) {
+      continue;
+    }
+
+    const slug = collectionSlugMap.get(collection.id) ?? collection.slug;
+    if (!slug) {
+      continue;
+    }
+    const metrics = collectionMetrics.get(collection.id);
+
+    exportedItems.push({
+      type: "collection",
+      slug,
+      title: collection.title || slug,
+      entryCount:
+        metrics?.postCount ??
+        (typeof collection.postCount === "number"
+          ? collection.postCount
+          : undefined),
+      recentActivityLabel: formatCollectionActivityLabel(
+        metrics?.recentActivityAt ?? collection.recentActivityAt,
+      ),
+    });
+  }
+
+  return exportedItems;
+}
+
+function buildExportedCollectionMetrics(
+  collections: readonly Collection[],
+  posts: readonly Post[],
+  collectionsByPost: ReadonlyMap<string, readonly Collection[]>,
+): Map<string, ExportedCollectionMetrics> {
+  const metrics = new Map<string, ExportedCollectionMetrics>();
+
+  for (const collection of collections) {
+    metrics.set(collection.id, {
+      postCount: 0,
+      recentActivityAt: collection.updatedAt,
+    });
+  }
+
+  for (const post of posts) {
+    if (post.deletedAt !== null) {
+      continue;
+    }
+
+    const activityAt =
+      post.lastActivityAt ??
+      post.publishedAt ??
+      post.updatedAt ??
+      post.createdAt;
+    const postCollections = collectionsByPost.get(post.id) ?? [];
+
+    for (const collection of postCollections) {
+      const current = metrics.get(collection.id);
+      if (!current) {
+        continue;
       }
 
-      const collectionId = item.collection?.id;
-      if (!collectionId) {
-        return null;
+      if (current.postCount === 0) {
+        current.recentActivityAt = activityAt;
+      } else {
+        current.recentActivityAt = Math.max(
+          current.recentActivityAt,
+          activityAt,
+        );
       }
+      current.postCount += 1;
+    }
+  }
 
-      const slug = collectionSlugMap.get(collectionId) ?? item.collection?.slug;
-      if (!slug) {
-        return null;
-      }
-
-      return {
-        type: "collection",
-        slug,
-      } satisfies ExportedCollectionDirectoryItem;
-    })
-    .filter((item): item is ExportedCollectionDirectoryItem => item !== null);
+  return metrics;
 }
 
 // ---------------------------------------------------------------------------
@@ -1277,6 +1377,78 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
     <h1 class="section-title">Collections</h1>
     <p class="section-description">Browse exported posts by collection.</p>
   </header>
+  {% set directory_items = config.extra.jant.collections_directory | default(value=[]) %}
+  {% if directory_items | length > 0 %}
+  <div class="collection-directory">
+    {% for item in directory_items %}
+      {% if item.type == "divider" %}
+      <div class="collection-directory-divider">
+        <div class="collection-directory-divider-row" {% if not item.label %}aria-hidden="true"{% endif %}>
+          {% if item.label %}
+          <span class="collection-directory-divider-text">{{ item.label }}</span>
+          {% endif %}
+          <hr class="collection-directory-divider-line">
+        </div>
+      </div>
+      {% elif item.type == "link" and item.label and item.url %}
+      <div class="collection-directory-item collection-directory-item-link">
+        <div class="collection-directory-main">
+          <span class="collection-directory-sequence" aria-hidden="true"></span>
+          <div class="collection-directory-title-row">
+            <a href="{{ item.url }}" class="collection-directory-title-link" target="_blank" rel="noopener noreferrer">
+              <span class="collection-directory-title">
+                {{ item.label }}
+                <span class="collection-directory-title-marker" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.08L11.7 5.24" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-2.92 2.92a5 5 0 0 0 7.07 7.08l1.69-1.7" />
+                  </svg>
+                </span>
+              </span>
+            </a>
+          </div>
+          <p class="collection-directory-summary">
+            <span class="collection-directory-meta">Link</span>
+          </p>
+        </div>
+      </div>
+      {% elif item.type == "collection" and item.slug %}
+      {% set entry_count = item.entry_count | default(value=-1) %}
+      {% set recent_activity_label = item.recent_activity_label | default(value="") %}
+      {% set has_collection_page = entry_count != 0 %}
+      <div class="collection-directory-item">
+        <div class="collection-directory-main">
+          <span class="collection-directory-sequence" aria-hidden="true"></span>
+          <div class="collection-directory-title-row">
+            {% if has_collection_page %}
+            <a href="{{ get_taxonomy_url(kind='c', name=item.slug) }}" class="collection-directory-title-link">
+              <span class="collection-directory-title">{{ item.title | default(value=item.slug) }}</span>
+            </a>
+            {% else %}
+            <span class="collection-directory-title">{{ item.title | default(value=item.slug) }}</span>
+            {% endif %}
+          </div>
+          <p class="collection-directory-summary">
+            {% if entry_count >= 0 %}
+            <span class="collection-directory-meta">
+              {{ entry_count }} {% if entry_count == 1 %}entry{% else %}entries{% endif %}
+            </span>
+            {% endif %}
+            {% if recent_activity_label != "" %}
+              {% if entry_count >= 0 %}
+              <span class="collection-directory-meta-separator" aria-hidden="true">/</span>
+              {% endif %}
+            <span class="collection-directory-updated">Updated {{ recent_activity_label }}</span>
+            {% elif entry_count < 0 %}
+            <span class="collection-directory-meta">Collection</span>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
   <ol class="collection-list">
     {% for term in terms %}
     {% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}
@@ -1297,6 +1469,7 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
     </li>
     {% endfor %}
   </ol>
+  {% endif %}
 </div>
 {% endblock %}
 `;
@@ -2905,6 +3078,171 @@ article[data-post-featured] .post-footer-featured {
   color: var(--site-text-secondary);
 }
 
+.collection-directory {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  counter-reset: collection-directory;
+}
+
+.collection-directory-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.95rem 0;
+}
+
+.collection-directory-item-link {
+  text-decoration: none;
+}
+
+.collection-directory-main {
+  --collection-directory-sequence-width: 3.5ch;
+  --collection-directory-title-line-height: 1.18;
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--collection-directory-sequence-width) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 0.8rem;
+  row-gap: 0.25rem;
+}
+
+.collection-directory-item .collection-directory-main {
+  counter-increment: collection-directory;
+}
+
+.collection-directory-sequence {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
+  width: var(--collection-directory-sequence-width);
+  padding-top: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--collection-directory-title-line-height);
+  letter-spacing: 0.14em;
+  color: var(--site-text-secondary);
+  transition: color 0.15s ease;
+}
+
+.collection-directory-sequence::before {
+  content: counter(collection-directory, decimal-leading-zero);
+}
+
+.collection-directory-title-row {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.collection-directory-title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.collection-directory-title-link:hover {
+  color: var(--site-text-primary);
+}
+
+.collection-directory-title-link:hover .collection-directory-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.collection-directory-title-link:hover .collection-directory-title-marker {
+  color: var(--site-text-primary);
+}
+
+.collection-directory-title {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
+  font-weight: var(--fw-medium);
+  line-height: var(--collection-directory-title-line-height);
+  letter-spacing: -0.02em;
+}
+
+.collection-directory-title-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95rem;
+  min-width: 0.95rem;
+  height: 0.95rem;
+  color: var(--site-text-secondary);
+  transition: color 0.15s ease;
+}
+
+.collection-directory-summary {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  align-items: center;
+  gap: 0.2rem 0.5rem;
+  margin: 0;
+  color: var(--site-text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.collection-directory-meta {
+  flex: 0 0 auto;
+  color: inherit;
+}
+
+.collection-directory-meta-separator {
+  flex: 0 0 auto;
+  color: color-mix(in srgb, var(--site-divider) 88%, transparent);
+}
+
+.collection-directory-updated {
+  flex: 0 0 auto;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.collection-directory-divider {
+  padding: 1.5rem 0 0.85rem;
+}
+
+.collection-directory-divider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+}
+
+.collection-directory-divider-text {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  color: var(--site-text-secondary);
+}
+
+.collection-directory-divider-line {
+  flex: 1;
+  height: 1px;
+  border: none;
+  margin: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--site-divider) 100%, transparent),
+    color-mix(in srgb, var(--site-divider) 54%, transparent) 34%,
+    transparent 86%
+  );
+}
+
 .collection-list {
   margin: 0;
   padding: 0;
@@ -3161,6 +3499,14 @@ article[data-post-featured] .post-footer-featured {
 }
 
 @media (max-width: 640px) {
+  .collection-directory-item {
+    padding: 0.9rem 0;
+  }
+
+  .collection-directory-updated {
+    white-space: normal;
+  }
+
   .archive-entry {
     grid-template-columns: 1fr;
     gap: 0.3rem;

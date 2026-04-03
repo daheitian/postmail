@@ -52,6 +52,11 @@ describe("createExportService", () => {
       createdAt: 1773014400,
       updatedAt: 1773014400,
     };
+    const directoryCollection = {
+      ...collection,
+      postCount: 1,
+      recentActivityAt: 1773014400,
+    };
 
     const services = {
       posts: {
@@ -66,7 +71,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [collection],
         listDirectoryData: async () => ({
-          collections: [],
+          collections: [directoryCollection],
           items: [
             {
               id: "divider-1",
@@ -76,7 +81,7 @@ describe("createExportService", () => {
             {
               id: "collection-item-1",
               type: "collection" as const,
-              collection,
+              collection: directoryCollection,
             },
             {
               id: "link-1",
@@ -146,6 +151,9 @@ describe("createExportService", () => {
     expect(configToml).toContain('label = "Writing"');
     expect(configToml).toContain('type = "collection"');
     expect(configToml).toContain('slug = "programming"');
+    expect(configToml).toContain('title = "编程开发"');
+    expect(configToml).toContain("entry_count = 1");
+    expect(configToml).toContain('recent_activity_label = "2026-03-09"');
     expect(configToml).toContain('type = "link"');
     expect(configToml).toContain('url = "https://example.com/elsewhere"');
     expect(collectionMetadata).toContain('title = "编程开发"');
@@ -160,6 +168,26 @@ describe("createExportService", () => {
     expect(archiveTemplate).toContain("page.extra.summary_text");
     expect(archiveTemplate).toContain(
       "get_section(path='c/' ~ col ~ '/_index.md')",
+    );
+    expect(taxonomyListTemplate).toContain(
+      "config.extra.jant.collections_directory",
+    );
+    expect(taxonomyListTemplate).toContain(
+      'class="collection-directory-divider"',
+    );
+    expect(taxonomyListTemplate).toContain(
+      'class="collection-directory-divider-text"',
+    );
+    expect(taxonomyListTemplate).toContain(
+      'class="collection-directory-item collection-directory-item-link"',
+    );
+    expect(taxonomyListTemplate).toContain("item.entry_count");
+    expect(taxonomyListTemplate).toContain("item.recent_activity_label");
+    expect(taxonomyListTemplate).toContain(
+      "get_taxonomy_url(kind='c', name=item.slug)",
+    );
+    expect(taxonomyListTemplate).toContain(
+      "has_collection_page = entry_count != 0",
     );
     expect(taxonomyListTemplate).toContain('<ol class="collection-list">');
     expect(taxonomyListTemplate).toContain("collection-list-sequence");
@@ -176,6 +204,9 @@ describe("createExportService", () => {
     expect(macrosTemplate).toContain('class="post-collection-popover-item"');
     expect(macrosTemplate).toContain("post-body-summary");
     expect(styleCss).toContain(".collection-list-sequence::before");
+    expect(styleCss).toContain(".collection-directory-sequence::before");
+    expect(styleCss).toContain(".collection-directory-divider-line");
+    expect(styleCss).toContain(".collection-directory-title-marker");
     expect(styleCss).toContain(
       ".post-collection-more-wrap:hover .post-collection-popover",
     );
@@ -275,7 +306,8 @@ describe("createExportService", () => {
           id: "media-1",
           type: "text" as const,
           contentFormat: "markdown" as const,
-          content: "# Attached note\n\nHello export",
+          content:
+            "# Attached note\n\nHello export[^1]\n\n[^1]: Preview *footnote*\n\n<script>alert(1)</script>",
           summary: "Attached note",
           chars: 24,
         }),
@@ -311,13 +343,105 @@ describe("createExportService", () => {
     expect(postMarkdown).toContain('data-jant-kind="text"');
     expect(postMarkdown).toContain('"contentFormat":"markdown"');
     expect(postMarkdown).toContain(
-      '"content":"# Attached note\\n\\nHello export"',
+      '"content":"# Attached note\\n\\nHello export[^1]\\n\\n[^1]: Preview *footnote*\\n\\n\\u003cscript\\u003ealert(1)\\u003c/script\\u003e"',
     );
     expect(postMarkdown).toContain("<details>");
     expect(postMarkdown).toContain("<summary>Attached note</summary>");
     expect(postMarkdown).toContain("<h1>Attached note</h1>");
+    expect(postMarkdown).toContain(
+      '<sup class="footnote-ref" data-footnote-reference>',
+    );
+    expect(postMarkdown).toContain(
+      '<section class="footnotes" data-footnotes>',
+    );
+    expect(postMarkdown).toContain("<em>footnote</em>");
+    expect(postMarkdown).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(postMarkdown).not.toContain('"src":"');
     expect(styleCss).not.toContain(".jant-attachment-text-preview blockquote");
+  });
+
+  it("exports rendered site footer HTML and enables bottom footnotes in Zola", async () => {
+    const rootPost: Post = {
+      id: "post-1",
+      format: "note",
+      status: "published",
+      visibility: "public",
+      pinnedAt: null,
+      featuredAt: null,
+      slug: "desk-note",
+      title: "Desk note",
+      url: null,
+      body: null,
+      bodyHtml: null,
+      bodyText: "Desk note",
+      quoteText: null,
+      summary: "Desk note",
+      rating: null,
+      previewImageKey: null,
+      previewKind: null,
+      previewProvider: null,
+      replyToId: null,
+      threadId: "post-1",
+      deletedAt: null,
+      publishedAt: 1773014400,
+      lastActivityAt: 1773014400,
+      createdAt: 1773014400,
+      updatedAt: 1773014400,
+    };
+
+    const services = {
+      posts: {
+        list: async () => [rootPost],
+      },
+      paths: {
+        getPostSlugMap: async () => new Map([["post-1", "desk-note"]]),
+        getPostAliases: async () => new Map([["post-1", []]]),
+        getCollectionSlugMap: async () => new Map(),
+      },
+      collections: {
+        list: async () => [],
+        getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+      },
+      media: {
+        getByPostIds: async () => new Map(),
+      },
+    } as unknown as Parameters<typeof createExportService>[0];
+
+    const siteConfig: Parameters<typeof createExportService>[1] = {
+      siteName: "Jant",
+      siteUrl: "https://example.com",
+      siteDescription: "Export test",
+      siteLanguage: "en",
+      showJantBrandingOnHome: true,
+      homeDefaultView: "latest",
+      headerNavMaxVisible: 4,
+      siteFooter:
+        "Read the [docs](https://example.com)[^1]\n\n[^1]: Footer note\n\n<script>alert(1)</script>",
+      showHeaderAvatar: false,
+      siteAvatarUrl: "",
+      themeId: "paper",
+      defaultThemeId: "paper",
+      fontThemeId: "system",
+      themeMode: "auto",
+      noindex: false,
+      navItems: [],
+    };
+
+    const zip = await createExportService(
+      services,
+      siteConfig,
+    ).generateZolaSite();
+    const files = unzipSync(zip);
+    const configToml = decodeZipEntry(files, "config.toml");
+
+    expect(configToml).toContain("bottom_footnotes = true");
+    expect(configToml).toContain(
+      'site_footer_html = "<p>Read the <a href=\\"https://example.com\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">docs</a><sup class=\\"footnote-ref\\" data-footnote-reference><a href=\\"#fn-1\\" id=\\"fnref-1\\">1</a></sup></p>',
+    );
+    expect(configToml).toContain(
+      '<section class=\\"footnotes\\" data-footnotes><ol><li id=\\"fn-1\\"><p>Footer note <a href=\\"#fnref-1\\" class=\\"footnote-backref\\" aria-label=\\"Back to reference\\">↩</a></p></li></ol></section>"',
+    );
+    expect(configToml).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
   });
 
   it("exports custom favicon and apple-touch assets with explicit custom modes", async () => {

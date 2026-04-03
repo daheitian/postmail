@@ -79,6 +79,7 @@ const SEARCHABLE_TYPES = new Set([
   "tableRow",
   "tableCell",
   "tableHeader",
+  "footnoteDefinition",
   "text",
   "hardBreak",
 ]);

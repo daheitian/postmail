@@ -62,6 +62,17 @@ describe("render", () => {
     expect(html).toBe("<p>Intro</p><!--more--><p>Rest</p>");
   });
 
+  it("renders footnote references and definitions", () => {
+    const html = render("Body copy[^1]\n\n[^1]: Footnote body");
+
+    expect(html).toContain(
+      '<sup class="footnote-ref" data-footnote-reference>',
+    );
+    expect(html).toContain('<section class="footnotes" data-footnotes>');
+    expect(html).toContain('<li id="fn-1">');
+    expect(html).toContain("Footnote body");
+  });
+
   it("escapes raw HTML outside the supported markdown schema", () => {
     const html = render("<script>alert(1)</script>");
     expect(html).toBe("<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>");
@@ -110,6 +121,12 @@ describe("toPlainText", () => {
     const md = "## Hello\n\nThis is **bold** and [a link](url).";
     const result = toPlainText(md);
     expect(result).toBe("Hello This is bold and a link.");
+  });
+
+  it("includes footnote definitions in plain text extraction", () => {
+    expect(toPlainText("Body copy[^1]\n\n[^1]: Footnote body")).toBe(
+      "Body copy Footnote body",
+    );
   });
 
   it("handles empty string", () => {

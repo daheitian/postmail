@@ -14,6 +14,13 @@ import {
   TableCell,
   TableHeader,
 } from "@tiptap/extension-table";
+import {
+  getFootnoteDefinitionLabelText,
+  getFootnoteReferenceText,
+  indentFootnoteMarkdown,
+  normalizeFootnoteLabel,
+  parseFootnoteDefinition,
+} from "./footnotes.js";
 import { renderMarkdownImage, type RichImageAttrs } from "./rich-image.js";
 
 export const MARKDOWN_MARKED_OPTIONS = {
@@ -298,6 +305,196 @@ export const MarkdownMoreBreak = Node.create({
   markdownTokenizer: createMoreBreakMarkdownToken(),
 });
 
+function createFootnoteReferenceMarkdownToken() {
+  return {
+    name: "footnoteReference",
+    level: "inline" as const,
+    start(src: string) {
+      return src.indexOf("[^");
+    },
+    tokenize(src: string) {
+      const match = src.match(/^\[\^([^\]\n]+)\]/);
+      const label = normalizeFootnoteLabel(match?.[1]);
+      if (!match || !label) return undefined;
+
+      return {
+        type: "footnoteReference",
+        raw: match[0],
+        label,
+      };
+    },
+  };
+}
+
+export const MarkdownFootnoteReference = Node.create({
+  name: "footnoteReference",
+  group: "inline",
+  inline: true,
+  atom: true,
+  selectable: true,
+  draggable: false,
+
+  addAttributes() {
+    return {
+      label: { default: "" },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "sup[data-footnote-reference]",
+        getAttrs(dom) {
+          const element = dom as QueryableElement;
+          return {
+            label: normalizeFootnoteLabel(
+              element.getAttribute("data-footnote-label"),
+            ),
+          };
+        },
+      },
+    ];
+  },
+
+  renderHTML({ node }) {
+    const label = normalizeFootnoteLabel(node.attrs.label);
+
+    return [
+      "sup",
+      {
+        "data-footnote-reference": "",
+        "data-footnote-label": label,
+        class: "tiptap-footnote-reference",
+      },
+      getFootnoteReferenceText(label),
+    ];
+  },
+
+  parseMarkdown: (token, helpers) =>
+    helpers.createNode("footnoteReference", {
+      label: normalizeFootnoteLabel(token.label),
+    }),
+
+  renderMarkdown: (node) => getFootnoteReferenceText(node.attrs?.label),
+
+  markdownTokenizer: createFootnoteReferenceMarkdownToken(),
+});
+
+export const MarkdownFootnoteDefinition = Node.create({
+  name: "footnoteDefinition",
+  group: "block",
+  content: "block+",
+  defining: true,
+  isolating: true,
+  selectable: false,
+  draggable: false,
+
+  addAttributes() {
+    return {
+      label: { default: "" },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "div[data-footnote-definition]",
+        getAttrs(dom) {
+          const element = dom as QueryableElement;
+          return {
+            label: normalizeFootnoteLabel(
+              element.getAttribute("data-footnote-label"),
+            ),
+          };
+        },
+      },
+    ];
+  },
+
+  renderHTML({ node }) {
+    const label = normalizeFootnoteLabel(node.attrs.label);
+
+    return [
+      "div",
+      {
+        "data-footnote-definition": "",
+        "data-footnote-label": getFootnoteDefinitionLabelText(label),
+        class: "tiptap-footnote-definition",
+      },
+      0,
+    ];
+  },
+
+  parseMarkdown: (token, helpers) => {
+    const content =
+      Array.isArray(token.tokens) &&
+      typeof helpers.parseBlockChildren === "function"
+        ? helpers.parseBlockChildren(token.tokens)
+        : [];
+
+    return helpers.createNode(
+      "footnoteDefinition",
+      {
+        label: normalizeFootnoteLabel(token.label),
+      },
+      content.length > 0 ? content : [helpers.createNode("paragraph")],
+    );
+  },
+
+  renderMarkdown: (node, helpers) => {
+    const label = normalizeFootnoteLabel(node.attrs?.label);
+    const content = Array.isArray(node.content) ? node.content : [];
+    const labelText = getFootnoteDefinitionLabelText(label);
+
+    if (content.length === 0) {
+      return labelText;
+    }
+
+    const renderedBlocks = content.map((child, index) =>
+      typeof helpers.renderChild === "function"
+        ? helpers.renderChild(child, index)
+        : "",
+    );
+    const simpleParagraph =
+      content.length === 1 &&
+      content[0]?.type === "paragraph" &&
+      !renderedBlocks[0]?.includes("\n");
+
+    if (simpleParagraph) {
+      return renderedBlocks[0]
+        ? `${labelText} ${renderedBlocks[0]}`
+        : labelText;
+    }
+
+    const indentedBlocks = renderedBlocks
+      .map((block) => indentFootnoteMarkdown(block))
+      .join("\n\n");
+
+    return `${labelText}\n${indentedBlocks}`;
+  },
+
+  markdownTokenizer: {
+    name: "footnoteDefinition",
+    level: "block",
+    start(src: string) {
+      return src.indexOf("[^");
+    },
+    tokenize(src: string, _tokens: unknown[], helpers) {
+      const definition = parseFootnoteDefinition(src);
+      if (!definition) return undefined;
+
+      return {
+        type: "footnoteDefinition",
+        raw: definition.raw,
+        label: definition.label,
+        tokens: definition.contentMarkdown
+          ? helpers.blockTokens(definition.contentMarkdown)
+          : [],
+      };
+    },
+  },
+});
+
 interface MarkdownContentExtensionOptions {
   imageExtension?: AnyExtension;
   moreBreakExtension?: AnyExtension;
@@ -323,6 +520,8 @@ export function createMarkdownContentExtensions(
     MarkdownFigureImageSupport,
     options.imageExtension ?? MarkdownImageNode,
     options.moreBreakExtension ?? MarkdownMoreBreak,
+    MarkdownFootnoteReference,
+    MarkdownFootnoteDefinition,
   ];
 }
 
@@ -381,6 +580,37 @@ function normalizeMarkdownDoc(node: JSONContent): JSONContent {
     (!normalized.content || normalized.content.length === 0)
   ) {
     normalized.content = [{ type: "paragraph" }];
+  }
+
+  if (normalized.type === "paragraph" && normalized.content) {
+    const nextContent: JSONContent[] = [];
+
+    for (let index = 0; index < normalized.content.length; index += 1) {
+      const child = normalized.content[index];
+      const nextChild = normalized.content[index + 1];
+
+      if (
+        child?.type === "text" &&
+        typeof child.text === "string" &&
+        nextChild?.type === "footnoteReference" &&
+        child.text.endsWith("\n")
+      ) {
+        const trimmedText = child.text.replace(/\n$/, "");
+        if (trimmedText) {
+          nextContent.push({
+            ...child,
+            text: trimmedText,
+          });
+        }
+        continue;
+      }
+
+      if (child) {
+        nextContent.push(child);
+      }
+    }
+
+    normalized.content = nextContent;
   }
 
   return normalized;

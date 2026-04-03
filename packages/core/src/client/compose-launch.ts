@@ -37,7 +37,16 @@ export function getCurrentDetailPostArticle(
   );
   if (currentPost) return currentPost;
 
-  return root.querySelector<HTMLElement>("[data-post-view] article[data-post]");
+  const postView = root.querySelector<HTMLElement>(
+    "[data-post-view] article[data-post]",
+  );
+  if (postView) return postView;
+
+  if (root === document) {
+    return document.querySelector<HTMLElement>("article[data-post]:hover");
+  }
+
+  return null;
 }
 
 export function getReplyRefreshTarget(
