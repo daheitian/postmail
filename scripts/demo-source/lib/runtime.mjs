@@ -25,23 +25,8 @@ function parseWranglerError(output, fallbackMessage) {
   return output || fallbackMessage;
 }
 
-export function readDemoSourceConfig(key) {
-  return readWranglerString(DEMO_SOURCE_WRANGLER_PATH, key);
-}
-
-function readOptionalDemoSourceConfig(key) {
-  try {
-    return readDemoSourceConfig(key);
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === `Missing ${key} in ${DEMO_SOURCE_WRANGLER_PATH}`
-    ) {
-      return "";
-    }
-
-    throw error;
-  }
+export function readDemoSourceConfig(key, options) {
+  return readWranglerString(DEMO_SOURCE_WRANGLER_PATH, key, options);
 }
 
 export function resolveDemoSourceSiteUrl() {
@@ -57,7 +42,8 @@ export function resolveDemoSourceSiteUrl() {
 
   const configuredOrigin = readDemoSourceConfig("SITE_ORIGIN");
   if (configuredOrigin) {
-    const configuredPrefix = readOptionalDemoSourceConfig("SITE_PATH_PREFIX");
+    const configuredPrefix =
+      readDemoSourceConfig("SITE_PATH_PREFIX", { required: false }) || "";
     const origin = new URL(configuredOrigin).origin;
     const normalizedPrefix =
       configuredPrefix && configuredPrefix !== "/"

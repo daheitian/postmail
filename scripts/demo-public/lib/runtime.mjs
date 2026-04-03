@@ -25,8 +25,8 @@ function parseWranglerError(output, fallbackMessage) {
   return output || fallbackMessage;
 }
 
-export function readDemoPublicConfig(key) {
-  return readWranglerString(DEMO_PUBLIC_WRANGLER_PATH, key);
+export function readDemoPublicConfig(key, options) {
+  return readWranglerString(DEMO_PUBLIC_WRANGLER_PATH, key, options);
 }
 
 export function resolveDemoPublicSiteUrl() {
@@ -40,9 +40,12 @@ export function resolveDemoPublicSiteUrl() {
     return `${parsed.origin}${explicitPrefix}`;
   }
 
-  const configuredOrigin = readDemoPublicConfig("SITE_ORIGIN");
+  const configuredOrigin = readDemoPublicConfig("SITE_ORIGIN", {
+    required: false,
+  });
   if (configuredOrigin) {
-    const configuredPrefix = readDemoPublicConfig("SITE_PATH_PREFIX") || "";
+    const configuredPrefix =
+      readDemoPublicConfig("SITE_PATH_PREFIX", { required: false }) || "";
     const origin = new URL(configuredOrigin).origin;
     const normalizedPrefix =
       configuredPrefix && configuredPrefix !== "/"
