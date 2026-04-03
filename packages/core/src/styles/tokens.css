@@ -89,9 +89,6 @@
   /* Layout — Tufte proportional model */
   --content-max-width: 50rem;
   /* compose dialogs + feed content cap */
-  --layout-body-width: 87.5%;
-  --layout-body-padding-left: 12.5%;
-  --layout-body-padding-right: 4%;
   --layout-body-max-width: 1400px;
   --layout-content-width: 55%;
   --layout-sidenote-width: 50%;
@@ -310,9 +307,6 @@
 @media (max-width: 760px) {
   :root {
     --site-padding: 1.875rem;
-    --layout-body-width: 84%;
-    --layout-body-padding-left: 8%;
-    --layout-body-padding-right: 8%;
     --layout-content-width: 100%;
   }
 }

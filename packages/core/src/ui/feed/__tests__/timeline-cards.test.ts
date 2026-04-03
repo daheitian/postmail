@@ -256,6 +256,32 @@ describe("timeline cards", () => {
     expect(feedHtml).not.toContain("feed-continue-link");
   });
 
+  it("keeps standalone article continue links pointed at the excerpt anchor", () => {
+    const post = createPostView({
+      format: "note",
+      summaryHtml: "<p>Intro</p>",
+      summaryHasMore: true,
+    });
+
+    const html = renderWithI18n(NoteCard({ post, mode: "feed" }));
+
+    expect(html).toContain('href="/post-1#continue"');
+  });
+
+  it("drops excerpt anchors from thread article continue links", () => {
+    const post = createPostView({
+      format: "note",
+      summaryHtml: "<p>Intro</p>",
+      summaryHasMore: true,
+      isLastInThread: false,
+    });
+
+    const html = renderWithI18n(NoteCard({ post, mode: "feed" }));
+
+    expect(html).toContain('href="/post-1"');
+    expect(html).not.toContain('href="/post-1#continue"');
+  });
+
   it("moves rated link detail cards into the title block without changing feed ordering", () => {
     const post = createPostView({
       format: "link",

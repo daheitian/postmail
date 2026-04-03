@@ -53,6 +53,18 @@ html:lang(ko) {
   --layout-body-max-width: 1200px;
 }
 
+/* Mobile: smaller base — closer viewing distance, less screen real estate */
+@media (max-width: 760px) {
+  html {
+    font-size: 13px;
+  }
+  html:lang(zh),
+  html:lang(ja),
+  html:lang(ko) {
+    font-size: 12px;
+  }
+}
+
 :root {
   --success: oklch(0.518 0.16 145.071);
 }
@@ -447,6 +459,7 @@ html:lang(ko) {
   max-width: none;
 }
 
+[data-page="search"],
 .site-home-header,
 .post-detail-title,
 .post-detail-body,
@@ -464,6 +477,7 @@ html:lang(ko) {
 }
 
 @media (max-width: 760px) {
+  [data-page="search"],
   .site-home-header,
   .post-detail-title,
   .post-detail-body,

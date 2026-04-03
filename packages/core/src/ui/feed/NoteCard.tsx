@@ -21,6 +21,11 @@ function stripContinueAnchor(html?: string): string | undefined {
   return html.replace(/<span id="continue"><\/span>/g, "");
 }
 
+function getContinueHref(post: TimelineCardProps["post"]): string {
+  const rendersPermalinkThread = !!post.threadRootId || !post.isLastInThread;
+  return rendersPermalinkThread ? post.permalink : `${post.permalink}#continue`;
+}
+
 export const NoteCard: FC<TimelineCardProps> = ({
   post,
   mode = "feed",
@@ -103,7 +108,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
         !showFullBody &&
         isArticle &&
         post.summaryHasMore && (
-          <a href={`${post.permalink}#continue`} class="feed-continue-link">
+          <a href={getContinueHref(post)} class="feed-continue-link">
             Continue →
           </a>
         )}

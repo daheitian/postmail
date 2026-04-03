@@ -34,17 +34,34 @@
    * Every page-level section gets the same asymmetric padding.
    * Inner elements must NOT add their own horizontal padding.
    */
+  /*
+   * Tufte horizontal frame (border-box).
+   *
+   * width: 100% with percentage padding gives content = 83.5% of viewport.
+   * max-width caps the box at 1680px (= 1400px content + padding).
+   * min() prevents padding from growing beyond the cap point so
+   * content stays at ~1400px on very wide viewports.
+   */
   .site-page > header,
   .site-page > main,
   .site-page > footer,
   .site-page > .home-branding-credit {
-    box-sizing: content-box;
-    width: calc(var(--layout-body-width) - var(--layout-body-padding-right));
-    max-width: var(--layout-body-max-width);
-    padding-left: var(--layout-body-padding-left);
-    padding-right: var(--layout-body-padding-right);
+    width: 100%;
+    max-width: calc(var(--layout-body-max-width) + 280px);
+    padding-left: min(12.5%, 210px);
+    padding-right: min(4%, 67px);
     margin-left: auto;
     margin-right: auto;
+  }
+
+  @media (max-width: 760px) {
+    .site-page > header,
+    .site-page > main,
+    .site-page > footer,
+    .site-page > .home-branding-credit {
+      padding-left: max(5%, 28px);
+      padding-right: 5%;
+    }
   }
 
   /* --- Top header --------------------------------------------------------- */
@@ -374,6 +391,14 @@
 
   .site-content-home {
     padding-top: 0;
+  }
+
+  /* --- Search page -------------------------------------------------------- */
+
+  [data-page="search"] .input,
+  [data-page="search"] .btn {
+    font-size: var(--type-secondary);
+    padding: 1.1rem 1.25rem;
   }
 
   /* --- Sidebar layout (collections pages) -------------------------------- */
@@ -1365,7 +1390,7 @@
     border: none;
     width: 30px;
     height: 9px;
-    margin: 3rem 0;
+    margin: 4rem 0;
     margin-left: calc(var(--layout-content-width) / 2 - 15px);
     color: var(--site-feed-divider-color);
     background-color: currentColor;

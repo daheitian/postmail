@@ -134,20 +134,30 @@ function isFirstThreadDetailItem(current: HTMLElement): boolean {
   return firstItem === current;
 }
 
+function isContinueHash(): boolean {
+  return globalThis.location.hash === "#continue";
+}
+
 function scrollCurrentDetailPostIntoView(
   root: globalThis.Document | globalThis.Element = document,
 ): void {
   const current = root.querySelector("[data-post-current]");
   if (!(current instanceof HTMLElement)) return;
 
-  // Explicit hashes such as #continue should win over thread auto-scroll.
-  if (globalThis.location.hash) return;
+  const continueHash = isContinueHash();
 
-  // Root posts already render at the top of the thread detail page.
-  if (isFirstThreadDetailItem(current)) return;
+  // Explicit hashes still win, except for #continue on thread detail pages.
+  if (globalThis.location.hash && !continueHash) return;
+
+  const scrollBehavior = continueHash ? "auto" : "smooth";
+  const isFirstItem = isFirstThreadDetailItem(current);
 
   requestAnimationFrame(() => {
-    current.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Root posts should stay at the top, but #continue deep-links need to be
+    // reset because permalink thread pages should open at the current post start.
+    if (isFirstItem && !continueHash) return;
+
+    current.scrollIntoView({ behavior: scrollBehavior, block: "start" });
   });
 }
 

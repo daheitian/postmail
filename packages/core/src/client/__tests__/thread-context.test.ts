@@ -82,9 +82,33 @@ describe("thread context", () => {
     });
   });
 
-  it("does not override explicit hash navigation such as #continue", () => {
+  it("resets #continue hash navigation to the current reply start", () => {
     const current = renderThreadDetail(2);
     globalThis.history.replaceState(null, "", "/thread#continue");
+
+    __testOnly.scrollCurrentDetailPostIntoView(document);
+
+    expect(current.scrollIntoView).toHaveBeenCalledWith({
+      behavior: "auto",
+      block: "start",
+    });
+  });
+
+  it("resets #continue hash navigation to the top when the current post is first", () => {
+    const current = renderThreadDetail(0);
+    globalThis.history.replaceState(null, "", "/thread#continue");
+
+    __testOnly.scrollCurrentDetailPostIntoView(document);
+
+    expect(current.scrollIntoView).toHaveBeenCalledWith({
+      behavior: "auto",
+      block: "start",
+    });
+  });
+
+  it("does not override other explicit hash navigation", () => {
+    const current = renderThreadDetail(2);
+    globalThis.history.replaceState(null, "", "/thread#footnote-1");
 
     __testOnly.scrollCurrentDetailPostIntoView(document);
 
