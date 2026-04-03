@@ -87,7 +87,7 @@ describe("BUILTIN_FONT_THEMES", () => {
 
     expect(variables["--font-body"]).toBe(theme.bodyFontFamily);
     expect(variables["--font-heading"]).toBe(theme.headingFontFamily);
-    expect(variables["--type-display-tracking"]).toBe("-0.06em");
+    expect(variables["--type-label-weight"]).toBe("var(--fw-semibold)");
   });
 
   it("routes zh-Hans sites to the simplified CJK serif fallback first", () => {

@@ -641,7 +641,7 @@ msgstr "色彩主題"
 #: src/routes/pages/collection.tsx
 #: src/ui/pages/CollectionPage.tsx
 msgid "Combined Collections"
-msgstr ""
+msgstr "合併選集"
 
 #. @context: Inline link label in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1185,7 +1185,7 @@ msgstr "此頁面上的所有內容皆可直接用於文章、發布貼文、名
 #. @context: Compose fullscreen - button tooltip to collapse back to normal editor
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Exit fullscreen"
-msgstr ""
+msgstr "離開全螢幕"
 
 #. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1891,7 +1891,7 @@ msgstr "新增貼文"
 #. @context: Compose dialog header title when composing a thread
 #: src/ui/compose/ComposeDialog.tsx
 msgid "New Thread"
-msgstr ""
+msgstr "建立貼文串"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -2369,7 +2369,7 @@ msgstr "回覆"
 #. @context: Compose publish settings switch label — reply without bumping thread to top of timeline
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Reply quietly"
-msgstr ""
+msgstr "靜默回覆"
 
 #. @context: Button to restore the automatically generated collection link from the title
 #. @context: Compose custom slug action that clears the manual slug and falls back to automatic generation
@@ -2411,12 +2411,12 @@ msgstr "撤銷此權杖？任何使用它的腳本將會停止運作。"
 #. @context: Tooltip for the RSS feed link on a collection page
 #: src/ui/pages/CollectionPage.tsx
 msgid "RSS feed"
-msgstr ""
+msgstr "RSS 訂閱"
 
 #. @context: Tooltip for the RSS feed button on the archive page
 #: src/ui/pages/ArchivePage.tsx
 msgid "RSS feed for this view"
-msgstr ""
+msgstr "此檢視的 RSS 訂閱"
 
 #. @context: Button to save collection
 #. @context: Button to save settings
@@ -3288,27 +3288,27 @@ msgstr "為什麼預設強調色應該像書寫，而不是品牌標記"
 #. @context: Archive feed title segment for hasMedia=1 filter
 #: src/routes/pages/archive.tsx
 msgid "with media"
-msgstr ""
+msgstr "含媒體"
 
 #. @context: Archive feed title segment for hasTitle=1 filter
 #: src/routes/pages/archive.tsx
 msgid "with title"
-msgstr ""
+msgstr "有標題"
 
 #. @context: Archive feed title segment for hasMedia=0 filter
 #: src/routes/pages/archive.tsx
 msgid "without media"
-msgstr ""
+msgstr "無媒體"
 
 #. @context: Archive feed title segment for hasTitle=0 filter
 #: src/routes/pages/archive.tsx
 msgid "without title"
-msgstr ""
+msgstr "無標題"
 
 #. @context: Compose publish settings hint for quiet reply switch
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Won't move the thread to the top of latest."
-msgstr ""
+msgstr "不會將貼文串移到「最新」的頂端。"
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx

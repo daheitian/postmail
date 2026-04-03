@@ -172,8 +172,8 @@
     gap: 10px;
     min-width: 0;
     padding: 0.15rem 0;
-    font-size: clamp(1.18rem, 1.08rem + 0.45vw, 1.34rem);
-    font-weight: var(--fw-medium);
+    font-size: var(--type-body);
+    font-weight: var(--fw-regular);
     font-family: var(--font-site-title);
     letter-spacing: -0.03em;
     white-space: nowrap;
@@ -219,7 +219,7 @@
     min-height: 2rem;
     padding: 0.2rem 0 0.5rem;
     cursor: pointer;
-    font-size: 0.84rem;
+    font-size: var(--type-secondary);
     line-height: 1;
     letter-spacing: 0.01em;
     white-space: nowrap;
@@ -336,14 +336,14 @@
   }
 
   .site-browse-sep {
-    font-size: var(--text-sm);
+    font-size: var(--type-secondary);
     color: var(--site-text-primary);
     opacity: 0.18;
     user-select: none;
   }
 
   .site-browse-link {
-    font-size: var(--text-base);
+    font-size: var(--type-secondary);
     font-weight: var(--fw-regular);
     color: var(--site-text-primary);
     text-decoration: none;
@@ -685,7 +685,7 @@
     align-items: center;
     gap: 0.45rem;
     font-family: var(--font-heading);
-    font-size: clamp(1rem, 1.5vw, 1.12rem);
+    font-size: var(--type-secondary);
     font-weight: var(--type-heading-weight);
     line-height: var(--collection-directory-title-line-height);
     letter-spacing: -0.02em;
@@ -715,8 +715,8 @@
     margin: 0;
     color: var(--muted-foreground);
     font-family: var(--font-ui);
-    font-size: 0.8rem;
-    line-height: 1.5;
+    font-size: var(--type-secondary);
+    line-height: 1.3;
     white-space: nowrap;
   }
 
@@ -799,7 +799,7 @@
 
   .collection-directory-divider-text {
     font-family: var(--font-heading);
-    font-size: 0.9rem;
+    font-size: var(--type-secondary);
     letter-spacing: 0;
     font-style: normal;
     white-space: nowrap;
@@ -845,7 +845,7 @@
     color: var(--foreground);
     font: inherit;
     font-family: var(--font-heading);
-    font-size: 0.9rem;
+    font-size: var(--type-secondary);
     letter-spacing: 0;
     font-style: normal;
     outline: none;
@@ -916,7 +916,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.45rem;
-    font-size: 0.92rem;
+    font-size: var(--type-secondary);
     color: var(--muted-foreground);
   }
 
@@ -946,10 +946,10 @@
   }
 
   .collection-page-title {
-    font-size: clamp(1.7rem, 4vw, 2.25rem);
-    font-weight: 600;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
+    font-size: var(--type-title);
+    font-weight: var(--type-heading-weight);
+    line-height: var(--type-heading-leading);
+    letter-spacing: var(--type-heading-tracking);
     user-select: all;
   }
 
@@ -964,17 +964,16 @@
     max-width: 38rem;
     color: var(--site-text-secondary);
     font-family: var(--font-body);
-    font-size: var(--text-sm);
-    line-height: 1.58;
-    letter-spacing: 0.004em;
+    font-size: var(--type-secondary);
+    line-height: 1.3;
   }
 
   .collection-page-meta {
     margin: 0;
     font-family: var(--font-ui);
-    font-size: var(--text-sm);
+    font-size: var(--type-secondary);
     color: var(--muted-foreground);
-    line-height: 1.35;
+    line-height: 1.3;
     font-variant-numeric: tabular-nums;
   }
 
@@ -1430,10 +1429,9 @@
     background: none;
     color: var(--site-text-secondary);
     font-family: var(--font-ui);
-    font-size: 0.75rem;
-    font-weight: var(--type-label-weight);
-    line-height: 1;
-    letter-spacing: var(--type-label-tracking);
+    font-size: var(--type-secondary);
+    font-weight: var(--fw-regular);
+    line-height: 1.3;
     text-decoration: none;
     transition: color 0.18s ease;
   }
@@ -1484,7 +1482,7 @@
   .feed-continue-link {
     display: inline-block;
     margin-top: 0.5rem;
-    font-size: 1.1rem;
+    font-size: var(--type-secondary);
     color: var(--site-text-secondary);
   }
 
@@ -1533,7 +1531,7 @@
   .post-header-meta-link {
     color: var(--site-text-secondary);
     font-family: var(--font-ui);
-    font-size: 0.875rem;
+    font-size: var(--type-secondary);
     text-decoration: none;
     white-space: nowrap;
   }
@@ -1565,7 +1563,7 @@
 
   [data-page="post"] .post-detail-title {
     color: var(--site-reading-title);
-    font-size: 3.2rem;
+    font-size: var(--type-display);
     font-weight: var(--type-heading-weight);
     line-height: var(--type-heading-leading);
     letter-spacing: var(--type-heading-tracking);
@@ -1637,7 +1635,7 @@
     width: var(--layout-sidenote-width);
     margin-top: 0.3rem;
     margin-bottom: 0;
-    font-size: 1.1rem;
+    font-size: var(--type-secondary);
     line-height: 1.3;
     vertical-align: baseline;
     position: relative;
@@ -1656,20 +1654,20 @@
 
   .sidenote-number::after {
     content: counter(sidenote-counter);
-    font-size: 1rem;
+    font-size: var(--type-code);
     top: -0.5rem;
     left: 0.1rem;
   }
 
   .sidenote::before {
     content: counter(sidenote-counter) " ";
-    font-size: 1rem;
+    font-size: var(--type-code);
     top: -0.5rem;
   }
 
   .sidenote > code,
   .marginnote > code {
-    font-size: 1rem;
+    font-size: var(--type-code);
   }
 
   blockquote .sidenote,
@@ -1899,8 +1897,8 @@
     border-radius: 999px;
     background: var(--site-thread-gap-bg);
     color: var(--site-text-secondary);
-    font-size: 0.78rem;
-    line-height: 1.15;
+    font-size: var(--type-secondary);
+    line-height: 1.3;
     text-decoration: none;
     transition:
       border-color 0.18s ease,
@@ -2098,7 +2096,7 @@
 
   .feed-quote-mark {
     position: relative;
-    width: clamp(1.46rem, 1.38rem + 0.36vw, 1.76rem);
+    width: 1.7rem;
     margin-bottom: -0.1rem;
     margin-left: -0.04rem;
     color: color-mix(in srgb, var(--site-accent) 14%, var(--site-divider));
@@ -2113,9 +2111,8 @@
     margin-top: 0.95rem;
     color: var(--site-text-secondary);
     font-family: var(--font-ui);
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    line-height: 1.4;
+    font-size: var(--type-secondary);
+    line-height: 1.3;
   }
 
   .feed-quote-attribution::before {
@@ -2176,8 +2173,8 @@
   }
 
   .feed-quote-post .feed-quote-commentary {
-    font-size: 0.94rem;
-    line-height: 1.68;
+    font-size: var(--type-body);
+    line-height: var(--type-body-leading);
   }
 
   .feed-quote-commentary.prose > :first-child {
@@ -2222,14 +2219,6 @@
     opacity: 0.65;
   }
 
-  @media (max-width: 640px) {
-    .feed-quote-mark {
-      width: clamp(1.34rem, 1.28rem + 0.32vw, 1.58rem);
-      margin-bottom: -0.08rem;
-      margin-left: -0.03rem;
-    }
-  }
-
   /* =========================================================================
    * Post Menu (More button + dropdown)
    * ========================================================================= */
@@ -2248,7 +2237,7 @@
     flex-wrap: wrap;
     gap: 6px;
     margin-bottom: 5px;
-    font-size: 12px;
+    font-size: var(--type-code);
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0.01em;
@@ -2294,9 +2283,7 @@
 
   .post-footer-detail {
     margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid var(--site-divider);
-    font-size: 14px;
+    font-size: var(--type-secondary);
     color: var(--site-text-secondary);
   }
 
@@ -2358,7 +2345,7 @@
 
   .post-footer-link {
     color: var(--site-text-secondary);
-    font-size: 13px;
+    font-size: var(--type-secondary);
     text-decoration: none;
     white-space: nowrap;
     flex-shrink: 0;
@@ -2402,7 +2389,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 13px;
+    font-size: var(--type-secondary);
     position: relative;
     min-width: 0;
     max-width: 100%;
@@ -2410,10 +2397,6 @@
 
   .post-menu-footer:not(.post-footer-detail) .post-collection-tags {
     flex: 1 1 auto;
-  }
-
-  .post-footer-detail .post-collection-tags {
-    font-size: 14px;
   }
 
   .post-collection-sep {
@@ -2531,7 +2514,7 @@
     gap: 6px;
     padding: 6px 8px;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: var(--type-secondary);
     color: var(--site-text-secondary);
     text-decoration: none;
   }
@@ -2547,7 +2530,7 @@
     display: flex;
     gap: 1px;
     margin-top: 6px;
-    font-size: 14px;
+    font-size: var(--type-secondary);
     line-height: 1;
   }
 
@@ -7922,7 +7905,7 @@
 
   .compose-tiptap-body .tiptap h3 {
     font-family: var(--font-heading);
-    font-size: 1.1rem;
+    font-size: var(--type-secondary);
     font-weight: var(--type-heading-weight);
     line-height: calc(var(--type-heading-leading) + 0.1);
     letter-spacing: var(--type-heading-tracking);

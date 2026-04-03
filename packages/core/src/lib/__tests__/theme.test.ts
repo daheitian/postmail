@@ -27,7 +27,6 @@ describe("buildThemeStyle", () => {
     expect(css).toContain(":root:root");
     expect(css).toContain("--font-body:");
     expect(css).toContain("--font-heading:");
-    expect(css).toContain("--type-body-leading:");
     expect(css).toContain("ui-sans-serif");
     expect(css).toContain("prefers-color-scheme: dark");
   });

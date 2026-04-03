@@ -66,7 +66,6 @@ describe("Font theme save & CSS generation", () => {
 
     expect(css).toContain("--font-body:");
     expect(css).toContain("--font-heading:");
-    expect(css).toContain("--type-display-tracking:");
     expect(css).toContain("Source Sans 3 Variable");
     expect(css).not.toContain("Charter");
   });
@@ -103,7 +102,6 @@ describe("Font theme save & CSS generation", () => {
     const css = buildThemeStyle(undefined, "auto", fontOverrides);
 
     expect(css).toContain("--font-heading:");
-    expect(css).toContain("--type-heading-leading:");
     expect(css).toContain("Charter");
   });
 

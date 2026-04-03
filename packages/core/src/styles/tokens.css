@@ -43,17 +43,38 @@
   --fw-semibold: 600;
   --fw-bold: 700;
   --fw-extrabold: 800;
-  --text-sm: 0.8125rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --feed-note-title-size: 1.7rem;
+  /*
+   * Tufte type scale — every font-size in the system must reference one of
+   * these tokens. No raw rem/px values for font-size outside this block.
+   *
+   *   --type-display    3.2rem (48px)  — page titles, h1
+   *   --type-title      2.2rem (33px)  — section headings, h2, feed card titles
+   *   --type-subtitle   1.7rem (25.5px)— h3
+   *   --type-body       1.4rem (21px)  — running text
+   *   --type-secondary  1.1rem (16.5px)— meta, nav, sidenotes, attribution
+   *   --type-code       1.0rem (15px)  — inline code
+   *   --type-code-block 0.9rem (13.5px)— code blocks (pre)
+   */
+  --type-display: 3.2rem;
+  --type-title: 2.2rem;
+  --type-subtitle: 1.7rem;
+  --type-body: 1.4rem;
+  --type-secondary: 1.1rem;
+  --type-code: 1rem;
+  --type-code-block: 0.9rem;
+
+  /* Legacy aliases (consumed by font themes + prose) */
+  --type-body-size: var(--type-body);
+  --type-body-leading: 1.43;
+  --type-body-tracking: 0;
+  --feed-note-title-size: var(--type-title);
   --feed-note-title-leading: 1;
   --leading: 1.5;
 
-  /* Tufte-matched body typography */
-  --type-body-size: 1.4rem;
-  --type-body-leading: 1.43;
-  --type-body-tracking: 0;
+  /* UI-only scale (admin, compose, badges — not reading content) */
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
   --type-heading-weight: var(--fw-regular);
   --type-heading-leading: 1;
   --type-heading-tracking: 0;
@@ -64,7 +85,7 @@
   --type-label-tracking: 0.08em;
 
   /* Layout — Tufte proportional model */
-  --content-max-width: 36rem;
+  --content-max-width: 50rem;
   /* compose dialogs + feed content cap */
   --layout-body-width: 87.5%;
   --layout-body-padding-left: 12.5%;

@@ -192,20 +192,20 @@ html {
   }
 
   :where(h1) {
-    font-size: 3.2rem;
+    font-size: var(--type-display);
     margin-top: 4rem;
     margin-bottom: 1.5rem;
   }
 
   :where(h2) {
-    font-size: 2.2rem;
+    font-size: var(--type-title);
     font-style: italic;
     margin-top: 2.1rem;
     margin-bottom: 1.4rem;
   }
 
   :where(h3) {
-    font-size: 1.7rem;
+    font-size: var(--type-subtitle);
     font-style: italic;
     margin-top: 2rem;
     margin-bottom: 1.4rem;
@@ -216,13 +216,13 @@ html {
   }
 
   :where(code, pre code) {
-    font-size: 1rem;
+    font-size: var(--type-code);
     line-height: 1.42;
     overflow-wrap: break-word;
   }
 
   :where(pre code) {
-    font-size: 0.9rem;
+    font-size: var(--type-code-block);
   }
 
   :where(h1, h2, h3) :where(code) {
@@ -425,6 +425,7 @@ html {
   max-width: none;
 }
 
+.site-home-header,
 .post-detail-title,
 .post-detail-body,
 .post-body-summary,
@@ -441,6 +442,7 @@ html {
 }
 
 @media (max-width: 760px) {
+  .site-home-header,
   .post-detail-title,
   .post-detail-body,
   .post-body-summary,
