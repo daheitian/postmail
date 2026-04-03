@@ -710,7 +710,7 @@ export class JantComposeEditor extends LitElement {
     const body = this.querySelector(".compose-body") as HTMLElement | null;
     if (!body) return;
     if (body.scrollHeight > body.clientHeight + 20) {
-      dom.style.paddingBottom = "80px";
+      dom.style.paddingBottom = "40px";
       this._scrollBufferApplied = true;
     }
   }
@@ -2058,6 +2058,15 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
+  private _renderAttachmentDock() {
+    if (this._attachments.length === 0 && this._attachedTexts.length === 0)
+      return nothing;
+
+    return html`
+      <div class="compose-attachments-dock">${this._renderAttachments()}</div>
+    `;
+  }
+
   private _renderToolsRow() {
     const hasAttached = this._attachedTexts.length > 0;
     return html`
@@ -2261,9 +2270,9 @@ export class JantComposeEditor extends LitElement {
           : this.format === "link"
             ? this._renderLinkFields()
             : this._renderQuoteFields()}
-        ${this._renderAttachments()} ${this._renderStarRating()}
+        ${this._renderStarRating()}
       </section>
-      ${this._renderToolsRow()}
+      ${this._renderAttachmentDock()} ${this._renderToolsRow()}
     `;
   }
 }
