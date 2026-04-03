@@ -300,8 +300,9 @@ Public post responses include these fields:
 | `url`             | string \| `null`            | Returned for `link` posts                                      |
 | `sourceName`      | string \| `null`            | Returned instead of `title` for `quote`                        |
 | `sourceUrl`       | string \| `null`            | Returned instead of `url` for `quote`                          |
-| `bodyHtml`        | string \| `null`            | Rendered HTML                                                  |
-| `bodyText`        | string \| `null`            | Plain-text rendering                                           |
+| `bodyHtml`        | string \| `null`            | Rendered HTML; omitted when `content=markdown`                 |
+| `bodyText`        | string \| `null`            | Plain-text rendering; omitted when `content=markdown`          |
+| `bodyMarkdown`    | string \| `null`            | Markdown source; only returned when `content=markdown`         |
 | `quoteText`       | string \| `null`            | Quote content                                                  |
 | `summary`         | string \| `null`            | Optional summary                                               |
 | `rating`          | integer \| `null`           | `1` to `5` when set                                            |
@@ -327,11 +328,12 @@ Auth: `Public`
 
 Query parameters:
 
-| Parameter | Type                        | Required | Default | Notes                                         |
-| --------- | --------------------------- | -------- | ------- | --------------------------------------------- |
-| `format`  | `note` \| `link` \| `quote` | no       | all     | Format filter                                 |
-| `cursor`  | string                      | no       | none    | Pass the previous `nextCursor` back unchanged |
-| `limit`   | integer                     | no       | `20`    | `1` to `100`                                  |
+| Parameter | Type                        | Required | Default | Notes                                                 |
+| --------- | --------------------------- | -------- | ------- | ----------------------------------------------------- |
+| `format`  | `note` \| `link` \| `quote` | no       | all     | Format filter                                         |
+| `cursor`  | string                      | no       | none    | Pass the previous `nextCursor` back unchanged         |
+| `limit`   | integer                     | no       | `20`    | `1` to `100`                                          |
+| `content` | `markdown`                  | no       | none    | Return `bodyMarkdown` instead of rendered body fields |
 
 Response:
 
@@ -364,6 +366,7 @@ Notes:
 
 - This list returns published public thread roots only.
 - Drafts, private posts, replies, and `latest_hidden` posts are excluded.
+- `content=markdown` returns `bodyMarkdown` and omits `bodyHtml/bodyText`.
 
 ### Get a public post by slug
 
@@ -377,6 +380,7 @@ Notes:
 
 - `latest_hidden` posts remain readable by direct slug.
 - Draft and private posts return `404`.
+- `content=markdown` returns `bodyMarkdown` and omits `bodyHtml/bodyText`.
 
 ### List posts
 

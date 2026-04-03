@@ -5,6 +5,7 @@ import type { AppVariables } from "../../../types/app-context.js";
 import { FormatSchema, parseValidated } from "../../../lib/schemas.js";
 import { NotFoundError } from "../../../lib/errors.js";
 import { toApiAttachment } from "../../../lib/api-posts.js";
+import { tiptapJsonToMarkdown } from "../../../lib/tiptap-to-markdown.js";
 import { toPublicPath } from "../../../lib/url.js";
 import {
   getImageUrl,
@@ -20,9 +21,14 @@ const ListPublicPostsQuerySchema = z.object({
   format: FormatSchema.optional(),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+  content: z.enum(["markdown"]).optional(),
 });
 
-type PublicPostResponse = {
+const PublicPostContentQuerySchema = z.object({
+  content: z.enum(["markdown"]).optional(),
+});
+
+type PublicPostBaseResponse = {
   id: string;
   format: Post["format"];
   status: "published";
@@ -33,8 +39,6 @@ type PublicPostResponse = {
   url?: string | null;
   sourceName?: string | null;
   sourceUrl?: string | null;
-  bodyHtml: string | null;
-  bodyText: string | null;
   quoteText: string | null;
   summary: string | null;
   rating: number | null;
@@ -58,6 +62,19 @@ type PublicPostResponse = {
   }[];
 };
 
+type PublicPostRenderedResponse = PublicPostBaseResponse & {
+  bodyHtml: string | null;
+  bodyText: string | null;
+};
+
+type PublicPostMarkdownResponse = PublicPostBaseResponse & {
+  bodyMarkdown: string | null;
+};
+
+type PublicPostResponse =
+  | PublicPostRenderedResponse
+  | PublicPostMarkdownResponse;
+
 function isPublicDetailVisible(post: Post | null): post is Post {
   return (
     post !== null &&
@@ -71,6 +88,7 @@ function toPublicPost(
   mediaList: Media[],
   postCollections: Collection[],
   appConfig: AppVariables["appConfig"],
+  options?: { content?: "markdown" },
 ): PublicPostResponse {
   const {
     r2PublicUrl,
@@ -106,8 +124,6 @@ function toPublicPost(
     visibility: post.visibility,
     slug: post.slug,
     permalink: toPublicPath(`/${post.slug}`, sitePathPrefix),
-    bodyHtml: post.bodyHtml,
-    bodyText: post.bodyText,
     quoteText: post.quoteText,
     summary: post.summary,
     rating: post.rating,
@@ -139,10 +155,20 @@ function toPublicPost(
       url: toPublicPath(`/c/${collection.slug}`, sitePathPrefix),
     })),
   };
+  const contentFields =
+    options?.content === "markdown"
+      ? {
+          bodyMarkdown: post.body ? tiptapJsonToMarkdown(post.body) : null,
+        }
+      : {
+          bodyHtml: post.bodyHtml,
+          bodyText: post.bodyText,
+        };
 
   if (post.format === "quote") {
     return {
       ...base,
+      ...contentFields,
       sourceName: post.title,
       sourceUrl: post.url,
     };
@@ -150,13 +176,14 @@ function toPublicPost(
 
   return {
     ...base,
+    ...contentFields,
     title: post.title,
     url: post.url,
   };
 }
 
 publicPostsApiRoutes.get("/", async (c) => {
-  const { format, cursor, limit } = parseValidated(
+  const { format, cursor, limit, content } = parseValidated(
     ListPublicPostsQuerySchema,
     c.req.query(),
   );
@@ -184,6 +211,7 @@ publicPostsApiRoutes.get("/", async (c) => {
         mediaMap.get(post.id) ?? [],
         collectionsMap.get(post.id) ?? [],
         c.var.appConfig,
+        { content },
       ),
     ),
     nextCursor:
@@ -192,6 +220,10 @@ publicPostsApiRoutes.get("/", async (c) => {
 });
 
 publicPostsApiRoutes.get("/:slug", async (c) => {
+  const { content } = parseValidated(
+    PublicPostContentQuerySchema,
+    c.req.query(),
+  );
   const slug = c.req.param("slug");
   const post = await c.var.services.posts.getBySlug(slug);
 
@@ -205,6 +237,8 @@ publicPostsApiRoutes.get("/:slug", async (c) => {
   ]);
 
   return c.json(
-    toPublicPost(post, mediaList, postCollections, c.var.appConfig),
+    toPublicPost(post, mediaList, postCollections, c.var.appConfig, {
+      content,
+    }),
   );
 });

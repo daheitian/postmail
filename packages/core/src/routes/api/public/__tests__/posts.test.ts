@@ -79,6 +79,26 @@ describe("Public Posts API Routes", () => {
       expect(body.posts[0].format).toBe("note");
       expect(body.nextCursor).toBeTruthy();
     });
+
+    it("returns markdown instead of rendered fields when content=markdown", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/public/posts", publicPostsApiRoutes);
+
+      await services.posts.create({
+        format: "note",
+        title: "Markdown post",
+        bodyMarkdown: "# Hello\n\nBody text",
+      });
+
+      const res = await app.request("/api/public/posts?content=markdown");
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.posts).toHaveLength(1);
+      expect(body.posts[0].bodyMarkdown).toBe("# Hello\n\nBody text");
+      expect(body.posts[0]).not.toHaveProperty("bodyHtml");
+      expect(body.posts[0]).not.toHaveProperty("bodyText");
+    });
   });
 
   describe("GET /api/public/posts/:slug", () => {
@@ -114,6 +134,27 @@ describe("Public Posts API Routes", () => {
       ]);
       expect(body.bodyHtml).toContain("public body");
       expect(body).not.toHaveProperty("body");
+    });
+
+    it("returns markdown instead of rendered fields when content=markdown", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/public/posts", publicPostsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "note",
+        title: "Markdown detail",
+        bodyMarkdown: "Line 1\n\nLine 2",
+      });
+
+      const res = await app.request(
+        `/api/public/posts/${post.slug}?content=markdown`,
+      );
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.bodyMarkdown).toBe("Line 1\n\nLine 2");
+      expect(body).not.toHaveProperty("bodyHtml");
+      expect(body).not.toHaveProperty("bodyText");
     });
 
     it("returns quote attribution as sourceName/sourceUrl", async () => {
