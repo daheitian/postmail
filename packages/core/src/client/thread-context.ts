@@ -126,6 +126,31 @@ export function setupThreadContexts(
   });
 }
 
+function isFirstThreadDetailItem(current: HTMLElement): boolean {
+  const group = current.closest<HTMLElement>(".thread-group-detail");
+  if (!group) return false;
+
+  const firstItem = group.querySelector<HTMLElement>(".thread-detail-item");
+  return firstItem === current;
+}
+
+function scrollCurrentDetailPostIntoView(
+  root: globalThis.Document | globalThis.Element = document,
+): void {
+  const current = root.querySelector("[data-post-current]");
+  if (!(current instanceof HTMLElement)) return;
+
+  // Explicit hashes such as #continue should win over thread auto-scroll.
+  if (globalThis.location.hash) return;
+
+  // Root posts already render at the top of the thread detail page.
+  if (isFirstThreadDetailItem(current)) return;
+
+  requestAnimationFrame(() => {
+    current.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
 // Expand/collapse: event delegation on toggle buttons
 document.addEventListener("click", (e) => {
   const toggle = (e.target as HTMLElement).closest<HTMLElement>(
@@ -145,11 +170,10 @@ document.addEventListener("click", (e) => {
 // Auto-scroll to current post on detail pages
 document.addEventListener("DOMContentLoaded", () => {
   setupThreadContexts(document);
-
-  const current = document.querySelector("[data-post-current]");
-  if (!current) return;
-
-  requestAnimationFrame(() => {
-    current.scrollIntoView({ behavior: "smooth", block: "center" });
-  });
+  scrollCurrentDetailPostIntoView(document);
 });
+
+export const __testOnly = {
+  isFirstThreadDetailItem,
+  scrollCurrentDetailPostIntoView,
+};

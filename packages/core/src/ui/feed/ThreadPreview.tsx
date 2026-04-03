@@ -18,6 +18,7 @@ import {
 
 const ROOT_CONTEXT_DISPLAY = {
   hideRating: true,
+  showFullBody: true,
   footer: {
     hideReply: true,
   },
@@ -25,9 +26,14 @@ const ROOT_CONTEXT_DISPLAY = {
 
 const PARENT_CONTEXT_DISPLAY = {
   hideRating: true,
+  showFullBody: true,
   footer: {
     hideReply: true,
   },
+} as const;
+
+const HERO_DISPLAY = {
+  showFullBody: true,
 } as const;
 
 export const ThreadPreview: FC<ThreadPreviewProps> = ({
@@ -122,7 +128,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
 
       {/* Latest reply (full card, hero) */}
       <div class="thread-item thread-item-hero">
-        <TimelineItem item={{ post: latestReply }} />
+        <TimelineItem item={{ post: latestReply }} display={HERO_DISPLAY} />
       </div>
     </div>
   );

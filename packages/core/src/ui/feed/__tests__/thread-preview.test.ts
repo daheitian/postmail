@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
+import type { Context } from "hono";
+import { renderToString } from "hono/jsx/dom/server";
 import { describe, expect, it } from "vitest";
-import type { PostView } from "../../../types.js";
+import { I18nProvider } from "../../../i18n/context.js";
+import { createI18n } from "../../../i18n/i18n.js";
+import type { PostView, TimelineItemView } from "../../../types.js";
+import { CuratedThreadPreview } from "../CuratedThreadPreview.js";
+import { ThreadPreview } from "../ThreadPreview.js";
 import {
   getThreadPreviewState,
   isThreadContextLikelyOverflow,
@@ -26,6 +32,23 @@ function createPostView(overrides: Partial<PostView> = {}): PostView {
     isLastInThread: false,
     ...overrides,
   };
+}
+
+function renderWithI18n(
+  render: () =>
+    | ReturnType<typeof ThreadPreview>
+    | ReturnType<typeof CuratedThreadPreview>,
+) {
+  const i18n = createI18n("en");
+  const c = {
+    get(key: string) {
+      if (key === "i18n") return i18n;
+      return undefined;
+    },
+  } as unknown as Context;
+
+  I18nProvider({ c, children: "" });
+  return renderToString(render());
 }
 
 describe("getThreadPreviewState", () => {
@@ -115,5 +138,67 @@ describe("getThreadPreviewState", () => {
     expect(css).toMatch(
       /\.thread-item\s*\{[\s\S]*min-width:\s*0;[\s\S]*max-width:\s*100%;/,
     );
+  });
+
+  it("renders full article bodies in thread previews", () => {
+    const rootPost = createPostView({
+      title: "Threaded article",
+      bodyHtml: '<p>Intro</p><span id="continue"></span><p>Rest</p>',
+      summaryHtml: "<p>Intro</p>",
+      summaryHasMore: true,
+    });
+    const latestReply = createPostView({
+      id: "post-2",
+      permalink: "/post-2",
+      slug: "post-2",
+      title: "Reply article",
+      bodyHtml: "<p>Full reply body</p>",
+      summaryHtml: "<p>Reply summary</p>",
+      summaryHasMore: true,
+      isLastInThread: true,
+    });
+
+    const html = renderWithI18n(() =>
+      ThreadPreview({
+        rootPost,
+        latestReply,
+        totalReplyCount: 1,
+      }),
+    );
+
+    expect(html).toContain("<p>Rest</p>");
+    expect(html).toContain("<p>Full reply body</p>");
+    expect(html).not.toContain("Reply summary");
+    expect(html).not.toContain('id="continue"');
+    expect(html).not.toContain("feed-continue-link");
+  });
+
+  it("renders full article bodies in curated thread previews", () => {
+    const articlePost = createPostView({
+      title: "Curated article",
+      bodyHtml: '<p>Lead</p><span id="continue"></span><p>Body</p>',
+      summaryHtml: "<p>Lead</p>",
+      summaryHasMore: true,
+    });
+    const curatedThread: NonNullable<TimelineItemView["curatedThread"]> = {
+      rootPost: articlePost,
+      segments: [
+        {
+          post: articlePost,
+          hiddenBeforeCount: 0,
+          highlighted: true,
+        },
+      ],
+    };
+
+    const html = renderWithI18n(() =>
+      CuratedThreadPreview({
+        curatedThread,
+      }),
+    );
+
+    expect(html).toContain("<p>Body</p>");
+    expect(html).not.toContain('id="continue"');
+    expect(html).not.toContain("feed-continue-link");
   });
 });

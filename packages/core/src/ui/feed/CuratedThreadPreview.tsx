@@ -6,6 +6,7 @@ import { TimelineItem, TimelineItemFromPost } from "./TimelineItem.js";
 
 const THREAD_CONTEXT_DISPLAY = {
   hideRating: true,
+  showFullBody: true,
   footer: {
     hideReply: true,
   },
@@ -13,9 +14,12 @@ const THREAD_CONTEXT_DISPLAY = {
 
 const THREAD_CONTEXT_LAST_DISPLAY = {
   hideRating: true,
+  showFullBody: true,
 } as const;
 
-const CURATED_SEGMENT_DISPLAY = {} as const;
+const CURATED_SEGMENT_DISPLAY = {
+  showFullBody: true,
+} as const;
 
 interface CuratedThreadPreviewProps {
   curatedThread: NonNullable<TimelineItemView["curatedThread"]>;

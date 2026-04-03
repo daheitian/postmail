@@ -166,6 +166,8 @@ export interface PostFooterDisplayOptions {
 export interface TimelineCardDisplayOptions {
   hideStatusBadges?: boolean;
   hideRating?: boolean;
+  /** Render full body HTML in feed contexts that would otherwise use summaries. */
+  showFullBody?: boolean;
   footer?: PostFooterDisplayOptions;
 }
 

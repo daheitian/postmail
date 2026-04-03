@@ -234,6 +234,28 @@ describe("timeline cards", () => {
     expect(detailHtml).toContain('class="e-content prose post-detail-body"');
   });
 
+  it("can render full article bodies inside feed contexts without permalink anchors", () => {
+    const post = createPostView({
+      format: "note",
+      bodyHtml: '<p>Intro</p><span id="continue"></span><p>Rest</p>',
+      summaryHtml: "<p>Intro</p>",
+      summaryHasMore: true,
+    });
+
+    const feedHtml = renderWithI18n(
+      NoteCard({
+        post,
+        mode: "feed",
+        display: { showFullBody: true },
+      }),
+    );
+
+    expect(feedHtml).toContain("<p>Rest</p>");
+    expect(feedHtml).toContain('class="e-content prose post-detail-body"');
+    expect(feedHtml).not.toContain('id="continue"');
+    expect(feedHtml).not.toContain("feed-continue-link");
+  });
+
   it("moves rated link detail cards into the title block without changing feed ordering", () => {
     const post = createPostView({
       format: "link",

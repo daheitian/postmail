@@ -16,6 +16,11 @@ import {
 } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 
+function stripContinueAnchor(html?: string): string | undefined {
+  if (!html) return undefined;
+  return html.replace(/<span id="continue"><\/span>/g, "");
+}
+
 export const NoteCard: FC<TimelineCardProps> = ({
   post,
   mode = "feed",
@@ -24,7 +29,13 @@ export const NoteCard: FC<TimelineCardProps> = ({
   const isCompact = mode === "compact";
   const isDetail = mode === "detail";
   const isArticle = !!post.title;
-  const displayHtml = isDetail || !isArticle ? post.bodyHtml : post.summaryHtml;
+  const showFullBody =
+    !isCompact && !isDetail && display?.showFullBody === true;
+  const fullBodyHtml = showFullBody
+    ? stripContinueAnchor(post.bodyHtml)
+    : post.bodyHtml;
+  const displayHtml =
+    isDetail || !isArticle || showFullBody ? fullBodyHtml : post.summaryHtml;
   const hasVisibleRating =
     !!post.rating && post.rating > 0 && !display?.hideRating;
   const showHeaderRating = isDetail && isArticle && hasVisibleRating;
@@ -77,7 +88,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
         ))}
       {displayHtml && (
         <div
-          class={`e-content prose ${isCompact ? "prose-sm" : isDetail ? "post-detail-body" : isArticle ? "post-body-summary" : ""}`}
+          class={`e-content prose ${isCompact ? "prose-sm" : isDetail || showFullBody ? "post-detail-body" : isArticle ? "post-body-summary" : ""}`}
           data-post-body
           dangerouslySetInnerHTML={{ __html: displayHtml }}
         />
@@ -87,11 +98,15 @@ export const NoteCard: FC<TimelineCardProps> = ({
           <MediaGallery attachments={post.media} />
         </div>
       )}
-      {!isDetail && !isCompact && isArticle && post.summaryHasMore && (
-        <a href={`${post.permalink}#continue`} class="feed-continue-link">
-          Continue →
-        </a>
-      )}
+      {!isDetail &&
+        !isCompact &&
+        !showFullBody &&
+        isArticle &&
+        post.summaryHasMore && (
+          <a href={`${post.permalink}#continue`} class="feed-continue-link">
+            Continue →
+          </a>
+        )}
       {!isCompact && !showHeaderRating && !display?.hideRating && (
         <StarRating rating={post.rating} />
       )}
