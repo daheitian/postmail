@@ -79,37 +79,44 @@ function renderTableCell(
   return `<${tagName}${colspanAttr}${rowspanAttr}>${context.renderChildren(node.content)}</${tagName}>`;
 }
 
-function appendFootnoteBackref(bodyHtml: string, footnoteId: string): string {
-  const backref = `<a href="#fnref-${escapeHtml(footnoteId)}" class="footnote-backref" aria-label="Back to reference">↩</a>`;
-
-  if (!bodyHtml) {
-    return `<p>${backref}</p>`;
+/**
+ * Strips wrapping `<p>...</p>` from single-paragraph sidenote bodies
+ * so they render cleanly as inline spans.
+ */
+function stripSingleParagraph(html: string): string {
+  const trimmed = html.trim();
+  if (
+    trimmed.startsWith("<p>") &&
+    trimmed.endsWith("</p>") &&
+    trimmed.indexOf("<p>", 1) === -1
+  ) {
+    return trimmed.slice(3, -4);
   }
-
-  if (bodyHtml.trimEnd().endsWith("</p>")) {
-    return bodyHtml.replace(/<\/p>\s*$/, ` ${backref}</p>`);
-  }
-
-  return `${bodyHtml}${backref}`;
+  return trimmed;
 }
 
-function renderFootnoteReference(node: TiptapNode): string {
-  const label = normalizeFootnoteLabel(getStringAttr(node.attrs, "label"));
-  const footnoteId = getFootnoteDomId(label);
-  const visibleLabel = escapeHtml(label);
+/**
+ * Module-level definition map populated by the `doc` renderer so that
+ * `footnoteReference` nodes can inline sidenote content.
+ */
+let activeDefinitionMap: Map<string, TiptapNode> | null = null;
 
-  return `<sup class="footnote-ref" data-footnote-reference><a href="#fn-${escapeHtml(footnoteId)}" id="fnref-${escapeHtml(footnoteId)}">${visibleLabel}</a></sup>`;
-}
-
-function renderFootnoteDefinitionItem(
+function renderSidenoteReference(
   node: TiptapNode,
   context: RenderContext,
 ): string {
   const label = normalizeFootnoteLabel(getStringAttr(node.attrs, "label"));
   const footnoteId = getFootnoteDomId(label);
-  const bodyHtml = context.renderChildren(node.content);
+  const definitionNode = activeDefinitionMap?.get(label);
+  const bodyHtml = definitionNode
+    ? stripSingleParagraph(context.renderChildren(definitionNode.content))
+    : "";
 
-  return `<li id="fn-${escapeHtml(footnoteId)}">${appendFootnoteBackref(bodyHtml, footnoteId)}</li>`;
+  return (
+    `<label for="sn-${escapeHtml(footnoteId)}" class="margin-toggle sidenote-number"></label>` +
+    `<input type="checkbox" id="sn-${escapeHtml(footnoteId)}" class="margin-toggle"/>` +
+    `<span class="sidenote">${bodyHtml}</span>`
+  );
 }
 
 const MARK_RENDERERS: Record<string, MarkRenderer> = {
@@ -130,25 +137,27 @@ const MARK_RENDERERS: Record<string, MarkRenderer> = {
 const NODE_RENDERERS: Record<string, NodeRenderer> = {
   doc: (node, context) => {
     const content = node.content ?? [];
-    const bodyNodes = content.filter(
-      (child) => child.type !== "footnoteDefinition",
-    );
-    const footnoteNodes = content.filter(
-      (child) => child.type === "footnoteDefinition",
-    );
-    const bodyHtml = context.renderChildren(bodyNodes);
 
-    if (footnoteNodes.length === 0) {
-      return bodyHtml;
+    // Build definition lookup so footnoteReference can inline sidenotes
+    const definitionMap = new Map<string, TiptapNode>();
+    for (const child of content) {
+      if (child.type === "footnoteDefinition") {
+        const label = normalizeFootnoteLabel(
+          getStringAttr(child.attrs, "label"),
+        );
+        if (label) definitionMap.set(label, child);
+      }
     }
 
-    const footnotesHtml = footnoteNodes
-      .map((footnoteNode) =>
-        renderFootnoteDefinitionItem(footnoteNode, context),
-      )
-      .join("");
-
-    return `${bodyHtml}<section class="footnotes" data-footnotes><hr><ol>${footnotesHtml}</ol></section>`;
+    activeDefinitionMap = definitionMap.size > 0 ? definitionMap : null;
+    try {
+      const bodyNodes = content.filter(
+        (child) => child.type !== "footnoteDefinition",
+      );
+      return context.renderChildren(bodyNodes);
+    } finally {
+      activeDefinitionMap = null;
+    }
   },
   paragraph: (node, context) =>
     `<p>${context.renderChildren(node.content)}</p>`,
@@ -188,7 +197,7 @@ const NODE_RENDERERS: Record<string, NodeRenderer> = {
   hardBreak: () => "<br>",
   image: (node) => renderPublishedImageFigure(node.attrs ?? {}),
   moreBreak: () => "<!--more-->",
-  footnoteReference: (node) => renderFootnoteReference(node),
+  footnoteReference: (node, context) => renderSidenoteReference(node, context),
   footnoteDefinition: () => "",
 };
 

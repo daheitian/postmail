@@ -213,7 +213,6 @@ describe("createExportService", () => {
     expect(styleCss).toContain(".post-collection-more-wrap::after");
     expect(styleCss).toContain(".site-header-top-home");
     expect(styleCss).toContain(".site-content-home");
-    expect(styleCss).toContain("--feed-note-summary-size:");
     expect(styleCss).toContain(".post-body-summary.prose");
     expect(styleCss).toContain("padding-top: 0.75rem;");
     expect(styleCss).toContain(
@@ -348,12 +347,8 @@ describe("createExportService", () => {
     expect(postMarkdown).toContain("<details>");
     expect(postMarkdown).toContain("<summary>Attached note</summary>");
     expect(postMarkdown).toContain("<h1>Attached note</h1>");
-    expect(postMarkdown).toContain(
-      '<sup class="footnote-ref" data-footnote-reference>',
-    );
-    expect(postMarkdown).toContain(
-      '<section class="footnotes" data-footnotes><hr>',
-    );
+    expect(postMarkdown).toContain('<label for="sn-');
+    expect(postMarkdown).toContain('<span class="sidenote">');
     expect(postMarkdown).toContain("<em>footnote</em>");
     expect(postMarkdown).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(postMarkdown).not.toContain('"src":"');
@@ -436,10 +431,10 @@ describe("createExportService", () => {
 
     expect(configToml).toContain("bottom_footnotes = true");
     expect(configToml).toContain(
-      'site_footer_html = "<p>Read the <a href=\\"https://example.com\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">docs</a><sup class=\\"footnote-ref\\" data-footnote-reference><a href=\\"#fn-1\\" id=\\"fnref-1\\">1</a></sup></p>',
+      '<label for=\\"sn-1\\" class=\\"margin-toggle sidenote-number\\">',
     );
     expect(configToml).toContain(
-      '<section class=\\"footnotes\\" data-footnotes><hr><ol><li id=\\"fn-1\\"><p>Footer note <a href=\\"#fnref-1\\" class=\\"footnote-backref\\" aria-label=\\"Back to reference\\">↩</a></p></li></ol></section>"',
+      '<span class=\\"sidenote\\">Footer note</span>',
     );
     expect(configToml).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
   });

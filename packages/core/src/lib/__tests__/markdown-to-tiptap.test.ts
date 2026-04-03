@@ -394,15 +394,15 @@ describe("end-to-end: Markdown → markdownToTiptapJson → renderTiptapJson", (
     expect(html).toContain("<figcaption>Caption</figcaption>");
   });
 
-  it("renders footnotes through the shared document renderer", () => {
+  it("renders footnotes as inline sidenotes through the shared document renderer", () => {
     const json = markdownToTiptapJson("Body[^1]\n\n[^1]: Footnote body");
     const html = renderTiptapJson(json);
 
     expect(html).toContain(
-      '<sup class="footnote-ref" data-footnote-reference>',
+      '<label for="sn-1" class="margin-toggle sidenote-number">',
     );
-    expect(html).toContain('<section class="footnotes" data-footnotes><hr>');
-    expect(html).toContain("Footnote body");
+    expect(html).toContain('<span class="sidenote">Footnote body</span>');
+    expect(html).not.toContain('<section class="footnotes"');
   });
 
   it("renders a complex document", () => {

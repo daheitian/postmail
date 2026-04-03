@@ -62,15 +62,14 @@ describe("render", () => {
     expect(html).toBe("<p>Intro</p><!--more--><p>Rest</p>");
   });
 
-  it("renders footnote references and definitions", () => {
+  it("renders footnote references as inline sidenotes", () => {
     const html = render("Body copy[^1]\n\n[^1]: Footnote body");
 
     expect(html).toContain(
-      '<sup class="footnote-ref" data-footnote-reference>',
+      '<label for="sn-1" class="margin-toggle sidenote-number">',
     );
-    expect(html).toContain('<section class="footnotes" data-footnotes><hr>');
-    expect(html).toContain('<li id="fn-1">');
-    expect(html).toContain("Footnote body");
+    expect(html).toContain('<span class="sidenote">Footnote body</span>');
+    expect(html).not.toContain('<section class="footnotes"');
   });
 
   it("escapes raw HTML outside the supported markdown schema", () => {

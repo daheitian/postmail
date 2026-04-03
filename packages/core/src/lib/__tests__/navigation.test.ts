@@ -44,12 +44,8 @@ describe("getNavigationData", () => {
 
     expect(result.isAuthenticated).toBe(false);
     expect(result.collections).toEqual([]);
-    expect(result.siteFooterHtml).toContain(
-      '<sup class="footnote-ref" data-footnote-reference>',
-    );
-    expect(result.siteFooterHtml).toContain(
-      '<section class="footnotes" data-footnotes><hr>',
-    );
+    expect(result.siteFooterHtml).toContain('<label for="sn-');
+    expect(result.siteFooterHtml).toContain('<span class="sidenote">');
     expect(result.siteFooterHtml).toContain("<strong>note</strong>");
     expect(result.siteFooterHtml).toContain(
       "&lt;script&gt;alert(1)&lt;/script&gt;",

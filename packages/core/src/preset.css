@@ -181,6 +181,27 @@
     line-height: var(--type-heading-leading);
   }
 
+  /* Tufte heading scale */
+  :where(h1) {
+    font-size: 3.2rem;
+    margin-top: 4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  :where(h2) {
+    font-size: 2.2rem;
+    font-style: italic;
+    margin-top: 2.1rem;
+    margin-bottom: 1.4rem;
+  }
+
+  :where(h3) {
+    font-size: 1.7rem;
+    font-style: italic;
+    margin-top: 2rem;
+    margin-bottom: 1.4rem;
+  }
+
   /* Image figures */
   figure {
     margin: 1.5em 0;
@@ -298,49 +319,15 @@
 /*
  * Feed-summary prose
  *
- * Keep these overrides outside cascade layers so they can outrank the base
- * `.prose` typography declared above.
+ * Inherits font-size/line-height from .prose (Tufte body size).
+ * Only overrides color for the muted summary treatment.
  */
 .post-body-summary.prose {
-  font-size: var(--feed-note-summary-size);
-  line-height: var(--feed-note-summary-leading);
   color: color-mix(
     in srgb,
     var(--site-text-secondary) 88%,
     var(--site-text-primary)
   );
-}
-
-article .post-body-summary.prose p,
-article .post-body-summary.prose ul,
-article .post-body-summary.prose ol,
-article .post-body-summary.prose blockquote,
-article .post-body-summary.prose pre {
-  font-size: var(--feed-note-summary-size);
-  line-height: var(--feed-note-summary-leading);
-}
-
-.post-body-summary.prose p + p,
-.post-body-summary.prose ul,
-.post-body-summary.prose ol,
-.post-body-summary.prose blockquote,
-.post-body-summary.prose pre {
-  margin-top: var(--feed-note-summary-gap);
-}
-
-.post-body-summary.prose ul,
-.post-body-summary.prose ol {
-  padding-left: 1.15rem;
-}
-
-.post-body-summary.prose li {
-  margin: 0.18rem 0;
-}
-
-.post-body-summary.prose :is(h1, h2, h3, h4) {
-  margin: 0.78rem 0 0.24rem;
-  font-size: 1em;
-  line-height: 1.35;
 }
 
 [data-post]:not([data-page="post"]) [data-post-body].prose blockquote,
@@ -412,4 +399,41 @@ article .post-body-summary.prose pre {
   --_blockquote-text: var(--site-reading-quote);
   margin: 1.5em 0;
   padding: 1rem 1.15rem 1.05rem 1.25rem;
+}
+
+/*
+ * Tufte content-width constraint.
+ *
+ * The 55% width is applied at the BLOCK level — each content container
+ * (title, body, quote, attribution, meta) is 55% of the page section width.
+ * Sidenotes inside these blocks float into the remaining right margin via
+ * negative margin-right.
+ *
+ * The prose max-width (65ch) is removed so the prose block itself participates
+ * in the Tufte proportional layout instead of being pre-constrained.
+ */
+[data-page="post"] .prose {
+  max-width: none;
+}
+
+[data-page="post"] .post-detail-title,
+[data-page="post"] .post-detail-body,
+[data-page="post"] .feed-quote,
+[data-page="post"] .feed-quote-attribution,
+[data-page="post"] .feed-quote-commentary,
+[data-page="post"] .feed-link-domain,
+[data-page="post"] [data-post-meta] {
+  width: var(--layout-content-width);
+}
+
+@media (max-width: 760px) {
+  [data-page="post"] .post-detail-title,
+  [data-page="post"] .post-detail-body,
+  [data-page="post"] .feed-quote,
+  [data-page="post"] .feed-quote-attribution,
+  [data-page="post"] .feed-quote-commentary,
+  [data-page="post"] .feed-link-domain,
+  [data-page="post"] [data-post-meta] {
+    width: 100%;
+  }
 }

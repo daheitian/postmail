@@ -52,9 +52,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
       {isArticle &&
         (isDetail ? (
           <div class="post-header-block post-header-block-detail">
-            <h1 class="p-name post-detail-title text-2xl font-semibold">
-              {post.title}
-            </h1>
+            <h1 class="p-name post-detail-title">{post.title}</h1>
             <div class="post-header-meta-row">
               <PostPublishedLink
                 post={post}

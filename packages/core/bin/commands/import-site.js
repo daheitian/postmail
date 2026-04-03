@@ -1703,7 +1703,7 @@ export async function run(argv) {
         const result = await target.createCollection({
           title: frontMatter.title || slug,
           slug,
-          description: frontMatter.description || null,
+          description: frontMatter.description || undefined,
           sortOrder:
             collectionExtra.sort_order ||
             collectionExtra.sortOrder ||

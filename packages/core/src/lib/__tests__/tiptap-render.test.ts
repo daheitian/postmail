@@ -64,7 +64,7 @@ describe("renderTiptapDocument", () => {
     );
   });
 
-  it("renders footnote references inline and definitions in a trailing section", () => {
+  it("renders footnote references as inline sidenotes", () => {
     const html = renderTiptapDocument(
       doc(
         p(text("Body copy"), {
@@ -80,7 +80,26 @@ describe("renderTiptapDocument", () => {
     );
 
     expect(html).toBe(
-      '<p>Body copy<sup class="footnote-ref" data-footnote-reference><a href="#fn-1" id="fnref-1">1</a></sup></p><section class="footnotes" data-footnotes><hr><ol><li id="fn-1"><p>Footnote body <a href="#fnref-1" class="footnote-backref" aria-label="Back to reference">↩</a></p></li></ol></section>',
+      '<p>Body copy<label for="sn-1" class="margin-toggle sidenote-number"></label>' +
+        '<input type="checkbox" id="sn-1" class="margin-toggle"/>' +
+        '<span class="sidenote">Footnote body</span></p>',
+    );
+  });
+
+  it("renders footnote reference without definition gracefully", () => {
+    const html = renderTiptapDocument(
+      doc(
+        p(text("Body copy"), {
+          type: "footnoteReference",
+          attrs: { label: "1" },
+        }),
+      ),
+    );
+
+    expect(html).toBe(
+      '<p>Body copy<label for="sn-1" class="margin-toggle sidenote-number"></label>' +
+        '<input type="checkbox" id="sn-1" class="margin-toggle"/>' +
+        '<span class="sidenote"></span></p>',
     );
   });
 

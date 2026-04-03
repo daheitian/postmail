@@ -136,7 +136,7 @@ export const LinkCard: FC<TimelineCardProps> = ({
           {domainEl}
           {post.title && (
             <div class="post-header-block">
-              <h1 class="p-name post-detail-title feed-link-title text-2xl font-semibold">
+              <h1 class="p-name post-detail-title feed-link-title">
                 <a
                   href={safeUrl || post.permalink}
                   class="u-url feed-link-title-link"
