@@ -25,6 +25,18 @@
   --color-success: var(--success);
   --default-font-family: var(--font-ui);
   --default-mono-font-family: var(--font-mono);
+
+  /* Bridge Tailwind text-* utilities to the unified type scale.
+     Any `text-sm`, `text-base`, etc. in templates uses these values. */
+  --text-2xs: var(--type-2xs);
+  --text-xs: var(--type-xs);
+  --text-sm: var(--type-sm);
+  --text-base: var(--type-base);
+  --text-lg: var(--type-secondary);
+  --text-xl: var(--type-body);
+  --text-2xl: var(--type-subtitle);
+  --text-3xl: var(--type-title);
+  --text-4xl: var(--type-display);
 }
 
 html {

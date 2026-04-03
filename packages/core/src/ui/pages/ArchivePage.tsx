@@ -280,8 +280,12 @@ const ChipSelect: FC<{
         ) : (
           <Icon name={icon} class="[&>svg]:size-4 text-muted-foreground" />
         )}
-        {isActive && !iconOnly && (
-          <span class="archive-chip-label">{activeLabel}</span>
+        {isActive && activeLabel && (
+          <span
+            class={`archive-chip-label${iconOnly ? " archive-chip-label-collapsible" : ""}`}
+          >
+            {activeLabel}
+          </span>
         )}
         {!isActive && <ChipChevron />}
       </button>

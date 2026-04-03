@@ -17,7 +17,7 @@ mark {
   font-family: var(--font-body);
   font-size: var(--type-sm);
   color: var(--muted-foreground);
-  line-height: var(--leading);
+  line-height: var(--type-body-leading);
 }
 
 /* Icon stroke width — CSS property overrides SVG presentational attributes */
@@ -283,7 +283,7 @@ svg[stroke-width].icon-fine {
 @layer components {
   .page-intro {
     @apply flex flex-col;
-    gap: 0.4rem;
+    gap: 1rem;
     padding-bottom: 0.1rem;
   }
 
@@ -309,7 +309,6 @@ svg[stroke-width].icon-fine {
 
   .page-intro-description {
     margin: 0;
-    max-width: 32rem;
     color: var(--site-text-secondary);
     font-family: var(--font-ui);
     font-size: var(--type-secondary);
@@ -335,8 +334,15 @@ svg[stroke-width].icon-fine {
 @layer components {
   .settings-root {
     @apply flex flex-col;
+    width: var(--layout-content-width);
     gap: clamp(1.15rem, 2.8vw, 1.65rem);
     padding-bottom: 0.15rem;
+  }
+
+  @media (max-width: 760px) {
+    .settings-root {
+      width: 100%;
+    }
   }
 
   .settings-directory-section {
@@ -368,7 +374,7 @@ svg[stroke-width].icon-fine {
 
   .settings-directory-list {
     @apply flex flex-col;
-    gap: 0.1rem;
+    gap: 0.35rem;
   }
 
   .settings-directory-item {
@@ -462,7 +468,7 @@ svg[stroke-width].icon-fine {
 
   .settings-directory-item-copy {
     @apply flex flex-col flex-1 min-w-0;
-    gap: 0.06rem;
+    gap: 0.3rem;
   }
 
   .settings-directory-item-name {

@@ -186,7 +186,7 @@ export const PagePagination: FC<PagePaginationProps> = ({
 
     return (
       <nav
-        class="flex items-center justify-center gap-4 py-6 text-sm"
+        class="flex items-center justify-center gap-4 py-6"
         aria-label="Pagination"
       >
         {hasPrev ? (

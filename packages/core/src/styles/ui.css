@@ -403,7 +403,14 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    width: var(--layout-content-width);
     gap: clamp(1.25rem, 3vw, 1.75rem);
+  }
+
+  @media (max-width: 760px) {
+    .collections-page-shell {
+      width: 100%;
+    }
   }
 
   .collections-page-header {
@@ -416,7 +423,6 @@
   .collections-page-heading {
     min-width: 0;
     flex: 1 1 18rem;
-    max-width: 42rem;
   }
 
   .collections-page-actions {
@@ -933,7 +939,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.7rem;
-    max-width: 42rem;
   }
 
   .collection-page-title {
@@ -952,7 +957,6 @@
   }
 
   .collection-page-description {
-    max-width: 38rem;
     color: var(--site-text-secondary);
     font-family: var(--font-body);
     font-size: var(--type-secondary);
@@ -1069,8 +1073,6 @@
   }
 
   .collection-editor-shell {
-    max-width: 58rem;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: clamp(1.35rem, 3vw, 2.5rem);
@@ -1363,7 +1365,8 @@
     border: none;
     width: 30px;
     height: 9px;
-    margin: 3rem auto;
+    margin: 3rem 0;
+    margin-left: calc(var(--layout-content-width) / 2 - 15px);
     color: var(--site-feed-divider-color);
     background-color: currentColor;
     -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='black' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
@@ -1609,11 +1612,6 @@
       var(--site-reading-meta) 74%,
       var(--site-divider)
     );
-  }
-
-  [data-page="post"] .feed-quote-mark {
-    color: color-mix(in srgb, var(--site-accent) 18%, var(--site-reading-meta));
-    opacity: 0.72;
   }
 
   /* --- Sidenotes (Tufte-style margin notes) ------------------------------ */
@@ -1976,7 +1974,8 @@
   .thread-context-toggle {
     display: inline-flex;
     align-items: center;
-    padding: 0.35rem 0.78rem;
+    padding: 0.38rem 0.78rem;
+    font-size: var(--type-secondary);
     margin-bottom: 4px;
     cursor: pointer;
     background: var(--site-thread-gap-bg);
@@ -2135,7 +2134,6 @@
 
   .feed-quote-commentary {
     position: relative;
-    max-width: 34rem;
     margin-top: 1.1rem;
     padding-top: 0.95rem;
     color: color-mix(
@@ -3293,7 +3291,7 @@
   }
 
   .compose-prompt-text {
-    font-size: var(--type-base);
+    font-size: var(--type-secondary);
   }
 
   .compose-prompt-discovery-hint {
@@ -3351,6 +3349,7 @@
       opacity: 0;
       transform: translateY(6px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -3362,6 +3361,7 @@
       opacity: 0;
       transform: scale(0.97) translateY(8px);
     }
+
     to {
       opacity: 1;
       transform: scale(1) translateY(0);
@@ -3934,6 +3934,7 @@
   .compose-body::-webkit-scrollbar {
     width: 3px;
   }
+
   .compose-body::-webkit-scrollbar-thumb {
     background-color: var(--site-divider);
     border-radius: 4px;
@@ -3959,6 +3960,7 @@
   .compose-input::placeholder {
     color: var(--site-text-secondary);
   }
+
   .compose-input:focus::placeholder {
     opacity: 0.6;
   }
@@ -4373,6 +4375,7 @@
   .compose-attached-tiptap::-webkit-scrollbar {
     width: 3px;
   }
+
   .compose-attached-tiptap::-webkit-scrollbar-thumb {
     background-color: var(--site-divider);
     border-radius: 4px;
@@ -6162,7 +6165,7 @@
     margin-top: 8px;
     font-size: var(--type-xs);
     color: var(--site-text-secondary);
-    line-height: var(--leading);
+    line-height: var(--type-body-leading);
   }
 
   .compose-confirm-action {
@@ -6867,6 +6870,7 @@
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -6877,6 +6881,7 @@
       opacity: 0;
       transform: scale(0.95);
     }
+
     to {
       opacity: 1;
       transform: scale(1);
@@ -7810,7 +7815,7 @@
     padding-bottom: var(--space-xl);
     text-align: center;
     color: var(--site-text-secondary);
-    font-size: var(--type-xs);
+    font-size: var(--type-base);
   }
 
   .home-branding-credit a {
@@ -9171,6 +9176,16 @@
     font-size: var(--type-xs);
   }
 
+  @media (max-width: 760px) {
+    .archive-chip-label-collapsible {
+      display: none;
+    }
+
+    .archive-chip-active:has(.archive-chip-label-collapsible) {
+      padding-right: 10px;
+    }
+  }
+
   .archive-chip-clear {
     position: absolute;
     top: 50%;
@@ -9230,11 +9245,7 @@
   /* --- Grid --------------------------------------------------------------- */
 
   .archive-grid-wrapper {
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    margin-left: -50vw;
-    padding: 18px var(--site-padding) 10px;
+    padding: 18px 0 10px;
   }
 
   .archive-grid {
@@ -9242,7 +9253,6 @@
     grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
     gap: 10px;
     align-items: start;
-    max-width: 1160px;
     margin: 0 auto;
   }
 

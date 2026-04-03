@@ -111,7 +111,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
       {/* Toggle button */}
       <button
         type="button"
-        class={`thread-context-toggle text-xs text-muted-foreground hover:text-foreground${startsCollapsedWithAffordances ? "" : " hidden"}`}
+        class={`thread-context-toggle text-muted-foreground hover:text-foreground${startsCollapsedWithAffordances ? "" : " hidden"}`}
         data-thread-context-toggle
         data-label-more={showMoreLabel}
         data-label-less={showLessLabel}
