@@ -88,10 +88,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
         </div>
       )}
       {!isDetail && !isCompact && isArticle && post.summaryHasMore && (
-        <a
-          href={`${post.permalink}#continue`}
-          class="text-sm text-muted-foreground hover:underline mt-1 inline-block"
-        >
+        <a href={`${post.permalink}#continue`} class="feed-continue-link">
           Continue →
         </a>
       )}

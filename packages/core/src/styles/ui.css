@@ -38,10 +38,22 @@
   .site-page > main,
   .site-page > footer,
   .site-page > .home-branding-credit {
+    box-sizing: content-box;
     width: var(--layout-body-width);
     max-width: var(--layout-body-max-width);
     padding-left: var(--layout-body-padding-left);
-    padding-right: var(--site-padding);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Mobile: symmetric padding (matches Tufte's mobile breakpoint) */
+  @media (max-width: 760px) {
+    .site-page > header,
+    .site-page > main,
+    .site-page > footer,
+    .site-page > .home-branding-credit {
+      padding-right: 8%;
+    }
   }
 
   /* --- Top header --------------------------------------------------------- */
@@ -367,12 +379,6 @@
     background-color: var(--site-elevated-bg);
     padding-top: 1rem;
     padding-bottom: var(--space-xl);
-    max-width: var(--content-max-width);
-  }
-
-  /* Detail pages use full width so sidenotes can float into the right margin */
-  .site-content:has([data-page="post"]) {
-    max-width: none;
   }
 
   .site-content-home {
@@ -1473,6 +1479,17 @@
 
   .feed-note-title a {
     user-select: all;
+  }
+
+  .feed-continue-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--site-text-secondary);
+  }
+
+  .feed-continue-link:hover {
+    text-decoration: underline;
   }
 
   .post-header-block {

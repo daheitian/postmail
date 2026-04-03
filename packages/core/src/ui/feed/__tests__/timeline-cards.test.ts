@@ -131,7 +131,7 @@ describe("timeline cards", () => {
       "utf8",
     );
 
-    expect(css).toContain(".post-body-summary.prose");
+    expect(css).toContain("[data-post-body].prose");
     expect(css).toContain(
       '[data-post]:not([data-page="post"]) [data-post-body].prose blockquote',
     );

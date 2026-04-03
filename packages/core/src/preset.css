@@ -343,20 +343,6 @@ html {
   text-decoration-color: currentColor;
 }
 
-/*
- * Feed-summary prose
- *
- * Inherits font-size/line-height from .prose (Tufte body size).
- * Only overrides color for the muted summary treatment.
- */
-.post-body-summary.prose {
-  color: color-mix(
-    in srgb,
-    var(--site-text-secondary) 88%,
-    var(--site-text-primary)
-  );
-}
-
 [data-post]:not([data-page="post"]) [data-post-body].prose blockquote,
 .compose-reply-context-body .prose blockquote {
   --_blockquote-bg: var(--site-summary-blockquote-bg);
@@ -431,36 +417,42 @@ html {
 /*
  * Tufte content-width constraint.
  *
- * The 55% width is applied at the BLOCK level — each content container
- * (title, body, quote, attribution, meta) is 55% of the page section width.
- * Sidenotes inside these blocks float into the remaining right margin via
- * negative margin-right.
- *
- * The prose max-width (65ch) is removed so the prose block itself participates
- * in the Tufte proportional layout instead of being pre-constrained.
+ * ALL content follows the 55% rule — text blocks occupy 55% of the page
+ * section width, leaving 45% right margin for sidenotes.
+ * This applies globally, not just to detail pages.
  */
-[data-page="post"] .prose {
+.prose {
   max-width: none;
 }
 
-[data-page="post"] .post-detail-title,
-[data-page="post"] .post-detail-body,
-[data-page="post"] .feed-quote,
-[data-page="post"] .feed-quote-attribution,
-[data-page="post"] .feed-quote-commentary,
-[data-page="post"] .feed-link-domain,
-[data-page="post"] [data-post-meta] {
+.post-detail-title,
+.post-detail-body,
+.post-body-summary,
+.feed-note-title,
+.feed-link-title,
+.feed-quote,
+.feed-quote-attribution,
+.feed-quote-commentary,
+.feed-link-domain,
+.feed-continue-link,
+[data-post-body].prose,
+[data-post-meta] {
   width: var(--layout-content-width);
 }
 
 @media (max-width: 760px) {
-  [data-page="post"] .post-detail-title,
-  [data-page="post"] .post-detail-body,
-  [data-page="post"] .feed-quote,
-  [data-page="post"] .feed-quote-attribution,
-  [data-page="post"] .feed-quote-commentary,
-  [data-page="post"] .feed-link-domain,
-  [data-page="post"] [data-post-meta] {
+  .post-detail-title,
+  .post-detail-body,
+  .post-body-summary,
+  .feed-note-title,
+  .feed-link-title,
+  .feed-quote,
+  .feed-quote-attribution,
+  .feed-quote-commentary,
+  .feed-link-domain,
+  .feed-continue-link,
+  [data-post-body].prose,
+  [data-post-meta] {
     width: 100%;
   }
 }
