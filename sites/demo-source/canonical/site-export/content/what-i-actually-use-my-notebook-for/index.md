@@ -29,6 +29,5 @@ That turns out to be enough. A notebook does not need to become an archive. It o
 <figure data-jant-node="attachment" data-jant-kind="image">
   <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/4c8fbf1ab9be-med_01km9a57txe01sj8jpqrxq913n.webp","poster":null,"mimeType":"image/webp","originalName":"notebook-pages.webp","size":15810,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
   <img src="/media/4c8fbf1ab9be-med_01km9a57txe01sj8jpqrxq913n.webp" alt="">
-  
 </figure>
 </div>

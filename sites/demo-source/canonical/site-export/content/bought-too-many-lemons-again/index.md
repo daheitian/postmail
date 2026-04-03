@@ -21,6 +21,5 @@ This keeps happening. I think part of me believes citrus counts as a plan.
 <figure data-jant-node="attachment" data-jant-kind="image">
   <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/24f76b88a018-med_01km9a49pqe01sj7wxrjv738cs.webp","poster":null,"mimeType":"image/webp","originalName":"market-lemons.webp","size":16484,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
   <img src="/media/24f76b88a018-med_01km9a49pqe01sj7wxrjv738cs.webp" alt="">
-  
 </figure>
 </div>

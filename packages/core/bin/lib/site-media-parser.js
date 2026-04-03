@@ -1110,34 +1110,81 @@ function parseAttachmentBlockHtml(html) {
   return attachments;
 }
 
+/**
+ * Checks whether an HTML string looks like the start of a
+ * `<div data-jant-node="attachments">` block (possibly incomplete due to
+ * blank-line splitting in the markdown parser).
+ */
+function looksLikeAttachmentBlockOpener(html) {
+  const fragment = parseHtmlFragment(html);
+  const rootNodes = (fragment.childNodes || []).filter(
+    (node) => !isWhitespaceHtmlNode(node),
+  );
+  return rootNodes.length >= 1 && isAttachmentRoot(rootNodes[0]);
+}
+
 export function extractAttachmentBlocks(markdown) {
   const tree = parseMarkdown(markdown);
   const attachments = [];
   const removalPatches = [];
 
+  // Collect all HTML nodes from the tree so we can look ahead when the
+  // markdown parser splits a single HTML block across blank lines.
+  const htmlNodes = [];
   visit(tree, "html", (node) => {
-    if (typeof node.value !== "string") {
-      return;
+    if (typeof node.value === "string") {
+      htmlNodes.push(node);
     }
-
-    const blockAttachments = parseAttachmentBlockHtml(node.value);
-    if (!blockAttachments) {
-      return;
-    }
-
-    attachments.push(...blockAttachments);
-    const startOffset = getStartOffset(node);
-    const endOffset = getEndOffset(node);
-    if (typeof startOffset !== "number" || typeof endOffset !== "number") {
-      return;
-    }
-
-    removalPatches.push({
-      start: startOffset,
-      end: endOffset,
-      replacement: "",
-    });
   });
+
+  const consumed = new Set();
+
+  for (let i = 0; i < htmlNodes.length; i++) {
+    if (consumed.has(i)) continue;
+    const node = htmlNodes[i];
+
+    // Fast path: the node contains a complete attachment block.
+    let blockAttachments = parseAttachmentBlockHtml(node.value);
+    if (blockAttachments) {
+      consumed.add(i);
+      attachments.push(...blockAttachments);
+      const startOffset = getStartOffset(node);
+      const endOffset = getEndOffset(node);
+      if (typeof startOffset === "number" && typeof endOffset === "number") {
+        removalPatches.push({ start: startOffset, end: endOffset, replacement: "" });
+      }
+      continue;
+    }
+
+    // Slow path: the node looks like the opener of an attachment block but
+    // is incomplete (e.g. blank lines inside caused the parser to split it).
+    // Try merging with subsequent HTML siblings until we get a valid block.
+    if (!looksLikeAttachmentBlockOpener(node.value)) continue;
+
+    let merged = node.value;
+    let lastMergedIdx = i;
+    for (let j = i + 1; j < htmlNodes.length; j++) {
+      if (consumed.has(j)) break;
+      merged += "\n" + htmlNodes[j].value;
+      blockAttachments = parseAttachmentBlockHtml(merged);
+      if (blockAttachments) {
+        lastMergedIdx = j;
+        break;
+      }
+      // Stop looking if we've gone too far (safety valve).
+      if (j - i > 5) break;
+    }
+
+    if (blockAttachments) {
+      for (let k = i; k <= lastMergedIdx; k++) consumed.add(k);
+      attachments.push(...blockAttachments);
+      const startOffset = getStartOffset(htmlNodes[i]);
+      const endOffset = getEndOffset(htmlNodes[lastMergedIdx]);
+      if (typeof startOffset === "number" && typeof endOffset === "number") {
+        removalPatches.push({ start: startOffset, end: endOffset, replacement: "" });
+      }
+    }
+  }
 
   const strippedMarkdown = applyPatches(markdown, removalPatches)
     .replace(/\n{3,}/g, "\n\n")

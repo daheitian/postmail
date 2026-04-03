@@ -631,8 +631,7 @@ function buildAttachmentFigure(
     const alt = media.alt ? ` alt="${escapeHtml(media.alt)}"` : ' alt=""';
     return `<figure data-jant-node="attachment" data-jant-kind="image">
   <script type="application/json" data-jant-meta>${metaJson}</script>
-  <img src="${escapeHtml(src)}"${alt}>
-  ${caption}
+  <img src="${escapeHtml(src)}"${alt}>${caption ? `\n  ${caption}` : ""}
 </figure>`;
   }
 
@@ -644,16 +643,14 @@ function buildAttachmentFigure(
   <script type="application/json" data-jant-meta>${metaJson}</script>
   <video controls preload="metadata"${posterAttr}>
     <source src="${escapeHtml(src)}" type="${escapeHtml(meta.mimeType)}">
-  </video>
-  ${caption}
+  </video>${caption ? `\n  ${caption}` : ""}
 </figure>`;
   }
 
   if (meta.kind === "audio") {
     return `<figure data-jant-node="attachment" data-jant-kind="audio">
   <script type="application/json" data-jant-meta>${metaJson}</script>
-  <audio controls preload="metadata" src="${escapeHtml(src)}"></audio>
-  ${caption}
+  <audio controls preload="metadata" src="${escapeHtml(src)}"></audio>${caption ? `\n  ${caption}` : ""}
 </figure>`;
   }
 
@@ -663,8 +660,7 @@ function buildAttachmentFigure(
     : "";
   return `<figure data-jant-node="attachment" data-jant-kind="${escapeHtml(meta.kind)}">
   <script type="application/json" data-jant-meta>${metaJson}</script>
-  <a href="${escapeHtml(src)}">${name}</a>
-  ${figcaption}
+  <a href="${escapeHtml(src)}">${name}</a>${figcaption ? `\n  ${figcaption}` : ""}
 </figure>`;
 }
 

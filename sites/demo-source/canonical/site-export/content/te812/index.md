@@ -23,7 +23,6 @@ Made tomato soup because the weather could not decide what month it wanted to be
 <figure data-jant-node="attachment" data-jant-kind="image">
   <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/423bb70d1117-med_01km9a4x35e01sj8ax3j1fhhws.webp","poster":null,"mimeType":"image/webp","originalName":"tomato-soup.webp","size":17382,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
   <img src="/media/423bb70d1117-med_01km9a4x35e01sj8ax3j1fhhws.webp" alt="">
-  
 </figure>
 </div>
 

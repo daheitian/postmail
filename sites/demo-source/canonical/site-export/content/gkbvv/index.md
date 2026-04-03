@@ -22,7 +22,6 @@ Tonight's tiny project: make the desk usable again without buying a single organ
 <figure data-jant-node="attachment" data-jant-kind="image">
   <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/baa603c991dd-med_01km9a4gfee01sj821y38h2gxq.webp","poster":null,"mimeType":"image/webp","originalName":"desk-before.webp","size":15464,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
   <img src="/media/baa603c991dd-med_01km9a4gfee01sj821y38h2gxq.webp" alt="">
-  
 </figure>
 </div>
 
@@ -42,6 +41,5 @@ Thirty minutes later: laptop, lamp, notebook, one glass of water. That is appare
 <figure data-jant-node="attachment" data-jant-kind="image">
   <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/11246d180f21-med_01km9a4j82e01sj83dpjzh3ff5.webp","poster":null,"mimeType":"image/webp","originalName":"desk-after.webp","size":14120,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
   <img src="/media/11246d180f21-med_01km9a4j82e01sj83dpjzh3ff5.webp" alt="">
-  
 </figure>
 </div>

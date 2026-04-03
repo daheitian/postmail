@@ -23,7 +23,6 @@ Repotted the balcony herbs before breakfast. Basil was dramatic. Mint did not ca
 <figure data-jant-node="attachment" data-jant-kind="image">
   <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/abcc2782dbf0-med_01km9a43p0e01sj7rxyns4fqey.webp","poster":null,"mimeType":"image/webp","originalName":"herbs-window.webp","size":13352,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
   <img src="/media/abcc2782dbf0-med_01km9a43p0e01sj7rxyns4fqey.webp" alt="">
-  
 </figure>
 </div>
 
@@ -43,6 +42,5 @@ By late afternoon the basil was standing up again. I respect a fast recovery.
 <figure data-jant-node="attachment" data-jant-kind="image">
   <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/a9b1d1892795-med_01km9a46g5e01sj7tkp75bb6a8.webp","poster":null,"mimeType":"image/webp","originalName":"balcony-light.webp","size":15058,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
   <img src="/media/a9b1d1892795-med_01km9a46g5e01sj7tkp75bb6a8.webp" alt="">
-  
 </figure>
 </div>
