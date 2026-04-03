@@ -1886,7 +1886,7 @@
     border-radius: 999px;
     background: var(--site-thread-gap-bg);
     color: var(--site-text-secondary);
-    font-size: var(--type-secondary);
+    font-size: var(--type-sm);
     line-height: 1.3;
     text-decoration: none;
     transition:
@@ -1975,7 +1975,7 @@
     display: inline-flex;
     align-items: center;
     padding: 0.38rem 0.78rem;
-    font-size: var(--type-secondary);
+    font-size: var(--type-sm);
     margin-bottom: 4px;
     cursor: pointer;
     background: var(--site-thread-gap-bg);
@@ -3260,8 +3260,8 @@
     flex: 1;
     min-width: 0;
     width: 100%;
-    min-height: 56px;
-    padding: 18px 0;
+    min-height: 64px;
+    padding: 24px 0;
     border: none;
     outline: none;
     background: none;
@@ -3685,12 +3685,12 @@
   }
 
   .compose-dialog-cancel {
-    padding: 4px 8px;
+    padding: 8px 12px;
     border: none;
     background: none;
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--site-text-secondary);
-    font-size: var(--type-xs);
+    font-size: var(--type-sm);
     cursor: pointer;
     transition: color 0.15s ease-out;
     flex-shrink: 0;
@@ -3717,7 +3717,7 @@
 
   .compose-dialog-title {
     font-weight: var(--fw-semibold);
-    font-size: var(--type-base);
+    font-size: var(--type-secondary);
   }
 
   .compose-dialog-header-btn {
@@ -3726,9 +3726,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     border: none;
     background: none;
     color: var(--site-text-secondary);
@@ -3754,8 +3754,8 @@
 
   .compose-dialog-header-icon {
     display: block;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     --icon-stroke: 1.32;
     flex-shrink: 0;
     overflow: visible;
@@ -4387,7 +4387,7 @@
     padding: 6px 10px;
     display: flex;
     align-items: center;
-    gap: 1px;
+    gap: 4px;
     background-color: var(--compose-paper-bg);
   }
 
@@ -4402,7 +4402,7 @@
   @media (min-width: 700px) {
     .compose-tools-row {
       padding: 6px 16px;
-      gap: 2px;
+      gap: 4px;
     }
   }
 
@@ -4411,9 +4411,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     border: none;
     background: transparent;
     cursor: pointer;
@@ -4425,8 +4425,8 @@
   .compose-tool-icon {
     --icon-stroke: 1.46;
     display: block;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     flex-shrink: 0;
     overflow: visible;
   }
@@ -4447,7 +4447,7 @@
   }
 
   .compose-tool-label {
-    font-size: var(--type-xs);
+    font-size: var(--type-sm);
     font-weight: var(--fw-medium);
     white-space: nowrap;
   }
@@ -4468,9 +4468,9 @@
   }
 
   .compose-tool-btn-view {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     color: var(--site-text-secondary);
   }
 
@@ -6804,7 +6804,7 @@
   }
 
   .compose-draft-preview {
-    font-size: var(--type-xs);
+    font-size: var(--type-sm);
     color: var(--site-text-primary);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -6819,14 +6819,14 @@
   }
 
   .compose-draft-meta {
-    font-size: var(--type-2xs);
+    font-size: var(--type-xs);
     color: var(--site-text-secondary);
     margin-top: 4px;
   }
 
   .compose-draft-more {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6920,7 +6920,7 @@
     justify-content: center;
     width: 100%;
     height: 100%;
-    padding: 16px 72px;
+    padding: 64px 96px;
     box-sizing: border-box;
     overflow: hidden;
   }
@@ -7186,7 +7186,7 @@
 
   @media (max-width: 640px) {
     .media-lightbox-stage {
-      padding: 16px 8px;
+      padding: 48px 16px;
     }
 
     .media-lightbox-img {
@@ -8863,7 +8863,7 @@
 
   .compose-fullscreen-toolbar-inner,
   .compose-fullscreen-inner {
-    width: min(100%, calc(var(--content-max-width) + 32px));
+    width: min(100%, 802px);
     margin: 0 auto;
     padding-inline: 16px;
   }
@@ -8879,11 +8879,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
+    width: 40px;
+    height: 40px;
     padding: 0;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: 10px;
     background: transparent;
     color: color-mix(in srgb, var(--site-text-secondary) 50%, transparent);
     cursor: pointer;
@@ -8982,9 +8982,9 @@
     background: none;
     color: var(--site-text-secondary);
     font-family: var(--font-heading);
-    font-size: var(--type-title);
+    font-size: var(--type-display);
     font-weight: var(--type-display-weight);
-    line-height: 1.02;
+    line-height: var(--type-display-leading);
     letter-spacing: var(--type-display-tracking);
     text-align: left;
     opacity: 0.32;
@@ -9011,11 +9011,11 @@
     width: 100%;
     min-width: 0;
     font-family: var(--font-heading);
-    font-size: var(--type-title);
+    font-size: var(--type-display);
     font-weight: var(--type-display-weight);
     color: var(--site-text-primary);
     letter-spacing: var(--type-display-tracking);
-    line-height: 1.02;
+    line-height: var(--type-display-leading);
     padding: 0;
   }
 
@@ -9058,8 +9058,8 @@
   .compose-fullscreen .compose-tiptap-body .tiptap {
     min-height: calc(100dvh - 14rem);
     padding-bottom: max(18vh, 8rem);
-    font-size: var(--type-base);
-    line-height: 1.78;
+    font-size: var(--type-body);
+    line-height: var(--type-body-leading);
   }
 
   .compose-fullscreen
@@ -9070,12 +9070,6 @@
   }
 
   @media (max-width: 960px) {
-    .compose-fullscreen-toolbar-inner,
-    .compose-fullscreen-inner {
-      width: min(100%, calc(var(--content-max-width) + 24px));
-      padding-inline: 12px;
-    }
-
     .compose-fullscreen-inner {
       padding-top: 0.9rem;
       padding-bottom: max(3rem, calc(2rem + env(safe-area-inset-bottom)));

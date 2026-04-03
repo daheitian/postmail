@@ -17,6 +17,7 @@ For static export and round-trip import, also see [Export and Import](export-and
 
 | Area                    | Base path                              | Auth                 |
 | ----------------------- | -------------------------------------- | -------------------- |
+| Public posts            | `/api/public/posts`                    | Public               |
 | Posts                   | `/api/posts`                           | API token or session |
 | Uploads (recommended)   | `/api/uploads`                         | API token or session |
 | Uploads (legacy)        | `/api/upload`, `/api/upload/multipart` | API token or session |
@@ -278,6 +279,104 @@ Notes:
 - `replyToId !== null` means the post is a thread reply.
 - `threadId` points at the thread root.
 - `GET /api/posts` includes both root posts and replies. There is currently no `excludeReplies` query parameter.
+
+## Public posts
+
+Base path: `/api/public/posts`
+
+These endpoints expose the public reading view, not the dashboard editing view.
+
+Public post responses include these fields:
+
+| Field             | Type                        | Notes                                                          |
+| ----------------- | --------------------------- | -------------------------------------------------------------- |
+| `id`              | `pst_*` string              | Post ID                                                        |
+| `format`          | `note` \| `link` \| `quote` | Post format                                                    |
+| `status`          | `published`                 | Public endpoints only return published posts                   |
+| `visibility`      | `public` \| `latest_hidden` | List excludes `latest_hidden`; single-post reads may return it |
+| `slug`            | string                      | Canonical slug                                                 |
+| `permalink`       | string                      | Public post URL                                                |
+| `title`           | string \| `null`            | Returned for `note` and `link` posts                           |
+| `url`             | string \| `null`            | Returned for `link` posts                                      |
+| `sourceName`      | string \| `null`            | Returned instead of `title` for `quote`                        |
+| `sourceUrl`       | string \| `null`            | Returned instead of `url` for `quote`                          |
+| `bodyHtml`        | string \| `null`            | Rendered HTML                                                  |
+| `bodyText`        | string \| `null`            | Plain-text rendering                                           |
+| `quoteText`       | string \| `null`            | Quote content                                                  |
+| `summary`         | string \| `null`            | Optional summary                                               |
+| `rating`          | integer \| `null`           | `1` to `5` when set                                            |
+| `previewKind`     | string \| `null`            | Link preview kind                                              |
+| `previewProvider` | string \| `null`            | Link preview provider                                          |
+| `previewImageUrl` | string \| `null`            | Public preview image URL                                       |
+| `replyToId`       | `pst_*` string \| `null`    | Parent reply/post ID                                           |
+| `threadId`        | `pst_*` string              | Thread root ID                                                 |
+| `pinnedAt`        | integer \| `null`           | Pin timestamp                                                  |
+| `featuredAt`      | integer \| `null`           | Feature timestamp                                              |
+| `publishedAt`     | integer \| `null`           | Publish timestamp                                              |
+| `lastActivityAt`  | integer                     | Last activity timestamp                                        |
+| `createdAt`       | integer                     | Unix seconds                                                   |
+| `updatedAt`       | integer                     | Unix seconds                                                   |
+| `attachments`     | array                       | Ordered media/text attachment objects                          |
+| `collections`     | object[]                    | Public collection refs with `id`, `slug`, `title`, and `url`   |
+
+### List public posts
+
+`GET /api/public/posts`
+
+Auth: `Public`
+
+Query parameters:
+
+| Parameter | Type                        | Required | Default | Notes                                         |
+| --------- | --------------------------- | -------- | ------- | --------------------------------------------- |
+| `format`  | `note` \| `link` \| `quote` | no       | all     | Format filter                                 |
+| `cursor`  | string                      | no       | none    | Pass the previous `nextCursor` back unchanged |
+| `limit`   | integer                     | no       | `20`    | `1` to `100`                                  |
+
+Response:
+
+```json
+{
+  "posts": [
+    {
+      "id": "pst_01jpyx3m7gw4w3h7m4bknq0v1d",
+      "format": "note",
+      "status": "published",
+      "visibility": "public",
+      "slug": "hello-world",
+      "permalink": "/hello-world",
+      "title": "Hello World",
+      "bodyHtml": "<p>Hello world</p>",
+      "bodyText": "Hello world",
+      "quoteText": null,
+      "replyToId": null,
+      "threadId": "pst_01jpyx3m7gw4w3h7m4bknq0v1d",
+      "publishedAt": 1706000000,
+      "attachments": [],
+      "collections": []
+    }
+  ],
+  "nextCursor": "pst_01jpyx3m7gw4w3h7m4bknq0v1d"
+}
+```
+
+Notes:
+
+- This list returns published public thread roots only.
+- Drafts, private posts, replies, and `latest_hidden` posts are excluded.
+
+### Get a public post by slug
+
+`GET /api/public/posts/:slug`
+
+Auth: `Public`
+
+This returns a single published public post by canonical slug.
+
+Notes:
+
+- `latest_hidden` posts remain readable by direct slug.
+- Draft and private posts return `404`.
 
 ### List posts
 

@@ -3,7 +3,7 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, Media, Post } from "../../types.js";
+import type { Bindings, Post } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { z } from "zod";
 import {
@@ -15,85 +15,16 @@ import {
   parseValidated,
 } from "../../lib/schemas.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import {
-  getMediaUrl,
-  getImageUrl,
-  getPublicUrlForProvider,
-} from "../../lib/image.js";
+import { toApiAttachment } from "../../lib/api-posts.js";
 import { assertFound, NotFoundError, parseIdParam } from "../../lib/errors.js";
 import { ID_PREFIX } from "../../lib/ids.js";
-import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const postsApiRoutes = new Hono<Env>();
-const ATTACHED_TEXT_MIME_TYPE = "text/x-tiptap+json";
 
 function hasOwnField<T extends object>(value: T, key: keyof T): boolean {
   return Object.prototype.hasOwnProperty.call(value, key);
-}
-
-/**
- * Converts a Media record to an ordered attachment API response shape.
- */
-function toApiAttachment(
-  m: Media,
-  r2PublicUrl?: string,
-  imageTransformUrl?: string,
-  s3PublicUrl?: string,
-  localPublicUrl?: string,
-  sitePathPrefix?: string,
-) {
-  const publicUrl = getPublicUrlForProvider(
-    m.provider,
-    r2PublicUrl,
-    s3PublicUrl,
-    localPublicUrl,
-  );
-  const url = getMediaUrl(m.storageKey, publicUrl, sitePathPrefix);
-
-  if (m.mimeType === ATTACHED_TEXT_MIME_TYPE) {
-    return {
-      type: "text" as const,
-      id: m.id,
-      contentFormat: "markdown" as const,
-      contentUrl: toPublicPath(
-        `/api/attachments/${m.id}/content`,
-        sitePathPrefix,
-      ),
-      summary: m.summary,
-      chars: m.chars,
-    };
-  }
-
-  const previewUrl = getImageUrl(url, imageTransformUrl, {
-    width: 1200,
-    height: 768,
-    quality: 80,
-    format: "auto",
-    fit: "scale-down",
-  });
-  const posterUrl = m.posterKey
-    ? getMediaUrl(m.posterKey, publicUrl, sitePathPrefix)
-    : null;
-
-  return {
-    type: "media" as const,
-    id: m.id,
-    url,
-    previewUrl,
-    posterUrl,
-    alt: m.alt,
-    blurhash: m.blurhash,
-    width: m.width,
-    height: m.height,
-    durationSeconds: m.durationSeconds,
-    mimeType: m.mimeType,
-    originalName: m.originalName,
-    size: m.size,
-    summary: m.summary,
-    chars: m.chars,
-  };
 }
 
 type ApiPostResponse = Omit<Post, "title" | "url"> & {

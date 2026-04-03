@@ -47,6 +47,7 @@ import { exportApiRoutes } from "./routes/api/export.js";
 import { internalApiTokensRoutes } from "./routes/api/internal/api-tokens.js";
 import { internalSitesRoutes } from "./routes/api/internal/sites.js";
 import { internalUploadsRoutes } from "./routes/api/internal/uploads.js";
+import { publicPostsApiRoutes } from "./routes/api/public/posts.js";
 // Routes - Compose
 import { composeRoutes } from "./routes/compose.js";
 
@@ -457,6 +458,7 @@ export function createApp(): App {
   // --- Routes that need config ---
 
   // API Routes
+  app.route("/api/public/posts", publicPostsApiRoutes);
   app.route("/api/posts", postsApiRoutes);
   app.route("/api/nav-items", navItemsApiRoutes);
   app.route("/api/collections", collectionsApiRoutes);
