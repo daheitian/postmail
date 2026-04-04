@@ -23,7 +23,7 @@ function stripContinueAnchor(html?: string): string | undefined {
 
 function getContinueHref(post: TimelineCardProps["post"]): string {
   const rendersPermalinkThread = !!post.threadRootId || !post.isLastInThread;
-  return rendersPermalinkThread ? post.permalink : `${post.permalink}#continue`;
+  return rendersPermalinkThread ? post.permalink : `${post.permalink}`;
 }
 
 export const NoteCard: FC<TimelineCardProps> = ({
