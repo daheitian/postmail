@@ -553,7 +553,7 @@ msgstr "清除篩選"
 #. @context: Close drawer button label
 #: src/ui/layouts/SiteLayout.tsx
 msgid "Close menu"
-msgstr ""
+msgstr "關閉選單"
 
 #. @context: Singular collection count label
 #. @context: Singular collection count label
@@ -1095,6 +1095,11 @@ msgstr "草稿"
 msgid "Drag collections, links, and dividers into the order you want."
 msgstr "將選集、連結和分隔線拖曳成您想要的順序。"
 
+#. @context: Hint text shown in empty More section of nav settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Drag links here to show them under the More menu"
+msgstr "將連結拖曳到此處以顯示在更多選單下"
+
 #. @context: Placeholder for API token name input
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "e.g. iOS Shortcuts"
@@ -1387,6 +1392,11 @@ msgstr "使用指引"
 #: src/ui/pages/BrandPage.tsx
 msgid "Hard edge"
 msgstr "銳利邊緣"
+
+#. @context: Section label for nav items shown in header
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Header"
+msgstr "頁首"
 
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1781,7 +1791,16 @@ msgstr "媒體"
 #. @context: Hamburger menu button label
 #: src/ui/layouts/SiteLayout.tsx
 msgid "Menu"
-msgstr ""
+msgstr "選單"
+
+#. @context: More dropdown button label in nav preview
+#. @context: More navigation links dropdown button
+#. @context: Section label for nav items hidden under More dropdown
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/layouts/SiteLayout.tsx
+msgid "More"
+msgstr "更多"
 
 #. @context: Aria-label for collections page more button
 #. @context: Button label for a menu with more actions
@@ -1833,6 +1852,11 @@ msgstr "導覽項目"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Navigation order updated."
 msgstr "導覽排序已更新。"
+
+#. @context: Toast after moving nav item between header/more
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation placement updated."
+msgstr "導覽項目位置已更新。"
 
 #. @context: Label for nav preview section
 #: src/ui/dash/appearance/NavigationContent.tsx

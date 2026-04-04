@@ -8,6 +8,7 @@ import type {
   Visibility,
   CollectionSortOrder,
   SystemNavKey,
+  NavItemPlacement,
   TextAttachmentContentFormat,
 } from "./constants.js";
 
@@ -88,6 +89,7 @@ export type CreateNavItem =
 export interface UpdateNavItem {
   label?: string;
   url?: string;
+  placement?: NavItemPlacement;
   position?: string;
 }
 

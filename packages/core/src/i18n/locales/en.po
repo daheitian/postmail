@@ -1095,6 +1095,11 @@ msgstr "Drafts"
 msgid "Drag collections, links, and dividers into the order you want."
 msgstr "Drag collections, links, and dividers into the order you want."
 
+#. @context: Hint text shown in empty More section of nav settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Drag links here to show them under the More menu"
+msgstr "Drag links here to show them under the More menu"
+
 #. @context: Placeholder for API token name input
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "e.g. iOS Shortcuts"
@@ -1387,6 +1392,11 @@ msgstr "Guidelines"
 #: src/ui/pages/BrandPage.tsx
 msgid "Hard edge"
 msgstr "Hard edge"
+
+#. @context: Section label for nav items shown in header
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Header"
+msgstr "Header"
 
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1783,6 +1793,15 @@ msgstr "Media"
 msgid "Menu"
 msgstr "Menu"
 
+#. @context: More dropdown button label in nav preview
+#. @context: More navigation links dropdown button
+#. @context: Section label for nav items hidden under More dropdown
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/layouts/SiteLayout.tsx
+msgid "More"
+msgstr "More"
+
 #. @context: Aria-label for collections page more button
 #. @context: Button label for a menu with more actions
 #. @context: Post menu trigger label in post actions
@@ -1833,6 +1852,11 @@ msgstr "Navigation items"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Navigation order updated."
 msgstr "Navigation order updated."
+
+#. @context: Toast after moving nav item between header/more
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation placement updated."
+msgstr "Navigation placement updated."
 
 #. @context: Label for nav preview section
 #: src/ui/dash/appearance/NavigationContent.tsx

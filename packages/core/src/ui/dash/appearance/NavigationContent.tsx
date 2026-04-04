@@ -53,6 +53,12 @@ export function NavigationContent({
       comment: "@context: Label for nav preview section",
     }),
   );
+  const moreLabel = i18n._(
+    msg({
+      message: "More",
+      comment: "@context: More dropdown button label in nav preview",
+    }),
+  );
 
   // Serialize nav items for the Lit component
   const itemsData = navItems.map((item) => ({
@@ -62,6 +68,7 @@ export function NavigationContent({
     label: item.label,
     displayLabel: getNavItemDisplayLabel(item, i18n, sitePathPrefix),
     url: item.url,
+    placement: item.placement ?? "header",
   }));
 
   // Build system nav config array for the Lit component
@@ -205,6 +212,32 @@ export function NavigationContent({
       }),
     ),
     urlPlaceholder: "/archive or https://...",
+    headerSection: i18n._(
+      msg({
+        message: "Header",
+        comment: "@context: Section label for nav items shown in header",
+      }),
+    ),
+    moreSection: i18n._(
+      msg({
+        message: "More",
+        comment:
+          "@context: Section label for nav items hidden under More dropdown",
+      }),
+    ),
+    moreEmptyHint: i18n._(
+      msg({
+        message: "Drag links here to show them under the More menu",
+        comment:
+          "@context: Hint text shown in empty More section of nav settings",
+      }),
+    ),
+    placementSaved: i18n._(
+      msg({
+        message: "Navigation placement updated.",
+        comment: "@context: Toast after moving nav item between header/more",
+      }),
+    ),
     useFeaturedAsDefault: i18n._(
       msg({
         message: "Use Featured as the home feed",
@@ -248,24 +281,38 @@ export function NavigationContent({
         home-default-view={homeDefaultView}
       >
         {/* SSR fallback: static preview until JS hydrates */}
-        <div class="nav-preview">
-          <div class="nav-preview-chrome">
-            <div class="nav-preview-dots">
-              <span />
-              <span />
-              <span />
-            </div>
-            <span class="nav-preview-label">{previewLabel}</span>
-          </div>
-          <div class="nav-preview-content">
-            <div class="site-header-top">
-              <a href={toPublicPath("/", sitePathPrefix)} class="site-logo">
-                {siteName}
-              </a>
-              <div class="site-header-right">
-                {navItems.length > 0 && (
+        {(() => {
+          const headerNavItems = navItems.filter(
+            (item) => item.placement !== "more",
+          );
+          const moreNavItems = navItems.filter(
+            (item) => item.placement === "more",
+          );
+          const defaultLabel =
+            homeDefaultView === "featured" ? featuredLabel : latestLabel;
+          const altLabel =
+            homeDefaultView === "featured" ? latestLabel : featuredLabel;
+          return (
+            <div class="nav-preview">
+              <div class="nav-preview-chrome">
+                <div class="nav-preview-dots">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                <span class="nav-preview-label">{previewLabel}</span>
+              </div>
+              <div class="nav-preview-content">
+                <div class="site-header-top">
+                  <a href={toPublicPath("/", sitePathPrefix)} class="site-logo">
+                    {siteName}
+                  </a>
                   <nav class="site-header-nav">
-                    {navItems.map((item) => (
+                    <span class="site-header-link site-header-link-active">
+                      {defaultLabel}
+                    </span>
+                    <span class="site-header-link">{altLabel}</span>
+                    {headerNavItems.map((item) => (
                       <a
                         key={item.id}
                         href={toPublicHref(item.url, sitePathPrefix)}
@@ -274,39 +321,30 @@ export function NavigationContent({
                         {getNavItemDisplayLabel(item, i18n, sitePathPrefix)}
                       </a>
                     ))}
+                    {moreNavItems.length > 0 && (
+                      <span class="site-header-more-btn">
+                        {moreLabel}{" "}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </span>
+                    )}
                   </nav>
-                )}
-                <span class="site-header-search" aria-hidden="true">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.35-4.35" />
-                  </svg>
-                </span>
+                </div>
               </div>
             </div>
-            <nav class="site-browse-nav">
-              <span class="site-browse-link site-browse-link-active">
-                {homeDefaultView === "featured" ? featuredLabel : latestLabel}
-              </span>
-              <span class="site-browse-sep" aria-hidden="true">
-                /
-              </span>
-              <span class="site-browse-link">
-                {homeDefaultView === "featured" ? latestLabel : featuredLabel}
-              </span>
-            </nav>
-          </div>
-        </div>
+          );
+        })()}
       </jant-nav-manager>
     </div>
   );

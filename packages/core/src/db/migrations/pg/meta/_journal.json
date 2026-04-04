@@ -50,6 +50,13 @@
       "when": 1775108281543,
       "tag": "0006_perpetual_bruce_banner",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775368800000,
+      "tag": "0007_nav_item_placement",
+      "breakpoints": true
     }
   ]
 }

@@ -32,6 +32,9 @@ export type CollectionSortOrder = (typeof COLLECTION_SORT_ORDERS)[number];
 export const NAV_ITEM_TYPES = ["link", "system"] as const;
 export type NavItemType = (typeof NAV_ITEM_TYPES)[number];
 
+export const NAV_ITEM_PLACEMENTS = ["header", "more"] as const;
+export type NavItemPlacement = (typeof NAV_ITEM_PLACEMENTS)[number];
+
 export const SYSTEM_NAV_KEY_VALUES = [
   "rss",
   "settings",

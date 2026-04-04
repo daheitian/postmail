@@ -523,6 +523,7 @@ export const UpdateNavItemSchema = z.object({
       message: "URL must use http:, https:, or mailto: protocol",
     })
     .optional(),
+  placement: z.enum(["header", "more"]).optional(),
 });
 
 export const CollectionDirectoryLabelSchema = z.string().trim().max(60);

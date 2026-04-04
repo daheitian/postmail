@@ -11,6 +11,7 @@ export interface NavManagerItem {
   label: string;
   displayLabel?: string;
   url: string;
+  placement?: "header" | "more";
 }
 
 export interface SystemNavConfig {
@@ -42,6 +43,10 @@ export interface NavManagerLabels {
   addLinkDescription: string;
   urlPlaceholder: string;
   labelAndUrlRequired: string;
+  headerSection: string;
+  moreSection: string;
+  moreEmptyHint: string;
+  placementSaved: string;
   useFeaturedAsDefault: string;
   useFeaturedAsDefaultDescription: string;
   homeViewSaved: string;

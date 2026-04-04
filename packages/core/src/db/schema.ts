@@ -24,6 +24,7 @@ const STATUSES = ["draft", "published"] as const;
 const VISIBILITIES = ["public", "latest_hidden", "private"] as const;
 const COLLECTION_SORT_ORDERS = ["newest", "oldest", "rating_desc"] as const;
 const NAV_ITEM_TYPES = ["link", "system"] as const;
+const NAV_ITEM_PLACEMENTS = ["header", "more"] as const;
 const SYSTEM_NAV_KEYS = ["rss", "settings", "collections", "archive"] as const;
 const UPLOAD_SESSION_STATES = [
   "pending",
@@ -566,6 +567,11 @@ export const navItems = sqliteTable(
     }),
     label: text("label").notNull(),
     url: text("url").notNull(),
+    placement: text("placement", {
+      enum: NAV_ITEM_PLACEMENTS,
+    })
+      .notNull()
+      .default("header"),
     position: text("position").notNull().default("a0"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -574,6 +580,10 @@ export const navItems = sqliteTable(
     check(
       "chk_nav_item_type",
       sql`${table.type} IN (${sqlTextEnum(NAV_ITEM_TYPES)})`,
+    ),
+    check(
+      "chk_nav_item_placement",
+      sql`${table.placement} IN (${sqlTextEnum(NAV_ITEM_PLACEMENTS)})`,
     ),
     check(
       "chk_nav_item_system_key",

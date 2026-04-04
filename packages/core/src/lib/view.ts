@@ -21,6 +21,7 @@ import type {
   Format,
   Status,
   NavItemType,
+  NavItemPlacement,
   AppConfig,
 } from "../types.js";
 import {
@@ -412,6 +413,7 @@ export function toNavItemView(
     systemKey: item.systemKey,
     label,
     url: publicUrl,
+    placement: item.placement as NavItemPlacement,
     isActive,
     isExternal,
   };

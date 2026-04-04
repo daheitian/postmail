@@ -115,6 +115,19 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     }),
   );
 
+  const moreLabel = i18n._(
+    msg({
+      message: "More",
+      comment: "@context: More navigation links dropdown button",
+    }),
+  );
+
+  // Split custom links by placement
+  const headerLinks = linksWithLabels.filter(
+    (l) => l.placement === "header" || !l.placement,
+  );
+  const moreLinks = linksWithLabels.filter((l) => l.placement === "more");
+
   const isHomePage =
     currentPath === toPublicPath("/", sitePathPrefix) ||
     currentPath === toPublicPath("/featured", sitePathPrefix) ||
@@ -147,13 +160,64 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                     {link.label}
                   </a>
                 ))}
-                {linksWithLabels.map((link) => (
+                {headerLinks.map((link) => (
                   <HeaderLink
                     key={link.id}
                     link={link}
                     label={link.displayLabel}
                   />
                 ))}
+                {moreLinks.length > 0 && (
+                  <div class="site-header-more">
+                    <button
+                      type="button"
+                      class="site-header-more-btn"
+                      id="site-nav-more-trigger"
+                      aria-haspopup="menu"
+                      aria-expanded="false"
+                    >
+                      {moreLabel}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                    <div
+                      id="site-nav-more-popover"
+                      class="site-header-more-popover"
+                      data-popover
+                      data-align="start"
+                      aria-hidden="true"
+                    >
+                      {moreLinks.map((link) => (
+                        <a
+                          key={link.id}
+                          href={link.url}
+                          class={`site-header-more-link ${link.isActive ? "site-header-more-link-active" : ""}`}
+                          {...(link.isExternal
+                            ? {
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                              }
+                            : {})}
+                        >
+                          {link.displayLabel}
+                          {link.isExternal && <ExternalLinkIcon />}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </nav>
 
               {/* Search */}

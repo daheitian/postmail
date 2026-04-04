@@ -1,6 +1,7 @@
 export function resolveCliRuntime(values, env = process.env) {
-  if (values.local && values.remote) {
-    throw new Error("Choose either --local or --remote, not both.");
+  const flags = [values.local, values.remote, values.node].filter(Boolean);
+  if (flags.length > 1) {
+    throw new Error("Choose only one of --local, --remote, or --node.");
   }
 
   if (values.remote) {
@@ -9,6 +10,10 @@ export function resolveCliRuntime(values, env = process.env) {
 
   if (values.local) {
     return "d1-local";
+  }
+
+  if (values.node) {
+    return "node";
   }
 
   if (

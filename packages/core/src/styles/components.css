@@ -1049,6 +1049,10 @@ svg[stroke-width].icon-fine {
   .nav-preview-content {
     @apply px-5 py-3;
   }
+
+  .nav-preview-content .site-header-top {
+    justify-content: flex-start;
+  }
 }
 
 /* Navigation items list — card-style draggable nav items */
@@ -1057,12 +1061,35 @@ svg[stroke-width].icon-fine {
     @apply flex flex-col gap-2;
   }
 
-  .nav-item {
-    @apply border rounded-lg transition-shadow;
+  .nav-items-list-drop {
+    min-height: 3rem;
+    border: 1.5px dashed
+      color-mix(in srgb, var(--color-border) 60%, transparent);
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    transition: border-color 0.15s;
+  }
 
-    &:hover {
-      @apply shadow-xs;
-    }
+  .nav-items-list-drop:has(.nav-item) {
+    border-color: transparent;
+    padding: 0;
+  }
+
+  .nav-items-empty-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 2rem;
+    font-size: var(--type-xs);
+    color: var(--muted-foreground);
+    opacity: 0.6;
+    text-align: center;
+    margin: 0;
+  }
+
+  .nav-item {
+    @apply border rounded-lg;
   }
 
   .nav-item-editing {
