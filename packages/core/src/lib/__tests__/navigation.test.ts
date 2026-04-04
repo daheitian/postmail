@@ -13,7 +13,6 @@ describe("getNavigationData", () => {
           siteDescription: "Footer test",
           siteDescriptionExplicit: true,
           homeDefaultView: "latest",
-          headerNavMaxVisible: 4,
           siteAvatarUrl: "",
           showHeaderAvatar: false,
           siteFooter:

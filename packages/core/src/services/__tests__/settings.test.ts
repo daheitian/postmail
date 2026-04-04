@@ -165,7 +165,6 @@ describe("SettingsService", () => {
       showJantBrandingOnHome: false,
       homeDefaultView: "latest",
       mainRssFeed: "featured",
-      headerNavMaxVisible: "2",
       timeZone: "UTC",
     };
 
@@ -234,25 +233,6 @@ describe("SettingsService", () => {
       );
 
       expect(await settingsService.get("MAIN_RSS_FEED")).toBe("latest");
-    });
-
-    it("removes HEADER_NAV_MAX_VISIBLE when set to default (2)", async () => {
-      await settingsService.set("HEADER_NAV_MAX_VISIBLE", "5");
-      await settingsService.updateGeneral(
-        { ...defaults, headerNavMaxVisible: "2" },
-        { oldLanguage: "en", fallbackSiteName: "Jant" },
-      );
-
-      expect(await settingsService.get("HEADER_NAV_MAX_VISIBLE")).toBeNull();
-    });
-
-    it("stores HEADER_NAV_MAX_VISIBLE when non-default", async () => {
-      await settingsService.updateGeneral(
-        { ...defaults, headerNavMaxVisible: "5" },
-        { oldLanguage: "en", fallbackSiteName: "Jant" },
-      );
-
-      expect(await settingsService.get("HEADER_NAV_MAX_VISIBLE")).toBe("5");
     });
 
     it("removes TIME_ZONE when set to UTC", async () => {

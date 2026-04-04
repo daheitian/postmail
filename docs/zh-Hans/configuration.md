@@ -327,7 +327,6 @@ npx jant uploads cleanup --url https://your-site.example --limit 50
 | `TIME_ZONE`                  | 显示时区，例如 `UTC` 或 `Asia/Shanghai`  |
 | `HOME_DEFAULT_VIEW`          | 决定首页默认从 Latest 还是 Featured 开始 |
 | `MAIN_RSS_FEED`              | 决定 `/feed` 返回什么                    |
-| `HEADER_NAV_MAX_VISIBLE`     | 顶层导航在进入 overflow 前最多显示多少项 |
 | `SITE_FOOTER`                | 自定义页脚文本                           |
 | `SHOW_JANT_BRANDING_ON_HOME` | 是否在首页显示 Jant 品牌标识             |
 | `NOINDEX`                    | 请求搜索引擎不要收录这个站点             |

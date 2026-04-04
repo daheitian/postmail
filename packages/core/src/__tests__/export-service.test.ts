@@ -107,7 +107,7 @@ describe("createExportService", () => {
       siteLanguage: "zh-CN",
       showJantBrandingOnHome: true,
       homeDefaultView: "latest",
-      headerNavMaxVisible: 4,
+
       siteFooter: "",
       showHeaderAvatar: false,
       siteAvatarUrl: "",
@@ -320,7 +320,7 @@ describe("createExportService", () => {
       siteLanguage: "en",
       showJantBrandingOnHome: true,
       homeDefaultView: "latest",
-      headerNavMaxVisible: 4,
+
       siteFooter: "",
       showHeaderAvatar: false,
       siteAvatarUrl: "",
@@ -409,7 +409,7 @@ describe("createExportService", () => {
       siteLanguage: "en",
       showJantBrandingOnHome: true,
       homeDefaultView: "latest",
-      headerNavMaxVisible: 4,
+
       siteFooter:
         "Read the [docs](https://example.com)[^1]\n\n[^1]: Footer note\n\n<script>alert(1)</script>",
       showHeaderAvatar: false,
@@ -496,7 +496,7 @@ describe("createExportService", () => {
       siteLanguage: "en",
       showJantBrandingOnHome: true,
       homeDefaultView: "latest",
-      headerNavMaxVisible: 4,
+
       siteFooter: "",
       showHeaderAvatar: true,
       siteAvatarUrl: "https://example.com/media/avatar.webp",
@@ -585,7 +585,7 @@ describe("createExportService", () => {
       siteLanguage: "en",
       showJantBrandingOnHome: true,
       homeDefaultView: "latest",
-      headerNavMaxVisible: 4,
+
       siteFooter: "",
       showHeaderAvatar: false,
       siteAvatarUrl: "",
@@ -668,7 +668,7 @@ describe("createExportService", () => {
       siteLanguage: "en",
       showJantBrandingOnHome: true,
       homeDefaultView: "latest",
-      headerNavMaxVisible: 4,
+
       siteFooter: "",
       showHeaderAvatar: false,
       siteAvatarUrl: "",
@@ -745,7 +745,7 @@ describe("createExportService", () => {
       siteLanguage: "en",
       showJantBrandingOnHome: true,
       homeDefaultView: "latest",
-      headerNavMaxVisible: 4,
+
       siteFooter: "",
       showHeaderAvatar: false,
       siteAvatarUrl: "",
@@ -848,7 +848,7 @@ describe("createExportService", () => {
       siteLanguage: "en",
       showJantBrandingOnHome: true,
       homeDefaultView: "latest",
-      headerNavMaxVisible: 4,
+
       siteFooter: "",
       showHeaderAvatar: false,
       siteAvatarUrl: "",

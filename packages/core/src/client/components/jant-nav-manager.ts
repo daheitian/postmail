@@ -37,7 +37,6 @@ export class JantNavManager extends LitElement {
     labels: { type: Object },
     systemNavItems: { type: Array, attribute: "system-nav-items" },
     siteName: { type: String, attribute: "site-name" },
-    maxVisible: { type: Number, attribute: "max-visible" },
     homeDefaultView: { type: String, attribute: "home-default-view" },
 
     _items: { state: true },
@@ -45,7 +44,6 @@ export class JantNavManager extends LitElement {
     _editLabel: { state: true },
     _editUrl: { state: true },
     _togglingKeys: { state: true },
-    _showOverflow: { state: true },
     _showLinkForm: { state: true },
     _newLinkLabel: { state: true },
     _newLinkUrl: { state: true },
@@ -56,7 +54,6 @@ export class JantNavManager extends LitElement {
   declare labels: NavManagerLabels;
   declare systemNavItems: SystemNavConfig[];
   declare siteName: string;
-  declare maxVisible: number;
   declare homeDefaultView: string;
 
   declare _items: NavManagerItem[];
@@ -65,18 +62,14 @@ export class JantNavManager extends LitElement {
   declare _editUrl: string;
   /** Keys currently mid-request (to disable switch during toggle) */
   declare _togglingKeys: Set<SystemNavConfig["key"]>;
-  declare _showOverflow: boolean;
   declare _showLinkForm: boolean;
   declare _newLinkLabel: string;
   declare _newLinkUrl: string;
   declare _addingLink: boolean;
 
-  #sortable: { destroy(): void } | null = null;
+  #sortableHeader: { destroy(): void } | null = null;
+  #sortableMore: { destroy(): void } | null = null;
   #initialized = false;
-  #closeOverflow = () => {
-    this._showOverflow = false;
-    document.removeEventListener("click", this.#closeOverflow);
-  };
   #closeLinkForm = () => {
     this._showLinkForm = false;
     document.removeEventListener("click", this.#closeLinkForm);
@@ -93,7 +86,6 @@ export class JantNavManager extends LitElement {
     this.labels = {} as NavManagerLabels;
     this.systemNavItems = [];
     this.siteName = "";
-    this.maxVisible = 2;
     this.homeDefaultView = "latest";
 
     this._items = [];
@@ -101,7 +93,6 @@ export class JantNavManager extends LitElement {
     this._editLabel = "";
     this._editUrl = "";
     this._togglingKeys = new Set();
-    this._showOverflow = false;
     this._showLinkForm = false;
     this._newLinkLabel = "";
     this._newLinkUrl = "";
@@ -122,9 +113,10 @@ export class JantNavManager extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.#sortable?.destroy();
-    this.#sortable = null;
-    document.removeEventListener("click", this.#closeOverflow);
+    this.#sortableHeader?.destroy();
+    this.#sortableHeader = null;
+    this.#sortableMore?.destroy();
+    this.#sortableMore = null;
     document.removeEventListener("click", this.#closeLinkForm);
   }
 
@@ -132,36 +124,174 @@ export class JantNavManager extends LitElement {
   // SortableJS
   // ===========================================================================
 
-  #initSortable() {
-    const list = this.querySelector<HTMLElement>("#nav-items-list");
-    if (!list || this.#sortable) return;
+  #destroySortables() {
+    this.#sortableHeader?.destroy();
+    this.#sortableHeader = null;
+    this.#sortableMore?.destroy();
+    this.#sortableMore = null;
+  }
 
-    this.#sortable = Sortable.create(list, {
+  #initSortable() {
+    const headerList = this.querySelector<HTMLElement>("#nav-items-header");
+    const moreList = this.querySelector<HTMLElement>("#nav-items-more");
+
+    if (headerList && !this.#sortableHeader) {
+      this.#sortableHeader = Sortable.create(
+        headerList,
+        this.#sortableOptions("header"),
+      );
+    }
+    if (moreList && !this.#sortableMore) {
+      this.#sortableMore = Sortable.create(
+        moreList,
+        this.#sortableOptions("more"),
+      );
+    }
+  }
+
+  #sortableOptions(placement: "header" | "more"): Sortable.Options {
+    return {
       ...responsiveSortableOptions,
       animation: 150,
       handle: "[data-drag-handle]",
+      draggable: "[data-nav-id]",
+      group: "nav-items",
       onEnd: (evt) => {
-        const ids = readSortableDataIds(list, "[data-nav-id]", "navId");
-        revertSortableDomMove(list, evt);
+        const targetList = evt.to;
+        const sourceList = evt.from;
+        const crossList = sourceList !== targetList;
 
-        // Destroy sortable so it doesn't fight Lit's re-render
-        this.#sortable?.destroy();
-        this.#sortable = null;
+        // Determine target placement from the list the item landed in
+        const targetPlacement: "header" | "more" =
+          targetList.id === "nav-items-header" ? "header" : "more";
 
-        // Find the moved item and compute neighbors
-        const { movedId, afterId, beforeId } = getSortableMove(
-          ids,
-          evt.newIndex,
+        console.log("[nav-drag] onEnd fired", {
+          crossList,
+          targetPlacement,
+          fromId: sourceList.id,
+          toId: targetList.id,
+          itemNavId: evt.item?.dataset?.navId,
+          oldIndex: evt.oldIndex,
+          newIndex: evt.newIndex,
+        });
+
+        const ids = readSortableDataIds(targetList, "[data-nav-id]", "navId");
+        console.log("[nav-drag] target list ids:", ids);
+
+        // Revert DOM in target list; for cross-list moves also revert the
+        // removal from the source list (SortableJS moves the DOM node).
+        if (crossList) {
+          // SortableJS already moved the item into targetList — put it back
+          // into sourceList so Lit owns both lists cleanly.
+          const item = evt.item;
+          item.parentNode?.removeChild(item);
+          if (
+            evt.oldIndex != null &&
+            evt.oldIndex < sourceList.children.length
+          ) {
+            sourceList.insertBefore(item, sourceList.children[evt.oldIndex]);
+          } else {
+            sourceList.appendChild(item);
+          }
+        } else {
+          revertSortableDomMove(targetList, evt);
+        }
+
+        // Destroy sortables so they don't fight Lit's re-render
+        this.#destroySortables();
+
+        // Compute neighbors within the target list
+        const movedId =
+          evt.item?.dataset?.navId ??
+          (evt.newIndex != null ? ids[evt.newIndex] : undefined);
+        console.log("[nav-drag] movedId:", movedId);
+        if (!movedId) {
+          console.log("[nav-drag] EARLY RETURN: no movedId");
+          return;
+        }
+
+        const movedIndex = ids.indexOf(movedId);
+        const afterId = movedIndex > 0 ? (ids[movedIndex - 1] ?? null) : null;
+        const beforeId =
+          movedIndex < ids.length - 1 ? (ids[movedIndex + 1] ?? null) : null;
+
+        // Update internal state — clone items so Lit detects changes
+        const itemMap = new Map(
+          this._items.map((i) => [
+            i.id,
+            i.id === movedId ? { ...i, placement: targetPlacement } : { ...i },
+          ]),
         );
-        if (!movedId) return;
 
-        // Update internal state so Lit re-renders in the new order
-        const itemMap = new Map(this._items.map((i) => [i.id, i]));
-        this._items = ids
-          .map((id) => itemMap.get(id))
-          .filter((i): i is NavManagerItem => i !== undefined);
+        // Rebuild _items: header items in their order, then more items in theirs
+        const headerIds = readSortableDataIds(
+          this.querySelector<HTMLElement>("#nav-items-header")!,
+          "[data-nav-id]",
+          "navId",
+        );
+        const moreIds = readSortableDataIds(
+          this.querySelector<HTMLElement>("#nav-items-more")!,
+          "[data-nav-id]",
+          "navId",
+        );
 
-        // Persist to server — single item move
+        // For cross-list: the DOM was reverted, so the moved item is still in
+        // the source list in the DOM. We need to use the SortableJS-reported
+        // ids (from before revert) for the target list.
+        if (crossList) {
+          // ids = target list order reported by Sortable (includes moved item)
+          // Remove movedId from the source placement items
+          const sourceIds = targetPlacement === "header" ? moreIds : headerIds;
+          const filteredSourceIds = sourceIds.filter((id) => id !== movedId);
+
+          const headerOrder =
+            targetPlacement === "header" ? ids : filteredSourceIds;
+          const moreOrder =
+            targetPlacement === "more" ? ids : filteredSourceIds;
+
+          this._items = [
+            ...headerOrder
+              .map((id) => itemMap.get(id))
+              .filter((i): i is NavManagerItem => i !== undefined),
+            ...moreOrder
+              .map((id) => itemMap.get(id))
+              .filter((i): i is NavManagerItem => i !== undefined),
+          ];
+        } else {
+          // Same-list reorder: just update order for that section
+          const otherItems = this._items.filter(
+            (i) => (i.placement ?? "header") !== placement,
+          );
+          const reorderedItems = ids
+            .map((id) => itemMap.get(id))
+            .filter((i): i is NavManagerItem => i !== undefined);
+
+          this._items =
+            placement === "header"
+              ? [...reorderedItems, ...otherItems]
+              : [...otherItems, ...reorderedItems];
+        }
+
+        // Persist placement change if cross-list
+        if (crossList) {
+          console.log(
+            "[nav-drag] cross-list PUT placement:",
+            targetPlacement,
+            "for",
+            movedId,
+          );
+          fetch(`/api/nav-items/${movedId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ placement: targetPlacement }),
+          }).then((res) => {
+            console.log("[nav-drag] placement PUT response:", res.status);
+            if (res.ok) showToast(this.labels.placementSaved);
+            else showToast(this.labels.saveFailed, "error");
+          });
+        }
+
+        // Persist position
         fetch(`/api/nav-items/${movedId}/move`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -170,11 +300,11 @@ export class JantNavManager extends LitElement {
             before: beforeId ?? null,
           }),
         }).then((res) => {
-          if (res.ok) showToast(this.labels.orderSaved);
-          else showToast(this.labels.saveFailed, "error");
+          if (res.ok && !crossList) showToast(this.labels.orderSaved);
+          else if (!res.ok) showToast(this.labels.saveFailed, "error");
         });
       },
-    });
+    };
   }
 
   // ===========================================================================
@@ -223,26 +353,6 @@ export class JantNavManager extends LitElement {
     );
   }
 
-  // ===========================================================================
-  // Max visible handler
-  // ===========================================================================
-
-  async #handleMaxVisibleChange(value: number) {
-    const clamped = Math.max(0, Math.min(5, value));
-    this.maxVisible = clamped;
-    try {
-      const res = await fetch("/settings/navigation/nav-max-visible", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: clamped }),
-      });
-      if (res.ok) showToast(this.labels.maxVisibleSaved);
-      else showToast(this.labels.saveFailed, "error");
-    } catch {
-      showToast(this.labels.saveFailed, "error");
-    }
-  }
-
   async #handleHomeViewToggle(useFeatured: boolean) {
     this.homeDefaultView = useFeatured ? "featured" : "latest";
     try {
@@ -278,13 +388,12 @@ export class JantNavManager extends LitElement {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ type: "link", label, url }),
+        body: JSON.stringify({ type: "link", label, url, placement: "header" }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const created: NavManagerItem = await res.json();
-      this.#sortable?.destroy();
-      this.#sortable = null;
+      this.#destroySortables();
       this._items = [...this._items, created];
       this._newLinkLabel = "";
       this._newLinkUrl = "";
@@ -326,8 +435,7 @@ export class JantNavManager extends LitElement {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const created: NavManagerItem = await res.json();
-        this.#sortable?.destroy();
-        this.#sortable = null;
+        this.#destroySortables();
         this._items = [
           ...this._items,
           { ...created, displayLabel: config.label },
@@ -343,8 +451,7 @@ export class JantNavManager extends LitElement {
           });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-          this.#sortable?.destroy();
-          this.#sortable = null;
+          this.#destroySortables();
           this._items = this._items.filter((item) => item.id !== existing.id);
         }
       }
@@ -362,10 +469,26 @@ export class JantNavManager extends LitElement {
   // Render helpers
   // ===========================================================================
 
+  get #headerItems(): NavManagerItem[] {
+    return this._items.filter((i) => (i.placement ?? "header") === "header");
+  }
+
+  get #moreItems(): NavManagerItem[] {
+    return this._items.filter((i) => i.placement === "more");
+  }
+
   #renderPreview() {
-    const visible = this._items.slice(0, this.maxVisible);
-    const overflow = this._items.slice(this.maxVisible);
-    const hasMore = overflow.length > 0;
+    const headerItems = this.#headerItems;
+    const moreItems = this.#moreItems;
+
+    const defaultLabel =
+      this.homeDefaultView === "featured"
+        ? this.labels.featured
+        : this.labels.latest;
+    const altLabel =
+      this.homeDefaultView === "featured"
+        ? this.labels.latest
+        : this.labels.featured;
 
     return html`
       <div class="nav-preview">
@@ -378,109 +501,37 @@ export class JantNavManager extends LitElement {
         <div class="nav-preview-content">
           <div class="site-header-top">
             <a href=${publicPath("/")} class="site-logo">${this.siteName}</a>
-            <div class="site-header-right">
-              ${visible.length > 0 || hasMore
-                ? html`<nav class="site-header-nav">
-                    ${visible.map(
-                      (item) =>
-                        html`<a
-                          href=${publicPath(item.url)}
-                          class="site-header-link"
-                        >
-                          ${item.displayLabel ?? item.label}
-                        </a>`,
-                    )}
-                    ${hasMore
-                      ? html`<div class="dropdown-menu site-header-more">
-                          <button
-                            type="button"
-                            class="site-header-more-btn"
-                            aria-haspopup="menu"
-                            aria-expanded=${this._showOverflow}
-                            @click=${(e: Event) => {
-                              e.stopPropagation();
-                              this._showOverflow = !this._showOverflow;
-                              if (this._showOverflow) {
-                                setTimeout(() => {
-                                  document.addEventListener(
-                                    "click",
-                                    this.#closeOverflow,
-                                  );
-                                });
-                              } else {
-                                document.removeEventListener(
-                                  "click",
-                                  this.#closeOverflow,
-                                );
-                              }
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="15"
-                              height="15"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                            >
-                              <circle cx="5" cy="12" r="2.2" />
-                              <circle cx="12" cy="12" r="2.2" />
-                              <circle cx="19" cy="12" r="2.2" />
-                            </svg>
-                          </button>
-                          ${this._showOverflow
-                            ? html`<div
-                                data-popover
-                                data-align="start"
-                                aria-hidden="false"
-                              >
-                                <div role="menu">
-                                  ${overflow.map(
-                                    (item) =>
-                                      html`<a
-                                        href=${publicPath(item.url)}
-                                        role="menuitem"
-                                      >
-                                        ${item.displayLabel ?? item.label}
-                                      </a>`,
-                                  )}
-                                </div>
-                              </div>`
-                            : nothing}
-                        </div>`
-                      : nothing}
-                  </nav>`
+            <nav class="site-header-nav">
+              <a class="site-header-link site-header-link-active"
+                >${defaultLabel}</a
+              >
+              <a class="site-header-link">${altLabel}</a>
+              ${headerItems.map(
+                (item) =>
+                  html`<a class="site-header-link">
+                    ${item.displayLabel ?? item.label}
+                  </a>`,
+              )}
+              ${moreItems.length > 0
+                ? html`<span class="site-header-more-btn"
+                    >${this.labels.moreSection}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </span>`
                 : nothing}
-              <span class="site-header-search" aria-hidden="true">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-              </span>
-            </div>
+            </nav>
           </div>
-          <nav class="site-browse-nav">
-            <span class="site-browse-link site-browse-link-active">
-              ${this.homeDefaultView === "featured"
-                ? this.labels.featured
-                : this.labels.latest}
-            </span>
-            <span class="site-browse-sep" aria-hidden="true">/</span>
-            <span class="site-browse-link">
-              ${this.homeDefaultView === "featured"
-                ? this.labels.latest
-                : this.labels.featured}
-            </span>
-          </nav>
         </div>
       </div>
     `;
@@ -773,28 +824,6 @@ export class JantNavManager extends LitElement {
       ${this.#renderPreview()}
 
       <div class="flex flex-col gap-4 mt-3">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex flex-col gap-0.5">
-            <label class="text-sm font-medium" for="nav-max-visible">
-              ${this.labels.maxVisibleLinks}
-            </label>
-            <p class="text-xs text-muted-foreground">
-              ${this.labels.maxVisibleLinksDescription}
-            </p>
-          </div>
-          <input
-            type="number"
-            id="nav-max-visible"
-            class="input w-16 h-8 shrink-0"
-            min="0"
-            max="5"
-            .value=${String(this.maxVisible)}
-            @change=${(e: Event) => {
-              const val = parseInt((e.target as HTMLInputElement).value, 10);
-              if (!isNaN(val)) this.#handleMaxVisibleChange(val);
-            }}
-          />
-        </div>
         <label class="flex items-start justify-between gap-4 cursor-pointer">
           <div class="flex flex-col gap-0.5">
             <span class="text-sm font-medium">
@@ -820,18 +849,26 @@ export class JantNavManager extends LitElement {
       </div>
 
       <section class="mt-8">
-        <h2 class="text-lg font-semibold mb-3">
-          ${this.labels.navigationItems}
-        </h2>
-        ${this._items.length === 0
+        <h2 class="text-lg font-semibold mb-3">${this.labels.headerSection}</h2>
+        ${this.#headerItems.length === 0
           ? html`<p class="text-sm text-muted-foreground py-4">
               ${this.labels.emptyState}
             </p>`
-          : html`
-              <div id="nav-items-list" class="nav-items-list">
-                ${this._items.map((item) => this.#renderItem(item))}
-              </div>
-            `}
+          : nothing}
+        <div id="nav-items-header" class="nav-items-list">
+          ${this.#headerItems.map((item) => this.#renderItem(item))}
+        </div>
+      </section>
+
+      <section class="mt-8">
+        <h2 class="text-lg font-semibold mb-3">${this.labels.moreSection}</h2>
+        <div id="nav-items-more" class="nav-items-list nav-items-list-drop">
+          ${this.#moreItems.length > 0
+            ? this.#moreItems.map((item) => this.#renderItem(item))
+            : html`<p class="nav-items-empty-hint">
+                ${this.labels.moreEmptyHint}
+              </p>`}
+        </div>
       </section>
 
       ${this.#renderAddLinkSection()} ${this.#renderSystemToggles()}

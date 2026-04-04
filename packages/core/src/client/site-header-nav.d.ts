@@ -1,1 +1,1 @@
-export function initSiteHeaderMenus(root?: object): void;
+export function initSiteHeaderNav(root?: object): void;

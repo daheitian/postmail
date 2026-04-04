@@ -3,7 +3,6 @@
 -- Source: d1-remote
 
 -- site_setting
-INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES('sit_01kn8jq3t4famtyg9hjd074ckr', 'HEADER_NAV_MAX_VISIBLE', '', 1775183416);
 INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES('sit_01kn8jq3t4famtyg9hjd074ckr', 'HOME_DEFAULT_VIEW', '', 1775183416);
 INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES('sit_01kn8jq3t4famtyg9hjd074ckr', 'NOINDEX', '', 1775183416);
 INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES('sit_01kn8jq3t4famtyg9hjd074ckr', 'SHOW_JANT_BRANDING_ON_HOME', 'true', 1775183416);

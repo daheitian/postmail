@@ -207,10 +207,16 @@ run = "pnpm --filter @jant/core db:generate"
 description = "Generate PostgreSQL Drizzle migrations from the current core schema"
 run = "pnpm --filter @jant/core db:generate:pg"
 
-[tasks.db-local-migrate]
-description = "Run migrations for the local development D1 database"
+[tasks.db-migrate]
+alias = "db-local-migrate"
+description = "Run migrations for local development"
 dir = "packages/core"
-run = "node ./bin/jant.js migrate --local"
+run = "node ./bin/jant.js migrate"
+
+[tasks.db-node-migrate]
+description = "Run migrations for the Node runtime database (reads .env.node)"
+dir = "packages/core"
+run = "node ./bin/jant.js migrate --node"
 
 [tasks.db-remote-migrate]
 description = "Run migrations for the default remote D1 database"

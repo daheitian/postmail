@@ -8,6 +8,7 @@ import type {
   Visibility,
   CollectionSortOrder,
   NavItemType,
+  NavItemPlacement,
   SystemNavKey,
   MediaKind,
   PathKind,
@@ -177,6 +178,7 @@ export interface NavItem {
   systemKey?: SystemNavKey;
   label: string;
   url: string;
+  placement: NavItemPlacement;
   position: string;
   createdAt: number;
   updatedAt: number;

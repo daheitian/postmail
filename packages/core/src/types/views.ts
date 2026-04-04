@@ -7,6 +7,7 @@ import type {
   Status,
   Visibility,
   NavItemType,
+  NavItemPlacement,
   SystemNavKey,
 } from "./constants.js";
 import type { Post, Collection } from "./entities.js";
@@ -153,6 +154,8 @@ export interface NavItemView {
   systemKey?: SystemNavKey;
   label: string;
   url: string;
+  /** "header" = visible in nav bar, "more" = under More dropdown */
+  placement: NavItemPlacement;
   /** Pre-computed based on currentPath */
   isActive: boolean;
   /** Pre-computed: starts with http(s):// */
@@ -231,7 +234,6 @@ export interface SiteLayoutProps {
   isAuthenticated?: boolean;
   collections?: Collection[];
   homeDefaultView?: string;
-  headerNavMaxVisible?: number;
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;

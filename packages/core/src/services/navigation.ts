@@ -18,6 +18,7 @@ import { now } from "../lib/time.js";
 import type {
   NavItem,
   NavItemType,
+  NavItemPlacement,
   CreateNavItem,
   UpdateNavItem,
   SystemNavKey,
@@ -82,6 +83,7 @@ export function createNavItemService(
       systemKey: (row.systemKey as SystemNavKey | null) ?? undefined,
       label: row.label,
       url: row.url,
+      placement: (row.placement ?? "header") as NavItemPlacement,
       position: row.position,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -321,6 +323,7 @@ export function createNavItemService(
         .set({
           ...(data.label !== undefined && { label: data.label }),
           ...(data.url !== undefined && { url: data.url }),
+          ...(data.placement !== undefined && { placement: data.placement }),
           ...(data.position !== undefined && { position: data.position }),
           updatedAt: timestamp,
         })

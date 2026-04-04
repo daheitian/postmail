@@ -39,7 +39,6 @@ export interface GeneralSettingsData {
   showJantBrandingOnHome: boolean;
   homeDefaultView?: FeedKind;
   mainRssFeed?: FeedKind;
-  headerNavMaxVisible?: string;
   timeZone: string;
 }
 
@@ -346,16 +345,6 @@ export function createSettingsService(
       }
 
       await this.updateFeedSettings({ mainRssFeed: data.mainRssFeed });
-
-      // Header nav max visible: only update if provided (may be managed separately)
-      if (data.headerNavMaxVisible !== undefined) {
-        const navMax = parseInt(String(data.headerNavMaxVisible), 10);
-        if (!isNaN(navMax) && navMax !== 2) {
-          await this.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
-        } else {
-          await this.remove("HEADER_NAV_MAX_VISIBLE");
-        }
-      }
 
       return {
         languageChanged,

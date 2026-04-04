@@ -347,7 +347,6 @@ These settings can be changed in the Jant dashboard after setup. Some of them ca
 | `TIME_ZONE`                  | Display time zone such as `UTC` or `Asia/Shanghai`        |
 | `HOME_DEFAULT_VIEW`          | Choose whether the home page starts on Latest or Featured |
 | `MAIN_RSS_FEED`              | Choose what `/feed` returns                               |
-| `HEADER_NAV_MAX_VISIBLE`     | Maximum number of top-level nav links before overflow     |
 | `SITE_FOOTER`                | Custom footer text                                        |
 | `SHOW_JANT_BRANDING_ON_HOME` | Show or hide Jant branding on the home page               |
 | `NOINDEX`                    | Ask search engines not to index the site                  |

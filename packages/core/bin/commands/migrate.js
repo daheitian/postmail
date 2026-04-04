@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import {
   applyD1Backfills,
@@ -20,6 +23,7 @@ export async function run(argv) {
       env: { type: "string" },
       help: { type: "boolean", short: "h" },
       local: { type: "boolean", default: false },
+      node: { type: "boolean", default: false },
       "persist-to": { type: "string" },
       remote: { type: "boolean", default: false },
     },
@@ -27,7 +31,7 @@ export async function run(argv) {
 
   if (values.help) {
     console.log(
-      "Usage: jant migrate [--local | --remote] [--config <file>] [--env <name>] [--database <binding>]",
+      "Usage: jant migrate [--local | --remote | --node] [--config <file>] [--env <name>] [--database <binding>]",
     );
     console.log("");
     console.log("Apply schema migrations and data backfills.");
@@ -35,6 +39,9 @@ export async function run(argv) {
     console.log("Options:");
     console.log("  --local            Force local D1 instead of DATABASE_URL");
     console.log("  --remote           Run against remote D1");
+    console.log(
+      "  --node             Force Node runtime (loads .env.node for DATABASE_URL)",
+    );
     console.log(
       "  --config           Wrangler config file (default: wrangler.toml)",
     );
@@ -46,6 +53,26 @@ export async function run(argv) {
       "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime.",
     );
     process.exit(0);
+  }
+
+  // --node: load .env.node and force node runtime
+  if (values.node) {
+    const __dir = dirname(fileURLToPath(import.meta.url));
+    const envPath = resolve(__dir, "../../.env.node");
+    try {
+      const content = readFileSync(envPath, "utf8");
+      for (const line of content.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
+        const eqIdx = trimmed.indexOf("=");
+        if (eqIdx < 1) continue;
+        const key = trimmed.slice(0, eqIdx).trim();
+        const value = trimmed.slice(eqIdx + 1).trim();
+        if (!(key in process.env)) process.env[key] = value;
+      }
+    } catch {
+      // .env.node not found
+    }
   }
 
   const runtime = resolveCliRuntime(values);

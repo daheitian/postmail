@@ -15,6 +15,25 @@ import { ComposePrompt } from "../compose/ComposePrompt.js";
 import { getNavItemDisplayLabel } from "../shared/navigation-labels.js";
 import { HomePageBranding } from "../shared/HomePageBranding.js";
 
+const ExternalLinkIcon = () => (
+  <svg
+    class="site-header-link-external"
+    xmlns="http://www.w3.org/2000/svg"
+    width="10"
+    height="10"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M7 7h10v10" />
+    <path d="M7 17 17 7" />
+  </svg>
+);
+
 function HeaderLink({ link, label }: { link: NavItemView; label: string }) {
   return (
     <a
@@ -25,6 +44,7 @@ function HeaderLink({ link, label }: { link: NavItemView; label: string }) {
         : {})}
     >
       {label}
+      {link.isExternal && <ExternalLinkIcon />}
     </a>
   );
 }
@@ -37,7 +57,6 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   isAuthenticated,
   collections,
   homeDefaultView,
-  headerNavMaxVisible,
   siteAvatarUrl,
   showHeaderAvatar,
   siteFooterHtml,
@@ -50,14 +69,10 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   children,
 }) => {
   const { i18n } = useLingui();
-  const maxVisible = headerNavMaxVisible ?? 3;
   const linksWithLabels = links.map((link) => ({
     ...link,
     displayLabel: getNavItemDisplayLabel(link, i18n, sitePathPrefix),
   }));
-  const visibleLinks = linksWithLabels.slice(0, maxVisible);
-  const overflowLinks = linksWithLabels.slice(maxVisible);
-  const hasActiveOverflow = overflowLinks.some((l) => l.isActive);
 
   const latestHref =
     homeDefaultView === "featured"
@@ -100,6 +115,19 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     }),
   );
 
+  const moreLabel = i18n._(
+    msg({
+      message: "More",
+      comment: "@context: More navigation links dropdown button",
+    }),
+  );
+
+  // Split custom links by placement
+  const headerLinks = linksWithLabels.filter(
+    (l) => l.placement === "header" || !l.placement,
+  );
+  const moreLinks = linksWithLabels.filter((l) => l.placement === "more");
+
   const isHomePage =
     currentPath === toPublicPath("/", sitePathPrefix) ||
     currentPath === toPublicPath("/featured", sitePathPrefix) ||
@@ -122,93 +150,125 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                 )}
                 {siteName}
               </a>
-              <div class="site-header-right">
-                {links.length > 0 && (
-                  <nav class="site-header-nav">
-                    {visibleLinks.map((link) => (
-                      <HeaderLink
-                        key={link.id}
-                        link={link}
-                        label={link.displayLabel}
-                      />
-                    ))}
-                    <div
-                      class="dropdown-menu site-header-more"
-                      hidden={overflowLinks.length === 0}
+              <nav class="site-header-nav">
+                {browseLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    class={`site-header-link ${currentPath === link.href ? "site-header-link-active" : ""}`}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                {headerLinks.map((link) => (
+                  <HeaderLink
+                    key={link.id}
+                    link={link}
+                    label={link.displayLabel}
+                  />
+                ))}
+                {moreLinks.length > 0 && (
+                  <div class="site-header-more">
+                    <button
+                      type="button"
+                      class="site-header-more-btn"
+                      id="site-nav-more-trigger"
+                      aria-haspopup="menu"
+                      aria-expanded="false"
                     >
-                      <button
-                        type="button"
-                        id="site-nav-more-trigger"
-                        class={`site-header-more-btn ${hasActiveOverflow ? "site-header-more-btn-active" : ""}`}
-                        aria-haspopup="menu"
-                        aria-controls="site-nav-more-menu"
-                        aria-expanded="false"
-                        aria-label={i18n._(
-                          msg({
-                            message: "More links",
-                            comment:
-                              "@context: Button to show overflow nav links",
-                          }),
-                        )}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <circle cx="5" cy="12" r="2.2" />
-                          <circle cx="12" cy="12" r="2.2" />
-                          <circle cx="19" cy="12" r="2.2" />
-                        </svg>
-                      </button>
-                      <div
-                        id="site-nav-more-popover"
-                        data-popover
-                        data-align="start"
+                      {moreLabel}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
                         aria-hidden="true"
                       >
-                        <div
-                          role="menu"
-                          id="site-nav-more-menu"
-                          aria-labelledby="site-nav-more-trigger"
-                        >
-                          {overflowLinks.map((link) => (
-                            <a
-                              key={link.id}
-                              href={link.url}
-                              role="menuitem"
-                              class={
-                                link.isActive
-                                  ? "site-header-menuitem-active"
-                                  : undefined
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                    <div
+                      id="site-nav-more-popover"
+                      class="site-header-more-popover"
+                      data-popover
+                      data-align="start"
+                      aria-hidden="true"
+                    >
+                      {moreLinks.map((link) => (
+                        <a
+                          key={link.id}
+                          href={link.url}
+                          class={`site-header-more-link ${link.isActive ? "site-header-more-link-active" : ""}`}
+                          {...(link.isExternal
+                            ? {
+                                target: "_blank",
+                                rel: "noopener noreferrer",
                               }
-                              {...(link.isExternal
-                                ? {
-                                    target: "_blank",
-                                    rel: "noopener noreferrer",
-                                  }
-                                : {})}
-                            >
-                              {link.displayLabel}
-                            </a>
-                          ))}
-                        </div>
-                      </div>
+                            : {})}
+                        >
+                          {link.displayLabel}
+                          {link.isExternal && <ExternalLinkIcon />}
+                        </a>
+                      ))}
                     </div>
-                  </nav>
+                  </div>
                 )}
-                <a
-                  href={toPublicPath("/search", sitePathPrefix)}
-                  class={`site-header-search ${currentPath === toPublicPath("/search", sitePathPrefix) ? "site-header-search-active" : ""}`}
+              </nav>
+
+              {/* Search */}
+              <form
+                class="site-header-search-form"
+                action={toPublicPath("/search", sitePathPrefix)}
+                method="get"
+              >
+                <svg
+                  class="site-header-search-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  type="search"
+                  name="q"
+                  class="site-header-search-input"
+                  placeholder={searchLabel}
                   aria-label={searchLabel}
-                  title={searchLabel}
+                />
+              </form>
+
+              <div class="site-header-right">
+                {/* Mobile hamburger */}
+                <button
+                  type="button"
+                  class="site-header-hamburger"
+                  aria-controls="site-nav-drawer"
+                  aria-expanded="false"
+                  aria-label={i18n._(
+                    msg({
+                      message: "Menu",
+                      comment: "@context: Hamburger menu button label",
+                    }),
+                  )}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -216,15 +276,90 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   >
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.35-4.35" />
+                    <line x1="4" x2="20" y1="12" y2="12" />
+                    <line x1="4" x2="20" y1="6" y2="6" />
+                    <line x1="4" x2="20" y1="18" y2="18" />
                   </svg>
-                </a>
+                </button>
               </div>
             </div>
           </div>
         </header>
       )}
+
+      {/* Mobile navigation drawer */}
+      <div class="site-nav-drawer-backdrop" aria-hidden="true" />
+      <div
+        id="site-nav-drawer"
+        class="site-nav-drawer"
+        aria-hidden="true"
+        inert
+      >
+        <div class="site-nav-drawer-header">
+          <button
+            type="button"
+            class="site-nav-drawer-close"
+            aria-label={i18n._(
+              msg({
+                message: "Close menu",
+                comment: "@context: Close drawer button label",
+              }),
+            )}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <form
+          class="site-nav-drawer-search"
+          action={toPublicPath("/search", sitePathPrefix)}
+          method="get"
+        >
+          <input
+            type="search"
+            name="q"
+            class="site-nav-drawer-search-input input"
+            placeholder={searchLabel}
+            aria-label={searchLabel}
+          />
+        </form>
+        <nav class="site-nav-drawer-nav">
+          {browseLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              class={`site-nav-drawer-link ${currentPath === link.href ? "site-nav-drawer-link-active" : ""}`}
+            >
+              {link.label}
+            </a>
+          ))}
+          {linksWithLabels.map((link) => (
+            <a
+              key={link.id}
+              href={link.url}
+              class={`site-nav-drawer-link ${link.isActive ? "site-nav-drawer-link-active" : ""}`}
+              {...(link.isExternal
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
+            >
+              {link.displayLabel}
+              {link.isExternal && <ExternalLinkIcon />}
+            </a>
+          ))}
+        </nav>
+      </div>
 
       <main class="site-main">
         {sidebar ? (
@@ -235,33 +370,13 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         ) : (
           <div class="site-container">
             <div class={contentClass}>
-              {isHomePage && (
+              {isHomePage && isAuthenticated && (
                 <div class="site-home-header">
-                  {isAuthenticated && (
-                    <ComposePrompt
-                      composeOpenShortcutDiscovered={
-                        composeOpenShortcutDiscovered
-                      }
-                    />
-                  )}
-                  <nav class="site-browse-nav">
-                    {browseLinks.map((link, i) => (
-                      <>
-                        {i > 0 && (
-                          <span class="site-browse-sep" aria-hidden="true">
-                            /
-                          </span>
-                        )}
-                        <a
-                          key={link.href}
-                          href={link.href}
-                          class={`site-browse-link ${currentPath === link.href ? "site-browse-link-active" : ""}`}
-                        >
-                          {link.label}
-                        </a>
-                      </>
-                    ))}
-                  </nav>
+                  <ComposePrompt
+                    composeOpenShortcutDiscovered={
+                      composeOpenShortcutDiscovered
+                    }
+                  />
                 </div>
               )}
               {children}

@@ -614,8 +614,6 @@ function buildSettingsUpdatesFromConfig(siteConfig, customCss = "") {
   const defaultThemeId = String(jant.default_theme_id || "");
   const fontThemeId = String(jant.font_theme_id || "");
   const themeMode = String(jant.theme_mode || "");
-  const headerNavMaxVisible = Number(jant.header_nav_max_visible);
-
   return {
     SITE_NAME: String(siteConfig?.title || ""),
     SITE_DESCRIPTION: String(siteConfig?.description || ""),
@@ -623,10 +621,6 @@ function buildSettingsUpdatesFromConfig(siteConfig, customCss = "") {
     SITE_FOOTER: String(jant.site_footer_markdown || ""),
     HOME_DEFAULT_VIEW:
       String(jant.home_default_view || "") === "featured" ? "featured" : "",
-    HEADER_NAV_MAX_VISIBLE:
-      Number.isFinite(headerNavMaxVisible) && headerNavMaxVisible !== 2
-        ? String(headerNavMaxVisible)
-        : "",
     SHOW_JANT_BRANDING_ON_HOME: jant.show_jant_branding_on_home ? "true" : "",
     NOINDEX: jant.noindex ? "true" : "",
     SHOW_HEADER_AVATAR: jant.show_header_avatar ? "true" : "",

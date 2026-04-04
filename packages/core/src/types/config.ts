@@ -51,12 +51,6 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     envKeys: ["MAIN_RSS_FEED"],
   },
-  HEADER_NAV_MAX_VISIBLE: {
-    defaultValue: "2",
-    envOnly: false,
-    envKeys: ["HEADER_NAV_MAX_VISIBLE"],
-  },
-
   // Environment-only (deployment/infrastructure config)
   DEFAULT_THEME: {
     defaultValue: "tufte",
@@ -291,7 +285,6 @@ export interface AppConfig {
   siteLanguage: string;
   homeDefaultView: string;
   mainRssFeed: string;
-  headerNavMaxVisible: number;
   /** Canonical IANA timezone identifier used for date/time display. */
   timeZone: string;
   siteFooter: string;
