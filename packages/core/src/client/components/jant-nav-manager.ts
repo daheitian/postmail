@@ -14,9 +14,11 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
+import { repeat } from "lit/directives/repeat.js";
 import Sortable from "sortablejs";
 import type { SortableOptions } from "sortablejs";
 import {
+  captureSortableRevertNextSibling,
   getSortableMove,
   readSortableDataIds,
   responsiveSortableOptions,
@@ -71,6 +73,7 @@ export class JantNavManager extends LitElement {
   #sortableHeader: { destroy(): void } | null = null;
   #sortableMore: { destroy(): void } | null = null;
   #initialized = false;
+  #revertNextSibling: Node | null = null;
   #closeLinkForm = () => {
     this._showLinkForm = false;
     document.removeEventListener("click", this.#closeLinkForm);
@@ -139,171 +142,136 @@ export class JantNavManager extends LitElement {
     if (headerList && !this.#sortableHeader) {
       this.#sortableHeader = Sortable.create(
         headerList,
-        this.#sortableOptions("header"),
+        this.#sortableOptions(),
       );
     }
     if (moreList && !this.#sortableMore) {
-      this.#sortableMore = Sortable.create(
-        moreList,
-        this.#sortableOptions("more"),
-      );
+      this.#sortableMore = Sortable.create(moreList, this.#sortableOptions());
     }
   }
 
-  #sortableOptions(placement: "header" | "more"): SortableOptions {
+  #sortableOptions(): SortableOptions {
     return {
       ...responsiveSortableOptions,
       animation: 150,
       handle: "[data-drag-handle]",
       draggable: "[data-nav-id]",
       group: "nav-items",
+      onStart: (evt) => {
+        this.#revertNextSibling = captureSortableRevertNextSibling(evt);
+      },
       onEnd: (evt) => {
         const targetList = evt.to;
         const sourceList = evt.from;
         const crossList = sourceList !== targetList;
-
-        // Determine target placement from the list the item landed in
         const targetPlacement: "header" | "more" =
           targetList.id === "nav-items-header" ? "header" : "more";
+        const headerList = this.querySelector<HTMLElement>("#nav-items-header");
+        const moreList = this.querySelector<HTMLElement>("#nav-items-more");
 
-        console.log("[nav-drag] onEnd fired", {
-          crossList,
-          targetPlacement,
-          fromId: sourceList.id,
-          toId: targetList.id,
-          itemNavId: evt.item?.dataset?.navId,
-          oldIndex: evt.oldIndex,
-          newIndex: evt.newIndex,
-        });
-
-        const ids = readSortableDataIds(targetList, "[data-nav-id]", "navId");
-        console.log("[nav-drag] target list ids:", ids);
-
-        // Revert DOM in target list; for cross-list moves also revert the
-        // removal from the source list (SortableJS moves the DOM node).
-        if (crossList) {
-          // SortableJS already moved the item into targetList — put it back
-          // into sourceList so Lit owns both lists cleanly.
-          const item = evt.item;
-          item.parentNode?.removeChild(item);
-          if (
-            evt.oldIndex != null &&
-            evt.oldIndex < sourceList.children.length
-          ) {
-            sourceList.insertBefore(item, sourceList.children[evt.oldIndex]);
-          } else {
-            sourceList.appendChild(item);
-          }
-        } else {
-          revertSortableDomMove(targetList, evt);
-        }
-
-        // Destroy sortables so they don't fight Lit's re-render
-        this.#destroySortables();
-
-        // Compute neighbors within the target list
-        const movedId =
-          evt.item?.dataset?.navId ??
-          (evt.newIndex != null ? ids[evt.newIndex] : undefined);
-        console.log("[nav-drag] movedId:", movedId);
-        if (!movedId) {
-          console.log("[nav-drag] EARLY RETURN: no movedId");
+        const movedId = evt.item?.dataset?.navId;
+        if (!movedId || !headerList || !moreList) {
+          this.#revertNextSibling = null;
           return;
         }
 
-        const movedIndex = ids.indexOf(movedId);
-        const afterId = movedIndex > 0 ? (ids[movedIndex - 1] ?? null) : null;
-        const beforeId =
-          movedIndex < ids.length - 1 ? (ids[movedIndex + 1] ?? null) : null;
-
-        // Update internal state — clone items so Lit detects changes
-        const itemMap = new Map(
-          this._items.map((i) => [
-            i.id,
-            i.id === movedId ? { ...i, placement: targetPlacement } : { ...i },
-          ]),
-        );
-
-        // Rebuild _items: header items in their order, then more items in theirs
         const headerIds = readSortableDataIds(
-          this.querySelector<HTMLElement>("#nav-items-header")!,
+          headerList,
           "[data-nav-id]",
           "navId",
         );
-        const moreIds = readSortableDataIds(
-          this.querySelector<HTMLElement>("#nav-items-more")!,
-          "[data-nav-id]",
-          "navId",
-        );
+        const moreIds = readSortableDataIds(moreList, "[data-nav-id]", "navId");
 
-        // For cross-list: the DOM was reverted, so the moved item is still in
-        // the source list in the DOM. We need to use the SortableJS-reported
-        // ids (from before revert) for the target list.
         if (crossList) {
-          // ids = target list order reported by Sortable (includes moved item)
-          // Remove movedId from the source placement items
-          const sourceIds = targetPlacement === "header" ? moreIds : headerIds;
-          const filteredSourceIds = sourceIds.filter((id) => id !== movedId);
-
-          const headerOrder =
-            targetPlacement === "header" ? ids : filteredSourceIds;
-          const moreOrder =
-            targetPlacement === "more" ? ids : filteredSourceIds;
-
-          this._items = [
-            ...headerOrder
-              .map((id) => itemMap.get(id))
-              .filter((i): i is NavManagerItem => i !== undefined),
-            ...moreOrder
-              .map((id) => itemMap.get(id))
-              .filter((i): i is NavManagerItem => i !== undefined),
-          ];
+          evt.item.parentNode?.removeChild(evt.item);
+          if (this.#revertNextSibling) {
+            sourceList.insertBefore(evt.item, this.#revertNextSibling);
+          } else if (
+            evt.oldIndex != null &&
+            evt.oldIndex < sourceList.children.length
+          ) {
+            sourceList.insertBefore(
+              evt.item,
+              sourceList.children[evt.oldIndex] ?? null,
+            );
+          } else {
+            sourceList.appendChild(evt.item);
+          }
         } else {
-          // Same-list reorder: just update order for that section
-          const otherItems = this._items.filter(
-            (i) => (i.placement ?? "header") !== placement,
-          );
-          const reorderedItems = ids
-            .map((id) => itemMap.get(id))
-            .filter((i): i is NavManagerItem => i !== undefined);
-
-          this._items =
-            placement === "header"
-              ? [...reorderedItems, ...otherItems]
-              : [...otherItems, ...reorderedItems];
+          revertSortableDomMove(targetList, evt, this.#revertNextSibling);
         }
 
-        // Persist placement change if cross-list
-        if (crossList) {
-          console.log(
-            "[nav-drag] cross-list PUT placement:",
-            targetPlacement,
-            "for",
-            movedId,
+        this.#revertNextSibling = null;
+        this.#destroySortables();
+
+        const orderedIds = [...new Set([...headerIds, ...moreIds])];
+        const itemMap = new Map(
+          this._items.map((item) => [
+            item.id,
+            item.id === movedId
+              ? { ...item, placement: targetPlacement }
+              : { ...item },
+          ]),
+        );
+        const reorderedItems = orderedIds
+          .map((id) => itemMap.get(id))
+          .filter((item): item is NavManagerItem => item !== undefined);
+        const remainingItems = this._items
+          .filter((item) => !orderedIds.includes(item.id))
+          .map((item) =>
+            item.id === movedId
+              ? { ...item, placement: targetPlacement }
+              : { ...item },
           );
+        this._items = [...reorderedItems, ...remainingItems];
+
+        const targetIds = targetPlacement === "header" ? headerIds : moreIds;
+        const {
+          movedId: persistedId,
+          afterId,
+          beforeId,
+        } = getSortableMove(targetIds, evt.newIndex);
+        if (!persistedId) return;
+
+        if (crossList) {
           fetch(`/api/nav-items/${movedId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ placement: targetPlacement }),
+          })
+            .then(async (res) => {
+              if (!res.ok) return false;
+
+              const moveRes = await fetch(
+                `/api/nav-items/${persistedId}/move`,
+                {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    after: afterId ?? null,
+                    before: beforeId ?? null,
+                  }),
+                },
+              );
+              return moveRes.ok;
+            })
+            .then((ok) => {
+              if (ok) showToast(this.labels.placementSaved);
+              else showToast(this.labels.saveFailed, "error");
+            });
+        } else {
+          fetch(`/api/nav-items/${persistedId}/move`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              after: afterId ?? null,
+              before: beforeId ?? null,
+            }),
           }).then((res) => {
-            console.log("[nav-drag] placement PUT response:", res.status);
-            if (res.ok) showToast(this.labels.placementSaved);
+            if (res.ok) showToast(this.labels.orderSaved);
             else showToast(this.labels.saveFailed, "error");
           });
         }
-
-        // Persist position
-        fetch(`/api/nav-items/${movedId}/move`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            after: afterId ?? null,
-            before: beforeId ?? null,
-          }),
-        }).then((res) => {
-          if (res.ok && !crossList) showToast(this.labels.orderSaved);
-          else if (!res.ok) showToast(this.labels.saveFailed, "error");
-        });
       },
     };
   }
@@ -857,7 +825,11 @@ export class JantNavManager extends LitElement {
             </p>`
           : nothing}
         <div id="nav-items-header" class="nav-items-list">
-          ${this.#headerItems.map((item) => this.#renderItem(item))}
+          ${repeat(
+            this.#headerItems,
+            (item) => item.id,
+            (item) => this.#renderItem(item),
+          )}
         </div>
       </section>
 
@@ -865,7 +837,11 @@ export class JantNavManager extends LitElement {
         <h2 class="text-lg font-semibold mb-3">${this.labels.moreSection}</h2>
         <div id="nav-items-more" class="nav-items-list nav-items-list-drop">
           ${this.#moreItems.length > 0
-            ? this.#moreItems.map((item) => this.#renderItem(item))
+            ? repeat(
+                this.#moreItems,
+                (item) => item.id,
+                (item) => this.#renderItem(item),
+              )
             : html`<p class="nav-items-empty-hint">
                 ${this.labels.moreEmptyHint}
               </p>`}
