@@ -7694,7 +7694,7 @@
   }
 
   .text-preview-dialog::backdrop {
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.92);
   }
 
   /* --- Shared confirm dialog --------------------------------------------- */
@@ -7738,9 +7738,9 @@
     position: relative;
     background-color: var(--color-background);
     border-radius: var(--radius-lg);
-    width: min(560px, 88vw);
+    width: min(720px, 88vw);
     aspect-ratio: 3 / 4;
-    max-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
     padding: var(--space-xl);
     box-shadow: var(--shadow-lg);
