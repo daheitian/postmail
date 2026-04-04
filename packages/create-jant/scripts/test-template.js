@@ -142,6 +142,14 @@ async function main() {
     ".github/workflows/deploy.yml",
     "README.md",
     ".dev.vars.example",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".agents/skills/building-jant-site/SKILL.md",
+    ".agents/skills/jant-http-api/SKILL.md",
+    ".agents/skills/jant-site-ops/SKILL.md",
+    ".claude/skills/building-jant-site/SKILL.md",
+    ".claude/skills/jant-http-api/SKILL.md",
+    ".claude/skills/jant-site-ops/SKILL.md",
   ];
   for (const file of expectedFiles) {
     if (!(await fs.pathExists(path.join(projectDir, file)))) {

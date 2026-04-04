@@ -174,9 +174,18 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
   await fs.copy(TEMPLATE_DIR, targetDir, {
     filter: (src) => {
       const basename = path.basename(src);
+      const relativePath = path.relative(TEMPLATE_DIR, src);
       if (basename === "node_modules") return false;
       if (basename === ".wrangler") return false;
       if (basename === ".dev.vars") return false;
+      if (basename === ".claude") return false;
+      if (basename === "CLAUDE.md") return false;
+      if (
+        relativePath === path.join("docs", "internal") ||
+        relativePath.startsWith(path.join("docs", "internal") + path.sep)
+      ) {
+        return false;
+      }
       return true;
     },
   });
@@ -259,6 +268,22 @@ S3_SECRET_ACCESS_KEY=
     devVarsContent,
     "utf-8",
   );
+
+  // Claude-compatible agent files are generated from the canonical site files
+  // so published templates do not depend on symlink behavior.
+  const agentsPath = path.join(targetDir, "AGENTS.md");
+  if (await fs.pathExists(agentsPath)) {
+    await fs.writeFile(
+      path.join(targetDir, "CLAUDE.md"),
+      "@AGENTS.md\n",
+      "utf-8",
+    );
+  }
+
+  const sourceSkillsDir = path.join(targetDir, ".agents", "skills");
+  if (await fs.pathExists(sourceSkillsDir)) {
+    await fs.copy(sourceSkillsDir, path.join(targetDir, ".claude", "skills"));
+  }
 }
 
 /**

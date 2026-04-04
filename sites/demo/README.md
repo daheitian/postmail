@@ -151,3 +151,15 @@ Reference:
 
 - [API Reference](https://github.com/jant-me/jant/blob/main/docs/API.md)
 - [GitHub Repository](https://github.com/jant-me/jant)
+
+## AI Coding Tools
+
+This site template includes project guidance in `AGENTS.md` plus task-focused skills in `.agents/skills/`.
+
+Available skills:
+
+- `building-jant-site`
+- `jant-http-api`
+- `jant-site-ops`
+
+If your coding tool expects Claude-style project files, `CLAUDE.md` and `.claude/skills/` are generated too.
