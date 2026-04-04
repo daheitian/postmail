@@ -379,7 +379,7 @@ describe("compose bridge", () => {
       if (url.pathname === "/compose/thread") {
         requestCount += 1;
         return new Response(
-          JSON.stringify({ error: "Threads can include up to 10 posts." }),
+          JSON.stringify({ error: "Threads can include up to 20 posts." }),
           {
             status: 422,
             headers: { "Content-Type": "application/json" },

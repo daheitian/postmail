@@ -260,7 +260,7 @@ const labels: ComposeLabels = {
   postPrivately: "Post privately",
   quietReplyLabel: "Reply quietly",
   quietReplyHint: "Won't move the thread to the top of latest.",
-  threadLimitReached: "Threads can include up to 10 posts.",
+  threadLimitReached: "Threads can include up to 20 posts.",
   showMore: "Show more",
   showLess: "Show less",
   newThread: "New Thread",

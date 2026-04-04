@@ -54,7 +54,7 @@ export const SYSTEM_NAV_KEYS = {
 >;
 
 export const MAX_MEDIA_ATTACHMENTS = 20;
-export const MAX_THREAD_POSTS = 10;
+export const MAX_THREAD_POSTS = 20;
 export const MAX_PINNED_POSTS = 3;
 export const MAX_COLLECTION_SLUG_LENGTH = 200;
 export const MAX_COLLECTION_TITLE_LENGTH = 120;
