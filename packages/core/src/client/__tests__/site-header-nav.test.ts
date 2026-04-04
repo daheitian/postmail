@@ -3,6 +3,38 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type SiteHeaderInit = typeof import("../site-header-nav.js").initSiteHeaderNav;
+type ResponsiveSearchRoot = HTMLElement & {
+  setWidths: (widths: {
+    clientWidth?: number;
+    fullWidth?: number;
+    compactWidth?: number;
+    iconWidth?: number;
+  }) => void;
+};
+
+class MockResizeObserver {
+  static instances: MockResizeObserver[] = [];
+
+  callback: (...args: unknown[]) => void;
+  observed: unknown[] = [];
+
+  constructor(callback: (...args: unknown[]) => void) {
+    this.callback = callback;
+    MockResizeObserver.instances.push(this);
+  }
+
+  observe(element: unknown) {
+    this.observed.push(element);
+  }
+
+  disconnect() {}
+
+  unobserve() {}
+
+  trigger() {
+    this.callback([], this);
+  }
+}
 
 function createDrawerDOM(): HTMLElement {
   const root = document.createElement("div");
@@ -27,6 +59,62 @@ function createDrawerDOM(): HTMLElement {
   return root;
 }
 
+function createResponsiveSearchDOM(): {
+  root: ResponsiveSearchRoot;
+  headerRow: HTMLElement;
+} {
+  const root = document.createElement("div");
+  root.innerHTML = `
+    <div class="site-header-top">
+      <a href="/" class="site-logo">Jant</a>
+      <nav class="site-header-nav">
+        <a href="/latest" class="site-header-link">Latest</a>
+        <a href="/archive" class="site-header-link">Archive</a>
+        <a href="/collections" class="site-header-link">Collections</a>
+      </nav>
+      <form class="site-header-search-form">
+        <input type="search" class="site-header-search-input" />
+      </form>
+    </div>
+  `;
+  document.body.appendChild(root);
+
+  const headerRow = root.querySelector(".site-header-top") as HTMLElement;
+  let clientWidth = 420;
+  let fullWidth = 360;
+  let compactWidth = 360;
+  let iconWidth = 360;
+
+  Object.defineProperty(headerRow, "clientWidth", {
+    configurable: true,
+    get: () => clientWidth,
+  });
+
+  Object.defineProperty(headerRow, "scrollWidth", {
+    configurable: true,
+    get: () => {
+      switch (headerRow.dataset.searchMode) {
+        case "compact":
+          return compactWidth;
+        case "icon":
+          return iconWidth;
+        default:
+          return fullWidth;
+      }
+    },
+  });
+
+  const responsiveRoot = root as unknown as ResponsiveSearchRoot;
+  responsiveRoot.setWidths = (widths) => {
+    clientWidth = widths.clientWidth ?? clientWidth;
+    fullWidth = widths.fullWidth ?? fullWidth;
+    compactWidth = widths.compactWidth ?? compactWidth;
+    iconWidth = widths.iconWidth ?? iconWidth;
+  };
+
+  return { root: responsiveRoot, headerRow };
+}
+
 describe("site header nav drawer", () => {
   let initSiteHeaderNav: SiteHeaderInit;
   let root: HTMLElement;
@@ -35,6 +123,12 @@ describe("site header nav drawer", () => {
     document.body.innerHTML = "";
     document.documentElement.classList.remove("drawer-open");
     vi.resetModules();
+    MockResizeObserver.instances = [];
+    vi.stubGlobal("ResizeObserver", MockResizeObserver);
+    Object.defineProperty(document, "fonts", {
+      configurable: true,
+      value: { ready: Promise.resolve() },
+    });
     root = createDrawerDOM();
     ({ initSiteHeaderNav } = await import("../site-header-nav.js"));
     initSiteHeaderNav(root);
@@ -121,5 +215,80 @@ describe("site header nav drawer", () => {
 
     hamburger.click();
     expect(drawer.getAttribute("aria-hidden")).toBe("true");
+  });
+});
+
+describe("site header responsive search", () => {
+  let initSiteHeaderNav: SiteHeaderInit;
+
+  beforeEach(async () => {
+    document.body.innerHTML = "";
+    document.documentElement.classList.remove("drawer-open");
+    vi.resetModules();
+    MockResizeObserver.instances = [];
+    vi.stubGlobal("ResizeObserver", MockResizeObserver);
+    Object.defineProperty(document, "fonts", {
+      configurable: true,
+      value: { ready: Promise.resolve() },
+    });
+    ({ initSiteHeaderNav } = await import("../site-header-nav.js"));
+  });
+
+  it("keeps full search width when the header fits", () => {
+    const { root, headerRow } = createResponsiveSearchDOM();
+
+    initSiteHeaderNav(root);
+
+    expect(headerRow.dataset.searchMode).toBeUndefined();
+  });
+
+  it("shrinks search before collapsing it to an icon", () => {
+    const { root, headerRow } = createResponsiveSearchDOM();
+    root.setWidths({
+      clientWidth: 350,
+      fullWidth: 390,
+      compactWidth: 340,
+      iconWidth: 320,
+    });
+
+    initSiteHeaderNav(root);
+
+    expect(headerRow.dataset.searchMode).toBe("compact");
+  });
+
+  it("falls back to icon mode when compact search still overflows", () => {
+    const { root, headerRow } = createResponsiveSearchDOM();
+    root.setWidths({
+      clientWidth: 300,
+      fullWidth: 390,
+      compactWidth: 340,
+      iconWidth: 280,
+    });
+
+    initSiteHeaderNav(root);
+
+    expect(headerRow.dataset.searchMode).toBe("icon");
+  });
+
+  it("recomputes search mode when the header width changes", () => {
+    const { root, headerRow } = createResponsiveSearchDOM();
+    root.setWidths({
+      clientWidth: 300,
+      fullWidth: 390,
+      compactWidth: 340,
+      iconWidth: 280,
+    });
+
+    initSiteHeaderNav(root);
+    expect(headerRow.dataset.searchMode).toBe("icon");
+
+    root.setWidths({
+      clientWidth: 360,
+      fullWidth: 390,
+      compactWidth: 340,
+    });
+    MockResizeObserver.instances[0]?.trigger();
+
+    expect(headerRow.dataset.searchMode).toBe("compact");
   });
 });

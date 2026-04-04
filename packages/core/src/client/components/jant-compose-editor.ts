@@ -1583,7 +1583,7 @@ export class JantComposeEditor extends LitElement {
             @blur=${() => {
               this._showUrlValidation = true;
             }}
-            class="compose-input compose-url-input text-[0.9rem]"
+            class="compose-input compose-url-input"
             placeholder=${this.labels.urlPlaceholder}
             aria-invalid=${urlError ? "true" : "false"}
             aria-describedby=${ifDefined(

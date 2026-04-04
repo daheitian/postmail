@@ -254,9 +254,11 @@ svg[stroke-width].icon-fine {
   .dash-breadcrumb {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     padding: 8px 0;
-    font-size: var(--type-xs);
+    font-size: var(--type-base);
+    line-height: 1.35;
   }
 
   .dash-breadcrumb-parent {

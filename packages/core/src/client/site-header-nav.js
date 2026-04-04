@@ -58,6 +58,48 @@ function initMoreDropdown(root) {
   });
 }
 
+function setHeaderSearchMode(headerRow, mode) {
+  if (mode === "full") {
+    delete headerRow.dataset.searchMode;
+    return;
+  }
+
+  headerRow.dataset.searchMode = mode;
+}
+
+function initResponsiveSearch(root) {
+  const headerRow = root.querySelector(".site-header-top");
+  const searchForm = root.querySelector(".site-header-search-form");
+
+  if (!headerRow || !searchForm) return;
+  if (headerRow.dataset.searchResponsiveInitialized === "true") return;
+  headerRow.dataset.searchResponsiveInitialized = "true";
+
+  const syncSearchMode = () => {
+    const modes = ["full", "compact", "icon"];
+
+    for (const mode of modes) {
+      setHeaderSearchMode(headerRow, mode);
+      if (headerRow.scrollWidth <= headerRow.clientWidth + 1) return;
+    }
+  };
+
+  syncSearchMode();
+
+  if ("ResizeObserver" in globalThis) {
+    const observer = new globalThis.ResizeObserver(() => {
+      syncSearchMode();
+    });
+    observer.observe(headerRow);
+  }
+
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => {
+      syncSearchMode();
+    });
+  }
+}
+
 export function initSiteHeaderNav(root = document) {
   const hamburger = root.querySelector(".site-header-hamburger");
   const drawer = root.querySelector("#site-nav-drawer");
@@ -66,6 +108,7 @@ export function initSiteHeaderNav(root = document) {
 
   // --- More dropdown (desktop) ---
   initMoreDropdown(root);
+  initResponsiveSearch(root);
 
   // --- Mobile drawer ---
   if (!hamburger || !drawer || !backdrop) return;
