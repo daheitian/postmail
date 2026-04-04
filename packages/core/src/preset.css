@@ -301,24 +301,14 @@ html:lang(ko) {
     border-radius: 0;
   }
 
-  /* Editorial blockquotes */
+  /* Tufte-style blockquotes — indent + italic (Latin only) */
   blockquote {
-    --_blockquote-rail: var(--site-blockquote-rail);
-    --_blockquote-bg: var(--site-blockquote-bg);
-    --_blockquote-text: var(--site-blockquote-text);
-    margin: 1.35em 0;
-    padding: 0.9em 1.05em 0.95em 1.15em;
+    margin: 1.4rem 0;
+    margin-left: 2rem;
+    padding: 0;
     border: none;
-    border-radius: 0 0.95rem 0.95rem 0;
-    background: linear-gradient(
-      90deg,
-      var(--_blockquote-rail) 0,
-      var(--_blockquote-rail) 2px,
-      var(--_blockquote-bg) 2px,
-      var(--_blockquote-bg) 100%
-    );
-    color: var(--_blockquote-text);
-    font-style: normal;
+    background: none;
+    font-style: italic;
     font-weight: inherit;
     quotes: none;
     text-wrap: pretty;
@@ -349,6 +339,13 @@ html:lang(ko) {
   }
 }
 
+/* CJK: no italic for blockquotes (no true italic glyph) */
+:lang(zh) .prose blockquote,
+:lang(ja) .prose blockquote,
+:lang(ko) .prose blockquote {
+  font-style: normal;
+}
+
 /*
  * Content links
  *
@@ -375,21 +372,6 @@ html:lang(ko) {
 .prose a:hover {
   color: var(--site-prose-link-hover, var(--site-content-link-hover));
   text-decoration-color: currentColor;
-}
-
-[data-post]:not([data-page="post"]) [data-post-body].prose blockquote,
-.compose-reply-context-body .prose blockquote {
-  --_blockquote-bg: var(--site-summary-blockquote-bg);
-  --_blockquote-text: color-mix(
-    in srgb,
-    var(--site-text-secondary) 84%,
-    var(--site-text-primary)
-  );
-  margin: 0.72rem 0;
-  padding: 0.72rem 0.9rem 0.76rem 1rem;
-  border-radius: 0 0.8rem 0.8rem 0;
-  font-size: 0.96em;
-  line-height: 1.58;
 }
 
 /*
@@ -438,14 +420,6 @@ html:lang(ko) {
     var(--site-divider) 82%,
     transparent
   );
-}
-
-[data-page="post"] .post-detail-body.prose blockquote {
-  --_blockquote-rail: var(--site-reading-blockquote-rail);
-  --_blockquote-bg: var(--site-reading-blockquote-bg);
-  --_blockquote-text: var(--site-reading-quote);
-  margin: 1.5em 0;
-  padding: 1rem 1.15rem 1.05rem 1.25rem;
 }
 
 /*

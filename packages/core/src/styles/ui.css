@@ -2077,8 +2077,8 @@
     padding-left: 0;
     font-family: var(--font-serif);
     color: var(--site-text-primary);
-    font-size: var(--type-body);
-    line-height: var(--type-body-leading);
+    font-size: var(--type-subtitle);
+    line-height: var(--type-heading-leading);
     white-space: pre-line;
     text-wrap: pretty;
   }

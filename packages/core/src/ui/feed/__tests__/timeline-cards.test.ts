@@ -132,9 +132,6 @@ describe("timeline cards", () => {
     );
 
     expect(css).toContain("[data-post-body].prose");
-    expect(css).toContain(
-      '[data-post]:not([data-page="post"]) [data-post-body].prose blockquote',
-    );
   });
 
   it("uses inset-note styling for compose editor blockquotes", () => {
