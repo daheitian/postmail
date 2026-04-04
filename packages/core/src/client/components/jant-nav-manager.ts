@@ -37,7 +37,6 @@ export class JantNavManager extends LitElement {
     labels: { type: Object },
     systemNavItems: { type: Array, attribute: "system-nav-items" },
     siteName: { type: String, attribute: "site-name" },
-    maxVisible: { type: Number, attribute: "max-visible" },
     homeDefaultView: { type: String, attribute: "home-default-view" },
 
     _items: { state: true },
@@ -45,7 +44,6 @@ export class JantNavManager extends LitElement {
     _editLabel: { state: true },
     _editUrl: { state: true },
     _togglingKeys: { state: true },
-    _showOverflow: { state: true },
     _showLinkForm: { state: true },
     _newLinkLabel: { state: true },
     _newLinkUrl: { state: true },
@@ -56,7 +54,6 @@ export class JantNavManager extends LitElement {
   declare labels: NavManagerLabels;
   declare systemNavItems: SystemNavConfig[];
   declare siteName: string;
-  declare maxVisible: number;
   declare homeDefaultView: string;
 
   declare _items: NavManagerItem[];
@@ -65,7 +62,6 @@ export class JantNavManager extends LitElement {
   declare _editUrl: string;
   /** Keys currently mid-request (to disable switch during toggle) */
   declare _togglingKeys: Set<SystemNavConfig["key"]>;
-  declare _showOverflow: boolean;
   declare _showLinkForm: boolean;
   declare _newLinkLabel: string;
   declare _newLinkUrl: string;
@@ -73,10 +69,6 @@ export class JantNavManager extends LitElement {
 
   #sortable: { destroy(): void } | null = null;
   #initialized = false;
-  #closeOverflow = () => {
-    this._showOverflow = false;
-    document.removeEventListener("click", this.#closeOverflow);
-  };
   #closeLinkForm = () => {
     this._showLinkForm = false;
     document.removeEventListener("click", this.#closeLinkForm);
@@ -93,7 +85,6 @@ export class JantNavManager extends LitElement {
     this.labels = {} as NavManagerLabels;
     this.systemNavItems = [];
     this.siteName = "";
-    this.maxVisible = 2;
     this.homeDefaultView = "latest";
 
     this._items = [];
@@ -101,7 +92,6 @@ export class JantNavManager extends LitElement {
     this._editLabel = "";
     this._editUrl = "";
     this._togglingKeys = new Set();
-    this._showOverflow = false;
     this._showLinkForm = false;
     this._newLinkLabel = "";
     this._newLinkUrl = "";
@@ -124,7 +114,6 @@ export class JantNavManager extends LitElement {
     super.disconnectedCallback();
     this.#sortable?.destroy();
     this.#sortable = null;
-    document.removeEventListener("click", this.#closeOverflow);
     document.removeEventListener("click", this.#closeLinkForm);
   }
 
@@ -221,26 +210,6 @@ export class JantNavManager extends LitElement {
         detail: { id: item.id },
       }),
     );
-  }
-
-  // ===========================================================================
-  // Max visible handler
-  // ===========================================================================
-
-  async #handleMaxVisibleChange(value: number) {
-    const clamped = Math.max(0, Math.min(5, value));
-    this.maxVisible = clamped;
-    try {
-      const res = await fetch("/settings/navigation/nav-max-visible", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: clamped }),
-      });
-      if (res.ok) showToast(this.labels.maxVisibleSaved);
-      else showToast(this.labels.saveFailed, "error");
-    } catch {
-      showToast(this.labels.saveFailed, "error");
-    }
   }
 
   async #handleHomeViewToggle(useFeatured: boolean) {
@@ -363,10 +332,6 @@ export class JantNavManager extends LitElement {
   // ===========================================================================
 
   #renderPreview() {
-    const visible = this._items.slice(0, this.maxVisible);
-    const overflow = this._items.slice(this.maxVisible);
-    const hasMore = overflow.length > 0;
-
     return html`
       <div class="nav-preview">
         <div class="nav-preview-chrome">
@@ -379,9 +344,9 @@ export class JantNavManager extends LitElement {
           <div class="site-header-top">
             <a href=${publicPath("/")} class="site-logo">${this.siteName}</a>
             <div class="site-header-right">
-              ${visible.length > 0 || hasMore
+              ${this._items.length > 0
                 ? html`<nav class="site-header-nav">
-                    ${visible.map(
+                    ${this._items.map(
                       (item) =>
                         html`<a
                           href=${publicPath(item.url)}
@@ -390,82 +355,8 @@ export class JantNavManager extends LitElement {
                           ${item.displayLabel ?? item.label}
                         </a>`,
                     )}
-                    ${hasMore
-                      ? html`<div class="dropdown-menu site-header-more">
-                          <button
-                            type="button"
-                            class="site-header-more-btn"
-                            aria-haspopup="menu"
-                            aria-expanded=${this._showOverflow}
-                            @click=${(e: Event) => {
-                              e.stopPropagation();
-                              this._showOverflow = !this._showOverflow;
-                              if (this._showOverflow) {
-                                setTimeout(() => {
-                                  document.addEventListener(
-                                    "click",
-                                    this.#closeOverflow,
-                                  );
-                                });
-                              } else {
-                                document.removeEventListener(
-                                  "click",
-                                  this.#closeOverflow,
-                                );
-                              }
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="15"
-                              height="15"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                            >
-                              <circle cx="5" cy="12" r="2.2" />
-                              <circle cx="12" cy="12" r="2.2" />
-                              <circle cx="19" cy="12" r="2.2" />
-                            </svg>
-                          </button>
-                          ${this._showOverflow
-                            ? html`<div
-                                data-popover
-                                data-align="start"
-                                aria-hidden="false"
-                              >
-                                <div role="menu">
-                                  ${overflow.map(
-                                    (item) =>
-                                      html`<a
-                                        href=${publicPath(item.url)}
-                                        role="menuitem"
-                                      >
-                                        ${item.displayLabel ?? item.label}
-                                      </a>`,
-                                  )}
-                                </div>
-                              </div>`
-                            : nothing}
-                        </div>`
-                      : nothing}
                   </nav>`
                 : nothing}
-              <span class="site-header-search" aria-hidden="true">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-              </span>
             </div>
           </div>
           <nav class="site-browse-nav">
@@ -773,28 +664,6 @@ export class JantNavManager extends LitElement {
       ${this.#renderPreview()}
 
       <div class="flex flex-col gap-4 mt-3">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex flex-col gap-0.5">
-            <label class="text-sm font-medium" for="nav-max-visible">
-              ${this.labels.maxVisibleLinks}
-            </label>
-            <p class="text-xs text-muted-foreground">
-              ${this.labels.maxVisibleLinksDescription}
-            </p>
-          </div>
-          <input
-            type="number"
-            id="nav-max-visible"
-            class="input w-16 h-8 shrink-0"
-            min="0"
-            max="5"
-            .value=${String(this.maxVisible)}
-            @change=${(e: Event) => {
-              const val = parseInt((e.target as HTMLInputElement).value, 10);
-              if (!isNaN(val)) this.#handleMaxVisibleChange(val);
-            }}
-          />
-        </div>
         <label class="flex items-start justify-between gap-4 cursor-pointer">
           <div class="flex flex-col gap-0.5">
             <span class="text-sm font-medium">

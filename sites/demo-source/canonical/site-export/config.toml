@@ -13,7 +13,6 @@ generated_at = "2026-04-02T14:39:20.000Z"
 
 [extra.jant]
 home_default_view = "latest"
-header_nav_max_visible = 2
 show_jant_branding_on_home = true
 show_header_avatar = false
 noindex = false

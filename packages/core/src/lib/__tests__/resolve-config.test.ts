@@ -283,28 +283,6 @@ describe("resolveConfig", () => {
     expect(config2.themeMode).toBe("auto");
   });
 
-  it("resolves headerNavMaxVisible with default, DB override, and clamping", () => {
-    // Default is 2
-    const config1 = resolveConfig(makeEnv(), {});
-    expect(config1.headerNavMaxVisible).toBe(2);
-
-    // DB override works
-    const config2 = resolveConfig(makeEnv(), { HEADER_NAV_MAX_VISIBLE: "5" });
-    expect(config2.headerNavMaxVisible).toBe(5);
-
-    // Clamped to 0 minimum
-    const config3 = resolveConfig(makeEnv(), { HEADER_NAV_MAX_VISIBLE: "-1" });
-    expect(config3.headerNavMaxVisible).toBe(0);
-
-    // Clamped to 5 maximum
-    const config4 = resolveConfig(makeEnv(), { HEADER_NAV_MAX_VISIBLE: "10" });
-    expect(config4.headerNavMaxVisible).toBe(5);
-
-    // Zero is valid
-    const config5 = resolveConfig(makeEnv(), { HEADER_NAV_MAX_VISIBLE: "0" });
-    expect(config5.headerNavMaxVisible).toBe(0);
-  });
-
   it("resolves defaultThemeId from env", () => {
     const config = resolveConfig(makeEnv({ DEFAULT_THEME: "dark" }), {});
     expect(config.defaultThemeId).toBe("dark");

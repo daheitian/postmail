@@ -1,315 +1,125 @@
 // @vitest-environment happy-dom
 
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-type SiteHeaderInit =
-  typeof import("../site-header-nav.js").initSiteHeaderMenus;
+type SiteHeaderInit = typeof import("../site-header-nav.js").initSiteHeaderNav;
 
-function rect({
-  left = 0,
-  top = 0,
-  width = 0,
-  height = 0,
-  right,
-  bottom,
-}: {
-  left?: number;
-  top?: number;
-  width?: number;
-  height?: number;
-  right?: number;
-  bottom?: number;
-} = {}) {
-  const resolvedRight = right ?? left + width;
-  const resolvedBottom = bottom ?? top + height;
-
-  return {
-    x: left,
-    y: top,
-    left,
-    top,
-    width,
-    height,
-    right: resolvedRight,
-    bottom: resolvedBottom,
-    toJSON() {
-      return this;
-    },
-  };
-}
-
-function setRect(
-  element: HTMLElement,
-  getValue: () => ReturnType<typeof rect>,
-) {
-  Object.defineProperty(element, "getBoundingClientRect", {
-    configurable: true,
-    value: getValue,
-  });
-}
-
-function renderHeader() {
-  document.body.innerHTML = `
-    <nav class="site-header-nav">
-      <a href="/collections" class="site-header-link">Collections</a>
-      <a href="/archive" class="site-header-link">Archive</a>
-      <a href="/rss" class="site-header-link">RSS</a>
-      <div class="dropdown-menu site-header-more" hidden>
-        <button
-          type="button"
-          class="site-header-more-btn"
-          aria-haspopup="menu"
-          aria-expanded="false"
-        >
-          More
-        </button>
-        <div data-popover aria-hidden="true" data-align="start">
-          <div role="menu">
-            <a href="/settings" role="menuitem">Settings</a>
-          </div>
-        </div>
+function createDrawerDOM(): HTMLElement {
+  const root = document.createElement("div");
+  root.innerHTML = `
+    <button
+      class="site-header-hamburger"
+      aria-controls="site-nav-drawer"
+      aria-expanded="false"
+    ></button>
+    <div class="site-nav-drawer-backdrop" aria-hidden="true"></div>
+    <div id="site-nav-drawer" class="site-nav-drawer" aria-hidden="true" inert>
+      <div class="site-nav-drawer-header">
+        <button class="site-nav-drawer-close"></button>
       </div>
-    </nav>
+      <nav class="site-nav-drawer-nav">
+        <a href="/about" class="site-nav-drawer-link">About</a>
+        <a href="/archive" class="site-nav-drawer-link">Archive</a>
+      </nav>
+    </div>
   `;
-
-  const nav = document.querySelector<HTMLElement>(".site-header-nav");
-  const menuRoot = document.querySelector<HTMLElement>(".site-header-more");
-  const trigger = document.querySelector<HTMLButtonElement>(
-    ".site-header-more-btn",
-  );
-  const popover = document.querySelector<HTMLElement>("[data-popover]");
-  const menu = document.querySelector<HTMLElement>('[role="menu"]');
-
-  if (!nav || !menuRoot || !trigger || !popover || !menu) {
-    throw new Error("Expected site header nav markup");
-  }
-
-  return { nav, menuRoot, trigger, popover, menu };
+  document.body.appendChild(root);
+  return root;
 }
 
-describe("site header nav", () => {
-  let initSiteHeaderMenus: SiteHeaderInit;
+describe("site header nav drawer", () => {
+  let initSiteHeaderNav: SiteHeaderInit;
+  let root: HTMLElement;
 
   beforeEach(async () => {
-    vi.resetModules();
     document.body.innerHTML = "";
-
-    vi.stubGlobal(
-      "requestAnimationFrame",
-      (callback: (time: number) => void) => {
-        callback(0);
-        return 1;
-      },
-    );
-    vi.stubGlobal("cancelAnimationFrame", vi.fn());
-
-    Object.defineProperty(document, "fonts", {
-      configurable: true,
-      value: { ready: Promise.resolve() },
-    });
-
-    ({ initSiteHeaderMenus } = await import("../site-header-nav.js"));
+    document.documentElement.classList.remove("drawer-open");
+    vi.resetModules();
+    root = createDrawerDOM();
+    ({ initSiteHeaderNav } = await import("../site-header-nav.js"));
+    initSiteHeaderNav(root);
   });
 
-  it("moves links into the overflow menu when the row is too narrow", () => {
-    const { nav, menuRoot, menu, trigger, popover } = renderHeader();
-    const anchors = Array.from(
-      document.querySelectorAll<HTMLAnchorElement>("a"),
+  it("opens drawer when hamburger is clicked", () => {
+    const hamburger = root.querySelector(
+      ".site-header-hamburger",
+    ) as HTMLButtonElement;
+    const drawer = root.querySelector("#site-nav-drawer") as HTMLElement;
+    const backdrop = root.querySelector(
+      ".site-nav-drawer-backdrop",
+    ) as HTMLElement;
+
+    hamburger.click();
+
+    expect(drawer.getAttribute("aria-hidden")).toBe("false");
+    expect(drawer.hasAttribute("inert")).toBe(false);
+    expect(backdrop.getAttribute("aria-hidden")).toBe("false");
+    expect(hamburger.getAttribute("aria-expanded")).toBe("true");
+    expect(document.documentElement.classList.contains("drawer-open")).toBe(
+      true,
     );
-
-    Object.defineProperty(document.documentElement, "clientWidth", {
-      configurable: true,
-      value: 320,
-    });
-
-    setRect(nav, () => rect({ width: 150, height: 32 }));
-    setRect(menuRoot, () => {
-      const inlineItems = Array.from(nav.children).filter(
-        (child) =>
-          child instanceof HTMLElement &&
-          (child !== menuRoot || !menuRoot.hidden),
-      );
-      let left = 0;
-      for (const child of inlineItems) {
-        const width = child === menuRoot ? 32 : 48;
-        if (child === menuRoot) {
-          return rect({ left, width, height: 32 });
-        }
-        left += width + 8;
-      }
-      return rect({ left: 0, width: 32, height: 32 });
-    });
-    setRect(trigger, () => menuRoot.getBoundingClientRect());
-    setRect(popover, () => rect({ width: 160, height: 120 }));
-
-    anchors.forEach((anchor) => {
-      setRect(anchor, () => {
-        const inlineItems = Array.from(nav.children).filter(
-          (child) => child instanceof HTMLElement && child !== menuRoot,
-        );
-        let left = 0;
-        for (const child of inlineItems) {
-          if (child === anchor) {
-            return rect({ left, width: 48, height: 32 });
-          }
-          left += 56;
-        }
-        return rect({ left: 0, width: 48, height: 32 });
-      });
-    });
-
-    initSiteHeaderMenus();
-
-    expect(
-      Array.from(nav.querySelectorAll(":scope > a.site-header-link")).map(
-        (link) => link.textContent?.trim(),
-      ),
-    ).toEqual(["Collections", "Archive"]);
-    expect(menuRoot.hidden).toBe(false);
-    expect(
-      Array.from(menu.querySelectorAll('[role="menuitem"]')).map((link) =>
-        link.textContent?.trim(),
-      ),
-    ).toEqual(["RSS", "Settings"]);
   });
 
-  it("does not exceed the configured max visible link count", () => {
-    const { nav, menuRoot, menu, trigger, popover } = renderHeader();
-    const anchors = Array.from(
-      document.querySelectorAll<HTMLAnchorElement>("a"),
+  it("closes drawer on close button click", () => {
+    const hamburger = root.querySelector(
+      ".site-header-hamburger",
+    ) as HTMLButtonElement;
+    const drawer = root.querySelector("#site-nav-drawer") as HTMLElement;
+    const closeBtn = root.querySelector(
+      ".site-nav-drawer-close",
+    ) as HTMLButtonElement;
+
+    hamburger.click();
+    closeBtn.click();
+
+    expect(drawer.getAttribute("aria-hidden")).toBe("true");
+    expect(hamburger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.documentElement.classList.contains("drawer-open")).toBe(
+      false,
     );
-
-    Object.defineProperty(document.documentElement, "clientWidth", {
-      configurable: true,
-      value: 640,
-    });
-
-    setRect(nav, () => rect({ width: 480, height: 32 }));
-    setRect(menuRoot, () => rect({ left: 168, width: 32, height: 32 }));
-    setRect(trigger, () => menuRoot.getBoundingClientRect());
-    setRect(popover, () => rect({ width: 160, height: 120 }));
-
-    anchors.forEach((anchor, index) => {
-      setRect(anchor, () => rect({ left: index * 56, width: 48, height: 32 }));
-    });
-
-    initSiteHeaderMenus();
-
-    expect(
-      Array.from(nav.querySelectorAll(":scope > a.site-header-link")).map(
-        (link) => link.textContent?.trim(),
-      ),
-    ).toEqual(["Collections", "Archive", "RSS"]);
-    expect(menuRoot.hidden).toBe(false);
-    expect(
-      Array.from(menu.querySelectorAll('[role="menuitem"]')).map((link) =>
-        link.textContent?.trim(),
-      ),
-    ).toEqual(["Settings"]);
   });
 
-  it("defaults to start alignment on desktop when it fits", () => {
-    const { nav, menuRoot, trigger, popover } = renderHeader();
+  it("closes drawer on backdrop click", () => {
+    const hamburger = root.querySelector(
+      ".site-header-hamburger",
+    ) as HTMLButtonElement;
+    const drawer = root.querySelector("#site-nav-drawer") as HTMLElement;
+    const backdrop = root.querySelector(
+      ".site-nav-drawer-backdrop",
+    ) as HTMLElement;
 
-    Object.defineProperty(document.documentElement, "clientWidth", {
-      configurable: true,
-      value: 800,
-    });
+    hamburger.click();
+    backdrop.click();
 
-    setRect(nav, () => rect({ width: 800, height: 32 }));
-    setRect(menuRoot, () => rect({ left: 8, width: 32, height: 32 }));
-    setRect(trigger, () => rect({ left: 8, width: 32, height: 32 }));
-    setRect(popover, () => rect({ width: 180, height: 120 }));
-
-    initSiteHeaderMenus();
-
-    menuRoot.hidden = false;
-    trigger.click();
-
-    expect(popover.getAttribute("aria-hidden")).toBe("false");
-    expect(popover.dataset.align).toBe("start");
+    expect(drawer.getAttribute("aria-hidden")).toBe("true");
+    expect(backdrop.getAttribute("aria-hidden")).toBe("true");
   });
 
-  it("switches to end alignment on desktop when start would overflow", () => {
-    const { nav, menuRoot, trigger, popover } = renderHeader();
+  it("closes drawer on Escape key", () => {
+    const hamburger = root.querySelector(
+      ".site-header-hamburger",
+    ) as HTMLButtonElement;
+    const drawer = root.querySelector("#site-nav-drawer") as HTMLElement;
 
-    Object.defineProperty(document.documentElement, "clientWidth", {
-      configurable: true,
-      value: 800,
-    });
+    hamburger.click();
+    drawer.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
 
-    // Trigger near the right edge — start alignment would push popover past viewport
-    setRect(nav, () => rect({ width: 800, height: 32 }));
-    setRect(menuRoot, () => rect({ left: 700, width: 32, height: 32 }));
-    setRect(trigger, () => rect({ left: 700, width: 32, height: 32 }));
-    setRect(popover, () => rect({ width: 180, height: 120 }));
-
-    initSiteHeaderMenus();
-
-    menuRoot.hidden = false;
-    trigger.click();
-
-    expect(popover.getAttribute("aria-hidden")).toBe("false");
-    expect(popover.dataset.align).toBe("end");
+    expect(drawer.getAttribute("aria-hidden")).toBe("true");
+    expect(hamburger.getAttribute("aria-expanded")).toBe("false");
   });
 
-  it("pins popover to page right edge on mobile", () => {
-    const { nav, menuRoot, trigger, popover } = renderHeader();
+  it("toggles drawer on repeated hamburger clicks", () => {
+    const hamburger = root.querySelector(
+      ".site-header-hamburger",
+    ) as HTMLButtonElement;
+    const drawer = root.querySelector("#site-nav-drawer") as HTMLElement;
 
-    Object.defineProperty(document.documentElement, "clientWidth", {
-      configurable: true,
-      value: 375,
-    });
+    hamburger.click();
+    expect(drawer.getAttribute("aria-hidden")).toBe("false");
 
-    // Stub --site-padding as 30px (1.875rem at 16px base)
-    const originalGetComputedStyle = globalThis.getComputedStyle;
-    vi.stubGlobal("getComputedStyle", (el: globalThis.Element) => {
-      const style = originalGetComputedStyle(el);
-      return {
-        ...style,
-        getPropertyValue: (prop: string) =>
-          prop === "--site-padding" ? "30" : style.getPropertyValue(prop),
-      };
-    });
-
-    setRect(nav, () => rect({ width: 375, height: 32 }));
-    // menuRoot right edge at 310 (375 - 30 padding - 34 search - 1 gap)
-    setRect(menuRoot, () =>
-      rect({ left: 278, width: 32, height: 32, right: 310 }),
-    );
-    setRect(trigger, () => rect({ left: 278, width: 32, height: 32 }));
-    setRect(popover, () => rect({ width: 200, height: 120 }));
-
-    initSiteHeaderMenus();
-
-    menuRoot.hidden = false;
-    trigger.click();
-
-    expect(popover.getAttribute("aria-hidden")).toBe("false");
-    expect(popover.dataset.align).toBe("end");
-    // right offset = menuRoot.right(310) - (viewport(375) - padding(30)) = -35
-    expect(popover.style.right).toBe("-35px");
-  });
-
-  it("keeps the closed overflow popover out of layout", () => {
-    const cssPath = [
-      resolve(process.cwd(), "src/styles/ui.css"),
-      resolve(process.cwd(), "packages/core/src/styles/ui.css"),
-    ].find((path) => existsSync(path));
-
-    if (!cssPath) {
-      throw new Error("Expected to find src/styles/ui.css");
-    }
-
-    const css = readFileSync(cssPath, "utf8");
-
-    expect(css).toMatch(
-      /\.site-header-more \[data-popover\]\s*\{[\s\S]*display:\s*none;/,
-    );
-    expect(css).toMatch(
-      /\.site-header-more \[data-popover\]\[aria-hidden="false"\]\s*\{[\s\S]*display:\s*block;/,
-    );
+    hamburger.click();
+    expect(drawer.getAttribute("aria-hidden")).toBe("true");
   });
 });

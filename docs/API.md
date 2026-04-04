@@ -1790,7 +1790,6 @@ All values are strings because they map directly to stored config values.
 | `SITE_LANGUAGE`              | Language code           | `"en"`              |
 | `HOME_DEFAULT_VIEW`          | Home feed mode          | `"latest"`          |
 | `MAIN_RSS_FEED`              | Canonical feed kind     | `"featured"`        |
-| `HEADER_NAV_MAX_VISIBLE`     | Header nav item count   | `"3"`               |
 | `TIME_ZONE`                  | IANA timezone           | `"Asia/Shanghai"`   |
 | `SITE_FOOTER`                | Footer HTML/text        | `"<p>Footer</p>"`   |
 | `SHOW_JANT_BRANDING_ON_HOME` | Branding toggle         | `"true"`            |
@@ -1821,7 +1820,6 @@ Response:
     "SITE_LANGUAGE": "en",
     "HOME_DEFAULT_VIEW": "latest",
     "MAIN_RSS_FEED": "featured",
-    "HEADER_NAV_MAX_VISIBLE": "2",
     "TIME_ZONE": "UTC",
     "SITE_FOOTER": "",
     "SHOW_JANT_BRANDING_ON_HOME": "",
@@ -1875,7 +1873,6 @@ Example partial-apply response:
     "SITE_LANGUAGE": "en",
     "HOME_DEFAULT_VIEW": "latest",
     "MAIN_RSS_FEED": "featured",
-    "HEADER_NAV_MAX_VISIBLE": "2",
     "TIME_ZONE": "UTC",
     "SITE_FOOTER": "",
     "SHOW_JANT_BRANDING_ON_HOME": "",

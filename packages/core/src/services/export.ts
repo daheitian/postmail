@@ -45,7 +45,6 @@ interface SiteConfig {
   siteLanguage: string;
   showJantBrandingOnHome: boolean;
   homeDefaultView: string;
-  headerNavMaxVisible: number;
   siteFooter: string;
   showHeaderAvatar: boolean;
   siteAvatarUrl: string;
@@ -830,7 +829,6 @@ function buildConfigToml(
     "",
     "[extra.jant]",
     `home_default_view = "${escapeToml(config.homeDefaultView)}"`,
-    `header_nav_max_visible = ${config.headerNavMaxVisible}`,
     `show_jant_branding_on_home = ${config.showJantBrandingOnHome}`,
     `show_header_avatar = ${config.showHeaderAvatar}`,
     `noindex = ${config.noindex}`,

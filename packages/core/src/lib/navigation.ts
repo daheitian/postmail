@@ -22,7 +22,6 @@ export interface NavigationData {
   isAuthenticated: boolean;
   collections: Collection[];
   homeDefaultView: string;
-  headerNavMaxVisible: number;
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;
@@ -101,7 +100,6 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
     isAuthenticated,
     collections,
     homeDefaultView,
-    headerNavMaxVisible: appConfig.headerNavMaxVisible,
     siteAvatarUrl,
     showHeaderAvatar: showHeaderAvatar && !!siteAvatarUrl,
     siteFooterHtml,

@@ -144,13 +144,6 @@ export function resolveConfig(
     siteLanguage: resolve("SITE_LANGUAGE", allSettings, env),
     homeDefaultView: resolve("HOME_DEFAULT_VIEW", allSettings, env),
     mainRssFeed: resolve("MAIN_RSS_FEED", allSettings, env),
-    headerNavMaxVisible: (() => {
-      const parsed = parseInt(
-        resolve("HEADER_NAV_MAX_VISIBLE", allSettings, env),
-        10,
-      );
-      return Math.max(0, Math.min(5, isNaN(parsed) ? 2 : parsed));
-    })(),
     timeZone: normalizeTimeZone(resolve("TIME_ZONE", allSettings, env)),
     siteFooter: resolve("SITE_FOOTER", allSettings, env),
     showJantBrandingOnHome:

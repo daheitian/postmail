@@ -622,7 +622,6 @@ export function createSiteAdminService(
           siteLanguage: appConfig.siteLanguage,
           showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
           homeDefaultView: appConfig.homeDefaultView,
-          headerNavMaxVisible: appConfig.headerNavMaxVisible,
           siteFooter: appConfig.siteFooter,
           showHeaderAvatar: appConfig.showHeaderAvatar,
           siteAvatarUrl: appConfig.siteAvatarUrl,

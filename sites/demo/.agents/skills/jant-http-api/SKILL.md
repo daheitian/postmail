@@ -133,8 +133,7 @@ curl -X PUT "$JANT_URL/api/settings" \
   -H "Content-Type: application/json" \
   -d '{
     "SITE_NAME": "My Site",
-    "TIME_ZONE": "Asia/Shanghai",
-    "HEADER_NAV_MAX_VISIBLE": "3"
+    "TIME_ZONE": "Asia/Shanghai"
   }'
 ```
 

@@ -577,7 +577,6 @@ settingsRoutes.post("/avatar/display", async (c) => {
 
 settingsRoutes.get("/navigation", async (c) => {
   const navItems = await c.var.services.navItems.list();
-  const headerNavMaxVisible = c.var.appConfig.headerNavMaxVisible;
   const homeDefaultView = c.var.appConfig.homeDefaultView;
   const navData = await getNavigationData(c);
 
@@ -593,7 +592,6 @@ settingsRoutes.get("/navigation", async (c) => {
         />
         <NavigationContent
           navItems={navItems}
-          headerNavMaxVisible={headerNavMaxVisible}
           homeDefaultView={homeDefaultView}
           mainRssFeed={c.var.appConfig.mainRssFeed}
           siteName={navData.siteName}
@@ -602,20 +600,6 @@ settingsRoutes.get("/navigation", async (c) => {
       </>
     ),
   });
-});
-
-settingsRoutes.post("/navigation/nav-max-visible", async (c) => {
-  const body = await c.req.json<{ value: number }>();
-  const { settings } = c.var.services;
-
-  const navMax = Math.max(0, Math.min(5, body.value ?? 3));
-  if (navMax !== 3) {
-    await settings.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
-  } else {
-    await settings.remove("HEADER_NAV_MAX_VISIBLE");
-  }
-
-  return c.json({ ok: true });
 });
 
 settingsRoutes.post("/navigation/home-default-view", async (c) => {

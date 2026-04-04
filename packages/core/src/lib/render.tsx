@@ -88,7 +88,6 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     isAuthenticated: navData.isAuthenticated,
     collections: navData.collections,
     homeDefaultView: navData.homeDefaultView,
-    headerNavMaxVisible: navData.headerNavMaxVisible,
     siteAvatarUrl: navData.siteAvatarUrl,
     showHeaderAvatar: navData.showHeaderAvatar,
     siteFooterHtml: navData.siteFooterHtml,

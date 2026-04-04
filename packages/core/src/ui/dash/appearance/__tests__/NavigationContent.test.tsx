@@ -21,7 +21,6 @@ function renderNavigationContent(
   return renderToString(
     NavigationContent({
       navItems: [],
-      headerNavMaxVisible: 4,
       homeDefaultView: "latest",
       mainRssFeed: "latest",
       siteName: "Test Site",

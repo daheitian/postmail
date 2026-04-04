@@ -23,14 +23,12 @@ import {
 
 export function NavigationContent({
   navItems,
-  headerNavMaxVisible,
   homeDefaultView,
   mainRssFeed,
   siteName,
   sitePathPrefix = "",
 }: {
   navItems: NavItem[];
-  headerNavMaxVisible: number;
   homeDefaultView: string;
   mainRssFeed: string;
   siteName: string;
@@ -207,25 +205,6 @@ export function NavigationContent({
       }),
     ),
     urlPlaceholder: "/archive or https://...",
-    maxVisibleLinks: i18n._(
-      msg({
-        message: "Links shown in header",
-        comment: "@context: Label for max visible nav links number input",
-      }),
-    ),
-    maxVisibleLinksDescription: i18n._(
-      msg({
-        message: "The rest will be tucked into a ··· menu",
-        comment:
-          "@context: Description for max visible nav links, explains overflow behavior",
-      }),
-    ),
-    maxVisibleSaved: i18n._(
-      msg({
-        message: "Header link limit updated.",
-        comment: "@context: Toast after saving max visible nav links setting",
-      }),
-    ),
     useFeaturedAsDefault: i18n._(
       msg({
         message: "Use Featured as the home feed",
@@ -266,7 +245,6 @@ export function NavigationContent({
         labels={escapeJson(labels)}
         system-nav-items={escapeJson(systemNavData)}
         site-name={siteName}
-        max-visible={headerNavMaxVisible}
         home-default-view={homeDefaultView}
       >
         {/* SSR fallback: static preview until JS hydrates */}
@@ -287,7 +265,7 @@ export function NavigationContent({
               <div class="site-header-right">
                 {navItems.length > 0 && (
                   <nav class="site-header-nav">
-                    {navItems.slice(0, headerNavMaxVisible).map((item) => (
+                    {navItems.map((item) => (
                       <a
                         key={item.id}
                         href={toPublicHref(item.url, sitePathPrefix)}
@@ -296,9 +274,6 @@ export function NavigationContent({
                         {getNavItemDisplayLabel(item, i18n, sitePathPrefix)}
                       </a>
                     ))}
-                    {navItems.length > headerNavMaxVisible && (
-                      <span class="text-muted-foreground">…</span>
-                    )}
                   </nav>
                 )}
                 <span class="site-header-search" aria-hidden="true">

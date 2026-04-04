@@ -42,9 +42,6 @@ export interface NavManagerLabels {
   addLinkDescription: string;
   urlPlaceholder: string;
   labelAndUrlRequired: string;
-  maxVisibleLinks: string;
-  maxVisibleLinksDescription: string;
-  maxVisibleSaved: string;
   useFeaturedAsDefault: string;
   useFeaturedAsDefaultDescription: string;
   homeViewSaved: string;

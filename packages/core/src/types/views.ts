@@ -231,7 +231,6 @@ export interface SiteLayoutProps {
   isAuthenticated?: boolean;
   collections?: Collection[];
   homeDefaultView?: string;
-  headerNavMaxVisible?: number;
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;
