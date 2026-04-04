@@ -14,7 +14,9 @@ Most customization happens through:
 - site settings in the dashboard
 - custom CSS and theme variables
 - HTTP API calls
-- CLI commands such as export, import, migrate, and deploy
+- `jant` CLI commands for posts, collections, settings, search, export, import, migrate, and deploy
+- the built-in MCP endpoint at `/api/mcp` for remote agent tooling
+- examples in `examples/agent-content-automation/`
 
 Do not edit `node_modules/@jant/core`. If you need reusable product changes, make them in the Jant monorepo instead.
 
@@ -27,6 +29,11 @@ npm run export
 npm run reset-password
 
 npx jant migrate --local
+npx jant posts list --limit 20
+npx jant media list --mimePrefix image/
+npx jant collections list
+npx jant settings get
+npx jant search "quiet design"
 npx jant site export --output ./jant-site-export.zip
 npx jant site import --path ./jant-site-export.zip --dry-run
 npx jant db export --output ./jant-export.sql
@@ -46,6 +53,10 @@ Load the matching skill before making substantive changes:
 
 - Keep `index.js` minimal unless the site truly needs custom server behavior.
 - Prefer settings, custom CSS, and documented extension points before changing runtime code.
+- Prefer local `npx jant posts`, `collections`, `settings`, and `search` commands for scripted automation when you are already on the site machine.
+- Use `npx jant media` for file uploads, media listing, text attachment reads, alt updates, and deletes.
+- Use `/api/mcp` when an MCP client is available and you need the site to expose posts, collections, settings, or search as tools.
+- Start from `examples/agent-content-automation/README.md` if the task is content automation rather than app development.
 - Use `bodyMarkdown` in API scripts instead of raw TipTap JSON unless you already have trusted editor output.
 - Quote posts use `quoteText`, `sourceName`, and `sourceUrl`. Do not send `title` or `url` for quote payloads.
 - `PUT /api/settings` accepts strings only, even for booleans and numbers.

@@ -156,6 +156,8 @@ Reference:
 
 This site template includes project guidance in `AGENTS.md` plus task-focused skills in `.agents/skills/`.
 
+For concrete content automation examples, see `examples/agent-content-automation/README.md`.
+
 Available skills:
 
 - `building-jant-site`

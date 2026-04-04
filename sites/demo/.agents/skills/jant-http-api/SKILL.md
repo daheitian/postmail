@@ -15,6 +15,34 @@ Use one of these:
 - `Authorization: Bearer jnt_...` API token
 - local `DEV_API_TOKEN` on localhost-style hosts
 
+## Prefer Local CLI First
+
+When you already have shell access to the site directory, prefer the built-in `jant` CLI for common automation:
+
+```bash
+npx jant posts list --limit 20
+npx jant posts create --input ./post.json
+npx jant media upload ./photo.webp --alt "Cover image"
+npx jant media list --mimePrefix image/
+npx jant collections add-post col_... pst_...
+npx jant settings get
+npx jant search "quiet design"
+```
+
+The CLI uses the same site URL and token model as the HTTP API.
+
+## Built-in MCP
+
+Jant also exposes a built-in MCP endpoint at `/api/mcp`.
+
+- auth: session cookie or `Authorization: Bearer jnt_...`
+- tools: posts, media, collections, settings, and search
+- protocol: streamable HTTP request/response shape with `initialize`, `tools/list`, and `tools/call`
+
+Use MCP when the caller already speaks MCP. Use the CLI or plain HTTP when you just need a direct script.
+
+Generated sites also include worked examples in `examples/agent-content-automation/`.
+
 Base URL examples:
 
 - local: `http://localhost:3000`
@@ -76,7 +104,13 @@ curl -X PUT "$JANT_URL/api/posts/pst_..." \
 
 ## Uploads
 
-For new clients, use the recommended upload flow:
+For scripted clients, prefer the local CLI:
+
+```bash
+npx jant media upload ./photo.webp --alt "Cover image"
+```
+
+For raw HTTP clients, use the recommended upload session flow:
 
 1. `POST /api/uploads/init`
 2. upload bytes to the returned transport
@@ -96,6 +130,13 @@ Use the returned `med_*` ID inside a post attachment:
 {
   "attachments": [{ "type": "media", "mediaId": "med_..." }]
 }
+```
+
+Read text attachment markdown through:
+
+```bash
+curl "$JANT_URL/api/attachments/med_.../content" \
+  -H "Authorization: Bearer $JANT_API_TOKEN"
 ```
 
 ## Collections

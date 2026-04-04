@@ -183,6 +183,7 @@ If you notice code contradicting this document, think about which side is correc
 - **Coding standards** (module deps, error handling, testing): `docs/internal/coding-standards.md`
 - **Lit/Datastar conventions**: `docs/internal/lit-guide.md`
 - **Testing guide**: `docs/internal/testing-guide.md`
+- **Agent automation testing**: `docs/internal/agent-automation-testing.md`
 - **Datastar patterns and API**: `docs/datastar.md`, `references/datastar/`
 - **BaseCoat components**: `references/basecoat/`
 - **Configuration**: `docs/configuration.md`

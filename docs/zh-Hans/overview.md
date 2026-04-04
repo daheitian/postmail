@@ -81,6 +81,7 @@ Cloudflare Workers 是一等公民部署目标，因为它几乎可以让博客�
 
 然后按需再看：
 
+- [自动化与 API](automation-and-api.md)
 - [导出与导入](export-and-import.md)
 - [备份与恢复](backups.md)
 - [主题定制](theming.md)

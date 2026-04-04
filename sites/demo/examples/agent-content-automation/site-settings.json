@@ -1,0 +1,5 @@
+{
+  "SITE_NAME": "Example Jant Site",
+  "SITE_DESCRIPTION": "Automated through the local CLI example.",
+  "TIME_ZONE": "Asia/Shanghai"
+}

@@ -6,57 +6,11 @@ import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { ValidationError, ExternalServiceError } from "../../lib/errors.js";
-import { toPublicPath } from "../../lib/url.js";
-import type { Post } from "../../types.js";
+import { toSearchApiResult } from "../../lib/api-search.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const searchApiRoutes = new Hono<Env>();
-
-type SearchApiResult = {
-  id: string;
-  format: Post["format"];
-  slug: string;
-  snippet?: string;
-  publishedAt: number | null;
-  permalink: string;
-  title?: string | null;
-  url?: string | null;
-  sourceName?: string | null;
-  sourceUrl?: string | null;
-};
-
-function toSearchApiResult(
-  post: Post,
-  snippet: string | undefined,
-  sitePathPrefix?: string,
-): SearchApiResult {
-  const permalink = toPublicPath(`/${post.slug}`, sitePathPrefix);
-
-  if (post.format === "quote") {
-    return {
-      id: post.id,
-      format: post.format,
-      slug: post.slug,
-      snippet,
-      publishedAt: post.publishedAt,
-      permalink,
-      sourceName: post.title,
-      sourceUrl: post.url,
-    };
-  }
-
-  return {
-    id: post.id,
-    format: post.format,
-    title: post.title,
-    url: post.url,
-    slug: post.slug,
-    snippet,
-    publishedAt: post.publishedAt,
-    permalink,
-  };
-}
 
 // Search posts
 searchApiRoutes.get("/", async (c) => {

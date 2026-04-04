@@ -3,7 +3,7 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, Post } from "../../types.js";
+import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { z } from "zod";
 import {
@@ -15,7 +15,7 @@ import {
   parseValidated,
 } from "../../lib/schemas.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { toApiAttachment } from "../../lib/api-posts.js";
+import { toApiAttachment, toApiPost } from "../../lib/api-posts.js";
 import { assertFound, NotFoundError, parseIdParam } from "../../lib/errors.js";
 import { ID_PREFIX } from "../../lib/ids.js";
 
@@ -25,41 +25,6 @@ export const postsApiRoutes = new Hono<Env>();
 
 function hasOwnField<T extends object>(value: T, key: keyof T): boolean {
   return Object.prototype.hasOwnProperty.call(value, key);
-}
-
-type ApiPostResponse = Omit<Post, "title" | "url"> & {
-  attachments?: ReturnType<typeof toApiAttachment>[];
-  collectionIds?: string[];
-  title?: string | null;
-  url?: string | null;
-  sourceName?: string | null;
-  sourceUrl?: string | null;
-};
-
-function toApiPost(
-  post: Post,
-  extras: {
-    attachments?: ReturnType<typeof toApiAttachment>[];
-    collectionIds?: string[];
-  } = {},
-): ApiPostResponse {
-  const { title, url, ...rest } = post;
-
-  if (post.format === "quote") {
-    return {
-      ...rest,
-      ...extras,
-      sourceName: title ?? null,
-      sourceUrl: url ?? null,
-    };
-  }
-
-  return {
-    ...rest,
-    ...extras,
-    title: title ?? null,
-    url: url ?? null,
-  };
 }
 
 const ListPostsQuerySchema = z.object({

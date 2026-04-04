@@ -1,0 +1,9 @@
+{
+  "format": "quote",
+  "quoteText": "What stands in the way becomes the way.",
+  "sourceName": "Marcus Aurelius",
+  "sourceUrl": "https://example.com/meditations",
+  "bodyMarkdown": "A source-backed quote published through the CLI example.",
+  "status": "published",
+  "visibility": "public"
+}

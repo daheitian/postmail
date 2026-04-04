@@ -60,6 +60,7 @@ By default, `create-jant` also:
 - installed dependencies
 - initialized a git repository
 - created a Cloudflare Workers project with D1 and R2 bindings ready to configure
+- included `examples/agent-content-automation/README.md` plus site-level agent guidance for scripted publishing
 
 If you passed `--no-install` or `--no-git`, do those steps yourself.
 

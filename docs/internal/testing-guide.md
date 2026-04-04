@@ -47,6 +47,12 @@ Usage notes:
 - Do not test third-party internals or framework rendering internals.
 - For bug fixes, add a regression test that fails before the fix.
 
+## Manual End-to-End Checks
+
+For changes that affect generated site agent scaffolding, content CLI commands,
+uploads/media automation, or the MCP endpoint, see
+`docs/internal/agent-automation-testing.md`.
+
 ## Migration Rehearsal
 
 - Use `mise run db-rehearse-local` to replay a frozen D1 fixture against the current migration set.

@@ -1,8 +1,17 @@
-import type { Media } from "../types.js";
+import type { Media, Post } from "../types.js";
 import { getImageUrl, getMediaUrl, getPublicUrlForProvider } from "./image.js";
 import { toPublicPath } from "./url.js";
 
 const ATTACHED_TEXT_MIME_TYPE = "text/x-tiptap+json";
+
+export type ApiPostResponse = Omit<Post, "title" | "url"> & {
+  attachments?: ReturnType<typeof toApiAttachment>[];
+  collectionIds?: string[];
+  title?: string | null;
+  url?: string | null;
+  sourceName?: string | null;
+  sourceUrl?: string | null;
+};
 
 export function toApiAttachment(
   media: Media,
@@ -61,5 +70,31 @@ export function toApiAttachment(
     size: media.size,
     summary: media.summary,
     chars: media.chars,
+  };
+}
+
+export function toApiPost(
+  post: Post,
+  extras: {
+    attachments?: ReturnType<typeof toApiAttachment>[];
+    collectionIds?: string[];
+  } = {},
+): ApiPostResponse {
+  const { title, url, ...rest } = post;
+
+  if (post.format === "quote") {
+    return {
+      ...rest,
+      ...extras,
+      sourceName: title ?? null,
+      sourceUrl: url ?? null,
+    };
+  }
+
+  return {
+    ...rest,
+    ...extras,
+    title: title ?? null,
+    url: url ?? null,
   };
 }

@@ -22,6 +22,7 @@ For static export and round-trip import, also see [Export and Import](export-and
 | Uploads (recommended)   | `/api/uploads`                         | API token or session |
 | Uploads (legacy)        | `/api/upload`, `/api/upload/multipart` | API token or session |
 | Text attachment content | `/api/attachments`                     | API token or session |
+| MCP                     | `/api/mcp`                             | API token or session |
 | Collections             | `/api/collections`                     | Mixed                |
 | Navigation items        | `/api/nav-items`                       | Mixed                |
 | Custom URLs             | `/api/custom-urls`                     | API token or session |
@@ -77,6 +78,94 @@ This is meant for local tooling, not production clients.
 `/api/internal/*` endpoints only accept the environment-provided `INTERNAL_ADMIN_TOKEN`.
 
 If that token is not configured, those endpoints behave as if they do not exist and return `404`.
+
+---
+
+## Automation Entry Points
+
+Jant exposes the same site-owner automation surface three ways:
+
+- local `npx jant` commands when the automation runs on the site machine
+- HTTP JSON endpoints under `/api/*`
+- an authenticated MCP endpoint at `/api/mcp`
+
+Projects created with `create-jant` also include `examples/agent-content-automation/README.md`, which shows copy-pasteable CLI and MCP flows for posts, media, and settings.
+
+### Local CLI
+
+The site-aware CLI maps directly to the HTTP endpoints documented below.
+
+Available command groups:
+
+- `npx jant posts`
+- `npx jant media`
+- `npx jant collections`
+- `npx jant settings`
+- `npx jant search`
+
+Resolution rules:
+
+- Pass `--url https://your-site.com`, or let the CLI read `SITE_ORIGIN` from the environment or `wrangler.toml`.
+- Pass `--token jnt_...`, or set `JANT_API_TOKEN`.
+- On local hosts only, `DEV_API_TOKEN` is also accepted.
+- `npx jant collections list`, `npx jant collections get`, and `npx jant search` can call public endpoints without a token. Other commands require auth.
+
+Examples:
+
+```bash
+npx jant posts create --input ./post.json
+npx jant media upload ./cover.webp --alt "Cover image"
+npx jant collections add-post col_01... pst_01...
+npx jant settings update --json '{"SITE_NAME":"Quiet Notes"}'
+npx jant search "quiet design"
+```
+
+### MCP
+
+Base path: `/api/mcp`
+
+Auth: `Session or token`
+
+Jant's MCP endpoint is a minimal HTTP JSON-RPC transport for remote agents and automation systems that already speak MCP.
+
+Current transport behavior:
+
+- `POST` only
+- content type `application/json`
+- requires `MCP-Protocol-Version: 2025-06-18`
+- supports `initialize`, `ping`, `tools/list`, `tools/call`, and `notifications/initialized`
+- does not support batch requests, SSE streaming, or session negotiation
+
+Current tool groups:
+
+- posts: `jant_posts_list`, `jant_posts_get`, `jant_posts_get_content`, `jant_posts_create`, `jant_posts_update`, `jant_posts_delete`
+- media: `jant_media_list`, `jant_media_get`, `jant_media_upload`, `jant_media_update_alt`, `jant_media_delete`
+- attachments: `jant_attachments_get_content`
+- collections: `jant_collections_list`, `jant_collections_get`, `jant_collections_create`, `jant_collections_update`, `jant_collections_delete`, `jant_collections_add_post`, `jant_collections_remove_post`
+- settings: `jant_settings_get`, `jant_settings_update`
+- search: `jant_search_posts`
+
+Tool calls return normal MCP `result` envelopes. Successful tool calls include both `structuredContent` and a JSON string copy in `content[0].text`. Tool-level validation and domain failures return `200 OK` with `isError: true`.
+
+Initialize:
+
+```bash
+curl -X POST https://your-site.com/api/mcp \
+  -H "Authorization: Bearer jnt_YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "MCP-Protocol-Version: 2025-06-18" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}'
+```
+
+Create a post through `tools/call`:
+
+```bash
+curl -X POST https://your-site.com/api/mcp \
+  -H "Authorization: Bearer jnt_YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "MCP-Protocol-Version: 2025-06-18" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"jant_posts_create","arguments":{"format":"note","bodyMarkdown":"Created through MCP.","status":"published","visibility":"public"}}}'
+```
 
 ---
 
@@ -919,11 +1008,109 @@ Response:
 { "success": true }
 ```
 
-### Legacy single-request uploads
+### List uploaded media
+
+`GET /api/upload`
+
+Auth: `Session or token`
+
+This is the media metadata endpoint used by `npx jant media list`.
+
+Query parameters:
+
+| Parameter    | Type    | Required | Default | Notes                                      |
+| ------------ | ------- | -------- | ------- | ------------------------------------------ |
+| `limit`      | integer | no       | `50`    | `1` to `200`                               |
+| `mimePrefix` | string  | no       | none    | Prefix filter such as `image/` or `video/` |
+
+Response:
+
+```json
+{
+  "media": [
+    {
+      "id": "med_01jpyx4g9m8b4y50a4gx3t7p1n",
+      "siteId": "sit_01jpyx1v6z9k4c7b2m5q8r3nfh",
+      "postId": null,
+      "filename": "photo.webp",
+      "originalName": "photo.webp",
+      "mimeType": "image/webp",
+      "size": 1024000,
+      "provider": "r2",
+      "width": 1200,
+      "height": 800,
+      "durationSeconds": null,
+      "alt": "Cover image",
+      "position": "0",
+      "blurhash": null,
+      "waveform": null,
+      "summary": null,
+      "chars": null,
+      "mediaKind": "image",
+      "createdAt": 1706000000,
+      "updatedAt": 1706000000,
+      "type": "media",
+      "url": "/media/med_01jpyx4g9m8b4y50a4gx3t7p1n.webp",
+      "previewUrl": "/media/med_01jpyx4g9m8b4y50a4gx3t7p1n.webp",
+      "posterUrl": null
+    }
+  ]
+}
+```
+
+Notes:
+
+- This list may include ordinary uploaded binaries and stored text attachments.
+- Text attachments use `type: "text"` and expose `contentFormat` plus `contentUrl` instead of `url`, `previewUrl`, and `posterUrl`.
+
+### Get a media item
+
+`GET /api/upload/:id`
+
+Auth: `Session or token`
+
+Returns one media or text attachment record using the same response shape as `GET /api/upload`.
+
+### Update media alt text
+
+`PATCH /api/upload/:id`
+
+Auth: `Session or token`
+
+Request body:
+
+```json
+{
+  "alt": "Cover image"
+}
+```
+
+Rules:
+
+- `alt` is trimmed before storing.
+- Max length is `500`.
+
+Response: `200 OK` with the updated media object.
+
+### Delete a media item
+
+`DELETE /api/upload/:id`
+
+Auth: `Session or token`
+
+Deletes the media record and its stored object.
+
+Response:
+
+```json
+{ "success": true }
+```
+
+### Legacy one-shot upload
 
 Base path: `/api/upload`
 
-Use this if you want the old one-shot multipart form upload behavior. New clients should prefer `/api/uploads`.
+Use this only if you want the older multipart form upload behavior in a single request. New clients should prefer `/api/uploads`.
 
 #### Upload a file
 
@@ -957,43 +1144,6 @@ Response:
 ```
 
 If the request sends `Accept: text/event-stream`, the endpoint may return SSE patches instead of JSON for dashboard use.
-
-#### List uploaded files
-
-`GET /api/upload`
-
-Query parameters:
-
-| Parameter | Type    | Required | Default |
-| --------- | ------- | -------- | ------- |
-| `limit`   | integer | no       | `50`    |
-
-Response:
-
-```json
-{
-  "media": [
-    {
-      "id": "med_01jpyx4g9m8b4y50a4gx3t7p1n",
-      "filename": "med_01jpyx4g9m8b4y50a4gx3t7p1n.jpg",
-      "url": "/media/med_01jpyx4g9m8b4y50a4gx3t7p1n.jpg",
-      "mimeType": "image/jpeg",
-      "size": 1024000,
-      "createdAt": 1706000000
-    }
-  ]
-}
-```
-
-#### Delete a file
-
-`DELETE /api/upload/:id`
-
-Response:
-
-```json
-{ "success": true }
-```
 
 ### Legacy explicit multipart relay
 
@@ -2494,6 +2644,25 @@ curl -X POST https://your-site.com/api/posts \
       { "type": "media", "mediaId": "med_01..." }
     ]
   }'
+```
+
+### Automate content from a generated site
+
+Projects created with `create-jant` include `examples/agent-content-automation/README.md`.
+
+Use that folder when you want ready-made examples for:
+
+- creating note and quote posts from JSON
+- updating editable settings from JSON
+- uploading media and attaching the returned `med_*` ID to a post
+- calling `/api/mcp` from an MCP-capable agent
+
+When the automation runs on the same machine as the site, prefer the local CLI first:
+
+```bash
+npx jant posts create --input ./examples/agent-content-automation/note.json
+npx jant media upload ./path/to/photo.webp --alt "Cover image"
+npx jant settings update --input ./examples/agent-content-automation/site-settings.json
 ```
 
 ### Migrate content from another system

@@ -42,6 +42,7 @@ import { uploadApiRoutes } from "./routes/api/upload.js";
 import { uploadsApiRoutes } from "./routes/api/uploads.js";
 import { multipartUploadApiRoutes } from "./routes/api/upload-multipart.js";
 import { searchApiRoutes } from "./routes/api/search.js";
+import { mcpApiRoutes } from "./routes/api/mcp.js";
 import { customUrlsApiRoutes } from "./routes/api/custom-urls.js";
 import { exportApiRoutes } from "./routes/api/export.js";
 import { internalApiTokensRoutes } from "./routes/api/internal/api-tokens.js";
@@ -484,6 +485,7 @@ export function createApp(): App {
   app.route("/api/upload", uploadApiRoutes);
   app.route("/api/uploads", uploadsApiRoutes);
   app.route("/api/search", searchApiRoutes);
+  app.route("/api/mcp", mcpApiRoutes);
 
   // Compose route (auth enforced in route middleware)
   app.route("/compose", composeRoutes);

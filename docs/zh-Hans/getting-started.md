@@ -60,12 +60,14 @@ PORT=3030 npm run dev
 - 安装依赖
 - 初始化一个 git 仓库
 - 创建一个已经接好 D1 与 R2 绑定、可继续配置的 Cloudflare Workers 项目
+- 带上 `examples/agent-content-automation/README.md` 和站点级 agent 指引，方便脚本化发布
 
 如果你传了 `--no-install` 或 `--no-git`，这些步骤就需要你自己完成。
 
 ## 接下来读什么
 
 - [写作与内容组织](writing-and-organizing.md)，了解 note、link、quote、threads 和 collections
+- [自动化与 API](automation-and-api.md)，了解 CLI、HTTP API 和 MCP 该怎么选
 - [部署到 Cloudflare](deployment.md)，把刚创建的站点发布出去
 - [配置](configuration.md)，调整 URL、存储、feeds 和上传行为
 - [主题定制](theming.md)，修改站点的视觉表现

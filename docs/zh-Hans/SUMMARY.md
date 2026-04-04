@@ -23,4 +23,5 @@
 
 ## 参考
 
+- [自动化与 API](automation-and-api.md)
 - [API 参考（英文）](../API.md)

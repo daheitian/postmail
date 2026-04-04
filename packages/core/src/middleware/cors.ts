@@ -38,8 +38,8 @@ export function apiCors(): MiddlewareHandler<Env> {
     const handler = cors({
       origin: origins,
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-      allowHeaders: ["Content-Type", "Authorization"],
-      exposeHeaders: ["Content-Type"],
+      allowHeaders: ["Content-Type", "Authorization", "MCP-Protocol-Version"],
+      exposeHeaders: ["Content-Type", "MCP-Protocol-Version"],
       credentials: origins !== "*",
       maxAge: 86400,
     });

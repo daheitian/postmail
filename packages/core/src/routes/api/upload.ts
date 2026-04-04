@@ -8,6 +8,7 @@
 import { Hono, type Context } from "hono";
 import { html } from "hono/html";
 import { msg } from "@lingui/core/macro";
+import { z } from "zod";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
@@ -27,12 +28,31 @@ import {
   validateStoredUploadMetadata,
   validateStoredUploadSignature,
 } from "../../lib/upload.js";
-import { assertFound, MediaQuotaExceededError } from "../../lib/errors.js";
+import {
+  assertFound,
+  MediaQuotaExceededError,
+  parseIdParam,
+} from "../../lib/errors.js";
 import { getI18n } from "../../i18n/index.js";
+import { ID_PREFIX } from "../../lib/ids.js";
+import { parseValidated } from "../../lib/schemas.js";
+import { toApiMedia } from "../../lib/api-media.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const uploadApiRoutes = new Hono<Env>();
+
+const ListMediaQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(200).optional().default(50),
+  mimePrefix: z.string().trim().min(1).optional(),
+});
+
+const UpdateMediaSchema = z.object({
+  alt: z
+    .string()
+    .max(500)
+    .transform((value) => value.trim()),
+});
 
 // Require auth for all upload routes
 uploadApiRoutes.use("*", requireAuthApi());
@@ -402,35 +422,37 @@ uploadApiRoutes.post("/", async (c) => {
 
 // List uploaded files (JSON only)
 uploadApiRoutes.get("/", async (c) => {
-  const limit = parseInt(c.req.query("limit") ?? "50", 10);
-  const mediaList = await c.var.services.media.list({ limit });
-  const { r2PublicUrl, s3PublicUrl, localPublicUrl, sitePathPrefix } =
-    c.var.appConfig;
+  const { limit, mimePrefix } = parseValidated(
+    ListMediaQuerySchema,
+    c.req.query(),
+  );
+  const mediaList = await c.var.services.media.list({ limit, mimePrefix });
 
   return c.json({
-    media: mediaList.map((m) => ({
-      id: m.id,
-      filename: m.filename,
-      url: getMediaUrl(
-        m.storageKey,
-        getPublicUrlForProvider(
-          m.provider,
-          r2PublicUrl,
-          s3PublicUrl,
-          localPublicUrl,
-        ),
-        sitePathPrefix,
-      ),
-      mimeType: m.mimeType,
-      size: m.size,
-      createdAt: m.createdAt,
-    })),
+    media: mediaList.map((media) => toApiMedia(media, c.var.appConfig)),
   });
+});
+
+uploadApiRoutes.get("/:id", async (c) => {
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.media);
+  const media = assertFound(await c.var.services.media.getById(id), "Media");
+  return c.json(toApiMedia(media, c.var.appConfig));
+});
+
+uploadApiRoutes.patch("/:id", async (c) => {
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.media);
+  const { alt } = parseValidated(UpdateMediaSchema, await c.req.json());
+  assertFound(await c.var.services.media.getById(id), "Media");
+
+  await c.var.services.media.updateAlt(id, alt);
+
+  const media = assertFound(await c.var.services.media.getById(id), "Media");
+  return c.json(toApiMedia(media, c.var.appConfig));
 });
 
 // Delete a file
 uploadApiRoutes.delete("/:id", async (c) => {
-  const id = c.req.param("id");
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.media);
   assertFound(await c.var.services.media.getById(id), "Media");
 
   await c.var.services.media.delete(id, c.var.storage);
