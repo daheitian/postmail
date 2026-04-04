@@ -205,6 +205,7 @@ export interface ComposeLabels {
   postPrivately: string;
   quietReplyLabel: string;
   quietReplyHint: string;
+  threadLimitReached: string;
   showMore: string;
   showLess: string;
   newThread: string;

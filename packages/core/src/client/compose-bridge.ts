@@ -677,6 +677,38 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     if (!isPageMode || !composeEl) return;
     composeEl.loading = false;
   };
+  const clearRecoveredLocalDraft = () => {
+    if (isEdit) return;
+    composeEl?.clearLocalDraftFromStorage?.();
+  };
+  const reopenComposeAfterFailure = async () => {
+    if (!composeEl || isPageMode || isEdit) return;
+
+    if (detail.replyToId) {
+      if (typeof composeEl.openReply !== "function") return;
+      await composeEl.openReply(
+        detail.replyToId,
+        undefined,
+        detail.replyThreadRootId,
+        detail.replyRefreshKind && detail.replyRefreshId
+          ? {
+              kind: detail.replyRefreshKind,
+              id: detail.replyRefreshId,
+            }
+          : undefined,
+        { restoreDraft: true },
+      );
+      return;
+    }
+
+    if (typeof composeEl.openNew !== "function") return;
+    await composeEl.openNew({ restoreDraft: true });
+  };
+  const handleSubmitError = async (message: string) => {
+    clearPageLoading();
+    await reopenComposeAfterFailure();
+    toastMsg(message, "error");
+  };
   const refreshComposeCollections = async () => {
     await composeEl?.refreshCollections();
   };
@@ -719,8 +751,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       if (detail.status === "published" && !isEdit) {
         draftFallback = "upload";
       } else {
-        clearPageLoading();
-        toastMsg("Upload failed. Post not created.", "error");
+        await handleSubmitError("Upload failed. Post not created.");
         return;
       }
     }
@@ -790,6 +821,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
           });
           if (retryRes.ok) {
             draftFallback = "server";
+            clearRecoveredLocalDraft();
             const fallbackMsg =
               labels?.publishFailedDraft ?? "Couldn't publish. Saved as draft.";
             await refreshComposeCollections();
@@ -799,15 +831,14 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
           }
         }
         const data = await readJsonObject(res);
-        clearPageLoading();
-        toastMsg(
+        await handleSubmitError(
           getJsonString(data, "error") ?? "Something went wrong",
-          "error",
         );
         return;
       }
 
       if (draftFallback === "upload") {
+        clearRecoveredLocalDraft();
         const fallbackMsg =
           labels?.uploadFailedDraft ?? "Some uploads failed. Saved as draft.";
         await refreshComposeCollections();
@@ -822,6 +853,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       const threadToast = getJsonString(threadData, "toast");
 
       if (threadStatus === "published") {
+        clearRecoveredLocalDraft();
         if (isPageMode && threadPermalink) {
           queueSuccessToast(publishedMsg);
           composeEl?.preparePageLeave?.();
@@ -836,6 +868,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
           globalThis.location.reload();
         }
       } else {
+        clearRecoveredLocalDraft();
         await refreshComposeCollections();
         if (!leavePageAfterConfirmSave()) resetPageCompose();
         toastMsg(threadToast ?? "Draft saved.");
@@ -895,6 +928,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
         if (retryRes.ok) {
           draftFallback = "server";
+          clearRecoveredLocalDraft();
           const retryData = await readJsonObject(retryRes);
           const fallbackMsg =
             labels?.publishFailedDraft ?? "Couldn't publish. Saved as draft.";
@@ -910,8 +944,9 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       }
 
       const data = await readJsonObject(res);
-      clearPageLoading();
-      toastMsg(getJsonString(data, "error") ?? "Something went wrong", "error");
+      await handleSubmitError(
+        getJsonString(data, "error") ?? "Something went wrong",
+      );
       return;
     }
 
@@ -927,6 +962,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
     // Upload fallback: show specific message instead of normal flow
     if (draftFallback === "upload") {
+      clearRecoveredLocalDraft();
       const fallbackMsg =
         labels?.uploadFailedDraft ?? "Some uploads failed. Saved as draft.";
       await refreshComposeCollections();
@@ -941,6 +977,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     const toast = getJsonString(data, "toast");
 
     if (status === "published") {
+      clearRecoveredLocalDraft();
       if (isPageMode && permalink) {
         queueSuccessToast(publishedMsg);
         composeEl?.preparePageLeave?.();
@@ -968,6 +1005,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       }
       return;
     } else {
+      clearRecoveredLocalDraft();
       await refreshComposeCollections();
       if (!leavePageAfterConfirmSave()) {
         resetPageCompose();
@@ -975,7 +1013,6 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       toastMsg(toast ?? "Draft saved.");
     }
   } catch {
-    clearPageLoading();
-    toastMsg("Something went wrong", "error");
+    await handleSubmitError("Something went wrong");
   }
 });

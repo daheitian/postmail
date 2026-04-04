@@ -15,6 +15,7 @@
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
 import Sortable from "sortablejs";
+import type { SortableOptions } from "sortablejs";
 import {
   getSortableMove,
   readSortableDataIds,
@@ -149,7 +150,7 @@ export class JantNavManager extends LitElement {
     }
   }
 
-  #sortableOptions(placement: "header" | "more"): Sortable.Options {
+  #sortableOptions(placement: "header" | "more"): SortableOptions {
     return {
       ...responsiveSortableOptions,
       animation: 150,

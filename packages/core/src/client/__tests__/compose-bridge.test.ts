@@ -5,6 +5,18 @@ import "../compose-bridge.js";
 import { QUEUED_TOAST_STORAGE_KEY } from "../toast.js";
 
 type ComposeHarness = HTMLElement & {
+  clearLocalDraftFromStorage?: () => void;
+  openNew?: (options?: { restoreDraft?: boolean }) => Promise<void>;
+  openReply?: (
+    id: string,
+    replyData?: unknown,
+    threadRootId?: string,
+    refreshTarget?: {
+      kind: "timeline-item" | "post-card" | "post-view";
+      id: string;
+    },
+    options?: { restoreDraft?: boolean },
+  ) => Promise<void>;
   refreshCollections: () => Promise<boolean>;
   pageMode?: boolean;
   preparePageLeave?: () => void;
@@ -18,6 +30,12 @@ type ComposeHarness = HTMLElement & {
 
 function flushAsyncWork() {
   return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+async function flushBridgeWork(times = 4) {
+  for (let i = 0; i < times; i++) {
+    await flushAsyncWork();
+  }
 }
 
 describe("compose bridge", () => {
@@ -90,8 +108,7 @@ describe("compose bridge", () => {
       }),
     );
 
-    await flushAsyncWork();
-    await flushAsyncWork();
+    await flushBridgeWork();
 
     expect(fetchSpy).toHaveBeenCalled();
     expect(refreshCollections).toHaveBeenCalledTimes(1);
@@ -160,8 +177,7 @@ describe("compose bridge", () => {
       }),
     );
 
-    await flushAsyncWork();
-    await flushAsyncWork();
+    await flushBridgeWork();
 
     expect(composeEl.preparePageLeave).toHaveBeenCalledTimes(1);
     expect(assignSpy).toHaveBeenCalledWith("/published-post");
@@ -252,8 +268,7 @@ describe("compose bridge", () => {
       }),
     );
 
-    await flushAsyncWork();
-    await flushAsyncWork();
+    await flushBridgeWork();
 
     expect(fetchSpy).toHaveBeenCalled();
   });
@@ -335,10 +350,111 @@ describe("compose bridge", () => {
       }),
     );
 
-    await flushAsyncWork();
-    await flushAsyncWork();
+    await flushBridgeWork();
 
     expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("reopens reply compose with local draft recovery after a thread validation error", async () => {
+    const composeEl = document.createElement(
+      "jant-compose-dialog",
+    ) as ComposeHarness;
+    composeEl.refreshCollections = vi.fn(async () => true);
+    composeEl.pageMode = false;
+    composeEl.openNew = vi.fn(async () => {});
+    composeEl.openReply = vi.fn(async () => {});
+    composeEl.clearLocalDraftFromStorage = vi.fn();
+    document.body.appendChild(composeEl);
+
+    let requestCount = 0;
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const raw =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url;
+      const url = new URL(raw, "http://localhost");
+
+      if (url.pathname === "/compose/thread") {
+        requestCount += 1;
+        return new Response(
+          JSON.stringify({ error: "Threads can include up to 10 posts." }),
+          {
+            status: 422,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      throw new Error(`Unexpected fetch: ${url.pathname}`);
+    });
+
+    composeEl.dispatchEvent(
+      new CustomEvent("jant:compose-submit-deferred", {
+        bubbles: true,
+        detail: {
+          format: "note",
+          title: "",
+          body: "",
+          url: "",
+          quoteText: "",
+          quoteAuthor: "",
+          slug: "",
+          status: "published",
+          visibility: "public",
+          rating: 0,
+          collectionIds: [],
+          attachments: [],
+          pendingAttachments: [],
+          replyToId: "pst_parent",
+          replyThreadRootId: "pst_root",
+          replyRefreshKind: "timeline-item",
+          replyRefreshId: "pst_root",
+          threadPosts: [
+            {
+              format: "note",
+              title: "",
+              body: '{"type":"doc","content":[]}',
+              url: "",
+              quoteText: "",
+              quoteAuthor: "",
+              status: "published",
+              visibility: "public",
+              rating: 0,
+              collectionIds: [],
+              attachments: [],
+              replyToId: "pst_parent",
+            },
+            {
+              format: "note",
+              title: "",
+              body: '{"type":"doc","content":[]}',
+              url: "",
+              quoteText: "",
+              quoteAuthor: "",
+              status: "published",
+              rating: 0,
+              collectionIds: [],
+              attachments: [],
+            },
+          ],
+        },
+      }),
+    );
+
+    await flushBridgeWork();
+
+    expect(requestCount).toBe(2);
+    expect(composeEl.openReply).toHaveBeenCalledWith(
+      "pst_parent",
+      undefined,
+      "pst_root",
+      { kind: "timeline-item", id: "pst_root" },
+      { restoreDraft: true },
+    );
+    expect(composeEl.openNew).not.toHaveBeenCalled();
+    expect(composeEl.clearLocalDraftFromStorage).not.toHaveBeenCalled();
   });
 
   it("sends nulls for cleared quote attribution fields when editing", async () => {
@@ -418,8 +534,7 @@ describe("compose bridge", () => {
       }),
     );
 
-    await flushAsyncWork();
-    await flushAsyncWork();
+    await flushBridgeWork();
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });

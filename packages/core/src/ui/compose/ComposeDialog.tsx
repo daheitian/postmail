@@ -10,7 +10,7 @@
 
 import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
-import type { Collection } from "../../types.js";
+import { MAX_THREAD_POSTS, type Collection } from "../../types.js";
 import { useLingui } from "../../i18n/context.js";
 import { getCollectionFormLabels } from "../shared/collection-management-labels.js";
 
@@ -475,6 +475,14 @@ export const ComposeForm: FC<ComposeFormProps> = ({
         comment:
           "@context: Compose publish settings hint for quiet reply switch",
       }),
+    ),
+    threadLimitReached: i18n._(
+      msg({
+        message: "Threads can include up to {count} posts.",
+        comment:
+          "@context: Toast shown when compose reaches the maximum allowed thread length",
+      }),
+      { count: MAX_THREAD_POSTS },
     ),
     publishHideFromLatest: i18n._(
       msg({

@@ -18,6 +18,7 @@ import {
   NAV_ITEM_TYPES,
   SYSTEM_NAV_KEY_VALUES,
   MAX_MEDIA_ATTACHMENTS,
+  MAX_THREAD_POSTS,
   MAX_COLLECTION_SLUG_LENGTH,
   MAX_COLLECTION_TITLE_LENGTH,
   MAX_COLLECTION_DESCRIPTION_LENGTH,
@@ -453,7 +454,13 @@ export const CreatePostApiSchema = refineSlugPathExclusivity(
  * posts[0] is the root; subsequent posts are sequential replies.
  */
 export const CreateThreadApiSchema = z.object({
-  posts: z.array(CreatePostApiSchema).min(2).max(10),
+  posts: z
+    .array(CreatePostApiSchema)
+    .min(2, "A thread needs at least 2 posts.")
+    .max(
+      MAX_THREAD_POSTS,
+      `Threads can include up to ${MAX_THREAD_POSTS} posts.`,
+    ),
   /** When re-editing a thread draft, the root post ID of the old thread to replace */
   replaceThreadId: createTypeIdSchema(ID_PREFIX.post).optional(),
 });

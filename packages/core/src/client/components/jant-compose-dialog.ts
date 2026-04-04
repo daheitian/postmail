@@ -33,6 +33,7 @@ import type { JantComposeEditor } from "./jant-compose-editor.js";
 import { getMediaCategory } from "../../lib/upload.js";
 import { getSlugValidationIssue } from "../../lib/slug-format.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
+import { MAX_THREAD_POSTS } from "../../types.js";
 
 interface ReplyToMedia {
   url: string;
@@ -104,6 +105,10 @@ interface DraftsResponse {
 
 interface ComposeOpenOptions {
   collectionId?: string;
+  restoreDraft?: boolean;
+}
+
+interface ComposeReplyOpenOptions {
   restoreDraft?: boolean;
 }
 
@@ -886,6 +891,7 @@ export class JantComposeDialog extends LitElement {
       kind: "timeline-item" | "post-card" | "post-view";
       id: string;
     },
+    options?: ComposeReplyOpenOptions,
   ) {
     this.reset();
     this._replyToId = id;
@@ -895,6 +901,10 @@ export class JantComposeDialog extends LitElement {
     this._replyToData = replyData ?? null;
     this._visibilityLocked = true;
     this._format = "note";
+
+    if (options?.restoreDraft !== false) {
+      await this.restoreLocalDraft({ expectedReplyToId: id });
+    }
 
     this.closest("dialog")?.showModal();
     await this.updateComplete;
@@ -1378,9 +1388,18 @@ export class JantComposeDialog extends LitElement {
   private _dispatchSubmit(status: "published" | "draft"): boolean {
     if (this._loading) return false;
     if (this._focusBlockedSubmitField(status)) return false;
+    if (!this._editPostId && !this._draftSourceId) {
+      this._cancelDraftSaveTimer();
+      this._saveDraftToStorage();
+    }
 
     // ── Thread mode ────────────────────────────────────────────────────
     if (this._threadItems.length > 0) {
+      if (this._threadItems.length > MAX_THREAD_POSTS) {
+        showToast(this._getThreadLimitMessage(), "error");
+        return false;
+      }
+
       const editors = Array.from(
         this.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
       );
@@ -1448,14 +1467,12 @@ export class JantComposeDialog extends LitElement {
 
   private _finishDraftSaveAndOpenDrafts() {
     if (!this._dispatchSubmit("draft")) return;
-    this._clearDraftFromStorage();
     this.reset();
     void this._openDraftsPanel();
   }
 
   private _finishSubmit(status: "published" | "draft") {
     if (!this._dispatchSubmit(status)) return;
-    this._clearDraftFromStorage();
     if (this.pageMode) {
       this._loading = true;
       return;
@@ -2419,6 +2436,13 @@ export class JantComposeDialog extends LitElement {
     return null;
   }
 
+  private _getThreadLimitMessage(): string {
+    return (
+      this.labels.threadLimitReached ||
+      `Threads can include up to ${MAX_THREAD_POSTS} posts.`
+    );
+  }
+
   // ── Local draft auto-save (globalThis.localStorage) ──────────────────────────
 
   private static _DRAFT_KEY = "jant:compose-draft";
@@ -2609,7 +2633,11 @@ export class JantComposeDialog extends LitElement {
     globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
   }
 
-  async restoreLocalDraft() {
+  clearLocalDraftFromStorage() {
+    this._clearDraftFromStorage();
+  }
+
+  async restoreLocalDraft(options?: { expectedReplyToId?: string }) {
     // Don't restore if already in edit or draft-load mode
     if (this._editPostId || this._draftSourceId) return;
     // Don't restore if the editor already has content (e.g. reopened dialog)
@@ -2634,6 +2662,13 @@ export class JantComposeDialog extends LitElement {
     // Discard stale drafts
     if (Date.now() - draft.savedAt > JantComposeDialog._DRAFT_MAX_AGE) {
       globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
+      return;
+    }
+
+    if (
+      options?.expectedReplyToId !== undefined &&
+      draft.replyToId !== options.expectedReplyToId
+    ) {
       return;
     }
 
@@ -4455,6 +4490,13 @@ export class JantComposeDialog extends LitElement {
   // ── Thread compose ───────────────────────────────────────────────
 
   private _addThreadItem() {
+    const nextCount =
+      this._threadItems.length === 0 ? 2 : this._threadItems.length + 1;
+    if (nextCount > MAX_THREAD_POSTS) {
+      showToast(this._getThreadLimitMessage(), "error");
+      return;
+    }
+
     const lastFormat =
       this._threadItems.length > 0
         ? this._threadItems[this._threadItems.length - 1].format
@@ -4671,13 +4713,14 @@ export class JantComposeDialog extends LitElement {
         !lastData.url.trim() &&
         !lastData.quoteText.trim() &&
         lastData.attachments.length === 0);
+    const atLimit = this._threadItems.length >= MAX_THREAD_POSTS;
     return html`
       <div class="compose-thread-add-row">
         <div class="compose-thread-add-dot"></div>
         <button
           type="button"
           class="compose-thread-add-btn"
-          ?disabled=${lastEmpty}
+          ?disabled=${lastEmpty || atLimit}
           @click=${() => this._addThreadItem()}
         >
           <svg

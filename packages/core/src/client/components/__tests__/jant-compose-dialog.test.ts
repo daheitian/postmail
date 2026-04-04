@@ -2,6 +2,7 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { Editor } from "@tiptap/core";
+import { MAX_THREAD_POSTS } from "../../../types.js";
 
 import type {
   ComposeLabels,
@@ -198,6 +199,7 @@ const labels: ComposeLabels = {
   postPrivately: "Post privately",
   quietReplyLabel: "Reply quietly",
   quietReplyHint: "Won't move the thread to the top of latest.",
+  threadLimitReached: "Threads can include up to 10 posts.",
   showMore: "Show more",
   showLess: "Show less",
   newThread: "New Thread",
@@ -1843,6 +1845,118 @@ describe("JantComposeDialog", () => {
     );
     expect(detail.replyRefreshKind).toBe("timeline-item");
     expect(detail.replyRefreshId).toBe("019ce8cf-19a1-7d16-9a75-017a9ac7299d");
+  });
+
+  it("restores a matching local reply draft when reopening reply compose", async () => {
+    const el = await createElement();
+    const replyToId = "019ce8ce-d6d8-7fda-a5df-c2da2bef5ade";
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(null, { status: 404 }),
+    );
+
+    globalThis.localStorage.setItem(
+      "jant:compose-draft",
+      JSON.stringify({
+        format: "note",
+        title: "",
+        bodyJson: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Recovered reply draft" }],
+            },
+          ],
+        },
+        url: "",
+        quoteText: "",
+        quoteAuthor: "",
+        slug: "",
+        visibility: "public",
+        rating: 0,
+        showTitle: false,
+        showRating: false,
+        collectionIds: [],
+        replyToId,
+        attachedTexts: [],
+        attachmentOrder: [],
+        savedAt: Date.now(),
+      }),
+    );
+
+    await el.openReply(replyToId, {
+      contentHtml: "<p>Parent</p>",
+      dateText: "Mar 14",
+    });
+    await flushUpdates(el);
+
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    expect(el._replyToId).toBe(replyToId);
+    expect(editor.getData().body).toContain("Recovered reply draft");
+  });
+
+  it("keeps the local reply draft when submit is dispatched", async () => {
+    const el = await createElement();
+    const replyToId = "019ce8ce-d6d8-7fda-a5df-c2da2bef5ade";
+
+    await el.openReply(replyToId, {
+      contentHtml: "<p>Parent</p>",
+      dateText: "Mar 14",
+    });
+
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Persist me before submit" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+    await el.updateComplete;
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+      "expected reply button",
+    ).click();
+
+    const savedDraftRaw = globalThis.localStorage.getItem("jant:compose-draft");
+    if (!savedDraftRaw) {
+      throw new Error("expected local compose draft");
+    }
+    const savedDraft = JSON.parse(savedDraftRaw) as {
+      replyToId: string;
+      bodyJson: { content: Array<{ content: Array<{ text: string }> }> };
+    };
+
+    expect(savedDraft.replyToId).toBe(replyToId);
+    expect(savedDraft.bodyJson.content[0]?.content[0]?.text).toBe(
+      "Persist me before submit",
+    );
+  });
+
+  it("does not add more thread items than the shared limit", async () => {
+    const el = await createElement();
+    el._threadItems = Array.from({ length: MAX_THREAD_POSTS }, (_, index) => ({
+      id: `thread-${index}`,
+      format: "note",
+    }));
+
+    (
+      el as unknown as {
+        _addThreadItem: () => void;
+      }
+    )._addThreadItem();
+
+    expect(el._threadItems).toHaveLength(MAX_THREAD_POSTS);
   });
 
   it("omits visibility from locked edit submissions", async () => {

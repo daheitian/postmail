@@ -31,7 +31,7 @@ describe("resolveCliRuntime", () => {
 
   it("rejects conflicting runtime flags", () => {
     expect(() => resolveCliRuntime({ local: true, remote: true }, {})).toThrow(
-      /either --local or --remote/,
+      /Choose only one of --local, --remote/,
     );
   });
 });

@@ -6,9 +6,11 @@
 
 declare module "sortablejs" {
   export interface SortableEvent {
+    to: HTMLElement;
+    from: HTMLElement;
+    item: HTMLElement;
     oldIndex?: number;
     newIndex?: number;
-    item: HTMLElement;
   }
 
   export interface SortableOptions {
@@ -16,11 +18,15 @@ declare module "sortablejs" {
     bubbleScroll?: boolean;
     chosenClass?: string;
     direction?: "horizontal" | "vertical";
+    draggable?: string;
     dragClass?: string;
     fallbackTolerance?: number;
     filter?: string;
     forceAutoScrollFallback?: boolean;
     ghostClass?: string;
+    group?:
+      | string
+      | { name: string; pull?: boolean | string; put?: boolean | string[] };
     handle?: string;
     onChoose?: (event: SortableEvent) => void;
     onStart?: (event: SortableEvent) => void;

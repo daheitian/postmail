@@ -2999,6 +2999,11 @@ msgstr "Thread accents"
 msgid "threads"
 msgstr "threads"
 
+#. @context: Toast shown when compose reaches the maximum allowed thread length
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Threads can include up to {count} posts."
+msgstr "Threads can include up to {count} posts."
+
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Time Zone"

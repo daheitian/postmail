@@ -37,6 +37,8 @@ describe("sortable-list helpers", () => {
 
     list.appendChild(movedItem);
     revertSortableDomMove(list, {
+      to: list,
+      from: list,
       item: movedItem,
       oldIndex: 1,
       newIndex: 2,
@@ -58,6 +60,8 @@ describe("sortable-list helpers", () => {
     revertSortableDomMove(
       list,
       {
+        to: list,
+        from: list,
         item: movedItem,
         oldIndex: 1,
         newIndex: 2,

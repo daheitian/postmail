@@ -2999,6 +2999,11 @@ msgstr "貼文串 強調色"
 msgid "threads"
 msgstr "個貼文串"
 
+#. @context: Toast shown when compose reaches the maximum allowed thread length
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Threads can include up to {count} posts."
+msgstr ""
+
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Time Zone"
