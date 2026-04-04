@@ -46,7 +46,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
   const showHeaderRating = isDetail && isArticle && hasVisibleRating;
   const showHeaderActions = !display?.footer?.hideActions;
   const footerDisplay =
-    isDetail && isArticle
+    isDetail && isArticle && display?.footer?.hideTimestamp === undefined
       ? { ...display?.footer, hideTimestamp: true }
       : display?.footer;
 

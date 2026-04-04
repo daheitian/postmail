@@ -25,7 +25,11 @@ const ThreadDetail: FC<{ post: PostView; threadPosts: PostView[] }> = ({
             class={`thread-item thread-detail-item${isCurrent ? " thread-item-current" : ""}`}
             {...(isCurrent ? { "data-post-current": "" } : {})}
           >
-            <TimelineItemFromPost post={tp} mode="detail" />
+            <TimelineItemFromPost
+              post={tp}
+              mode="detail"
+              display={{ footer: { hideTimestamp: false } }}
+            />
           </div>
         );
       })}

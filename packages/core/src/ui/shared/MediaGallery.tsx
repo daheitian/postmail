@@ -247,12 +247,12 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
 
   // When non-visual attachments are mixed with visuals, use a compact row
   const hasNonVisual = hasNonVisualAttachment;
-  const COMPACT_HEIGHT = 160;
+  const COMPACT_HEIGHT = 220;
 
   // Row height adapts to the first visual item's aspect ratio
-  const ROW_MIN = hasNonVisual ? 160 : 240;
-  const ROW_MAX = hasNonVisual ? 240 : 400;
-  let rowHeight = hasNonVisual ? COMPACT_HEIGHT : 320;
+  const ROW_MIN = hasNonVisual ? 220 : 280;
+  const ROW_MAX = hasNonVisual ? 300 : 440;
+  let rowHeight = hasNonVisual ? COMPACT_HEIGHT : 360;
   if (!singleVisual && galleryItems.length > 1) {
     const firstVisual = galleryItems.find(
       (item) => item._kind === "image" || item._kind === "video",
