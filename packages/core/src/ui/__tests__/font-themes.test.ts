@@ -11,8 +11,8 @@ describe("BUILTIN_FONT_THEMES", () => {
     expect(BUILTIN_FONT_THEMES).toHaveLength(7);
   });
 
-  it("has 'default' as the first theme", () => {
-    expect(BUILTIN_FONT_THEMES[0].id).toBe("default");
+  it("has 'tufte' as the first theme", () => {
+    expect(BUILTIN_FONT_THEMES[0].id).toBe("tufte");
   });
 
   it("each theme has required fields", () => {

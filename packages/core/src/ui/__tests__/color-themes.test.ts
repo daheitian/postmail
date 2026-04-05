@@ -6,8 +6,8 @@ describe("BUILTIN_COLOR_THEMES", () => {
     expect(BUILTIN_COLOR_THEMES).toHaveLength(14);
   });
 
-  it("keeps Linen as the first theme", () => {
-    expect(BUILTIN_COLOR_THEMES[0]?.id).toBe("linen");
+  it("keeps Tufte as the first theme", () => {
+    expect(BUILTIN_COLOR_THEMES[0]?.id).toBe("tufte");
   });
 
   it("has no duplicate IDs", () => {

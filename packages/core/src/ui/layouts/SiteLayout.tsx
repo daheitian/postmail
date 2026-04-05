@@ -426,7 +426,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         ) : (
           <div class="site-container">
             <div class={contentClass}>
-              {isHomePage && isAuthenticated && (
+              {isHomePage && isAuthenticated ? (
                 <div class="site-home-header">
                   <ComposePrompt
                     composeOpenShortcutDiscovered={
@@ -434,7 +434,9 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                     }
                   />
                 </div>
-              )}
+              ) : isHomePage ? (
+                <div class="site-home-header" />
+              ) : null}
               {children}
             </div>
           </div>

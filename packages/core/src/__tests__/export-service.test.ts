@@ -12,7 +12,7 @@ function decodeZipEntry(
 }
 
 describe("createExportService", () => {
-  it("exports collection metadata under content/c and includes archive fallback metadata", async () => {
+  it("exports collection metadata and includes archive fallback metadata", async () => {
     const rootPost: Post = {
       id: "post-1",
       format: "note",
@@ -128,7 +128,7 @@ describe("createExportService", () => {
     const configToml = decodeZipEntry(files, "config.toml");
     const collectionMetadata = decodeZipEntry(
       files,
-      "content/c/programming/_index.md",
+      "content/programming/_index.md",
     );
     const postMarkdown = decodeZipEntry(files, "content/desk-note/index.md");
     const archiveTemplate = decodeZipEntry(files, "templates/archive.html");
@@ -166,9 +166,7 @@ describe("createExportService", () => {
     expect(archiveTemplate).toContain('group_by(attribute="year")');
     expect(archiveTemplate).toContain('group_by(attribute="month")');
     expect(archiveTemplate).toContain("page.extra.summary_text");
-    expect(archiveTemplate).toContain(
-      "get_section(path='c/' ~ col ~ '/_index.md')",
-    );
+    expect(archiveTemplate).toContain("get_section(path= col ~ '/_index.md')");
     expect(taxonomyListTemplate).toContain(
       "config.extra.jant.collections_directory",
     );
@@ -184,7 +182,7 @@ describe("createExportService", () => {
     expect(taxonomyListTemplate).toContain("item.entry_count");
     expect(taxonomyListTemplate).toContain("item.recent_activity_label");
     expect(taxonomyListTemplate).toContain(
-      "get_taxonomy_url(kind='c', name=item.slug)",
+      "get_taxonomy_url(kind='collections', name=item.slug)",
     );
     expect(taxonomyListTemplate).toContain(
       "has_collection_page = entry_count != 0",

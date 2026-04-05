@@ -89,7 +89,7 @@ export function AvatarContent({
   }).replace(/</g, "\\u003c");
 
   return (
-    <div class="flex flex-col max-w-lg">
+    <div class="flex flex-col max-w-2xl">
       <jant-settings-avatar
         avatar-url={siteAvatarUrl}
         show-in-header={showHeaderAvatar || undefined}

@@ -61,7 +61,7 @@ export function FontThemeContent({
             }),
           )}
         </p>
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-4">
           {fontThemes.map((ft) => (
             <label
               key={ft.id}

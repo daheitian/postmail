@@ -257,7 +257,7 @@ export function ColorThemeContent({
     <div
       data-signals={themeSignals}
       data-on:change={`@post('${toPublicPath("/settings/color-theme", sitePathPrefix)}')`}
-      class="max-w-5xl"
+      class="max-w-2xl"
     >
       <fieldset>
         <legend class="text-lg font-semibold">

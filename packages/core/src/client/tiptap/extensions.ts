@@ -4,7 +4,7 @@
  * Shared extension set for all Tiptap editor instances (compose + post form).
  */
 
-import type { Extensions } from "@tiptap/core";
+import { Extension, type Extensions } from "@tiptap/core";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Markdown } from "@tiptap/markdown";
 import { SlashCommands } from "./slash-commands.js";
@@ -36,6 +36,24 @@ export interface EditorExtensionOptions {
  * @param options - Configuration for extensions
  * @returns Configured extension array
  */
+/**
+ * Prevent TipTap's HardBreak extension from consuming Mod-Enter so the
+ * keystroke bubbles up to the compose dialog's keydown handler for submit.
+ * Returning `true` at a higher priority tells ProseMirror "handled — skip
+ * remaining keymaps" without inserting a hard break. The DOM event still
+ * bubbles, so the compose dialog receives it. Shift-Enter continues to
+ * insert a hard break as usual.
+ */
+const ReclaimModEnter = Extension.create({
+  name: "reclaimModEnter",
+  priority: 1000,
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Enter": () => true,
+    };
+  },
+});
+
 export function createEditorExtensions(
   options: EditorExtensionOptions = {},
 ): Extensions {
@@ -44,6 +62,7 @@ export function createEditorExtensions(
       imageExtension: ImageNode,
       moreBreakExtension: MoreBreak,
     }),
+    ReclaimModEnter,
     Markdown.configure({
       markedOptions: MARKDOWN_MARKED_OPTIONS,
     }),

@@ -293,7 +293,7 @@ export function GeneralContent({
 
   return (
     <>
-      <div class="flex flex-col max-w-lg">
+      <div class="flex flex-col max-w-2xl">
         <jant-settings-general
           labels={labels}
           timezones={timezonesJson}

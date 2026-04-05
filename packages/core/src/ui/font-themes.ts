@@ -141,6 +141,23 @@ export const DEFAULT_FONT_CJK_SERIF_FALLBACK = DEFAULT_CJK_SERIF_FALLBACK;
 
 export const BUILTIN_FONT_THEMES: FontTheme[] = [
   {
+    id: "tufte",
+    name: {
+      id: "Tufte",
+      message: "Tufte",
+      comment: "@context: Font theme name",
+    },
+    headingFontFamily: TUFTE_SERIF,
+    bodyFontFamily: TUFTE_SERIF,
+    cssVariables: {},
+    description: {
+      id: "Palatino-based old-style serif matching Tufte CSS proportions",
+      message: "Palatino-based old-style serif matching Tufte CSS proportions",
+      comment: "@context: Font theme description",
+    },
+  },
+
+  {
     id: "default",
     name: {
       id: "Classic",
@@ -219,22 +236,6 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
       id: "Literata-driven all-serif setting for essays, notes, and quotations",
       message:
         "Literata-driven all-serif setting for essays, notes, and quotations",
-      comment: "@context: Font theme description",
-    },
-  },
-  {
-    id: "tufte",
-    name: {
-      id: "Tufte",
-      message: "Tufte",
-      comment: "@context: Font theme name",
-    },
-    headingFontFamily: TUFTE_SERIF,
-    bodyFontFamily: TUFTE_SERIF,
-    cssVariables: {},
-    description: {
-      id: "Palatino-based old-style serif matching Tufte CSS proportions",
-      message: "Palatino-based old-style serif matching Tufte CSS proportions",
       comment: "@context: Font theme description",
     },
   },

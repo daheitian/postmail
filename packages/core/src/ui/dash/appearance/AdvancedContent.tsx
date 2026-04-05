@@ -25,7 +25,7 @@ export function AdvancedContent({
       data-signals={cssSignals}
       data-on:submit__prevent={`@post('${toPublicPath("/settings/custom-css", sitePathPrefix)}')`}
       data-indicator="_cssLoading"
-      class="max-w-3xl"
+      class="max-w-2xl"
     >
       <fieldset>
         <legend class="text-lg font-semibold">

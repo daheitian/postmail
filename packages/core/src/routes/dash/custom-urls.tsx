@@ -193,7 +193,7 @@ function CustomUrlsListContent({
   );
 
   return (
-    <>
+    <div class="max-w-2xl">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-lg font-medium">
           {i18n._(
@@ -349,7 +349,7 @@ function CustomUrlsListContent({
           />
         </>
       )}
-    </>
+    </div>
   );
 }
 
@@ -375,7 +375,7 @@ function NewCustomUrlContent({
         data-signals="{path: '', targetType: 'redirect', targetId: '', toPath: '', redirectType: '301', archiveQuery: ''}"
         data-on:submit__prevent={`@post('${toPublicPath("/settings/custom-urls", sitePathPrefix)}')`}
         data-indicator="_loading"
-        class="flex flex-col gap-4 max-w-lg"
+        class="flex flex-col gap-4 max-w-2xl"
       >
         <div class="field">
           <label class="label">

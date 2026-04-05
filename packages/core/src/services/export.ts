@@ -897,7 +897,7 @@ function buildConfigToml(
 
   parts.push("");
   parts.push("[[taxonomies]]");
-  parts.push('name = "c"');
+  parts.push('name = "collections"');
   parts.push("feed = true");
   parts.push("");
   parts.push("[markdown]");
@@ -987,7 +987,7 @@ config.toml          — Site configuration (title, URL, language)
 content/
   _index.md          — Root section (homepage settings)
   {slug}/index.md    — Individual posts (threads are merged into one page)
-  c/{slug}/_index.md — Collection display metadata for taxonomy pages and round-trip import
+  {slug}/_index.md   — Collection display metadata for taxonomy pages and round-trip import
 templates/           — Tera templates (Zola's template engine)
 static/
   style.css          — Base exported stylesheet
@@ -1004,7 +1004,7 @@ static/
 - **Styles** — edit \`static/style.css\`. The theme supports light and dark modes via \`prefers-color-scheme\`.
 - **Templates** — edit files in \`templates/\`. Zola uses the [Tera](https://keats.github.io/tera/) template engine.
 - **Debugging** — export to a directory with \`jant site export --directory ./my-site\`, then run \`cd my-site && zola serve\`.
-- **Collections** — posts are tagged with collections via the \`c\` taxonomy. Browse them at \`/collections/\`.
+- **Collections** — posts are tagged with collections via the \`collections\` taxonomy. Browse them at \`/collections/\`.
 
 ## Notes
 
@@ -1175,7 +1175,7 @@ const TEMPLATE_BASE = `<!DOCTYPE html>
                 {% for item in config.extra.jant.nav %}
                   {% if item.system_key == "settings" %}
                   {% elif item.system_key == "collections" %}
-                <a href="{{ get_url(path='c') }}" class="site-header-link">{{ item.label }}</a>
+                <a href="{{ get_url(path='collections') }}" class="site-header-link">{{ item.label }}</a>
                   {% elif item.system_key == "rss" %}
                 <a href="{{ get_url(path='atom.xml') }}" class="site-header-link">{{ item.label }}</a>
                   {% elif item.system_key == "archive" %}
@@ -1356,10 +1356,10 @@ const TEMPLATE_ARCHIVE = `{% extends "base.html" %}
               </a>
               <div class="archive-entry-meta">
                 <span class="archive-entry-format">{{ page.extra.format | default(value="note") }}</span>
-                {% set collections = page.taxonomies.c | default(value=[]) %}
+                {% set collections = page.taxonomies.collections | default(value=[]) %}
                 {% for col in collections %}
-                {% set col_meta = get_section(path='c/' ~ col ~ '/_index.md') %}
-                <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="archive-entry-tag">{{ col_meta.title | default(value=col) }}</a>
+                {% set col_meta = get_section(path= col ~ '/_index.md') %}
+                <a href="{{ get_taxonomy_url(kind='collections', name=col) }}" class="archive-entry-tag">{{ col_meta.title | default(value=col) }}</a>
                 {% endfor %}
               </div>
             </div>
@@ -1428,7 +1428,7 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
           <span class="collection-directory-sequence" aria-hidden="true"></span>
           <div class="collection-directory-title-row">
             {% if has_collection_page %}
-            <a href="{{ get_taxonomy_url(kind='c', name=item.slug) }}" class="collection-directory-title-link">
+            <a href="{{ get_taxonomy_url(kind='collections', name=item.slug) }}" class="collection-directory-title-link">
               <span class="collection-directory-title">{{ item.title | default(value=item.slug) }}</span>
             </a>
             {% else %}
@@ -1458,7 +1458,7 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
   {% else %}
   <ol class="collection-list">
     {% for term in terms %}
-    {% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}
+    {% set term_meta = get_section(path= term.name ~ '/_index.md') %}
     {% set latest_page = term.pages | first %}
     <li class="collection-list-item">
       <a href="{{ term.permalink }}" class="collection-list-link">
@@ -1484,10 +1484,10 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
 const TEMPLATE_TAXONOMY_SINGLE = `{% extends "base.html" %}
 {% import "macros.html" as macros %}
 
-{% block title %}{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} &mdash; {{ config.title }}{% endblock %}
+{% block title %}{% set term_meta = get_section(path= term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} &mdash; {{ config.title }}{% endblock %}
 
 {% block content %}
-{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}
+{% set term_meta = get_section(path= term.name ~ '/_index.md') %}
 <div class="section-shell">
   <header class="section-header">
     <h1 class="section-title">{{ term_meta.title | default(value=term.name) }}</h1>
@@ -1515,7 +1515,7 @@ const TEMPLATE_TAXONOMY_SINGLE = `{% extends "base.html" %}
 
 const TEMPLATE_ATOM = `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ lang }}">
-  <title>{% if section is defined and section.title %}{{ section.title }} · {% elif term is defined and taxonomy.name == "c" %}{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} · {% elif term is defined and term.name %}{{ term.name }} · {% endif %}{{ config.title }}</title>
+  <title>{% if section is defined and section.title %}{{ section.title }} · {% elif term is defined and taxonomy.name == "collections" %}{% set term_meta = get_section(path= term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} · {% elif term is defined and term.name %}{{ term.name }} · {% endif %}{{ config.title }}</title>
   {% if config.description %}
   <subtitle>{{ config.description }}</subtitle>
   {% endif %}
@@ -1601,7 +1601,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
 {% endmacro %}
 
 {% macro post_footer(page, detail=false, show_date=true) %}
-{% set collections = page.taxonomies.c | default(value=[]) %}
+{% set collections = page.taxonomies.collections | default(value=[]) %}
 <footer class="post-menu-footer{% if detail %} post-footer-detail{% endif %}" data-post-meta>
   <div class="post-footer-meta">
     <span class="post-footer-featured" title="Featured">
@@ -1627,14 +1627,14 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
     {% endif %}
     {% if collections | length > 0 %}
     {% set first_collection = collections | first %}
-    {% set first_collection_meta = get_section(path='c/' ~ first_collection ~ '/_index.md') %}
+    {% set first_collection_meta = get_section(path= first_collection ~ '/_index.md') %}
     {% set hidden_collection_count = collections | length %}
     {% set show_collection_separator = show_date or (page.extra.format == "link" and page.extra.link_url) or page.extra.featured %}
     <span class="post-collection-tags">
       {% if show_collection_separator %}
       <span class="post-collection-sep" aria-hidden="true">&middot;</span>
       {% endif %}
-      <a href="{{ get_taxonomy_url(kind='c', name=first_collection) }}" class="post-collection-tag">
+      <a href="{{ get_taxonomy_url(kind='collections', name=first_collection) }}" class="post-collection-tag">
         {% if detail %}
         <span class="post-collection-primary-icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
@@ -1647,9 +1647,9 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
       </a>
       {% if hidden_collection_count == 2 %}
       {% set second_collection = collections | nth(n=1) %}
-      {% set second_collection_meta = get_section(path='c/' ~ second_collection ~ '/_index.md') %}
+      {% set second_collection_meta = get_section(path= second_collection ~ '/_index.md') %}
       <span class="post-collection-second-sep" aria-hidden="true">, </span>
-      <a href="{{ get_taxonomy_url(kind='c', name=second_collection) }}" class="post-collection-tag">
+      <a href="{{ get_taxonomy_url(kind='collections', name=second_collection) }}" class="post-collection-tag">
         <span class="post-collection-tag-text">{{ second_collection_meta.title | default(value=second_collection) }}</span>
       </a>
       {% elif hidden_collection_count > 2 %}
@@ -1660,8 +1660,8 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
         <span class="post-collection-popover" role="menu" data-collection-popover>
           {% for col in collections %}
           {% if not loop.first %}
-          {% set col_meta = get_section(path='c/' ~ col ~ '/_index.md') %}
-          <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="post-collection-popover-item" role="menuitem">{{ col_meta.title | default(value=col) }}</a>
+          {% set col_meta = get_section(path= col ~ '/_index.md') %}
+          <a href="{{ get_taxonomy_url(kind='collections', name=col) }}" class="post-collection-popover-item" role="menuitem">{{ col_meta.title | default(value=col) }}</a>
           {% endif %}
           {% endfor %}
         </span>
