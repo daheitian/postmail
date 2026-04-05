@@ -15,6 +15,7 @@ function createContext(
     themeMode?: "auto" | "light" | "dark";
     themeId?: string;
     defaultThemeId?: string;
+    userAgent?: string;
   },
 ) {
   const values = {
@@ -40,6 +41,15 @@ function createContext(
   return {
     get(key: keyof typeof values) {
       return values[key];
+    },
+    req: {
+      header(name: string) {
+        if (name.toLowerCase() === "user-agent") {
+          return overrides?.userAgent;
+        }
+
+        return undefined;
+      },
     },
   } as never;
 }
@@ -210,5 +220,43 @@ describe("BaseLayout", () => {
     expect(html).toContain('meta name="theme-color" content="#121211"');
     expect(html).not.toContain('media="(prefers-color-scheme: light)"');
     expect(html).not.toContain('media="(prefers-color-scheme: dark)"');
+  });
+
+  it("defaults the header to drawer mode for iPad user agents during SSR", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        c: createContext("featured", {
+          userAgent:
+            "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+        }),
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain('<html lang="en" data-theme-mode="auto"');
+    expect(html).toContain('data-header-ssr-mode="drawer"');
+    expect(html).toContain(
+      'html[data-header-ssr-mode="drawer"] .site-header-nav',
+    );
+  });
+
+  it("does not force drawer mode for macOS desktop user agents", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        c: createContext("featured", {
+          userAgent:
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+        }),
+        children: "Test",
+      }),
+    );
+
+    expect(html).not.toContain(
+      '<html lang="en" data-theme-mode="auto" data-site-path-prefix="" data-asset-base-path="/_assets" data-header-ssr-mode="drawer"',
+    );
   });
 });

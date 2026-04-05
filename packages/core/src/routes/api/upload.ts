@@ -313,7 +313,7 @@ uploadApiRoutes.post("/", async (c) => {
       const posterBytes = new Uint8Array(await posterFile.arrayBuffer());
       const posterMime = detectPosterMimeType(posterBytes);
       if (posterMime) {
-        const posterExt = getPosterExtension(posterMime)!;
+        const posterExt = getPosterExtension(posterMime);
         posterKey = getPosterStorageKey(c.var.currentSite.id, id, posterExt);
         await storage.put(posterKey, posterBytes, {
           contentType: posterMime,

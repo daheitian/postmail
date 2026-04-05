@@ -545,7 +545,7 @@ export function createUploadSessionService(
         );
       }
 
-      const ext = getPosterExtension(detectedType)!;
+      const ext = getPosterExtension(detectedType);
       await deps.storage.put(
         getTemporaryPosterStorageKey(siteId, id, ext),
         bytes,

@@ -204,9 +204,9 @@ export function defaultAtomRenderer(data: FeedData): string {
       const permalinkUrl = new URL(post.permalink, siteUrl).toString();
       const escapedPermalink = escapeXml(permalinkUrl);
       // Link-format posts point <link rel="alternate"> to the original URL
-      const isLinkWithUrl = post.format === "link" && post.url;
-      const alternateLink = isLinkWithUrl
-        ? escapeXml(post.url!)
+      const alternateUrl = post.format === "link" ? post.url : null;
+      const alternateLink = alternateUrl
+        ? escapeXml(alternateUrl)
         : escapedPermalink;
       const title = getAtomTitle(post);
       const summary = getFeedSummaryText(post);
@@ -214,7 +214,7 @@ export function defaultAtomRenderer(data: FeedData): string {
       const updatedAt = post.feedUpdatedAt ?? post.updatedAt;
 
       // For link posts, add a <link rel="related"> back to the blog permalink
-      const relatedLink = isLinkWithUrl
+      const relatedLink = alternateUrl
         ? `\n    <link href="${escapedPermalink}" rel="related"/>`
         : "";
 
@@ -226,7 +226,7 @@ export function defaultAtomRenderer(data: FeedData): string {
     <published>${publishedAt}</published>
     <updated>${updatedAt}</updated>
     <summary type="text">${escapeXml(summary)}</summary>
-    <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post, isLinkWithUrl ? permalinkUrl : undefined))}]]></content>
+    <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post, alternateUrl ? permalinkUrl : undefined))}]]></content>
   </entry>`;
     })
     .join("");

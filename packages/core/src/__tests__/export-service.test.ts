@@ -214,9 +214,8 @@ describe("createExportService", () => {
     expect(styleCss).toContain(".site-header-top-home");
     expect(styleCss).toContain(".site-content-home");
     expect(styleCss).toContain(".post-body-summary.prose");
-    expect(styleCss).toContain("padding-top: 0.75rem;");
-    expect(styleCss).toContain(
-      "border-bottom-color: color-mix(in srgb, var(--site-divider) 72%, transparent);",
+    expect(styleCss).toMatch(
+      /\.site-content-home\s*\{[\s\S]*?padding-top: 0\.75rem;[\s\S]*?border-bottom: 0\.5px solid\s+color-mix\(in srgb, var\(--site-divider\) 84%, transparent\);/,
     );
     expect(atomTemplate).toContain('rel="self" type="application/atom+xml"');
     expect(atomTemplate).toContain('href="{{ feed_url | safe }}" />');

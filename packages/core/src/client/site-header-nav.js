@@ -76,23 +76,48 @@ function setHeaderNavMode(headerRow, mode) {
 function initResponsiveHeader(root, onExitCollapsedMode = () => {}) {
   const headerRow = root.querySelector(".site-header-top");
   const searchForm = root.querySelector(".site-header-search-form");
+  const logo = root.querySelector(".site-logo");
 
   if (!headerRow || !searchForm) return;
   if (headerRow.dataset.searchResponsiveInitialized === "true") return;
   headerRow.dataset.searchResponsiveInitialized = "true";
 
   let previousNavMode = "desktop";
+  const clearSsrHeaderMode = () => {
+    document.documentElement.removeAttribute("data-header-ssr-mode");
+  };
+
+  const headerFits = () => headerRow.scrollWidth <= headerRow.clientWidth + 1;
+  const logoIsClipped = () =>
+    logo instanceof HTMLElement && logo.scrollWidth > logo.clientWidth + 1;
 
   const syncHeaderMode = () => {
     setHeaderNavMode(headerRow, "desktop");
 
-    for (const mode of ["full", "compact", "icon"]) {
+    setHeaderSearchMode(headerRow, "full");
+    if (headerFits() && !logoIsClipped()) {
+      if (previousNavMode === "collapsed") {
+        onExitCollapsedMode();
+      }
+      previousNavMode = "desktop";
+      clearSsrHeaderMode();
+      return;
+    }
+
+    const prefersDirectButton =
+      headerFits() && logoIsClipped() && headerRow.clientWidth <= 520;
+    const fallbackModes = prefersDirectButton
+      ? ["button"]
+      : ["compact", "button"];
+
+    for (const mode of fallbackModes) {
       setHeaderSearchMode(headerRow, mode);
-      if (headerRow.scrollWidth <= headerRow.clientWidth + 1) {
+      if (headerFits() && !logoIsClipped()) {
         if (previousNavMode === "collapsed") {
           onExitCollapsedMode();
         }
         previousNavMode = "desktop";
+        clearSsrHeaderMode();
         return;
       }
     }
@@ -100,6 +125,7 @@ function initResponsiveHeader(root, onExitCollapsedMode = () => {}) {
     setHeaderSearchMode(headerRow, "full");
     setHeaderNavMode(headerRow, "collapsed");
     previousNavMode = "collapsed";
+    clearSsrHeaderMode();
   };
 
   syncHeaderMode();

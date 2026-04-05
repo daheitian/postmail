@@ -355,8 +355,7 @@ async function uploadFile(
         toUpload = result.file;
         width = result.width;
         height = result.height;
-      } catch (err) {
-        console.error("[compose] Image processing failed:", err);
+      } catch {
         editor?.removeAttachment(clientId);
         showToast("Image format not supported.", "error");
         return null;

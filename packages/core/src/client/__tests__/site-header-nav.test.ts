@@ -8,8 +8,12 @@ type ResponsiveSearchRoot = HTMLElement & {
     clientWidth?: number;
     fullWidth?: number;
     compactWidth?: number;
-    iconWidth?: number;
+    buttonWidth?: number;
     collapsedWidth?: number;
+    logoScrollWidth?: number;
+    fullLogoClientWidth?: number;
+    compactLogoClientWidth?: number;
+    buttonLogoClientWidth?: number;
   }) => void;
 };
 
@@ -73,19 +77,28 @@ function createResponsiveSearchDOM(): {
         <a href="/archive" class="site-header-link">Archive</a>
         <a href="/collections" class="site-header-link">Collections</a>
       </nav>
-      <form class="site-header-search-form">
-        <input type="search" class="site-header-search-input" />
-      </form>
+      <div class="site-header-search-slot">
+        <form class="site-header-search-form">
+          <input type="search" class="site-header-search-input" />
+        </form>
+        <a href="/search" class="site-header-search-link">Search</a>
+      </div>
+      <div class="site-header-right"></div>
     </div>
   `;
   document.body.appendChild(root);
 
   const headerRow = root.querySelector(".site-header-top") as HTMLElement;
+  const logo = root.querySelector(".site-logo") as HTMLElement;
   let clientWidth = 420;
   let fullWidth = 360;
   let compactWidth = 360;
-  let iconWidth = 360;
+  let buttonWidth = 360;
   let collapsedWidth = 240;
+  let logoScrollWidth = 180;
+  let fullLogoClientWidth = 180;
+  let compactLogoClientWidth = 180;
+  let buttonLogoClientWidth = 180;
 
   Object.defineProperty(headerRow, "clientWidth", {
     configurable: true,
@@ -102,12 +115,31 @@ function createResponsiveSearchDOM(): {
       switch (headerRow.dataset.searchMode) {
         case "compact":
           return compactWidth;
-        case "icon":
-          return iconWidth;
+        case "button":
+          return buttonWidth;
         default:
           return fullWidth;
       }
     },
+  });
+
+  Object.defineProperty(logo, "clientWidth", {
+    configurable: true,
+    get: () => {
+      switch (headerRow.dataset.searchMode) {
+        case "compact":
+          return compactLogoClientWidth;
+        case "button":
+          return buttonLogoClientWidth;
+        default:
+          return fullLogoClientWidth;
+      }
+    },
+  });
+
+  Object.defineProperty(logo, "scrollWidth", {
+    configurable: true,
+    get: () => logoScrollWidth,
   });
 
   const responsiveRoot = root as unknown as ResponsiveSearchRoot;
@@ -115,8 +147,14 @@ function createResponsiveSearchDOM(): {
     clientWidth = widths.clientWidth ?? clientWidth;
     fullWidth = widths.fullWidth ?? fullWidth;
     compactWidth = widths.compactWidth ?? compactWidth;
-    iconWidth = widths.iconWidth ?? iconWidth;
+    buttonWidth = widths.buttonWidth ?? buttonWidth;
     collapsedWidth = widths.collapsedWidth ?? collapsedWidth;
+    logoScrollWidth = widths.logoScrollWidth ?? logoScrollWidth;
+    fullLogoClientWidth = widths.fullLogoClientWidth ?? fullLogoClientWidth;
+    compactLogoClientWidth =
+      widths.compactLogoClientWidth ?? compactLogoClientWidth;
+    buttonLogoClientWidth =
+      widths.buttonLogoClientWidth ?? buttonLogoClientWidth;
   };
 
   return { root: responsiveRoot, headerRow };
@@ -260,18 +298,22 @@ describe("site header responsive search", () => {
   it("keeps full search width when the header fits", () => {
     const { root, headerRow } = createResponsiveSearchDOM();
 
+    document.documentElement.setAttribute("data-header-ssr-mode", "drawer");
     initSiteHeaderNav(root);
 
     expect(headerRow.dataset.searchMode).toBeUndefined();
+    expect(document.documentElement.hasAttribute("data-header-ssr-mode")).toBe(
+      false,
+    );
   });
 
-  it("shrinks search before collapsing it to an icon", () => {
+  it("shrinks search before collapsing it to a button", () => {
     const { root, headerRow } = createResponsiveSearchDOM();
     root.setWidths({
       clientWidth: 350,
       fullWidth: 390,
       compactWidth: 340,
-      iconWidth: 320,
+      buttonWidth: 320,
     });
 
     initSiteHeaderNav(root);
@@ -279,18 +321,51 @@ describe("site header responsive search", () => {
     expect(headerRow.dataset.searchMode).toBe("compact");
   });
 
-  it("falls back to icon mode when compact search still overflows", () => {
+  it("falls back to button mode when compact search still overflows", () => {
     const { root, headerRow } = createResponsiveSearchDOM();
     root.setWidths({
       clientWidth: 300,
       fullWidth: 390,
       compactWidth: 340,
-      iconWidth: 280,
+      buttonWidth: 280,
     });
 
     initSiteHeaderNav(root);
 
-    expect(headerRow.dataset.searchMode).toBe("icon");
+    expect(headerRow.dataset.searchMode).toBe("button");
+  });
+
+  it("prefers button mode on narrow headers when the full search clips the logo", () => {
+    const { root, headerRow } = createResponsiveSearchDOM();
+    root.setWidths({
+      clientWidth: 485,
+      fullWidth: 430,
+      buttonWidth: 320,
+      logoScrollWidth: 180,
+      fullLogoClientWidth: 118,
+      buttonLogoClientWidth: 180,
+    });
+
+    initSiteHeaderNav(root);
+
+    expect(headerRow.dataset.searchMode).toBe("button");
+  });
+
+  it("still uses compact mode on wider headers when that is enough to preserve the logo", () => {
+    const { root, headerRow } = createResponsiveSearchDOM();
+    root.setWidths({
+      clientWidth: 560,
+      fullWidth: 430,
+      compactWidth: 370,
+      buttonWidth: 320,
+      logoScrollWidth: 180,
+      fullLogoClientWidth: 132,
+      compactLogoClientWidth: 180,
+    });
+
+    initSiteHeaderNav(root);
+
+    expect(headerRow.dataset.searchMode).toBe("compact");
   });
 
   it("recomputes search mode when the header width changes", () => {
@@ -299,11 +374,11 @@ describe("site header responsive search", () => {
       clientWidth: 300,
       fullWidth: 390,
       compactWidth: 340,
-      iconWidth: 280,
+      buttonWidth: 280,
     });
 
     initSiteHeaderNav(root);
-    expect(headerRow.dataset.searchMode).toBe("icon");
+    expect(headerRow.dataset.searchMode).toBe("button");
 
     root.setWidths({
       clientWidth: 360,
@@ -315,7 +390,7 @@ describe("site header responsive search", () => {
     expect(headerRow.dataset.searchMode).toBe("compact");
   });
 
-  it("collapses the header into drawer mode when icon search still overflows", () => {
+  it("collapses the header into drawer mode when button search still overflows", () => {
     const { root, headerRow } = createResponsiveSearchDOM();
     root.insertAdjacentHTML(
       "beforeend",
@@ -337,7 +412,7 @@ describe("site header responsive search", () => {
       clientWidth: 280,
       fullWidth: 420,
       compactWidth: 360,
-      iconWidth: 320,
+      buttonWidth: 320,
       collapsedWidth: 220,
     });
 
@@ -369,7 +444,7 @@ describe("site header responsive search", () => {
       clientWidth: 280,
       fullWidth: 420,
       compactWidth: 360,
-      iconWidth: 320,
+      buttonWidth: 320,
       collapsedWidth: 220,
     });
 
@@ -387,7 +462,7 @@ describe("site header responsive search", () => {
       clientWidth: 420,
       fullWidth: 360,
       compactWidth: 340,
-      iconWidth: 300,
+      buttonWidth: 300,
     });
     MockResizeObserver.instances[0]?.trigger();
 

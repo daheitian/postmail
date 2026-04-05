@@ -447,19 +447,21 @@ export function validateStoredUploadSignature(
 }
 
 /** Allowed poster MIME types and their file extensions. */
-const POSTER_FORMATS: Record<string, string> = {
+const POSTER_FORMATS = {
   "image/webp": "webp",
   "image/png": "png",
-};
+} as const;
+
+export type PosterMimeType = keyof typeof POSTER_FORMATS;
 
 /**
  * Returns the file extension for a poster MIME type, or null if unsupported.
  *
- * @param contentType - The MIME type to check
- * @returns File extension string or null
+ * @param contentType - The poster MIME type to check
+ * @returns File extension string
  */
-export function getPosterExtension(contentType: string): string | null {
-  return POSTER_FORMATS[contentType] ?? null;
+export function getPosterExtension(contentType: PosterMimeType): string {
+  return POSTER_FORMATS[contentType];
 }
 
 /**
@@ -469,7 +471,7 @@ export function getPosterExtension(contentType: string): string | null {
  * @param bytes - First few bytes of the file
  * @returns MIME type string or null
  */
-export function detectPosterMimeType(bytes: Uint8Array): string | null {
+export function detectPosterMimeType(bytes: Uint8Array): PosterMimeType | null {
   if (
     bytes.length >= 12 &&
     readAscii(bytes, 0, 4) === "RIFF" &&

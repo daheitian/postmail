@@ -333,7 +333,7 @@ multipartUploadApiRoutes.put("/:id/poster", async (c) => {
     );
   }
 
-  const posterExt = getPosterExtension(posterMime)!;
+  const posterExt = getPosterExtension(posterMime);
   const posterKey = getPosterStorageKey(c.var.currentSite.id, id, posterExt);
 
   await storage.put(posterKey, posterBytes, {

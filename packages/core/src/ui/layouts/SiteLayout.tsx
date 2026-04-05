@@ -100,6 +100,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       comment: "@context: Search icon link in browse nav",
     }),
   );
+  const searchHref = toPublicPath("/search", sitePathPrefix);
 
   const moreLabel = i18n._(
     msg({
@@ -198,21 +199,31 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
               </nav>
 
               {/* Search */}
-              <form
-                class="site-header-search-form"
-                action={toPublicPath("/search", sitePathPrefix)}
-                method="get"
-              >
-                <SearchIcon class="site-header-search-icon" />
-                <input
-                  type="search"
-                  name="q"
-                  class="site-header-search-input"
-                  placeholder={searchLabel}
+              <div class="site-header-search-slot">
+                <form
+                  class="site-header-search-form"
+                  action={searchHref}
+                  method="get"
+                >
+                  <SearchIcon class="site-header-search-icon" />
+                  <input
+                    type="search"
+                    name="q"
+                    class="site-header-search-input"
+                    placeholder={searchLabel}
+                    aria-label={searchLabel}
+                    enterkeyhint="search"
+                  />
+                </form>
+                <a
+                  href={searchHref}
+                  class="site-header-search-link"
                   aria-label={searchLabel}
-                  enterkeyhint="search"
-                />
-              </form>
+                  title={searchLabel}
+                >
+                  <SearchIcon class="site-header-search-link-icon" />
+                </a>
+              </div>
 
               <div class="site-header-right">
                 {/* Mobile hamburger */}

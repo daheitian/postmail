@@ -139,4 +139,23 @@ export default [
       },
     },
   },
+  {
+    files: [
+      "packages/*/src/**/__tests__/**/*.{ts,tsx}",
+      "packages/*/src/**/__test__/**/*.{ts,tsx}",
+      "templates/*/src/**/__tests__/**/*.{ts,tsx}",
+      "templates/*/src/**/__test__/**/*.{ts,tsx}",
+    ],
+    linterOptions: {
+      reportUnusedDisableDirectives: "off",
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "no-console": "off",
+      "no-debugger": "off",
+      "prefer-const": "off",
+    },
+  },
 ];

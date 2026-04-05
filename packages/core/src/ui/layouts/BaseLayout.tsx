@@ -52,6 +52,15 @@ export interface BaseLayoutProps {
   clientBundle?: "public" | "full";
 }
 
+function isIpadUserAgent(userAgent: string | null | undefined): boolean {
+  if (!userAgent) return false;
+
+  return (
+    /iPad/i.test(userAgent) ||
+    (/Macintosh/i.test(userAgent) && /Mobile/i.test(userAgent))
+  );
+}
+
 export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   title,
   description,
@@ -88,6 +97,9 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   const currentUrl = c ? c.get("publicRequestUrl") : undefined;
   const siteName = appConfig?.siteName;
   const i18n = c ? c.get("i18n") : undefined;
+  const requestUserAgent = (
+    c as { req?: { header?: (name: string) => string | undefined } } | undefined
+  )?.req?.header?.("user-agent");
   const assetPath = (path: string) =>
     IS_VITE_DEV ? path : toAssetPath(path, assetBasePath);
 
@@ -192,6 +204,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     appConfig?.mainRssFeed === "latest"
       ? { href: featuredFeedHref, title: featuredFeedTitle }
       : { href: latestFeedHref, title: latestFeedTitle };
+  const ssrHeaderMode = isIpadUserAgent(requestUserAgent) ? "drawer" : null;
 
   return (
     <>
@@ -201,6 +214,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         data-theme-mode={themeMode}
         data-site-path-prefix={sitePathPrefix}
         data-asset-base-path={assetBasePath}
+        {...(ssrHeaderMode ? { "data-header-ssr-mode": ssrHeaderMode } : {})}
       >
         <head>
           <meta charset="UTF-8" />
@@ -286,7 +300,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
               collapsed layout before external CSS/JS loads */}
           <style
             dangerouslySetInnerHTML={{
-              __html: `@media(max-width:860px){.site-header-nav,.site-header-search-form{display:none!important}.site-header-hamburger{display:flex!important}.site-header-right{margin-left:auto}}`,
+              __html: `html[data-header-ssr-mode="drawer"] .site-header-nav,html[data-header-ssr-mode="drawer"] .site-header-search-slot{display:none!important}html[data-header-ssr-mode="drawer"] .site-header-hamburger{display:flex!important}html[data-header-ssr-mode="drawer"] .site-header-right{margin-left:auto}@media(max-width:480px){.site-header-nav,.site-header-search-slot{display:none!important}.site-header-hamburger{display:flex!important}.site-header-right{margin-left:auto}}`,
             }}
           />
           {themeStyle && (
