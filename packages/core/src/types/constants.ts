@@ -58,7 +58,7 @@ export const SYSTEM_NAV_KEYS = {
   },
   collections: {
     defaultLabel: "Collections",
-    url: "/c",
+    url: "/collections",
     defaultPlacement: "header",
   },
   archive: {

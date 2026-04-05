@@ -9,10 +9,32 @@ export const DEFAULT_SITE_NAME = "Jant";
 export const DEFAULT_SITE_LANGUAGE = "en";
 
 const DEFAULT_SYSTEM_NAV_ITEMS = [
-  { systemKey: "collections", label: "Collections", url: "/c" },
-  { systemKey: "archive", label: "Archive", url: "/archive" },
-  { systemKey: "rss", label: "RSS", url: "/feed" },
-  { systemKey: "settings", label: "Settings", url: "/settings" },
+  { systemKey: "latest", label: "Latest", url: "/latest", placement: "header" },
+  {
+    systemKey: "featured",
+    label: "Featured",
+    url: "/featured",
+    placement: "header",
+  },
+  {
+    systemKey: "collections",
+    label: "Collections",
+    url: "/collections",
+    placement: "header",
+  },
+  {
+    systemKey: "archive",
+    label: "Archive",
+    url: "/archive",
+    placement: "header",
+  },
+  { systemKey: "rss", label: "RSS", url: "/feed", placement: "more" },
+  {
+    systemKey: "settings",
+    label: "Settings",
+    url: "/settings",
+    placement: "more",
+  },
 ];
 
 const PASSWORD_HASH_PREFIX = "custom-scrypt";
@@ -187,9 +209,9 @@ function buildDefaultNavInsertStatements(flag, siteId, timestamp) {
     const position = generateKeyBetween(lastPosition, null);
     statements.push(
       [
-        "INSERT INTO nav_item (id, site_id, type, system_key, label, url, position, created_at, updated_at)",
+        "INSERT INTO nav_item (id, site_id, type, system_key, label, url, placement, position, created_at, updated_at)",
         "VALUES (",
-        `${sqlString(createTypeId("nav"))}, ${sqlString(siteId)}, 'system', ${sqlString(item.systemKey)}, ${sqlString(item.label)}, ${sqlString(item.url)}, ${sqlString(position)}, ${timestamp}, ${timestamp}`,
+        `${sqlString(createTypeId("nav"))}, ${sqlString(siteId)}, 'system', ${sqlString(item.systemKey)}, ${sqlString(item.label)}, ${sqlString(item.url)}, ${sqlString(item.placement)}, ${sqlString(position)}, ${timestamp}, ${timestamp}`,
         ")",
       ].join(" "),
     );

@@ -17,7 +17,7 @@ type CollectionFormHarness = HTMLElement & {
 };
 
 function createPageForm(
-  cancelHref = "/c",
+  cancelHref = "/collections",
   initial: CollectionFormHarness["initial"] = { slug: "books" },
 ): CollectionFormHarness {
   document.body.innerHTML = `
@@ -51,11 +51,11 @@ describe("collection form bridge", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.restoreAllMocks();
-    window.location.href = "http://localhost/c/new";
+    window.location.href = "http://localhost/collections/new";
   });
 
   it("redirects new collections back to the configured return URL", async () => {
-    const formEl = createPageForm("/c");
+    const formEl = createPageForm("/collections");
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ slug: "books" }), {
         status: 201,
@@ -90,11 +90,11 @@ describe("collection form bridge", () => {
         slug: "books",
       }),
     });
-    expect(window.location.pathname).toBe("/c");
+    expect(window.location.pathname).toBe("/collections");
   });
 
   it("redirects edited collections back to the collections page when launched from the list", async () => {
-    const formEl = createPageForm("/c");
+    const formEl = createPageForm("/collections");
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ slug: "books-renamed" }), {
         status: 200,
@@ -129,13 +129,13 @@ describe("collection form bridge", () => {
         slug: "books-renamed",
       }),
     });
-    expect(window.location.pathname).toBe("/c");
+    expect(window.location.pathname).toBe("/collections");
   });
 
   it("redirects edited collections back to the updated detail page when launched from detail", async () => {
     window.location.href =
-      "http://localhost/c/books/edit?returnTo=%2Fc%2Fbooks";
-    const formEl = createPageForm("/c/books");
+      "http://localhost/collections/books/edit?returnTo=%2Fbooks";
+    const formEl = createPageForm("/books");
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ slug: "books-renamed" }), {
         status: 200,
@@ -159,13 +159,15 @@ describe("collection form bridge", () => {
 
     await flushAsyncWork();
 
-    expect(window.location.pathname).toBe("/c/books-renamed");
+    expect(window.location.pathname).toBe("/books-renamed");
   });
 
   it("rewrites aggregate return paths when a collection slug changes", async () => {
     window.location.href =
-      "http://localhost/c/books/edit?returnTo=%2Fc%2Fbooks%2Bessays";
-    const formEl = createPageForm("/c/books+essays", { slug: "books" });
+      "http://localhost/collections/books/edit?returnTo=%2Fcollections%2Fbooks%2Bessays";
+    const formEl = createPageForm("/collections/books+essays", {
+      slug: "books",
+    });
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ slug: "books-renamed" }), {
         status: 200,
@@ -200,6 +202,6 @@ describe("collection form bridge", () => {
         slug: "books-renamed",
       }),
     });
-    expect(window.location.pathname).toBe("/c/books-renamed+essays");
+    expect(window.location.pathname).toBe("/collections/books-renamed+essays");
   });
 });

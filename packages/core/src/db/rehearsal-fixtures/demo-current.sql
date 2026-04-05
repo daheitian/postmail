@@ -42,13 +42,57 @@ INSERT INTO "nav_item" (
   "created_at",
   "updated_at"
 ) VALUES (
+  'nav_01kme7j8xfe4m7s2k8r5c9t0qa',
+  'sit_01kme7j7j1f4m7s2k8r5c9t0qb',
+  'system',
+  'latest',
+  'Latest',
+  '/latest',
+  'a0',
+  1774200011,
+  1774200011
+);
+
+INSERT INTO "nav_item" (
+  "id",
+  "site_id",
+  "type",
+  "system_key",
+  "label",
+  "url",
+  "position",
+  "created_at",
+  "updated_at"
+) VALUES (
+  'nav_01kme7j8xfe4m7s2k8r5c9t0qb',
+  'sit_01kme7j7j1f4m7s2k8r5c9t0qb',
+  'system',
+  'featured',
+  'Featured',
+  '/featured',
+  'a1',
+  1774200011,
+  1774200011
+);
+
+INSERT INTO "nav_item" (
+  "id",
+  "site_id",
+  "type",
+  "system_key",
+  "label",
+  "url",
+  "position",
+  "created_at",
+  "updated_at"
+) VALUES (
   'nav_01kme7j8xfe4m7s2k8r5c9t0qd',
   'sit_01kme7j7j1f4m7s2k8r5c9t0qb',
   'system',
   'collections',
   'Collections',
-  '/c',
-  'a0',
+  '/collections',
+  'a2',
   1774200011,
   1774200011
 );

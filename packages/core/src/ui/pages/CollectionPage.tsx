@@ -8,6 +8,11 @@ import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
 import { useLingui } from "../../i18n/context.js";
 import type { CollectionPageProps } from "../../types.js";
+import {
+  getCollectionEditPath,
+  getCollectionSelectionPath,
+  getCollectionsDirectoryPath,
+} from "../../lib/collection-paths.js";
 import { formatPageLabel } from "../../lib/pagination.js";
 import { toPublicPath } from "../../lib/url.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
@@ -47,7 +52,9 @@ export const CollectionPage: FC<CollectionPageProps> = ({
     : collections.map((collection) => collection.title).join(" + ");
   const collectionUrl = toPublicPath(pagePath, sitePathPrefix);
   const editCollectionUrl = toPublicPath(
-    `/c/${primaryCollection.slug}/edit?returnTo=${encodeURIComponent(collectionUrl)}`,
+    `${getCollectionEditPath(primaryCollection.slug)}?returnTo=${encodeURIComponent(
+      collectionUrl,
+    )}`,
     sitePathPrefix,
   );
   const sortUiId = isAggregate
@@ -174,7 +181,12 @@ export const CollectionPage: FC<CollectionPageProps> = ({
           >
             <ol>
               <li>
-                <a href={toPublicPath("/c", sitePathPrefix)}>
+                <a
+                  href={toPublicPath(
+                    getCollectionsDirectoryPath(),
+                    sitePathPrefix,
+                  )}
+                >
                   {i18n._(
                     msg({
                       message: "Collections",
@@ -229,7 +241,10 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 <span key={collection.id}>
                   {index > 0 ? <span>, </span> : null}
                   <a
-                    href={toPublicPath(`/c/${collection.slug}`, sitePathPrefix)}
+                    href={toPublicPath(
+                      getCollectionSelectionPath(collection.slug),
+                      sitePathPrefix,
+                    )}
                   >
                     {collection.title}
                   </a>
@@ -432,7 +447,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 data-collection-id={primaryCollection.id}
                 data-collection-page-labels={escapeJson(mutationLabels)}
                 data-collection-page-redirect-url={toPublicPath(
-                  "/c",
+                  getCollectionsDirectoryPath(),
                   sitePathPrefix,
                 )}
               >

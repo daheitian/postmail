@@ -127,11 +127,23 @@ describe("CollectionService", () => {
       ).rejects.toThrow("Use lowercase letters, numbers, and hyphens only.");
     });
 
-    it("rejects slugs reserved by the collection namespace", async () => {
+    it("allows root-level slugs that only conflicted in the old namespace", async () => {
       await expect(
         collectionService.create({
           slug: "new",
           title: "New",
+        }),
+      ).resolves.toMatchObject({
+        slug: "new",
+        title: "New",
+      });
+    });
+
+    it("rejects slugs reserved by top-level routes", async () => {
+      await expect(
+        collectionService.create({
+          slug: "collections",
+          title: "Collections",
         }),
       ).rejects.toThrow("This link is reserved. Choose something else.");
     });

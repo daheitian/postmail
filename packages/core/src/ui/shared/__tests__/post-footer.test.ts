@@ -14,7 +14,7 @@ function createCollection(slug: string, title: string): CollectionTagView {
   return {
     slug,
     title,
-    url: `/c/${slug}`,
+    url: `/${slug}`,
   };
 }
 
@@ -83,8 +83,8 @@ describe("PostFooter", () => {
     });
     const html = renderPostFooter(post);
 
-    expect(html).toContain('href="/c/notes"');
-    expect(html).toContain('href="/c/writing"');
+    expect(html).toContain('href="/notes"');
+    expect(html).toContain('href="/writing"');
     expect(html).toContain("Notes");
     expect(html).toContain("Writing");
     expect(html).not.toContain("more");
@@ -97,11 +97,11 @@ describe("PostFooter", () => {
     expect(html).toContain("and 2 more");
     expect(html).toContain("data-collection-popover-trigger");
     expect(html).toContain('class="post-collection-tag-text"');
-    expect(html).toContain('class="post-collection-primary-icon"');
+    expect(html).not.toContain('class="post-collection-primary-icon"');
     expect(html.match(/class="post-collection-popover-item"/g)).toHaveLength(2);
-    expect(html.match(/href="\/c\/notes"/g)).toHaveLength(1);
-    expect(html.match(/href="\/c\/writing"/g)).toHaveLength(1);
-    expect(html.match(/href="\/c\/studio"/g)).toHaveLength(1);
+    expect(html.match(/href="\/notes"/g)).toHaveLength(1);
+    expect(html.match(/href="\/writing"/g)).toHaveLength(1);
+    expect(html.match(/href="\/studio"/g)).toHaveLength(1);
   });
 
   it("interpolates the hidden collection count in non-English locales", () => {
@@ -137,7 +137,7 @@ describe("PostFooter", () => {
 
     expect(html).not.toContain('class="dt-published"');
     expect(html).not.toContain('class="post-collection-sep"');
-    expect(html).toContain('href="/c/notes"');
+    expect(html).toContain('href="/notes"');
     expect(html).toContain("data-post-menu-trigger");
   });
 

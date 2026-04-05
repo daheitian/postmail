@@ -149,11 +149,11 @@ describe("CreateCollectionSchema", () => {
     ).toThrow("Use lowercase letters, numbers, and hyphens only.");
   });
 
-  it("rejects collection namespace reserved slugs", () => {
+  it("rejects top-level reserved collection slugs", () => {
     expect(() =>
       CreateCollectionSchema.parse({
-        slug: "new",
-        title: "New",
+        slug: "collections",
+        title: "Collections",
       }),
     ).toThrow("This link is reserved. Choose something else.");
   });

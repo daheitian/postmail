@@ -1,3 +1,4 @@
+import { getCollectionsDirectoryPath } from "../lib/collection-paths.js";
 import { showConfirmDialog } from "./confirm.js";
 import { showToast } from "./toast.js";
 
@@ -46,7 +47,8 @@ document
 
     const labels = parseLabels(root.dataset.collectionPageLabels);
     const collectionId = root.dataset.collectionId;
-    const redirectUrl = root.dataset.collectionPageRedirectUrl || "/c";
+    const redirectUrl =
+      root.dataset.collectionPageRedirectUrl || getCollectionsDirectoryPath();
     const trigger = root.querySelector<HTMLElement>(
       "[data-collection-page-action='toggle-menu']",
     );

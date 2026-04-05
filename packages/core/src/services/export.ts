@@ -995,7 +995,7 @@ static/
 - **Styles** — edit \`static/style.css\`. The theme supports light and dark modes via \`prefers-color-scheme\`.
 - **Templates** — edit files in \`templates/\`. Zola uses the [Tera](https://keats.github.io/tera/) template engine.
 - **Debugging** — export to a directory with \`jant site export --directory ./my-site\`, then run \`cd my-site && zola serve\`.
-- **Collections** — posts are tagged with collections via the \`c\` taxonomy. Browse them at \`/c/\`.
+- **Collections** — posts are tagged with collections via the \`c\` taxonomy. Browse them at \`/collections/\`.
 
 ## Notes
 
@@ -1176,7 +1176,7 @@ const TEMPLATE_BASE = `<!DOCTYPE html>
                   {% endif %}
                 {% endfor %}
               {% else %}
-              <a href="{{ config.base_url }}/c/" class="site-header-link">Collections</a>
+              <a href="{{ config.base_url }}/collections/" class="site-header-link">Collections</a>
               <a href="{{ get_url(path='atom.xml') }}" class="site-header-link">RSS</a>
               {% endif %}
             </nav>

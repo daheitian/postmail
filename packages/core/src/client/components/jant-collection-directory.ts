@@ -1,7 +1,7 @@
 /**
  * Collections Page Manager
  *
- * Manages collections on the public /c page for authenticated users:
+ * Manages collections on the public /collections page for authenticated users:
  * - Renders collection rows and dividers in a single-column layout
  * - Dropdown menu for page actions (organize, new divider)
  * - SortableJS drag-and-drop organize mode
@@ -27,6 +27,11 @@ import { showConfirmDialog } from "../confirm.js";
 import { publicPath } from "../runtime-paths.js";
 import { showToast } from "../toast.js";
 import { getDividerCollectionGroup } from "../../lib/collection-groups.js";
+import {
+  getCollectionEditPath,
+  getCollectionSelectionPath,
+  getCollectionsDirectoryPath,
+} from "../../lib/collection-paths.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
 import type {
   CollectionManagerItem,
@@ -744,7 +749,9 @@ export class JantCollectionsManager extends LitElement {
     const collection = item.collection;
     if (!collection) return nothing;
 
-    const collectionHref = publicPath(`/c/${collection.slug}`);
+    const collectionHref = publicPath(
+      getCollectionSelectionPath(collection.slug),
+    );
 
     const body = html`
       <div class="collection-directory-main">
@@ -1054,8 +1061,10 @@ export class JantCollectionsManager extends LitElement {
                   ? html`
                       <a
                         href=${publicPath(
-                          `/c/${collection.slug}/edit?returnTo=${encodeURIComponent(
-                            publicPath("/c"),
+                          `${getCollectionEditPath(
+                            collection.slug,
+                          )}?returnTo=${encodeURIComponent(
+                            publicPath(getCollectionsDirectoryPath()),
                           )}`,
                         )}
                         class="collections-page-menu-item"
@@ -1193,7 +1202,9 @@ export class JantCollectionsManager extends LitElement {
                 ${group
                   ? html`
                       <a
-                        href=${publicPath(`/c/${group.slugExpression}`)}
+                        href=${publicPath(
+                          getCollectionSelectionPath(group.slugExpression),
+                        )}
                         class="collection-directory-divider-link collection-directory-divider-text"
                       >
                         ${item.label}

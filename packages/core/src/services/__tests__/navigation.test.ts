@@ -214,7 +214,7 @@ describe("NavItemService", () => {
       await navItemService.create({
         type: "link",
         label: "C",
-        url: "/c",
+        url: "/collections",
         position: "c0",
       });
       await navItemService.create({
@@ -364,7 +364,7 @@ describe("NavItemService", () => {
       const c = await navItemService.create({
         type: "link",
         label: "C",
-        url: "/c",
+        url: "/collections",
       });
 
       // Move C between A and B
@@ -390,7 +390,7 @@ describe("NavItemService", () => {
       const c = await navItemService.create({
         type: "link",
         label: "C",
-        url: "/c",
+        url: "/collections",
       });
 
       // Move C before A
@@ -416,7 +416,7 @@ describe("NavItemService", () => {
       const c = await navItemService.create({
         type: "link",
         label: "C",
-        url: "/c",
+        url: "/collections",
       });
 
       // Move A after C

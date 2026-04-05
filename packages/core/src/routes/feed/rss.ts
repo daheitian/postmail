@@ -5,7 +5,8 @@
  * - /feed                  — site main feed (latest or featured, site-configurable)
  * - /feed/latest           — latest public posts
  * - /feed/featured        — featured posts only
- * - /c/{slug}/feed        — per-collection feed (handled in collection routes)
+ * - /{slug}/feed          — single-collection feed (handled in page routes)
+ * - /collections/{slug}/feed — combined collection feed (handled in collection routes)
  */
 
 import { msg } from "@lingui/core/macro";

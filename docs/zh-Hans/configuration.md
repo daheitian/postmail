@@ -339,11 +339,9 @@ npx jant uploads cleanup --url https://your-site.example --limit 50
 
 ```text
 featured, latest, collections, signin, signout, setup, settings, posts, dash,
-api, feed, search, archive, media, pages, reset, c, compose, static, assets,
+api, feed, search, archive, media, pages, reset, compose, static, assets,
 _assets, health
 ```
-
-在 `/c/*` 命名空间内部，collection slug `new` 也是保留的。
 
 ## 配置文件
 

@@ -8,6 +8,11 @@
 
 import type { CollectionSubmitDetail } from "./components/collection-types.js";
 import type { JantCollectionForm } from "./components/jant-collection-form.js";
+import {
+  getCollectionPagePath,
+  getCollectionSelectionPath,
+  getCollectionsDirectoryPath,
+} from "../lib/collection-paths.js";
 import { publicPath } from "./runtime-paths.js";
 import { showToast } from "./toast.js";
 
@@ -71,7 +76,8 @@ function resolveRedirectUrl(
   formEl: JantCollectionForm,
   nextSlug: string | undefined,
 ): string {
-  const fallbackUrl = formEl.cancelHref || publicPath("/c");
+  const fallbackUrl =
+    formEl.cancelHref || publicPath(getCollectionsDirectoryPath());
   if (!detail.isEdit) {
     return fallbackUrl;
   }
@@ -82,23 +88,28 @@ function resolveRedirectUrl(
 
   const cancelUrl = normalizeLocalHref(fallbackUrl);
   if (!cancelUrl) {
-    return publicPath(`/c/${nextSlug}`);
+    return publicPath(getCollectionPagePath(nextSlug));
   }
 
   const internalPath = toInternalPath(cancelUrl.pathname);
-  const selectionMatch = internalPath?.match(/^\/c\/([^/]+)$/);
+  const currentSlug = formEl.initial?.slug?.trim() || undefined;
+  if (currentSlug && internalPath === getCollectionPagePath(currentSlug)) {
+    cancelUrl.pathname = publicPath(getCollectionPagePath(nextSlug));
+    return `${cancelUrl.pathname}${cancelUrl.search}${cancelUrl.hash}`;
+  }
+
+  const selectionMatch = internalPath?.match(/^\/collections\/([^/]+)$/);
   if (!selectionMatch) {
     return `${cancelUrl.pathname}${cancelUrl.search}${cancelUrl.hash}`;
   }
 
-  const currentSlug = formEl.initial?.slug?.trim() || undefined;
   const nextSelection = replaceCollectionSelectionSlug(
     selectionMatch[1],
     nextSlug,
     currentSlug,
   );
 
-  cancelUrl.pathname = publicPath(`/c/${nextSelection}`);
+  cancelUrl.pathname = publicPath(getCollectionSelectionPath(nextSelection));
   return `${cancelUrl.pathname}${cancelUrl.search}${cancelUrl.hash}`;
 }
 

@@ -503,8 +503,8 @@ export function createApp(): App {
   app.route("/", partialPageRoutes);
   app.route("/_", brandRoutes);
   app.route("/_", themeSampleRoutes);
-  app.route("/c", collectionsPageRoutes);
-  app.route("/c", collectionRoutes);
+  app.route("/collections", collectionsPageRoutes);
+  app.route("/collections", collectionRoutes);
   app.route("/", homeRoutes);
 
   // Custom page catch-all (must be last)

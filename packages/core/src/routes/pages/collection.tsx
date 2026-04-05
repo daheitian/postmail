@@ -23,6 +23,12 @@ import { buildMediaMap } from "../../lib/media-helpers.js";
 import { toISOString } from "../../lib/time.js";
 import { createMediaContext, toPostViews } from "../../lib/view.js";
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
+import {
+  getCollectionPagePath,
+  getCollectionSelectionFeedPath,
+  getCollectionSelectionPath,
+  isAggregateCollectionSelection,
+} from "../../lib/collection-paths.js";
 import type { I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { getI18n } from "../../i18n/index.js";
@@ -47,10 +53,6 @@ function buildCollectionSelectionTitle(
   return collections.map((collection) => collection.title).join(" + ");
 }
 
-function getCanonicalSelectionPath(slugExpression: string): string {
-  return `/c/${slugExpression}`;
-}
-
 function resolveReturnHref(
   value: string | undefined,
   fallback: string,
@@ -66,6 +68,8 @@ collectionRoutes.use("/:slug/edit", requireAuth());
 
 collectionRoutes.get("/:slug/edit", async (c) => {
   const slug = c.req.param("slug");
+  if (isAggregateCollectionSelection(slug)) return c.notFound();
+
   const [collection, navData] = await Promise.all([
     c.var.services.collections.getBySlug(slug),
     getNavigationData(c),
@@ -73,7 +77,7 @@ collectionRoutes.get("/:slug/edit", async (c) => {
   if (!collection) return c.notFound();
 
   const defaultReturnHref = toPublicPath(
-    `/c/${collection.slug}`,
+    getCollectionPagePath(collection.slug),
     navData.sitePathPrefix,
   );
   const cancelHref = resolveReturnHref(
@@ -96,12 +100,13 @@ collectionRoutes.get("/:slug/edit", async (c) => {
 });
 
 /**
- * Render a collection selection page. Used by both the `/c/:slug` route
- * and collection aliases resolved through the path registry.
+ * Render a collection selection page. Used by root-level single-collection
+ * paths, collection aliases resolved through the path registry, and aggregate
+ * routes under `/collections/{slug1}+{slug2}`.
  *
  * @param c - Hono context
  * @param slugExpression - Collection slug (or `a+b` aggregate expression)
- * @param pagePathOverride - When set, used as the canonical page path instead of `/c/{slug}`
+ * @param pagePathOverride - When set, used as the public page path instead of the derived canonical path
  */
 export async function renderCollectionPage(
   c: Context<Env>,
@@ -118,9 +123,9 @@ export async function renderCollectionPage(
   if (!selection) return null;
 
   const canonicalPagePath =
-    pagePathOverride ?? getCanonicalSelectionPath(selection.slugExpression);
+    pagePathOverride ?? getCollectionSelectionPath(selection.slugExpression);
 
-  // Only redirect for slug normalization when using the default /c/ path
+  // Only redirect for slug normalization when using the derived canonical path
   if (!pagePathOverride && slugExpression !== selection.slugExpression) {
     const search = new URL(c.req.url).search;
     return c.redirect(
@@ -216,43 +221,24 @@ export async function renderCollectionPage(
   });
 }
 
-collectionRoutes.get("/:slug", async (c) => {
-  const slugExpression = c.req.param("slug");
-  const sitePathPrefix = c.var.appConfig.sitePathPrefix;
-
-  // If accessed via /c/{slug} and an alias exists, redirect to the alias
-  const collection = await c.var.services.collections.getBySlug(slugExpression);
-  if (collection) {
-    const alias = await c.var.services.customUrls.getByTarget(
-      "collection",
-      collection.id,
-    );
-    if (alias) {
-      const search = new URL(c.req.url).search;
-      return c.redirect(
-        toPublicPath(`/${alias.path}${search}`, sitePathPrefix),
-        301,
-      );
-    }
-  }
-
-  const result = await renderCollectionPage(c, slugExpression);
-  return result ?? c.notFound();
-});
-
-// Collection RSS feed
-collectionRoutes.get("/:slug/feed", async (c) => {
-  const slugExpression = c.req.param("slug");
-
+export async function renderCollectionFeed(
+  c: Context<Env>,
+  slugExpression: string,
+  feedPathOverride?: string,
+): Promise<Response | null> {
   const selection =
     await c.var.services.collections.resolveSelection(slugExpression);
-  if (!selection) return c.notFound();
+  if (!selection) return null;
 
-  if (slugExpression !== selection.slugExpression) {
+  const canonicalFeedPath =
+    feedPathOverride ??
+    getCollectionSelectionFeedPath(selection.slugExpression);
+
+  if (!feedPathOverride && slugExpression !== selection.slugExpression) {
     const search = new URL(c.req.url).search;
     return c.redirect(
       toPublicPath(
-        `${getCanonicalSelectionPath(selection.slugExpression)}/feed${search}`,
+        `${canonicalFeedPath}${search}`,
         c.var.appConfig.sitePathPrefix,
       ),
       301,
@@ -265,7 +251,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
   const siteLanguage = appConfig.siteLanguage;
   const feedLimit = appConfig.rssFeedLimit;
   const primaryCollection = selection.collections[0];
-  if (!primaryCollection) return c.notFound();
+  if (!primaryCollection) return null;
 
   const entries =
     await c.var.services.posts.listCollectionFeedEntriesForCollections(
@@ -278,8 +264,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
     );
   const posts = entries.map((entry) => entry.post);
 
-  // Batch load media and aliases for enclosures
-  const postIds = posts.map((p) => p.id);
+  const postIds = posts.map((post) => post.id);
   const [rawMediaMap, aliasesMap] = await Promise.all([
     c.var.services.media.getByPostIds(postIds),
     c.var.services.paths.getPostAliases(postIds),
@@ -299,9 +284,9 @@ collectionRoutes.get("/:slug/feed", async (c) => {
   }
 
   const postViews = toPostViews(
-    posts.map((p) => ({
-      ...p,
-      mediaAttachments: mediaMap.get(p.id) ?? [],
+    posts.map((post) => ({
+      ...post,
+      mediaAttachments: mediaMap.get(post.id) ?? [],
     })),
     mediaCtx,
     undefined,
@@ -317,10 +302,10 @@ collectionRoutes.get("/:slug/feed", async (c) => {
       feedUpdatedAt: feedTimestamp,
     };
   });
-  const i18nRss = getI18n(c);
+  const i18n = getI18n(c);
   const selectionTitle = buildCollectionSelectionTitle(
     selection.collections,
-    i18nRss,
+    i18n,
   );
 
   const xml = defaultRssRenderer({
@@ -331,7 +316,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
         : "",
     siteUrl,
     selfUrl: toAbsoluteSiteUrl(
-      `${getCanonicalSelectionPath(selection.slugExpression)}/feed`,
+      canonicalFeedPath,
       siteUrl,
       appConfig.sitePathPrefix,
     ),
@@ -345,4 +330,51 @@ collectionRoutes.get("/:slug/feed", async (c) => {
       "Cache-Control": "public, max-age=180",
     },
   });
+}
+
+collectionRoutes.get("/:slug", async (c) => {
+  const slugExpression = c.req.param("slug");
+  const sitePathPrefix = c.var.appConfig.sitePathPrefix;
+
+  if (!isAggregateCollectionSelection(slugExpression)) {
+    const collection =
+      await c.var.services.collections.getBySlug(slugExpression);
+    if (!collection) return c.notFound();
+
+    const search = new URL(c.req.url).search;
+    return c.redirect(
+      toPublicPath(
+        `${getCollectionPagePath(collection.slug)}${search}`,
+        sitePathPrefix,
+      ),
+      301,
+    );
+  }
+
+  const result = await renderCollectionPage(c, slugExpression);
+  return result ?? c.notFound();
+});
+
+// Collection RSS feed
+collectionRoutes.get("/:slug/feed", async (c) => {
+  const slugExpression = c.req.param("slug");
+  const sitePathPrefix = c.var.appConfig.sitePathPrefix;
+
+  if (!isAggregateCollectionSelection(slugExpression)) {
+    const collection =
+      await c.var.services.collections.getBySlug(slugExpression);
+    if (!collection) return c.notFound();
+
+    const search = new URL(c.req.url).search;
+    return c.redirect(
+      toPublicPath(
+        `${getCollectionSelectionFeedPath(collection.slug)}${search}`,
+        sitePathPrefix,
+      ),
+      301,
+    );
+  }
+
+  const result = await renderCollectionFeed(c, slugExpression);
+  return result ?? c.notFound();
 });

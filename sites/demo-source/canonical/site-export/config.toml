@@ -31,7 +31,7 @@ favicon_version = "202603212301"
 [[extra.jant.nav]]
 type = "system"
 label = "Collections"
-url = "/c"
+url = "/collections"
 system_key = "collections"
 
 [[extra.jant.nav]]

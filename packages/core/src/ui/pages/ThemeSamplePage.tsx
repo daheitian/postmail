@@ -1,5 +1,6 @@
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "../../i18n/context.js";
+import { getCollectionPagePath } from "../../lib/collection-paths.js";
 import { escapeHtml } from "../../lib/html.js";
 import { toPublicPath } from "../../lib/url.js";
 import type { PostView } from "../../types.js";
@@ -267,7 +268,7 @@ export function ThemeSamplePage({
       collections: [
         {
           slug: "design",
-          url: toPublicPath("/c/design", sitePathPrefix),
+          url: toPublicPath(getCollectionPagePath("design"), sitePathPrefix),
           title: i18n._(
             msg({
               message: "Design",
@@ -352,7 +353,10 @@ export function ThemeSamplePage({
       collections: [
         {
           slug: "references",
-          url: toPublicPath("/c/references", sitePathPrefix),
+          url: toPublicPath(
+            getCollectionPagePath("references"),
+            sitePathPrefix,
+          ),
           title: i18n._(
             msg({
               message: "References",
@@ -440,7 +444,7 @@ export function ThemeSamplePage({
       collections: [
         {
           slug: "reading",
-          url: toPublicPath("/c/reading", sitePathPrefix),
+          url: toPublicPath(getCollectionPagePath("reading"), sitePathPrefix),
           title: i18n._(
             msg({
               message: "Reading",
@@ -692,7 +696,7 @@ export function ThemeSamplePage({
     collections: [
       {
         slug: "design",
-        url: toPublicPath("/c/design", sitePathPrefix),
+        url: toPublicPath(getCollectionPagePath("design"), sitePathPrefix),
         title: i18n._(
           msg({
             message: "Design",

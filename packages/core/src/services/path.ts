@@ -3,7 +3,7 @@
  *
  * Centralizes path ownership and resolution for posts, collections, aliases,
  * and redirects. Stored paths are normalized relative paths without a leading
- * slash (for example: "hello-world" or "c/notes").
+ * slash (for example: "hello-world" or "collections/reading+tools").
  */
 
 import { and, eq, inArray, isNotNull, ne } from "drizzle-orm";
@@ -50,11 +50,11 @@ export interface PathService {
 }
 
 export function toCollectionPath(slug: string): string {
-  return normalizePath(`c/${slug}`);
+  return normalizePath(slug);
 }
 
 export function fromCollectionPath(path: string): string {
-  return path.startsWith("c/") ? path.slice(2) : path;
+  return normalizePath(path);
 }
 
 function isUniqueConstraintError(err: unknown): boolean {

@@ -68,7 +68,7 @@ static/
 - **Styles** — edit `static/style.css`. The theme supports light and dark modes via `prefers-color-scheme`.
 - **Templates** — edit files in `templates/`. Zola uses the [Tera](https://keats.github.io/tera/) template engine.
 - **Debugging** — export to a directory with `jant site export --directory ./my-site`, then run `cd my-site && zola serve`.
-- **Collections** — posts are tagged with collections via the `c` taxonomy. Browse them at `/c/`.
+- **Collections** — posts are tagged with collections via the `c` taxonomy. Browse them at `/collections/`.
 
 ## Notes
 

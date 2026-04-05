@@ -2,6 +2,7 @@ import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
 import { useLingui } from "../../i18n/context.js";
 import type { CollectionDirectoryItem } from "../../types.js";
+import { getCollectionSelectionPath } from "../../lib/collection-paths.js";
 import { getDividerCollectionGroup } from "../../lib/collection-groups.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
 import { toPublicHref, toPublicPath } from "../../lib/url.js";
@@ -133,7 +134,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                     {group ? (
                       <a
                         href={toPublicPath(
-                          `/c/${group.slugExpression}`,
+                          getCollectionSelectionPath(group.slugExpression),
                           sitePathPrefix,
                         )}
                         class="collection-directory-divider-link collection-directory-divider-text"
@@ -218,7 +219,10 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
               </span>
               <div class="collection-directory-title-row">
                 <a
-                  href={toPublicPath(`/c/${collection.slug}`, sitePathPrefix)}
+                  href={toPublicPath(
+                    getCollectionSelectionPath(collection.slug),
+                    sitePathPrefix,
+                  )}
                   class="collection-directory-title-link"
                 >
                   <span class="collection-directory-title">

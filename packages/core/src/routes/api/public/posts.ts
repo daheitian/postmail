@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import type { Bindings, Collection, Media, Post } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
+import { getCollectionPagePath } from "../../../lib/collection-paths.js";
 import { FormatSchema, parseValidated } from "../../../lib/schemas.js";
 import { NotFoundError } from "../../../lib/errors.js";
 import { toApiAttachment } from "../../../lib/api-posts.js";
@@ -152,7 +153,7 @@ function toPublicPost(
       id: collection.id,
       slug: collection.slug,
       title: collection.title,
-      url: toPublicPath(`/c/${collection.slug}`, sitePathPrefix),
+      url: toPublicPath(getCollectionPagePath(collection.slug), sitePathPrefix),
     })),
   };
   const contentFields =

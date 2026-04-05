@@ -31,7 +31,7 @@ import {
 import { ValidationError } from "./errors.js";
 import { createTypeIdSchema, ID_PREFIX } from "./ids.js";
 import { normalizeSlug } from "./slug-format.js";
-import { isReservedCollectionSlug } from "./constants.js";
+import { isReservedPath } from "./constants.js";
 import { sanitizeUrl, normalizePath } from "./url.js";
 
 // =============================================================================
@@ -597,7 +597,7 @@ export const CollectionSlugSchema = z
         message: `Keep this link under ${MAX_COLLECTION_SLUG_LENGTH} characters.`,
       })
       .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/)
-      .refine((value) => !isReservedCollectionSlug(value), {
+      .refine((value) => !isReservedPath(value), {
         message: "This link is reserved. Choose something else.",
       }),
   );

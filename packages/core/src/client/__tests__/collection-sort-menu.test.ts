@@ -21,8 +21,8 @@ function renderMenu() {
         aria-hidden="true"
       >
         <div data-collection-sort-options>
-          <a href="/c/test">Newest first</a>
-          <a href="/c/test?sort=oldest">Oldest first</a>
+          <a href="/test">Newest first</a>
+          <a href="/test?sort=oldest">Oldest first</a>
         </div>
       </div>
     </div>

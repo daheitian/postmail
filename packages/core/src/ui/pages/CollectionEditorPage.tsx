@@ -8,6 +8,10 @@ import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
 import { useLingui } from "../../i18n/context.js";
 import type { CollectionEditorPageProps } from "../../types.js";
+import {
+  getCollectionPagePath,
+  getCollectionsDirectoryPath,
+} from "../../lib/collection-paths.js";
 import { toPublicPath } from "../../lib/url.js";
 import {
   getCollectionFormLabels,
@@ -26,9 +30,12 @@ export const CollectionEditorPage: FC<CollectionEditorPageProps> = ({
   const { i18n } = useLingui();
   const formLabels = getCollectionFormLabels(i18n);
   const mutationLabels = getCollectionMutationLabels(i18n);
-  const collectionsHref = toPublicPath("/c", sitePathPrefix);
+  const collectionsHref = toPublicPath(
+    getCollectionsDirectoryPath(),
+    sitePathPrefix,
+  );
   const collectionHref = collection
-    ? toPublicPath(`/c/${collection.slug}`, sitePathPrefix)
+    ? toPublicPath(getCollectionPagePath(collection.slug), sitePathPrefix)
     : null;
   const initial = collection
     ? {

@@ -1452,7 +1452,7 @@ Response:
 
 Auth: `Session or token`
 
-Creates a manual directory item for the `/c` collections index.
+Creates a manual directory item for the `/collections` directory page.
 
 Request body:
 
@@ -2520,7 +2520,8 @@ These are not part of the JSON content-management API, but they are often useful
 | `GET /feed/featured/atom.xml` | Public | Atom     | Featured posts feed                                             |
 | `GET /feed/all`               | Public | Redirect | Legacy alias to `/feed/latest`                                  |
 | `GET /feed/all/atom.xml`      | Public | Redirect | Legacy Atom alias to `/feed/latest/atom.xml`                    |
-| `GET /c/:slug/feed`           | Public | RSS      | Collection feed for one collection or collection selection      |
+| `GET /:slug/feed`             | Public | RSS      | Collection feed for one collection                              |
+| `GET /collections/:slug/feed` | Public | RSS      | Collection feed for a collection selection                      |
 | `GET /sitemap.xml`            | Public | XML      | Sitemap for published posts                                     |
 | `GET /robots.txt`             | Public | Text     | Robots rules and sitemap location                               |
 
@@ -2577,7 +2578,8 @@ Feed notes:
 - Latest feeds include published root posts only, excluding private posts and `latest_hidden` posts.
 - Featured feeds include published featured root posts and exclude private posts.
 - `GET /feed/all` and `GET /feed/all/atom.xml` are legacy aliases that redirect to the `latest` feed with `308`, preserving the query string.
-- `GET /c/:slug/feed` returns an RSS feed for the collection page selection. Non-canonical collection aliases redirect to the canonical selection path with `301`.
+- `GET /:slug/feed` returns an RSS feed for a single collection.
+- `GET /collections/:slug/feed` returns an RSS feed for a collection selection and redirects normalized selections to the canonical path with `301`.
 
 ### Sitemap and robots
 

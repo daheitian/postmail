@@ -129,7 +129,7 @@ describe("Public Posts API Routes", () => {
           id: collection.id,
           slug: "reading",
           title: "Reading",
-          url: "/c/reading",
+          url: "/reading",
         },
       ]);
       expect(body.bodyHtml).toContain("public body");

@@ -31,6 +31,7 @@ import {
   formatTime,
   formatRelativeTime,
 } from "./time.js";
+import { getCollectionPagePath } from "./collection-paths.js";
 import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
 import { extractSummaryHtml } from "./summary.js";
 import { highlightText } from "./search-snippet.js";
@@ -228,7 +229,7 @@ export function toPostView(
   const collections: CollectionTagView[] = (postCollections ?? []).map((c) => ({
     slug: c.slug,
     title: c.title,
-    url: toPublicPath(`/c/${c.slug}`, ctx.sitePathPrefix),
+    url: toPublicPath(getCollectionPagePath(c.slug), ctx.sitePathPrefix),
   }));
 
   // Convert media attachments

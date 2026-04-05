@@ -117,17 +117,17 @@
 
 **示例**：
 
-- `/c/reading` - 读过的书（Link + rating）
-- `/c/movies` - 看过的电影（Link + rating）
-- `/c/tools` - 好用的工具（Link）
-- `/c/ai-chats` - AI 对话记录（Note）
+- `/reading` - 读过的书（Link + rating）
+- `/movies` - 看过的电影（Link + rating）
+- `/tools` - 好用的工具（Link）
+- `/ai-chats` - AI 对话记录（Note）
 
 **规则**：
 
 - 一个帖子可以属于多个合集（多对多关系，通过 `post_collections` 关联表实现）
 - 合集有名称、描述和图标
 - 合集有自定义排序方式（最新/最早/评分最高/评分最低）
-- 合集有自定义 slug，地址为 `/c/{slug}`，创建时根据名称自动生成，用户可修改
+- 合集有自定义 slug，地址为 `/{slug}`，创建时根据名称自动生成，用户可修改
 - 合集有 `position` 字段，后台支持拖拽排序
 - 合集之间可以插入分隔线（保存在统一的 `collection_directory_item` 排序表里），用于在列表页分组
 - 不预设任何合集，首次使用时引导创建
@@ -223,7 +223,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 3.7 合集页面
 
-`/c` 展示所有合集的列表页，点击进入单个合集的帖子列表（`/c/{slug}`）。合集页面为双栏布局，左侧边栏展示所有合集，右侧栏展示当前合集的帖子列表。
+`/collections` 展示所有合集的列表页，点击进入单个合集的帖子列表（`/{slug}`）。合集页面为双栏布局，左侧边栏展示所有合集，右侧栏展示当前合集的帖子列表。
 
 ### 3.8 首次使用（Onboarding）
 
@@ -245,8 +245,8 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 **类型**：
 
-- `link` — 任意 URL（/c、/featured、/archive、/c/reading、外部链接，都是 link）
-- `system` — 系统内置链接（RSS `/feed`、Settings `/settings`、Collections `/c`、Archive `/archive`），label 可自定义
+- `link` — 任意 URL（`/collections`、`/featured`、`/archive`、`/reading`、外部链接，都是 link）
+- `system` — 系统内置链接（RSS `/feed`、Settings `/settings`、Collections `/collections`、Archive `/archive`），label 可自定义
 
 **后台管理**（`/settings/navigation`，设置的导航子页面）：
 
@@ -262,28 +262,30 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 > URL 是产品的一部分。应该简洁、美观、有意义。
 
-帖子使用 slug 作为 URL（如 `/{slug}`）。Slug 由标题自动生成（通过 `lib/slug.ts`），或生成随机字母数字 ID（通过 `lib/nanoid.ts`，长度由 `SLUG_ID_LENGTH` 环境变量控制，默认 5）。自定义路径覆盖通过 `path_registry` 表管理。合集使用 `/c/{slug}`。
+帖子使用 slug 作为 URL（如 `/{slug}`）。Slug 由标题自动生成（通过 `lib/slug.ts`），或生成随机字母数字 ID（通过 `lib/nanoid.ts`，长度由 `SLUG_ID_LENGTH` 环境变量控制，默认 5）。自定义路径覆盖通过 `path_registry` 表管理。合集使用 `/{slug}`，组合合集使用 `/collections/{slug1}+{slug2}`。
 
 ### 5.2 前台路由
 
-| URL                       | 内容                                                                  |
-| ------------------------- | --------------------------------------------------------------------- |
-| `/`                       | 首页（默认展示最新帖子；`HOME_DEFAULT_VIEW=featured` 时展示精选帖子） |
-| `/latest`                 | 最新帖子（当首页已展示最新时，302 重定向到 `/`）                      |
-| `/featured`               | 精选帖子（当首页已展示精选时，302 重定向到 `/`）                      |
-| `/{slug}`                 | 单条帖子（slug 自动生成或自定义）                                     |
-| `/c/{slug}`               | 合集帖子列表                                                          |
-| `/c`                      | 合集列表页                                                            |
-| `/archive`                | 归档（支持 ?format= &featured= 筛选）                                 |
-| `/search`                 | 搜索                                                                  |
-| `/feed`                   | RSS 2.0 站点主 Feed（默认精选，可在设置中切换为 Latest）              |
-| `/feed/atom.xml`          | Atom 站点主 Feed（默认精选，可在设置中切换为 Latest）                 |
-| `/feed/latest`            | RSS 2.0 Latest Feed（公开帖子，支持 `?format=` 筛选）                 |
-| `/feed/latest/atom.xml`   | Atom Latest Feed（公开帖子，支持 `?format=` 筛选）                    |
-| `/feed/featured`          | RSS 2.0 Featured Feed（仅精选帖子）                                   |
-| `/feed/featured/atom.xml` | Atom Featured Feed（仅精选帖子）                                      |
-| `/c/{slug}/feed`          | 单个合集的 RSS Feed                                                   |
-| `/sitemap.xml`            | 自动生成的站点地图                                                    |
+| URL                        | 内容                                                                  |
+| -------------------------- | --------------------------------------------------------------------- |
+| `/`                        | 首页（默认展示最新帖子；`HOME_DEFAULT_VIEW=featured` 时展示精选帖子） |
+| `/latest`                  | 最新帖子（当首页已展示最新时，302 重定向到 `/`）                      |
+| `/featured`                | 精选帖子（当首页已展示精选时，302 重定向到 `/`）                      |
+| `/{slug}`                  | 单条帖子（slug 自动生成或自定义）                                     |
+| `/{slug}`                  | 单个合集帖子列表                                                      |
+| `/collections/{slug}`      | 组合合集帖子列表                                                      |
+| `/collections`             | 合集列表页                                                            |
+| `/archive`                 | 归档（支持 ?format= &featured= 筛选）                                 |
+| `/search`                  | 搜索                                                                  |
+| `/feed`                    | RSS 2.0 站点主 Feed（默认精选，可在设置中切换为 Latest）              |
+| `/feed/atom.xml`           | Atom 站点主 Feed（默认精选，可在设置中切换为 Latest）                 |
+| `/feed/latest`             | RSS 2.0 Latest Feed（公开帖子，支持 `?format=` 筛选）                 |
+| `/feed/latest/atom.xml`    | Atom Latest Feed（公开帖子，支持 `?format=` 筛选）                    |
+| `/feed/featured`           | RSS 2.0 Featured Feed（仅精选帖子）                                   |
+| `/feed/featured/atom.xml`  | Atom Featured Feed（仅精选帖子）                                      |
+| `/{slug}/feed`             | 单个合集的 RSS Feed                                                   |
+| `/collections/{slug}/feed` | 组合合集的 RSS Feed                                                   |
+| `/sitemap.xml`             | 自动生成的站点地图                                                    |
 
 ### 5.3 后台路由
 
@@ -321,7 +323,8 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 - `/feed/latest/atom.xml` — Atom 格式，Latest 公开帖子
 - `/feed/featured` — RSS 2.0，仅精选帖子
 - `/feed/featured/atom.xml` — Atom 格式，仅精选帖子
-- `/c/{slug}/feed` — 单个合集的 RSS Feed，按加入合集时间倒序
+- `/{slug}/feed` — 单个合集的 RSS Feed，按加入合集时间倒序
+- `/collections/{slug}/feed` — 组合合集的 RSS Feed，按加入合集时间倒序
 
 **Sitemap**：自动生成，包含所有公开帖子和页面。
 

@@ -72,7 +72,7 @@ Use threads when you want to keep a sequence of thoughts together without collap
 
 ## Collections
 
-Collections are curated groupings of posts under `/c/{slug}`.
+Collections are curated groupings of posts under `/{slug}`.
 
 Use them for:
 
@@ -86,14 +86,14 @@ Collections have their own pages and feeds. They are better than tags when you w
 
 You can also combine collections in the URL. For example:
 
-- `/c/reading+movies`
-- `/c/notes+links+quotes`
+- `/collections/reading+movies`
+- `/collections/notes+links+quotes`
 
 Jant treats that as one combined view across multiple collections.
 
 - It shows the union of posts from all included collections
 - Shared threads are deduped, so the same thread does not appear twice
-- The same pattern works for feeds at `/c/{slug1}+{slug2}/feed`
+- The same pattern works for feeds at `/collections/{slug1}+{slug2}/feed`
 
 ## Visibility and Curation
 
@@ -156,8 +156,8 @@ If you later switch `MAIN_RSS_FEED` to `latest`, the default `/feed` behavior ch
 Jant uses readable URLs:
 
 - Posts use `/{slug}`
-- Collections use `/c/{slug}`
-- Combined collection views use `/c/{slug1}+{slug2}+{slug3}`
+- Collections use `/{slug}`
+- Combined collection views use `/collections/{slug1}+{slug2}+{slug3}`
 - Search lives at `/search`
 - Archive lives at `/archive`
 - Featured lives at `/featured`
@@ -167,8 +167,8 @@ Feeds:
 - `/feed` uses your configured main feed
 - `/feed/latest` always returns the latest public posts
 - `/feed/featured` always returns featured posts
-- `/c/{slug}/feed` returns a collection feed
-- `/c/{slug1}+{slug2}/feed` returns a combined collection feed
+- `/{slug}/feed` returns a collection feed
+- `/collections/{slug1}+{slug2}/feed` returns a combined collection feed
 
 ## Choosing Between Thread, Collection, and Featured
 

@@ -2,6 +2,10 @@ import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
 import { useLingui } from "../../i18n/context.js";
 import type { CollectionDirectoryItem } from "../../types.js";
+import {
+  getCollectionsDirectoryPath,
+  getNewCollectionPath,
+} from "../../lib/collection-paths.js";
 import { toPublicPath } from "../../lib/url.js";
 import { CollectionDirectory } from "./CollectionDirectory.js";
 import { getCollectionMutationLabels } from "./collection-management-labels.js";
@@ -22,9 +26,12 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
   sitePathPrefix = "",
 }) => {
   const { i18n } = useLingui();
-  const collectionsHref = toPublicPath("/c", sitePathPrefix);
+  const collectionsHref = toPublicPath(
+    getCollectionsDirectoryPath(),
+    sitePathPrefix,
+  );
   const newCollectionHref = toPublicPath(
-    `/c/new?returnTo=${encodeURIComponent(collectionsHref)}`,
+    `${getNewCollectionPath()}?returnTo=${encodeURIComponent(collectionsHref)}`,
     sitePathPrefix,
   );
   const collectionCount = countCollections(items);

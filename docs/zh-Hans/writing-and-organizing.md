@@ -72,7 +72,7 @@ Threads 是“回复自己”的结构。每条回复都属于根帖所在的同
 
 ## Collections
 
-Collections 是按 `/c/{slug}` 组织的策展式内容分组。
+Collections 是按 `/{slug}` 组织的策展式内容分组。
 
 你可以用它来做：
 
@@ -86,14 +86,14 @@ Collections 有自己的页面和 feed。当你想要编辑控制时，它们比
 
 你也可以在 URL 里组合多个 collections。例如：
 
-- `/c/reading+movies`
-- `/c/notes+links+quotes`
+- `/collections/reading+movies`
+- `/collections/notes+links+quotes`
 
 Jant 会把它当成一个跨多个 collection 的组合视图。
 
 - 它展示的是这些 collections 中帖子的并集
 - 如果同一个 thread 同时属于多个 collections，只会出现一次
-- 同样的写法也适用于 feed：`/c/{slug1}+{slug2}/feed`
+- 同样的写法也适用于 feed：`/collections/{slug1}+{slug2}/feed`
 
 ## 可见性与策展
 
@@ -156,8 +156,8 @@ Jant 的核心假设之一是：发布一篇内容和广播一篇内容，不是
 Jant 使用可读 URL：
 
 - 帖子使用 `/{slug}`
-- collections 使用 `/c/{slug}`
-- 组合 collection 视图使用 `/c/{slug1}+{slug2}+{slug3}`
+- collections 使用 `/{slug}`
+- 组合 collection 视图使用 `/collections/{slug1}+{slug2}+{slug3}`
 - 搜索在 `/search`
 - 归档在 `/archive`
 - Featured 页面在 `/featured`
@@ -167,8 +167,8 @@ Feeds：
 - `/feed` 使用你当前配置的主 feed
 - `/feed/latest` 永远返回最新公开帖子
 - `/feed/featured` 永远返回 featured 帖子
-- `/c/{slug}/feed` 返回单个 collection 的 feed
-- `/c/{slug1}+{slug2}/feed` 返回组合 collection 的 feed
+- `/{slug}/feed` 返回单个 collection 的 feed
+- `/collections/{slug1}+{slug2}/feed` 返回组合 collection 的 feed
 
 ## 什么时候用 Thread、Collection 和 Featured
 

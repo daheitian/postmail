@@ -324,7 +324,7 @@ describe("JantCollectionsManager", () => {
 
     expect(links).toHaveLength(1);
     expect(links[0]?.textContent?.trim()).toBe("Reading group");
-    expect(links[0]?.getAttribute("href")).toBe("/c/reading+tools");
+    expect(links[0]?.getAttribute("href")).toBe("/collections/reading+tools");
   });
 
   it("keeps focus on the URL field while typing in the new link form", async () => {

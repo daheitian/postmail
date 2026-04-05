@@ -359,11 +359,9 @@ These top-level paths are reserved and cannot be used as post or custom page slu
 
 ```text
 featured, latest, collections, signin, signout, setup, settings, posts, dash,
-api, feed, search, archive, media, pages, reset, c, compose, static, assets,
+api, feed, search, archive, media, pages, reset, compose, static, assets,
 _assets, health
 ```
-
-Inside `/c/*`, the collection slug `new` is also reserved.
 
 ## Configuration Files
 

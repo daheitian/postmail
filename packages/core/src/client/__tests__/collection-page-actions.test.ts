@@ -17,7 +17,7 @@ function createMarkup() {
       data-collection-page-actions
       data-collection-id="collection-1"
       data-collection-page-labels='{"edit":"Edit","moreActions":"More actions","deleteCollection":"Delete","confirmDelete":"Delete this collection permanently? Posts inside won\\u0027t be removed.","cancel":"Cancel","saveFailed":"Couldn\\u0027t save. Try again in a moment.","deleted":"Deleted"}'
-      data-collection-page-redirect-url="/c"
+      data-collection-page-redirect-url="/collections"
     >
       <button
         type="button"
@@ -27,7 +27,7 @@ function createMarkup() {
         More actions
       </button>
       <div data-collection-page-menu hidden>
-        <a href="/c/original-slug/edit?returnTo=%2Fc%2Foriginal-slug" role="menuitem">
+        <a href="/collections/original-slug/edit?returnTo=%2Foriginal-slug" role="menuitem">
           Edit
         </a>
         <button
@@ -46,7 +46,7 @@ describe("collection detail page actions", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    window.location.href = "http://localhost/c/original-slug";
+    window.location.href = "http://localhost/original-slug";
   });
 
   it("toggles the action menu from the trigger", async () => {
@@ -107,6 +107,6 @@ describe("collection detail page actions", () => {
       method: "DELETE",
     });
     expect(showToast).toHaveBeenCalledWith("Deleted");
-    expect(window.location.pathname).toBe("/c");
+    expect(window.location.pathname).toBe("/collections");
   });
 });

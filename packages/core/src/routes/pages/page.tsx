@@ -16,7 +16,7 @@ import { assemblePostPageDisplay } from "../../lib/post-display.js";
 import { toPublicHref, toPublicPath } from "../../lib/url.js";
 import type { Post } from "../../types.js";
 import { renderArchivePage } from "./archive.js";
-import { renderCollectionPage } from "./collection.js";
+import { renderCollectionFeed, renderCollectionPage } from "./collection.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -51,6 +51,45 @@ pageRoutes.get("/*", async (c) => {
   const fullPath = c.req.path.slice(1); // Remove leading /
   if (!fullPath) return c.notFound();
   const sitePathPrefix = c.var.appConfig.sitePathPrefix;
+
+  if (fullPath.endsWith("/feed")) {
+    const collectionPath = fullPath.slice(0, -"/feed".length);
+    if (!collectionPath) return c.notFound();
+
+    const resolvedCollection =
+      await c.var.services.paths.resolve(collectionPath);
+    if (resolvedCollection?.collectionId) {
+      const collection = await c.var.services.collections.getById(
+        resolvedCollection.collectionId,
+      );
+      if (!collection) return c.notFound();
+
+      if (resolvedCollection.kind === "slug") {
+        const alias = await c.var.services.customUrls.getByTarget(
+          "collection",
+          collection.id,
+        );
+        if (alias) {
+          return c.redirect(
+            toPublicPath(`/${alias.path}/feed`, sitePathPrefix),
+            301,
+          );
+        }
+
+        const result = await renderCollectionFeed(c, collection.slug);
+        return result ?? c.notFound();
+      }
+
+      if (resolvedCollection.kind === "alias") {
+        const result = await renderCollectionFeed(
+          c,
+          collection.slug,
+          `/${resolvedCollection.path}/feed`,
+        );
+        return result ?? c.notFound();
+      }
+    }
+  }
 
   const resolved = await c.var.services.paths.resolve(fullPath);
   if (!resolved) return c.notFound();
@@ -97,6 +136,19 @@ pageRoutes.get("/*", async (c) => {
       resolved.collectionId,
     );
     if (!collection) return c.notFound();
+
+    if (resolved.kind === "slug") {
+      const alias = await c.var.services.customUrls.getByTarget(
+        "collection",
+        collection.id,
+      );
+      if (alias) {
+        return c.redirect(toPublicPath(`/${alias.path}`, sitePathPrefix), 301);
+      }
+
+      const result = await renderCollectionPage(c, collection.slug);
+      return result ?? c.notFound();
+    }
 
     if (resolved.kind === "alias") {
       const aliasPagePath = `/${resolved.path}`;

@@ -17,8 +17,8 @@ import {
   MAX_COLLECTION_TITLE_LENGTH,
   type CollectionSortOrder,
 } from "../../types.js";
+import { getCollectionPagePath } from "../../lib/collection-paths.js";
 import { getSlugValidationIssue, truncateSlug } from "../../lib/slug-format.js";
-import { RESERVED_COLLECTION_SLUGS } from "../../lib/constants.js";
 import { slugify } from "../lazy-slugify.js";
 import { publicPath } from "../runtime-paths.js";
 import type {
@@ -152,7 +152,6 @@ export class JantCollectionForm extends LitElement {
   #getSlugValidationMessage(): string | null {
     const issue = getSlugValidationIssue(this._slug, {
       maxLength: MAX_COLLECTION_SLUG_LENGTH,
-      additionalReservedValues: RESERVED_COLLECTION_SLUGS,
     });
     if (issue === "too_long") {
       return (
@@ -188,7 +187,9 @@ export class JantCollectionForm extends LitElement {
 
   #getCollectionLinkPreview(): string {
     const slug = this._slug.trim();
-    const path = publicPath(slug ? `/c/${slug}` : "/c/");
+    const path = publicPath(
+      slug ? getCollectionPagePath(slug) : getCollectionPagePath("example"),
+    );
     const origin =
       globalThis.location?.origin && globalThis.location.origin !== "null"
         ? globalThis.location.origin

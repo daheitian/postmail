@@ -48,7 +48,7 @@ describe("getNavItemDisplayLabel", () => {
           type: "system",
           systemKey: "collections",
           label: "Collections",
-          url: "/c",
+          url: "/collections",
         },
         i18n,
       ),
@@ -105,7 +105,7 @@ describe("getNavItemDisplayLabel", () => {
   it("does not translate matching custom links even if the path matches", () => {
     expect(
       getNavItemDisplayLabel(
-        { type: "link", label: "Collections", url: "/c" },
+        { type: "link", label: "Collections", url: "/collections" },
         i18n,
       ),
     ).toBe("Collections");
