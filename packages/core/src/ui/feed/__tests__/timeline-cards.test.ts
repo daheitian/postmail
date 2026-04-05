@@ -163,6 +163,40 @@ describe("timeline cards", () => {
     expect(css).toContain(".compose-divider-quote");
   });
 
+  it("keeps reply context previews on thread-context type tokens", () => {
+    const uiCss = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+    const tokenCss = readFileSync(
+      new URL("../../../styles/tokens.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(tokenCss).toContain("--type-thread-context: var(--type-base);");
+    expect(tokenCss).toContain(
+      "--type-thread-context-title: var(--type-secondary);",
+    );
+    expect(tokenCss).toContain("--type-thread-context-meta: var(--type-sm);");
+    expect(uiCss).toMatch(
+      /\.compose-reply-context-body\s*\{[\s\S]*font-size:\s*var\(--type-thread-context\);/,
+    );
+    expect(uiCss).toMatch(
+      /\.compose-reply-meta\s*\{[\s\S]*font-size:\s*var\(--type-thread-context-meta\);/,
+    );
+  });
+
+  it("resets cloned reply previews away from feed/detail width constraints", () => {
+    const uiCss = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(uiCss).toMatch(
+      /\.compose-reply-context-body\s*:is\([\s\S]*\[data-post-body\]\.prose[\s\S]*\)\s*\{[\s\S]*width:\s*100%;[\s\S]*max-width:\s*none;/,
+    );
+  });
+
   it("keeps link and quote attachments hidden in compact mode", () => {
     const linkPost = createPostView({ format: "link" });
     const quotePost = createPostView({ format: "quote" });

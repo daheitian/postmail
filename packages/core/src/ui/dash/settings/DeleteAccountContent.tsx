@@ -307,12 +307,12 @@ export function DeleteAccountContent({
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: var(--type-xs);
             font-weight: 600;
             margin-top: 0.1rem;
           }
           .delete-account-step-title {
-            font-size: 0.95rem;
+            font-size: var(--type-base);
             font-weight: 600;
             margin-bottom: 0.25rem;
           }
@@ -330,7 +330,7 @@ export function DeleteAccountContent({
             padding: 0.25rem 0.5rem;
             background: var(--color-muted);
             border-radius: var(--radius);
-            font-size: 0.9rem;
+            font-size: var(--type-sm);
             user-select: all;
           }
         `}

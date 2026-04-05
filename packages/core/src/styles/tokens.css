@@ -74,6 +74,9 @@
   --type-code-block: var(--type-sm);
   --type-body-size: var(--type-body);
   --type-body-tracking: 0;
+  --type-thread-context: var(--type-base);
+  --type-thread-context-title: var(--type-secondary);
+  --type-thread-context-meta: var(--type-sm);
   --feed-note-title-size: var(--type-title);
   --feed-note-title-leading: var(--type-heading-leading);
   --type-body-leading: 1.5;
