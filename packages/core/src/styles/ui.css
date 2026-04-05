@@ -3843,6 +3843,13 @@
     overflow: visible;
   }
 
+  .compose-dialog:focus,
+  .compose-dialog:focus-visible,
+  .compose-dialog-inner:focus,
+  .compose-dialog-inner:focus-visible {
+    outline: none;
+  }
+
   .compose-dialog-inner-suspended {
     opacity: 0;
     visibility: hidden;
