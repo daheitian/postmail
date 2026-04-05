@@ -276,114 +276,190 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
     <>
       {/* Unified gallery row */}
       {hasGalleryItems && (
-        <div
-          data-post-media
-          data-lightbox-group={
-            lightboxItems.length > 0 ? JSON.stringify(lightboxItems) : undefined
-          }
-          class={`mt-3 flex gap-2 ${singleVisual ? "" : "overflow-x-auto scroll-smooth snap-x snap-mandatory"}`}
-          style={
-            singleVisual
-              ? undefined
-              : "scrollbar-width: none; -ms-overflow-style: none;"
-          }
-        >
-          {galleryItems.map((item) => {
-            if (item._kind === "image") {
-              const ratio = getMediaAspectRatio(item.width, item.height);
-              const placeholder = getMediaPlaceholderDataUrl(
-                item.blurhash,
-                item.width,
-                item.height,
-              );
-              const itemWidth = singleVisual
-                ? undefined
-                : `${Math.round(Math.max(160, rowHeight * ratio))}px`;
-              const aspectRatio =
-                item.width && item.height
-                  ? `${item.width}/${item.height}`
-                  : "4/3";
-              const imageStyle = {
-                ...(singleVisual
-                  ? { aspectRatio, backgroundSize: "cover" }
-                  : { height: `${rowHeight}px`, backgroundSize: "cover" }),
-                ...(placeholder
-                  ? {
-                      backgroundImage: `url(${placeholder})`,
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                    }
-                  : {}),
-              };
-
-              return (
-                <a
-                  key={item.id}
-                  href={item.url}
-                  data-lightbox-index={item._lbIdx}
-                  class={`${singleVisual ? "" : "shrink-0 snap-start"} media-visual-frame`}
-                  style={{
-                    ...(singleVisual
-                      ? {
-                          width: getSingleVisualWidth(ratio),
-                          maxWidth: "100%",
-                        }
-                      : { width: itemWidth, maxWidth: "85%" }),
-                  }}
-                >
-                  <img
-                    src={item.thumbnailUrl}
-                    alt={item.altText || ""}
-                    width={item.width}
-                    height={item.height}
-                    style={imageStyle}
-                    class={
-                      singleVisual
-                        ? "media-visual w-full h-auto rounded-lg"
-                        : "media-visual w-full object-cover"
-                    }
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </a>
-              );
+        <div class={`mt-3 ${singleVisual ? "" : "media-gallery-scroll-wrap"}`}>
+          <div
+            data-post-media
+            data-lightbox-group={
+              lightboxItems.length > 0
+                ? JSON.stringify(lightboxItems)
+                : undefined
             }
-
-            if (item._kind === "video") {
-              const useShortVideoExperience =
-                shouldUseShortVideoExperience(item);
-              const ratio = getMediaAspectRatio(item.width, item.height);
-              const placeholder = getMediaPlaceholderDataUrl(
-                item.blurhash,
-                item.width,
-                item.height,
-              );
-              const itemWidth = singleVisual
+            class={`flex gap-2 ${singleVisual ? "" : "overflow-x-auto scroll-smooth snap-x snap-mandatory"}`}
+            style={
+              singleVisual
                 ? undefined
-                : `${Math.round(Math.max(160, rowHeight * ratio))}px`;
-              const posterSrc = item.posterUrl || placeholder;
-              const aspectRatio =
-                item.width && item.height
-                  ? `${item.width}/${item.height}`
-                  : "4/3";
-              const videoStyle = {
-                ...(singleVisual
-                  ? { aspectRatio, backgroundSize: "cover" }
-                  : { height: `${rowHeight}px`, backgroundSize: "cover" }),
-                ...(placeholder
-                  ? {
-                      backgroundImage: `url(${placeholder})`,
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                    }
-                  : {}),
-              };
+                : "scrollbar-width: none; -ms-overflow-style: none;"
+            }
+          >
+            {galleryItems.map((item) => {
+              if (item._kind === "image") {
+                const ratio = getMediaAspectRatio(item.width, item.height);
+                const placeholder = getMediaPlaceholderDataUrl(
+                  item.blurhash,
+                  item.width,
+                  item.height,
+                );
+                const itemWidth = singleVisual
+                  ? undefined
+                  : `${Math.round(Math.max(160, rowHeight * ratio))}px`;
+                const aspectRatio =
+                  item.width && item.height
+                    ? `${item.width}/${item.height}`
+                    : "4/3";
+                const imageStyle = {
+                  ...(singleVisual
+                    ? { aspectRatio, backgroundSize: "cover" }
+                    : { height: `${rowHeight}px`, backgroundSize: "cover" }),
+                  ...(placeholder
+                    ? {
+                        backgroundImage: `url(${placeholder})`,
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                      }
+                    : {}),
+                };
 
-              if (useShortVideoExperience) {
                 return (
-                  <div
+                  <a
                     key={item.id}
-                    class={`${singleVisual ? "" : "shrink-0 snap-start"} media-video-wrap media-video-wrap-short`}
+                    href={item.url}
+                    data-lightbox-index={item._lbIdx}
+                    class={`${singleVisual ? "" : "shrink-0 snap-start"} media-visual-frame`}
+                    style={{
+                      ...(singleVisual
+                        ? {
+                            width: getSingleVisualWidth(ratio),
+                            maxWidth: "100%",
+                          }
+                        : { width: itemWidth, maxWidth: "85%" }),
+                    }}
+                  >
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.altText || ""}
+                      width={item.width}
+                      height={item.height}
+                      style={imageStyle}
+                      class={
+                        singleVisual
+                          ? "media-visual w-full h-auto rounded-lg"
+                          : "media-visual w-full object-cover"
+                      }
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </a>
+                );
+              }
+
+              if (item._kind === "video") {
+                const useShortVideoExperience =
+                  shouldUseShortVideoExperience(item);
+                const ratio = getMediaAspectRatio(item.width, item.height);
+                const placeholder = getMediaPlaceholderDataUrl(
+                  item.blurhash,
+                  item.width,
+                  item.height,
+                );
+                const itemWidth = singleVisual
+                  ? undefined
+                  : `${Math.round(Math.max(160, rowHeight * ratio))}px`;
+                const posterSrc = item.posterUrl || placeholder;
+                const aspectRatio =
+                  item.width && item.height
+                    ? `${item.width}/${item.height}`
+                    : "4/3";
+                const videoStyle = {
+                  ...(singleVisual
+                    ? { aspectRatio, backgroundSize: "cover" }
+                    : { height: `${rowHeight}px`, backgroundSize: "cover" }),
+                  ...(placeholder
+                    ? {
+                        backgroundImage: `url(${placeholder})`,
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                      }
+                    : {}),
+                };
+
+                if (useShortVideoExperience) {
+                  return (
+                    <div
+                      key={item.id}
+                      class={`${singleVisual ? "" : "shrink-0 snap-start"} media-video-wrap media-video-wrap-short`}
+                      style={
+                        singleVisual
+                          ? {
+                              width: getSingleVisualWidth(ratio),
+                              maxWidth: "100%",
+                            }
+                          : { width: itemWidth, maxWidth: "85%" }
+                      }
+                    >
+                      <a
+                        href={item.url}
+                        data-lightbox-index={item._lbIdx}
+                        class="media-visual-frame media-video-link"
+                      >
+                        <video
+                          preload="none"
+                          muted
+                          playsinline
+                          loop
+                          poster={posterSrc}
+                          width={item.width}
+                          height={item.height}
+                          data-feed-short-video=""
+                          data-video-src={item.url}
+                          data-feed-video-id={item.id}
+                          style={videoStyle}
+                          class={
+                            singleVisual
+                              ? "media-visual w-full h-auto"
+                              : "media-visual w-full object-cover"
+                          }
+                        />
+                      </a>
+                      <button
+                        type="button"
+                        class="media-feed-video-mute"
+                        data-feed-video-mute-toggle
+                        data-muted="true"
+                        aria-label="Play with sound"
+                      >
+                        <svg
+                          class="media-feed-video-icon media-feed-video-icon-muted"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 48 48"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path d="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0 .8.7 1.5 1.5 1.5h8.7l12.9 12.9c.9.9 2.5.3 2.5-1v-9.8c0-.4-.2-.8-.4-1.1l-22-22c-.3-.3-.7-.4-1.1-.4h-.6zm46.8 31.4-5.5-5.5C44.9 36.6 48 31.4 48 24c0-11.4-7.2-17.4-7.2-17.4-.6-.6-1.6-.6-2.2 0L37.2 8c-.6.6-.6 1.6 0 2.2 0 0 5.7 5 5.7 13.8 0 5.4-2.1 9.3-3.8 11.6L35.5 32c1.1-1.7 2.3-4.4 2.3-8 0-6.8-4.1-10.3-4.1-10.3-.6-.6-1.6-.6-2.2 0l-1.4 1.4c-.6.6-.6 1.6 0 2.2 0 0 2.6 2 2.6 6.7 0 1.8-.4 3.2-.9 4.3L25.5 22V1.4c0-1.3-1.6-1.9-2.5-1L13.5 10 3.3-.3c-.6-.6-1.5-.6-2.1 0L-.2 1.1c-.6.6-.6 1.5 0 2.1L4 7.6l26.8 26.8 13.9 13.9c.6.6 1.5.6 2.1 0l1.4-1.4c.7-.6.7-1.6.1-2.2z" />
+                        </svg>
+                        <svg
+                          class="media-feed-video-icon media-feed-video-icon-unmuted"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 48 48"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path d="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0 .8.7 1.5 1.5 1.5h8.7l12.9 12.9c.9.9 2.5.3 2.5-1V1.4c0-1.3-1.6-1.9-2.5-1L10.2 13.3H1.5z" />
+                          <path d="M30.1 15.9c-.6-.6-.6-1.6 0-2.2l1.4-1.4c.6-.6 1.6-.6 2.2 0 0 0 4.1 3.5 4.1 11.7s-4.1 11.7-4.1 11.7c-.6.6-1.6.6-2.2 0l-1.4-1.4c-.6-.6-.6-1.6 0-2.2 0 0 2.6-2 2.6-8.1s-2.6-8.1-2.6-8.1z" />
+                          <path d="M37.2 8c-.6-.6-.6-1.6 0-2.2l1.4-1.4c.6-.6 1.6-.6 2.2 0 0 0 5.7 5.1 5.7 19.6s-5.7 19.6-5.7 19.6c-.6.6-1.6.6-2.2 0L37.2 42c-.6-.6-.6-1.6 0-2.2 0 0 4.3-4.4 4.3-15.8S37.2 8 37.2 8z" />
+                        </svg>
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <a
+                    key={item.id}
+                    href={item.url}
+                    data-lightbox-index={item._lbIdx}
+                    class={`${singleVisual ? "" : "shrink-0 snap-start"} media-video-wrap media-visual-frame`}
                     style={
                       singleVisual
                         ? {
@@ -393,198 +469,154 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                         : { width: itemWidth, maxWidth: "85%" }
                     }
                   >
-                    <a
-                      href={item.url}
-                      data-lightbox-index={item._lbIdx}
-                      class="media-visual-frame media-video-link"
-                    >
-                      <video
-                        preload="none"
-                        muted
-                        playsinline
-                        loop
-                        poster={posterSrc}
-                        width={item.width}
-                        height={item.height}
-                        data-feed-short-video=""
-                        data-video-src={item.url}
-                        data-feed-video-id={item.id}
-                        style={videoStyle}
-                        class={
-                          singleVisual
-                            ? "media-visual w-full h-auto"
-                            : "media-visual w-full object-cover"
-                        }
+                    <video
+                      preload="none"
+                      muted
+                      playsinline
+                      poster={posterSrc}
+                      width={item.width}
+                      height={item.height}
+                      style={videoStyle}
+                      class={
+                        singleVisual
+                          ? "media-visual w-full h-auto"
+                          : "media-visual w-full object-cover"
+                      }
+                    />
+                    <div class="media-video-play-overlay">
+                      <svg viewBox="0 0 24 24" fill="white">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </a>
+                );
+              }
+
+              if (item._kind === "audio") {
+                const audioName = item.originalName || item.altText || "Audio";
+                return (
+                  <div
+                    key={item.id}
+                    class={`media-gallery-card media-audio-card shrink-0 snap-start${item.waveform ? " has-waveform" : ""}`}
+                    style={{
+                      width: `${docCardWidth}px`,
+                      height: `${rowHeight}px`,
+                    }}
+                  >
+                    {/* Hidden audio element — JS controls it */}
+                    <audio preload="none" class="media-audio-el">
+                      <source src={item.url} type={item.mimeType} />
+                    </audio>
+
+                    {/* Artwork area */}
+                    <div class="media-audio-artwork">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M9 18V5l12-2v13" />
+                        <circle cx="6" cy="18" r="3" />
+                        <circle cx="18" cy="16" r="3" />
+                      </svg>
+                    </div>
+
+                    {/* Bottom control strip */}
+                    <div class="media-audio-controls">
+                      {/* Range fallback — hidden when waveform loads */}
+                      <input
+                        type="range"
+                        min="0"
+                        max="1000"
+                        value="0"
+                        class="media-audio-range"
+                        data-audio-range
+                        aria-label="Seek"
                       />
-                    </a>
-                    <button
-                      type="button"
-                      class="media-feed-video-mute"
-                      data-feed-video-mute-toggle
-                      data-muted="true"
-                      aria-label="Play with sound"
-                    >
-                      <svg
-                        class="media-feed-video-icon media-feed-video-icon-muted"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 48 48"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path d="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0 .8.7 1.5 1.5 1.5h8.7l12.9 12.9c.9.9 2.5.3 2.5-1v-9.8c0-.4-.2-.8-.4-1.1l-22-22c-.3-.3-.7-.4-1.1-.4h-.6zm46.8 31.4-5.5-5.5C44.9 36.6 48 31.4 48 24c0-11.4-7.2-17.4-7.2-17.4-.6-.6-1.6-.6-2.2 0L37.2 8c-.6.6-.6 1.6 0 2.2 0 0 5.7 5 5.7 13.8 0 5.4-2.1 9.3-3.8 11.6L35.5 32c1.1-1.7 2.3-4.4 2.3-8 0-6.8-4.1-10.3-4.1-10.3-.6-.6-1.6-.6-2.2 0l-1.4 1.4c-.6.6-.6 1.6 0 2.2 0 0 2.6 2 2.6 6.7 0 1.8-.4 3.2-.9 4.3L25.5 22V1.4c0-1.3-1.6-1.9-2.5-1L13.5 10 3.3-.3c-.6-.6-1.5-.6-2.1 0L-.2 1.1c-.6.6-.6 1.5 0 2.1L4 7.6l26.8 26.8 13.9 13.9c.6.6 1.5.6 2.1 0l1.4-1.4c.7-.6.7-1.6.1-2.2z" />
-                      </svg>
-                      <svg
-                        class="media-feed-video-icon media-feed-video-icon-unmuted"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 48 48"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path d="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0 .8.7 1.5 1.5 1.5h8.7l12.9 12.9c.9.9 2.5.3 2.5-1V1.4c0-1.3-1.6-1.9-2.5-1L10.2 13.3H1.5z" />
-                        <path d="M30.1 15.9c-.6-.6-.6-1.6 0-2.2l1.4-1.4c.6-.6 1.6-.6 2.2 0 0 0 4.1 3.5 4.1 11.7s-4.1 11.7-4.1 11.7c-.6.6-1.6.6-2.2 0l-1.4-1.4c-.6-.6-.6-1.6 0-2.2 0 0 2.6-2 2.6-8.1s-2.6-8.1-2.6-8.1z" />
-                        <path d="M37.2 8c-.6-.6-.6-1.6 0-2.2l1.4-1.4c.6-.6 1.6-.6 2.2 0 0 0 5.7 5.1 5.7 19.6s-5.7 19.6-5.7 19.6c-.6.6-1.6.6-2.2 0L37.2 42c-.6-.6-.6-1.6 0-2.2 0 0 4.3-4.4 4.3-15.8S37.2 8 37.2 8z" />
-                      </svg>
-                    </button>
+                      {/* Waveform canvas — replaces range after first play */}
+                      <canvas
+                        class="media-audio-waveform"
+                        data-audio-waveform
+                        data-audio-peaks={item.waveform || undefined}
+                      />
+
+                      {/* Title + play button row */}
+                      <div class="media-audio-row">
+                        <div class="media-audio-info">
+                          <div class="media-audio-title" title={audioName}>
+                            {audioName}
+                          </div>
+                          <div class="media-audio-time" data-audio-time>
+                            0:00
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          class="media-audio-play-btn"
+                          data-audio-play
+                          aria-label="Play"
+                        >
+                          <svg
+                            class="media-audio-icon-play"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                          <svg
+                            class="media-audio-icon-pause"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 );
               }
 
-              return (
-                <a
-                  key={item.id}
-                  href={item.url}
-                  data-lightbox-index={item._lbIdx}
-                  class={`${singleVisual ? "" : "shrink-0 snap-start"} media-video-wrap media-visual-frame`}
-                  style={
-                    singleVisual
-                      ? {
-                          width: getSingleVisualWidth(ratio),
-                          maxWidth: "100%",
-                        }
-                      : { width: itemWidth, maxWidth: "85%" }
-                  }
-                >
-                  <video
-                    preload="none"
-                    muted
-                    playsinline
-                    poster={posterSrc}
-                    width={item.width}
-                    height={item.height}
-                    style={videoStyle}
-                    class={
-                      singleVisual
-                        ? "media-visual w-full h-auto"
-                        : "media-visual w-full object-cover"
-                    }
-                  />
-                  <div class="media-video-play-overlay">
-                    <svg viewBox="0 0 24 24" fill="white">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                </a>
-              );
-            }
-
-            if (item._kind === "audio") {
-              const audioName = item.originalName || item.altText || "Audio";
-              return (
-                <div
-                  key={item.id}
-                  class={`media-gallery-card media-audio-card shrink-0 snap-start${item.waveform ? " has-waveform" : ""}`}
-                  style={{
-                    width: `${docCardWidth}px`,
-                    height: `${rowHeight}px`,
-                  }}
-                >
-                  {/* Hidden audio element — JS controls it */}
-                  <audio preload="none" class="media-audio-el">
-                    <source src={item.url} type={item.mimeType} />
-                  </audio>
-
-                  {/* Artwork area */}
-                  <div class="media-audio-artwork">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M9 18V5l12-2v13" />
-                      <circle cx="6" cy="18" r="3" />
-                      <circle cx="18" cy="16" r="3" />
-                    </svg>
-                  </div>
-
-                  {/* Bottom control strip */}
-                  <div class="media-audio-controls">
-                    {/* Range fallback — hidden when waveform loads */}
-                    <input
-                      type="range"
-                      min="0"
-                      max="1000"
-                      value="0"
-                      class="media-audio-range"
-                      data-audio-range
-                      aria-label="Seek"
-                    />
-                    {/* Waveform canvas — replaces range after first play */}
-                    <canvas
-                      class="media-audio-waveform"
-                      data-audio-waveform
-                      data-audio-peaks={item.waveform || undefined}
-                    />
-
-                    {/* Title + play button row */}
-                    <div class="media-audio-row">
-                      <div class="media-audio-info">
-                        <div class="media-audio-title" title={audioName}>
-                          {audioName}
-                        </div>
-                        <div class="media-audio-time" data-audio-time>
-                          0:00
-                        </div>
+              if (item._kind === "document") {
+                return (
+                  <a
+                    key={item.id}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="media-gallery-card shrink-0 snap-start"
+                    style={{
+                      width: `${docCardWidth}px`,
+                      height: `${rowHeight}px`,
+                    }}
+                  >
+                    <div class="media-gallery-card-inner">
+                      <div class="media-gallery-card-icon">
+                        <FileIcon mimeType={item.mimeType} />
                       </div>
-
-                      <button
-                        type="button"
-                        class="media-audio-play-btn"
-                        data-audio-play
-                        aria-label="Play"
-                      >
-                        <svg
-                          class="media-audio-icon-play"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                        <svg
-                          class="media-audio-icon-pause"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
-                        </svg>
-                      </button>
+                      <span class="media-gallery-card-summary">
+                        {item.originalName || item.altText || "Document"}
+                      </span>
+                      {item.size != null && (
+                        <span class="media-gallery-card-meta">
+                          {formatSize(item.size)}
+                        </span>
+                      )}
                     </div>
-                  </div>
-                </div>
-              );
-            }
+                  </a>
+                );
+              }
 
-            if (item._kind === "document") {
+              // Text card — 3:4 portrait, matching document cards
               return (
-                <a
+                <button
                   key={item.id}
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  type="button"
+                  data-text-preview-id={item.id}
                   class="media-gallery-card shrink-0 snap-start"
                   style={{
                     width: `${docCardWidth}px`,
@@ -596,46 +628,18 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                       <FileIcon mimeType={item.mimeType} />
                     </div>
                     <span class="media-gallery-card-summary">
-                      {item.originalName || item.altText || "Document"}
+                      {item.summary || item.originalName || "Attached text"}
                     </span>
-                    {item.size != null && (
+                    {typeof item.chars === "number" && item.chars > 0 && (
                       <span class="media-gallery-card-meta">
-                        {formatSize(item.size)}
+                        {formatChars(item.chars)}
                       </span>
                     )}
                   </div>
-                </a>
+                </button>
               );
-            }
-
-            // Text card — 3:4 portrait, matching document cards
-            return (
-              <button
-                key={item.id}
-                type="button"
-                data-text-preview-id={item.id}
-                class="media-gallery-card shrink-0 snap-start"
-                style={{
-                  width: `${docCardWidth}px`,
-                  height: `${rowHeight}px`,
-                }}
-              >
-                <div class="media-gallery-card-inner">
-                  <div class="media-gallery-card-icon">
-                    <FileIcon mimeType={item.mimeType} />
-                  </div>
-                  <span class="media-gallery-card-summary">
-                    {item.summary || item.originalName || "Attached text"}
-                  </span>
-                  {typeof item.chars === "number" && item.chars > 0 && (
-                    <span class="media-gallery-card-meta">
-                      {formatChars(item.chars)}
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+            })}
+          </div>
         </div>
       )}
     </>

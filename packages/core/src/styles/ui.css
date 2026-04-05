@@ -8266,6 +8266,40 @@
     background: transparent;
   }
 
+  /* --- Gallery horizontal scroll fade hints ------------------------------- */
+
+  .media-gallery-scroll-wrap {
+    /* Default: no mask — full visibility */
+    --_fade: 1.5rem;
+    --_mask-left: black;
+    --_mask-right: black;
+  }
+
+  .media-gallery-scroll-wrap > [data-post-media] {
+    mask-image: linear-gradient(
+      to right,
+      var(--_mask-left) 0%,
+      black var(--_fade),
+      black calc(100% - var(--_fade)),
+      var(--_mask-right) 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      var(--_mask-left) 0%,
+      black var(--_fade),
+      black calc(100% - var(--_fade)),
+      var(--_mask-right) 100%
+    );
+  }
+
+  .media-gallery-scroll-wrap.can-scroll-start {
+    --_mask-left: transparent;
+  }
+
+  .media-gallery-scroll-wrap.can-scroll-end {
+    --_mask-right: transparent;
+  }
+
   /* =========================================================================
    * Site Footer
    * ========================================================================= */
