@@ -100,6 +100,20 @@ describe("NavItemService", () => {
       expect(item.url).toBe("/settings");
     });
 
+    it("uses the built-in default placement for system items", async () => {
+      const latest = await navItemService.create({
+        type: "system",
+        systemKey: "latest",
+      });
+      const rss = await navItemService.create({
+        type: "system",
+        systemKey: "rss",
+      });
+
+      expect(latest.placement).toBe("header");
+      expect(rss.placement).toBe("more");
+    });
+
     it("rejects duplicate built-in system items", async () => {
       await navItemService.create({
         type: "system",
@@ -116,15 +130,25 @@ describe("NavItemService", () => {
   });
 
   describe("ensureSystemDefaults", () => {
-    it("creates the four default system items once", async () => {
+    it("creates the six default system items once", async () => {
       const created = await navItemService.ensureSystemDefaults();
 
-      expect(created).toHaveLength(4);
+      expect(created).toHaveLength(6);
       expect(created.map((item) => item.systemKey)).toEqual([
+        "latest",
+        "featured",
         "collections",
         "archive",
         "rss",
         "settings",
+      ]);
+      expect(created.map((item) => item.placement)).toEqual([
+        "header",
+        "header",
+        "header",
+        "header",
+        "more",
+        "more",
       ]);
     });
 
@@ -138,11 +162,13 @@ describe("NavItemService", () => {
       const items = await navItemService.list();
 
       expect(created.map((item) => item.systemKey)).toEqual([
+        "latest",
+        "featured",
         "collections",
         "rss",
         "settings",
       ]);
-      expect(items.filter((item) => item.type === "system")).toHaveLength(4);
+      expect(items.filter((item) => item.type === "system")).toHaveLength(6);
     });
 
     it("is idempotent when defaults already exist", async () => {
@@ -152,7 +178,7 @@ describe("NavItemService", () => {
       const items = await navItemService.list();
 
       expect(created).toEqual([]);
-      expect(items.filter((item) => item.type === "system")).toHaveLength(4);
+      expect(items.filter((item) => item.type === "system")).toHaveLength(6);
     });
   });
 

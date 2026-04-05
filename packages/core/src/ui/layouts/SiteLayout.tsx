@@ -56,7 +56,6 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   sitePathPrefix = "",
   isAuthenticated,
   collections,
-  homeDefaultView,
   siteAvatarUrl,
   showHeaderAvatar,
   siteFooterHtml,
@@ -73,40 +72,6 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     ...link,
     displayLabel: getNavItemDisplayLabel(link, i18n, sitePathPrefix),
   }));
-
-  const latestHref =
-    homeDefaultView === "featured"
-      ? toPublicPath("/latest", sitePathPrefix)
-      : toPublicPath("/", sitePathPrefix);
-  const featuredHref =
-    homeDefaultView === "featured"
-      ? toPublicPath("/", sitePathPrefix)
-      : toPublicPath("/featured", sitePathPrefix);
-
-  const latestLink = {
-    href: latestHref,
-    label: i18n._(
-      msg({
-        message: "Latest",
-        comment: "@context: Browse filter for latest posts",
-      }),
-    ),
-  };
-  const featuredLink = {
-    href: featuredHref,
-    label: i18n._(
-      msg({
-        message: "Featured",
-        comment: "@context: Browse filter for featured posts",
-      }),
-    ),
-  };
-
-  // Default view tab comes first
-  const browseLinks =
-    homeDefaultView === "featured"
-      ? [featuredLink, latestLink]
-      : [latestLink, featuredLink];
 
   const searchLabel = i18n._(
     msg({
@@ -151,15 +116,6 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                 {siteName}
               </a>
               <nav class="site-header-nav">
-                {browseLinks.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    class={`site-header-link ${currentPath === link.href ? "site-header-link-active" : ""}`}
-                  >
-                    {link.label}
-                  </a>
-                ))}
                 {headerLinks.map((link) => (
                   <HeaderLink
                     key={link.id}
@@ -336,15 +292,6 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           />
         </form>
         <nav class="site-nav-drawer-nav">
-          {browseLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              class={`site-nav-drawer-link ${currentPath === link.href ? "site-nav-drawer-link-active" : ""}`}
-            >
-              {link.label}
-            </a>
-          ))}
           {linksWithLabels.map((link) => (
             <a
               key={link.id}

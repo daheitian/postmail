@@ -14,6 +14,14 @@ type NavigationLabelItem = {
 };
 
 const BUILTIN_NAV_LABELS = {
+  latest: msg({
+    message: "Latest",
+    comment: "@context: Built-in navigation label for the latest feed",
+  }),
+  featured: msg({
+    message: "Featured",
+    comment: "@context: Built-in navigation label for the featured feed",
+  }),
   collections: msg({
     message: "Collections",
     comment: "@context: Built-in navigation label for the collections page",
@@ -26,6 +34,10 @@ const BUILTIN_NAV_LABELS = {
     message: "Settings",
     comment: "@context: Built-in navigation label for settings",
   }),
+  rss: msg({
+    message: "RSS",
+    comment: "@context: Built-in navigation label for RSS",
+  }),
   signIn: msg({
     message: "Sign in",
     comment: "@context: Built-in navigation label shown when auth is required",
@@ -33,12 +45,25 @@ const BUILTIN_NAV_LABELS = {
 } as const;
 
 const SYSTEM_NAV_TITLES: Partial<Record<SystemNavKey, MessageDescriptor>> = {
+  latest: BUILTIN_NAV_LABELS.latest,
+  featured: BUILTIN_NAV_LABELS.featured,
   collections: BUILTIN_NAV_LABELS.collections,
   archive: BUILTIN_NAV_LABELS.archive,
   settings: BUILTIN_NAV_LABELS.settings,
+  rss: BUILTIN_NAV_LABELS.rss,
 };
 
 const SYSTEM_NAV_DESCRIPTIONS: Record<SystemNavKey, MessageDescriptor> = {
+  latest: msg({
+    message:
+      "Link to your latest posts. If it comes before Featured, the homepage opens here.",
+    comment: "@context: Description for the latest system navigation toggle",
+  }),
+  featured: msg({
+    message:
+      "Link to your featured posts. If it comes before Latest, the homepage opens here.",
+    comment: "@context: Description for the featured system navigation toggle",
+  }),
   rss: msg({
     message:
       "Add a link to your main RSS feed. Change what /feed returns in General.",
@@ -88,8 +113,20 @@ function getBuiltinNavLabelDescriptor(
     return BUILTIN_NAV_LABELS.collections;
   }
 
+  if (item.systemKey === "latest") {
+    return BUILTIN_NAV_LABELS.latest;
+  }
+
+  if (item.systemKey === "featured") {
+    return BUILTIN_NAV_LABELS.featured;
+  }
+
   if (item.systemKey === "archive") {
     return BUILTIN_NAV_LABELS.archive;
+  }
+
+  if (item.systemKey === "rss") {
+    return BUILTIN_NAV_LABELS.rss;
   }
 
   if (item.systemKey === "settings") {
@@ -115,8 +152,7 @@ export function getSystemNavDisplayLabel(
   key: SystemNavKey,
   i18n: Translator,
 ): string {
-  const descriptor = SYSTEM_NAV_TITLES[key];
-  return descriptor ? i18n._(descriptor) : "RSS";
+  return i18n._(SYSTEM_NAV_TITLES[key] ?? BUILTIN_NAV_LABELS.rss);
 }
 
 export function getSystemNavDescription(

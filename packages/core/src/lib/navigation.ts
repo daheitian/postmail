@@ -5,7 +5,7 @@
  */
 
 import type { Context } from "hono";
-import type { Collection, NavItemView } from "../types.js";
+import type { Collection, FeedKind, NavItem, NavItemView } from "../types.js";
 import { toNavItemViews } from "./view.js";
 import { render as renderMarkdown } from "./markdown.js";
 
@@ -21,10 +21,22 @@ export interface NavigationData {
   siteDescription: string;
   isAuthenticated: boolean;
   collections: Collection[];
-  homeDefaultView: string;
+  homeDefaultView: FeedKind;
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;
+}
+
+export function getHomeDefaultViewFromNavItems(
+  items: Pick<NavItem, "type" | "systemKey">[],
+): FeedKind {
+  const homeFeedItem = items.find(
+    (item) =>
+      item.type === "system" &&
+      (item.systemKey === "latest" || item.systemKey === "featured"),
+  );
+
+  return homeFeedItem?.systemKey === "featured" ? "featured" : "latest";
 }
 
 /**
@@ -52,7 +64,7 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   const appConfig = c.var.appConfig;
 
   const siteName = appConfig.siteName;
-  const homeDefaultView = appConfig.homeDefaultView;
+  const homeDefaultView = getHomeDefaultViewFromNavItems(items);
   const siteFooter = appConfig.siteFooter;
 
   // Only include description if explicitly set (DB or env), not the default
@@ -82,6 +94,7 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   const links = toNavItemViews(
     items,
     currentPath,
+    homeDefaultView,
     isAuthenticated,
     appConfig.sitePathPrefix,
   );

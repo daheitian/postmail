@@ -71,6 +71,13 @@
       "when": 1775277008096,
       "tag": "0009_clear_fixer",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1775319683556,
+      "tag": "0010_futuristic_preak",
+      "breakpoints": true
     }
   ]
 }

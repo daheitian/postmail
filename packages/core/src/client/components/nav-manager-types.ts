@@ -47,11 +47,6 @@ export interface NavManagerLabels {
   moreSection: string;
   moreEmptyHint: string;
   placementSaved: string;
-  useFeaturedAsDefault: string;
-  useFeaturedAsDefaultDescription: string;
-  homeViewSaved: string;
-  latest: string;
-  featured: string;
 }
 
 export interface NavManagerUpdateDetail {

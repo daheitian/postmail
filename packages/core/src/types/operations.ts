@@ -78,11 +78,13 @@ export type CreateNavItem =
       type: "link";
       label: string;
       url: string;
+      placement?: NavItemPlacement;
       position?: string;
     }
   | {
       type: "system";
       systemKey: SystemNavKey;
+      placement?: NavItemPlacement;
       position?: string;
     };
 

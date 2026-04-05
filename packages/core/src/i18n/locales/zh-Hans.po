@@ -464,6 +464,11 @@ msgstr "浏览器标签页"
 msgid "Built-in background"
 msgstr "内置背景"
 
+#. @context: Section heading for built-in nav items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Built-in links"
+msgstr ""
+
 #. @context: Sample note post second paragraph on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Buttons can stay steady, but links, thread markers, and subtle emphasis should feel closer to ink on paper than dashboard chrome."
@@ -1223,10 +1228,10 @@ msgid "Favicon and the profile mark in your header"
 msgstr "网站图标及页眉中的个人头像"
 
 #. @context: Archive visibility filter - featured posts
-#. @context: Browse filter for featured posts
 #. @context: Browse filter label for featured posts
 #. @context: Browser page title for the featured feed
 #. @context: Browser page title for the featured feed
+#. @context: Built-in navigation label for the featured feed
 #. @context: Inactive browse tab label on sample page
 #. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
@@ -1237,10 +1242,10 @@ msgstr "网站图标及页眉中的个人头像"
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/dash/StatusBadge.tsx
-#: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/FeaturedPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/navigation-labels.ts
 #: src/ui/shared/PostFooter.tsx
 msgid "Featured"
 msgstr "精选"
@@ -1444,11 +1449,6 @@ msgstr "评分最高"
 msgid "Home"
 msgstr "首页"
 
-#. @context: Toast after saving home default view setting
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Home feed updated."
-msgstr "首页视图已更新。"
-
 #. @context: Description for the apple touch icon asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Home screen icon for iPhone and iPad shortcuts."
@@ -1592,19 +1592,19 @@ msgid "Last used {date}"
 msgstr "上次使用 {date}"
 
 #. @context: Active browse tab label on sample page
-#. @context: Browse filter for latest posts
 #. @context: Browse filter label for latest posts
 #. @context: Browser page title for the latest feed
 #. @context: Browser page title for the latest feed
+#. @context: Built-in navigation label for the latest feed
 #. @context: Page heading for the latest posts feed
 #. @context: Select option for using latest posts as the main RSS feed
 #: src/routes/pages/home.tsx
 #: src/routes/pages/latest.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
-#: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/HomePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Latest"
 msgstr "最新"
 
@@ -1675,6 +1675,16 @@ msgstr "链接到文章归档页"
 #: src/ui/shared/navigation-labels.ts
 msgid "Link to your collections page"
 msgstr "链接到你的合集页"
+
+#. @context: Description for the featured system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to your featured posts. If it comes before Latest, the homepage opens here."
+msgstr ""
+
+#. @context: Description for the latest system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to your latest posts. If it comes before Featured, the homepage opens here."
+msgstr ""
 
 #. @context: Toast after saving a custom collections link
 #: src/ui/shared/collection-management-labels.ts
@@ -2427,6 +2437,11 @@ msgstr "撤销"
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "撤销此令牌吗？任何使用它的脚本都将停止工作。"
 
+#. @context: Built-in navigation label for RSS
+#: src/ui/shared/navigation-labels.ts
+msgid "RSS"
+msgstr ""
+
 #. @context: Tooltip for the RSS feed link on a collection page
 #: src/ui/pages/CollectionPage.tsx
 msgid "RSS feed"
@@ -2772,11 +2787,6 @@ msgstr "当标准绿色徽标对比度不足时，切换至白色徽标。"
 msgid "system"
 msgstr "系统"
 
-#. @context: Section heading for system nav items
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "System links"
-msgstr "系统链接"
-
 #. @context: Label on failed upload overlay button, tells user tapping retries the upload
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Tap to retry"
@@ -3032,10 +3042,10 @@ msgstr "有标题"
 msgid "to make sure both still feel like they belong to the same product."
 msgstr "以确保两者仍然感觉属于同一产品。"
 
-#. @context: Description for system nav toggles
+#. @context: Description for built-in nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside links."
-msgstr "切换内置导航项。启用的项会与链接一起显示在您的导航中。"
+msgid "Toggle built-in navigation items. Their order controls what shows in the header and which feed the homepage opens first."
+msgstr ""
 
 #. @context: Button to expand/collapse nav item edit
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -3150,11 +3160,6 @@ msgstr "使用 {brandColorName}"
 msgid "Use current date"
 msgstr "使用当前日期"
 
-#. @context: Switch label for setting featured posts as default homepage
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Use Featured as the home feed"
-msgstr "将精选设为首页视图"
-
 #. @context: Collection slug validation error for invalid characters
 #. @context: Compose custom slug validation error for invalid characters
 #: src/ui/compose/ComposeDialog.tsx
@@ -3263,11 +3268,6 @@ msgstr "在想些什么..."
 #: src/ui/shared/collection-management-labels.ts
 msgid "What's this collection about?"
 msgstr "这个合集是关于什么的？"
-
-#. @context: Description for featured default toggle, explains what happens when off
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "When off, the homepage opens with your latest posts."
-msgstr "关闭后，首页会先显示你的最新文章。"
 
 #. @context: Textarea value on sample page
 #: src/ui/pages/ThemeSamplePage.tsx

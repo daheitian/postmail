@@ -56,11 +56,13 @@ navItemsApiRoutes.post("/", requireAuthApi(), async (c) => {
       ? await c.var.services.navItems.create({
           type: "system",
           systemKey: body.systemKey,
+          placement: body.placement,
         })
       : await c.var.services.navItems.create({
           type: "link",
           label: body.label,
           url: body.url,
+          placement: body.placement,
         });
 
   return c.json(item, 201);

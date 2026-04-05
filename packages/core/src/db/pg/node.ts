@@ -1,3 +1,4 @@
+import { readdirSync } from "node:fs";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate as drizzleMigrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
@@ -7,6 +8,132 @@ import { pgSchemaBundle } from "../schema-bundle.js";
 
 interface PostgresErrorLike extends Error {
   code?: string;
+}
+
+interface PgMigrationJournalRow {
+  created_at: number;
+  hash: string;
+  id: number;
+}
+
+interface PgConstraintRow {
+  conname: string;
+  definition: string;
+}
+
+export function isMigrationDebugEnabled(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return env.JANT_DEBUG_MIGRATE === "1";
+}
+
+export function listPgMigrationFiles(migrationsFolder: string): string[] {
+  return readdirSync(migrationsFolder)
+    .filter((entry) => entry.endsWith(".sql"))
+    .sort();
+}
+
+export function formatPgMigrationJournalSummary(
+  entries: PgMigrationJournalRow[],
+  expectedCount?: number,
+): string {
+  const expectedSuffix =
+    typeof expectedCount === "number" ? `/${expectedCount}` : "";
+
+  if (entries.length === 0) {
+    return `count=0${expectedSuffix}`;
+  }
+
+  const latest = entries.at(-1);
+  return `count=${entries.length}${expectedSuffix} latest_id=${latest?.id ?? "?"} latest_created_at=${latest?.created_at ?? "?"}`;
+}
+
+export async function readPgMigrationJournal(
+  pool: Pool,
+): Promise<PgMigrationJournalRow[]> {
+  try {
+    const result = await pool.query<PgMigrationJournalRow>(`
+      SELECT id, hash, created_at
+      FROM drizzle.__drizzle_migrations
+      ORDER BY created_at ASC, id ASC
+    `);
+    return result.rows;
+  } catch (error) {
+    const pgError = error as PostgresErrorLike | undefined;
+    if (pgError?.code === "3F000" || pgError?.code === "42P01") {
+      return [];
+    }
+    throw error;
+  }
+}
+
+export async function readNavItemCheckConstraints(
+  pool: Pool,
+): Promise<Record<string, string>> {
+  const result = await pool.query<PgConstraintRow>(
+    `
+      SELECT
+        c.conname,
+        pg_get_constraintdef(c.oid) AS definition
+      FROM pg_constraint c
+      JOIN pg_class t ON t.oid = c.conrelid
+      JOIN pg_namespace n ON n.oid = t.relnamespace
+      WHERE n.nspname = 'public'
+        AND t.relname = 'nav_item'
+        AND c.conname = ANY($1::text[])
+      ORDER BY c.conname ASC
+    `,
+    [["chk_nav_item_placement", "chk_nav_item_system_key"]],
+  );
+
+  return Object.fromEntries(
+    result.rows.map((row) => [row.conname, row.definition]),
+  );
+}
+
+export function formatNavItemConstraintSummary(
+  constraints: Record<string, string>,
+): string {
+  const placement = constraints.chk_nav_item_placement ?? "<missing>";
+  const systemKey = constraints.chk_nav_item_system_key ?? "<missing>";
+  return `chk_nav_item_placement=${placement}; chk_nav_item_system_key=${systemKey}`;
+}
+
+function logMigrationDebug(message: string): void {
+  process.stdout.write(`[jant:migrate] ${message}\n`);
+}
+
+export async function logPgMigrationDebugState(
+  pool: Pool,
+  databaseUrl: string,
+  migrationsFolder: string,
+  phase: "before" | "after" | "failed",
+): Promise<void> {
+  if (!isMigrationDebugEnabled()) {
+    return;
+  }
+
+  const target = describePostgresTarget(databaseUrl);
+  const migrationFiles = listPgMigrationFiles(migrationsFolder);
+  const journal = await readPgMigrationJournal(pool);
+  const constraints = await readNavItemCheckConstraints(pool);
+
+  logMigrationDebug(`pg.${phase}.target=${target}`);
+  logMigrationDebug(`pg.${phase}.migrations_folder=${migrationsFolder}`);
+  logMigrationDebug(
+    `pg.${phase}.migrations_files=${migrationFiles.join(", ") || "<none>"}`,
+  );
+  logMigrationDebug(
+    `pg.${phase}.journal=${formatPgMigrationJournalSummary(
+      journal,
+      migrationFiles.length,
+    )}`,
+  );
+  logMigrationDebug(
+    `pg.${phase}.nav_item_constraints=${formatNavItemConstraintSummary(
+      constraints,
+    )}`,
+  );
 }
 
 export function describePostgresTarget(databaseUrl: string): string {
@@ -142,8 +269,30 @@ export async function migrateNodePgDatabase(
 
   try {
     const db = drizzle(pool, { schema: pgSchemaBundle });
+    await logPgMigrationDebugState(
+      pool,
+      databaseUrl,
+      migrationsFolder,
+      "before",
+    );
     await drizzleMigrate(db, { migrationsFolder });
+    await logPgMigrationDebugState(
+      pool,
+      databaseUrl,
+      migrationsFolder,
+      "after",
+    );
   } catch (error) {
+    try {
+      await logPgMigrationDebugState(
+        pool,
+        databaseUrl,
+        migrationsFolder,
+        "failed",
+      );
+    } catch {
+      // Best-effort debug logging should never hide the original migration error.
+    }
     throw wrapPostgresConnectionError(error, databaseUrl, "migrate");
   } finally {
     await pool.end();

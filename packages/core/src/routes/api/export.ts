@@ -5,6 +5,7 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
+import { getHomeDefaultViewFromNavItems } from "../../lib/navigation.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { createExportService } from "../../services/export.js";
 
@@ -24,7 +25,7 @@ exportApiRoutes.post("/zola", requireAuthApi(), async (c) => {
       siteDescription: appConfig.siteDescription,
       siteLanguage: appConfig.siteLanguage,
       showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
-      homeDefaultView: appConfig.homeDefaultView,
+      homeDefaultView: getHomeDefaultViewFromNavItems(navItems),
       siteFooter: appConfig.siteFooter,
       showHeaderAvatar: appConfig.showHeaderAvatar,
       siteAvatarUrl: appConfig.siteAvatarUrl,

@@ -577,7 +577,6 @@ settingsRoutes.post("/avatar/display", async (c) => {
 
 settingsRoutes.get("/navigation", async (c) => {
   const navItems = await c.var.services.navItems.list();
-  const homeDefaultView = c.var.appConfig.homeDefaultView;
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
@@ -592,7 +591,6 @@ settingsRoutes.get("/navigation", async (c) => {
         />
         <NavigationContent
           navItems={navItems}
-          homeDefaultView={homeDefaultView}
           mainRssFeed={c.var.appConfig.mainRssFeed}
           siteName={navData.siteName}
           sitePathPrefix={c.var.appConfig.sitePathPrefix}
@@ -600,19 +598,6 @@ settingsRoutes.get("/navigation", async (c) => {
       </>
     ),
   });
-});
-
-settingsRoutes.post("/navigation/home-default-view", async (c) => {
-  const body = await c.req.json<{ value: string }>();
-  const { settings } = c.var.services;
-
-  if (body.value === "featured") {
-    await settings.set("HOME_DEFAULT_VIEW", "featured");
-  } else {
-    await settings.remove("HOME_DEFAULT_VIEW");
-  }
-
-  return c.json({ ok: true });
 });
 
 // ===========================================================================

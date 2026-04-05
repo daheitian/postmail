@@ -36,21 +36,49 @@ export const NAV_ITEM_PLACEMENTS = ["header", "more"] as const;
 export type NavItemPlacement = (typeof NAV_ITEM_PLACEMENTS)[number];
 
 export const SYSTEM_NAV_KEY_VALUES = [
-  "rss",
-  "settings",
+  "latest",
+  "featured",
   "collections",
   "archive",
+  "rss",
+  "settings",
 ] as const;
 export type SystemNavKey = (typeof SYSTEM_NAV_KEY_VALUES)[number];
 
 export const SYSTEM_NAV_KEYS = {
-  rss: { defaultLabel: "RSS", url: "/feed" },
-  settings: { defaultLabel: "Settings", url: "/settings" },
-  collections: { defaultLabel: "Collections", url: "/c" },
-  archive: { defaultLabel: "Archive", url: "/archive" },
+  latest: {
+    defaultLabel: "Latest",
+    url: "/latest",
+    defaultPlacement: "header",
+  },
+  featured: {
+    defaultLabel: "Featured",
+    url: "/featured",
+    defaultPlacement: "header",
+  },
+  collections: {
+    defaultLabel: "Collections",
+    url: "/c",
+    defaultPlacement: "header",
+  },
+  archive: {
+    defaultLabel: "Archive",
+    url: "/archive",
+    defaultPlacement: "header",
+  },
+  rss: { defaultLabel: "RSS", url: "/feed", defaultPlacement: "more" },
+  settings: {
+    defaultLabel: "Settings",
+    url: "/settings",
+    defaultPlacement: "more",
+  },
 } as const satisfies Record<
   SystemNavKey,
-  { defaultLabel: string; url: string }
+  {
+    defaultLabel: string;
+    url: string;
+    defaultPlacement: NavItemPlacement;
+  }
 >;
 
 export const MAX_MEDIA_ATTACHMENTS = 20;

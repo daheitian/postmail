@@ -511,10 +511,12 @@ export const CreateNavItemSchema = z.discriminatedUnion("type", [
       .refine((val) => sanitizeUrl(val) !== "", {
         message: "URL must use http:, https:, or mailto: protocol",
       }),
+    placement: z.enum(["header", "more"]).optional(),
   }),
   z.object({
     type: z.literal("system"),
     systemKey: SystemNavKeySchema,
+    placement: z.enum(["header", "more"]).optional(),
   }),
 ]);
 

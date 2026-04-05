@@ -233,7 +233,6 @@ export interface SiteLayoutProps {
   sitePathPrefix?: string;
   isAuthenticated?: boolean;
   collections?: Collection[];
-  homeDefaultView?: string;
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;

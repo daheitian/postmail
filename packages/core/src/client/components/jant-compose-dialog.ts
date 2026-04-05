@@ -110,6 +110,7 @@ interface ComposeOpenOptions {
 
 interface ComposeReplyOpenOptions {
   restoreDraft?: boolean;
+  initialFormat?: ComposeFormat;
 }
 
 interface ComposeStateSnapshot {
@@ -900,7 +901,7 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshId = refreshTarget?.id ?? null;
     this._replyToData = replyData ?? null;
     this._visibilityLocked = true;
-    this._format = "note";
+    this._format = options?.initialFormat ?? "note";
 
     if (options?.restoreDraft !== false) {
       await this.restoreLocalDraft({ expectedReplyToId: id });

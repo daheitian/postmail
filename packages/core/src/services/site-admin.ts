@@ -15,6 +15,7 @@ import { SETTINGS_KEYS } from "../lib/constants.js";
 import { ConflictError, NotFoundError } from "../lib/errors.js";
 import { createEntityId } from "../lib/ids.js";
 import { getConfiguredSingleSiteUrl } from "../lib/env.js";
+import { getHomeDefaultViewFromNavItems } from "../lib/navigation.js";
 import { resolveConfig } from "../lib/resolve-config.js";
 import { buildThemeStyle } from "../lib/theme.js";
 import { now } from "../lib/time.js";
@@ -621,7 +622,7 @@ export function createSiteAdminService(
           siteDescription: appConfig.siteDescription,
           siteLanguage: appConfig.siteLanguage,
           showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
-          homeDefaultView: appConfig.homeDefaultView,
+          homeDefaultView: getHomeDefaultViewFromNavItems(navItemList),
           siteFooter: appConfig.siteFooter,
           showHeaderAvatar: appConfig.showHeaderAvatar,
           siteAvatarUrl: appConfig.siteAvatarUrl,

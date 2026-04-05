@@ -15,7 +15,7 @@ type ComposeHarness = HTMLElement & {
       kind: "timeline-item" | "post-card" | "post-view";
       id: string;
     },
-    options?: { restoreDraft?: boolean },
+    options?: { restoreDraft?: boolean; initialFormat?: string },
   ) => Promise<void>;
   refreshCollections: () => Promise<boolean>;
   pageMode?: boolean;
@@ -394,7 +394,7 @@ describe("compose bridge", () => {
       new CustomEvent("jant:compose-submit-deferred", {
         bubbles: true,
         detail: {
-          format: "note",
+          format: "quote",
           title: "",
           body: "",
           url: "",
@@ -413,7 +413,7 @@ describe("compose bridge", () => {
           replyRefreshId: "pst_root",
           threadPosts: [
             {
-              format: "note",
+              format: "quote",
               title: "",
               body: '{"type":"doc","content":[]}',
               url: "",
@@ -451,7 +451,7 @@ describe("compose bridge", () => {
       undefined,
       "pst_root",
       { kind: "timeline-item", id: "pst_root" },
-      { restoreDraft: true },
+      { restoreDraft: true, initialFormat: "quote" },
     );
     expect(composeEl.openNew).not.toHaveBeenCalled();
     expect(composeEl.clearLocalDraftFromStorage).not.toHaveBeenCalled();

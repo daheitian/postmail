@@ -21,7 +21,6 @@ function renderNavigationContent(
   return renderToString(
     NavigationContent({
       navItems: [],
-      homeDefaultView: "latest",
       mainRssFeed: "latest",
       siteName: "Test Site",
       ...props,
@@ -44,5 +43,11 @@ describe("NavigationContent", () => {
     expect(html).toContain(
       "Header RSS points to your Featured feed (/feed). Change what /feed returns in General.",
     );
+  });
+
+  it("renders the built-in links heading", () => {
+    const html = renderNavigationContent();
+
+    expect(html).toContain("Built-in links");
   });
 });

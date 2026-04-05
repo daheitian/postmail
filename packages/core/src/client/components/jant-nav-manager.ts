@@ -40,7 +40,6 @@ export class JantNavManager extends LitElement {
     labels: { type: Object },
     systemNavItems: { type: Array, attribute: "system-nav-items" },
     siteName: { type: String, attribute: "site-name" },
-    homeDefaultView: { type: String, attribute: "home-default-view" },
 
     _items: { state: true },
     _editingId: { state: true },
@@ -51,13 +50,13 @@ export class JantNavManager extends LitElement {
     _newLinkLabel: { state: true },
     _newLinkUrl: { state: true },
     _addingLink: { state: true },
+    _showPreviewMore: { state: true },
   };
 
   declare items: NavManagerItem[];
   declare labels: NavManagerLabels;
   declare systemNavItems: SystemNavConfig[];
   declare siteName: string;
-  declare homeDefaultView: string;
 
   declare _items: NavManagerItem[];
   declare _editingId: string | null;
@@ -69,6 +68,7 @@ export class JantNavManager extends LitElement {
   declare _newLinkLabel: string;
   declare _newLinkUrl: string;
   declare _addingLink: boolean;
+  declare _showPreviewMore: boolean;
 
   #sortableHeader: { destroy(): void } | null = null;
   #sortableMore: { destroy(): void } | null = null;
@@ -77,6 +77,23 @@ export class JantNavManager extends LitElement {
   #closeLinkForm = () => {
     this._showLinkForm = false;
     document.removeEventListener("click", this.#closeLinkForm);
+  };
+  #handlePreviewMoreDocumentClick = (event: Event) => {
+    if (!(event.target instanceof Node)) return;
+
+    const previewMore = this.querySelector<HTMLElement>("[data-preview-more]");
+    if (!previewMore?.contains(event.target)) {
+      this.#closePreviewMore();
+    }
+  };
+  #handlePreviewMoreKeydown = (event: Event) => {
+    if (!("key" in event) || event.key !== "Escape" || !this._showPreviewMore) {
+      return;
+    }
+
+    event.preventDefault();
+    this.#closePreviewMore();
+    this.querySelector<HTMLElement>("[data-preview-more-trigger]")?.focus();
   };
 
   createRenderRoot() {
@@ -90,7 +107,6 @@ export class JantNavManager extends LitElement {
     this.labels = {} as NavManagerLabels;
     this.systemNavItems = [];
     this.siteName = "";
-    this.homeDefaultView = "latest";
 
     this._items = [];
     this._editingId = null;
@@ -101,6 +117,7 @@ export class JantNavManager extends LitElement {
     this._newLinkLabel = "";
     this._newLinkUrl = "";
     this._addingLink = false;
+    this._showPreviewMore = false;
   }
 
   protected update(changedProperties: PropertyValueMap<JantNavManager>): void {
@@ -112,6 +129,9 @@ export class JantNavManager extends LitElement {
   }
 
   protected updated(): void {
+    if (this._showPreviewMore && this.#moreItems.length === 0) {
+      this.#closePreviewMore();
+    }
     this.#initSortable();
   }
 
@@ -122,6 +142,7 @@ export class JantNavManager extends LitElement {
     this.#sortableMore?.destroy();
     this.#sortableMore = null;
     document.removeEventListener("click", this.#closeLinkForm);
+    this.#closePreviewMore();
   }
 
   // ===========================================================================
@@ -322,21 +343,6 @@ export class JantNavManager extends LitElement {
     );
   }
 
-  async #handleHomeViewToggle(useFeatured: boolean) {
-    this.homeDefaultView = useFeatured ? "featured" : "latest";
-    try {
-      const res = await fetch("/settings/navigation/home-default-view", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: this.homeDefaultView }),
-      });
-      if (res.ok) showToast(this.labels.homeViewSaved);
-      else showToast(this.labels.saveFailed, "error");
-    } catch {
-      showToast(this.labels.saveFailed, "error");
-    }
-  }
-
   // ===========================================================================
   // Add link handler
   // ===========================================================================
@@ -446,18 +452,31 @@ export class JantNavManager extends LitElement {
     return this._items.filter((i) => i.placement === "more");
   }
 
+  #closePreviewMore() {
+    this._showPreviewMore = false;
+    document.removeEventListener("click", this.#handlePreviewMoreDocumentClick);
+    document.removeEventListener("keydown", this.#handlePreviewMoreKeydown);
+  }
+
+  #togglePreviewMore(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this._showPreviewMore) {
+      this.#closePreviewMore();
+      return;
+    }
+
+    this._showPreviewMore = true;
+    document.addEventListener("keydown", this.#handlePreviewMoreKeydown);
+    setTimeout(() => {
+      document.addEventListener("click", this.#handlePreviewMoreDocumentClick);
+    });
+  }
+
   #renderPreview() {
     const headerItems = this.#headerItems;
     const moreItems = this.#moreItems;
-
-    const defaultLabel =
-      this.homeDefaultView === "featured"
-        ? this.labels.featured
-        : this.labels.latest;
-    const altLabel =
-      this.homeDefaultView === "featured"
-        ? this.labels.latest
-        : this.labels.featured;
 
     return html`
       <div class="nav-preview">
@@ -471,33 +490,64 @@ export class JantNavManager extends LitElement {
           <div class="site-header-top">
             <a href=${publicPath("/")} class="site-logo">${this.siteName}</a>
             <nav class="site-header-nav">
-              <a class="site-header-link site-header-link-active"
-                >${defaultLabel}</a
-              >
-              <a class="site-header-link">${altLabel}</a>
-              ${headerItems.map(
-                (item) =>
-                  html`<a class="site-header-link">
+              ${repeat(
+                headerItems,
+                (item) => item.id,
+                (item, index) =>
+                  html`<a
+                    class=${index === 0
+                      ? "site-header-link site-header-link-active"
+                      : "site-header-link"}
+                  >
                     ${item.displayLabel ?? item.label}
                   </a>`,
               )}
               ${moreItems.length > 0
-                ? html`<span class="site-header-more-btn"
-                    >${this.labels.moreSection}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </span>`
+                ? html`
+                    <div class="site-header-more" data-preview-more>
+                      <button
+                        type="button"
+                        class="site-header-more-btn"
+                        data-preview-more-trigger
+                        aria-haspopup="menu"
+                        aria-expanded=${this._showPreviewMore
+                          ? "true"
+                          : "false"}
+                        @click=${this.#togglePreviewMore}
+                      >
+                        ${this.labels.moreSection}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+                      <div
+                        class="site-header-more-popover"
+                        aria-hidden=${this._showPreviewMore ? "false" : "true"}
+                        @click=${(event: Event) => event.stopPropagation()}
+                      >
+                        ${repeat(
+                          moreItems,
+                          (item) => item.id,
+                          (item) => html`
+                            <span class="site-header-more-link">
+                              ${item.displayLabel ?? item.label}
+                            </span>
+                          `,
+                        )}
+                      </div>
+                    </div>
+                  `
                 : nothing}
             </nav>
           </div>
@@ -791,31 +841,6 @@ export class JantNavManager extends LitElement {
   render() {
     return html`
       ${this.#renderPreview()}
-
-      <div class="flex flex-col gap-4 mt-3">
-        <label class="flex items-start justify-between gap-4 cursor-pointer">
-          <div class="flex flex-col gap-0.5">
-            <span class="text-sm font-medium">
-              ${this.labels.useFeaturedAsDefault}
-            </span>
-            <p class="text-xs text-muted-foreground">
-              ${this.labels.useFeaturedAsDefaultDescription}
-            </p>
-          </div>
-          <input
-            type="checkbox"
-            role="switch"
-            id="nav-home-view"
-            class="input shrink-0"
-            .checked=${this.homeDefaultView === "featured"}
-            @change=${(e: Event) => {
-              this.#handleHomeViewToggle(
-                (e.target as HTMLInputElement).checked,
-              );
-            }}
-          />
-        </label>
-      </div>
 
       <section class="mt-8">
         <h2 class="text-lg font-semibold mb-3">${this.labels.headerSection}</h2>

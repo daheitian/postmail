@@ -567,6 +567,7 @@ describe("toNavItemView", () => {
         url: "/settings",
       }),
       "/signin",
+      "latest",
       false,
     );
 
@@ -584,6 +585,7 @@ describe("toNavItemView", () => {
         url: "/settings",
       }),
       "/settings",
+      "latest",
       true,
     );
 
@@ -591,17 +593,72 @@ describe("toNavItemView", () => {
     expect(view.url).toBe("/settings");
     expect(view.isActive).toBe(true);
   });
+
+  it("resolves the latest built-in item to / when it is the home default", () => {
+    const view = toNavItemView(
+      makeNavItem({
+        type: "system",
+        systemKey: "latest",
+        label: "Latest",
+        url: "/latest",
+      }),
+      "/",
+      "latest",
+    );
+
+    expect(view.url).toBe("/");
+    expect(view.isActive).toBe(true);
+  });
+
+  it("keeps the latest built-in item on /latest when featured owns the homepage", () => {
+    const view = toNavItemView(
+      makeNavItem({
+        type: "system",
+        systemKey: "latest",
+        label: "Latest",
+        url: "/latest",
+      }),
+      "/latest",
+      "featured",
+    );
+
+    expect(view.url).toBe("/latest");
+    expect(view.isActive).toBe(true);
+  });
+
+  it("resolves the featured built-in item to / when it is the home default", () => {
+    const view = toNavItemView(
+      makeNavItem({
+        type: "system",
+        systemKey: "featured",
+        label: "Featured",
+        url: "/featured",
+      }),
+      "/",
+      "featured",
+    );
+
+    expect(view.url).toBe("/");
+    expect(view.isActive).toBe(true);
+  });
 });
 
 describe("toNavItemViews", () => {
   it("converts multiple items", () => {
     const items = [
-      makeNavItem({ id: UUID_NAV_1, url: "/" }),
+      makeNavItem({
+        id: UUID_NAV_1,
+        type: "system",
+        systemKey: "latest",
+        label: "Latest",
+        url: "/latest",
+      }),
       makeNavItem({ id: UUID_NAV_2, url: "/archive" }),
       makeNavItem({ id: UUID_NAV_3, url: "https://github.com" }),
     ];
-    const views = toNavItemViews(items, "/archive");
+    const views = toNavItemViews(items, "/archive", "featured");
     expect(views).toHaveLength(3);
+    expect(views[0]?.url).toBe("/latest");
     expect(views[0]).toHaveProperty("isActive", false);
     expect(views[1]).toHaveProperty("isActive", true);
     expect(views[2]).toHaveProperty("isExternal", true);

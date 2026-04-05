@@ -98,6 +98,32 @@ describe("Nav Items API Routes", () => {
       expect(body.systemKey).toBe("archive");
       expect(body.url).toBe("/archive");
       expect(body.label).toBe("Archive");
+      expect(body.placement).toBe("header");
+    });
+
+    it("uses built-in default placements for new system nav items", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      const latestRes = await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "system",
+          systemKey: "latest",
+        }),
+      });
+      const rssRes = await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "system",
+          systemKey: "rss",
+        }),
+      });
+
+      expect((await latestRes.json()).placement).toBe("header");
+      expect((await rssRes.json()).placement).toBe("more");
     });
 
     it("returns 400 for missing required fields", async () => {

@@ -23,13 +23,11 @@ import {
 
 export function NavigationContent({
   navItems,
-  homeDefaultView,
   mainRssFeed,
   siteName,
   sitePathPrefix = "",
 }: {
   navItems: NavItem[];
-  homeDefaultView: string;
   mainRssFeed: string;
   siteName: string;
   sitePathPrefix?: string;
@@ -182,15 +180,15 @@ export function NavigationContent({
     ),
     systemLinks: i18n._(
       msg({
-        message: "System links",
-        comment: "@context: Section heading for system nav items",
+        message: "Built-in links",
+        comment: "@context: Section heading for built-in nav items",
       }),
     ),
     systemLinksDescription: i18n._(
       msg({
         message:
-          "Toggle built-in navigation items. Enabled items appear in your navigation alongside links.",
-        comment: "@context: Description for system nav toggles",
+          "Toggle built-in navigation items. Their order controls what shows in the header and which feed the homepage opens first.",
+        comment: "@context: Description for built-in nav toggles",
       }),
     ),
     addCustomLinkToNavigation: i18n._(
@@ -238,28 +236,6 @@ export function NavigationContent({
         comment: "@context: Toast after moving nav item between header/more",
       }),
     ),
-    useFeaturedAsDefault: i18n._(
-      msg({
-        message: "Use Featured as the home feed",
-        comment:
-          "@context: Switch label for setting featured posts as default homepage",
-      }),
-    ),
-    useFeaturedAsDefaultDescription: i18n._(
-      msg({
-        message: "When off, the homepage opens with your latest posts.",
-        comment:
-          "@context: Description for featured default toggle, explains what happens when off",
-      }),
-    ),
-    homeViewSaved: i18n._(
-      msg({
-        message: "Home feed updated.",
-        comment: "@context: Toast after saving home default view setting",
-      }),
-    ),
-    latest: latestLabel,
-    featured: featuredLabel,
     labelAndUrlRequired: i18n._(
       msg({
         message: "Label and URL are required",
@@ -278,7 +254,6 @@ export function NavigationContent({
         labels={escapeJson(labels)}
         system-nav-items={escapeJson(systemNavData)}
         site-name={siteName}
-        home-default-view={homeDefaultView}
       >
         {/* SSR fallback: static preview until JS hydrates */}
         {(() => {
@@ -288,10 +263,6 @@ export function NavigationContent({
           const moreNavItems = navItems.filter(
             (item) => item.placement === "more",
           );
-          const defaultLabel =
-            homeDefaultView === "featured" ? featuredLabel : latestLabel;
-          const altLabel =
-            homeDefaultView === "featured" ? latestLabel : featuredLabel;
           return (
             <div class="nav-preview">
               <div class="nav-preview-chrome">
@@ -308,36 +279,54 @@ export function NavigationContent({
                     {siteName}
                   </a>
                   <nav class="site-header-nav">
-                    <span class="site-header-link site-header-link-active">
-                      {defaultLabel}
-                    </span>
-                    <span class="site-header-link">{altLabel}</span>
-                    {headerNavItems.map((item) => (
+                    {headerNavItems.map((item, index) => (
                       <a
                         key={item.id}
                         href={toPublicHref(item.url, sitePathPrefix)}
-                        class="site-header-link"
+                        class={`site-header-link${index === 0 ? " site-header-link-active" : ""}`}
                       >
                         {getNavItemDisplayLabel(item, i18n, sitePathPrefix)}
                       </a>
                     ))}
                     {moreNavItems.length > 0 && (
-                      <span class="site-header-more-btn">
-                        {moreLabel}{" "}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                      <div class="site-header-more">
+                        <button
+                          type="button"
+                          class="site-header-more-btn"
+                          aria-haspopup="menu"
+                          aria-expanded="false"
                         >
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-                      </span>
+                          {moreLabel}{" "}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+                        </button>
+                        <div
+                          class="site-header-more-popover"
+                          aria-hidden="true"
+                        >
+                          {moreNavItems.map((item) => (
+                            <span key={item.id} class="site-header-more-link">
+                              {getNavItemDisplayLabel(
+                                item,
+                                i18n,
+                                sitePathPrefix,
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </nav>
                 </div>

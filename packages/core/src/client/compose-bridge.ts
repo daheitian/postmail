@@ -696,7 +696,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
               id: detail.replyRefreshId,
             }
           : undefined,
-        { restoreDraft: true },
+        { restoreDraft: true, initialFormat: detail.format },
       );
       return;
     }

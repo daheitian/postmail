@@ -2,9 +2,9 @@
  * Latest Page Route
  *
  * Explicit /latest URL that always shows the latest posts timeline.
- * When HOME_DEFAULT_VIEW is "latest" (default), this redirects to /
- * to avoid duplicate content. When it's "featured", this serves as
- * the explicit latest view.
+ * When Latest is the homepage default, this redirects to / to avoid
+ * duplicate content. When Featured comes first, this serves as the
+ * explicit latest view.
  */
 
 import { Hono } from "hono";

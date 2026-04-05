@@ -1847,6 +1847,24 @@ describe("JantComposeDialog", () => {
     expect(detail.replyRefreshId).toBe("019ce8cf-19a1-7d16-9a75-017a9ac7299d");
   });
 
+  it("uses the replied post format as the initial compose format", async () => {
+    const el = await createElement();
+
+    await el.openReply(
+      "019ce8ce-d6d8-7fda-a5df-c2da2bef5ade",
+      {
+        contentHtml: "<p>Parent</p>",
+        dateText: "Mar 14",
+      },
+      undefined,
+      undefined,
+      { initialFormat: "quote" },
+    );
+    await flushUpdates(el);
+
+    expect(el._format).toBe("quote");
+  });
+
   it("restores a matching local reply draft when reopening reply compose", async () => {
     const el = await createElement();
     const replyToId = "019ce8ce-d6d8-7fda-a5df-c2da2bef5ade";

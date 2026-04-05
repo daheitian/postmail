@@ -46,11 +46,6 @@ const labels: NavManagerLabels = {
   moreSection: "More",
   moreEmptyHint: "Move links here to hide them under More.",
   placementSaved: "Navigation placement updated.",
-  useFeaturedAsDefault: "Use featured posts by default",
-  useFeaturedAsDefaultDescription: "Swap the main nav default view.",
-  homeViewSaved: "Home view updated.",
-  latest: "Latest",
-  featured: "Featured",
 };
 
 const items: NavManagerItem[] = [
@@ -91,6 +86,22 @@ function getListIds(list: HTMLElement): string[] {
   );
 }
 
+function getPreviewHeaderLabels(el: HTMLElement): string[] {
+  return Array.from(
+    el.querySelectorAll<HTMLElement>(
+      ".nav-preview .site-header-nav > .site-header-link",
+    ),
+  ).map((item) => item.textContent?.trim() ?? "");
+}
+
+function getPreviewMoreLabels(el: HTMLElement): string[] {
+  return Array.from(
+    el.querySelectorAll<HTMLElement>(
+      ".nav-preview .site-header-more-popover .site-header-more-link",
+    ),
+  ).map((item) => item.textContent?.trim() ?? "");
+}
+
 function getSortableOptions(
   listId: string,
 ): Record<string, ((event: unknown) => void) | undefined> {
@@ -111,7 +122,6 @@ async function createElement(): Promise<JantNavManager> {
   el.items = items;
   el.systemNavItems = [];
   el.siteName = "Test Site";
-  el.homeDefaultView = "latest";
   document.body.appendChild(el);
   await el.updateComplete;
   return el;
@@ -171,6 +181,8 @@ describe("JantNavManager", () => {
 
     expect(getListIds(headerList)).toEqual(["nav-1"]);
     expect(getListIds(moreList)).toEqual(["nav-2", "nav-3"]);
+    expect(getPreviewHeaderLabels(el)).toEqual(["About"]);
+    expect(getPreviewMoreLabels(el)).toEqual(["Links", "Archive"]);
     expect(
       Array.from(el.querySelectorAll<HTMLElement>("[data-nav-id]")).map(
         (item) => item.dataset.navId,
@@ -195,5 +207,35 @@ describe("JantNavManager", () => {
         }),
       }),
     );
+  });
+
+  it("opens and dismisses the preview More popover", async () => {
+    const el = await createElement();
+    const trigger = requireElement(
+      el.querySelector<HTMLElement>("[data-preview-more-trigger]"),
+      "expected preview more trigger",
+    );
+    const popover = requireElement(
+      el.querySelector<HTMLElement>(".nav-preview .site-header-more-popover"),
+      "expected preview more popover",
+    );
+
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(popover.getAttribute("aria-hidden")).toBe("true");
+
+    trigger.click();
+    await el.updateComplete;
+
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(popover.getAttribute("aria-hidden")).toBe("false");
+    expect(getPreviewMoreLabels(el)).toEqual(["Archive"]);
+
+    const escapeEvent = new Event("keydown");
+    Object.defineProperty(escapeEvent, "key", { value: "Escape" });
+    document.dispatchEvent(escapeEvent);
+    await el.updateComplete;
+
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(popover.getAttribute("aria-hidden")).toBe("true");
   });
 });

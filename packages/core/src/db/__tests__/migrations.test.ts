@@ -23,8 +23,10 @@ import {
 } from "../../../bin/lib/migration-artifacts.js";
 
 const MIGRATIONS_DIR = resolve(import.meta.dirname, "../migrations");
+const PG_MIGRATIONS_DIR = resolve(import.meta.dirname, "../migrations/pg");
 const BACKFILLS_DIR = resolve(import.meta.dirname, "../backfills");
 const JOURNAL_PATH = resolve(MIGRATIONS_DIR, "meta/_journal.json");
+const PG_JOURNAL_PATH = resolve(PG_MIGRATIONS_DIR, "meta/_journal.json");
 
 interface JournalEntry {
   idx: number;
@@ -40,8 +42,8 @@ interface Journal {
   entries: JournalEntry[];
 }
 
-function readJournal(): Journal {
-  return JSON.parse(readFileSync(JOURNAL_PATH, "utf-8"));
+function readJournal(path = JOURNAL_PATH): Journal {
+  return JSON.parse(readFileSync(path, "utf-8"));
 }
 
 function listMigrationFiles(): string[] {
@@ -179,6 +181,27 @@ describe("migration integrity", () => {
     for (let i = 0; i < journal.entries.length; i++) {
       const entry = journal.entries[i];
       if (entry) expect(entry.idx).toBe(i);
+    }
+  });
+
+  it("journal entry timestamps stay in nondecreasing order", () => {
+    const journals = [
+      { label: "sqlite", path: JOURNAL_PATH },
+      { label: "postgres", path: PG_JOURNAL_PATH },
+    ];
+
+    for (const { label, path } of journals) {
+      const journal = readJournal(path);
+      for (let i = 1; i < journal.entries.length; i++) {
+        const previous = journal.entries[i - 1];
+        const current = journal.entries[i];
+        if (!previous || !current) continue;
+
+        expect(
+          current.when,
+          `${label} migration journal must keep entries ordered by increasing "when" values: ${previous.tag} (${previous.when}) -> ${current.tag} (${current.when}).`,
+        ).toBeGreaterThanOrEqual(previous.when);
+      }
     }
   });
 

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   describePostgresTarget,
+  formatNavItemConstraintSummary,
+  formatPgMigrationJournalSummary,
+  isMigrationDebugEnabled,
   wrapPostgresConnectionError,
 } from "../node.js";
 
@@ -11,6 +14,41 @@ describe("describePostgresTarget", () => {
         "postgres://app_user:super-secret@localhost:5432/jant_dev",
       ),
     ).toBe("postgres://app_user@localhost:5432/jant_dev");
+  });
+});
+
+describe("isMigrationDebugEnabled", () => {
+  it("only enables migration debug logging when the flag is set", () => {
+    expect(isMigrationDebugEnabled({ JANT_DEBUG_MIGRATE: "1" })).toBe(true);
+    expect(isMigrationDebugEnabled({ JANT_DEBUG_MIGRATE: "true" })).toBe(false);
+    expect(isMigrationDebugEnabled({})).toBe(false);
+  });
+});
+
+describe("formatPgMigrationJournalSummary", () => {
+  it("includes the applied and expected migration counts", () => {
+    expect(
+      formatPgMigrationJournalSummary(
+        [{ id: 8, hash: "hash-8", created_at: 1775349118 }],
+        10,
+      ),
+    ).toBe("count=1/10 latest_id=8 latest_created_at=1775349118");
+  });
+
+  it("handles an empty migration journal", () => {
+    expect(formatPgMigrationJournalSummary([], 8)).toBe("count=0/8");
+  });
+});
+
+describe("formatNavItemConstraintSummary", () => {
+  it("shows both nav_item check constraints and marks missing ones", () => {
+    expect(
+      formatNavItemConstraintSummary({
+        chk_nav_item_system_key: "CHECK ((system_key IS NULL))",
+      }),
+    ).toBe(
+      "chk_nav_item_placement=<missing>; chk_nav_item_system_key=CHECK ((system_key IS NULL))",
+    );
   });
 });
 

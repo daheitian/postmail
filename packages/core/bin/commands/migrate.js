@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { Pool } from "pg";
 import {
   applyD1Backfills,
   applyD1SchemaMigrations,
@@ -13,6 +14,184 @@ import {
   getCliRuntimeLabel,
   resolveCliRuntime,
 } from "../lib/runtime-target.js";
+
+export function isMigrationDebugEnabled(env = process.env) {
+  return env.JANT_DEBUG_MIGRATE === "1";
+}
+
+export function describeNodeDatabaseTarget(databaseUrl) {
+  if (!databaseUrl) {
+    return "<unset>";
+  }
+
+  if (resolveDatabaseDialect(databaseUrl) === "sqlite") {
+    return databaseUrl;
+  }
+
+  try {
+    const parsed = new URL(databaseUrl);
+    const protocol = parsed.protocol.replace(/:$/, "");
+    const username = parsed.username || "<unknown-user>";
+    const hostname = parsed.hostname || "<unknown-host>";
+    const port = parsed.port || "5432";
+    const database = parsed.pathname.replace(/^\/+/, "") || "<unknown-db>";
+    return `${protocol}://${username}@${hostname}:${port}/${database}`;
+  } catch {
+    return "<invalid-database-url>";
+  }
+}
+
+export function loadNodeEnvFile(envPath, env = process.env) {
+  const result = {
+    envPath,
+    found: false,
+    assignedKeys: [],
+    skippedKeys: [],
+  };
+
+  try {
+    const content = readFileSync(envPath, "utf8");
+    result.found = true;
+    for (const line of content.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eqIdx = trimmed.indexOf("=");
+      if (eqIdx < 1) continue;
+      const key = trimmed.slice(0, eqIdx).trim();
+      const value = trimmed.slice(eqIdx + 1).trim();
+      if (key in env) {
+        result.skippedKeys.push(key);
+        continue;
+      }
+      env[key] = value;
+      result.assignedKeys.push(key);
+    }
+  } catch {
+    // .env.node not found
+  }
+
+  return result;
+}
+
+function logMigrationDebug(message) {
+  console.log(`[jant:migrate] ${message}`);
+}
+
+function resolveNodePgMigrationsDir(baseUrl = import.meta.url) {
+  const root = dirname(fileURLToPath(baseUrl));
+  const candidates = [
+    resolve(root, "../../dist/db/migrations/pg"),
+    resolve(root, "../../src/db/migrations/pg"),
+  ];
+
+  return candidates.find((candidate) => existsSync(candidate));
+}
+
+function listPgMigrationFiles(migrationsFolder) {
+  if (!migrationsFolder) {
+    return [];
+  }
+
+  return readdirSync(migrationsFolder)
+    .filter((entry) => entry.endsWith(".sql"))
+    .sort();
+}
+
+function formatPgMigrationJournalSummary(entries, expectedCount) {
+  const expectedSuffix =
+    typeof expectedCount === "number" ? `/${expectedCount}` : "";
+
+  if (entries.length === 0) {
+    return `count=0${expectedSuffix}`;
+  }
+
+  const latest = entries.at(-1);
+  return `count=${entries.length}${expectedSuffix} latest_id=${latest?.id ?? "?"} latest_created_at=${latest?.created_at ?? "?"}`;
+}
+
+async function readPgMigrationJournal(databaseUrl) {
+  const pool = new Pool({ connectionString: databaseUrl });
+
+  try {
+    const result = await pool.query(`
+      SELECT id, hash, created_at
+      FROM drizzle.__drizzle_migrations
+      ORDER BY created_at ASC, id ASC
+    `);
+    return result.rows;
+  } catch (error) {
+    if (error?.code === "3F000" || error?.code === "42P01") {
+      return [];
+    }
+    throw error;
+  } finally {
+    await pool.end().catch(() => undefined);
+  }
+}
+
+async function readNavItemCheckConstraints(databaseUrl) {
+  const pool = new Pool({ connectionString: databaseUrl });
+
+  try {
+    const result = await pool.query(
+      `
+        SELECT
+          c.conname,
+          pg_get_constraintdef(c.oid) AS definition
+        FROM pg_constraint c
+        JOIN pg_class t ON t.oid = c.conrelid
+        JOIN pg_namespace n ON n.oid = t.relnamespace
+        WHERE n.nspname = 'public'
+          AND t.relname = 'nav_item'
+          AND c.conname = ANY($1::text[])
+        ORDER BY c.conname ASC
+      `,
+      [["chk_nav_item_placement", "chk_nav_item_system_key"]],
+    );
+    return Object.fromEntries(
+      result.rows.map((row) => [row.conname, row.definition]),
+    );
+  } finally {
+    await pool.end().catch(() => undefined);
+  }
+}
+
+function formatNavItemConstraintSummary(constraints) {
+  const placement = constraints.chk_nav_item_placement ?? "<missing>";
+  const systemKey = constraints.chk_nav_item_system_key ?? "<missing>";
+  return `chk_nav_item_placement=${placement}; chk_nav_item_system_key=${systemKey}`;
+}
+
+async function logCliPgMigrationDebug(databaseUrl, phase) {
+  const migrationsFolder = resolveNodePgMigrationsDir();
+  const migrationFiles = listPgMigrationFiles(migrationsFolder);
+
+  try {
+    const journal = await readPgMigrationJournal(databaseUrl);
+    const constraints = await readNavItemCheckConstraints(databaseUrl);
+    logMigrationDebug(`cli.pg.${phase}.target=${describeNodeDatabaseTarget(databaseUrl)}`);
+    logMigrationDebug(
+      `cli.pg.${phase}.migrations_folder=${migrationsFolder ?? "<missing>"}`,
+    );
+    logMigrationDebug(
+      `cli.pg.${phase}.migrations_files=${migrationFiles.join(", ") || "<none>"}`,
+    );
+    logMigrationDebug(
+      `cli.pg.${phase}.journal=${formatPgMigrationJournalSummary(
+        journal,
+        migrationFiles.length,
+      )}`,
+    );
+    logMigrationDebug(
+      `cli.pg.${phase}.nav_item_constraints=${formatNavItemConstraintSummary(
+        constraints,
+      )}`,
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logMigrationDebug(`cli.pg.${phase}.inspect_error=${message}`);
+  }
+}
 
 export async function run(argv) {
   const { values } = parseArgs({
@@ -56,29 +235,72 @@ export async function run(argv) {
   }
 
   // --node: load .env.node and force node runtime
+  let nodeEnvLoadResult;
   if (values.node) {
     const __dir = dirname(fileURLToPath(import.meta.url));
     const envPath = resolve(__dir, "../../.env.node");
-    try {
-      const content = readFileSync(envPath, "utf8");
-      for (const line of content.split("\n")) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith("#")) continue;
-        const eqIdx = trimmed.indexOf("=");
-        if (eqIdx < 1) continue;
-        const key = trimmed.slice(0, eqIdx).trim();
-        const value = trimmed.slice(eqIdx + 1).trim();
-        if (!(key in process.env)) process.env[key] = value;
-      }
-    } catch {
-      // .env.node not found
-    }
+    nodeEnvLoadResult = loadNodeEnvFile(envPath);
   }
 
   const runtime = resolveCliRuntime(values);
+  const debugMigrate = isMigrationDebugEnabled();
+  const databaseUrl = process.env.DATABASE_URL ?? "";
+  const databaseDialect =
+    runtime === "node" && databaseUrl
+      ? resolveDatabaseDialect(databaseUrl)
+      : undefined;
+
+  if (debugMigrate) {
+    logMigrationDebug(`cli.runtime=${runtime}`);
+    if (values.node) {
+      const databaseUrlSource =
+        nodeEnvLoadResult?.assignedKeys.includes("DATABASE_URL")
+          ? ".env.node"
+          : process.env.DATABASE_URL
+            ? "process.env"
+            : "<unset>";
+      const dataDirSource =
+        nodeEnvLoadResult?.assignedKeys.includes("DATA_DIR")
+          ? ".env.node"
+          : process.env.DATA_DIR
+            ? "process.env"
+            : "<unset>";
+      const envPath = nodeEnvLoadResult?.envPath ?? "<unknown>";
+      const envState = nodeEnvLoadResult?.found ? "loaded" : "missing";
+      const skippedKeys = nodeEnvLoadResult?.skippedKeys.join(", ") || "<none>";
+      logMigrationDebug(`cli.node_env.path=${envPath}`);
+      logMigrationDebug(`cli.node_env.state=${envState}`);
+      logMigrationDebug(`cli.node_env.skipped_keys=${skippedKeys}`);
+      logMigrationDebug(`cli.node_env.database_url_source=${databaseUrlSource}`);
+      logMigrationDebug(`cli.node_env.data_dir_source=${dataDirSource}`);
+    }
+
+    if (runtime === "node") {
+      logMigrationDebug(`cli.node.dialect=${databaseDialect ?? "<unset>"}`);
+      logMigrationDebug(
+        `cli.node.target=${describeNodeDatabaseTarget(databaseUrl)}`,
+      );
+    }
+  }
+
   if (runtime === "node") {
+    if (debugMigrate && databaseDialect === "pg") {
+      await logCliPgMigrationDebug(databaseUrl, "before");
+    }
+
     const { migrate } = await loadNodeRuntime();
-    await migrate();
+    try {
+      await migrate();
+    } catch (error) {
+      if (debugMigrate && databaseDialect === "pg") {
+        await logCliPgMigrationDebug(databaseUrl, "failed");
+      }
+      throw error;
+    }
+
+    if (debugMigrate && databaseDialect === "pg") {
+      await logCliPgMigrationDebug(databaseUrl, "after");
+    }
 
     if (
       !process.env.DATABASE_URL ||

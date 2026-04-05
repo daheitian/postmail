@@ -4,8 +4,8 @@
  * Timeline feed with per-type card components and thread previews.
  * Uses page-based pagination.
  *
- * When HOME_DEFAULT_VIEW is "featured", the homepage shows featured posts
- * instead of latest. The /latest route always shows latest posts explicitly.
+ * The homepage shows whichever built-in feed comes first between
+ * Latest and Featured in navigation. The explicit feed routes still work.
  */
 
 import { Hono } from "hono";

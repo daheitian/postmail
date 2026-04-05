@@ -23,6 +23,7 @@ import type {
   NavItemType,
   NavItemPlacement,
   AppConfig,
+  FeedKind,
 } from "../types.js";
 import {
   toISOString,
@@ -380,17 +381,28 @@ export function toPostViewsFromPosts(
 export function toNavItemView(
   item: NavItem,
   currentPath: string,
+  homeDefaultView: FeedKind = "latest",
   isAuthenticated = false,
   sitePathPrefix = "",
 ): NavItemView {
   let url = item.url;
   let label = item.label;
 
-  // System settings item: resolve URL and label based on auth.
-  if (item.type === "system" && item.systemKey === "settings") {
-    url = isAuthenticated ? "/settings" : "/signin";
-    if (!isAuthenticated) {
-      label = "Sign in";
+  if (item.type === "system") {
+    if (item.systemKey === "latest") {
+      url = homeDefaultView === "latest" ? "/" : "/latest";
+    }
+
+    if (item.systemKey === "featured") {
+      url = homeDefaultView === "featured" ? "/" : "/featured";
+    }
+
+    // System settings item: resolve URL and label based on auth.
+    if (item.systemKey === "settings") {
+      url = isAuthenticated ? "/settings" : "/signin";
+      if (!isAuthenticated) {
+        label = "Sign in";
+      }
     }
   }
 
@@ -429,11 +441,18 @@ export function toNavItemView(
 export function toNavItemViews(
   items: NavItem[],
   currentPath: string,
+  homeDefaultView: FeedKind = "latest",
   isAuthenticated = false,
   sitePathPrefix = "",
 ): NavItemView[] {
   return items.map((item) =>
-    toNavItemView(item, currentPath, isAuthenticated, sitePathPrefix),
+    toNavItemView(
+      item,
+      currentPath,
+      homeDefaultView,
+      isAuthenticated,
+      sitePathPrefix,
+    ),
   );
 }
 

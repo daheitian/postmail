@@ -69,6 +69,8 @@ export function createNavItemService(
   const { navItems } = databaseSchema;
 
   const defaultSystemOrder = [
+    "latest",
+    "featured",
     "collections",
     "archive",
     "rss",
@@ -102,6 +104,7 @@ export function createNavItemService(
         systemKey: data.systemKey,
         label: config.defaultLabel,
         url: config.url,
+        placement: data.placement ?? config.defaultPlacement,
         position: data.position,
       };
     }
@@ -111,6 +114,7 @@ export function createNavItemService(
       systemKey: null,
       label: data.label,
       url: data.url,
+      placement: data.placement ?? "header",
       position: data.position,
     };
   }
@@ -219,6 +223,7 @@ export function createNavItemService(
             systemKey: normalized.systemKey,
             label: normalized.label,
             url: normalized.url,
+            placement: normalized.placement,
             position: normalized.position,
             createdAt: timestamp,
             updatedAt: timestamp,
@@ -240,6 +245,7 @@ export function createNavItemService(
               systemKey: normalized.systemKey,
               label: normalized.label,
               url: normalized.url,
+              placement: normalized.placement,
               position: await getAppendPosition(),
               createdAt: timestamp,
               updatedAt: timestamp,

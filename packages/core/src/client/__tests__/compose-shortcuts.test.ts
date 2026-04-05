@@ -7,6 +7,7 @@ import "../compose-shortcuts.js";
 type ComposeHarness = HTMLElement & {
   openNew: (options?: unknown) => Promise<void>;
   openReply: (...args: unknown[]) => Promise<void>;
+  openEdit: (id: string) => Promise<void>;
 };
 
 function dispatchShortcut(
@@ -28,8 +29,55 @@ function createComposeHarness(): ComposeHarness {
   ) as ComposeHarness;
   composeEl.openNew = vi.fn(async () => {});
   composeEl.openReply = vi.fn(async () => {});
+  composeEl.openEdit = vi.fn(async () => {});
   document.body.appendChild(composeEl);
   return composeEl;
+}
+
+function renderThreadDetailPage() {
+  const postView = document.createElement("div");
+  postView.dataset.postView = "";
+  postView.dataset.postViewId = "post-current";
+
+  const threadGroup = document.createElement("div");
+  threadGroup.dataset.page = "post";
+  threadGroup.className = "thread-group thread-group-detail";
+
+  const currentItem = document.createElement("div");
+  currentItem.dataset.postCurrent = "";
+
+  const currentArticle = document.createElement("article");
+  currentArticle.dataset.post = "";
+  currentArticle.dataset.postId = "post-current";
+  currentArticle.dataset.threadRootId = "thread-root";
+  currentArticle.dataset.format = "note";
+  currentArticle.innerHTML = `
+    <div data-post-meta>meta</div>
+    <time class="dt-published">Mar 19</time>
+    <div data-post-body>Current body</div>
+  `;
+
+  const hoveredItem = document.createElement("div");
+
+  const hoveredArticle = document.createElement("article");
+  hoveredArticle.dataset.post = "";
+  hoveredArticle.dataset.postId = "post-hovered";
+  hoveredArticle.dataset.threadRootId = "thread-root";
+  hoveredArticle.dataset.format = "quote";
+  hoveredArticle.innerHTML = `
+    <div data-post-meta>meta</div>
+    <time class="dt-published">Mar 20</time>
+    <div data-post-body>Hovered body</div>
+  `;
+
+  currentItem.appendChild(currentArticle);
+  hoveredItem.appendChild(hoveredArticle);
+  threadGroup.appendChild(currentItem);
+  threadGroup.appendChild(hoveredItem);
+  postView.appendChild(threadGroup);
+  document.body.appendChild(postView);
+
+  return { currentArticle, hoveredArticle };
 }
 
 describe("compose shortcuts", () => {
@@ -96,6 +144,7 @@ describe("compose shortcuts", () => {
     article.dataset.post = "";
     article.dataset.postId = "post-current";
     article.dataset.threadRootId = "thread-root";
+    article.dataset.format = "quote";
     article.innerHTML = `
       <div data-post-meta>meta</div>
       <div class="post-status-badges">badges</div>
@@ -119,6 +168,9 @@ describe("compose shortcuts", () => {
     expect(postId).toBe("post-current");
     expect(threadRootId).toBe("thread-root");
     expect(refreshTarget).toEqual({ kind: "post-view", id: "post-current" });
+    expect(vi.mocked(composeEl.openReply).mock.calls[0]?.[4]).toEqual({
+      initialFormat: "quote",
+    });
     expect(replyData).toMatchObject({ dateText: "Mar 19" });
     expect((replyData as { contentHtml: string }).contentHtml).toContain(
       "Reply body",
@@ -129,5 +181,53 @@ describe("compose shortcuts", () => {
     expect((replyData as { contentHtml: string }).contentHtml).not.toContain(
       "badges",
     );
+  });
+
+  it("prefers the hovered thread post for reply shortcuts on detail pages", () => {
+    const composeEl = createComposeHarness();
+    const { hoveredArticle } = renderThreadDetailPage();
+    const originalQuerySelector = document.querySelector.bind(document);
+
+    vi.spyOn(document, "querySelector").mockImplementation(
+      (selector: string): globalThis.Element | null => {
+        if (selector === "[data-page='post'] article[data-post]:hover") {
+          return hoveredArticle;
+        }
+        return originalQuerySelector(selector);
+      },
+    );
+
+    const event = dispatchShortcut(document, "r");
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(composeEl.openReply).toHaveBeenCalledWith(
+      "post-hovered",
+      expect.objectContaining({ dateText: "Mar 20" }),
+      "thread-root",
+      { kind: "post-view", id: "post-current" },
+      { initialFormat: "quote" },
+    );
+  });
+
+  it("prefers the hovered thread post for edit shortcuts on detail pages", async () => {
+    const composeEl = createComposeHarness();
+    composeEl.openEdit = vi.fn(async () => {});
+    const { hoveredArticle } = renderThreadDetailPage();
+    const originalQuerySelector = document.querySelector.bind(document);
+
+    vi.spyOn(document, "querySelector").mockImplementation(
+      (selector: string): globalThis.Element | null => {
+        if (selector === "[data-page='post'] article[data-post]:hover") {
+          return hoveredArticle;
+        }
+        return originalQuerySelector(selector);
+      },
+    );
+
+    const event = dispatchShortcut(document, "e");
+    await Promise.resolve();
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(composeEl.openEdit).toHaveBeenCalledWith("post-hovered");
   });
 });
