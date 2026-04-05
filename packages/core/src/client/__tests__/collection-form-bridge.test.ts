@@ -10,10 +10,16 @@ import "../collection-form-bridge.js";
 
 type CollectionFormHarness = HTMLElement & {
   cancelHref?: string;
+  initial?: {
+    slug?: string;
+  };
   loading?: boolean;
 };
 
-function createPageForm(cancelHref = "/c"): CollectionFormHarness {
+function createPageForm(
+  cancelHref = "/c",
+  initial: CollectionFormHarness["initial"] = { slug: "books" },
+): CollectionFormHarness {
   document.body.innerHTML = `
     <div
       data-collection-editor-page
@@ -32,6 +38,7 @@ function createPageForm(cancelHref = "/c"): CollectionFormHarness {
   }
 
   formEl.cancelHref = cancelHref;
+  formEl.initial = initial;
   return formEl;
 }
 
@@ -86,7 +93,7 @@ describe("collection form bridge", () => {
     expect(window.location.pathname).toBe("/c");
   });
 
-  it("redirects edited collections to the updated collection detail page", async () => {
+  it("redirects edited collections back to the collections page when launched from the list", async () => {
     const formEl = createPageForm("/c");
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ slug: "books-renamed" }), {
@@ -122,6 +129,77 @@ describe("collection form bridge", () => {
         slug: "books-renamed",
       }),
     });
+    expect(window.location.pathname).toBe("/c");
+  });
+
+  it("redirects edited collections back to the updated detail page when launched from detail", async () => {
+    window.location.href =
+      "http://localhost/c/books/edit?returnTo=%2Fc%2Fbooks";
+    const formEl = createPageForm("/c/books");
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ slug: "books-renamed" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    formEl.dispatchEvent(
+      new CustomEvent("jant:collection-submit", {
+        bubbles: true,
+        detail: {
+          endpoint: "/api/collections/collection-1",
+          isEdit: true,
+          data: {
+            title: "Books renamed",
+            slug: "books-renamed",
+          },
+        },
+      }),
+    );
+
+    await flushAsyncWork();
+
     expect(window.location.pathname).toBe("/c/books-renamed");
+  });
+
+  it("rewrites aggregate return paths when a collection slug changes", async () => {
+    window.location.href =
+      "http://localhost/c/books/edit?returnTo=%2Fc%2Fbooks%2Bessays";
+    const formEl = createPageForm("/c/books+essays", { slug: "books" });
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ slug: "books-renamed" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    formEl.dispatchEvent(
+      new CustomEvent("jant:collection-submit", {
+        bubbles: true,
+        detail: {
+          endpoint: "/api/collections/collection-1",
+          isEdit: true,
+          data: {
+            title: "Books renamed",
+            slug: "books-renamed",
+          },
+        },
+      }),
+    );
+
+    await flushAsyncWork();
+
+    expect(fetchSpy).toHaveBeenCalledWith("/api/collections/collection-1", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        title: "Books renamed",
+        slug: "books-renamed",
+      }),
+    });
+    expect(window.location.pathname).toBe("/c/books-renamed+essays");
   });
 });

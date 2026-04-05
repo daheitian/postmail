@@ -11,6 +11,97 @@ import type { JantCollectionForm } from "./components/jant-collection-form.js";
 import { publicPath } from "./runtime-paths.js";
 import { showToast } from "./toast.js";
 
+function normalizeLocalHref(href: string): URL | null {
+  try {
+    const url = new URL(href, window.location.origin);
+    if (url.origin !== window.location.origin) return null;
+    return url;
+  } catch {
+    return null;
+  }
+}
+
+function getSitePathPrefix(): string {
+  return document.documentElement.dataset.sitePathPrefix || "";
+}
+
+function toInternalPath(pathname: string): string | null {
+  const sitePathPrefix = getSitePathPrefix();
+  if (!sitePathPrefix) return pathname || "/";
+  if (pathname === sitePathPrefix) return "/";
+  if (pathname.startsWith(`${sitePathPrefix}/`)) {
+    return pathname.slice(sitePathPrefix.length) || "/";
+  }
+  return null;
+}
+
+function replaceCollectionSelectionSlug(
+  slugExpression: string,
+  nextSlug: string,
+  currentSlug: string | undefined,
+): string {
+  const slugs = slugExpression.split("+").filter(Boolean);
+  if (slugs.length === 0) {
+    return nextSlug;
+  }
+
+  if (slugs.length === 1) {
+    return nextSlug;
+  }
+
+  if (!currentSlug) {
+    return slugExpression;
+  }
+
+  let replaced = false;
+  const nextSlugs = slugs.map((slug) => {
+    if (slug !== currentSlug) {
+      return slug;
+    }
+
+    replaced = true;
+    return nextSlug;
+  });
+
+  return replaced ? nextSlugs.join("+") : slugExpression;
+}
+
+function resolveRedirectUrl(
+  detail: CollectionSubmitDetail,
+  formEl: JantCollectionForm,
+  nextSlug: string | undefined,
+): string {
+  const fallbackUrl = formEl.cancelHref || publicPath("/c");
+  if (!detail.isEdit) {
+    return fallbackUrl;
+  }
+
+  if (!nextSlug) {
+    return fallbackUrl;
+  }
+
+  const cancelUrl = normalizeLocalHref(fallbackUrl);
+  if (!cancelUrl) {
+    return publicPath(`/c/${nextSlug}`);
+  }
+
+  const internalPath = toInternalPath(cancelUrl.pathname);
+  const selectionMatch = internalPath?.match(/^\/c\/([^/]+)$/);
+  if (!selectionMatch) {
+    return `${cancelUrl.pathname}${cancelUrl.search}${cancelUrl.hash}`;
+  }
+
+  const currentSlug = formEl.initial?.slug?.trim() || undefined;
+  const nextSelection = replaceCollectionSelectionSlug(
+    selectionMatch[1],
+    nextSlug,
+    currentSlug,
+  );
+
+  cancelUrl.pathname = publicPath(`/c/${nextSelection}`);
+  return `${cancelUrl.pathname}${cancelUrl.search}${cancelUrl.hash}`;
+}
+
 document.addEventListener("jant:collection-submit", async (event: Event) => {
   const customEvent = event as CustomEvent<CollectionSubmitDetail>;
   const detail = customEvent.detail;
@@ -48,10 +139,13 @@ document.addEventListener("jant:collection-submit", async (event: Event) => {
       );
     }
 
-    const redirectUrl =
-      detail.isEdit && typeof json?.slug === "string" && json.slug.length > 0
-        ? publicPath(`/c/${json.slug}`)
-        : formEl.cancelHref || publicPath("/c");
+    const redirectUrl = resolveRedirectUrl(
+      detail,
+      formEl,
+      typeof json?.slug === "string" && json.slug.length > 0
+        ? json.slug
+        : undefined,
+    );
 
     window.location.href = redirectUrl;
     return;

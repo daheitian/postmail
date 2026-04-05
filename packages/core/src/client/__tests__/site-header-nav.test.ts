@@ -9,6 +9,7 @@ type ResponsiveSearchRoot = HTMLElement & {
     fullWidth?: number;
     compactWidth?: number;
     iconWidth?: number;
+    collapsedWidth?: number;
   }) => void;
 };
 
@@ -84,6 +85,7 @@ function createResponsiveSearchDOM(): {
   let fullWidth = 360;
   let compactWidth = 360;
   let iconWidth = 360;
+  let collapsedWidth = 240;
 
   Object.defineProperty(headerRow, "clientWidth", {
     configurable: true,
@@ -93,6 +95,10 @@ function createResponsiveSearchDOM(): {
   Object.defineProperty(headerRow, "scrollWidth", {
     configurable: true,
     get: () => {
+      if (headerRow.dataset.navMode === "collapsed") {
+        return collapsedWidth;
+      }
+
       switch (headerRow.dataset.searchMode) {
         case "compact":
           return compactWidth;
@@ -110,6 +116,7 @@ function createResponsiveSearchDOM(): {
     fullWidth = widths.fullWidth ?? fullWidth;
     compactWidth = widths.compactWidth ?? compactWidth;
     iconWidth = widths.iconWidth ?? iconWidth;
+    collapsedWidth = widths.collapsedWidth ?? collapsedWidth;
   };
 
   return { root: responsiveRoot, headerRow };
@@ -216,6 +223,22 @@ describe("site header nav drawer", () => {
     hamburger.click();
     expect(drawer.getAttribute("aria-hidden")).toBe("true");
   });
+
+  it("closes drawer when a navigation link is clicked", () => {
+    const hamburger = root.querySelector(
+      ".site-header-hamburger",
+    ) as HTMLButtonElement;
+    const drawer = root.querySelector("#site-nav-drawer") as HTMLElement;
+    const link = root.querySelector(
+      ".site-nav-drawer-link",
+    ) as HTMLAnchorElement;
+
+    hamburger.click();
+    link.click();
+
+    expect(drawer.getAttribute("aria-hidden")).toBe("true");
+    expect(hamburger.getAttribute("aria-expanded")).toBe("false");
+  });
 });
 
 describe("site header responsive search", () => {
@@ -290,5 +313,86 @@ describe("site header responsive search", () => {
     MockResizeObserver.instances[0]?.trigger();
 
     expect(headerRow.dataset.searchMode).toBe("compact");
+  });
+
+  it("collapses the header into drawer mode when icon search still overflows", () => {
+    const { root, headerRow } = createResponsiveSearchDOM();
+    root.insertAdjacentHTML(
+      "beforeend",
+      `
+      <button
+        class="site-header-hamburger"
+        aria-controls="site-nav-drawer"
+        aria-expanded="false"
+      ></button>
+      <div class="site-nav-drawer-backdrop" aria-hidden="true"></div>
+      <div id="site-nav-drawer" class="site-nav-drawer" aria-hidden="true" inert>
+        <div class="site-nav-drawer-header">
+          <button class="site-nav-drawer-close"></button>
+        </div>
+      </div>
+    `,
+    );
+    root.setWidths({
+      clientWidth: 280,
+      fullWidth: 420,
+      compactWidth: 360,
+      iconWidth: 320,
+      collapsedWidth: 220,
+    });
+
+    initSiteHeaderNav(root);
+
+    expect(headerRow.dataset.navMode).toBe("collapsed");
+    expect(headerRow.dataset.searchMode).toBeUndefined();
+  });
+
+  it("closes the drawer when the header expands out of collapsed mode", () => {
+    const { root, headerRow } = createResponsiveSearchDOM();
+    root.insertAdjacentHTML(
+      "beforeend",
+      `
+      <button
+        class="site-header-hamburger"
+        aria-controls="site-nav-drawer"
+        aria-expanded="false"
+      ></button>
+      <div class="site-nav-drawer-backdrop" aria-hidden="true"></div>
+      <div id="site-nav-drawer" class="site-nav-drawer" aria-hidden="true" inert>
+        <div class="site-nav-drawer-header">
+          <button class="site-nav-drawer-close"></button>
+        </div>
+      </div>
+    `,
+    );
+    root.setWidths({
+      clientWidth: 280,
+      fullWidth: 420,
+      compactWidth: 360,
+      iconWidth: 320,
+      collapsedWidth: 220,
+    });
+
+    initSiteHeaderNav(root);
+
+    const hamburger = root.querySelector(
+      ".site-header-hamburger",
+    ) as HTMLButtonElement;
+    const drawer = root.querySelector("#site-nav-drawer") as HTMLElement;
+
+    hamburger.click();
+    expect(drawer.getAttribute("aria-hidden")).toBe("false");
+
+    root.setWidths({
+      clientWidth: 420,
+      fullWidth: 360,
+      compactWidth: 340,
+      iconWidth: 300,
+    });
+    MockResizeObserver.instances[0]?.trigger();
+
+    expect(headerRow.dataset.navMode).toBeUndefined();
+    expect(drawer.getAttribute("aria-hidden")).toBe("true");
+    expect(hamburger.getAttribute("aria-expanded")).toBe("false");
   });
 });

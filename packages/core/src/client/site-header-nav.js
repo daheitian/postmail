@@ -45,10 +45,7 @@ function initMoreDropdown(root) {
   });
 
   document.addEventListener("keydown", (e) => {
-    if (
-      e.key === "Escape" &&
-      popover.getAttribute("aria-hidden") === "false"
-    ) {
+    if (e.key === "Escape" && popover.getAttribute("aria-hidden") === "false") {
       close(true);
     }
   });
@@ -67,7 +64,16 @@ function setHeaderSearchMode(headerRow, mode) {
   headerRow.dataset.searchMode = mode;
 }
 
-function initResponsiveSearch(root) {
+function setHeaderNavMode(headerRow, mode) {
+  if (mode === "desktop") {
+    delete headerRow.dataset.navMode;
+    return;
+  }
+
+  headerRow.dataset.navMode = mode;
+}
+
+function initResponsiveHeader(root, onExitCollapsedMode = () => {}) {
   const headerRow = root.querySelector(".site-header-top");
   const searchForm = root.querySelector(".site-header-search-form");
 
@@ -75,27 +81,39 @@ function initResponsiveSearch(root) {
   if (headerRow.dataset.searchResponsiveInitialized === "true") return;
   headerRow.dataset.searchResponsiveInitialized = "true";
 
-  const syncSearchMode = () => {
-    const modes = ["full", "compact", "icon"];
+  let previousNavMode = "desktop";
 
-    for (const mode of modes) {
+  const syncHeaderMode = () => {
+    setHeaderNavMode(headerRow, "desktop");
+
+    for (const mode of ["full", "compact", "icon"]) {
       setHeaderSearchMode(headerRow, mode);
-      if (headerRow.scrollWidth <= headerRow.clientWidth + 1) return;
+      if (headerRow.scrollWidth <= headerRow.clientWidth + 1) {
+        if (previousNavMode === "collapsed") {
+          onExitCollapsedMode();
+        }
+        previousNavMode = "desktop";
+        return;
+      }
     }
+
+    setHeaderSearchMode(headerRow, "full");
+    setHeaderNavMode(headerRow, "collapsed");
+    previousNavMode = "collapsed";
   };
 
-  syncSearchMode();
+  syncHeaderMode();
 
   if ("ResizeObserver" in globalThis) {
     const observer = new globalThis.ResizeObserver(() => {
-      syncSearchMode();
+      syncHeaderMode();
     });
     observer.observe(headerRow);
   }
 
   if (document.fonts?.ready) {
     document.fonts.ready.then(() => {
-      syncSearchMode();
+      syncHeaderMode();
     });
   }
 }
@@ -105,10 +123,13 @@ export function initSiteHeaderNav(root = document) {
   const drawer = root.querySelector("#site-nav-drawer");
   const backdrop = root.querySelector(".site-nav-drawer-backdrop");
   const closeBtn = drawer?.querySelector(".site-nav-drawer-close");
+  let closeDrawerIfOpen = () => {};
 
   // --- More dropdown (desktop) ---
   initMoreDropdown(root);
-  initResponsiveSearch(root);
+  initResponsiveHeader(root, () => {
+    closeDrawerIfOpen();
+  });
 
   // --- Mobile drawer ---
   if (!hamburger || !drawer || !backdrop) return;
@@ -147,6 +168,12 @@ export function initSiteHeaderNav(root = document) {
     if (returnFocus) hamburger.focus();
   }
 
+  closeDrawerIfOpen = () => {
+    if (hamburger.getAttribute("aria-expanded") === "true") {
+      close(false);
+    }
+  };
+
   hamburger.addEventListener("click", () => {
     if (hamburger.getAttribute("aria-expanded") === "true") {
       close();
@@ -157,6 +184,12 @@ export function initSiteHeaderNav(root = document) {
 
   closeBtn?.addEventListener("click", () => close());
   backdrop.addEventListener("click", () => close());
+  drawer.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    if (event.target.closest("a[href]")) {
+      close(false);
+    }
+  });
 
   drawer.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {

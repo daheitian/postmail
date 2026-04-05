@@ -34,6 +34,27 @@ const ExternalLinkIcon = () => (
   </svg>
 );
 
+function SearchIcon({ class: className = "" }: { class?: string }) {
+  return (
+    <svg
+      class={className}
+      xmlns="http://www.w3.org/2000/svg"
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.35-4.35" />
+    </svg>
+  );
+}
+
 function HeaderLink({ link, label }: { link: NavItemView; label: string }) {
   return (
     <a
@@ -115,7 +136,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                 )}
                 {siteName}
               </a>
-              <nav class="site-header-nav">
+              <nav class="site-header-nav" aria-label="Primary">
                 {headerLinks.map((link) => (
                   <HeaderLink
                     key={link.id}
@@ -182,28 +203,14 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                 action={toPublicPath("/search", sitePathPrefix)}
                 method="get"
               >
-                <svg
-                  class="site-header-search-icon"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
+                <SearchIcon class="site-header-search-icon" />
                 <input
                   type="search"
                   name="q"
                   class="site-header-search-input"
                   placeholder={searchLabel}
                   aria-label={searchLabel}
+                  enterkeyhint="search"
                 />
               </form>
 
@@ -252,6 +259,19 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         inert
       >
         <div class="site-nav-drawer-header">
+          <a
+            href={toPublicPath("/", sitePathPrefix)}
+            class="site-nav-drawer-brand"
+          >
+            {showHeaderAvatar && siteAvatarUrl && (
+              <img
+                src={siteAvatarUrl}
+                class="site-nav-drawer-brand-avatar"
+                alt=""
+              />
+            )}
+            {siteName}
+          </a>
           <button
             type="button"
             class="site-nav-drawer-close"
@@ -283,15 +303,17 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           action={toPublicPath("/search", sitePathPrefix)}
           method="get"
         >
+          <SearchIcon class="site-nav-drawer-search-icon" />
           <input
             type="search"
             name="q"
-            class="site-nav-drawer-search-input input"
+            class="site-nav-drawer-search-input"
             placeholder={searchLabel}
             aria-label={searchLabel}
+            enterkeyhint="search"
           />
         </form>
-        <nav class="site-nav-drawer-nav">
+        <nav class="site-nav-drawer-nav" aria-label="Primary">
           {linksWithLabels.map((link) => (
             <a
               key={link.id}
