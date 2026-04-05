@@ -1,7 +1,7 @@
 ---
 title: "NTS archives are good cleaning music"
 date: 2025-08-09T10:05:00.000Z
-updated: 2026-03-21T23:02:04.000Z
+updated: 2026-04-03T02:30:49.000Z
 slug: "nts-archives-are-good-cleaning-music"
 taxonomies:
   c:

@@ -41,7 +41,7 @@
                 {% for item in config.extra.jant.nav %}
                   {% if item.system_key == "settings" %}
                   {% elif item.system_key == "collections" %}
-                <a href="{{ get_url(path='c') }}" class="site-header-link">{{ item.label }}</a>
+                <a href="{{ get_url(path='collections') }}" class="site-header-link">{{ item.label }}</a>
                   {% elif item.system_key == "rss" %}
                 <a href="{{ get_url(path='atom.xml') }}" class="site-header-link">{{ item.label }}</a>
                   {% elif item.system_key == "archive" %}

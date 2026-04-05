@@ -246,26 +246,6 @@ run = "node scripts/demo-local/import-canonical.mjs"
 description = "Alias for db-local-load-demo-snapshot"
 run = "mise run db-local-load-demo-snapshot"
 
-[tasks.snapshot-rewrite-svg-webp]
-description = "Rewrite legacy SVG objects in a site snapshot to WebP and sync db.sql + storage-manifest.json"
-usage = 'arg "[args]" var=#true double_dash="automatic"'
-run = """
-#!/usr/bin/env bash
-set -euo pipefail
-
-args=()
-if [[ -n "${usage_args:-}" ]]; then
-  eval "args=($usage_args)"
-fi
-
-path="sites/demo-source/canonical/snapshot"
-if [[ -n "${args[*]:-}" && "${args[0]}" != -* ]]; then
-  path="${args[0]}"
-  args=("${args[@]:1}")
-fi
-
-node packages/core/dev/scripts/rewrite-snapshot-svg-webp.mjs --path "$path" "${args[@]}"
-"""
 
 [tasks.db-rehearse-local]
 description = "Rebuild a local D1 from the frozen migration rehearsal fixture"

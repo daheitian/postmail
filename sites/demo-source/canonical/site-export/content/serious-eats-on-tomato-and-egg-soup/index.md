@@ -1,7 +1,7 @@
 ---
 title: "Serious Eats on tomato and egg soup"
 date: 2025-09-17T17:30:00.000Z
-updated: 2026-03-21T23:02:09.000Z
+updated: 2026-04-03T02:30:54.000Z
 slug: "serious-eats-on-tomato-and-egg-soup"
 taxonomies:
   c:

@@ -1,6 +1,6 @@
 ---
 date: 2025-08-12T08:30:00.000Z
-updated: 2026-03-21T23:01:53.000Z
+updated: 2026-04-03T02:30:37.000Z
 slug: "from-basho"
 taxonomies:
   c:

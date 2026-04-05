@@ -1,6 +1,6 @@
 ---
 date: 2025-09-03T12:20:00.000Z
-updated: 2026-03-21T23:01:54.000Z
+updated: 2026-04-03T02:30:39.000Z
 slug: "from-marcus-aurelius"
 taxonomies:
   c:

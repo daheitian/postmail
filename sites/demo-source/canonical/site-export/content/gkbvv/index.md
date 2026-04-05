@@ -1,6 +1,6 @@
 ---
 date: 2026-01-07T18:40:00.000Z
-updated: 2026-03-21T23:01:57.000Z
+updated: 2026-04-03T02:30:41.000Z
 slug: "gkbvv"
 aliases:
   - "/5oxsv"
@@ -20,8 +20,8 @@ Tonight's tiny project: make the desk usable again without buying a single organ
 
 <div data-jant-node="attachments">
 <figure data-jant-node="attachment" data-jant-kind="image">
-  <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/baa603c991dd-med_01km9a4gfee01sj821y38h2gxq.webp","poster":null,"mimeType":"image/webp","originalName":"desk-before.webp","size":15464,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
-  <img src="/media/baa603c991dd-med_01km9a4gfee01sj821y38h2gxq.webp" alt="">
+  <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/6c64800135d7-med_01kn8jvb16enf98txp7p0pf5ge.webp","poster":null,"mimeType":"image/webp","originalName":"desk-before.webp","size":15464,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
+  <img src="/media/6c64800135d7-med_01kn8jvb16enf98txp7p0pf5ge.webp" alt="">
 </figure>
 </div>
 
@@ -39,7 +39,7 @@ Thirty minutes later: laptop, lamp, notebook, one glass of water. That is appare
 
 <div data-jant-node="attachments">
 <figure data-jant-node="attachment" data-jant-kind="image">
-  <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/11246d180f21-med_01km9a4j82e01sj83dpjzh3ff5.webp","poster":null,"mimeType":"image/webp","originalName":"desk-after.webp","size":14120,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
-  <img src="/media/11246d180f21-med_01km9a4j82e01sj83dpjzh3ff5.webp" alt="">
+  <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/10b670b2e86e-med_01kn8jve5nenf98tzap11gpxzr.webp","poster":null,"mimeType":"image/webp","originalName":"desk-after.webp","size":14120,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
+  <img src="/media/10b670b2e86e-med_01kn8jve5nenf98tzap11gpxzr.webp" alt="">
 </figure>
 </div>

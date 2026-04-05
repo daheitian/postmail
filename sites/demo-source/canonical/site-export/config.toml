@@ -9,7 +9,7 @@ feed_filenames = [ "atom.xml" ]
 [extra.jant_export]
 format = "jant-site"
 version = 1
-generated_at = "2026-04-02T14:39:20.000Z"
+generated_at = "2026-04-05T10:54:31.000Z"
 
 [extra.jant]
 home_default_view = "latest"
@@ -21,12 +21,12 @@ favicon_mode = "custom"
 apple_touch_mode = "custom"
 nav_exported = true
 collections_directory_exported = true
-theme_id = "linen"
-default_theme_id = "linen"
-font_theme_id = ""
+theme_id = "tufte"
+default_theme_id = "tufte"
+font_theme_id = "tufte"
 theme_mode = "auto"
-site_avatar_url = "/media/2290b69f5f24-med_01km9a40kte01sj7p9qkabfcbq.png"
-favicon_version = "202603212301"
+site_avatar_url = "/media/7d1da94fd970-med_01kn8jtq3penf98tfq4gzmh9g9.png"
+favicon_version = "202604030230"
 
 [[extra.jant.nav]]
 type = "system"
@@ -55,31 +55,50 @@ system_key = "settings"
 [[extra.jant.collections_directory]]
 type = "collection"
 slug = "city-walks"
+title = "City Walks"
+entry_count = 3
+recent_activity_label = "2026-03-09"
 
 [[extra.jant.collections_directory]]
 type = "collection"
 slug = "home-cooking"
+title = "Home Cooking"
+entry_count = 5
+recent_activity_label = "2026-02-01"
 
 [[extra.jant.collections_directory]]
 type = "collection"
 slug = "reading-notes"
+title = "Reading Notes"
+entry_count = 7
+recent_activity_label = "2026-02-05"
 
 [[extra.jant.collections_directory]]
 type = "collection"
 slug = "tiny-projects"
+title = "Tiny Projects"
+entry_count = 8
+recent_activity_label = "2026-03-01"
 
 [[extra.jant.collections_directory]]
 type = "collection"
 slug = "useful-links"
+title = "Useful Links"
+entry_count = 7
+recent_activity_label = "2026-03-05"
 
 [[extra.jant.collections_directory]]
 type = "collection"
 slug = "weekend-notes"
+title = "Weekend Notes"
+entry_count = 14
+recent_activity_label = "2026-03-09"
 
 [[taxonomies]]
-name = "c"
+name = "collections"
 feed = true
 
 [markdown]
 highlight_code = true
 highlight_theme = "css"
+bottom_footnotes = true

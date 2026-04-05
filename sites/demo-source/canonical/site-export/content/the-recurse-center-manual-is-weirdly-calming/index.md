@@ -1,7 +1,7 @@
 ---
 title: "The Recurse Center manual is weirdly calming"
 date: 2026-01-29T15:20:00.000Z
-updated: 2026-03-21T23:02:17.000Z
+updated: 2026-04-03T02:31:04.000Z
 slug: "the-recurse-center-manual-is-weirdly-calming"
 taxonomies:
   c:

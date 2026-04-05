@@ -51,7 +51,7 @@ config.toml          — Site configuration (title, URL, language)
 content/
   _index.md          — Root section (homepage settings)
   {slug}/index.md    — Individual posts (threads are merged into one page)
-  c/{slug}/_index.md — Collection display metadata for taxonomy pages and round-trip import
+  {slug}/_index.md   — Collection display metadata for taxonomy pages and round-trip import
 templates/           — Tera templates (Zola's template engine)
 static/
   style.css          — Base exported stylesheet
@@ -68,7 +68,7 @@ static/
 - **Styles** — edit `static/style.css`. The theme supports light and dark modes via `prefers-color-scheme`.
 - **Templates** — edit files in `templates/`. Zola uses the [Tera](https://keats.github.io/tera/) template engine.
 - **Debugging** — export to a directory with `jant site export --directory ./my-site`, then run `cd my-site && zola serve`.
-- **Collections** — posts are tagged with collections via the `c` taxonomy. Browse them at `/collections/`.
+- **Collections** — posts are tagged with collections via the `collections` taxonomy. Browse them at `/collections/`.
 
 ## Notes
 

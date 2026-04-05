@@ -1,7 +1,7 @@
 ---
 title: "Derek Sivers still writes the kind of internet I want more of"
 date: 2025-11-25T08:50:00.000Z
-updated: 2026-03-21T23:01:51.000Z
+updated: 2026-04-03T02:30:36.000Z
 slug: "derek-sivers-still-writes-the-kind-of-internet-i-want-more-of"
 taxonomies:
   c:

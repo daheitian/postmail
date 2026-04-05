@@ -40,7 +40,7 @@
 {% endmacro %}
 
 {% macro post_footer(page, detail=false, show_date=true) %}
-{% set collections = page.taxonomies.c | default(value=[]) %}
+{% set collections = page.taxonomies.collections | default(value=[]) %}
 <footer class="post-menu-footer{% if detail %} post-footer-detail{% endif %}" data-post-meta>
   <div class="post-footer-meta">
     <span class="post-footer-featured" title="Featured">
@@ -66,14 +66,14 @@
     {% endif %}
     {% if collections | length > 0 %}
     {% set first_collection = collections | first %}
-    {% set first_collection_meta = get_section(path='c/' ~ first_collection ~ '/_index.md') %}
+    {% set first_collection_meta = get_section(path= first_collection ~ '/_index.md') %}
     {% set hidden_collection_count = collections | length %}
     {% set show_collection_separator = show_date or (page.extra.format == "link" and page.extra.link_url) or page.extra.featured %}
     <span class="post-collection-tags">
       {% if show_collection_separator %}
       <span class="post-collection-sep" aria-hidden="true">&middot;</span>
       {% endif %}
-      <a href="{{ get_taxonomy_url(kind='c', name=first_collection) }}" class="post-collection-tag">
+      <a href="{{ get_taxonomy_url(kind='collections', name=first_collection) }}" class="post-collection-tag">
         {% if detail %}
         <span class="post-collection-primary-icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
@@ -86,9 +86,9 @@
       </a>
       {% if hidden_collection_count == 2 %}
       {% set second_collection = collections | nth(n=1) %}
-      {% set second_collection_meta = get_section(path='c/' ~ second_collection ~ '/_index.md') %}
+      {% set second_collection_meta = get_section(path= second_collection ~ '/_index.md') %}
       <span class="post-collection-second-sep" aria-hidden="true">, </span>
-      <a href="{{ get_taxonomy_url(kind='c', name=second_collection) }}" class="post-collection-tag">
+      <a href="{{ get_taxonomy_url(kind='collections', name=second_collection) }}" class="post-collection-tag">
         <span class="post-collection-tag-text">{{ second_collection_meta.title | default(value=second_collection) }}</span>
       </a>
       {% elif hidden_collection_count > 2 %}
@@ -99,8 +99,8 @@
         <span class="post-collection-popover" role="menu" data-collection-popover>
           {% for col in collections %}
           {% if not loop.first %}
-          {% set col_meta = get_section(path='c/' ~ col ~ '/_index.md') %}
-          <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="post-collection-popover-item" role="menuitem">{{ col_meta.title | default(value=col) }}</a>
+          {% set col_meta = get_section(path= col ~ '/_index.md') %}
+          <a href="{{ get_taxonomy_url(kind='collections', name=col) }}" class="post-collection-popover-item" role="menuitem">{{ col_meta.title | default(value=col) }}</a>
           {% endif %}
           {% endfor %}
         </span>

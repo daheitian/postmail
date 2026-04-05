@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ lang }}">
-  <title>{% if section is defined and section.title %}{{ section.title }} · {% elif term is defined and taxonomy.name == "c" %}{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} · {% elif term is defined and term.name %}{{ term.name }} · {% endif %}{{ config.title }}</title>
+  <title>{% if section is defined and section.title %}{{ section.title }} · {% elif term is defined and taxonomy.name == "collections" %}{% set term_meta = get_section(path= term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} · {% elif term is defined and term.name %}{{ term.name }} · {% endif %}{{ config.title }}</title>
   {% if config.description %}
   <subtitle>{{ config.description }}</subtitle>
   {% endif %}

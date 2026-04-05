@@ -1,6 +1,6 @@
 ---
 date: 2025-12-10T07:35:00.000Z
-updated: 2026-03-21T23:01:55.000Z
+updated: 2026-04-03T02:30:39.000Z
 slug: "from-seneca"
 taxonomies:
   c:

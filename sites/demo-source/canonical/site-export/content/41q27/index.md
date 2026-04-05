@@ -1,6 +1,6 @@
 ---
 date: 2025-09-27T08:15:00.000Z
-updated: 2026-03-21T23:01:44.000Z
+updated: 2026-04-03T02:30:27.000Z
 slug: "41q27"
 aliases:
   - "/the-potting-mix-guide-i-keep-rereading"
@@ -21,8 +21,8 @@ Repotted the balcony herbs before breakfast. Basil was dramatic. Mint did not ca
 
 <div data-jant-node="attachments">
 <figure data-jant-node="attachment" data-jant-kind="image">
-  <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/abcc2782dbf0-med_01km9a43p0e01sj7rxyns4fqey.webp","poster":null,"mimeType":"image/webp","originalName":"herbs-window.webp","size":13352,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
-  <img src="/media/abcc2782dbf0-med_01km9a43p0e01sj7rxyns4fqey.webp" alt="">
+  <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/479757a748f8-med_01kn8jtx8qenf98tm9ahxr48sw.webp","poster":null,"mimeType":"image/webp","originalName":"herbs-window.webp","size":13352,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
+  <img src="/media/479757a748f8-med_01kn8jtx8qenf98tm9ahxr48sw.webp" alt="">
 </figure>
 </div>
 
@@ -40,7 +40,7 @@ By late afternoon the basil was standing up again. I respect a fast recovery.
 
 <div data-jant-node="attachments">
 <figure data-jant-node="attachment" data-jant-kind="image">
-  <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/a9b1d1892795-med_01km9a46g5e01sj7tkp75bb6a8.webp","poster":null,"mimeType":"image/webp","originalName":"balcony-light.webp","size":15058,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
-  <img src="/media/a9b1d1892795-med_01km9a46g5e01sj7tkp75bb6a8.webp" alt="">
+  <script type="application/json" data-jant-meta>{"kind":"image","src":"/media/4b776e0e9619-med_01kn8jv0jdenf98tp6qr9zgjjc.webp","poster":null,"mimeType":"image/webp","originalName":"balcony-light.webp","size":15058,"width":1200,"height":900,"alt":null,"position":"a0","blurhash":null,"waveform":null,"summary":null,"chars":null}</script>
+  <img src="/media/4b776e0e9619-med_01kn8jv0jdenf98tp6qr9zgjjc.webp" alt="">
 </figure>
 </div>

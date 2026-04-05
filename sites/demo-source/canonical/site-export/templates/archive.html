@@ -36,10 +36,10 @@
               </a>
               <div class="archive-entry-meta">
                 <span class="archive-entry-format">{{ page.extra.format | default(value="note") }}</span>
-                {% set collections = page.taxonomies.c | default(value=[]) %}
+                {% set collections = page.taxonomies.collections | default(value=[]) %}
                 {% for col in collections %}
-                {% set col_meta = get_section(path='c/' ~ col ~ '/_index.md') %}
-                <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="archive-entry-tag">{{ col_meta.title | default(value=col) }}</a>
+                {% set col_meta = get_section(path= col ~ '/_index.md') %}
+                <a href="{{ get_taxonomy_url(kind='collections', name=col) }}" class="archive-entry-tag">{{ col_meta.title | default(value=col) }}</a>
                 {% endfor %}
               </div>
             </div>

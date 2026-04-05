@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% import "macros.html" as macros %}
 
-{% block title %}{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} &mdash; {{ config.title }}{% endblock %}
+{% block title %}{% set term_meta = get_section(path= term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} &mdash; {{ config.title }}{% endblock %}
 
 {% block content %}
-{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}
+{% set term_meta = get_section(path= term.name ~ '/_index.md') %}
 <div class="section-shell">
   <header class="section-header">
     <h1 class="section-title">{{ term_meta.title | default(value=term.name) }}</h1>

@@ -1,6 +1,6 @@
 ---
 date: 2026-03-09T17:15:00.000Z
-updated: 2026-03-21T23:02:13.000Z
+updated: 2026-04-03T02:30:59.000Z
 slug: "telk3"
 aliases:
   - "/openstreetmap-for-route-wandering"
