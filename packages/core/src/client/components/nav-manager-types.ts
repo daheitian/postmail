@@ -32,6 +32,7 @@ export interface NavManagerLabels {
   save: string;
   delete: string;
   remove: string;
+  confirmDeleteLink: string;
   orderSaved: string;
   labelRequired: string;
   saveFailed: string;
@@ -47,6 +48,7 @@ export interface NavManagerLabels {
   moreSection: string;
   moreEmptyHint: string;
   placementSaved: string;
+  cancel: string;
 }
 
 export interface NavManagerUpdateDetail {

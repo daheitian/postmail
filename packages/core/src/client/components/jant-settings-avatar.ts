@@ -13,6 +13,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { SettingsLabels } from "./settings-types.js";
+import { showConfirmDialog } from "../confirm.js";
 import { publicPath } from "../runtime-paths.js";
 
 export class JantSettingsAvatar extends LitElement {
@@ -71,6 +72,11 @@ export class JantSettingsAvatar extends LitElement {
     this._loading = false;
   }
 
+  /** Called by bridge on avatar remove error */
+  removeError() {
+    this._removeLoading = false;
+  }
+
   private _toggleDisplay() {
     this._showInHeader = !this._showInHeader;
     this._dirty = this._showInHeader !== this._origShowInHeader;
@@ -96,7 +102,15 @@ export class JantSettingsAvatar extends LitElement {
     );
   }
 
-  private _removeAvatar() {
+  private async _removeAvatar() {
+    const confirmed = await showConfirmDialog({
+      message: this.labels.confirmRemoveAvatar,
+      confirmLabel: this.labels.remove,
+      cancelLabel: this.labels.cancel,
+      tone: "danger",
+    });
+    if (!confirmed) return;
+
     if (this._removeLoading) return;
     this._removeLoading = true;
     this.dispatchEvent(
@@ -177,7 +191,7 @@ export class JantSettingsAvatar extends LitElement {
                       type="button"
                       class="btn-outline text-sm"
                       ?disabled=${this._removeLoading}
-                      @click=${this._removeAvatar}
+                      @click=${() => void this._removeAvatar()}
                     >
                       ${this.labels.remove}
                     </button>

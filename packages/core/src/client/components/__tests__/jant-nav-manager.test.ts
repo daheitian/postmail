@@ -2,10 +2,12 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { sortableCreateMock, sortableDestroyMock } = vi.hoisted(() => ({
-  sortableCreateMock: vi.fn(),
-  sortableDestroyMock: vi.fn(),
-}));
+const { sortableCreateMock, sortableDestroyMock, showConfirmDialogMock } =
+  vi.hoisted(() => ({
+    sortableCreateMock: vi.fn(),
+    sortableDestroyMock: vi.fn(),
+    showConfirmDialogMock: vi.fn(),
+  }));
 
 vi.mock("sortablejs", () => ({
   default: {
@@ -13,6 +15,10 @@ vi.mock("sortablejs", () => ({
       destroy: sortableDestroyMock,
     })),
   },
+}));
+
+vi.mock("../confirm.js", () => ({
+  showConfirmDialog: showConfirmDialogMock,
 }));
 
 import type { NavManagerItem, NavManagerLabels } from "../nav-manager-types.js";
@@ -31,6 +37,7 @@ const labels: NavManagerLabels = {
   save: "Save",
   delete: "Delete",
   remove: "Remove",
+  confirmDeleteLink: "Delete this navigation link?",
   orderSaved: "Navigation order updated.",
   labelRequired: "Add a label.",
   saveFailed: "Save failed.",
@@ -46,6 +53,7 @@ const labels: NavManagerLabels = {
   moreSection: "More",
   moreEmptyHint: "Move links here to hide them under More.",
   placementSaved: "Navigation placement updated.",
+  cancel: "Cancel",
 };
 
 const items: NavManagerItem[] = [
@@ -132,6 +140,8 @@ describe("JantNavManager", () => {
     document.body.innerHTML = "";
     sortableCreateMock.mockClear();
     sortableDestroyMock.mockClear();
+    showConfirmDialogMock.mockReset();
+    showConfirmDialogMock.mockResolvedValue(true);
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -237,5 +247,57 @@ describe("JantNavManager", () => {
 
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(popover.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("confirms before dispatching nav deletion", async () => {
+    const el = await createElement();
+    const deleteHandler = vi.fn();
+    el.addEventListener("jant:nav-delete", deleteHandler);
+
+    const toggle = requireElement(
+      el.querySelector<HTMLButtonElement>(".nav-item-toggle"),
+      "expected nav item toggle",
+    );
+    toggle.click();
+    await el.updateComplete;
+
+    const deleteButton = Array.from(el.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "Delete",
+    );
+    deleteButton?.click();
+    await Promise.resolve();
+
+    expect(showConfirmDialogMock).toHaveBeenCalledWith({
+      message: "Delete this navigation link?",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      tone: "danger",
+    });
+    expect(deleteHandler).toHaveBeenCalledTimes(1);
+    expect(deleteHandler.mock.calls[0]?.[0]).toMatchObject({
+      detail: { id: "nav-1" },
+    });
+  });
+
+  it("does not dispatch nav deletion when confirmation is canceled", async () => {
+    showConfirmDialogMock.mockResolvedValue(false);
+    const el = await createElement();
+    const deleteHandler = vi.fn();
+    el.addEventListener("jant:nav-delete", deleteHandler);
+
+    const toggle = requireElement(
+      el.querySelector<HTMLButtonElement>(".nav-item-toggle"),
+      "expected nav item toggle",
+    );
+    toggle.click();
+    await el.updateComplete;
+
+    const deleteButton = Array.from(el.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "Delete",
+    );
+    deleteButton?.click();
+    await Promise.resolve();
+
+    expect(deleteHandler).not.toHaveBeenCalled();
   });
 });

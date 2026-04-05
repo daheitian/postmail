@@ -4,6 +4,7 @@
 
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "../../../i18n/context.js";
+import { buildConfirmActionExpression } from "../../../lib/confirm.js";
 import { formatDate } from "../../../lib/time.js";
 import { toPublicPath } from "../../../lib/url.js";
 
@@ -72,6 +73,12 @@ function SessionRow({
   const { i18n } = useLingui();
   const device = parseDevice(session.userAgent);
   const icon = isMobileUA(session.userAgent) ? ICON_MOBILE : ICON_DESKTOP;
+  const revokeLabel = i18n._(
+    msg({
+      message: "Revoke",
+      comment: "@context: Button to revoke a session",
+    }),
+  );
 
   return (
     <div class="py-4 flex items-start gap-4 border-b border-border last:border-b-0">
@@ -123,14 +130,30 @@ function SessionRow({
         <button
           type="button"
           class="btn-sm-ghost text-destructive"
-          data-on:click__prevent={`@post('${toPublicPath(`/settings/account/sessions/${session.token}/revoke`, sitePathPrefix)}')`}
-        >
-          {i18n._(
-            msg({
-              message: "Revoke",
-              comment: "@context: Button to revoke a session",
-            }),
+          data-on:click__prevent={buildConfirmActionExpression(
+            `@post('${toPublicPath(`/settings/account/sessions/${session.token}/revoke`, sitePathPrefix)}')`,
+            {
+              message: i18n._(
+                msg({
+                  message:
+                    "Revoke this session? That device will need to sign in again.",
+                  comment:
+                    "@context: Confirm dialog for revoking an active session",
+                }),
+              ),
+              confirmLabel: revokeLabel,
+              cancelLabel: i18n._(
+                msg({
+                  message: "Cancel",
+                  comment:
+                    "@context: Button label to dismiss a dialog or action",
+                }),
+              ),
+              tone: "danger",
+            },
           )}
+        >
+          {revokeLabel}
         </button>
       )}
     </div>

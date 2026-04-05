@@ -19,6 +19,7 @@ import { renderPublicPage } from "../../lib/render.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { AdminBreadcrumb } from "../../ui/shared/AdminBreadcrumb.js";
 import { PagePagination } from "../../ui/shared/Pagination.js";
+import { buildConfirmActionExpression } from "../../lib/confirm.js";
 import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -154,6 +155,12 @@ function CustomUrlsListContent({
       comment: "@context: Button to delete custom URL",
     }),
   );
+  const cancelLabel = i18n._(
+    msg({
+      message: "Cancel",
+      comment: "@context: Button label to dismiss a dialog or action",
+    }),
+  );
 
   return (
     <>
@@ -242,10 +249,25 @@ function CustomUrlsListContent({
                           class="custom-url-menu-item custom-url-menu-item-danger"
                           role="menuitem"
                           data-custom-url-action="delete"
-                          data-on:click__prevent={`@post('${toPublicPath(
-                            `/settings/custom-urls/${cu.id}/delete`,
-                            sitePathPrefix,
-                          )}')`}
+                          data-on:click__prevent={buildConfirmActionExpression(
+                            `@post('${toPublicPath(
+                              `/settings/custom-urls/${cu.id}/delete`,
+                              sitePathPrefix,
+                            )}')`,
+                            {
+                              message: i18n._(
+                                msg({
+                                  message:
+                                    "Delete this custom URL? Visitors using it won't be redirected anymore.",
+                                  comment:
+                                    "@context: Confirm dialog for deleting a custom URL",
+                                }),
+                              ),
+                              confirmLabel: deleteLabel,
+                              cancelLabel,
+                              tone: "danger",
+                            },
+                          )}
                         >
                           {deleteLabel}
                         </button>

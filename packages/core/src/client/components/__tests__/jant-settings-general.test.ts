@@ -71,6 +71,7 @@ const labels: SettingsLabels = {
   blogAvatar: "Blog Avatar",
   uploadAvatar: "Upload Avatar",
   remove: "Remove",
+  confirmRemoveAvatar: "Remove this avatar?",
   avatarHelp: "For best results, upload a square image.",
   displayInHeader: "Display avatar in my site header",
   processing: "Processing...",

@@ -35,6 +35,13 @@ export function AvatarContent({
         comment: "@context: Button to remove the blog avatar",
       }),
     ),
+    confirmRemoveAvatar: i18n._(
+      msg({
+        message:
+          "Remove this avatar? Your favicon and header icon will go back to the default.",
+        comment: "@context: Confirm dialog for removing the blog avatar",
+      }),
+    ),
     avatarHelp: i18n._(
       msg({
         message:

@@ -114,6 +114,9 @@ document.addEventListener("jant:settings-save", async (e: Event) => {
 document.addEventListener("jant:avatar-remove", async (e: Event) => {
   const event = e as CustomEvent<AvatarRemoveDetail>;
   const { endpoint } = event.detail;
+  const avatarEl = document.querySelector<JantSettingsAvatar>(
+    "jant-settings-avatar",
+  );
 
   try {
     const res = await fetch(endpoint, {
@@ -138,6 +141,7 @@ document.addEventListener("jant:avatar-remove", async (e: Event) => {
     }
   } catch {
     showToast("Failed to remove avatar. Please try again.", "error");
+    avatarEl?.removeError();
   }
 });
 

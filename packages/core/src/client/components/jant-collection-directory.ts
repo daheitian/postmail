@@ -688,7 +688,59 @@ export class JantCollectionsManager extends LitElement {
     }
   }
 
-  #renderCollectionItem(item: CollectionManagerItem, sequence: number) {
+  #computeSequenceLabels(): string[] {
+    const isContentItem = (item: CollectionManagerItem) =>
+      (item.type === "collection" && item.collection) ||
+      (item.type === "link" && item.label && item.url);
+
+    const groupSizes: number[] = [];
+    let seenDivider = false;
+    let ungroupedCount = 0;
+    for (const item of this._items) {
+      if (item.type === "divider") {
+        seenDivider = true;
+        groupSizes.push(0);
+      } else if (isContentItem(item)) {
+        if (seenDivider) {
+          groupSizes[groupSizes.length - 1] += 1;
+        } else {
+          ungroupedCount += 1;
+        }
+      }
+    }
+
+    const hasGroups = groupSizes.length > 0;
+    const maxGroupIndex = Math.max(0, groupSizes.length - 1);
+    const allCounts = hasGroups ? groupSizes : [ungroupedCount];
+    const maxItemIndex = Math.max(0, ...allCounts.map((s) => s - 1));
+    const groupWidth = hasGroups ? String(maxGroupIndex).length : 0;
+    const itemWidth = String(maxItemIndex).length;
+
+    const labels: string[] = [];
+    let groupIndex = -1;
+    let itemIndex = 0;
+
+    for (const item of this._items) {
+      if (item.type === "divider") {
+        groupIndex += 1;
+        itemIndex = 0;
+        labels.push("");
+      } else if (isContentItem(item)) {
+        const groupPart =
+          groupWidth > 0
+            ? String(Math.max(0, groupIndex)).padStart(groupWidth, "0")
+            : "";
+        labels.push(groupPart + String(itemIndex).padStart(itemWidth, "0"));
+        itemIndex += 1;
+      } else {
+        labels.push("");
+      }
+    }
+
+    return labels;
+  }
+
+  #renderCollectionItem(item: CollectionManagerItem, sequence: string) {
     const collection = item.collection;
     if (!collection) return nothing;
 
@@ -697,7 +749,7 @@ export class JantCollectionsManager extends LitElement {
     const body = html`
       <div class="collection-directory-main">
         <span class="collection-directory-sequence" aria-hidden="true">
-          ${String(sequence).padStart(2, "0")}
+          ${sequence}
         </span>
         <div class="collection-directory-title-row">
           <a href=${collectionHref} class="collection-directory-title-link">
@@ -842,7 +894,7 @@ export class JantCollectionsManager extends LitElement {
     `;
   }
 
-  #renderLinkItem(item: CollectionManagerItem, sequence: number) {
+  #renderLinkItem(item: CollectionManagerItem, sequence: string) {
     if (!item.label || !item.url) return nothing;
 
     const linkHref = publicPath(item.url);
@@ -850,7 +902,7 @@ export class JantCollectionsManager extends LitElement {
     const body = html`
       <div class="collection-directory-main">
         <span class="collection-directory-sequence" aria-hidden="true">
-          ${String(sequence).padStart(2, "0")}
+          ${sequence}
         </span>
         <div class="collection-directory-title-row">
           <a
@@ -1239,15 +1291,13 @@ export class JantCollectionsManager extends LitElement {
         ? html`
             <div id="collections-manager-list" class="collection-directory">
               ${(() => {
-                let itemIndex = 0;
+                const labels = this.#computeSequenceLabels();
                 return this._items.map((item, index) => {
                   if (item.type === "collection") {
-                    itemIndex += 1;
-                    return this.#renderCollectionItem(item, itemIndex);
+                    return this.#renderCollectionItem(item, labels[index]);
                   }
                   if (item.type === "link") {
-                    itemIndex += 1;
-                    return this.#renderLinkItem(item, itemIndex);
+                    return this.#renderLinkItem(item, labels[index]);
                   }
                   return this.#renderDividerItem(item, index);
                 });

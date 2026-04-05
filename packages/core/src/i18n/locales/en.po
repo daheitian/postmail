@@ -479,6 +479,9 @@ msgstr "Buttons can stay steady, but links, thread markers, and subtle emphasis 
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel settings changes
@@ -486,14 +489,17 @@ msgstr "Buttons can stay steady, but links, thread markers, and subtle emphasis 
 #. @context: Close compose dialog
 #. @context: Confirm close action sheet - cancel and return to editor
 #: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/DangerZone.tsx
 #: src/ui/dash/settings/ApiTokensContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/SessionsContent.tsx
 #: src/ui/shared/collection-management-labels.ts
 #: src/ui/shared/collection-management-labels.ts
 msgid "Cancel"
@@ -909,6 +915,16 @@ msgstr "Delete this blog permanently? This cannot be undone."
 #: src/ui/shared/collection-management-labels.ts
 msgid "Delete this collection permanently? Posts inside won't be removed."
 msgstr "Delete this collection permanently? Posts inside won't be removed."
+
+#. @context: Confirm dialog for deleting a custom URL
+#: src/routes/dash/custom-urls.tsx
+msgid "Delete this custom URL? Visitors using it won't be redirected anymore."
+msgstr "Delete this custom URL? Visitors using it won't be redirected anymore."
+
+#. @context: Confirm dialog for deleting a custom navigation link
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Delete this navigation link? Visitors won't see it in your site header anymore."
+msgstr "Delete this navigation link? Visitors won't see it in your site header anymore."
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
 #: src/routes/auth/signin.tsx
@@ -2376,6 +2392,11 @@ msgstr "Remove Divider"
 msgid "Remove Link"
 msgstr "Remove Link"
 
+#. @context: Confirm dialog for removing the blog avatar
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Remove this avatar? Your favicon and header icon will go back to the default."
+msgstr "Remove this avatar? Your favicon and header icon will go back to the default."
+
 #. @context: Confirm dialog for deleting a custom collections link
 #: src/ui/shared/collection-management-labels.ts
 msgid "Remove this link from Collections? The destination won't change."
@@ -2431,6 +2452,11 @@ msgstr "Reverse logo"
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "Revoke"
 msgstr "Revoke"
+
+#. @context: Confirm dialog for revoking an active session
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Revoke this session? That device will need to sign in again."
+msgstr "Revoke this session? That device will need to sign in again."
 
 #. @context: Confirm dialog for revoking API token
 #: src/ui/dash/settings/ApiTokensContent.tsx

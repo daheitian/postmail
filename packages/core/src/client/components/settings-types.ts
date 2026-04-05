@@ -8,6 +8,7 @@ export interface SettingsLabels {
   blogAvatar: string;
   uploadAvatar: string;
   remove: string;
+  confirmRemoveAvatar: string;
   avatarHelp: string;
   displayInHeader: string;
   processing: string;

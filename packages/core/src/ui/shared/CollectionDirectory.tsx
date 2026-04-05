@@ -19,7 +19,74 @@ const hasDirectoryContent = (items: CollectionDirectoryItem[]) =>
       (item.type === "link" && item.label && item.url),
   );
 
-const formatSequence = (value: number) => String(value).padStart(2, "0");
+/**
+ * Compute group-aware sequence labels for directory items.
+ *
+ * Numbering scheme: each divider starts a new group (0-indexed). Items before
+ * the first divider belong to group 0. The label concatenates the group index
+ * and the item index within that group, each zero-padded to a width determined
+ * by the largest value across all groups (adaptive width).
+ *
+ * @example
+ *   // Two groups, ≤10 items each → "00 01 02 … 10 11 12"
+ *   // A group with 11+ items    → "000 001 … 010 … 100 101"
+ */
+const computeSequenceLabels = (items: CollectionDirectoryItem[]): string[] => {
+  const isContentItem = (item: CollectionDirectoryItem) =>
+    (item.type === "collection" && item.collection) ||
+    (item.type === "link" && item.label && item.url);
+
+  // First pass: determine group sizes.
+  // Each divider starts a new group. Items before the first divider are
+  // ungrouped and get a flat sequence (group width 0).
+  const groupSizes: number[] = [];
+  let seenDivider = false;
+  let ungroupedCount = 0;
+  for (const item of items) {
+    if (item.type === "divider") {
+      seenDivider = true;
+      groupSizes.push(0);
+    } else if (isContentItem(item)) {
+      if (seenDivider) {
+        groupSizes[groupSizes.length - 1] += 1;
+      } else {
+        ungroupedCount += 1;
+      }
+    }
+  }
+
+  const hasGroups = groupSizes.length > 0;
+  const maxGroupIndex = Math.max(0, groupSizes.length - 1);
+  const allCounts = hasGroups ? groupSizes : [ungroupedCount];
+  const maxItemIndex = Math.max(0, ...allCounts.map((s) => s - 1));
+  const groupWidth = hasGroups ? String(maxGroupIndex).length : 0;
+  const itemWidth = String(maxItemIndex).length;
+
+  // Second pass: assign labels
+  const labels: string[] = [];
+  let groupIndex = -1;
+  let itemIndex = 0;
+
+  for (const item of items) {
+    if (item.type === "divider") {
+      groupIndex += 1;
+      itemIndex = 0;
+      labels.push("");
+    } else if (isContentItem(item)) {
+      const groupPart =
+        groupWidth > 0
+          ? String(Math.max(0, groupIndex)).padStart(groupWidth, "0")
+          : "";
+      const label = groupPart + String(itemIndex).padStart(itemWidth, "0");
+      labels.push(label);
+      itemIndex += 1;
+    } else {
+      labels.push("");
+    }
+  }
+
+  return labels;
+};
 
 export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
   items,
@@ -43,7 +110,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
     );
   }
 
-  let itemIndex = 0;
+  const sequenceLabels = computeSequenceLabels(items);
 
   return (
     <div class="collection-directory">
@@ -85,8 +152,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
         }
 
         if (item.type === "link" && item.label && item.url) {
-          itemIndex += 1;
-          const sequence = formatSequence(itemIndex);
+          const sequence = sequenceLabels[index];
 
           return (
             <div
@@ -138,8 +204,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
 
         const collection = item.collection;
         if (!collection) return null;
-        itemIndex += 1;
-        const sequence = formatSequence(itemIndex);
+        const sequence = sequenceLabels[index];
 
         return (
           <div key={item.id} class="collection-directory-item">

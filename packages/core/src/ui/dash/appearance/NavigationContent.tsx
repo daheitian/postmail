@@ -154,6 +154,14 @@ export function NavigationContent({
         comment: "@context: Remove system item from navigation",
       }),
     ),
+    confirmDeleteLink: i18n._(
+      msg({
+        message:
+          "Delete this navigation link? Visitors won't see it in your site header anymore.",
+        comment:
+          "@context: Confirm dialog for deleting a custom navigation link",
+      }),
+    ),
     orderSaved: i18n._(
       msg({
         message: "Navigation order updated.",
@@ -234,6 +242,12 @@ export function NavigationContent({
       msg({
         message: "Navigation placement updated.",
         comment: "@context: Toast after moving nav item between header/more",
+      }),
+    ),
+    cancel: i18n._(
+      msg({
+        message: "Cancel",
+        comment: "@context: Button label to dismiss a dialog or action",
       }),
     ),
     labelAndUrlRequired: i18n._(

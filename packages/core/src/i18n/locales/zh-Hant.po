@@ -479,6 +479,9 @@ msgstr "按鈕可以保持穩定，但連結、貼文串標記與細微的強調
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel settings changes
@@ -486,14 +489,17 @@ msgstr "按鈕可以保持穩定，但連結、貼文串標記與細微的強調
 #. @context: Close compose dialog
 #. @context: Confirm close action sheet - cancel and return to editor
 #: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/DangerZone.tsx
 #: src/ui/dash/settings/ApiTokensContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/SessionsContent.tsx
 #: src/ui/shared/collection-management-labels.ts
 #: src/ui/shared/collection-management-labels.ts
 msgid "Cancel"
@@ -909,6 +915,16 @@ msgstr "永久刪除此部落格？ 此操作無法復原。"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Delete this collection permanently? Posts inside won't be removed."
 msgstr "要永久刪除此選集嗎？裡面的貼文不會被刪除。"
+
+#. @context: Confirm dialog for deleting a custom URL
+#: src/routes/dash/custom-urls.tsx
+msgid "Delete this custom URL? Visitors using it won't be redirected anymore."
+msgstr ""
+
+#. @context: Confirm dialog for deleting a custom navigation link
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Delete this navigation link? Visitors won't see it in your site header anymore."
+msgstr ""
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
 #: src/routes/auth/signin.tsx
@@ -2376,6 +2392,11 @@ msgstr "移除分隔線"
 msgid "Remove Link"
 msgstr "移除連結"
 
+#. @context: Confirm dialog for removing the blog avatar
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Remove this avatar? Your favicon and header icon will go back to the default."
+msgstr ""
+
 #. @context: Confirm dialog for deleting a custom collections link
 #: src/ui/shared/collection-management-labels.ts
 msgid "Remove this link from Collections? The destination won't change."
@@ -2431,6 +2452,11 @@ msgstr "反白標誌"
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "Revoke"
 msgstr "撤銷"
+
+#. @context: Confirm dialog for revoking an active session
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Revoke this session? That device will need to sign in again."
+msgstr ""
 
 #. @context: Confirm dialog for revoking API token
 #: src/ui/dash/settings/ApiTokensContent.tsx

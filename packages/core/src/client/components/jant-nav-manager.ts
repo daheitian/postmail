@@ -24,6 +24,7 @@ import {
   responsiveSortableOptions,
   revertSortableDomMove,
 } from "../sortable-list.js";
+import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
 import type {
@@ -334,7 +335,15 @@ export class JantNavManager extends LitElement {
     );
   }
 
-  #handleDelete(item: NavManagerItem) {
+  async #handleDelete(item: NavManagerItem) {
+    const confirmed = await showConfirmDialog({
+      message: this.labels.confirmDeleteLink,
+      confirmLabel: this.labels.delete,
+      cancelLabel: this.labels.cancel,
+      tone: "danger",
+    });
+    if (!confirmed) return;
+
     this.dispatchEvent(
       new CustomEvent<NavManagerDeleteDetail>("jant:nav-delete", {
         bubbles: true,
@@ -595,7 +604,7 @@ export class JantNavManager extends LitElement {
             <button
               type="button"
               class="btn-sm-ghost text-destructive"
-              @click=${() => this.#handleDelete(item)}
+              @click=${() => void this.#handleDelete(item)}
             >
               ${this.labels.delete}
             </button>

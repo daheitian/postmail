@@ -1,6 +1,15 @@
 // @vitest-environment happy-dom
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+
+const { showConfirmDialogMock } = vi.hoisted(() => ({
+  showConfirmDialogMock: vi.fn(),
+}));
+
+vi.mock("../confirm.js", () => ({
+  showConfirmDialog: showConfirmDialogMock,
+}));
+
 import type {
   AvatarRemoveDetail,
   SettingsLabels,
@@ -23,6 +32,7 @@ const labels: SettingsLabels = {
   blogAvatar: "Blog Avatar",
   uploadAvatar: "Upload Avatar",
   remove: "Remove",
+  confirmRemoveAvatar: "Remove this avatar?",
   avatarHelp: "For best results, upload a square image.",
   displayInHeader: "Display avatar in my site header",
   processing: "Processing...",
@@ -100,6 +110,8 @@ function findCancelBtn(el: HTMLElement): HTMLButtonElement | null {
 describe("JantSettingsAvatar", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    showConfirmDialogMock.mockReset();
+    showConfirmDialogMock.mockResolvedValue(true);
   });
 
   it("renders card with Blog Avatar heading", async () => {
@@ -222,10 +234,34 @@ describe("JantSettingsAvatar", () => {
       b.textContent?.includes("Remove"),
     );
     removeBtn?.click();
+    await Promise.resolve();
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as AvatarRemoveDetail;
     expect(d.endpoint).toBe("/settings/avatar/remove");
+    expect(showConfirmDialogMock).toHaveBeenCalledWith({
+      message: "Remove this avatar?",
+      confirmLabel: "Remove",
+      cancelLabel: "Cancel",
+      tone: "danger",
+    });
+  });
+
+  it("does not dispatch jant:avatar-remove when confirmation is canceled", async () => {
+    showConfirmDialogMock.mockResolvedValue(false);
+    const el = await createElement("https://example.com/avatar.png");
+
+    const handler = vi.fn();
+    el.addEventListener("jant:avatar-remove", handler);
+
+    const buttons = el.querySelectorAll("button");
+    const removeBtn = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Remove"),
+    );
+    removeBtn?.click();
+    await Promise.resolve();
+
+    expect(handler).not.toHaveBeenCalled();
   });
 
   it("saved() resets dirty state", async () => {
