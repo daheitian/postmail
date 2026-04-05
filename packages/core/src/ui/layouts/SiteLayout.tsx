@@ -55,11 +55,27 @@ function SearchIcon({ class: className = "" }: { class?: string }) {
   );
 }
 
-function HeaderLink({ link, label }: { link: NavItemView; label: string }) {
+function HeaderLink({
+  link,
+  label,
+  className = "",
+}: {
+  link: NavItemView;
+  label: string;
+  className?: string;
+}) {
+  const classes = [
+    "site-header-link",
+    className,
+    link.isActive ? "site-header-link-active" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <a
       href={link.url}
-      class={`site-header-link ${link.isActive ? "site-header-link-active" : ""}`}
+      class={classes}
       {...(link.isExternal
         ? { target: "_blank", rel: "noopener noreferrer" }
         : {})}
@@ -114,6 +130,19 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     (l) => l.placement === "header" || !l.placement,
   );
   const moreLinks = linksWithLabels.filter((l) => l.placement === "more");
+  const primaryHeaderLinks = headerLinks.slice(0, 2);
+  const overflowHeaderLinks = headerLinks.slice(2);
+  const hasResponsiveOverflow = overflowHeaderLinks.length > 0;
+  const hasSupplementalMoreLinks = moreLinks.length > 0;
+  const showMoreMenu = hasResponsiveOverflow || hasSupplementalMoreLinks;
+  const moreMenuClass = [
+    "site-header-more",
+    hasResponsiveOverflow && !hasSupplementalMoreLinks
+      ? "site-header-more-responsive-only"
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const isHomePage =
     currentPath === toPublicPath("/", sitePathPrefix) ||
@@ -138,15 +167,24 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                 {siteName}
               </a>
               <nav class="site-header-nav" aria-label="Primary">
-                {headerLinks.map((link) => (
+                {primaryHeaderLinks.map((link) => (
                   <HeaderLink
                     key={link.id}
                     link={link}
                     label={link.displayLabel}
+                    className="site-header-link-primary"
                   />
                 ))}
-                {moreLinks.length > 0 && (
-                  <div class="site-header-more">
+                {overflowHeaderLinks.map((link) => (
+                  <HeaderLink
+                    key={link.id}
+                    link={link}
+                    label={link.displayLabel}
+                    className="site-header-link-overflow"
+                  />
+                ))}
+                {showMoreMenu && (
+                  <div class={moreMenuClass}>
                     <button
                       type="button"
                       class="site-header-more-btn"
@@ -177,11 +215,30 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                       data-align="start"
                       aria-hidden="true"
                     >
+                      {overflowHeaderLinks.map((link) => (
+                        <a
+                          key={link.id}
+                          href={link.url}
+                          class={`site-header-more-link site-header-more-link-responsive ${link.isActive ? "site-header-more-link-active" : ""}`}
+                          {...(link.isExternal
+                            ? {
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                              }
+                            : {})}
+                        >
+                          {link.displayLabel}
+                          {link.isExternal && <ExternalLinkIcon />}
+                        </a>
+                      ))}
+                      {hasResponsiveOverflow && hasSupplementalMoreLinks && (
+                        <div class="site-header-more-divider site-header-more-divider-responsive" />
+                      )}
                       {moreLinks.map((link) => (
                         <a
                           key={link.id}
                           href={link.url}
-                          class={`site-header-more-link ${link.isActive ? "site-header-more-link-active" : ""}`}
+                          class={`site-header-more-link site-header-more-link-supplemental ${link.isActive ? "site-header-more-link-active" : ""}`}
                           {...(link.isExternal
                             ? {
                                 target: "_blank",

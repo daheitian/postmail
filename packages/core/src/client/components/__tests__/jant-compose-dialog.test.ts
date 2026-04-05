@@ -2162,6 +2162,7 @@ describe("JantComposeDialog", () => {
 
     expect(refreshed).toBe(true);
     expect(fetchSpy).toHaveBeenCalledWith("/api/collections?view=compose", {
+      cache: "no-store",
       headers: { Accept: "application/json" },
     });
     expect(el.collections).toEqual([

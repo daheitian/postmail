@@ -97,7 +97,7 @@ describe("PostFooter", () => {
     expect(html).toContain("and 2 more");
     expect(html).toContain("data-collection-popover-trigger");
     expect(html).toContain('class="post-collection-tag-text"');
-    expect(html).not.toContain('class="post-collection-primary-icon"');
+    expect(html).toContain('class="post-collection-primary-icon"');
     expect(html.match(/class="post-collection-popover-item"/g)).toHaveLength(2);
     expect(html.match(/href="\/c\/notes"/g)).toHaveLength(1);
     expect(html.match(/href="\/c\/writing"/g)).toHaveLength(1);

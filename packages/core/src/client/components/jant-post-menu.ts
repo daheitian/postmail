@@ -20,6 +20,7 @@ import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
 import {
   applyItemOrder,
+  filterCollectionsBySearch,
   getSelectedFirstOrder,
 } from "../collection-picker-order.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
@@ -551,7 +552,10 @@ export class JantPostMenu extends LitElement {
 
     try {
       const [collectionsRes, postRes] = await Promise.all([
-        fetch("/api/collections"),
+        fetch("/api/collections?view=compose", {
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        }),
         fetch(`/api/posts/${postId}`),
       ]);
 
@@ -604,6 +608,7 @@ export class JantPostMenu extends LitElement {
       })
         .then((res) => {
           if (!res.ok) throw new Error();
+          return this.#refreshComposeCollections();
         })
         .catch(() => {
           // Revert: re-add
@@ -624,9 +629,10 @@ export class JantPostMenu extends LitElement {
         .then((res) => {
           if (!res.ok) {
             // 409 means already added — not an error, keep optimistic state
-            if (res.status === 409) return;
+            if (res.status === 409) return this.#refreshComposeCollections();
             throw new Error();
           }
+          return this.#refreshComposeCollections();
         })
         .catch(() => {
           // Revert: remove
@@ -711,6 +717,7 @@ export class JantPostMenu extends LitElement {
         this._postCollectionIds = [...this._postCollectionIds, created.id];
       }
 
+      await this.#refreshComposeCollections();
       this.#collectionsDirty = true;
       this.#closeAddCollectionPanel();
       showToast(
@@ -741,6 +748,13 @@ export class JantPostMenu extends LitElement {
       | import("./jant-compose-dialog.js").JantComposeDialog
       | null;
     return composeEl?.labels?.addCollection ?? "Add Collection";
+  }
+
+  async #refreshComposeCollections() {
+    const composeEl = document.querySelector("jant-compose-dialog") as {
+      refreshCollections?: () => Promise<boolean>;
+    } | null;
+    await composeEl?.refreshCollections?.();
   }
 
   #getVisibilityLabel(visibility: string) {
@@ -903,14 +917,11 @@ export class JantPostMenu extends LitElement {
       collections,
       this.#collectionPickerOrder,
     );
-    const search = this._collectionSearch.toLowerCase();
-    const filtered = search
-      ? orderedCollections.filter(
-          (c) =>
-            c.title.toLowerCase().includes(search) ||
-            c.slug.toLowerCase().includes(search),
-        )
-      : orderedCollections;
+    const hasSearch = this._collectionSearch.trim().length > 0;
+    const filtered = filterCollectionsBySearch(
+      orderedCollections,
+      this._collectionSearch,
+    );
 
     return html`
       <div
@@ -1033,7 +1044,9 @@ export class JantPostMenu extends LitElement {
                   `;
                 })
               : html`<div class="post-menu-picker-empty">
-                  ${search ? "No matching collections" : "No collections yet"}
+                  ${hasSearch
+                    ? "No matching collections"
+                    : "No collections yet"}
                 </div>`}
         </div>
         <div class="post-menu-picker-footer">

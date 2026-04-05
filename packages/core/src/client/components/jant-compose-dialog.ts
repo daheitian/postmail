@@ -31,6 +31,7 @@ import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
 import {
   applyItemOrder,
+  filterCollectionsBySearch,
   getSelectedFirstOrder,
 } from "../collection-picker-order.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
@@ -756,6 +757,7 @@ export class JantComposeDialog extends LitElement {
   async refreshCollections(): Promise<boolean> {
     try {
       const res = await fetch("/api/collections?view=compose", {
+        cache: "no-store",
         headers: { Accept: "application/json" },
       });
       if (!res.ok) return false;
@@ -3096,20 +3098,17 @@ export class JantComposeDialog extends LitElement {
       collections,
       this._collectionPickerOrder,
     );
-    const search = this._collectionSearch.toLowerCase();
-    const filtered = search
-      ? orderedCollections.filter(
-          (c) =>
-            c.title.toLowerCase().includes(search) ||
-            (c.slug ?? "").toLowerCase().includes(search),
-        )
-      : orderedCollections;
+    const hasSearch = this._collectionSearch.trim().length > 0;
+    const filtered = filterCollectionsBySearch(
+      orderedCollections,
+      this._collectionSearch,
+    );
     const selectedCount = this._collectionIds.length;
     const selectedLabel =
       selectedCount > 0
         ? this._selectedCollectionLabel(collections)
         : this.labels.collection;
-    const emptyLabel = search
+    const emptyLabel = hasSearch
       ? this.labels.noCollections
       : this.labels.emptyCollections;
 

@@ -48,6 +48,7 @@ collectionsApiRoutes.get("/", async (c) => {
   const query = parseValidated(ListCollectionsQuerySchema, c.req.query());
 
   if (query.view === "compose") {
+    c.header("Cache-Control", "no-store");
     const collections = await c.var.services.collections.listByRecentActivity();
     return c.json({
       collections,

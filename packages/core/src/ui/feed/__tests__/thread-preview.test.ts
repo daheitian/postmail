@@ -140,7 +140,7 @@ describe("getThreadPreviewState", () => {
     );
   });
 
-  it("renders full article bodies in thread previews", () => {
+  it("renders article summaries in thread previews", () => {
     const rootPost = createPostView({
       title: "Threaded article",
       bodyHtml: '<p>Intro</p><span id="continue"></span><p>Rest</p>',
@@ -166,14 +166,14 @@ describe("getThreadPreviewState", () => {
       }),
     );
 
-    expect(html).toContain("<p>Rest</p>");
-    expect(html).toContain("<p>Full reply body</p>");
-    expect(html).not.toContain("Reply summary");
+    expect(html).toContain("<p>Intro</p>");
+    expect(html).toContain("<p>Reply summary</p>");
+    expect(html).not.toContain("<p>Rest</p>");
+    expect(html).not.toContain("<p>Full reply body</p>");
     expect(html).not.toContain('id="continue"');
-    expect(html).not.toContain("feed-continue-link");
   });
 
-  it("renders full article bodies in curated thread previews", () => {
+  it("renders article summaries in curated thread previews", () => {
     const articlePost = createPostView({
       title: "Curated article",
       bodyHtml: '<p>Lead</p><span id="continue"></span><p>Body</p>',
@@ -197,8 +197,8 @@ describe("getThreadPreviewState", () => {
       }),
     );
 
-    expect(html).toContain("<p>Body</p>");
+    expect(html).toContain("<p>Lead</p>");
+    expect(html).not.toContain("<p>Body</p>");
     expect(html).not.toContain('id="continue"');
-    expect(html).not.toContain("feed-continue-link");
   });
 });

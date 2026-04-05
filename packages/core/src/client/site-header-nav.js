@@ -2,7 +2,7 @@
  * Site Header — Mobile Drawer + More Dropdown
  *
  * Toggles a slide-in drawer on mobile for navigation and search.
- * Manages the "More" dropdown popover on desktop.
+ * Manages the "More" dropdown popover.
  */
 
 function initMoreDropdown(root) {
@@ -55,107 +55,14 @@ function initMoreDropdown(root) {
   });
 }
 
-function setHeaderSearchMode(headerRow, mode) {
-  if (mode === "full") {
-    delete headerRow.dataset.searchMode;
-    return;
-  }
-
-  headerRow.dataset.searchMode = mode;
-}
-
-function setHeaderNavMode(headerRow, mode) {
-  if (mode === "desktop") {
-    delete headerRow.dataset.navMode;
-    return;
-  }
-
-  headerRow.dataset.navMode = mode;
-}
-
-function initResponsiveHeader(root, onExitCollapsedMode = () => {}) {
-  const headerRow = root.querySelector(".site-header-top");
-  const searchForm = root.querySelector(".site-header-search-form");
-  const logo = root.querySelector(".site-logo");
-
-  if (!headerRow || !searchForm) return;
-  if (headerRow.dataset.searchResponsiveInitialized === "true") return;
-  headerRow.dataset.searchResponsiveInitialized = "true";
-
-  let previousNavMode = "desktop";
-  const clearSsrHeaderMode = () => {
-    document.documentElement.removeAttribute("data-header-ssr-mode");
-  };
-
-  const headerFits = () => headerRow.scrollWidth <= headerRow.clientWidth + 1;
-  const logoIsClipped = () =>
-    logo instanceof HTMLElement && logo.scrollWidth > logo.clientWidth + 1;
-
-  const syncHeaderMode = () => {
-    setHeaderNavMode(headerRow, "desktop");
-
-    setHeaderSearchMode(headerRow, "full");
-    if (headerFits() && !logoIsClipped()) {
-      if (previousNavMode === "collapsed") {
-        onExitCollapsedMode();
-      }
-      previousNavMode = "desktop";
-      clearSsrHeaderMode();
-      return;
-    }
-
-    const prefersDirectButton =
-      headerFits() && logoIsClipped() && headerRow.clientWidth <= 520;
-    const fallbackModes = prefersDirectButton
-      ? ["button"]
-      : ["compact", "button"];
-
-    for (const mode of fallbackModes) {
-      setHeaderSearchMode(headerRow, mode);
-      if (headerFits() && !logoIsClipped()) {
-        if (previousNavMode === "collapsed") {
-          onExitCollapsedMode();
-        }
-        previousNavMode = "desktop";
-        clearSsrHeaderMode();
-        return;
-      }
-    }
-
-    setHeaderSearchMode(headerRow, "full");
-    setHeaderNavMode(headerRow, "collapsed");
-    previousNavMode = "collapsed";
-    clearSsrHeaderMode();
-  };
-
-  syncHeaderMode();
-
-  if ("ResizeObserver" in globalThis) {
-    const observer = new globalThis.ResizeObserver(() => {
-      syncHeaderMode();
-    });
-    observer.observe(headerRow);
-  }
-
-  if (document.fonts?.ready) {
-    document.fonts.ready.then(() => {
-      syncHeaderMode();
-    });
-  }
-}
-
 export function initSiteHeaderNav(root = document) {
   const hamburger = root.querySelector(".site-header-hamburger");
   const drawer = root.querySelector("#site-nav-drawer");
   const backdrop = root.querySelector(".site-nav-drawer-backdrop");
   const closeBtn = drawer?.querySelector(".site-nav-drawer-close");
-  let closeDrawerIfOpen = () => {};
 
-  // --- More dropdown (desktop) ---
+  // --- More dropdown ---
   initMoreDropdown(root);
-  initResponsiveHeader(root, () => {
-    closeDrawerIfOpen();
-  });
 
   // --- Mobile drawer ---
   if (!hamburger || !drawer || !backdrop) return;
@@ -193,12 +100,6 @@ export function initSiteHeaderNav(root = document) {
 
     if (returnFocus) hamburger.focus();
   }
-
-  closeDrawerIfOpen = () => {
-    if (hamburger.getAttribute("aria-expanded") === "true") {
-      close(false);
-    }
-  };
 
   hamburger.addEventListener("click", () => {
     if (hamburger.getAttribute("aria-expanded") === "true") {

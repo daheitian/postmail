@@ -94,6 +94,7 @@ describe("Collections API Routes", () => {
 
         const res = await app.request("/api/collections?view=compose");
         expect(res.status).toBe(200);
+        expect(res.headers.get("cache-control")).toBe("no-store");
 
         const body = await res.json();
         expect(body.directoryItems).toEqual([]);

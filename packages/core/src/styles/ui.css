@@ -240,18 +240,6 @@
     opacity: 0.55;
   }
 
-  .site-header-top[data-search-mode="compact"] {
-    --site-header-search-width: clamp(10rem, 18vw, 13rem);
-  }
-
-  .site-header-top[data-search-mode="button"] .site-header-search-form {
-    display: none;
-  }
-
-  .site-header-top[data-search-mode="button"] .site-header-search-link {
-    display: inline-flex;
-  }
-
   /* --- Hamburger (mobile only) -------------------------------------------- */
 
   .site-header-hamburger {
@@ -508,39 +496,6 @@
     overflow: hidden;
   }
 
-  /* --- Header responsive: hide desktop nav, show hamburger when needed --- */
-
-  .site-header-top[data-nav-mode="collapsed"] .site-header-search-slot,
-  .site-header-top[data-nav-mode="collapsed"] .site-header-nav {
-    display: none;
-  }
-
-  .site-header-top[data-nav-mode="collapsed"] .site-header-hamburger {
-    display: flex;
-  }
-
-  .site-header-top[data-nav-mode="collapsed"] .site-header-right {
-    margin-left: auto;
-  }
-
-  @media (max-width: 480px) {
-    .site-header-search-slot {
-      display: none;
-    }
-
-    .site-header-nav {
-      display: none;
-    }
-
-    .site-header-hamburger {
-      display: flex;
-    }
-
-    .site-header-right {
-      margin-left: auto;
-    }
-  }
-
   .p-name {
     font-family: var(--font-heading);
   }
@@ -630,6 +585,10 @@
     position: relative;
     display: inline-flex;
     align-items: center;
+  }
+
+  .site-header-more-responsive-only {
+    display: none;
   }
 
   .site-header-more-btn {
@@ -727,6 +686,64 @@
       var(--site-text-primary) 84%,
       var(--site-text-secondary)
     );
+  }
+
+  .site-header-more-link-responsive,
+  .site-header-more-divider-responsive {
+    display: none;
+  }
+
+  .site-header-more-divider {
+    height: 0;
+    margin: 0.35rem 0.75rem;
+    border-top: 0.5px solid
+      color-mix(in srgb, var(--site-divider) 60%, transparent);
+  }
+
+  /* --- Header responsive -------------------------------------------------- */
+
+  @media (max-width: 1200px) {
+    .site-header-search-form {
+      display: none;
+    }
+
+    .site-header-search-link {
+      display: inline-flex;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .site-header-link-overflow {
+      display: none;
+    }
+
+    .site-header-more-responsive-only {
+      display: inline-flex;
+    }
+
+    .site-header-more-link-responsive {
+      display: flex;
+    }
+
+    .site-header-more-divider-responsive {
+      display: block;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .site-header-nav,
+    .site-header-search-slot,
+    .site-header-more {
+      display: none;
+    }
+
+    .site-header-hamburger {
+      display: flex;
+    }
+
+    .site-header-right {
+      margin-left: auto;
+    }
   }
 
   /* --- Browse filter tabs ------------------------------------------------- */

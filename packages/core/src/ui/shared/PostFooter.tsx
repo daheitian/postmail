@@ -25,9 +25,8 @@ interface PostFooterProps {
 
 export const CompactCollectionTags: FC<{
   collections: CollectionTagView[];
-  detail?: boolean;
   showSeparator?: boolean;
-}> = ({ collections, detail = false, showSeparator = true }) => {
+}> = ({ collections, showSeparator = true }) => {
   const { i18n } = useLingui();
 
   if (collections.length === 0) return null;
@@ -45,22 +44,20 @@ export const CompactCollectionTags: FC<{
         </span>
       )}
       <a href={first.url} class="post-collection-tag">
-        {detail && (
-          <span class="post-collection-primary-icon" aria-hidden="true">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.35"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <rect x="3" y="5.05" width="10" height="8.15" rx="2.2" />
-              <path d="M5.1 5.05V4.2a1.1 1.1 0 0 1 1.1-1.1h3.6a1.1 1.1 0 0 1 1.1 1.1v.85" />
-            </svg>
-          </span>
-        )}
+        <span class="post-collection-primary-icon" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.35"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="5.05" width="10" height="8.15" rx="2.2" />
+            <path d="M5.1 5.05V4.2a1.1 1.1 0 0 1 1.1-1.1h3.6a1.1 1.1 0 0 1 1.1 1.1v.85" />
+          </svg>
+        </span>
         <span class="post-collection-tag-text">{first.title}</span>
       </a>
       {second && (
@@ -265,7 +262,6 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
         )}
         <CompactCollectionTags
           collections={post.collections}
-          detail={detail}
           showSeparator={showCollectionSeparator}
         />
       </div>

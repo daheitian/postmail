@@ -129,7 +129,7 @@ describe("JantPostMenu", () => {
       vi.fn((input: unknown, init?: globalThis.RequestInit) => {
         const url = String(input);
         const method = init?.method ?? "GET";
-        if (url === "/api/collections") {
+        if (url === "/api/collections?view=compose") {
           return Promise.resolve(
             jsonResponse({
               collections: [
@@ -290,14 +290,12 @@ describe("JantPostMenu", () => {
 
   it("puts selected collections first on open and keeps the order stable while toggling", async () => {
     const selectedIds = ["collection-2"];
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (input: unknown, init?: globalThis.RequestInit) => {
+    const fetchMock = vi.fn(
+      async (input: unknown, init?: globalThis.RequestInit) => {
         const url = String(input);
         const method = init?.method ?? "GET";
 
-        if (url === "/api/collections" && method === "GET") {
+        if (url === "/api/collections?view=compose" && method === "GET") {
           return jsonResponse({
             collections: [
               { id: "collection-1", title: "Books", slug: "books" },
@@ -329,8 +327,9 @@ describe("JantPostMenu", () => {
         }
 
         throw new Error(`Unexpected fetch in test: ${url}`);
-      }),
+      },
     );
+    vi.stubGlobal("fetch", fetchMock);
 
     const { menu, trigger } = await createMenu();
 
@@ -388,6 +387,10 @@ describe("JantPostMenu", () => {
         "Travel",
         "Books",
       ]);
+    });
+    expect(fetchMock).toHaveBeenCalledWith("/api/collections?view=compose", {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
     });
   });
 

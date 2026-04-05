@@ -18,7 +18,6 @@ import {
 
 const ROOT_CONTEXT_DISPLAY = {
   hideRating: true,
-  showFullBody: true,
   footer: {
     hideReply: true,
   },
@@ -26,15 +25,12 @@ const ROOT_CONTEXT_DISPLAY = {
 
 const PARENT_CONTEXT_DISPLAY = {
   hideRating: true,
-  showFullBody: true,
   footer: {
     hideReply: true,
   },
 } as const;
 
-const HERO_DISPLAY = {
-  showFullBody: true,
-} as const;
+const HERO_DISPLAY = {} as const;
 
 export const ThreadPreview: FC<ThreadPreviewProps> = ({
   rootPost,
