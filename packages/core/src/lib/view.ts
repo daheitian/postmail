@@ -24,7 +24,9 @@ import type {
   NavItemPlacement,
   AppConfig,
   FeedKind,
+  SystemNavKey,
 } from "../types.js";
+import { SYSTEM_NAV_KEYS } from "../types/constants.js";
 import {
   toISOString,
   formatDate,
@@ -389,7 +391,15 @@ export function toNavItemView(
   let url = item.url;
   let label = item.label;
 
-  if (item.type === "system") {
+  if (item.type === "system" && item.systemKey) {
+    // All system nav URLs are resolved from the canonical constant,
+    // so stale DB values (e.g. old "/c") are always corrected at render time.
+    const config = SYSTEM_NAV_KEYS[item.systemKey as SystemNavKey];
+    if (config) {
+      url = config.url;
+    }
+
+    // Special overrides for conditional system URLs
     if (item.systemKey === "latest") {
       url = homeDefaultView === "latest" ? "/" : "/latest";
     }
@@ -398,7 +408,6 @@ export function toNavItemView(
       url = homeDefaultView === "featured" ? "/" : "/featured";
     }
 
-    // System settings item: resolve URL and label based on auth.
     if (item.systemKey === "settings") {
       url = isAuthenticated ? "/settings" : "/signin";
       if (!isAuthenticated) {

@@ -641,6 +641,21 @@ describe("toNavItemView", () => {
     expect(view.url).toBe("/");
     expect(view.isActive).toBe(true);
   });
+
+  it("corrects stale DB URL for system nav items", () => {
+    const view = toNavItemView(
+      makeNavItem({
+        type: "system",
+        systemKey: "collections",
+        label: "Collections",
+        url: "/c",
+      }),
+      "/collections",
+    );
+
+    expect(view.url).toBe("/collections");
+    expect(view.isActive).toBe(true);
+  });
 });
 
 describe("toNavItemViews", () => {
