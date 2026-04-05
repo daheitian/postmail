@@ -48,7 +48,11 @@ const computeSequenceLabels = (items: CollectionDirectoryItem[]): string[] => {
       groupSizes.push(0);
     } else if (isContentItem(item)) {
       if (seenDivider) {
-        groupSizes[groupSizes.length - 1] += 1;
+        const lastGroupIndex = groupSizes.length - 1;
+        const lastGroupSize = groupSizes[lastGroupIndex];
+        if (lastGroupSize !== undefined) {
+          groupSizes[lastGroupIndex] = lastGroupSize + 1;
+        }
       } else {
         ungroupedCount += 1;
       }

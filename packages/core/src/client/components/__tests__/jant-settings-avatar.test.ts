@@ -1,14 +1,6 @@
 // @vitest-environment happy-dom
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
-
-const { showConfirmDialogMock } = vi.hoisted(() => ({
-  showConfirmDialogMock: vi.fn(),
-}));
-
-vi.mock("../confirm.js", () => ({
-  showConfirmDialog: showConfirmDialogMock,
-}));
+import { describe, it, expect, beforeEach } from "vitest";
 
 import type {
   AvatarRemoveDetail,
@@ -110,8 +102,6 @@ function findCancelBtn(el: HTMLElement): HTMLButtonElement | null {
 describe("JantSettingsAvatar", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
-    showConfirmDialogMock.mockReset();
-    showConfirmDialogMock.mockResolvedValue(true);
   });
 
   it("renders card with Blog Avatar heading", async () => {
@@ -229,39 +219,65 @@ describe("JantSettingsAvatar", () => {
       detail = customEvent.detail;
     });
 
-    const buttons = el.querySelectorAll("button");
-    const removeBtn = Array.from(buttons).find((b) =>
-      b.textContent?.includes("Remove"),
+    const removeButton = requireElement(
+      Array.from(el.querySelectorAll("button")).find(
+        (button) => button.textContent?.trim() === "Remove",
+      ) ?? null,
+      "expected remove avatar button",
     );
-    removeBtn?.click();
+    removeButton.click();
+    await Promise.resolve();
+
+    const host = requireElement(
+      document.querySelector<HTMLElement>("jant-confirm-dialog"),
+      "expected shared confirm dialog host",
+    );
+    const confirmButton = requireElement(
+      host.querySelector<HTMLButtonElement>(
+        ".confirm-dialog-actions .btn-destructive",
+      ),
+      "expected confirm button",
+    );
+    confirmButton.click();
+    await Promise.resolve();
     await Promise.resolve();
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as AvatarRemoveDetail;
     expect(d.endpoint).toBe("/settings/avatar/remove");
-    expect(showConfirmDialogMock).toHaveBeenCalledWith({
-      message: "Remove this avatar?",
-      confirmLabel: "Remove",
-      cancelLabel: "Cancel",
-      tone: "danger",
-    });
   });
 
   it("does not dispatch jant:avatar-remove when confirmation is canceled", async () => {
-    showConfirmDialogMock.mockResolvedValue(false);
     const el = await createElement("https://example.com/avatar.png");
 
-    const handler = vi.fn();
-    el.addEventListener("jant:avatar-remove", handler);
-
-    const buttons = el.querySelectorAll("button");
-    const removeBtn = Array.from(buttons).find((b) =>
-      b.textContent?.includes("Remove"),
+    let called = false;
+    const removeButton = requireElement(
+      Array.from(el.querySelectorAll("button")).find(
+        (button) => button.textContent?.trim() === "Remove",
+      ) ?? null,
+      "expected remove avatar button",
     );
-    removeBtn?.click();
+    el.addEventListener("jant:avatar-remove", () => {
+      called = true;
+    });
+    removeButton.click();
     await Promise.resolve();
 
-    expect(handler).not.toHaveBeenCalled();
+    const host = requireElement(
+      document.querySelector<HTMLElement>("jant-confirm-dialog"),
+      "expected shared confirm dialog host",
+    );
+    const cancelButton = requireElement(
+      host.querySelector<HTMLButtonElement>(
+        ".confirm-dialog-actions .btn-outline",
+      ),
+      "expected cancel button",
+    );
+    cancelButton.click();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(called).toBe(false);
   });
 
   it("saved() resets dirty state", async () => {

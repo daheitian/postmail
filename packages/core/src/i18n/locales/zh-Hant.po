@@ -919,12 +919,12 @@ msgstr "要永久刪除此選集嗎？裡面的貼文不會被刪除。"
 #. @context: Confirm dialog for deleting a custom URL
 #: src/routes/dash/custom-urls.tsx
 msgid "Delete this custom URL? Visitors using it won't be redirected anymore."
-msgstr ""
+msgstr "刪除這個自訂 URL？使用這個位址的訪客之後不會再被重新導向。"
 
 #. @context: Confirm dialog for deleting a custom navigation link
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Delete this navigation link? Visitors won't see it in your site header anymore."
-msgstr ""
+msgstr "刪除這個導覽連結？訪客之後不會再在網站頁首看到它。"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
 #: src/routes/auth/signin.tsx
@@ -2395,7 +2395,7 @@ msgstr "移除連結"
 #. @context: Confirm dialog for removing the blog avatar
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Remove this avatar? Your favicon and header icon will go back to the default."
-msgstr ""
+msgstr "移除此頭像？你的 favicon 和頁首圖示會恢復成預設狀態。"
 
 #. @context: Confirm dialog for deleting a custom collections link
 #: src/ui/shared/collection-management-labels.ts
@@ -2456,7 +2456,7 @@ msgstr "撤銷"
 #. @context: Confirm dialog for revoking an active session
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "Revoke this session? That device will need to sign in again."
-msgstr ""
+msgstr "撤銷這個工作階段？那台裝置需要重新登入。"
 
 #. @context: Confirm dialog for revoking API token
 #: src/ui/dash/settings/ApiTokensContent.tsx

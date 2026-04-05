@@ -2,12 +2,10 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { sortableCreateMock, sortableDestroyMock, showConfirmDialogMock } =
-  vi.hoisted(() => ({
-    sortableCreateMock: vi.fn(),
-    sortableDestroyMock: vi.fn(),
-    showConfirmDialogMock: vi.fn(),
-  }));
+const { sortableCreateMock, sortableDestroyMock } = vi.hoisted(() => ({
+  sortableCreateMock: vi.fn(),
+  sortableDestroyMock: vi.fn(),
+}));
 
 vi.mock("sortablejs", () => ({
   default: {
@@ -15,10 +13,6 @@ vi.mock("sortablejs", () => ({
       destroy: sortableDestroyMock,
     })),
   },
-}));
-
-vi.mock("../confirm.js", () => ({
-  showConfirmDialog: showConfirmDialogMock,
 }));
 
 import type { NavManagerItem, NavManagerLabels } from "../nav-manager-types.js";
@@ -140,8 +134,6 @@ describe("JantNavManager", () => {
     document.body.innerHTML = "";
     sortableCreateMock.mockClear();
     sortableDestroyMock.mockClear();
-    showConfirmDialogMock.mockReset();
-    showConfirmDialogMock.mockResolvedValue(true);
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -254,25 +246,33 @@ describe("JantNavManager", () => {
     const deleteHandler = vi.fn();
     el.addEventListener("jant:nav-delete", deleteHandler);
 
-    const toggle = requireElement(
-      el.querySelector<HTMLButtonElement>(".nav-item-toggle"),
-      "expected nav item toggle",
-    );
-    toggle.click();
+    (
+      el as unknown as { _editingId: string | null; requestUpdate: () => void }
+    )._editingId = "nav-1";
+    el.requestUpdate();
     await el.updateComplete;
 
-    const deleteButton = Array.from(el.querySelectorAll("button")).find(
-      (button) => button.textContent?.trim() === "Delete",
+    const deleteButton = requireElement(
+      el.querySelector<HTMLButtonElement>(".nav-item-edit .btn-sm-ghost"),
+      "expected nav delete button",
     );
-    deleteButton?.click();
+    deleteButton.click();
     await Promise.resolve();
 
-    expect(showConfirmDialogMock).toHaveBeenCalledWith({
-      message: "Delete this navigation link?",
-      confirmLabel: "Delete",
-      cancelLabel: "Cancel",
-      tone: "danger",
-    });
+    const host = requireElement(
+      document.querySelector<HTMLElement>("jant-confirm-dialog"),
+      "expected shared confirm dialog host",
+    );
+    const confirmButton = requireElement(
+      host.querySelector<HTMLButtonElement>(
+        ".confirm-dialog-actions .btn-destructive",
+      ),
+      "expected confirm button",
+    );
+    confirmButton.click();
+    await Promise.resolve();
+    await Promise.resolve();
+
     expect(deleteHandler).toHaveBeenCalledTimes(1);
     expect(deleteHandler.mock.calls[0]?.[0]).toMatchObject({
       detail: { id: "nav-1" },
@@ -280,22 +280,35 @@ describe("JantNavManager", () => {
   });
 
   it("does not dispatch nav deletion when confirmation is canceled", async () => {
-    showConfirmDialogMock.mockResolvedValue(false);
     const el = await createElement();
     const deleteHandler = vi.fn();
     el.addEventListener("jant:nav-delete", deleteHandler);
 
-    const toggle = requireElement(
-      el.querySelector<HTMLButtonElement>(".nav-item-toggle"),
-      "expected nav item toggle",
-    );
-    toggle.click();
+    (
+      el as unknown as { _editingId: string | null; requestUpdate: () => void }
+    )._editingId = "nav-1";
+    el.requestUpdate();
     await el.updateComplete;
 
-    const deleteButton = Array.from(el.querySelectorAll("button")).find(
-      (button) => button.textContent?.trim() === "Delete",
+    const deleteButton = requireElement(
+      el.querySelector<HTMLButtonElement>(".nav-item-edit .btn-sm-ghost"),
+      "expected nav delete button",
     );
-    deleteButton?.click();
+    deleteButton.click();
+    await Promise.resolve();
+
+    const host = requireElement(
+      document.querySelector<HTMLElement>("jant-confirm-dialog"),
+      "expected shared confirm dialog host",
+    );
+    const cancelButton = requireElement(
+      host.querySelector<HTMLButtonElement>(
+        ".confirm-dialog-actions .btn-outline",
+      ),
+      "expected cancel button",
+    );
+    cancelButton.click();
+    await Promise.resolve();
     await Promise.resolve();
 
     expect(deleteHandler).not.toHaveBeenCalled();

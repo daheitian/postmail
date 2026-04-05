@@ -919,12 +919,12 @@ msgstr "永久删除这个合集？里面的帖子不会被删除。"
 #. @context: Confirm dialog for deleting a custom URL
 #: src/routes/dash/custom-urls.tsx
 msgid "Delete this custom URL? Visitors using it won't be redirected anymore."
-msgstr ""
+msgstr "删除这个自定义 URL？访问这个地址的访客将不会再被重定向。"
 
 #. @context: Confirm dialog for deleting a custom navigation link
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Delete this navigation link? Visitors won't see it in your site header anymore."
-msgstr ""
+msgstr "删除这个导航链接？访客将不会再在站点页眉里看到它。"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
 #: src/routes/auth/signin.tsx
@@ -2395,7 +2395,7 @@ msgstr "删除链接"
 #. @context: Confirm dialog for removing the blog avatar
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Remove this avatar? Your favicon and header icon will go back to the default."
-msgstr ""
+msgstr "移除这个头像？你的 favicon 和页眉图标会恢复为默认状态。"
 
 #. @context: Confirm dialog for deleting a custom collections link
 #: src/ui/shared/collection-management-labels.ts
@@ -2456,7 +2456,7 @@ msgstr "撤销"
 #. @context: Confirm dialog for revoking an active session
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "Revoke this session? That device will need to sign in again."
-msgstr ""
+msgstr "撤销这个会话？那台设备需要重新登录。"
 
 #. @context: Confirm dialog for revoking API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
