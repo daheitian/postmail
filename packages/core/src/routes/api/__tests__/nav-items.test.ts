@@ -139,6 +139,22 @@ describe("Nav Items API Routes", () => {
       expect(res.status).toBe(400);
     });
 
+    it("returns 400 for unknown system nav keys", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      const res = await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "system",
+          systemKey: "unknown",
+        }),
+      });
+
+      expect(res.status).toBe(400);
+    });
+
     it("returns 400 for duplicate system nav items", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/nav-items", navItemsApiRoutes);

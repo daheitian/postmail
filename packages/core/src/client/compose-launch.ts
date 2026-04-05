@@ -50,6 +50,10 @@ export function getCurrentDetailPostArticle(
   );
   if (postView) return postView;
 
+  if (root === document) {
+    return document.querySelector<HTMLElement>("article[data-post]:hover");
+  }
+
   return null;
 }
 

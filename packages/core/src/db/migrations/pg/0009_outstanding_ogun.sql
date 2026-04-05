@@ -1,0 +1,1 @@
+ALTER TABLE "nav_item" DROP CONSTRAINT "chk_nav_item_system_key";

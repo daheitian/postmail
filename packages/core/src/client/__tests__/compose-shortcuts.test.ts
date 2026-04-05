@@ -230,4 +230,45 @@ describe("compose shortcuts", () => {
     expect(event.defaultPrevented).toBe(true);
     expect(composeEl.openEdit).toHaveBeenCalledWith("post-hovered");
   });
+
+  it("keeps using the hovered post for reply shortcuts in the timeline", () => {
+    const composeEl = createComposeHarness();
+    const article = document.createElement("article");
+    article.dataset.post = "";
+    article.dataset.postId = "timeline-post";
+    article.dataset.threadRootId = "timeline-thread";
+    article.innerHTML = `
+      <div data-post-meta>meta</div>
+      <time class="dt-published">Apr 5</time>
+      <div data-post-body>Timeline body</div>
+    `;
+    document.body.appendChild(article);
+
+    const originalQuerySelector = document.querySelector.bind(document);
+    vi.spyOn(document, "querySelector").mockImplementation(
+      (selector: string): globalThis.Element | null => {
+        if (selector === "[data-page='post'] article[data-post]:hover") {
+          return null;
+        }
+        if (selector === "article[data-post]:hover") {
+          return article;
+        }
+        return originalQuerySelector(selector);
+      },
+    );
+
+    const event = dispatchShortcut(document, "r");
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(composeEl.openReply).toHaveBeenCalledTimes(1);
+
+    const [postId, replyData, threadRootId, refreshTarget] = vi.mocked(
+      composeEl.openReply,
+    ).mock.calls[0] ?? [null, null, null, null];
+
+    expect(postId).toBe("timeline-post");
+    expect(replyData).toMatchObject({ dateText: "Apr 5" });
+    expect(threadRootId).toBe("timeline-thread");
+    expect(refreshTarget).toEqual({ kind: "post-card", id: "timeline-post" });
+  });
 });

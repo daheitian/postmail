@@ -64,6 +64,13 @@
       "when": 1775369700000,
       "tag": "0008_yielding_frightful_four",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1775369800000,
+      "tag": "0009_outstanding_ogun",
+      "breakpoints": true
     }
   ]
 }

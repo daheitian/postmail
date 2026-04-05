@@ -614,10 +614,6 @@ export const navItems = pgTable(
       sql`${table.placement} IN (${sqlTextEnum(NAV_ITEM_PLACEMENTS)})`,
     ),
     check(
-      "chk_nav_item_system_key",
-      sql`${table.systemKey} IS NULL OR ${table.systemKey} IN (${sqlTextEnum(SYSTEM_NAV_KEYS)})`,
-    ),
-    check(
       "chk_nav_item_shape",
       sql`(
         ${table.type} = 'link'
