@@ -251,8 +251,9 @@ export class JantComposeEditor extends LitElement {
     this.#sortable?.destroy();
     this.#sortable = null;
     document.removeEventListener("jant:slash-image", this._onSlashImage);
-    document.removeEventListener("click", this._onDocClickBound, true);
+    document.removeEventListener("click", this._onDocClickBound);
     this._emojiContainer?.remove();
+    this._emojiPickerEl = null;
     this._filePickerCleanup?.();
     this._filePickerCleanup = null;
   }
@@ -1355,6 +1356,7 @@ export class JantComposeEditor extends LitElement {
     }
     this._showEmojiPicker = false;
     this._emojiContainer?.remove();
+    this._emojiPickerEl = null;
     document.removeEventListener("click", this._onDocClickBound);
     if (options?.restoreFocus) {
       this._restoreEmojiFocus();
@@ -1387,7 +1389,9 @@ export class JantComposeEditor extends LitElement {
     }
     (dialog ?? document.body).appendChild(this._emojiContainer);
 
-    // Only create the picker element once
+    // Recreate the picker after every close. emoji-mart doesn't recover its
+    // row observers reliably after disconnect/reconnect, which leaves later
+    // categories empty on reopen.
     if (!this._emojiPickerEl) {
       const [{ default: data }, { Picker }] = await Promise.all([
         import("@emoji-mart/data"),

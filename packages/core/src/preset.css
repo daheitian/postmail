@@ -435,7 +435,6 @@ html:lang(ko) {
 
 [data-page="search"],
 .site-home-header,
-.post-detail-title,
 .post-detail-body,
 .post-body-summary,
 .feed-note-title,
@@ -448,6 +447,10 @@ html:lang(ko) {
 [data-post-body].prose,
 [data-post-meta] {
   width: var(--layout-content-width);
+}
+
+.post-detail-title {
+  width: min(80%, 45rem);
 }
 
 @media (max-width: 760px) {

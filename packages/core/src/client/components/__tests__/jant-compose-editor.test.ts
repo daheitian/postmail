@@ -298,6 +298,18 @@ async function createElement(
   return el;
 }
 
+async function toggleEmojiPicker(el: JantComposeEditor) {
+  (
+    el as unknown as {
+      _toggleEmojiPicker: () => void;
+    }
+  )._toggleEmojiPicker();
+  await new Promise((resolve) => globalThis.setTimeout(resolve, 0));
+  await Promise.resolve();
+  await Promise.resolve();
+  await el.updateComplete;
+}
+
 describe("JantComposeEditor", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -443,6 +455,71 @@ describe("JantComposeEditor", () => {
     input.dispatchEvent(new Event("cancel"));
 
     expect(states).toEqual(["open", "cancelled"]);
+  });
+
+  it("recreates the emoji picker after closing so later categories stay populated", async () => {
+    const el = await createElement("note");
+    let pickerInstanceCount = 0;
+
+    const editor = el as unknown as {
+      _emojiContainer: HTMLElement | null;
+      _emojiPickerEl: HTMLElement | null;
+      _mountEmojiPicker: () => Promise<void>;
+    };
+
+    editor._mountEmojiPicker = async () => {
+      if (!editor._emojiContainer) {
+        editor._emojiContainer = document.createElement("div");
+        editor._emojiContainer.className = "compose-emoji-picker";
+      }
+      document.body.appendChild(editor._emojiContainer);
+
+      if (!editor._emojiPickerEl) {
+        pickerInstanceCount += 1;
+        const picker = document.createElement("div");
+        picker.setAttribute("data-instance-id", String(pickerInstanceCount));
+        picker.attachShadow({ mode: "open" }).innerHTML = `
+          <section data-category="people">😀 😃 😄</section>
+          <section data-category="nature">🐶 🌿 🐢</section>
+        `;
+        editor._emojiPickerEl = picker;
+      }
+
+      editor._emojiContainer.innerHTML = "";
+      editor._emojiContainer.appendChild(editor._emojiPickerEl);
+    };
+
+    await toggleEmojiPicker(el);
+
+    const firstPicker = requireValue(
+      editor._emojiPickerEl,
+      "expected first emoji picker",
+    );
+    const firstInstanceId = requireValue(
+      firstPicker.getAttribute("data-instance-id"),
+      "expected first emoji picker instance id",
+    );
+
+    expect(
+      firstPicker.shadowRoot?.querySelector('[data-category="nature"]')
+        ?.textContent,
+    ).toContain("🐶");
+
+    el.closeEmojiPicker();
+    await toggleEmojiPicker(el);
+
+    const secondPicker = requireValue(
+      editor._emojiPickerEl,
+      "expected reopened emoji picker",
+    );
+
+    expect(secondPicker.getAttribute("data-instance-id")).not.toBe(
+      firstInstanceId,
+    );
+    expect(
+      secondPicker.shadowRoot?.querySelector('[data-category="nature"]')
+        ?.textContent,
+    ).toContain("🐶");
   });
 
   it("parses inserted markdown link syntax into a link mark", async () => {
