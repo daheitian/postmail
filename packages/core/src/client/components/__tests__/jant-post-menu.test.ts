@@ -33,6 +33,16 @@ function click(element: globalThis.Element) {
   );
 }
 
+function collectionPickerTitles(root: globalThis.Element): string[] {
+  return Array.from(
+    root.querySelectorAll<HTMLElement>(".post-menu-picker-option"),
+  ).map(
+    (option) =>
+      option.querySelector(".post-menu-picker-title")?.textContent?.trim() ??
+      "",
+  );
+}
+
 function setViewport(width: number, height: number) {
   Object.defineProperty(window, "innerWidth", {
     configurable: true,
@@ -276,6 +286,109 @@ describe("JantPostMenu", () => {
     expect(menu.querySelector(".dropdown-menu")).toBeNull();
     expect(menu.querySelector(".post-menu-backdrop")).toBeNull();
     expect(menu.querySelector("[data-collection-quick-dialog]")).not.toBeNull();
+  });
+
+  it("puts selected collections first on open and keeps the order stable while toggling", async () => {
+    const selectedIds = ["collection-2"];
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: unknown, init?: globalThis.RequestInit) => {
+        const url = String(input);
+        const method = init?.method ?? "GET";
+
+        if (url === "/api/collections" && method === "GET") {
+          return jsonResponse({
+            collections: [
+              { id: "collection-1", title: "Books", slug: "books" },
+              { id: "collection-2", title: "Movies", slug: "movies" },
+              { id: "collection-3", title: "Travel", slug: "travel" },
+            ],
+          });
+        }
+
+        if (url === "/api/posts/post-1" && method === "GET") {
+          return jsonResponse({ collectionIds: [...selectedIds] });
+        }
+
+        if (
+          url === "/api/collections/collection-3/posts" &&
+          method === "POST"
+        ) {
+          selectedIds.push("collection-3");
+          return new Response(null, { status: 200 });
+        }
+
+        if (
+          url === "/api/collections/collection-2/posts/post-1" &&
+          method === "DELETE"
+        ) {
+          const index = selectedIds.indexOf("collection-2");
+          if (index >= 0) selectedIds.splice(index, 1);
+          return new Response(null, { status: 204 });
+        }
+
+        throw new Error(`Unexpected fetch in test: ${url}`);
+      }),
+    );
+
+    const { menu, trigger } = await createMenu();
+
+    click(trigger);
+    await menu.updateComplete;
+
+    click(
+      requireElement(
+        menu.querySelector<HTMLElement>("[data-post-menu-open-collections]"),
+        "expected collections button in main menu",
+      ),
+    );
+    await Promise.resolve();
+    await menu.updateComplete;
+
+    await vi.waitFor(() => {
+      expect(collectionPickerTitles(menu)).toEqual([
+        "Movies",
+        "Books",
+        "Travel",
+      ]);
+    });
+
+    const options = menu.querySelectorAll<HTMLElement>(
+      ".post-menu-picker-option",
+    );
+    click(
+      requireElement(options[2] ?? null, "expected third collection option"),
+    );
+    await Promise.resolve();
+    await menu.updateComplete;
+
+    expect(collectionPickerTitles(menu)).toEqual(["Movies", "Books", "Travel"]);
+
+    click(
+      requireElement(
+        menu.querySelector<HTMLElement>(".post-menu-panel-back"),
+        "expected collection panel back button",
+      ),
+    );
+    await menu.updateComplete;
+
+    click(
+      requireElement(
+        menu.querySelector<HTMLElement>("[data-post-menu-open-collections]"),
+        "expected collections button in main menu",
+      ),
+    );
+    await Promise.resolve();
+    await menu.updateComplete;
+
+    await vi.waitFor(() => {
+      expect(collectionPickerTitles(menu)).toEqual([
+        "Movies",
+        "Travel",
+        "Books",
+      ]);
+    });
   });
 
   it("closes the menu before waiting on delete confirmation", async () => {

@@ -18,6 +18,10 @@ import {
 import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
+import {
+  applyItemOrder,
+  getSelectedFirstOrder,
+} from "../collection-picker-order.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 
 interface PostMenuData {
@@ -40,10 +44,6 @@ interface CollectionsResponse {
 
 interface PostCollectionsResponse {
   collectionIds?: string[];
-}
-
-interface ErrorResponse {
-  error?: string;
 }
 
 type PostMenuView = "menu" | "collections" | "visibility";
@@ -106,6 +106,7 @@ export class JantPostMenu extends LitElement {
 
   /** Whether collections were modified during this session (triggers page reload on close) */
   #collectionsDirty = false;
+  #collectionPickerOrder: string[] = [];
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -557,12 +558,19 @@ export class JantPostMenu extends LitElement {
       if (!collectionsRes.ok) throw new Error();
       const collectionsData =
         (await collectionsRes.json()) as CollectionsResponse;
-      this._collections = collectionsData.collections ?? [];
+      const collections = collectionsData.collections ?? [];
+      let postCollectionIds = this._postCollectionIds;
 
       if (postRes.ok) {
         const postData = (await postRes.json()) as PostCollectionsResponse;
-        this._postCollectionIds = postData.collectionIds ?? [];
+        postCollectionIds = postData.collectionIds ?? [];
       }
+      this.#collectionPickerOrder = getSelectedFirstOrder(
+        collections,
+        postCollectionIds,
+      );
+      this._collections = collections;
+      this._postCollectionIds = postCollectionIds;
     } catch {
       this._collections = this._collections ?? [];
       showToast("Could not load collections.", "error");
@@ -891,14 +899,18 @@ export class JantPostMenu extends LitElement {
 
   #renderCollectionPicker() {
     const collections = this._collections ?? [];
+    const orderedCollections = applyItemOrder(
+      collections,
+      this.#collectionPickerOrder,
+    );
     const search = this._collectionSearch.toLowerCase();
     const filtered = search
-      ? collections.filter(
+      ? orderedCollections.filter(
           (c) =>
             c.title.toLowerCase().includes(search) ||
             c.slug.toLowerCase().includes(search),
         )
-      : collections;
+      : orderedCollections;
 
     return html`
       <div

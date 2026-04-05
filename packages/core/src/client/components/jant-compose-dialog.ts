@@ -29,6 +29,10 @@ import type {
 import type { CollectionSubmitDetail } from "./collection-types.js";
 import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
+import {
+  applyItemOrder,
+  getSelectedFirstOrder,
+} from "../collection-picker-order.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
 import { getMediaCategory } from "../../lib/upload.js";
 import { getSlugValidationIssue } from "../../lib/slug-format.js";
@@ -585,6 +589,7 @@ export class JantComposeDialog extends LitElement {
   private _filePickerActive = false;
   private _ignoreNextEscapeClose = false;
   private _openEditRequestId = 0;
+  private _collectionPickerOrder: string[] = [];
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -1507,6 +1512,13 @@ export class JantComposeDialog extends LitElement {
     return this.labels.collectionCountLabel
       .replace("%name%", first.title)
       .replace("%count%", String(ids.length - 1));
+  }
+
+  private _prepareCollectionPickerOrder() {
+    this._collectionPickerOrder = getSelectedFirstOrder(
+      this.collections ?? [],
+      this._collectionIds,
+    );
   }
 
   private _updateCollectionPopoverSide() {
@@ -3080,14 +3092,18 @@ export class JantComposeDialog extends LitElement {
 
   private _renderCollectionSelector() {
     const collections = this.collections ?? [];
+    const orderedCollections = applyItemOrder(
+      collections,
+      this._collectionPickerOrder,
+    );
     const search = this._collectionSearch.toLowerCase();
     const filtered = search
-      ? collections.filter(
+      ? orderedCollections.filter(
           (c) =>
             c.title.toLowerCase().includes(search) ||
             (c.slug ?? "").toLowerCase().includes(search),
         )
-      : collections;
+      : orderedCollections;
     const selectedCount = this._collectionIds.length;
     const selectedLabel =
       selectedCount > 0
@@ -3121,9 +3137,13 @@ export class JantComposeDialog extends LitElement {
             data-open=${this._showCollection ? "true" : nothing}
             data-selected=${selectedCount > 0 ? "true" : nothing}
             @click=${() => {
+              const nextOpen = !this._showCollection;
               this._showPublishPanel = false;
-              this._showCollection = !this._showCollection;
-              if (!this._showCollection) {
+              if (nextOpen) {
+                this._prepareCollectionPickerOrder();
+              }
+              this._showCollection = nextOpen;
+              if (!nextOpen) {
                 this._collectionSearch = "";
               }
             }}

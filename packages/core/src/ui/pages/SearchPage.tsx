@@ -254,7 +254,7 @@ export const SearchPage: FC<SearchPageProps> = ({
               }),
             )}
             value={query}
-            autofocus
+            autofocus={!query}
           />
           <button type="submit" class="btn">
             {i18n._(

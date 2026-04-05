@@ -32,6 +32,17 @@ function requireEditor(el: JantComposeEditor): Editor {
   return editor;
 }
 
+function collectionOptionTitles(root: globalThis.Element): string[] {
+  return Array.from(
+    root.querySelectorAll<HTMLElement>("[data-popover] [role='option']"),
+  ).map(
+    (option) =>
+      option
+        .querySelector(".compose-collection-option-label")
+        ?.textContent?.trim() ?? "",
+  );
+}
+
 async function flushUpdates(el?: JantComposeDialog) {
   await Promise.resolve();
   await Promise.resolve();
@@ -2054,6 +2065,42 @@ describe("JantComposeDialog", () => {
     options[0].click();
     await el.updateComplete;
     expect(el._collectionIds).toEqual(["col-2"]);
+  });
+
+  it("reorders selected collections when opening and keeps the list stable while toggling", async () => {
+    const el = await createElement([
+      { id: "col-1", title: "Books", slug: "books" },
+      { id: "col-2", title: "Movies", slug: "movies" },
+      { id: "col-3", title: "Travel", slug: "travel" },
+    ]);
+    el._collectionIds = ["col-2"];
+    await el.updateComplete;
+
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
+      "expected collection trigger",
+    );
+
+    trigger.click();
+    await el.updateComplete;
+
+    expect(collectionOptionTitles(el)).toEqual(["Movies", "Books", "Travel"]);
+
+    const options = el.querySelectorAll<HTMLButtonElement>(
+      "[data-popover] [role='option']",
+    );
+    options[2]?.click();
+    await el.updateComplete;
+
+    expect(el._collectionIds).toEqual(["col-2", "col-3"]);
+    expect(collectionOptionTitles(el)).toEqual(["Movies", "Books", "Travel"]);
+
+    trigger.click();
+    await el.updateComplete;
+    trigger.click();
+    await el.updateComplete;
+
+    expect(collectionOptionTitles(el)).toEqual(["Movies", "Travel", "Books"]);
   });
 
   it("reset restores initial state", async () => {
