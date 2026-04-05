@@ -248,12 +248,9 @@ img {
 
 .site-header-top-bordered {
   padding-bottom: 15px;
-  border-bottom: 0.5px solid
-    color-mix(in srgb, var(--site-divider) 72%, transparent);
 }
 
 .site-header-top-home {
-  border-bottom-color: color-mix(in srgb, var(--site-divider) 72%, transparent);
   padding-bottom: 14px;
 }
 

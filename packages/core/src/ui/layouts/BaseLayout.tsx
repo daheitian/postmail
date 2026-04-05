@@ -282,6 +282,13 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           {cjkStylesheetPath && (
             <link rel="stylesheet" href={cjkStylesheetPath} />
           )}
+          {/* Critical inline style: prevent mobile nav jitter by applying
+              collapsed layout before external CSS/JS loads */}
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `@media(max-width:860px){.site-header-nav,.site-header-search-form{display:none!important}.site-header-hamburger{display:flex!important}.site-header-right{margin-left:auto}}`,
+            }}
+          />
           {themeStyle && (
             <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
           )}

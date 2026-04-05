@@ -314,7 +314,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           />
         </form>
         <nav class="site-nav-drawer-nav" aria-label="Primary">
-          {linksWithLabels.map((link) => (
+          {headerLinks.map((link) => (
             <a
               key={link.id}
               href={link.url}
@@ -327,6 +327,25 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
               {link.isExternal && <ExternalLinkIcon />}
             </a>
           ))}
+          {moreLinks.length > 0 && (
+            <>
+              <div class="site-nav-drawer-divider" />
+              <span class="site-nav-drawer-section-label">{moreLabel}</span>
+              {moreLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  class={`site-nav-drawer-link site-nav-drawer-link-secondary ${link.isActive ? "site-nav-drawer-link-active" : ""}`}
+                  {...(link.isExternal
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                >
+                  {link.displayLabel}
+                  {link.isExternal && <ExternalLinkIcon />}
+                </a>
+              ))}
+            </>
+          )}
         </nav>
       </div>
 

@@ -226,6 +226,11 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                   </span>
                 </a>
               </div>
+              {collection.description && (
+                <p class="collection-directory-description">
+                  {collection.description}
+                </p>
+              )}
               <p class="collection-directory-summary">
                 <span class="collection-directory-meta">
                   {collection.postCount}{" "}

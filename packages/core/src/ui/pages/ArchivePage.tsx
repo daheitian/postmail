@@ -927,7 +927,7 @@ function getTileBadge(
   if (!firstMedia) return undefined;
   const kind = toMediaKind(firstMedia.mimeType);
 
-  if (kind === "video") return { icon: "circle-play", position: "center" };
+  if (kind === "video") return { icon: "play", position: "center" };
   if (kind === "audio")
     return { icon: MEDIA_KIND_ICONS.audio, position: "corner" };
   if (kind === "text")
@@ -940,12 +940,12 @@ function getTileBadge(
 function getTileText(post: PostView): { title?: string; summary: string } {
   const fallbackSummary = post.summary?.trim() || post.excerpt?.trim() || "";
 
+  if (post.format === "quote" && post.quoteText)
+    return { title: post.title || undefined, summary: post.quoteText };
   if (post.title) {
     const summary = fallbackSummary || post.url || "";
     return { title: post.title, summary };
   }
-  if (post.format === "quote" && post.quoteText)
-    return { summary: post.quoteText };
   if (fallbackSummary) return { summary: fallbackSummary };
   if (post.url) return { summary: post.url };
   return { summary: getFormatLabel(post.format) };
@@ -1002,7 +1002,6 @@ const ArchiveMonthHeader: FC<{
           </span>
         )}
       </span>
-      <span class="archive-month-header-rule" aria-hidden="true" />
     </div>
   );
 };
@@ -1050,7 +1049,9 @@ const ArchiveTile: FC<{ post: PostView; timeZone?: string }> = ({
     !hasBg &&
     !!title &&
     !!summary &&
-    (post.format === "note" || post.format === "link");
+    (post.format === "note" ||
+      post.format === "link" ||
+      post.format === "quote");
   const showSummary =
     !!summary && ((hasBg && !title) || (!title && !hasBg) || showTitledSummary);
   const cornerBadge = badge?.position === "corner" ? badge : undefined;
@@ -1131,10 +1132,11 @@ const ArchiveTile: FC<{ post: PostView; timeZone?: string }> = ({
       )}
 
       {badge?.position === "center" && (
-        <span
-          class="archive-tile-badge archive-tile-badge-center"
-          dangerouslySetInnerHTML={{ __html: getIconSvg(badge.icon) ?? "" }}
-        />
+        <span class="archive-tile-badge archive-tile-badge-center">
+          <span
+            dangerouslySetInnerHTML={{ __html: getIconSvg(badge.icon) ?? "" }}
+          />
+        </span>
       )}
     </a>
   );
