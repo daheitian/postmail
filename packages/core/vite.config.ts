@@ -34,6 +34,9 @@ export default defineConfig({
     // the TypeScript declarations in version.ts to compile.
     __CLIENT_JS_FILE__: JSON.stringify("/_assets/client.js"),
     __CLIENT_AUTH_JS_FILE__: JSON.stringify("/_assets/client-auth.js"),
+    __CLIENT_CSS_FILE__: JSON.stringify("/_assets/client.css"),
+    __CLIENT_CJK_CSS_FILE__: JSON.stringify("/_assets/client-cjk.css"),
+    __CLIENT_CJK_TC_CSS_FILE__: JSON.stringify("/_assets/client-cjk-tc.css"),
   },
 
   environments: {

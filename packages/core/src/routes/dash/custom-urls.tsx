@@ -92,6 +92,26 @@ function TargetTypeIcon({
           <path d="m8 16 9-9" />
         </svg>
       );
+    case "archive":
+      return (
+        <svg
+          class="custom-url-type-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect width="20" height="5" x="2" y="3" rx="1" />
+          <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
+          <path d="M10 12h4" />
+        </svg>
+      );
   }
 }
 
@@ -101,6 +121,10 @@ function targetPath(
 ): string {
   if (customUrl.targetType === "redirect") {
     return customUrl.toPath ?? "?";
+  }
+
+  if (customUrl.targetType === "archive") {
+    return `/archive?${customUrl.archiveQuery ?? ""}`;
   }
 
   return customUrl.targetId
@@ -140,6 +164,12 @@ function CustomUrlsListContent({
       msg({
         message: "Redirect",
         comment: "@context: Custom URL target type badge for a redirect",
+      }),
+    ),
+    archive: i18n._(
+      msg({
+        message: "Archive",
+        comment: "@context: Custom URL target type badge for an archive view",
       }),
     ),
   } satisfies Record<CustomUrl["targetType"], string>;
@@ -342,7 +372,7 @@ function NewCustomUrlContent({
       </h2>
 
       <form
-        data-signals="{path: '', targetType: 'redirect', targetId: '', toPath: '', redirectType: '301'}"
+        data-signals="{path: '', targetType: 'redirect', targetId: '', toPath: '', redirectType: '301', archiveQuery: ''}"
         data-on:submit__prevent={`@post('${toPublicPath("/settings/custom-urls", sitePathPrefix)}')`}
         data-indicator="_loading"
         class="flex flex-col gap-4 max-w-lg"
@@ -404,6 +434,15 @@ function NewCustomUrlContent({
                 }),
               )}
             </option>
+            <option value="archive">
+              {i18n._(
+                msg({
+                  message: "Archive",
+                  comment:
+                    "@context: Custom URL type option for filtered archive view",
+                }),
+              )}
+            </option>
           </select>
         </div>
 
@@ -453,6 +492,33 @@ function NewCustomUrlContent({
               </option>
             </select>
           </div>
+        </div>
+
+        <div data-show="$targetType === 'archive'" class="field">
+          <label class="label">
+            {i18n._(
+              msg({
+                message: "Query Parameters",
+                comment: "@context: Archive custom URL query params field",
+              }),
+            )}
+          </label>
+          <input
+            type="text"
+            data-bind="archiveQuery"
+            class="input"
+            placeholder="format=note&hasTitle=0&visibility=public&view=list"
+          />
+          <p class="text-xs text-muted-foreground mt-1">
+            {i18n._(
+              msg({
+                message:
+                  "Archive filter parameters (e.g. format=note&view=list)",
+                comment:
+                  "@context: Help text for archive custom URL query params",
+              }),
+            )}
+          </p>
         </div>
 
         <div
@@ -645,6 +711,7 @@ customUrlsRoutes.post("/", async (c) => {
     targetId,
     toPath: body.toPath,
     redirectType,
+    archiveQuery: body.archiveQuery,
   });
 
   return dsRedirect(

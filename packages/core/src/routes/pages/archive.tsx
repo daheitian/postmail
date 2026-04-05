@@ -63,23 +63,30 @@ interface ParsedArchiveParams {
 }
 
 /**
- * Parse archive filter query parameters from the request.
+ * Parse archive filter query parameters.
  *
  * @param c - Hono context
+ * @param queryOverrides - Optional map of query param overrides (used by custom archive URLs)
  * @returns Parsed and validated query parameters
  */
-function parseArchiveParams(c: Context<Env>): ParsedArchiveParams {
-  const formatParam = c.req.query("format") as Format | undefined;
+function parseArchiveParams(
+  c: Context<Env>,
+  queryOverrides?: Record<string, string>,
+): ParsedArchiveParams {
+  const q = (key: string): string | undefined =>
+    queryOverrides ? queryOverrides[key] : c.req.query(key);
+
+  const formatParam = q("format") as Format | undefined;
   const format =
     formatParam && FORMATS.includes(formatParam) ? formatParam : undefined;
 
-  const yearParam = c.req.query("year");
+  const yearParam = q("year");
   const year = yearParam ? parseInt(yearParam, 10) : undefined;
   const validYear = year && !isNaN(year) && year > 1970 ? year : undefined;
 
-  const collectionSlug = c.req.query("collection") || undefined;
+  const collectionSlug = q("collection") || undefined;
 
-  const mediaParam = c.req.query("media") || undefined;
+  const mediaParam = q("media") || undefined;
   const mediaKinds = mediaParam
     ? (mediaParam
         .split(",")
@@ -88,28 +95,29 @@ function parseArchiveParams(c: Context<Env>): ParsedArchiveParams {
         ) as MediaKind[])
     : undefined;
 
-  const hasMediaParam = c.req.query("hasMedia");
+  const hasMediaParam = q("hasMedia");
   const hasMedia =
     hasMediaParam === "1" ? true : hasMediaParam === "0" ? false : undefined;
 
-  const hasTitleParam = c.req.query("hasTitle");
+  const hasTitleParam = q("hasTitle");
   const hasTitle =
     hasTitleParam === "1" ? true : hasTitleParam === "0" ? false : undefined;
 
   const VALID_VISIBILITIES = ["public", "latest_hidden", "private", "featured"];
-  const visibilityParam = c.req.query("visibility");
+  const visibilityParam = q("visibility");
   const visibilityAll = visibilityParam === "all";
   const visibility =
     visibilityParam && VALID_VISIBILITIES.includes(visibilityParam)
       ? (visibilityParam as ArchiveVisibility)
       : undefined;
 
-  const viewParam = c.req.query("view") as ArchiveView | undefined;
+  const viewParam = q("view") as ArchiveView | undefined;
   const view =
     viewParam && (viewParam === "grid" || viewParam === "list")
       ? viewParam
       : undefined;
 
+  // Page always comes from the actual request URL (pagination links use ?page=N)
   const pageParam = c.req.query("page");
   const currentPage = Math.max(1, parseInt(pageParam || "1", 10) || 1);
 
@@ -202,13 +210,23 @@ function buildArchiveFeedQuery(params: ParsedArchiveParams): string {
 export const archiveRoutes = new Hono<Env>();
 
 // =============================================================================
-// Archive page
+// Archive page — shared rendering
 // =============================================================================
 
-archiveRoutes.get("/", async (c) => {
+/**
+ * Render the archive page. Used by both the `/archive` route and custom
+ * archive URLs resolved through the path registry.
+ *
+ * @param c - Hono context
+ * @param queryOverrides - Optional pre-set query params (from path_registry.archive_query)
+ */
+export async function renderArchivePage(
+  c: Context<Env>,
+  queryOverrides?: Record<string, string>,
+): Promise<Response> {
   const { services, appConfig } = c.var;
   const pageSize = appConfig.archivePageSize;
-  const params = parseArchiveParams(c);
+  const params = parseArchiveParams(c, queryOverrides);
 
   // --- Resolve collection slug to ID ----------------------------------------
 
@@ -371,7 +389,13 @@ archiveRoutes.get("/", async (c) => {
       />
     ),
   });
-});
+}
+
+// =============================================================================
+// Archive page route
+// =============================================================================
+
+archiveRoutes.get("/", (c) => renderArchivePage(c));
 
 // =============================================================================
 // Archive feed

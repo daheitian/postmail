@@ -169,6 +169,7 @@ export const CustomUrlTargetTypeSchema = z.enum([
   "post",
   "collection",
   "redirect",
+  "archive",
 ]);
 
 /**
@@ -668,6 +669,7 @@ export const CreateCustomUrlSchema = z.object({
   targetId: z.string().optional(),
   toPath: z.string().optional(),
   redirectType: RedirectTypeSchema.optional(),
+  archiveQuery: z.string().optional(),
 });
 
 // =============================================================================

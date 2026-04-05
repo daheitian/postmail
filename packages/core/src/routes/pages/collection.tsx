@@ -2,7 +2,7 @@
  * Collection Page Route
  */
 
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuth } from "../../middleware/auth.js";
@@ -95,8 +95,19 @@ collectionRoutes.get("/:slug/edit", async (c) => {
   });
 });
 
-collectionRoutes.get("/:slug", async (c) => {
-  const slugExpression = c.req.param("slug");
+/**
+ * Render a collection selection page. Used by both the `/c/:slug` route
+ * and collection aliases resolved through the path registry.
+ *
+ * @param c - Hono context
+ * @param slugExpression - Collection slug (or `a+b` aggregate expression)
+ * @param pagePathOverride - When set, used as the canonical page path instead of `/c/{slug}`
+ */
+export async function renderCollectionPage(
+  c: Context<Env>,
+  slugExpression: string,
+  pagePathOverride?: string,
+): Promise<Response | null> {
   const page = parsePageNumber(c.req.query("page"));
   const paginatedPageTitle = formatPageLabel(page);
 
@@ -104,10 +115,13 @@ collectionRoutes.get("/:slug", async (c) => {
     c.var.services.collections.resolveSelection(slugExpression),
     getNavigationData(c),
   ]);
-  if (!selection) return c.notFound();
+  if (!selection) return null;
 
-  const canonicalPagePath = getCanonicalSelectionPath(selection.slugExpression);
-  if (slugExpression !== selection.slugExpression) {
+  const canonicalPagePath =
+    pagePathOverride ?? getCanonicalSelectionPath(selection.slugExpression);
+
+  // Only redirect for slug normalization when using the default /c/ path
+  if (!pagePathOverride && slugExpression !== selection.slugExpression) {
     const search = new URL(c.req.url).search;
     return c.redirect(
       toPublicPath(`${canonicalPagePath}${search}`, navData.sitePathPrefix),
@@ -121,7 +135,7 @@ collectionRoutes.get("/:slug", async (c) => {
       ? CollectionSortOrderSchema.parse(sortQuery)
       : undefined;
   const primaryCollection = selection.collections[0];
-  if (!primaryCollection) return c.notFound();
+  if (!primaryCollection) return null;
   const collectionIds = selection.collections.map(
     (collection) => collection.id,
   );
@@ -200,6 +214,30 @@ collectionRoutes.get("/:slug", async (c) => {
       />
     ),
   });
+}
+
+collectionRoutes.get("/:slug", async (c) => {
+  const slugExpression = c.req.param("slug");
+  const sitePathPrefix = c.var.appConfig.sitePathPrefix;
+
+  // If accessed via /c/{slug} and an alias exists, redirect to the alias
+  const collection = await c.var.services.collections.getBySlug(slugExpression);
+  if (collection) {
+    const alias = await c.var.services.customUrls.getByTarget(
+      "collection",
+      collection.id,
+    );
+    if (alias) {
+      const search = new URL(c.req.url).search;
+      return c.redirect(
+        toPublicPath(`/${alias.path}${search}`, sitePathPrefix),
+        301,
+      );
+    }
+  }
+
+  const result = await renderCollectionPage(c, slugExpression);
+  return result ?? c.notFound();
 });
 
 // Collection RSS feed

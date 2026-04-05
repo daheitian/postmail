@@ -187,10 +187,11 @@ export interface NavItem {
 export interface CustomUrl {
   id: string;
   path: string;
-  targetType: "post" | "collection" | "redirect";
+  targetType: "post" | "collection" | "redirect" | "archive";
   targetId: string | null;
   toPath: string | null;
   redirectType: 301 | 302 | null;
+  archiveQuery: string | null;
   createdAt: number;
 }
 
@@ -203,6 +204,7 @@ export interface PathRecord {
   collectionId: string | null;
   redirectToPath: string | null;
   redirectType: 301 | 302 | null;
+  archiveQuery: string | null;
   createdAt: number;
   updatedAt: number;
 }

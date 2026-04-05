@@ -85,6 +85,13 @@
       "when": 1775353006480,
       "tag": "0011_bizarre_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1775364510172,
+      "tag": "0012_furry_thena",
+      "breakpoints": true
     }
   ]
 }

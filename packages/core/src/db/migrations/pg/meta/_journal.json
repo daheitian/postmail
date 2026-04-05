@@ -71,6 +71,13 @@
       "when": 1775369800000,
       "tag": "0009_outstanding_ogun",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1775369900000,
+      "tag": "0010_overjoyed_gertrude_yorkes",
+      "breakpoints": true
     }
   ]
 }

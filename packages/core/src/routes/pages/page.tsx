@@ -15,6 +15,8 @@ import { buildPostMeta } from "../../lib/post-meta.js";
 import { assemblePostPageDisplay } from "../../lib/post-display.js";
 import { toPublicHref, toPublicPath } from "../../lib/url.js";
 import type { Post } from "../../types.js";
+import { renderArchivePage } from "./archive.js";
+import { renderCollectionPage } from "./collection.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -60,6 +62,13 @@ pageRoutes.get("/*", async (c) => {
     );
   }
 
+  if (resolved.kind === "archive" && resolved.archiveQuery) {
+    const overrides = Object.fromEntries(
+      new URLSearchParams(resolved.archiveQuery),
+    );
+    return renderArchivePage(c, overrides);
+  }
+
   if (resolved.postId) {
     const post = await c.var.services.posts.getById(resolved.postId);
     if (!post || post.status === "draft") return c.notFound();
@@ -90,10 +99,13 @@ pageRoutes.get("/*", async (c) => {
     if (!collection) return c.notFound();
 
     if (resolved.kind === "alias") {
-      return c.redirect(
-        toPublicPath(`/c/${collection.slug}`, sitePathPrefix),
-        301,
+      const aliasPagePath = `/${resolved.path}`;
+      const result = await renderCollectionPage(
+        c,
+        collection.slug,
+        aliasPagePath,
       );
+      return result ?? c.notFound();
     }
   }
 

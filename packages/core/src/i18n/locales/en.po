@@ -324,13 +324,22 @@ msgstr "Applies to your entire site, including admin pages. Pick a palette, then
 #. @context: Archive feed title prefix
 #. @context: Archive page title
 #. @context: Built-in navigation label for the archive page
+#. @context: Custom URL target type badge for an archive view
+#. @context: Custom URL type option for filtered archive view
 #. @context: Inactive nav link label on sample page
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
 #: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/navigation-labels.ts
 msgid "Archive"
 msgstr "Archive"
+
+#. @context: Help text for archive custom URL query params
+#: src/routes/dash/custom-urls.tsx
+msgid "Archive filter parameters (e.g. format=note&view=list)"
+msgstr "Archive filter parameters (e.g. format=note&view=list)"
 
 #. @context: Section heading for the detail article sample on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2279,6 +2288,11 @@ msgstr "Published on {date} at {time}"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Published!"
 msgstr "Published!"
+
+#. @context: Archive custom URL query params field
+#: src/routes/dash/custom-urls.tsx
+msgid "Query Parameters"
+msgstr "Query Parameters"
 
 #. @context: Search highlight text on sample page
 #: src/ui/pages/ThemeSamplePage.tsx

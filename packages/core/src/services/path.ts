@@ -19,7 +19,7 @@ import { normalizePath } from "../lib/url.js";
 import type { PathKind, PathRecord } from "../types.js";
 
 export interface ResolvedPath extends PathRecord {
-  targetType: "post" | "collection" | "redirect";
+  targetType: "post" | "collection" | "redirect" | "archive";
 }
 
 export interface CreatePathInput {
@@ -29,6 +29,7 @@ export interface CreatePathInput {
   collectionId?: string | null;
   redirectToPath?: string | null;
   redirectType?: 301 | 302 | null;
+  archiveQuery?: string | null;
 }
 
 export interface PathService {
@@ -91,6 +92,7 @@ export function createPathService(
       collectionId: row.collectionId,
       redirectToPath: row.redirectToPath,
       redirectType: row.redirectType as 301 | 302 | null,
+      archiveQuery: row.archiveQuery,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -118,6 +120,7 @@ export function createPathService(
             ? normalizeStoredPath(input.redirectToPath)
             : null,
           redirectType: input.redirectType ?? null,
+          archiveQuery: input.archiveQuery ?? null,
           createdAt: timestamp,
           updatedAt: timestamp,
         })
@@ -154,11 +157,13 @@ export function createPathService(
       if (!record) return null;
 
       const targetType =
-        record.kind === "redirect"
-          ? "redirect"
-          : record.postId
-            ? "post"
-            : "collection";
+        record.kind === "archive"
+          ? "archive"
+          : record.kind === "redirect"
+            ? "redirect"
+            : record.postId
+              ? "post"
+              : "collection";
 
       return { ...record, targetType };
     },

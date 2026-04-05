@@ -404,7 +404,7 @@ export const pathRegistry = sqliteTable(
       .references(() => sites.id, { onDelete: "cascade" }),
     path: text("path").notNull(),
     kind: text("kind", {
-      enum: ["slug", "alias", "redirect"],
+      enum: ["slug", "alias", "redirect", "archive"],
     }).notNull(),
     postId: text("post_id").references(() => posts.id, {
       onDelete: "cascade",
@@ -414,13 +414,14 @@ export const pathRegistry = sqliteTable(
     }),
     redirectToPath: text("redirect_to_path"),
     redirectType: integer("redirect_type"),
+    archiveQuery: text("archive_query"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
     check(
       "chk_path_registry_kind",
-      sql`${table.kind} IN ('slug', 'alias', 'redirect')`,
+      sql`${table.kind} IN ('slug', 'alias', 'redirect', 'archive')`,
     ),
     uniqueIndex("uq_path_registry_site_path").on(table.siteId, table.path),
     uniqueIndex("uq_path_registry_site_post_slug")
@@ -444,12 +445,21 @@ export const pathRegistry = sqliteTable(
         )
         AND ${table.redirectToPath} IS NULL
         AND ${table.redirectType} IS NULL
+        AND ${table.archiveQuery} IS NULL
       ) OR (
         ${table.kind} = 'redirect'
         AND ${table.postId} IS NULL
         AND ${table.collectionId} IS NULL
         AND ${table.redirectToPath} IS NOT NULL
         AND ${table.redirectType} IN (301, 302)
+        AND ${table.archiveQuery} IS NULL
+      ) OR (
+        ${table.kind} = 'archive'
+        AND ${table.postId} IS NULL
+        AND ${table.collectionId} IS NULL
+        AND ${table.redirectToPath} IS NULL
+        AND ${table.redirectType} IS NULL
+        AND ${table.archiveQuery} IS NOT NULL
       )`,
     ),
   ],

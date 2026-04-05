@@ -19,10 +19,11 @@ import { createPathService, type PathService } from "./path.js";
 
 export interface CreateCustomUrl {
   path: string;
-  targetType: "post" | "collection" | "redirect";
+  targetType: "post" | "collection" | "redirect" | "archive";
   targetId?: string;
   toPath?: string;
   redirectType?: 301 | 302;
+  archiveQuery?: string;
 }
 
 export interface CustomUrlService {
@@ -53,14 +54,17 @@ export function createCustomUrlService(
       id: row.id,
       path: row.path,
       targetType:
-        row.kind === "redirect"
-          ? "redirect"
-          : row.postId
-            ? "post"
-            : "collection",
+        row.kind === "archive"
+          ? "archive"
+          : row.kind === "redirect"
+            ? "redirect"
+            : row.postId
+              ? "post"
+              : "collection",
       targetId: row.postId ?? row.collectionId,
       toPath: row.redirectToPath ? `/${row.redirectToPath}` : null,
       redirectType: row.redirectType as 301 | 302 | null,
+      archiveQuery: row.archiveQuery,
       createdAt: row.createdAt,
     };
   }
@@ -121,6 +125,29 @@ export function createCustomUrlService(
           );
         }
         throw new ConflictError(`Path "${normalized}" is already in use`);
+      }
+
+      if (data.targetType === "archive") {
+        if (!data.archiveQuery) {
+          throw new ValidationError("Archive query parameters are required");
+        }
+        const record = await resolvedPaths.create({
+          path: normalized,
+          kind: "archive",
+          archiveQuery: data.archiveQuery,
+        });
+        const row = await db
+          .select()
+          .from(pathRegistry)
+          .where(
+            and(
+              eq(pathRegistry.siteId, siteId),
+              eq(pathRegistry.id, record.id),
+            ),
+          )
+          .limit(1);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- freshly inserted row exists
+        return toCustomUrl(row[0]!);
       }
 
       if (data.targetType === "redirect") {
