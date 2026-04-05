@@ -566,7 +566,10 @@ export function createCollectionService(
         )
         .where(eq(collections.siteId, siteId))
         .groupBy(collections.id)
-        .orderBy(desc(sql`last_added_at`), desc(collections.createdAt));
+        .orderBy(
+          desc(sql`COALESCE(MAX(${postCollections.createdAt}), 0)`),
+          desc(collections.createdAt),
+        );
       return hydrateCollections(rows.map((row) => row.collection));
     },
 
