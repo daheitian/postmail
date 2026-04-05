@@ -1902,6 +1902,10 @@
     margin-bottom: 1.4rem;
   }
 
+  .feed-link-title:has(+ .post-menu-footer) {
+    margin-bottom: 0;
+  }
+
   .feed-link-title-link {
     text-decoration: none;
     user-select: all;
