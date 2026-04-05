@@ -2802,11 +2802,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 0.9rem;
-    height: 0.9rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.72rem;
     color: var(--site-text-secondary);
     text-decoration: none;
-    transition: color 0.18s ease;
+    transition:
+      color 0.18s ease,
+      background-color 0.16s ease;
     flex-shrink: 0;
   }
 
@@ -2815,8 +2818,8 @@
   }
 
   .post-footer-external-link svg {
-    width: 0.82rem;
-    height: 0.82rem;
+    width: 1.05rem;
+    height: 1.05rem;
   }
 
   .post-collection-tags {
@@ -2987,8 +2990,8 @@
     display: none;
     align-items: center;
     justify-content: center;
-    width: 1.58rem;
-    height: 1.58rem;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
     border: none;
     border-radius: 0.72rem;
@@ -3005,26 +3008,26 @@
   }
 
   .post-menu-trigger {
-    width: 1.74rem;
-    height: 1.74rem;
+    width: 2.12rem;
+    height: 2.12rem;
     opacity: 0.88;
   }
 
   .reply-trigger {
-    width: 1.52rem;
-    height: 1.52rem;
+    width: 2rem;
+    height: 2rem;
     opacity: 0.66;
   }
 
   .post-menu-trigger svg,
   .reply-trigger svg {
-    width: 0.9rem;
-    height: 0.9rem;
+    width: 1.05rem;
+    height: 1.05rem;
   }
 
   .post-menu-trigger svg {
-    width: 1rem;
-    height: 1rem;
+    width: 1.15rem;
+    height: 1.15rem;
   }
 
   .post-menu-trigger:hover,
@@ -3292,6 +3295,12 @@
   .post-menu-visibility-panel {
     width: 100%;
     min-width: 0;
+  }
+
+  .post-menu-panel:has(.post-menu-collection-picker) {
+    width: min(18.5rem, calc(100vw - 1.25rem));
+    min-width: min(18.5rem, calc(100vw - 1.25rem));
+    max-width: min(20rem, calc(100vw - 1.25rem));
   }
 
   .post-menu-picker-search {
@@ -10199,6 +10208,11 @@
     opacity: 0.66;
   }
 
+  .archive-tile-quote .archive-tile-copy {
+    display: flex;
+    flex-direction: column;
+  }
+
   .archive-tile-quote .archive-tile-summary {
     position: relative;
     z-index: 1;
@@ -10209,6 +10223,26 @@
     font-size: var(--type-sm);
     line-height: 1.42;
     letter-spacing: -0.01em;
+  }
+
+  .archive-tile-quote-source {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 4px;
+    font-size: var(--type-2xs);
+    font-weight: var(--fw-medium);
+    color: var(--site-text-secondary);
+    opacity: 0.72;
+  }
+
+  .archive-tile-quote-source::before {
+    content: "";
+    width: 0.65rem;
+    height: 1px;
+    flex-shrink: 0;
+    background: currentColor;
+    opacity: 0.5;
   }
 
   /* --- Month header in grid ------------------------------------------------ */

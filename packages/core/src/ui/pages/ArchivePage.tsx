@@ -1102,21 +1102,34 @@ const ArchiveTile: FC<{ post: PostView; timeZone?: string }> = ({
           )}
           {hasCopy && (
             <div class="archive-tile-copy">
-              {title && (
-                <span class="archive-tile-title">
-                  {post.format === "link" && (
-                    <span
-                      class="archive-tile-link-indicator"
-                      dangerouslySetInnerHTML={{
-                        __html: getIconSvg("external-link") ?? "",
-                      }}
-                    />
+              {post.format === "quote" ? (
+                <>
+                  {showSummary && (
+                    <span class="archive-tile-summary">{summary}</span>
                   )}
-                  {title}
-                </span>
-              )}
-              {showSummary && !showBgTitle && (
-                <span class="archive-tile-summary">{summary}</span>
+                  {title && (
+                    <span class="archive-tile-quote-source">{title}</span>
+                  )}
+                </>
+              ) : (
+                <>
+                  {title && (
+                    <span class="archive-tile-title">
+                      {post.format === "link" && (
+                        <span
+                          class="archive-tile-link-indicator"
+                          dangerouslySetInnerHTML={{
+                            __html: getIconSvg("external-link") ?? "",
+                          }}
+                        />
+                      )}
+                      {title}
+                    </span>
+                  )}
+                  {showSummary && !showBgTitle && (
+                    <span class="archive-tile-summary">{summary}</span>
+                  )}
+                </>
               )}
             </div>
           )}
