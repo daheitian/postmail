@@ -263,9 +263,7 @@ export function createExportService(
       for (const collection of allCollections) {
         const slug = collectionSlugMap.get(collection.id) ?? collection.slug;
         const section = buildCollectionSection(collection);
-        files[`content/c/${slug}/_index.md`] = new TextEncoder().encode(
-          section,
-        );
+        files[`content/${slug}/_index.md`] = new TextEncoder().encode(section);
       }
 
       // Generate scaffold
@@ -277,6 +275,9 @@ export function createExportService(
         ),
       );
       files["content/_index.md"] = new TextEncoder().encode(buildRootSection());
+      files["content/collections/_index.md"] = new TextEncoder().encode(
+        buildCollectionsSection(),
+      );
       files["content/archive/_index.md"] = new TextEncoder().encode(
         buildArchiveSection(),
       );
@@ -912,6 +913,14 @@ function buildRootSection(): string {
   return `+++
 sort_by = "date"
 paginate_by = 20
++++
+`;
+}
+
+function buildCollectionsSection(): string {
+  return `+++
+title = "Collections"
+render = false
 +++
 `;
 }

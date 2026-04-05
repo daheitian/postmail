@@ -7,6 +7,7 @@ import {
   applyD1Backfills,
   applyD1SchemaMigrations,
   applyNodeBackfills,
+  applyPgBackfills,
 } from "../lib/migration-runner.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
 import { openNodeSqlite, resolveDatabaseDialect } from "../lib/node-sqlite.js";
@@ -311,6 +312,13 @@ export async function run(argv) {
         applyNodeBackfills(sqlite);
       } finally {
         sqlite.close();
+      }
+    } else if (databaseDialect === "pg") {
+      const pool = new Pool({ connectionString: databaseUrl });
+      try {
+        await applyPgBackfills(pool);
+      } finally {
+        await pool.end().catch(() => undefined);
       }
     }
   } else {

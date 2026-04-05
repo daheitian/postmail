@@ -309,3 +309,67 @@ export function applyNodeBackfills(sqlite) {
     tableName: DEFAULT_DATA_MIGRATION_TABLE,
   });
 }
+
+function createPgTrackingTableSql(tableName) {
+  const table = quoteIdentifier(tableName);
+  return `
+    CREATE TABLE IF NOT EXISTS ${table} (
+      "id" SERIAL PRIMARY KEY,
+      "name" TEXT UNIQUE NOT NULL,
+      "applied_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    );
+  `;
+}
+
+function createPgSqlRunner(pool) {
+  return {
+    async execute(sql) {
+      await pool.query(sql);
+    },
+    async query(sql) {
+      const result = await pool.query(sql);
+      return result.rows;
+    },
+  };
+}
+
+export async function applyPgBackfills(pool) {
+  const runner = createPgSqlRunner(pool);
+  const files = listBackfillFiles(resolveBundledBackfillsDir());
+  if (files.length === 0) {
+    console.log("No data backfills to apply.");
+    return 0;
+  }
+
+  const tableName = DEFAULT_DATA_MIGRATION_TABLE;
+  await runner.execute(createPgTrackingTableSql(tableName));
+  const table = quoteIdentifier(tableName);
+  const applied = await runner.query(`SELECT "name" FROM ${table} ORDER BY "id"`);
+  const appliedNames = new Set(applied.map((row) => String(row.name)));
+  const pendingFiles = files.filter((file) => !appliedNames.has(file.name));
+
+  if (pendingFiles.length === 0) {
+    console.log("No data backfills to apply.");
+    return 0;
+  }
+
+  console.log(
+    `Applying data backfills (${pendingFiles.length} pending)...`,
+  );
+
+  for (const [index, file] of pendingFiles.entries()) {
+    try {
+      const sql = readNormalizedSqlFile(file.path);
+      const trackingSql = `INSERT INTO ${table} ("name") VALUES (${quoteString(file.name)});`;
+      await runner.execute(`${sql}\n${trackingSql}`);
+      console.log(`[${index + 1}/${pendingFiles.length}] ${file.name} ✅`);
+    } catch (error) {
+      console.log(`[${index + 1}/${pendingFiles.length}] ${file.name} ❌`);
+      throw new Error(`Failed to apply ${file.name}: ${error.message}`, {
+        cause: error,
+      });
+    }
+  }
+
+  return pendingFiles.length;
+}

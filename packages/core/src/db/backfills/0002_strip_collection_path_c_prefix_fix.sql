@@ -1,4 +1,5 @@
 -- Strip c/ prefix from collection paths in path_registry.
+-- Fixes 0001 which incorrectly matched /c/ (with leading slash).
 -- Rows where the target path already exists (conflict) are skipped.
 UPDATE "path_registry"
 SET "path" = SUBSTR("path", 3)
