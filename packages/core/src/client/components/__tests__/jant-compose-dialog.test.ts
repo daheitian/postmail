@@ -2067,7 +2067,7 @@ describe("JantComposeDialog", () => {
     expect(el._collectionIds).toEqual(["col-2"]);
   });
 
-  it("reorders selected collections when opening and keeps the list stable while toggling", async () => {
+  it("keeps selected collections first when opening and after reopening", async () => {
     const el = await createElement([
       { id: "col-1", title: "Books", slug: "books" },
       { id: "col-2", title: "Movies", slug: "movies" },

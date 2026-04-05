@@ -288,7 +288,7 @@ describe("JantPostMenu", () => {
     expect(menu.querySelector("[data-collection-quick-dialog]")).not.toBeNull();
   });
 
-  it("puts selected collections first on open and keeps the order stable while toggling", async () => {
+  it("keeps selected collections first when opening and after reopening", async () => {
     const selectedIds = ["collection-2"];
     const fetchMock = vi.fn(
       async (input: unknown, init?: globalThis.RequestInit) => {

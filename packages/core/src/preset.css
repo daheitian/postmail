@@ -374,6 +374,14 @@ html:lang(ko) {
   text-decoration-color: currentColor;
 }
 
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
 /*
  * Detail-page reading prose
  *

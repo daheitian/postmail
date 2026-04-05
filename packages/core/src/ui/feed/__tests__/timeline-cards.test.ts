@@ -132,6 +132,20 @@ describe("timeline cards", () => {
     );
 
     expect(css).toContain("[data-post-body].prose");
+    expect(css).toContain(".prose > :last-child");
+    expect(css).toContain("margin-bottom: 0;");
+  });
+
+  it("keeps quote footers on the shared card spacing baseline", () => {
+    const css = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toContain(".feed-quote-post [data-post-meta] {");
+    expect(css).not.toContain(
+      ".feed-quote-post [data-post-meta] {\n    margin-top: 0.9rem;",
+    );
   });
 
   it("uses inset-note styling for compose editor blockquotes", () => {
