@@ -190,7 +190,7 @@
     background: transparent;
     color: var(--site-text-primary);
     font-family: var(--font-ui);
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-input);
     line-height: 2.55rem;
     outline: none;
     transition:
@@ -553,7 +553,7 @@
     min-height: 2rem;
     padding: 0.15rem 0;
     cursor: pointer;
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-control);
     font-weight: var(--fw-medium);
     letter-spacing: 0.01em;
     line-height: 1;
@@ -601,7 +601,7 @@
     background: transparent;
     cursor: pointer;
     font-family: var(--font-ui);
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-control);
     font-weight: var(--fw-medium);
     letter-spacing: 0.01em;
     color: color-mix(in srgb, var(--site-text-secondary) 62%, transparent);
@@ -663,7 +663,7 @@
     gap: 0.35rem;
     padding: 0.38rem 0.75rem 0.38rem 1.15rem;
     font-family: var(--font-ui);
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-control);
     color: var(--site-text-secondary);
     text-decoration: none;
     transition:
@@ -758,14 +758,14 @@
   }
 
   .site-browse-sep {
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     color: var(--site-text-primary);
     opacity: 0.18;
     user-select: none;
   }
 
   .site-browse-link {
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-control);
     font-weight: var(--fw-regular);
     color: var(--site-text-primary);
     text-decoration: none;
@@ -1876,7 +1876,7 @@
     background: none;
     color: var(--site-text-secondary);
     font-family: var(--font-ui);
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     font-weight: var(--fw-regular);
     line-height: 1.3;
     text-decoration: none;
@@ -1933,7 +1933,7 @@
   .feed-continue-link {
     display: inline-block;
     margin-top: 0.5rem;
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     color: var(--site-text-secondary);
   }
 
@@ -1982,7 +1982,7 @@
   .post-header-meta-link {
     color: var(--site-text-secondary);
     font-family: var(--font-ui);
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     text-decoration: none;
     white-space: nowrap;
   }
@@ -2565,7 +2565,7 @@
     margin-top: 0.95rem;
     color: var(--site-text-secondary);
     font-family: var(--font-ui);
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     line-height: 1.3;
   }
 
@@ -2689,7 +2689,7 @@
     flex-wrap: wrap;
     gap: 6px;
     margin-bottom: 5px;
-    font-size: var(--type-code);
+    font-size: var(--type-ui-caption);
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0.01em;
@@ -2735,7 +2735,7 @@
 
   .post-footer-detail {
     margin-top: 24px;
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     color: var(--site-text-secondary);
   }
 
@@ -2797,7 +2797,7 @@
 
   .post-footer-link {
     color: var(--site-text-secondary);
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     text-decoration: none;
     white-space: nowrap;
     flex-shrink: 0;
@@ -2844,7 +2844,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     position: relative;
     min-width: 0;
     max-width: 100%;
@@ -2967,7 +2967,7 @@
     gap: 6px;
     padding: 6px 8px;
     border-radius: 4px;
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     color: var(--site-text-secondary);
     text-decoration: none;
   }
@@ -2983,7 +2983,7 @@
     display: flex;
     gap: 1px;
     margin-top: 6px;
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-meta);
     line-height: 1;
   }
 
@@ -3536,7 +3536,7 @@
 
   .collection-quick-dialog-title {
     margin: 0;
-    font-size: var(--type-base);
+    font-size: var(--type-ui-title);
     font-weight: var(--fw-semibold);
     letter-spacing: -0.015em;
     line-height: 1.15;
@@ -3555,7 +3555,7 @@
     padding: 0.42rem 0.78rem;
     margin: 0;
     color: var(--site-text-secondary);
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-control);
     font-weight: var(--fw-medium);
     cursor: pointer;
     transition:
@@ -3596,7 +3596,7 @@
   .collection-quick-dialog-note {
     margin: 0;
     color: var(--site-text-secondary);
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     line-height: 1.45;
     max-width: 28ch;
   }
@@ -3613,7 +3613,7 @@
 
   .collection-quick-dialog jant-collection-form .label {
     color: var(--site-text-secondary);
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-micro);
     font-weight: var(--fw-medium);
     letter-spacing: 0.03em;
   }
@@ -4018,12 +4018,12 @@
     --compose-title-input-size: var(--type-subtitle);
     --compose-title-input-leading: var(--type-display-leading);
     --compose-quote-input-size: var(--type-subtitle);
-    --compose-inline-input-size: var(--type-secondary);
-    --compose-panel-label-size: var(--type-base);
-    --compose-panel-hint-size: var(--type-sm);
-    --compose-panel-control-size: var(--type-base);
-    --compose-summary-size: var(--type-base);
-    --compose-primary-button-size: var(--type-secondary);
+    --compose-inline-input-size: var(--type-ui-input);
+    --compose-panel-label-size: var(--type-ui-control);
+    --compose-panel-hint-size: var(--type-ui-hint);
+    --compose-panel-control-size: var(--type-ui-control);
+    --compose-summary-size: var(--type-ui-meta);
+    --compose-primary-button-size: var(--type-ui-meta);
   }
 
   @media (min-width: 700px) {
@@ -4190,7 +4190,7 @@
     background: none;
     border-radius: 10px;
     color: var(--site-text-secondary);
-    font-size: var(--type-base);
+    font-size: var(--type-ui-control);
     font-weight: var(--fw-medium);
     cursor: pointer;
     transition: color 0.15s ease-out;
@@ -4221,7 +4221,7 @@
 
   .compose-dialog-title {
     font-weight: var(--fw-semibold);
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-title);
     line-height: 1.2;
   }
 
@@ -4408,7 +4408,7 @@
     border: none;
     background: transparent;
     color: var(--site-text-secondary);
-    font-size: var(--type-base);
+    font-size: var(--type-ui-control);
     font-weight: var(--fw-medium);
     line-height: 1.1;
     cursor: pointer;
@@ -4511,7 +4511,7 @@
     background: transparent;
     color: var(--site-text-secondary);
     cursor: pointer;
-    font-size: var(--type-sm);
+    font-size: var(--type-ui-hint);
     padding: 6px 8px;
     border-radius: 8px;
     flex-shrink: 0;
@@ -4758,7 +4758,7 @@
 
   .compose-url-status {
     color: var(--site-text-secondary);
-    font-size: var(--type-sm);
+    font-size: var(--compose-panel-hint-size);
     line-height: 1.45;
     margin: 0 0 14px;
     padding-left: 2px;
@@ -4789,15 +4789,9 @@
   }
 
   .compose-thoughts {
-    font-size: var(--type-xs);
+    font-size: var(--compose-panel-hint-size);
     line-height: 1.6;
     color: var(--site-text-secondary);
-  }
-
-  @media (min-width: 700px) {
-    .compose-thoughts {
-      font-size: var(--type-sm);
-    }
   }
 
   /* --- Star rating -------------------------------------------------------- */
@@ -4829,7 +4823,7 @@
   }
 
   .compose-star-label {
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-micro);
     color: var(--site-text-secondary);
     margin-left: 4px;
   }
@@ -4869,7 +4863,7 @@
     border: none;
     background: transparent;
     cursor: pointer;
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-control);
     font-weight: var(--fw-medium);
     color: var(--site-text-secondary);
     padding: 4px 8px;
@@ -4967,7 +4961,7 @@
   }
 
   .compose-tool-label {
-    font-size: var(--type-sm);
+    font-size: var(--type-ui-hint);
     font-weight: var(--fw-medium);
     white-space: nowrap;
   }
@@ -5068,7 +5062,7 @@
       box-shadow 0.18s ease,
       color 0.18s ease;
     color: var(--site-text-secondary);
-    font-size: var(--type-base);
+    font-size: var(--type-ui-control);
   }
 
   .compose-collection-trigger:hover,
@@ -5256,7 +5250,7 @@
     cursor: pointer !important;
     text-align: left;
     color: var(--site-text-primary);
-    font-size: var(--type-xs);
+    font-size: var(--compose-panel-control-size);
     transition:
       background-color 0.16s ease,
       box-shadow 0.16s ease,
@@ -5344,7 +5338,7 @@
   .compose-collection-empty {
     padding: 0.95rem 0.7rem 1.05rem;
     color: var(--site-text-secondary);
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     line-height: 1.5;
     text-align: center;
   }
@@ -5368,7 +5362,7 @@
     background: transparent;
     cursor: pointer;
     text-align: left;
-    font-size: var(--type-xs);
+    font-size: var(--compose-panel-control-size);
     font-weight: var(--fw-medium);
     color: var(--site-text-primary);
     transition:
@@ -5400,7 +5394,7 @@
   }
 
   .compose-post-btn {
-    font-size: var(--type-xs);
+    font-size: var(--compose-primary-button-size);
     font-weight: var(--fw-medium);
     letter-spacing: 0.02em;
     color: var(--site-elevated-bg);
@@ -6038,7 +6032,7 @@
     border-radius: 8px;
     cursor: pointer;
     text-align: left;
-    font-size: var(--type-xs);
+    font-size: var(--compose-panel-control-size);
     color: var(--site-text-primary);
     transition: background-color 0.12s ease;
   }
@@ -6102,7 +6096,7 @@
 
   .compose-slug-suggestion-label {
     color: var(--site-text-secondary);
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-micro);
     font-weight: var(--fw-medium);
     letter-spacing: 0.01em;
     line-height: 1.2;
@@ -6128,7 +6122,7 @@
   .compose-slug-suggestion-value {
     display: block;
     color: var(--site-text-primary);
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     font-weight: var(--fw-medium);
     line-height: 1.2;
     font-family:
@@ -6303,7 +6297,7 @@
       var(--compose-control-bg) 58%,
       var(--compose-paper-bg)
     );
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     line-height: 1.35;
     word-break: break-word;
     font-family:
@@ -6317,13 +6311,13 @@
       var(--site-text-secondary) 92%,
       var(--compose-paper-bg)
     );
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-micro);
     font-weight: var(--fw-normal);
   }
 
   .compose-publish-slug-preview-path {
     color: var(--site-text-primary);
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     font-weight: var(--fw-medium);
     overflow-wrap: anywhere;
   }
@@ -6510,7 +6504,7 @@
   }
 
   .compose-retry-label {
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-micro);
     line-height: 1.3;
     text-align: center;
     opacity: 0.9;
@@ -6569,7 +6563,7 @@
     border: none;
     background: transparent;
     cursor: pointer;
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-caption);
     font-weight: var(--fw-semibold);
     letter-spacing: 0.04em;
     color: var(--site-text-secondary);
@@ -6635,7 +6629,7 @@
   }
 
   .compose-attachment-file-name {
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-caption);
     font-weight: var(--fw-medium);
     color: var(--site-text-primary);
     max-width: 100%;
@@ -6645,7 +6639,7 @@
   }
 
   .compose-attachment-file-size {
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-micro);
     color: var(--site-text-secondary);
   }
 
@@ -6673,7 +6667,7 @@
   }
 
   .compose-attachment-text-summary {
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-caption);
     line-height: 1.45;
     color: var(--site-text-secondary);
     display: -webkit-box;
@@ -6711,7 +6705,7 @@
   }
 
   .compose-confirm-title {
-    font-size: var(--type-base);
+    font-size: var(--type-ui-title);
     font-weight: var(--fw-bold);
     color: var(--site-text-primary);
     letter-spacing: -0.01em;
@@ -6719,7 +6713,7 @@
 
   .compose-confirm-subtitle {
     margin-top: 8px;
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-hint);
     color: var(--site-text-secondary);
     line-height: var(--type-body-leading);
   }
@@ -6731,7 +6725,7 @@
     border: none;
     border-top: 1px solid var(--site-divider);
     background: transparent;
-    font-size: var(--type-base);
+    font-size: var(--type-ui-control);
     font-family: inherit;
     text-align: center;
     cursor: pointer;
@@ -7069,7 +7063,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     font-family: var(--font-ui);
     color: var(--site-text-secondary);
     padding: 4px 12px 4px 9px;
@@ -7118,7 +7112,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     font-family: var(--font-ui);
     color: var(--site-text-secondary);
     padding: 4px 12px 4px 9px;
@@ -7163,7 +7157,7 @@
 
   .compose-thread-segmented .compose-segmented-item {
     flex: none;
-    font-size: var(--type-2xs);
+    font-size: var(--type-ui-caption);
     padding: 3px 10px;
     border-radius: 20px;
     border: 1.5px solid
@@ -7264,7 +7258,7 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-title);
     font-weight: var(--fw-semibold);
     letter-spacing: -0.005em;
     white-space: nowrap;
@@ -7359,7 +7353,7 @@
     justify-content: center;
     padding: 48px 16px;
     color: var(--site-text-secondary);
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     text-align: center;
   }
 
@@ -7388,7 +7382,7 @@
   }
 
   .compose-draft-preview {
-    font-size: var(--type-sm);
+    font-size: var(--type-ui-meta);
     color: var(--site-text-primary);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -7403,7 +7397,7 @@
   }
 
   .compose-draft-meta {
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     color: var(--site-text-secondary);
     margin-top: 4px;
   }

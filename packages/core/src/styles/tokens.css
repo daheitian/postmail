@@ -74,6 +74,13 @@
   --type-code-block: var(--type-sm);
   --type-body-size: var(--type-body);
   --type-body-tracking: 0;
+  --type-ui-title: var(--type-secondary);
+  --type-ui-control: var(--type-base);
+  --type-ui-meta: var(--type-secondary);
+  --type-ui-hint: var(--type-sm);
+  --type-ui-caption: var(--type-xs);
+  --type-ui-micro: var(--type-2xs);
+  --type-ui-input: var(--type-secondary);
   --type-thread-context: var(--type-base);
   --type-thread-context-title: var(--type-secondary);
   --type-thread-context-meta: var(--type-sm);
@@ -376,4 +383,16 @@
   --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
   --search-mark-color: oklch(0.92 0.08 90);
   --dash-bg: oklch(0.2 0.005 80);
+}
+
+@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+  :root {
+    --type-ui-title: max(15px, var(--type-secondary));
+    --type-ui-control: max(15px, var(--type-base));
+    --type-ui-meta: max(14px, var(--type-secondary));
+    --type-ui-hint: max(13px, var(--type-sm));
+    --type-ui-caption: max(13px, var(--type-xs));
+    --type-ui-micro: max(12px, var(--type-2xs));
+    --type-ui-input: max(16px, var(--type-secondary));
+  }
 }

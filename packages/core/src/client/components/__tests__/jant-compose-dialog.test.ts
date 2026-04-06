@@ -555,6 +555,49 @@ describe("JantComposeDialog", () => {
     ).toBeNull();
   });
 
+  it("autofocuses the primary field on desktop format switches", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const focusSpy = vi.spyOn(editor, "focusInput");
+
+    const linkBtn = el.querySelectorAll<HTMLButtonElement>(
+      ".compose-segmented-item",
+    )[1];
+    linkBtn.click();
+    await flushUpdates(el);
+
+    expect(focusSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not autofocus the primary field on touch format switches", async () => {
+    mockMatchMedia(true);
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const focusSpy = vi.spyOn(editor, "focusInput");
+
+    const linkBtn = el.querySelectorAll<HTMLButtonElement>(
+      ".compose-segmented-item",
+    )[1];
+    linkBtn.click();
+    await flushUpdates(el);
+
+    expect(focusSpy).not.toHaveBeenCalled();
+  });
+
   it("submit dispatches jant:compose-submit-deferred with correct payload", async () => {
     const el = await createElement();
     const editor = requireElement(

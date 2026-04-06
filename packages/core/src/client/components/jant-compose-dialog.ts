@@ -1544,11 +1544,19 @@ export class JantComposeDialog extends LitElement {
     return true;
   }
 
-  private _shouldAutofocusCollectionPicker() {
-    return !(
+  private _isTouchViewport() {
+    return (
       globalThis.matchMedia?.("(hover: none) and (pointer: coarse)")?.matches ??
       false
     );
+  }
+
+  private _shouldAutofocusCollectionPicker() {
+    return !this._isTouchViewport();
+  }
+
+  private _shouldAutofocusFormatInput() {
+    return !this._isTouchViewport();
   }
 
   private _scheduleCollectionPickerAutofocus() {
@@ -3248,8 +3256,15 @@ export class JantComposeDialog extends LitElement {
                             "compose-segmented-item-active": this._format === f,
                           })}
                           @click=${() => {
+                            const formatChanged = this._format !== f;
                             this._format = f;
                             this._showPublishPanel = false;
+                            if (
+                              !formatChanged ||
+                              !this._shouldAutofocusFormatInput()
+                            ) {
+                              return;
+                            }
                             globalThis.requestAnimationFrame(() =>
                               this._editor?.focusInput(),
                             );
