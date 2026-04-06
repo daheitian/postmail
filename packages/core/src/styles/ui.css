@@ -1524,7 +1524,8 @@
     display: flex;
     flex-direction: column;
     gap: 1.05rem;
-    margin-bottom: 2.4rem;
+    margin-bottom: 4rem;
+    max-width: 55%;
   }
 
   .collection-page-topbar {
@@ -1973,6 +1974,10 @@
 
     .collection-directory-updated {
       white-space: normal;
+    }
+
+    .collection-page-header {
+      max-width: 100%;
     }
 
     .collection-page-subhead {
