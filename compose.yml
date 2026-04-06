@@ -7,10 +7,11 @@ services:
       AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env}
       PORT: ${PORT:-3000}
       TRUST_PROXY: ${TRUST_PROXY:-true}
+      TZ: ${TZ:-UTC}
     command: ["node", "bin/jant.js", "migrate"]
+    volumes:
+      - ./data:/var/lib/jant
     restart: "no"
-    profiles:
-      - migrate
 
   jant:
     image: ${IMAGE:-owenyoung/jant:latest}
@@ -22,8 +23,12 @@ services:
       AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env}
       PORT: ${PORT:-3000}
       TRUST_PROXY: ${TRUST_PROXY:-true}
+      TZ: ${TZ:-UTC}
     volumes:
       - ./data:/var/lib/jant
+    depends_on:
+      jant-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test:
@@ -37,3 +42,8 @@ services:
       timeout: 5s
       start_period: 20s
       retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

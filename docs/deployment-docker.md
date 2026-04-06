@@ -2,7 +2,7 @@
 
 The official Docker image is `owenyoung/jant`.
 
-It runs the Node runtime, applies pending migrations, and then starts Jant.
+It runs the Node runtime and starts Jant. Database migrations run automatically before the app starts.
 
 Docker Hub: <https://hub.docker.com/r/owenyoung/jant>
 
@@ -21,7 +21,6 @@ Download the official Compose files:
 ```bash
 curl -O https://raw.githubusercontent.com/jant-me/jant/main/compose.yml
 curl -o .env https://raw.githubusercontent.com/jant-me/jant/main/.env.example
-mkdir -p data/media
 ```
 
 Edit `.env` and set at least:
@@ -49,10 +48,13 @@ Open `http://127.0.0.1:3000`.
 The bundled `compose.yml` uses a simple single-node layout:
 
 - the official image `owenyoung/jant:latest`
+- a migration init service that runs automatically before the app starts — if migration fails, the app does not start
 - SQLite stored at `./data/jant.sqlite`
 - uploaded media stored at `./data/media/`
 - container data mounted at `/var/lib/jant`
 - `TRUST_PROXY=true`, which is appropriate when the container sits behind a reverse proxy you control
+- log rotation capped at 10 MB × 3 files to prevent disk exhaustion
+- timezone configurable via `TZ` (defaults to UTC)
 
 This is the easiest way to self-host Jant on a VPS or home server.
 
@@ -168,6 +170,14 @@ The asset bucket (or prefix) must be publicly readable — browsers fetch JS and
 Use `docker run` when you want one container and will manage the rest yourself:
 
 ```bash
+# Run migrations first
+docker run --rm \
+  -e AUTH_SECRET=replace-with-a-long-random-secret \
+  -v "$(pwd)/data:/var/lib/jant" \
+  owenyoung/jant:latest \
+  node bin/jant.js migrate
+
+# Then start the app
 docker run -d \
   --name jant \
   -p 3000:3000 \
@@ -181,7 +191,7 @@ Set `TRUST_PROXY=true` if the container sits behind your own reverse proxy.
 
 ## Updating the Site
 
-Pull the latest image and restart:
+Pull the latest image and restart. Migrations run automatically before the app starts:
 
 ```bash
 docker compose pull
