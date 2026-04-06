@@ -163,6 +163,7 @@ export class JantComposeEditor extends LitElement {
     _attachedTexts: { state: true },
     _attachments: { state: true },
     _attachmentOrder: { state: true },
+    _failedAttachmentPreviews: { state: true },
     _showAltPanel: { state: true },
     _altPanelIndex: { state: true },
     _showEmojiPicker: { state: true },
@@ -186,6 +187,7 @@ export class JantComposeEditor extends LitElement {
   declare _attachedTexts: AttachedTextItem[];
   declare _attachments: ComposeAttachment[];
   declare _attachmentOrder: string[];
+  declare _failedAttachmentPreviews: string[];
   declare _showAltPanel: boolean;
   declare _altPanelIndex: number;
   declare _showEmojiPicker: boolean;
@@ -231,6 +233,7 @@ export class JantComposeEditor extends LitElement {
     this._attachedTexts = [];
     this._attachments = [];
     this._attachmentOrder = [];
+    this._failedAttachmentPreviews = [];
     this._showAltPanel = false;
     this._altPanelIndex = 0;
     this._showEmojiPicker = false;
@@ -497,6 +500,7 @@ export class JantComposeEditor extends LitElement {
     }
     this._attachments = [];
     this._attachmentOrder = [];
+    this._failedAttachmentPreviews = [];
     this._showAltPanel = false;
     this._altPanelIndex = 0;
     this._showUrlValidation = false;
@@ -516,6 +520,7 @@ export class JantComposeEditor extends LitElement {
   }
 
   updateAttachmentPreview(clientId: string, file: File) {
+    this._setAttachmentPreviewFailure(clientId, false);
     this._attachments = this._attachments.map((a) => {
       if (a.clientId !== clientId) return a;
       URL.revokeObjectURL(a.previewUrl);
@@ -762,6 +767,9 @@ export class JantComposeEditor extends LitElement {
       changed.has("_attachments") ||
       changed.has("_attachedTexts")
     ) {
+      if (changed.has("_attachments")) {
+        this._syncFailedAttachmentPreviews();
+      }
       if (this._attachmentOrder.length > 1) {
         this.#initSortable();
       } else {
@@ -831,6 +839,7 @@ export class JantComposeEditor extends LitElement {
     if (data.showTitle !== undefined) this._showTitle = data.showTitle;
     else if (data.title && data.format === "note") this._showTitle = true;
     if (data.showRating !== undefined) this._showRating = data.showRating;
+    this._failedAttachmentPreviews = [];
 
     // Parse body JSON and set editor content
     if (data.bodyJson) {
@@ -1259,6 +1268,7 @@ export class JantComposeEditor extends LitElement {
   private _removeAttachment(index: number) {
     const attachment = this._attachments[index];
     if (attachment) {
+      this._setAttachmentPreviewFailure(attachment.clientId, false);
       URL.revokeObjectURL(attachment.previewUrl);
       if (attachment.posterUrl) URL.revokeObjectURL(attachment.posterUrl);
       this.dispatchEvent(
@@ -1521,6 +1531,63 @@ export class JantComposeEditor extends LitElement {
     >
       ${unsafeSVG(doc + inner)}
     </svg>`;
+  }
+
+  private _hasFailedAttachmentPreview(clientId: string): boolean {
+    return this._failedAttachmentPreviews.includes(clientId);
+  }
+
+  private _setAttachmentPreviewFailure(clientId: string, failed: boolean) {
+    const hasFailure = this._failedAttachmentPreviews.includes(clientId);
+    if (failed === hasFailure) return;
+    this._failedAttachmentPreviews = failed
+      ? [...this._failedAttachmentPreviews, clientId]
+      : this._failedAttachmentPreviews.filter((id) => id !== clientId);
+  }
+
+  private _syncFailedAttachmentPreviews() {
+    const attachmentIds = new Set(
+      this._attachments.map((item) => item.clientId),
+    );
+    const nextFailures = this._failedAttachmentPreviews.filter((clientId) =>
+      attachmentIds.has(clientId),
+    );
+    if (nextFailures.length === this._failedAttachmentPreviews.length) return;
+    this._failedAttachmentPreviews = nextFailures;
+  }
+
+  private _renderAttachmentPreviewFallback(category: "image" | "video") {
+    return html`
+      <div
+        class="compose-attachment-preview-fallback"
+        data-preview-failed=${category}
+        aria-hidden="true"
+      >
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+          <circle cx="9" cy="10" r="1.25" />
+          <path d="m7 16 3.4-3.45 2.65 2.45 2.45-3.05 1.95 2.5" />
+        </svg>
+        ${category === "video"
+          ? html`
+              <div class="compose-attachment-play-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            `
+          : nothing}
+      </div>
+    `;
   }
 
   // ── Render helpers ────────────────────────────────────────────────
@@ -1937,6 +2004,8 @@ export class JantComposeEditor extends LitElement {
   private _renderMediaAttachment(a: ComposeAttachment, i: number) {
     const category = this._getCategory(a);
     const isFileCard = category !== "image" && category !== "video";
+    const visualCategory = category === "video" ? "video" : "image";
+    const previewFailed = this._hasFailedAttachmentPreview(a.clientId);
 
     return html`
       <div class="compose-attachment" data-attachment-id=${a.clientId}>
@@ -1964,51 +2033,73 @@ export class JantComposeEditor extends LitElement {
                   @keydown=${(e: globalThis.KeyboardEvent) =>
                     this._handleAttachmentKeydown(a.clientId, e)}
                 >
-                  ${category === "video"
-                    ? html`
-                        <video
-                          src=${a.previewUrl}
-                          poster=${a.posterUrl ?? nothing}
-                          class="compose-attachment-img"
-                          preload="metadata"
-                          .playsInline=${true}
-                          .muted=${true}
-                        ></video>
-                        <div class="compose-attachment-play-icon">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="white"
-                          >
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        </div>
-                      `
-                    : a.status === "processing"
+                  ${previewFailed
+                    ? this._renderAttachmentPreviewFallback(visualCategory)
+                    : category === "video"
                       ? html`
-                          <div class="compose-attachment-processing">
+                          <video
+                            src=${a.previewUrl}
+                            poster=${a.posterUrl ?? nothing}
+                            class="compose-attachment-img"
+                            preload="metadata"
+                            .playsInline=${true}
+                            .muted=${true}
+                            @loadeddata=${() =>
+                              this._setAttachmentPreviewFailure(
+                                a.clientId,
+                                false,
+                              )}
+                            @error=${() =>
+                              this._setAttachmentPreviewFailure(
+                                a.clientId,
+                                true,
+                              )}
+                          ></video>
+                          <div class="compose-attachment-play-icon">
                             <svg
-                              class="animate-spin size-5"
+                              width="24"
+                              height="24"
                               viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
+                              fill="white"
                             >
-                              <path
-                                d="M12 2a10 10 0 1 0 10 10"
-                                stroke-linecap="round"
-                              />
+                              <path d="M8 5v14l11-7z" />
                             </svg>
                           </div>
                         `
-                      : html`
-                          <img
-                            src=${a.previewUrl}
-                            alt=""
-                            class="compose-attachment-img"
-                          />
-                        `}
+                      : a.status === "processing"
+                        ? html`
+                            <div class="compose-attachment-processing">
+                              <svg
+                                class="animate-spin size-5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                              >
+                                <path
+                                  d="M12 2a10 10 0 1 0 10 10"
+                                  stroke-linecap="round"
+                                />
+                              </svg>
+                            </div>
+                          `
+                        : html`
+                            <img
+                              src=${a.previewUrl}
+                              alt=""
+                              class="compose-attachment-img"
+                              @load=${() =>
+                                this._setAttachmentPreviewFailure(
+                                  a.clientId,
+                                  false,
+                                )}
+                              @error=${() =>
+                                this._setAttachmentPreviewFailure(
+                                  a.clientId,
+                                  true,
+                                )}
+                            />
+                          `}
                 </div>
                 ${this._renderAttachmentOverlay(a, i)}
               </div>

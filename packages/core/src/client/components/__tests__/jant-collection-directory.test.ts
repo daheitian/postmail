@@ -327,6 +327,23 @@ describe("JantCollectionsManager", () => {
     expect(links[0]?.getAttribute("href")).toBe("/collections/reading+tools");
   });
 
+  it("renders collection descriptions between the title and metadata", async () => {
+    const el = await createElement();
+
+    const descriptions = Array.from(
+      el.querySelectorAll<HTMLElement>(".collection-directory-description"),
+    ).map((node) => node.textContent?.trim());
+
+    expect(descriptions).toEqual(["Notes from books", "Tools I keep around"]);
+
+    const firstRow = el.querySelector<HTMLElement>(
+      ".collection-directory-item",
+    );
+    expect(firstRow?.textContent).toContain("Reading");
+    expect(firstRow?.textContent).toContain("Notes from books");
+    expect(firstRow?.textContent).toContain("4 entries");
+  });
+
   it("keeps focus on the URL field while typing in the new link form", async () => {
     const el = await createElement();
 

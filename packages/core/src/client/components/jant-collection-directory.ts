@@ -763,6 +763,13 @@ export class JantCollectionsManager extends LitElement {
             <span class="collection-directory-title">${collection.title}</span>
           </a>
         </div>
+        ${collection.description
+          ? html`
+              <p class="collection-directory-description">
+                ${collection.description}
+              </p>
+            `
+          : nothing}
         <p class="collection-directory-summary">
           <span class="collection-directory-meta"
             >${this.#countLabel(collection.postCount)}</span

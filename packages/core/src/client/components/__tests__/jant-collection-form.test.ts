@@ -229,22 +229,103 @@ describe("JantCollectionForm", () => {
     select.value = "rating_desc";
     select.dispatchEvent(new Event("change", { bubbles: true }));
 
-    let detail: CollectionSubmitDetail | null = null;
+    let submittedData: CollectionSubmitDetail["data"] | null = null;
     el.addEventListener("jant:collection-submit", (event) => {
-      detail = (event as CustomEvent<CollectionSubmitDetail>).detail;
+      submittedData = (event as CustomEvent<CollectionSubmitDetail>).detail
+        .data;
     });
 
     el.querySelector("form")?.dispatchEvent(
       new Event("submit", { bubbles: true, cancelable: true }),
     );
 
-    expect(detail).not.toBeNull();
-    expect((detail as unknown as CollectionSubmitDetail).data).toEqual({
+    expect(submittedData).toEqual({
       title: "Books",
       slug: "books",
       description: "All about books",
       sortOrder: "rating_desc",
     });
+  });
+
+  it("submits the form from the description textarea on Cmd/Ctrl+Enter", async () => {
+    const el = await createElement();
+    const titleInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-title-input]",
+    );
+    const slugInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-slug-input]",
+    );
+    const descriptionTextarea =
+      el.querySelector<HTMLTextAreaElement>("textarea");
+
+    if (!titleInput || !slugInput || !descriptionTextarea) {
+      throw new Error("Expected full form inputs");
+    }
+
+    titleInput.value = "Wisdom";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    slugInput.value = "wisdom";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    descriptionTextarea.value = "Short notes worth keeping.";
+    descriptionTextarea.dispatchEvent(new Event("input", { bubbles: true }));
+
+    let submittedData: CollectionSubmitDetail["data"] | null = null;
+    el.addEventListener("jant:collection-submit", (event) => {
+      submittedData = (event as CustomEvent<CollectionSubmitDetail>).detail
+        .data;
+    });
+
+    descriptionTextarea.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Enter",
+        metaKey: true,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+
+    expect(submittedData).toEqual({
+      title: "Wisdom",
+      slug: "wisdom",
+      description: "Short notes worth keeping.",
+      sortOrder: "newest",
+    });
+  });
+
+  it("does not submit the form from the description textarea on plain Enter", async () => {
+    const el = await createElement();
+    const titleInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-title-input]",
+    );
+    const slugInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-slug-input]",
+    );
+    const descriptionTextarea =
+      el.querySelector<HTMLTextAreaElement>("textarea");
+
+    if (!titleInput || !slugInput || !descriptionTextarea) {
+      throw new Error("Expected full form inputs");
+    }
+
+    titleInput.value = "Wisdom";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    slugInput.value = "wisdom";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+    let detail: CollectionSubmitDetail | null = null;
+    el.addEventListener("jant:collection-submit", (event) => {
+      detail = (event as CustomEvent<CollectionSubmitDetail>).detail;
+    });
+
+    descriptionTextarea.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Enter",
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+
+    expect(detail).toBeNull();
   });
 
   it("shows a slug error and blocks submit when the slug is invalid", async () => {

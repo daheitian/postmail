@@ -989,6 +989,34 @@ describe("JantComposeEditor", () => {
     expect(card?.textContent).toContain("Some content here");
   });
 
+  it("keeps a removable fallback card when a single saved image preview fails", async () => {
+    const el = await createElement("note");
+
+    el.populate({
+      format: "note",
+      media: [
+        {
+          id: "m1",
+          previewUrl: "/missing.png",
+          mimeType: "image/png",
+        },
+      ],
+      attachmentOrder: ["m1"],
+    });
+    await el.updateComplete;
+
+    const image = requireElement(
+      el.querySelector<HTMLImageElement>(".compose-attachment-img"),
+      "expected image preview",
+    );
+    image.dispatchEvent(new Event("error"));
+    await el.updateComplete;
+
+    expect(el.querySelector("[data-preview-failed='image']")).not.toBeNull();
+    expect(el.querySelector(".compose-attachment-remove")).not.toBeNull();
+    expect(el.querySelector(".compose-attachment-img")).toBeNull();
+  });
+
   it("media button shows inline add label when attachments are present", async () => {
     const el = await createElement("note");
 

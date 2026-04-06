@@ -346,6 +346,22 @@ export class JantCollectionForm extends LitElement {
     );
   }
 
+  #handleDescriptionKeydown(event: globalThis.KeyboardEvent) {
+    if (
+      event.key !== "Enter" ||
+      event.defaultPrevented ||
+      event.isComposing ||
+      !(event.metaKey || event.ctrlKey) ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    const form = (event.currentTarget as HTMLTextAreaElement | null)?.form;
+    form?.requestSubmit();
+  }
+
   render() {
     const isQuick = this.variant === "quick";
     const formClass = isQuick
@@ -431,6 +447,8 @@ export class JantCollectionForm extends LitElement {
                       const target = event.target as HTMLTextAreaElement;
                       this._description = target.value;
                     }}
+                    @keydown=${(event: globalThis.KeyboardEvent) =>
+                      this.#handleDescriptionKeydown(event)}
                   ></textarea>
                 </div>
 
