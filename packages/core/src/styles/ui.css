@@ -2302,6 +2302,14 @@
     --site-thread-rail-line-left: -19px;
   }
 
+  @media (max-width: 700px) {
+    .thread-group-preview,
+    .thread-group-detail {
+      --site-thread-rail-indent: 8px;
+      --site-thread-rail-line-left: -11px;
+    }
+  }
+
   .thread-group-preview::before,
   .thread-group-detail::before {
     width: 1px;

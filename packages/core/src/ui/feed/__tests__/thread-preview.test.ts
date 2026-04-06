@@ -189,6 +189,20 @@ describe("getThreadPreviewState", () => {
     );
   });
 
+  it("adds extra mobile inset before the thread rail reaches the viewport edge", () => {
+    const css = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /@media\s*\(max-width:\s*700px\)\s*\{[\s\S]*\.thread-group-preview,\s*\.thread-group-detail\s*\{[\s\S]*--site-thread-rail-indent:\s*8px;[\s\S]*--site-thread-rail-line-left:\s*-11px;/,
+    );
+    expect(css).not.toMatch(
+      /@media\s*\(max-width:\s*700px\)\s*\{[\s\S]*\.thread-group-preview,\s*\.thread-group-detail\s*\{[\s\S]*--site-thread-rail-dot-left:/,
+    );
+  });
+
   it("renders article summaries in thread previews", () => {
     const rootPost = createPostView({
       title: "Threaded article",
