@@ -288,6 +288,110 @@ export class JantPostMenu extends LitElement {
     });
   }
 
+  #getCollectionOptionElements() {
+    return Array.from(
+      this.querySelectorAll<HTMLButtonElement>(".post-menu-picker-option"),
+    );
+  }
+
+  #handleCollectionSearchKeydown = (event: globalThis.KeyboardEvent) => {
+    if (
+      event.defaultPrevented ||
+      event.isComposing ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.key !== "ArrowDown"
+    ) {
+      return;
+    }
+
+    const [firstOption] = this.#getCollectionOptionElements();
+    const addAction = this.querySelector<HTMLButtonElement>(
+      "[data-post-menu-add-collection]",
+    );
+    const nextTarget = firstOption ?? addAction;
+    if (!nextTarget) return;
+
+    event.preventDefault();
+    nextTarget.focus();
+  };
+
+  #handleCollectionOptionKeydown = (
+    event: globalThis.KeyboardEvent,
+    collectionId: string,
+  ) => {
+    if (
+      event.defaultPrevented ||
+      event.isComposing ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    ) {
+      return;
+    }
+
+    const options = this.#getCollectionOptionElements();
+    const currentTarget = event.currentTarget as HTMLButtonElement | null;
+    const currentIndex = currentTarget ? options.indexOf(currentTarget) : -1;
+
+    if (event.key === "ArrowDown") {
+      const addAction = this.querySelector<HTMLButtonElement>(
+        "[data-post-menu-add-collection]",
+      );
+      const nextTarget =
+        currentIndex >= 0
+          ? (options[currentIndex + 1] ?? addAction)
+          : options[0];
+      if (!nextTarget) return;
+
+      event.preventDefault();
+      nextTarget.focus();
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      const searchInput = this.querySelector<HTMLInputElement>(
+        ".post-menu-picker-search input",
+      );
+      const previousTarget =
+        currentIndex > 0 ? options[currentIndex - 1] : searchInput;
+      if (!previousTarget) return;
+
+      event.preventDefault();
+      previousTarget.focus();
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      this.#toggleCollection(collectionId);
+    }
+  };
+
+  #handleCollectionAddActionKeydown = (event: globalThis.KeyboardEvent) => {
+    if (
+      event.defaultPrevented ||
+      event.isComposing ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.key !== "ArrowUp"
+    ) {
+      return;
+    }
+
+    const options = this.#getCollectionOptionElements();
+    const searchInput = this.querySelector<HTMLInputElement>(
+      ".post-menu-picker-search input",
+    );
+    const previousTarget = options.at(-1) ?? searchInput;
+    if (!previousTarget) return;
+
+    event.preventDefault();
+    previousTarget.focus();
+  };
+
   #showMainMenu(focusSelector = "[data-post-menu-item-primary]") {
     this._view = "menu";
     this.#focusAfterUpdate(focusSelector);
@@ -964,6 +1068,7 @@ export class JantPostMenu extends LitElement {
                 autocorrect="off"
                 spellcheck="false"
                 .value=${this._collectionSearch}
+                @keydown=${this.#handleCollectionSearchKeydown}
                 @input=${(e: Event) => {
                   this._collectionSearch = (e.target as HTMLInputElement).value;
                 }}
@@ -988,6 +1093,8 @@ export class JantPostMenu extends LitElement {
                       class=${`post-menu-picker-option${
                         selected ? " post-menu-picker-option-selected" : ""
                       }`}
+                      @keydown=${(event: globalThis.KeyboardEvent) =>
+                        this.#handleCollectionOptionKeydown(event, c.id)}
                       @click=${() => this.#toggleCollection(c.id)}
                     >
                       <span class="post-menu-picker-title">${c.title}</span>
@@ -1054,6 +1161,7 @@ export class JantPostMenu extends LitElement {
             type="button"
             class="post-menu-picker-add"
             data-post-menu-add-collection
+            @keydown=${this.#handleCollectionAddActionKeydown}
             @click=${() => this.#openAddCollectionPanel()}
           >
             <svg

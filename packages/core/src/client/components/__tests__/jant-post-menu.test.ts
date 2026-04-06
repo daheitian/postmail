@@ -33,6 +33,20 @@ function click(element: globalThis.Element) {
   );
 }
 
+function keydown(
+  element: globalThis.Element,
+  key: string,
+  init: globalThis.KeyboardEventInit = {},
+) {
+  element.dispatchEvent(
+    new globalThis.KeyboardEvent("keydown", {
+      bubbles: true,
+      key,
+      ...init,
+    }),
+  );
+}
+
 function collectionPickerTitles(root: globalThis.Element): string[] {
   return Array.from(
     root.querySelectorAll<HTMLElement>(".post-menu-picker-option"),
@@ -286,6 +300,115 @@ describe("JantPostMenu", () => {
     expect(menu.querySelector(".dropdown-menu")).toBeNull();
     expect(menu.querySelector(".post-menu-backdrop")).toBeNull();
     expect(menu.querySelector("[data-collection-quick-dialog]")).not.toBeNull();
+  });
+
+  it("moves collection focus with arrow keys and toggles with Enter", async () => {
+    const selectedIds = ["collection-1"];
+    const fetchMock = vi.fn(
+      async (input: unknown, init?: globalThis.RequestInit) => {
+        const url = String(input);
+        const method = init?.method ?? "GET";
+
+        if (url === "/api/collections?view=compose" && method === "GET") {
+          return jsonResponse({
+            collections: [
+              { id: "collection-1", title: "Movies", slug: "movies" },
+              { id: "collection-2", title: "Books", slug: "books" },
+            ],
+          });
+        }
+
+        if (url === "/api/posts/post-1" && method === "GET") {
+          return jsonResponse({ collectionIds: [...selectedIds] });
+        }
+
+        if (
+          url === "/api/collections/collection-1/posts/post-1" &&
+          method === "DELETE"
+        ) {
+          selectedIds.splice(0, 1);
+          return new Response(null, { status: 204 });
+        }
+
+        throw new Error(`Unexpected fetch in test: ${url}`);
+      },
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { menu, trigger } = await createMenu();
+
+    click(trigger);
+    await menu.updateComplete;
+
+    click(
+      requireElement(
+        menu.querySelector<HTMLElement>("[data-post-menu-open-collections]"),
+        "expected collections button in main menu",
+      ),
+    );
+    await Promise.resolve();
+    await menu.updateComplete;
+
+    await vi.waitFor(() => {
+      expect(
+        menu.querySelector<HTMLInputElement>(".post-menu-picker-search input"),
+      ).not.toBeNull();
+      expect(collectionPickerTitles(menu)).toEqual(["Movies", "Books"]);
+    });
+
+    const searchInput = requireElement(
+      menu.querySelector<HTMLInputElement>(".post-menu-picker-search input"),
+      "expected collection search input",
+    );
+    expect(document.activeElement).toBe(searchInput);
+
+    keydown(searchInput, "ArrowDown");
+    await menu.updateComplete;
+
+    let options = Array.from(
+      menu.querySelectorAll<HTMLButtonElement>(".post-menu-picker-option"),
+    );
+    expect(document.activeElement).toBe(options[0]);
+
+    keydown(
+      requireElement(options[0] ?? null, "expected first option"),
+      "ArrowDown",
+    );
+    await menu.updateComplete;
+    options = Array.from(
+      menu.querySelectorAll<HTMLButtonElement>(".post-menu-picker-option"),
+    );
+    expect(document.activeElement).toBe(options[1]);
+
+    keydown(
+      requireElement(options[1] ?? null, "expected second option"),
+      "ArrowUp",
+    );
+    await menu.updateComplete;
+    options = Array.from(
+      menu.querySelectorAll<HTMLButtonElement>(".post-menu-picker-option"),
+    );
+    expect(document.activeElement).toBe(options[0]);
+
+    keydown(
+      requireElement(options[0] ?? null, "expected first option"),
+      "Enter",
+    );
+    await Promise.resolve();
+    await menu.updateComplete;
+    expect(menu._postCollectionIds).toEqual([]);
+
+    options = Array.from(
+      menu.querySelectorAll<HTMLButtonElement>(".post-menu-picker-option"),
+    );
+    expect(document.activeElement).toBe(options[0]);
+
+    keydown(
+      requireElement(options[0] ?? null, "expected first option"),
+      "ArrowUp",
+    );
+    await menu.updateComplete;
+    expect(document.activeElement).toBe(searchInput);
   });
 
   it("keeps selected collections first when opening and after reopening", async () => {

@@ -32,6 +32,20 @@ function requireEditor(el: JantComposeEditor): Editor {
   return editor;
 }
 
+function keydown(
+  element: globalThis.Element,
+  key: string,
+  init: globalThis.KeyboardEventInit = {},
+) {
+  element.dispatchEvent(
+    new globalThis.KeyboardEvent("keydown", {
+      bubbles: true,
+      key,
+      ...init,
+    }),
+  );
+}
+
 function collectionOptionTitles(root: globalThis.Element): string[] {
   return Array.from(
     root.querySelectorAll<HTMLElement>("[data-popover] [role='option']"),
@@ -2065,6 +2079,149 @@ describe("JantComposeDialog", () => {
     options[0].click();
     await el.updateComplete;
     expect(el._collectionIds).toEqual(["col-2"]);
+  });
+
+  it("moves collection focus with arrow keys and toggles with Enter", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    const el = await createElement();
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
+      "expected collection trigger",
+    ).click();
+    await flushUpdates(el);
+
+    const searchInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-collection-search-input"),
+      "expected collection search input",
+    );
+    expect(document.activeElement).toBe(searchInput);
+
+    keydown(searchInput, "ArrowDown");
+    await flushUpdates(el);
+
+    let options = Array.from(
+      el.querySelectorAll<HTMLButtonElement>("[data-popover] [role='option']"),
+    );
+    expect(document.activeElement).toBe(options[0]);
+
+    keydown(
+      requireElement(options[0] ?? null, "expected first option"),
+      "ArrowDown",
+    );
+    await flushUpdates(el);
+    options = Array.from(
+      el.querySelectorAll<HTMLButtonElement>("[data-popover] [role='option']"),
+    );
+    expect(document.activeElement).toBe(options[1]);
+
+    keydown(
+      requireElement(options[1] ?? null, "expected second option"),
+      "ArrowUp",
+    );
+    await flushUpdates(el);
+    options = Array.from(
+      el.querySelectorAll<HTMLButtonElement>("[data-popover] [role='option']"),
+    );
+    expect(document.activeElement).toBe(options[0]);
+
+    keydown(
+      requireElement(options[0] ?? null, "expected first option"),
+      "Enter",
+    );
+    await flushUpdates(el);
+    expect(el._collectionIds).toEqual(["col-1"]);
+
+    options = Array.from(
+      el.querySelectorAll<HTMLButtonElement>("[data-popover] [role='option']"),
+    );
+    expect(document.activeElement).toBe(options[0]);
+
+    keydown(
+      requireElement(options[0] ?? null, "expected first option"),
+      "ArrowUp",
+    );
+    await flushUpdates(el);
+    expect(document.activeElement).toBe(searchInput);
+  });
+
+  it("does not autofocus collection search on coarse pointer devices", async () => {
+    Object.defineProperty(globalThis, "matchMedia", {
+      configurable: true,
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: query === "(hover: none) and (pointer: coarse)",
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+
+    const el = await createElement();
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
+      "expected collection trigger",
+    );
+    trigger.focus();
+    trigger.click();
+    await flushUpdates(el);
+
+    const searchInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-collection-search-input"),
+      "expected collection search input",
+    );
+    expect(document.activeElement).not.toBe(searchInput);
+  });
+
+  it("moves trigger keyboard input into the collection search when the picker is open", async () => {
+    Object.defineProperty(globalThis, "matchMedia", {
+      configurable: true,
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: query === "(hover: none) and (pointer: coarse)",
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+
+    const el = await createElement();
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
+      "expected collection trigger",
+    );
+    trigger.focus();
+    trigger.click();
+    await flushUpdates(el);
+
+    keydown(trigger, "m");
+    await flushUpdates(el);
+
+    const searchInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-collection-search-input"),
+      "expected collection search input",
+    );
+    expect(document.activeElement).toBe(searchInput);
+    expect(el._collectionSearch).toBe("m");
   });
 
   it("keeps selected collections first when opening and after reopening", async () => {

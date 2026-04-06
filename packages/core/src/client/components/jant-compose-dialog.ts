@@ -672,6 +672,9 @@ export class JantComposeDialog extends LitElement {
         titleInput?.select();
       });
     }
+    if (changed.has("_showCollection") && this._showCollection) {
+      this._scheduleCollectionPickerAutofocus();
+    }
     if (
       changed.has("_format") ||
       changed.has("_collectionIds") ||
@@ -1522,6 +1525,192 @@ export class JantComposeDialog extends LitElement {
       this._collectionIds,
     );
   }
+
+  private _focusCollectionPickerInitialTarget() {
+    this.querySelector<HTMLElement>(
+      ".compose-collection-search-input, .compose-collection-option, .compose-collection-add-action",
+    )?.focus();
+  }
+
+  private _focusCollectionSearchInput() {
+    const searchInput = this.querySelector<HTMLInputElement>(
+      ".compose-collection-search-input",
+    );
+    if (!searchInput) return false;
+
+    searchInput.focus();
+    const cursor = searchInput.value.length;
+    searchInput.setSelectionRange(cursor, cursor);
+    return true;
+  }
+
+  private _shouldAutofocusCollectionPicker() {
+    return !(
+      globalThis.matchMedia?.("(hover: none) and (pointer: coarse)")?.matches ??
+      false
+    );
+  }
+
+  private _scheduleCollectionPickerAutofocus() {
+    if (!this._shouldAutofocusCollectionPicker()) return;
+
+    globalThis.requestAnimationFrame(() => {
+      if (!this._showCollection) return;
+      this._focusCollectionPickerInitialTarget();
+    });
+  }
+
+  private _scheduleCollectionSearchFocus() {
+    globalThis.requestAnimationFrame(() => {
+      if (!this._showCollection) return;
+      if (!this._focusCollectionSearchInput()) {
+        this._focusCollectionPickerInitialTarget();
+      }
+    });
+  }
+
+  private _isPrintableCollectionSearchKey(key: string) {
+    return key.length === 1 && key.trim().length > 0;
+  }
+
+  private _handleCollectionTriggerKeydown = (
+    event: globalThis.KeyboardEvent,
+  ) => {
+    if (
+      event.defaultPrevented ||
+      event.isComposing ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    ) {
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      this._scheduleCollectionSearchFocus();
+      return;
+    }
+
+    if (
+      !this._showCollection ||
+      !this._isPrintableCollectionSearchKey(event.key)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    this._collectionSearch += event.key;
+    this._scheduleCollectionSearchFocus();
+  };
+
+  private _getCollectionOptionElements() {
+    return Array.from(
+      this.querySelectorAll<HTMLButtonElement>(".compose-collection-option"),
+    );
+  }
+
+  private _handleCollectionSearchKeydown = (
+    event: globalThis.KeyboardEvent,
+  ) => {
+    if (
+      event.defaultPrevented ||
+      event.isComposing ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.key !== "ArrowDown"
+    ) {
+      return;
+    }
+
+    const [firstOption] = this._getCollectionOptionElements();
+    const addAction = this.querySelector<HTMLButtonElement>(
+      ".compose-collection-add-action",
+    );
+    const nextTarget = firstOption ?? addAction;
+    if (!nextTarget) return;
+
+    event.preventDefault();
+    nextTarget.focus();
+  };
+
+  private _handleCollectionOptionKeydown = (
+    event: globalThis.KeyboardEvent,
+    collectionId: string,
+  ) => {
+    if (
+      event.defaultPrevented ||
+      event.isComposing ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    ) {
+      return;
+    }
+
+    const options = this._getCollectionOptionElements();
+    const currentTarget = event.currentTarget as HTMLButtonElement | null;
+    const currentIndex = currentTarget ? options.indexOf(currentTarget) : -1;
+
+    if (event.key === "ArrowDown") {
+      const addAction = this.querySelector<HTMLButtonElement>(
+        ".compose-collection-add-action",
+      );
+      const nextTarget =
+        currentIndex >= 0
+          ? (options[currentIndex + 1] ?? addAction)
+          : options[0];
+      if (!nextTarget) return;
+
+      event.preventDefault();
+      nextTarget.focus();
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      const searchInput = this.querySelector<HTMLInputElement>(
+        ".compose-collection-search-input",
+      );
+      const previousTarget =
+        currentIndex > 0 ? options[currentIndex - 1] : searchInput;
+      if (!previousTarget) return;
+
+      event.preventDefault();
+      previousTarget.focus();
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      this._toggleCollection(collectionId);
+    }
+  };
+
+  private _handleCollectionAddActionKeydown = (
+    event: globalThis.KeyboardEvent,
+  ) => {
+    if (
+      event.defaultPrevented ||
+      event.isComposing ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.key !== "ArrowUp"
+    ) {
+      return;
+    }
+
+    const options = this._getCollectionOptionElements();
+    const searchInput = this.querySelector<HTMLInputElement>(
+      ".compose-collection-search-input",
+    );
+    const previousTarget = options.at(-1) ?? searchInput;
+    if (!previousTarget) return;
+
+    event.preventDefault();
+    previousTarget.focus();
+  };
 
   private _updateCollectionPopoverSide() {
     const trigger = this.querySelector<HTMLElement>(
@@ -3135,6 +3324,7 @@ export class JantComposeDialog extends LitElement {
             aria-expanded=${this._showCollection ? "true" : "false"}
             data-open=${this._showCollection ? "true" : nothing}
             data-selected=${selectedCount > 0 ? "true" : nothing}
+            @keydown=${this._handleCollectionTriggerKeydown}
             @click=${() => {
               const nextOpen = !this._showCollection;
               this._showPublishPanel = false;
@@ -3180,6 +3370,7 @@ export class JantComposeDialog extends LitElement {
                       autocorrect="off"
                       spellcheck="false"
                       .value=${this._collectionSearch}
+                      @keydown=${this._handleCollectionSearchKeydown}
                       @input=${(e: Event) => {
                         this._collectionSearch = (
                           e.target as HTMLInputElement
@@ -3208,6 +3399,8 @@ export class JantComposeDialog extends LitElement {
                         role="option"
                         data-value=${col.id}
                         aria-selected=${selected ? "true" : "false"}
+                        @keydown=${(event: globalThis.KeyboardEvent) =>
+                          this._handleCollectionOptionKeydown(event, col.id)}
                         @click=${() => this._toggleCollection(col.id)}
                       >
                         <span class="compose-collection-option-label"
@@ -3259,6 +3452,7 @@ export class JantComposeDialog extends LitElement {
               <button
                 type="button"
                 class="compose-collection-add-action"
+                @keydown=${this._handleCollectionAddActionKeydown}
                 @click=${() => {
                   this._showCollection = false;
                   this._collectionSearch = "";
