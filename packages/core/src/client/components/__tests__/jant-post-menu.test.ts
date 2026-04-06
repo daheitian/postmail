@@ -471,6 +471,77 @@ describe("JantPostMenu", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
   });
 
+  it("does not restore focus to the trigger when the shortcut opens the collection picker and Enter closes it", async () => {
+    const { menu, trigger } = await createMenu();
+    const article = requireElement(
+      trigger.closest<HTMLElement>("article[data-post]"),
+      "expected post article",
+    );
+
+    menu.openCollectionsForPost(article);
+    await Promise.resolve();
+    await menu.updateComplete;
+
+    await vi.waitFor(() => {
+      expect(
+        menu.querySelector<HTMLInputElement>(".post-menu-picker-search input"),
+      ).not.toBeNull();
+    });
+
+    const searchInput = requireElement(
+      menu.querySelector<HTMLInputElement>(".post-menu-picker-search input"),
+      "expected collection search input",
+    );
+    searchInput.focus();
+
+    keydown(searchInput, "Enter");
+    await menu.updateComplete;
+
+    expect(menu.textContent?.trim()).toBe("");
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).not.toBe(trigger);
+  });
+
+  it("does not restore focus to the trigger when the shortcut-opened picker closes on Escape", async () => {
+    const { menu, trigger } = await createMenu();
+    const article = requireElement(
+      trigger.closest<HTMLElement>("article[data-post]"),
+      "expected post article",
+    );
+
+    menu.openCollectionsForPost(article);
+    await Promise.resolve();
+    await menu.updateComplete;
+
+    await vi.waitFor(() => {
+      expect(
+        menu.querySelector<HTMLInputElement>(".post-menu-picker-search input"),
+      ).not.toBeNull();
+    });
+
+    document.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        bubbles: true,
+        key: "Escape",
+      }),
+    );
+    await menu.updateComplete;
+
+    expect(menu.querySelector("[data-post-menu-item-primary]")).not.toBeNull();
+
+    document.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        bubbles: true,
+        key: "Escape",
+      }),
+    );
+    await menu.updateComplete;
+
+    expect(menu.textContent?.trim()).toBe("");
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).not.toBe(trigger);
+  });
+
   it("keeps selected collections first when opening and after reopening", async () => {
     const selectedIds = ["collection-2"];
     const fetchMock = vi.fn(

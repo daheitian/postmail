@@ -20,6 +20,13 @@ mark {
   line-height: var(--type-body-leading);
 }
 
+/* Untitled notes: snippet IS the primary content, so use normal text color */
+.search-snippet-primary {
+  font-family: var(--font-body);
+  font-size: var(--type-sm);
+  line-height: var(--type-body-leading);
+}
+
 /* Icon stroke width — CSS property overrides SVG presentational attributes */
 svg[stroke-width] {
   stroke-width: var(--icon-stroke);

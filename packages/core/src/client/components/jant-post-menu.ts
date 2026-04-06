@@ -108,6 +108,7 @@ export class JantPostMenu extends LitElement {
   /** Whether collections were modified during this session (triggers page reload on close) */
   #collectionsDirty = false;
   #collectionPickerOrder: string[] = [];
+  #restoreTriggerFocusOnClose = true;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -260,6 +261,7 @@ export class JantPostMenu extends LitElement {
 
       // Position relative to trigger
       this._triggerEl = trigger;
+      this.#restoreTriggerFocusOnClose = true;
       this.#syncPositionFromTrigger();
       trigger.setAttribute("aria-expanded", "true");
       this._view = "menu";
@@ -434,10 +436,12 @@ export class JantPostMenu extends LitElement {
   }
 
   #close(options: { restoreFocus?: boolean } = {}) {
-    const { restoreFocus = true } = options;
+    const restoreFocus =
+      options.restoreFocus ?? this.#restoreTriggerFocusOnClose;
     const trigger = this._triggerEl;
     trigger?.setAttribute("aria-expanded", "false");
     this._triggerEl = null;
+    this.#restoreTriggerFocusOnClose = true;
     this._open = false;
     this._view = "menu";
     this._addCollectionPanelOpen = false;
@@ -477,6 +481,7 @@ export class JantPostMenu extends LitElement {
     );
     if (trigger) {
       this._triggerEl = trigger;
+      this.#restoreTriggerFocusOnClose = false;
       this.#syncPositionFromTrigger();
       trigger.setAttribute("aria-expanded", "true");
     }

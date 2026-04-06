@@ -192,12 +192,13 @@ const SearchResultCard: FC<{
   }
 
   // ── Untitled note ─────────────────────────────────────────────────────────
+  // Snippet is the primary content here (no title), so use normal text color.
   return (
     <article {...postAttrs}>
       {snippet ? (
         <a href={post.permalink} class="block hover:opacity-80">
           <p
-            class="search-snippet"
+            class="search-snippet-primary"
             dangerouslySetInnerHTML={{ __html: snippet }}
           />
         </a>
@@ -299,10 +300,9 @@ export const SearchPage: FC<SearchPageProps> = ({
 
           {results.length > 0 && (
             <>
-              <div class="flex flex-col">
-                {results.map((result, i) => (
-                  <div key={result.post.id}>
-                    {i > 0 && <hr class="feed-divider" />}
+              <div class="flex flex-col divide-y divide-border">
+                {results.map((result) => (
+                  <div key={result.post.id} class="py-4 first:pt-0 last:pb-0">
                     <SearchResultCard
                       result={result}
                       isAuthenticated={isAuthenticated}
