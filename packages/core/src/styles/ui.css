@@ -4122,7 +4122,7 @@
     align-items: center;
     gap: 8px;
     color: var(--site-text-secondary);
-    font-size: var(--type-sm);
+    font-size: var(--type-base);
   }
 
   .compose-edit-loading-skeleton {
