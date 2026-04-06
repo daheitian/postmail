@@ -2349,7 +2349,7 @@ export function createPostService(
       const rows = await db
         .select({
           threadId: posts.threadId,
-          count: sql<number>`count(*)`.as("count"),
+          count: sql<number>`CAST(count(*) AS INTEGER)`.as("count"),
         })
         .from(posts)
         .where(
@@ -2378,10 +2378,10 @@ export function createPostService(
           id: posts.id,
           threadId: posts.threadId,
           createdAt: posts.createdAt,
-          previewRank: sql<number>`ROW_NUMBER() OVER (
+          previewRank: sql<number>`CAST(ROW_NUMBER() OVER (
             PARTITION BY ${posts.threadId}
             ORDER BY ${posts.createdAt}, ${posts.id}
-          )`.as("preview_rank"),
+          ) AS INTEGER)`.as("preview_rank"),
         })
         .from(posts)
         .where(
@@ -2435,17 +2435,17 @@ export function createPostService(
         .select({
           id: posts.id,
           threadId: posts.threadId,
-          firstReplyRank: sql<number>`ROW_NUMBER() OVER (
+          firstReplyRank: sql<number>`CAST(ROW_NUMBER() OVER (
             PARTITION BY ${posts.threadId}
             ORDER BY ${posts.createdAt}, ${posts.id}
-          )`.as("first_reply_rank"),
-          latestReplyRank: sql<number>`ROW_NUMBER() OVER (
+          ) AS INTEGER)`.as("first_reply_rank"),
+          latestReplyRank: sql<number>`CAST(ROW_NUMBER() OVER (
             PARTITION BY ${posts.threadId}
             ORDER BY ${posts.createdAt} DESC, ${posts.id} DESC
-          )`.as("latest_reply_rank"),
-          totalReplyCount: sql<number>`COUNT(*) OVER (
+          ) AS INTEGER)`.as("latest_reply_rank"),
+          totalReplyCount: sql<number>`CAST(COUNT(*) OVER (
             PARTITION BY ${posts.threadId}
-          )`.as("total_reply_count"),
+          ) AS INTEGER)`.as("total_reply_count"),
         })
         .from(posts)
         .where(
