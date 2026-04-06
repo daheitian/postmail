@@ -391,6 +391,7 @@ describe("JantComposeEditor", () => {
       ".compose-quote-author",
     );
     expect(authorInput).not.toBeNull();
+    expect(el.querySelector(".compose-quote-mark svg path")).not.toBeNull();
   });
 
   it("accepts mailto links as valid URLs", async () => {

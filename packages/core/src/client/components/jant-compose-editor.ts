@@ -36,6 +36,10 @@ import {
   validateUploadFile,
 } from "../../lib/upload.js";
 import type { MediaCategory } from "../../lib/upload.js";
+import {
+  DECORATIVE_QUOTE_MARK_SVG_CONTENT,
+  DECORATIVE_QUOTE_MARK_VIEWBOX,
+} from "../../lib/decorative-quote-mark.js";
 import { showToast } from "../toast.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 import {
@@ -133,6 +137,21 @@ function renderComposeToolbarIcon(
   >
     ${unsafeSVG(icon)}
   </svg>`;
+}
+
+function renderDecorativeQuoteMark(className: string) {
+  return html`<span
+    class=${`decorative-quote-mark ${className}`}
+    aria-hidden="true"
+  >
+    <svg
+      viewBox=${DECORATIVE_QUOTE_MARK_VIEWBOX}
+      role="presentation"
+      focusable="false"
+    >
+      ${unsafeSVG(DECORATIVE_QUOTE_MARK_SVG_CONTENT)}
+    </svg>
+  </span>`;
 }
 
 function clampEditorSelection(
@@ -1707,7 +1726,7 @@ export class JantComposeEditor extends LitElement {
     return html`
       <div class="compose-field-enter">
         <div class="compose-quote-wrap">
-          <span class="compose-quote-mark" aria-hidden="true">“</span>
+          ${renderDecorativeQuoteMark("compose-quote-mark")}
           <textarea
             .value=${this._quoteText}
             @input=${(e: Event) => this._onInput("_quoteText", e)}
