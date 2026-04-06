@@ -14,7 +14,6 @@ import { TimelineItemFromPost } from "./TimelineItem.js";
 import { getThreadPreviewState } from "./thread-preview-state.js";
 
 const ROOT_CONTEXT_DISPLAY = {
-  hideRating: true,
   footer: {
     hideReply: true,
   },
@@ -73,16 +72,13 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
     penultimateReply.id !== secondReply?.id
       ? penultimateReply
       : undefined;
-  const hasExpandedPreviewSlots =
-    renderedSecondReply !== undefined || renderedPenultimateReply !== undefined;
-  const shouldUseCollapsibleContext = !hasExpandedPreviewSlots;
 
   return (
     <div class="thread-group thread-group-preview">
       {/* Faded ancestor context */}
       <div
-        class={`thread-context-shell${shouldUseCollapsibleContext ? " thread-context-collapsed" : ""}`}
-        {...(shouldUseCollapsibleContext ? { "data-thread-context": "" } : {})}
+        class="thread-context-shell thread-context-collapsed"
+        data-thread-context
       >
         {/* Root post */}
         <div class="thread-item thread-item-context">
@@ -124,22 +120,20 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
           </div>
         )}
 
-        {shouldUseCollapsibleContext && <div class="thread-context-fade" />}
+        <div class="thread-context-fade" />
       </div>
 
-      {/* Toggle button */}
-      {shouldUseCollapsibleContext && (
-        <button
-          type="button"
-          class="thread-context-toggle text-muted-foreground hover:text-foreground hidden"
-          data-thread-context-toggle
-          data-label-more={showMoreLabel}
-          data-label-less={showLessLabel}
-          aria-expanded="false"
-        >
-          {showMoreLabel}
-        </button>
-      )}
+      {/* Toggle button – always present for expanding context in timeline */}
+      <button
+        type="button"
+        class="thread-context-toggle text-muted-foreground hover:text-foreground hidden"
+        data-thread-context-toggle
+        data-label-more={showMoreLabel}
+        data-label-less={showLessLabel}
+        aria-expanded="false"
+      >
+        {showMoreLabel}
+      </button>
 
       {/* Latest reply (full card, hero) */}
       <div class="thread-item thread-item-hero">

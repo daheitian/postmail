@@ -2476,9 +2476,9 @@
 
   .thread-group-preview,
   .thread-group-detail {
-    --site-thread-rail-dot-left: -24px;
+    --site-thread-rail-dot-left: -32px;
     --site-thread-rail-indent: 0px;
-    --site-thread-rail-line-left: -19px;
+    --site-thread-rail-line-left: -27px;
   }
 
   @media (max-width: 700px) {
@@ -2997,10 +2997,6 @@
 
   .post-footer-detail .post-footer-link {
     font-size: inherit;
-  }
-
-  [data-page="featured"] article[data-post-featured] .post-footer-featured {
-    display: none;
   }
 
   .post-footer-external-link {

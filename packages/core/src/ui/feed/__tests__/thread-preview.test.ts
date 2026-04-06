@@ -248,7 +248,7 @@ describe("getThreadPreviewState", () => {
     expect(html).not.toContain('id="continue"');
   });
 
-  it("does not auto-collapse previews when extra visible thread slots are present", () => {
+  it("always renders collapsible context shell with toggle even when all thread slots are visible", () => {
     const html = renderWithI18n(() =>
       ThreadPreview({
         rootPost: createPostView({
@@ -279,9 +279,9 @@ describe("getThreadPreviewState", () => {
       }),
     );
 
-    expect(html).not.toContain("data-thread-context");
-    expect(html).not.toContain("data-thread-context-toggle");
-    expect(html).not.toContain("thread-context-collapsed");
+    expect(html).toContain("data-thread-context");
+    expect(html).toContain("data-thread-context-toggle");
+    expect(html).toContain("thread-context-collapsed");
   });
 
   it("renders article summaries in curated thread previews", () => {
