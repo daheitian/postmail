@@ -3155,7 +3155,7 @@
   .post-menu-panel-heading {
     min-width: 0;
     color: var(--site-text-primary);
-    font-size: var(--type-base);
+    font-size: var(--type-ui-control);
     font-weight: var(--fw-semibold);
     letter-spacing: -0.02em;
     line-height: 1.2;
@@ -3196,7 +3196,7 @@
     border-radius: 1rem;
     cursor: pointer !important;
     text-align: left;
-    font-size: var(--type-base);
+    font-size: var(--type-ui-control);
     font-weight: var(--fw-semibold);
     color: var(--site-text-primary);
     transition:
@@ -3258,7 +3258,7 @@
     margin-left: auto;
     padding-right: 0.35rem;
     color: var(--site-text-secondary);
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     font-weight: var(--fw-medium);
     letter-spacing: 0;
   }
@@ -3349,7 +3349,7 @@
     border: none;
     background: transparent;
     outline: none;
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-input);
     color: var(--site-text-primary);
     min-width: 0;
   }
@@ -3376,7 +3376,7 @@
     border-radius: 0.85rem;
     text-align: left;
     cursor: pointer;
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-control);
     color: var(--site-text-primary);
     transition:
       background-color 0.16s ease,
@@ -3454,7 +3454,7 @@
   .post-menu-picker-empty {
     padding: 0.95rem 0.75rem;
     text-align: center;
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-caption);
     color: var(--site-text-secondary);
   }
 
@@ -3478,7 +3478,7 @@
     min-height: 3rem;
     padding: 0 0.8rem;
     cursor: pointer;
-    font-size: var(--type-xs);
+    font-size: var(--type-ui-control);
     color: var(--site-text-primary);
     transition:
       background-color 0.16s ease,
@@ -3769,7 +3769,8 @@
   }
 
   .compose-prompt-text {
-    font-size: var(--type-secondary);
+    font-size: var(--type-ui-title);
+    line-height: 1.35;
   }
 
   .compose-prompt-discovery-hint {
@@ -7008,6 +7009,154 @@
 
   .compose-reply-toggle:hover {
     color: var(--site-text-primary);
+  }
+
+  @media (max-width: 760px), (hover: none) and (pointer: coarse) {
+    .post-menu-footer {
+      gap: 12px;
+    }
+
+    .post-menu-actions {
+      gap: 0.18rem;
+      margin-right: 0;
+    }
+
+    .post-menu-trigger,
+    .reply-trigger,
+    .post-footer-external-link {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.88rem;
+    }
+
+    .post-menu-trigger {
+      width: 2.62rem;
+      height: 2.62rem;
+    }
+
+    .reply-trigger {
+      opacity: 0.78;
+    }
+
+    .post-menu-trigger svg,
+    .reply-trigger svg,
+    .post-footer-external-link svg {
+      width: 1.18rem;
+      height: 1.18rem;
+    }
+
+    .post-menu-trigger svg {
+      width: 1.26rem;
+      height: 1.26rem;
+    }
+
+    .post-menu-panel {
+      width: min(18rem, calc(100vw - 1rem));
+      min-width: min(18rem, calc(100vw - 1rem));
+      max-width: min(19.5rem, calc(100vw - 1rem));
+    }
+
+    .post-menu-panel:has(.post-menu-collection-picker) {
+      width: min(20rem, calc(100vw - 1rem));
+      min-width: min(20rem, calc(100vw - 1rem));
+      max-width: min(21rem, calc(100vw - 1rem));
+    }
+
+    .post-menu-panel-header {
+      padding: 1rem 1rem 0.85rem;
+    }
+
+    .post-menu-panel-back {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .post-menu-panel [role="menuitem"],
+    .post-menu-panel [role="menuitemradio"],
+    .post-menu-picker-option,
+    .post-menu-picker-add {
+      min-height: 3.25rem;
+    }
+
+    .post-menu-item-icon,
+    .post-menu-item-trailing,
+    .post-menu-picker-icon,
+    .post-menu-picker-marker {
+      width: 1.45rem;
+      height: 1.45rem;
+    }
+
+    .post-menu-picker-search {
+      margin-bottom: 0.55rem;
+      padding: 0.78rem 0.9rem;
+    }
+
+    .compose-collection-trigger {
+      min-height: 2.65rem;
+      padding-right: 0.82rem;
+    }
+
+    .compose-collection-trigger-icon {
+      width: 1.75rem;
+      height: 1.75rem;
+    }
+
+    .compose-collection-select [data-popover] {
+      min-width: min(18rem, calc(100vw - 1rem));
+      max-width: min(20rem, calc(100vw - 1rem));
+    }
+
+    .compose-collection-popover {
+      padding: 0.62rem 0.68rem 0.58rem;
+    }
+
+    .compose-collection-search-shell {
+      min-height: 3rem;
+      padding: 0 1rem;
+    }
+
+    .compose-collection-options {
+      padding: 0.12rem;
+    }
+
+    .compose-collection-popover [role="option"].compose-collection-option {
+      gap: 0.82rem;
+      min-height: 3.35rem;
+      padding-left: 0.92rem !important;
+      padding-right: 0.64rem !important;
+    }
+
+    .compose-collection-option-marker {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .compose-thread-layout {
+      padding-top: 0.45rem;
+    }
+
+    .compose-thread-layout::before {
+      top: 0.45rem;
+    }
+
+    .compose-reply-context {
+      padding-top: 0.24rem;
+      padding-bottom: 0.28rem;
+    }
+
+    .compose-reply-meta {
+      gap: 10px;
+      padding-top: 8px;
+    }
+
+    .compose-fullscreen-thread-layout .compose-reply-context {
+      padding-top: 0.24rem;
+      padding-bottom: 0.18rem;
+    }
+
+    .compose-fullscreen-thread-layout .compose-reply-meta {
+      padding-top: 8px;
+    }
   }
 
   /* --- Thread compose layout (multi-post, scrollable) --------------------- */
