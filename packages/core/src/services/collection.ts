@@ -368,11 +368,11 @@ export function createCollectionService(
     CollectionDirectoryCollection[]
   > {
     const postCount = sql<number>`
-      COUNT(
+      CAST(COUNT(
         CASE
           WHEN ${posts.id} IS NOT NULL AND ${posts.deletedAt} IS NULL THEN 1
         END
-      )
+      ) AS INTEGER)
     `.as("post_count");
     const recentActivityAt = sql<number | null>`
       MAX(
@@ -950,7 +950,7 @@ export function createCollectionService(
       const rows = await db
         .select({
           collectionId: postCollections.collectionId,
-          count: sql<number>`count(*)`.as("count"),
+          count: sql<number>`CAST(count(*) AS INTEGER)`.as("count"),
         })
         .from(postCollections)
         .innerJoin(

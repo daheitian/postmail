@@ -1310,7 +1310,7 @@ export function createPostService(
       const conditions = buildFilterConditions(filters);
 
       const result = await db
-        .select({ count: sql<number>`count(*)`.as("count") })
+        .select({ count: sql<number>`CAST(count(*) AS INTEGER)`.as("count") })
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined);
 
@@ -1343,7 +1343,7 @@ export function createPostService(
       return db
         .select({
           yearMonth: publishedYearMonthExpr.as("year_month"),
-          count: sql<number>`count(*)`.as("count"),
+          count: sql<number>`CAST(count(*) AS INTEGER)`.as("count"),
         })
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
@@ -2539,7 +2539,10 @@ export function createPostService(
 
       const rows = await db
         .select({
-          count: sql<number>`count(distinct ${posts.threadId})`.as("count"),
+          count:
+            sql<number>`CAST(count(distinct ${posts.threadId}) AS INTEGER)`.as(
+              "count",
+            ),
         })
         .from(posts)
         .where(and(...conditions));
@@ -2595,7 +2598,10 @@ export function createPostService(
 
       const rows = await db
         .select({
-          count: sql<number>`count(distinct ${posts.threadId})`.as("count"),
+          count:
+            sql<number>`CAST(count(distinct ${posts.threadId}) AS INTEGER)`.as(
+              "count",
+            ),
         })
         .from(posts)
         .innerJoin(

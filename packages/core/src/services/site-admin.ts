@@ -494,7 +494,7 @@ export function createSiteAdminService(
       .where(eq(media.siteId, normalizedSiteId));
 
     return {
-      mediaBytesUsed: rows[0]?.mediaBytesUsed ?? 0,
+      mediaBytesUsed: Number(rows[0]?.mediaBytesUsed ?? 0),
       siteId: normalizedSiteId,
     };
   }

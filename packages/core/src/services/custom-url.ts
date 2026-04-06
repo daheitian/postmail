@@ -213,7 +213,7 @@ export function createCustomUrlService(
 
     async count() {
       const result = await db
-        .select({ count: sql<number>`count(*)`.as("count") })
+        .select({ count: sql<number>`CAST(count(*) AS INTEGER)`.as("count") })
         .from(pathRegistry)
         .where(
           and(eq(pathRegistry.siteId, siteId), ne(pathRegistry.kind, "slug")),
