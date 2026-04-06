@@ -193,8 +193,9 @@ export interface SearchResultView {
 export interface TimelineItemView {
   post: PostView;
   threadPreview?: {
+    secondReply?: PostView;
+    penultimateReply?: PostView;
     latestReply: PostView;
-    parentReply?: PostView;
     totalReplyCount: number;
   };
   curatedThread?: {

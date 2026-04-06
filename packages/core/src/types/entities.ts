@@ -228,8 +228,10 @@ export interface ApiToken {
 
 /** Latest-reply context for a thread root, used in timeline display */
 export interface ThreadTimelineContext {
+  /** Second chronological post in the thread (the first published reply). */
+  secondReply: Post | null;
+  /** Penultimate chronological post in the thread, when distinct from latest. */
+  penultimateReply: Post | null;
   latestReply: Post;
-  /** Parent of latestReply, only if it's not the root */
-  parentReply: Post | null;
   totalReplyCount: number;
 }

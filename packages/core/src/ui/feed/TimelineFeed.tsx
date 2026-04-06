@@ -27,8 +27,9 @@ export const TimelineFeedItemContent: FC<TimelineFeedItemContentProps> = ({
   ) : item.threadPreview ? (
     <ThreadPreview
       rootPost={item.post}
+      secondReply={item.threadPreview.secondReply}
+      penultimateReply={item.threadPreview.penultimateReply}
       latestReply={item.threadPreview.latestReply}
-      parentReply={item.threadPreview.parentReply}
       totalReplyCount={item.threadPreview.totalReplyCount}
     />
   ) : (

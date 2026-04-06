@@ -11,10 +11,7 @@ import { useLingui } from "../../i18n/context.js";
 import type { ThreadPreviewProps } from "../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
 import { TimelineItemFromPost } from "./TimelineItem.js";
-import {
-  getThreadPreviewState,
-  isThreadContextLikelyOverflow,
-} from "./thread-preview-state.js";
+import { getThreadPreviewState } from "./thread-preview-state.js";
 
 const ROOT_CONTEXT_DISPLAY = {
   hideRating: true,
@@ -23,7 +20,7 @@ const ROOT_CONTEXT_DISPLAY = {
   },
 } as const;
 
-const PARENT_CONTEXT_DISPLAY = {
+const CONTEXT_DISPLAY = {
   hideRating: true,
   footer: {
     hideReply: true,
@@ -34,8 +31,9 @@ const HERO_DISPLAY = {} as const;
 
 export const ThreadPreview: FC<ThreadPreviewProps> = ({
   rootPost,
+  secondReply,
+  penultimateReply,
   latestReply,
-  parentReply,
   totalReplyCount,
 }) => {
   const { i18n } = useLingui();
@@ -52,7 +50,9 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
     }),
   );
   const { hiddenCount } = getThreadPreviewState({
-    hasParentReply: parentReply !== undefined,
+    secondReply,
+    penultimateReply,
+    latestReply,
     totalReplyCount,
   });
   const hiddenPostsLabel = i18n._(
@@ -65,18 +65,24 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
       count: hiddenCount,
     },
   );
-  const startsCollapsedWithAffordances = isThreadContextLikelyOverflow({
-    rootPost,
-    parentReply,
-    hiddenCount,
-  });
+  const renderedSecondReply =
+    secondReply && secondReply.id !== latestReply.id ? secondReply : undefined;
+  const renderedPenultimateReply =
+    penultimateReply &&
+    penultimateReply.id !== latestReply.id &&
+    penultimateReply.id !== secondReply?.id
+      ? penultimateReply
+      : undefined;
+  const hasExpandedPreviewSlots =
+    renderedSecondReply !== undefined || renderedPenultimateReply !== undefined;
+  const shouldUseCollapsibleContext = !hasExpandedPreviewSlots;
 
   return (
     <div class="thread-group thread-group-preview">
       {/* Faded ancestor context */}
       <div
-        class={`thread-context-shell thread-context-collapsed${startsCollapsedWithAffordances ? " thread-context-faded" : ""}`}
-        data-thread-context
+        class={`thread-context-shell${shouldUseCollapsibleContext ? " thread-context-collapsed" : ""}`}
+        {...(shouldUseCollapsibleContext ? { "data-thread-context": "" } : {})}
       >
         {/* Root post */}
         <div class="thread-item thread-item-context">
@@ -87,6 +93,17 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
           />
         </div>
 
+        {/* Second post in the thread */}
+        {renderedSecondReply && (
+          <div class="thread-item thread-item-context">
+            <TimelineItemFromPost
+              post={renderedSecondReply}
+              mode="feed"
+              display={CONTEXT_DISPLAY}
+            />
+          </div>
+        )}
+
         {/* Hidden posts gap */}
         {hiddenCount > 0 && (
           <div class="thread-item thread-item-gap">
@@ -96,31 +113,33 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
           </div>
         )}
 
-        {/* Parent of latest reply */}
-        {parentReply && (
+        {/* Penultimate post in the thread */}
+        {renderedPenultimateReply && (
           <div class="thread-item thread-item-context">
             <TimelineItemFromPost
-              post={parentReply}
+              post={renderedPenultimateReply}
               mode="feed"
-              display={PARENT_CONTEXT_DISPLAY}
+              display={CONTEXT_DISPLAY}
             />
           </div>
         )}
 
-        <div class="thread-context-fade" />
+        {shouldUseCollapsibleContext && <div class="thread-context-fade" />}
       </div>
 
       {/* Toggle button */}
-      <button
-        type="button"
-        class={`thread-context-toggle text-muted-foreground hover:text-foreground${startsCollapsedWithAffordances ? "" : " hidden"}`}
-        data-thread-context-toggle
-        data-label-more={showMoreLabel}
-        data-label-less={showLessLabel}
-        aria-expanded="false"
-      >
-        {showMoreLabel}
-      </button>
+      {shouldUseCollapsibleContext && (
+        <button
+          type="button"
+          class="thread-context-toggle text-muted-foreground hover:text-foreground hidden"
+          data-thread-context-toggle
+          data-label-more={showMoreLabel}
+          data-label-less={showLessLabel}
+          aria-expanded="false"
+        >
+          {showMoreLabel}
+        </button>
+      )}
 
       {/* Latest reply (full card, hero) */}
       <div class="thread-item thread-item-hero">

@@ -52,10 +52,17 @@ function renderWithI18n(
 }
 
 describe("getThreadPreviewState", () => {
-  it("has no hidden ancestors for a 2-post thread", () => {
+  it("has no hidden posts for a 2-post thread", () => {
+    const latestReply = createPostView({
+      id: "post-2",
+      permalink: "/post-2",
+      slug: "post-2",
+    });
+
     expect(
       getThreadPreviewState({
-        hasParentReply: false,
+        secondReply: latestReply,
+        latestReply,
         totalReplyCount: 1,
       }),
     ).toEqual({
@@ -63,25 +70,61 @@ describe("getThreadPreviewState", () => {
     });
   });
 
-  it("has no hidden ancestors for a 3-post thread with parent context", () => {
+  it("has no hidden posts for a 4-post thread when all four slots are visible", () => {
+    const secondReply = createPostView({
+      id: "post-2",
+      permalink: "/post-2",
+      slug: "post-2",
+    });
+    const penultimateReply = createPostView({
+      id: "post-3",
+      permalink: "/post-3",
+      slug: "post-3",
+    });
+    const latestReply = createPostView({
+      id: "post-4",
+      permalink: "/post-4",
+      slug: "post-4",
+    });
+
     expect(
       getThreadPreviewState({
-        hasParentReply: true,
-        totalReplyCount: 2,
+        secondReply,
+        penultimateReply,
+        latestReply,
+        totalReplyCount: 3,
       }),
     ).toEqual({
       hiddenCount: 0,
     });
   });
 
-  it("counts hidden ancestors for longer threads", () => {
+  it("counts hidden posts for longer threads after deduping visible slots", () => {
+    const secondReply = createPostView({
+      id: "post-2",
+      permalink: "/post-2",
+      slug: "post-2",
+    });
+    const penultimateReply = createPostView({
+      id: "post-4",
+      permalink: "/post-4",
+      slug: "post-4",
+    });
+    const latestReply = createPostView({
+      id: "post-5",
+      permalink: "/post-5",
+      slug: "post-5",
+    });
+
     expect(
       getThreadPreviewState({
-        hasParentReply: true,
-        totalReplyCount: 5,
+        secondReply,
+        penultimateReply,
+        latestReply,
+        totalReplyCount: 4,
       }),
     ).toEqual({
-      hiddenCount: 3,
+      hiddenCount: 1,
     });
   });
 
@@ -118,11 +161,17 @@ describe("getThreadPreviewState", () => {
         rootPost: createPostView({
           bodyHtml: "<p>Short note.</p>",
         }),
-        parentReply: createPostView({
+        secondReply: createPostView({
           id: "post-2",
           permalink: "/post-2",
           slug: "post-2",
           bodyHtml: "<p>Tiny reply.</p>",
+        }),
+        penultimateReply: createPostView({
+          id: "post-3",
+          permalink: "/post-3",
+          slug: "post-3",
+          bodyHtml: "<p>Brief note.</p>",
         }),
         hiddenCount: 0,
       }),
@@ -148,29 +197,77 @@ describe("getThreadPreviewState", () => {
       summaryHasMore: true,
     });
     const latestReply = createPostView({
-      id: "post-2",
-      permalink: "/post-2",
-      slug: "post-2",
+      id: "post-4",
+      permalink: "/post-4",
+      slug: "post-4",
       title: "Reply article",
       bodyHtml: "<p>Full reply body</p>",
       summaryHtml: "<p>Reply summary</p>",
       summaryHasMore: true,
       isLastInThread: true,
     });
+    const secondReply = createPostView({
+      id: "post-2",
+      permalink: "/post-2",
+      slug: "post-2",
+      title: "Second article",
+      bodyHtml: "<p>Second full body</p>",
+      summaryHtml: "<p>Second summary</p>",
+      summaryHasMore: true,
+    });
 
     const html = renderWithI18n(() =>
       ThreadPreview({
         rootPost,
+        secondReply,
         latestReply,
-        totalReplyCount: 1,
+        totalReplyCount: 3,
       }),
     );
 
     expect(html).toContain("<p>Intro</p>");
+    expect(html).toContain("<p>Second summary</p>");
     expect(html).toContain("<p>Reply summary</p>");
     expect(html).not.toContain("<p>Rest</p>");
+    expect(html).not.toContain("<p>Second full body</p>");
     expect(html).not.toContain("<p>Full reply body</p>");
     expect(html).not.toContain('id="continue"');
+  });
+
+  it("does not auto-collapse previews when extra visible thread slots are present", () => {
+    const html = renderWithI18n(() =>
+      ThreadPreview({
+        rootPost: createPostView({
+          title: "Long root",
+          summaryHtml: "<p>Root summary</p>",
+          summaryHasMore: true,
+        }),
+        secondReply: createPostView({
+          id: "post-2",
+          permalink: "/post-2",
+          slug: "post-2",
+          bodyHtml: "<p>Second</p>",
+        }),
+        penultimateReply: createPostView({
+          id: "post-4",
+          permalink: "/post-4",
+          slug: "post-4",
+          bodyHtml: "<p>Penultimate</p>",
+        }),
+        latestReply: createPostView({
+          id: "post-5",
+          permalink: "/post-5",
+          slug: "post-5",
+          bodyHtml: "<p>Latest</p>",
+          isLastInThread: true,
+        }),
+        totalReplyCount: 4,
+      }),
+    );
+
+    expect(html).not.toContain("data-thread-context");
+    expect(html).not.toContain("data-thread-context-toggle");
+    expect(html).not.toContain("thread-context-collapsed");
   });
 
   it("renders article summaries in curated thread previews", () => {

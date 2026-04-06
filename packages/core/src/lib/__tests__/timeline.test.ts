@@ -106,7 +106,7 @@ describe("Timeline data assembly", () => {
       format: "note",
       bodyMarkdown: "Thread root",
     });
-    await postService.create({
+    const reply1 = await postService.create({
       format: "note",
       bodyMarkdown: "Reply 1",
       replyToId: root.id,
@@ -114,7 +114,7 @@ describe("Timeline data assembly", () => {
     await postService.create({
       format: "note",
       bodyMarkdown: "Reply 2",
-      replyToId: root.id,
+      replyToId: reply1.id,
     });
 
     const posts = await postService.list({
@@ -157,13 +157,22 @@ describe("Timeline data assembly", () => {
         return {
           post: postWithMedia,
           threadPreview: {
+            secondReply: threadCtx.secondReply
+              ? {
+                  ...threadCtx.secondReply,
+                  mediaAttachments: [],
+                }
+              : undefined,
+            penultimateReply: threadCtx.penultimateReply
+              ? {
+                  ...threadCtx.penultimateReply,
+                  mediaAttachments: [],
+                }
+              : undefined,
             latestReply: {
               ...threadCtx.latestReply,
               mediaAttachments: [],
             },
-            parentReply: threadCtx.parentReply
-              ? { ...threadCtx.parentReply, mediaAttachments: [] }
-              : undefined,
             totalReplyCount: threadCtx.totalReplyCount,
           },
         };
@@ -174,6 +183,7 @@ describe("Timeline data assembly", () => {
 
     expect(items).toHaveLength(1);
     expect(items[0]?.threadPreview).toBeDefined();
+    expect(items[0]?.threadPreview?.secondReply?.bodyText).toBe("Reply 1");
     expect(items[0]?.threadPreview?.latestReply.bodyText).toBe("Reply 2");
     expect(items[0]?.threadPreview?.totalReplyCount).toBe(2);
   });
@@ -300,7 +310,7 @@ describe("Timeline data assembly", () => {
       format: "note",
       bodyMarkdown: "Thread root",
     });
-    await postService.create({
+    const reply1 = await postService.create({
       format: "note",
       bodyMarkdown: "Reply 1",
       replyToId: root.id,
@@ -308,7 +318,7 @@ describe("Timeline data assembly", () => {
     const latestReply = await postService.create({
       format: "note",
       bodyMarkdown: "Reply 2",
-      replyToId: root.id,
+      replyToId: reply1.id,
     });
 
     const item = await assembleTimelineItem(createTimelineContext(), root.id);
@@ -372,7 +382,7 @@ describe("Timeline data assembly", () => {
       format: "note",
       bodyMarkdown: "Root",
     });
-    await postService.create({
+    const reply1 = await postService.create({
       format: "note",
       bodyMarkdown: "Reply 1",
       replyToId: root.id,
@@ -380,17 +390,17 @@ describe("Timeline data assembly", () => {
     const featuredReplyA = await postService.create({
       format: "note",
       bodyMarkdown: "Featured reply A",
-      replyToId: root.id,
+      replyToId: reply1.id,
     });
-    await postService.create({
+    const reply3 = await postService.create({
       format: "note",
       bodyMarkdown: "Reply 3",
-      replyToId: root.id,
+      replyToId: featuredReplyA.id,
     });
     const featuredReplyB = await postService.create({
       format: "note",
       bodyMarkdown: "Featured reply B",
-      replyToId: root.id,
+      replyToId: reply3.id,
     });
 
     await db
@@ -497,7 +507,7 @@ describe("Timeline data assembly", () => {
     await postService.create({
       format: "note",
       bodyMarkdown: "Later non-featured reply",
-      replyToId: olderFeaturedRoot.id,
+      replyToId: olderFeaturedReply.id,
     });
 
     const result = await assembleFeaturedTimeline(createTimelineContext(), {
@@ -523,15 +533,15 @@ describe("Timeline data assembly", () => {
       bodyMarkdown: "Collected reply A",
       replyToId: firstRoot.id,
     });
-    await postService.create({
+    const hiddenMiddleReply = await postService.create({
       format: "note",
       bodyMarkdown: "Hidden middle reply",
-      replyToId: firstRoot.id,
+      replyToId: collectedReplyA.id,
     });
     const collectedReplyB = await postService.create({
       format: "note",
       bodyMarkdown: "Collected reply B",
-      replyToId: firstRoot.id,
+      replyToId: hiddenMiddleReply.id,
     });
     const secondRoot = await postService.create({
       format: "note",
@@ -649,15 +659,15 @@ describe("Timeline data assembly", () => {
       bodyMarkdown: "Smart reply",
       replyToId: firstRoot.id,
     });
-    await postService.create({
+    const hiddenMiddleReply = await postService.create({
       format: "note",
       bodyMarkdown: "Hidden middle reply",
-      replyToId: firstRoot.id,
+      replyToId: smartReply.id,
     });
     const movieReply = await postService.create({
       format: "note",
       bodyMarkdown: "Movie reply",
-      replyToId: firstRoot.id,
+      replyToId: hiddenMiddleReply.id,
     });
     const secondRoot = await postService.create({
       format: "note",

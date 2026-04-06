@@ -572,6 +572,38 @@ describe("Posts API Routes", () => {
       });
     });
 
+    it("returns 409 when replying to a post that is no longer the thread tail", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const root = await services.posts.create({
+        format: "note",
+        bodyMarkdown: "root",
+      });
+      await services.posts.create({
+        format: "note",
+        bodyMarkdown: "reply 1",
+        replyToId: root.id,
+      });
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "note",
+          bodyMarkdown: "reply 2",
+          replyToId: root.id,
+        }),
+      });
+
+      expect(res.status).toBe(409);
+      await expect(res.json()).resolves.toMatchObject({
+        code: "CONFLICT",
+        error:
+          "This post is no longer the end of the thread. Reply to the latest post instead.",
+      });
+    });
+
     it("creates text attachments through the posts API", async () => {
       const storage = createMockStorage();
       const { app } = createTestApp({

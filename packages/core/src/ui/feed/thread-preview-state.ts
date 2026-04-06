@@ -1,15 +1,22 @@
 import type { PostView } from "../../types.js";
 
 export function getThreadPreviewState({
-  hasParentReply,
+  secondReply,
+  penultimateReply,
+  latestReply,
   totalReplyCount,
 }: {
-  hasParentReply: boolean;
+  secondReply?: PostView;
+  penultimateReply?: PostView;
+  latestReply: PostView;
   totalReplyCount: number;
 }) {
-  const hiddenCount = hasParentReply
-    ? totalReplyCount - 2 // exclude latest + parent
-    : totalReplyCount - 1; // exclude latest only
+  const visibleReplyIds = new Set(
+    [secondReply, penultimateReply, latestReply]
+      .filter((post): post is PostView => post !== undefined)
+      .map((post) => post.id),
+  );
+  const hiddenCount = Math.max(0, totalReplyCount - visibleReplyIds.size);
 
   return {
     hiddenCount,
@@ -29,18 +36,24 @@ function getRenderedTextLength(post?: PostView): number {
 
 export function isThreadContextLikelyOverflow({
   rootPost,
-  parentReply,
+  secondReply,
+  penultimateReply,
   hiddenCount,
 }: {
   rootPost: PostView;
-  parentReply?: PostView;
+  secondReply?: PostView;
+  penultimateReply?: PostView;
   hiddenCount: number;
 }): boolean {
   if (hiddenCount > 0) return true;
 
-  const contextPosts = [rootPost, parentReply].filter(
-    (post): post is PostView => post !== undefined,
-  );
+  const contextPosts = [rootPost];
+  if (secondReply) {
+    contextPosts.push(secondReply);
+  }
+  if (penultimateReply && penultimateReply.id !== secondReply?.id) {
+    contextPosts.push(penultimateReply);
+  }
 
   if (
     contextPosts.some(

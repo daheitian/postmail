@@ -57,19 +57,18 @@ async function buildTimelineItems(
     mediaCtx.sitePathPrefix,
   );
 
-  // Batch load media for context posts (latestReply + parentReply)
-  const contextPostIds: string[] = [];
+  // Batch load media for thread preview posts (second + penultimate + latest)
+  const contextPostIds = new Set<string>();
   for (const ctx of threadContexts.values()) {
-    contextPostIds.push(ctx.latestReply.id);
-    if (ctx.parentReply) {
-      contextPostIds.push(ctx.parentReply.id);
-    }
+    contextPostIds.add(ctx.latestReply.id);
+    if (ctx.secondReply) contextPostIds.add(ctx.secondReply.id);
+    if (ctx.penultimateReply) contextPostIds.add(ctx.penultimateReply.id);
   }
   const [contextMediaMap, contextCollectionsMap, contextAliasesMap] =
-    contextPostIds.length > 0
+    contextPostIds.size > 0
       ? await Promise.all([
           c.var.services.media
-            .getByPostIds(contextPostIds)
+            .getByPostIds([...contextPostIds])
             .then((raw) =>
               buildMediaMap(
                 raw,
@@ -80,8 +79,10 @@ async function buildTimelineItems(
                 mediaCtx.sitePathPrefix,
               ),
             ),
-          c.var.services.collections.getCollectionsByPostIds(contextPostIds),
-          c.var.services.paths.getPostAliases(contextPostIds),
+          c.var.services.collections.getCollectionsByPostIds([
+            ...contextPostIds,
+          ]),
+          c.var.services.paths.getPostAliases([...contextPostIds]),
         ])
       : [new Map(), new Map(), new Map<string, string[]>()];
 
@@ -107,6 +108,20 @@ async function buildTimelineItems(
       // Thread root is not the last post — hide reply button on it
       postView.isLastInThread = false;
 
+      const secondReplyView = threadCtx.secondReply
+        ? toPostView(
+            {
+              ...threadCtx.secondReply,
+              mediaAttachments:
+                contextMediaMap.get(threadCtx.secondReply.id) ?? [],
+            },
+            mediaCtx,
+            contextCollectionsMap.get(threadCtx.secondReply.id),
+            threadCtx.secondReply.id === threadCtx.latestReply.id,
+            firstContextAlias(threadCtx.secondReply.id),
+          )
+        : undefined;
+
       const latestReplyView = toPostView(
         {
           ...threadCtx.latestReply,
@@ -118,25 +133,26 @@ async function buildTimelineItems(
         firstContextAlias(threadCtx.latestReply.id),
       );
 
-      const parentReplyView = threadCtx.parentReply
+      const penultimateReplyView = threadCtx.penultimateReply
         ? toPostView(
             {
-              ...threadCtx.parentReply,
+              ...threadCtx.penultimateReply,
               mediaAttachments:
-                contextMediaMap.get(threadCtx.parentReply.id) ?? [],
+                contextMediaMap.get(threadCtx.penultimateReply.id) ?? [],
             },
             mediaCtx,
-            contextCollectionsMap.get(threadCtx.parentReply.id),
-            false, // parentReply is not the last post
-            firstContextAlias(threadCtx.parentReply.id),
+            contextCollectionsMap.get(threadCtx.penultimateReply.id),
+            false, // penultimateReply is not the last post
+            firstContextAlias(threadCtx.penultimateReply.id),
           )
         : undefined;
 
       return {
         post: postView,
         threadPreview: {
+          secondReply: secondReplyView,
+          penultimateReply: penultimateReplyView,
           latestReply: latestReplyView,
-          parentReply: parentReplyView,
           totalReplyCount: threadCtx.totalReplyCount,
         },
       };

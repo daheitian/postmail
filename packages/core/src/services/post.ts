@@ -9,6 +9,7 @@
 import {
   eq,
   and,
+  or,
   type SQL,
   type SQLWrapper,
   isNull,
@@ -766,6 +767,25 @@ export function createPostService(
     return conditions;
   }
 
+  async function getLastLivePostIdInThread(
+    threadId: string,
+  ): Promise<string | null> {
+    const rows = await db
+      .select({ id: posts.id })
+      .from(posts)
+      .where(
+        and(
+          eq(posts.siteId, siteId),
+          eq(posts.threadId, threadId),
+          isNull(posts.deletedAt),
+        ),
+      )
+      .orderBy(desc(posts.createdAt), desc(posts.id))
+      .limit(1);
+
+    return rows[0]?.id ?? null;
+  }
+
   function getCursorSortTimestamp(row: typeof posts.$inferSelect): number {
     return row.status === "draft" ? row.updatedAt : (row.lastActivityAt ?? -1);
   }
@@ -1385,6 +1405,13 @@ export function createPostService(
         if (data.pinned) {
           throw new ConflictError(
             "Cannot pin a thread reply. Pin the root post instead.",
+          );
+        }
+
+        const lastLivePostId = await getLastLivePostIdInThread(parent.threadId);
+        if (lastLivePostId && lastLivePostId !== parent.id) {
+          throw new ConflictError(
+            "This post is no longer the end of the thread. Reply to the latest post instead.",
           );
         }
 
@@ -2408,11 +2435,14 @@ export function createPostService(
         .select({
           id: posts.id,
           threadId: posts.threadId,
-          replyToId: posts.replyToId,
-          replyRank: sql<number>`ROW_NUMBER() OVER (
+          firstReplyRank: sql<number>`ROW_NUMBER() OVER (
+            PARTITION BY ${posts.threadId}
+            ORDER BY ${posts.createdAt}, ${posts.id}
+          )`.as("first_reply_rank"),
+          latestReplyRank: sql<number>`ROW_NUMBER() OVER (
             PARTITION BY ${posts.threadId}
             ORDER BY ${posts.createdAt} DESC, ${posts.id} DESC
-          )`.as("reply_rank"),
+          )`.as("latest_reply_rank"),
           totalReplyCount: sql<number>`COUNT(*) OVER (
             PARTITION BY ${posts.threadId}
           )`.as("total_reply_count"),
@@ -2429,41 +2459,72 @@ export function createPostService(
         )
         .as("ranked_replies");
 
-      const latestReplyRows = await db
+      const contextRows = await db
         .select({
           threadId: rankedReplies.threadId,
-          latestReplyId: rankedReplies.id,
-          latestReplyToId: rankedReplies.replyToId,
+          id: rankedReplies.id,
+          firstReplyRank: rankedReplies.firstReplyRank,
+          latestReplyRank: rankedReplies.latestReplyRank,
           totalReplyCount: rankedReplies.totalReplyCount,
         })
         .from(rankedReplies)
-        .where(eq(rankedReplies.replyRank, 1));
+        .where(
+          or(
+            eq(rankedReplies.firstReplyRank, 1),
+            lte(rankedReplies.latestReplyRank, 2),
+          ),
+        );
 
-      const relatedPostIds = latestReplyRows.flatMap((row) => {
-        const ids = [row.latestReplyId];
+      const hydratedPosts = await hydratePostsById(
+        contextRows.map((row) => row.id),
+      );
 
-        if (row.latestReplyToId && row.latestReplyToId !== row.threadId) {
-          ids.push(row.latestReplyToId);
+      const contextByThreadId = new Map<
+        string,
+        {
+          secondReplyId: string | null;
+          penultimateReplyId: string | null;
+          latestReplyId: string | null;
+          totalReplyCount: number;
+        }
+      >();
+      for (const row of contextRows) {
+        const existing = contextByThreadId.get(row.threadId) ?? {
+          secondReplyId: null,
+          penultimateReplyId: null,
+          latestReplyId: null,
+          totalReplyCount: row.totalReplyCount,
+        };
+
+        if (row.firstReplyRank === 1) {
+          existing.secondReplyId = row.id;
+        }
+        if (row.latestReplyRank === 2) {
+          existing.penultimateReplyId = row.id;
+        }
+        if (row.latestReplyRank === 1) {
+          existing.latestReplyId = row.id;
         }
 
-        return ids;
-      });
-      const hydratedPosts = await hydratePostsById(relatedPostIds);
+        contextByThreadId.set(row.threadId, existing);
+      }
 
       const result = new Map<string, ThreadTimelineContext>();
-      for (const row of latestReplyRows) {
-        const latestReply = hydratedPosts.get(row.latestReplyId);
+      for (const [threadId, context] of contextByThreadId) {
+        if (!context.latestReplyId) continue;
+
+        const latestReply = hydratedPosts.get(context.latestReplyId);
         if (!latestReply) continue;
 
-        const parentReply =
-          row.latestReplyToId && row.latestReplyToId !== row.threadId
-            ? (hydratedPosts.get(row.latestReplyToId) ?? null)
-            : null;
-
-        result.set(row.threadId, {
+        result.set(threadId, {
+          secondReply: context.secondReplyId
+            ? (hydratedPosts.get(context.secondReplyId) ?? null)
+            : null,
+          penultimateReply: context.penultimateReplyId
+            ? (hydratedPosts.get(context.penultimateReplyId) ?? null)
+            : null,
           latestReply,
-          parentReply,
-          totalReplyCount: row.totalReplyCount,
+          totalReplyCount: context.totalReplyCount,
         });
       }
 

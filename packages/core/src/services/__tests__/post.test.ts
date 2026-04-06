@@ -1484,7 +1484,7 @@ describe("PostService", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "reply2",
-        replyToId: root.id,
+        replyToId: reply1.id,
       });
 
       await postService.delete(reply1.id);
@@ -1531,6 +1531,28 @@ describe("PostService", () => {
       // Both replies point to the root's thread
       expect(reply1.threadId).toBe(root.id);
       expect(reply2.threadId).toBe(root.id);
+    });
+
+    it("rejects replies to posts that are no longer the thread tail", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "reply1",
+        replyToId: root.id,
+      });
+
+      await expect(
+        postService.create({
+          format: "note",
+          bodyMarkdown: "reply2",
+          replyToId: root.id,
+        }),
+      ).rejects.toThrow(
+        "This post is no longer the end of the thread. Reply to the latest post instead.",
+      );
     });
 
     it("inherits status from root post", async () => {
@@ -1626,7 +1648,7 @@ describe("PostService", () => {
         format: "note",
         bodyMarkdown: "root",
       });
-      await postService.create({
+      const reply1 = await postService.create({
         format: "note",
         bodyMarkdown: "reply1",
         replyToId: root.id,
@@ -1634,7 +1656,7 @@ describe("PostService", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "reply2",
-        replyToId: root.id,
+        replyToId: reply1.id,
       });
 
       const thread = await postService.getThread(root.id);
@@ -1835,7 +1857,7 @@ describe("PostService", () => {
         format: "note",
         bodyMarkdown: "root",
       });
-      await postService.create({
+      const reply1 = await postService.create({
         format: "note",
         bodyMarkdown: "reply1",
         replyToId: root.id,
@@ -1843,7 +1865,7 @@ describe("PostService", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "reply2",
-        replyToId: root.id,
+        replyToId: reply1.id,
       });
 
       const counts = await postService.getReplyCounts([root.id]);
@@ -1873,7 +1895,7 @@ describe("PostService", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "reply2",
-        replyToId: root.id,
+        replyToId: reply.id,
       });
 
       await postService.delete(reply.id);
@@ -1887,7 +1909,7 @@ describe("PostService", () => {
         format: "note",
         bodyMarkdown: "root",
       });
-      await postService.create({
+      const publishedReply = await postService.create({
         format: "note",
         bodyMarkdown: "published reply",
         replyToId: root.id,
@@ -1895,7 +1917,7 @@ describe("PostService", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "draft reply",
-        replyToId: root.id,
+        replyToId: publishedReply.id,
         status: "draft",
       });
 
@@ -1974,7 +1996,7 @@ describe("PostService", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "reply2",
-        replyToId: root.id,
+        replyToId: reply1.id,
         publishedAt: 5000,
       });
 

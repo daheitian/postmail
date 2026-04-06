@@ -84,7 +84,7 @@ describe("PostService - Timeline features", () => {
         format: "note",
         bodyMarkdown: "root",
       });
-      await postService.create({
+      const reply1 = await postService.create({
         format: "note",
         bodyMarkdown: "reply 1",
         replyToId: root.id,
@@ -92,7 +92,7 @@ describe("PostService - Timeline features", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "reply 2",
-        replyToId: root.id,
+        replyToId: reply1.id,
       });
 
       const previews = await postService.getThreadPreviews([root.id]);
@@ -108,11 +108,12 @@ describe("PostService - Timeline features", () => {
         format: "note",
         bodyMarkdown: "root",
       });
+      let prev = root;
       for (let i = 0; i < 5; i++) {
-        await postService.create({
+        prev = await postService.create({
           format: "note",
           bodyMarkdown: `reply ${i}`,
-          replyToId: root.id,
+          replyToId: prev.id,
         });
       }
 
@@ -128,11 +129,12 @@ describe("PostService - Timeline features", () => {
         format: "note",
         bodyMarkdown: "root",
       });
+      let prev = root;
       for (let i = 0; i < 5; i++) {
-        await postService.create({
+        prev = await postService.create({
           format: "note",
           bodyMarkdown: `reply ${i}`,
-          replyToId: root.id,
+          replyToId: prev.id,
         });
       }
 
@@ -183,7 +185,7 @@ describe("PostService - Timeline features", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "reply 2",
-        replyToId: root.id,
+        replyToId: reply1.id,
       });
 
       await postService.delete(reply1.id);
@@ -199,7 +201,7 @@ describe("PostService - Timeline features", () => {
         format: "note",
         bodyMarkdown: "root",
       });
-      await postService.create({
+      const publishedReply = await postService.create({
         format: "note",
         bodyMarkdown: "published reply",
         replyToId: root.id,
@@ -207,7 +209,7 @@ describe("PostService - Timeline features", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "draft reply",
-        replyToId: root.id,
+        replyToId: publishedReply.id,
         status: "draft",
       });
 
@@ -234,7 +236,7 @@ describe("PostService - Timeline features", () => {
       expect(result.size).toBe(0);
     });
 
-    it("returns latestReply with no parentReply for a 2-post thread", async () => {
+    it("returns second and latest as the same post for a 2-post thread", async () => {
       const root = await postService.create({
         format: "note",
         bodyMarkdown: "root",
@@ -248,12 +250,13 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
+      expect(ctx?.secondReply?.id).toBe(reply.id);
+      expect(ctx?.penultimateReply).toBeNull();
       expect(ctx?.latestReply.id).toBe(reply.id);
-      expect(ctx?.parentReply).toBeNull();
       expect(ctx?.totalReplyCount).toBe(1);
     });
 
-    it("returns latestReply + parentReply for a 3-post thread", async () => {
+    it("returns second, penultimate, and latest slots for a 3-post thread", async () => {
       const root = await postService.create({
         format: "note",
         bodyMarkdown: "root",
@@ -272,12 +275,13 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
+      expect(ctx?.secondReply?.id).toBe(reply1.id);
+      expect(ctx?.penultimateReply?.id).toBe(reply1.id);
       expect(ctx?.latestReply.id).toBe(reply2.id);
-      expect(ctx?.parentReply?.id).toBe(reply1.id);
       expect(ctx?.totalReplyCount).toBe(2);
     });
 
-    it("returns correct totalReplyCount for 4+ post thread", async () => {
+    it("returns second, penultimate, and latest slots for longer threads", async () => {
       const root = await postService.create({
         format: "note",
         bodyMarkdown: "root",
@@ -294,8 +298,9 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
+      expect(ctx?.secondReply?.bodyText).toBe("reply 0");
+      expect(ctx?.penultimateReply?.bodyText).toBe("reply 3");
       expect(ctx?.latestReply.bodyText).toBe("reply 4");
-      expect(ctx?.parentReply?.bodyText).toBe("reply 3");
       expect(ctx?.totalReplyCount).toBe(5);
     });
 
@@ -321,6 +326,7 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
+      expect(ctx?.secondReply?.id).toBe(reply1.id);
       expect(ctx?.latestReply.id).toBe(reply1.id);
       expect(ctx?.totalReplyCount).toBe(1);
     });
@@ -338,13 +344,14 @@ describe("PostService - Timeline features", () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "draft reply",
-        replyToId: root.id,
+        replyToId: publishedReply.id,
         status: "draft",
       });
 
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
+      expect(ctx?.secondReply?.id).toBe(publishedReply.id);
       expect(ctx?.latestReply.id).toBe(publishedReply.id);
       expect(ctx?.totalReplyCount).toBe(1);
     });
@@ -374,6 +381,8 @@ describe("PostService - Timeline features", () => {
         root2.id,
       ]);
       expect(result.size).toBe(2);
+      expect(result.get(root1.id)?.secondReply?.id).toBe(r1Reply.id);
+      expect(result.get(root2.id)?.secondReply?.id).toBe(r2Reply.id);
       expect(result.get(root1.id)?.latestReply.id).toBe(r1Reply.id);
       expect(result.get(root2.id)?.latestReply.id).toBe(r2Reply.id);
     });
