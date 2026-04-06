@@ -93,7 +93,7 @@ async function listExistingKeys(s3, prefix) {
     const command = new ListObjectsV2Command({
       Bucket: bucket,
       Prefix: prefix ? `${prefix}/` : undefined,
-      MaxKeys: 1000,
+      MaxKeys: 500,
       ...(continuationToken ? { ContinuationToken: continuationToken } : {}),
     });
     const response = await client.send(command);
