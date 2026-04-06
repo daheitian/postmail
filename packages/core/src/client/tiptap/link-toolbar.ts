@@ -112,6 +112,7 @@ export const LinkToolbar = Extension.create({
     let savedFrom = 0;
     let savedTo = 0;
     let suppressNextUpdate = false;
+    let suppressPreview = false;
     let outsideClickHandler: ((e: MouseEvent) => void) | null = null;
 
     function createElements() {
@@ -314,6 +315,20 @@ export const LinkToolbar = Extension.create({
       }
 
       positionPopup(previewEl, view, range.from, range.to);
+
+      // Register outside-click handler to dismiss preview
+      removeOutsideClickHandler();
+      outsideClickHandler = (e: MouseEvent) => {
+        if (previewEl && !previewEl.contains(e.target as Node)) {
+          suppressPreview = true;
+          hideAll();
+        }
+      };
+      setTimeout(() => {
+        if (outsideClickHandler) {
+          document.addEventListener("mousedown", outsideClickHandler, true);
+        }
+      }, 0);
     }
 
     function hideAll() {
@@ -374,6 +389,17 @@ export const LinkToolbar = Extension.create({
           };
           editorView.dom.addEventListener("tiptap:open-link-input", handler);
 
+          // Escape key dismisses preview
+          const keyHandler = (e: globalThis.KeyboardEvent) => {
+            if (e.key === "Escape" && currentMode === "preview") {
+              e.preventDefault();
+              e.stopPropagation();
+              suppressPreview = true;
+              hideAll();
+            }
+          };
+          editorView.dom.addEventListener("keydown", keyHandler);
+
           return {
             update(view) {
               if (suppressNextUpdate) {
@@ -392,9 +418,15 @@ export const LinkToolbar = Extension.create({
               // Detect link under cursor for preview mode
               const range = getLinkRange(view.state);
               if (range) {
-                showPreview(view, range);
-              } else if (currentMode === "preview") {
-                hideAll();
+                if (!suppressPreview) {
+                  showPreview(view, range);
+                }
+              } else {
+                // Cursor moved off link — reset suppress flag
+                suppressPreview = false;
+                if (currentMode === "preview") {
+                  hideAll();
+                }
               }
             },
             destroy() {
@@ -402,6 +434,7 @@ export const LinkToolbar = Extension.create({
                 "tiptap:open-link-input",
                 handler,
               );
+              editorView.dom.removeEventListener("keydown", keyHandler);
               removeOutsideClickHandler();
               inputEl?.remove();
               previewEl?.remove();
