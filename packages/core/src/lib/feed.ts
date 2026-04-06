@@ -100,12 +100,6 @@ function buildFeedContent(post: PostView, permalinkUrl?: string): string {
     }
   }
 
-  if (post.format === "link" && post.url) {
-    parts.push(
-      `<p><a href="${escapeXml(post.url)}">${escapeXml(post.url)}</a></p>`,
-    );
-  }
-
   if (post.bodyHtml) {
     parts.push(stripUnsafeFeedHtml(post.bodyHtml));
   }

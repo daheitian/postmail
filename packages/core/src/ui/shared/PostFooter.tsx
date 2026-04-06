@@ -28,14 +28,13 @@ export const CompactCollectionTags: FC<{
   showSeparator?: boolean;
   showIcon?: boolean;
 }> = ({ collections, showSeparator = true, showIcon = false }) => {
-  const { i18n } = useLingui();
-
   if (collections.length === 0) return null;
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length checked above
   const first = collections[0]!;
-  const second = collections.length === 2 ? collections[1] : undefined;
-  const rest = collections.length > 2 ? collections.slice(1) : [];
+  const second = collections.length >= 2 ? collections[1] : undefined;
+  const hiddenCollections = collections.length > 2 ? collections.slice(2) : [];
+  const hiddenTitles = hiddenCollections.map((c) => c.title).join(", ");
 
   return (
     <span class="post-collection-tags">
@@ -73,30 +72,34 @@ export const CompactCollectionTags: FC<{
           <span class="post-collection-tag-text">{second.title}</span>
         </a>
       )}
-      {rest.length > 0 && (
-        <span class="post-collection-more-wrap">
-          <button
-            type="button"
-            class="post-collection-more"
-            data-collection-popover-trigger
-          >
-            {i18n._(
-              msg({
-                message: "and {count} more",
-                comment:
-                  "@context: Button label for opening the hidden collection list in the post footer",
-              }),
-              { count: rest.length },
-            )}
-          </button>
-          <div class="post-collection-popover" data-collection-popover>
-            {rest.map((c) => (
-              <a key={c.slug} href={c.url} class="post-collection-popover-item">
-                {c.title}
-              </a>
-            ))}
-          </div>
-        </span>
+      {hiddenCollections.length > 0 && (
+        <>
+          <span class="post-collection-second-sep" aria-hidden="true">
+            ,{" "}
+          </span>
+          <span class="post-collection-more-wrap">
+            <button
+              type="button"
+              class="post-collection-more"
+              data-collection-popover-trigger
+              aria-label={hiddenTitles}
+              title={hiddenTitles}
+            >
+              +{hiddenCollections.length}
+            </button>
+            <div class="post-collection-popover" data-collection-popover>
+              {hiddenCollections.map((c) => (
+                <a
+                  key={c.slug}
+                  href={c.url}
+                  class="post-collection-popover-item"
+                >
+                  {c.title}
+                </a>
+              ))}
+            </div>
+          </span>
+        </>
       )}
     </span>
   );

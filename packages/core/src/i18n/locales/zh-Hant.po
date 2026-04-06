@@ -279,11 +279,6 @@ msgstr "始終顯示主題的淺色版本。"
 msgid "An abstract editorial layout in warm paper colors"
 msgstr "以溫暖紙張色調呈現的抽象編輯版面"
 
-#. @context: Button label for opening the hidden collection list in the post footer
-#: src/ui/shared/PostFooter.tsx
-msgid "and {count} more"
-msgstr "以及另外 {count} 個"
-
 #. @context: Sample link post body suffix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "and checking whether the accent is guiding attention or pulling too hard."

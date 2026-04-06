@@ -1628,7 +1628,8 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
     {% if collections | length > 0 %}
     {% set first_collection = collections | first %}
     {% set first_collection_meta = get_section(path= first_collection ~ '/_index.md') %}
-    {% set hidden_collection_count = collections | length %}
+    {% set collection_count = collections | length %}
+    {% set hidden_collection_count = collection_count - 2 %}
     {% set show_collection_separator = show_date or (page.extra.format == "link" and page.extra.link_url) or page.extra.featured %}
     <span class="post-collection-tags">
       {% if show_collection_separator %}
@@ -1645,21 +1646,21 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
         {% endif %}
         <span class="post-collection-tag-text">{{ first_collection_meta.title | default(value=first_collection) }}</span>
       </a>
-      {% if hidden_collection_count == 2 %}
+      {% if collection_count >= 2 %}
       {% set second_collection = collections | nth(n=1) %}
       {% set second_collection_meta = get_section(path= second_collection ~ '/_index.md') %}
       <span class="post-collection-second-sep" aria-hidden="true">, </span>
       <a href="{{ get_taxonomy_url(kind='collections', name=second_collection) }}" class="post-collection-tag">
         <span class="post-collection-tag-text">{{ second_collection_meta.title | default(value=second_collection) }}</span>
       </a>
-      {% elif hidden_collection_count > 2 %}
+      {% endif %}
+      {% if hidden_collection_count > 0 %}
+      <span class="post-collection-second-sep" aria-hidden="true">, </span>
       <span class="post-collection-more-wrap">
-        <button type="button" class="post-collection-more" aria-haspopup="menu" data-collection-popover-trigger>
-          and {{ hidden_collection_count - 1 }} more
-        </button>
+        <button type="button" class="post-collection-more" aria-haspopup="menu" data-collection-popover-trigger>+{{ hidden_collection_count }}</button>
         <span class="post-collection-popover" role="menu" data-collection-popover>
           {% for col in collections %}
-          {% if not loop.first %}
+          {% if loop.index > 2 %}
           {% set col_meta = get_section(path= col ~ '/_index.md') %}
           <a href="{{ get_taxonomy_url(kind='collections', name=col) }}" class="post-collection-popover-item" role="menuitem">{{ col_meta.title | default(value=col) }}</a>
           {% endif %}

@@ -193,11 +193,11 @@ describe("createExportService", () => {
     expect(taxonomyListTemplate).toContain("term.pages | length");
     expect(taxonomyListTemplate).toContain("latest_page.updated");
     expect(macrosTemplate).toContain("first_collection = collections | first");
-    expect(macrosTemplate).toContain("hidden_collection_count == 2");
-    expect(macrosTemplate).toContain("hidden_collection_count > 2");
     expect(macrosTemplate).toContain(
-      "and {{ hidden_collection_count - 1 }} more",
+      "hidden_collection_count = collection_count - 2",
     );
+    expect(macrosTemplate).toContain("collection_count >= 2");
+    expect(macrosTemplate).toContain("+{{ hidden_collection_count }}");
     expect(macrosTemplate).toContain("data-collection-popover-trigger");
     expect(macrosTemplate).toContain('class="post-collection-popover-item"');
     expect(macrosTemplate).toContain("post-body-summary");

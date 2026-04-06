@@ -75,6 +75,7 @@ import {
 import { isAssetPath } from "./lib/asset-path.js";
 import { getHostedCanonicalRedirect } from "./lib/hosted-domain.js";
 import { stripSitePathPrefix, toPublicHref } from "./lib/url.js";
+import { withWorkerResponseCache } from "./lib/worker-response-cache.js";
 import { createRequestRuntime } from "./runtime/index.js";
 import { getInstanceReadiness } from "./runtime/readiness.js";
 import { type AppVariables, type App } from "./types/app-context.js";
@@ -253,9 +254,15 @@ export function createApp(): App {
       getConfiguredSingleSitePathPrefix(bindings),
     );
     if (preparedRequest instanceof Response) {
-      return preparedRequest;
+      return Promise.resolve(preparedRequest);
     }
-    return defaultFetch(preparedRequest, bindings, executionCtx);
+    return withWorkerResponseCache({
+      bindings,
+      executionCtx,
+      request,
+      next: () =>
+        Promise.resolve(defaultFetch(preparedRequest, bindings, executionCtx)),
+    });
   };
 
   // Global error handler: maps DomainError → HTTP responses

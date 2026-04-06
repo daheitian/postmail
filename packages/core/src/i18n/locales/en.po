@@ -279,11 +279,6 @@ msgstr "Always show the light version of the theme."
 msgid "An abstract editorial layout in warm paper colors"
 msgstr "An abstract editorial layout in warm paper colors"
 
-#. @context: Button label for opening the hidden collection list in the post footer
-#: src/ui/shared/PostFooter.tsx
-msgid "and {count} more"
-msgstr "and {count} more"
-
 #. @context: Sample link post body suffix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "and checking whether the accent is guiding attention or pulling too hard."

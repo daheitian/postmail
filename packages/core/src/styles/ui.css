@@ -2927,8 +2927,7 @@
     font: inherit;
     font-size: inherit;
     color: var(--site-text-secondary);
-    text-decoration: underline dotted;
-    text-underline-offset: 2px;
+    text-decoration: none;
     cursor: pointer;
   }
 

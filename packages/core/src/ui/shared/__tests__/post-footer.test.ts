@@ -63,12 +63,14 @@ function renderPostFooter(
 }
 
 describe("PostFooter", () => {
-  it("links the detail timestamp and keeps compact collection summary", () => {
+  it("links the detail timestamp and shows a +N trigger after the first two collections", () => {
     const html = renderPostFooter(createPostView(), true);
 
     expect(html).toContain('href="/hello-world"');
     expect(html).not.toContain(">Permalink<");
-    expect(html).toContain("and 2 more");
+    expect(html).toContain("Notes");
+    expect(html).toContain("Writing");
+    expect(html).toContain(">+1<");
     expect(html).toContain("data-collection-popover-trigger");
     expect(html).toContain('title="Published on Mar 17, 2026 at 10:00"');
     expect(html).toContain('class="post-collection-primary-icon"');
@@ -91,24 +93,17 @@ describe("PostFooter", () => {
     expect(html).not.toContain("data-collection-popover-trigger");
   });
 
-  it("shows only hidden collections inside the more popover when three or more", () => {
+  it("shows only hidden collections inside the +N popover when three or more", () => {
     const html = renderPostFooter(createPostView());
 
-    expect(html).toContain("and 2 more");
+    expect(html).toContain(">+1<");
     expect(html).toContain("data-collection-popover-trigger");
     expect(html).toContain('class="post-collection-tag-text"');
     expect(html).not.toContain('class="post-collection-primary-icon"');
-    expect(html.match(/class="post-collection-popover-item"/g)).toHaveLength(2);
+    expect(html.match(/class="post-collection-popover-item"/g)).toHaveLength(1);
     expect(html.match(/href="\/notes"/g)).toHaveLength(1);
     expect(html.match(/href="\/writing"/g)).toHaveLength(1);
     expect(html.match(/href="\/studio"/g)).toHaveLength(1);
-  });
-
-  it("interpolates the hidden collection count in non-English locales", () => {
-    const html = renderPostFooter(createPostView(), false, "zh-Hans");
-
-    expect(html).toContain("2");
-    expect(html).not.toContain("{count}");
   });
 
   it("renders the featured icon before the timestamp for client-side toggles", () => {
