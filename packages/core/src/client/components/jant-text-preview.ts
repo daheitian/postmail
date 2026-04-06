@@ -11,6 +11,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { escapeHtml } from "../../lib/html.js";
 import { showToast } from "../toast.js";
 import { jsonToMarkdown } from "../tiptap/create-editor.js";
 
@@ -28,6 +29,7 @@ export class JantTextPreview extends LitElement {
   declare _copied: boolean;
   /** Raw text for the copy button (markdown / plain text source) */
   #rawText = "";
+  #focusReturnTarget: HTMLElement | null = null;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -59,10 +61,11 @@ export class JantTextPreview extends LitElement {
 
     e.preventDefault();
     const mediaId = btn.dataset.textPreviewId;
-    if (mediaId) this.#openPreview(mediaId);
+    if (mediaId) this.#openPreview(mediaId, btn);
   };
 
-  async #openPreview(mediaId: string) {
+  async #openPreview(mediaId: string, trigger: HTMLElement) {
+    this.#focusReturnTarget = trigger;
     this._loading = true;
     this._open = true;
 
@@ -70,6 +73,7 @@ export class JantTextPreview extends LitElement {
 
     await this.updateComplete;
     this.querySelector<HTMLDialogElement>(".text-preview-dialog")?.showModal();
+    this.querySelector<HTMLElement>(".text-preview-content")?.focus();
 
     try {
       const res = await fetch(`/api/media/${mediaId}/content`);
@@ -89,7 +93,7 @@ export class JantTextPreview extends LitElement {
       } catch {
         // Not JSON — raw markdown / plain text, copy as-is
         this.#rawText = raw;
-        this._html = `<pre>${raw.replace(/</g, "&lt;")}</pre>`;
+        this._html = `<pre>${escapeHtml(raw)}</pre>`;
       }
     } catch {
       this._html = "<p>Failed to load content.</p>";
@@ -106,6 +110,13 @@ export class JantTextPreview extends LitElement {
     this._html = "";
     this.#rawText = "";
     this._copied = false;
+    const restoreTarget = this.#focusReturnTarget;
+    this.#focusReturnTarget = null;
+    queueMicrotask(() => {
+      if (restoreTarget?.isConnected) {
+        restoreTarget.focus();
+      }
+    });
   }
 
   async #copy() {
@@ -148,14 +159,35 @@ export class JantTextPreview extends LitElement {
           }
         }}
       >
-        <div class="text-preview-content">
+        <div class="text-preview-content" tabindex="-1">
           <div class="text-preview-toolbar">
+            <button
+              type="button"
+              class="text-preview-btn"
+              @click=${() => this.#close()}
+              title="Close"
+              aria-label="Close"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
             <button
               type="button"
               class="text-preview-btn"
               @click=${() => this.#copy()}
               ?disabled=${this._loading || !this.#rawText}
               title="Copy"
+              aria-label="Copy text"
             >
               ${this._copied
                 ? html`<svg
@@ -185,25 +217,6 @@ export class JantTextPreview extends LitElement {
                       d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
                     />
                   </svg>`}
-            </button>
-            <button
-              type="button"
-              class="text-preview-btn"
-              @click=${() => this.#close()}
-              title="Close"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M18 6 6 18M6 6l12 12" />
-              </svg>
             </button>
           </div>
           ${this._loading
