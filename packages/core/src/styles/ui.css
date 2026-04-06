@@ -2428,7 +2428,7 @@
   .thread-group {
     --site-thread-rail-indent: 24px;
     --site-thread-rail-line-left: 5px;
-    --site-thread-rail-dot-left: -24px;
+    --site-thread-rail-line-width: 2px;
     position: relative;
     padding-left: var(--site-thread-rail-indent);
   }
@@ -2440,7 +2440,7 @@
     left: var(--site-thread-rail-line-left);
     top: 0;
     bottom: 0;
-    width: 2px;
+    width: var(--site-thread-rail-line-width);
     background-color: var(--site-threadline);
   }
 
@@ -2460,11 +2460,16 @@
     padding-bottom: 0;
   }
 
-  /* Dot marker at each post position */
+  /* Dot marker at each post position — auto-centered on the rail line.
+     Line ::before is relative to .thread-group, but dot ::before is relative
+     to .thread-item which sits inside the padding (indent), so we subtract it. */
   .thread-item::before {
     content: "";
     position: absolute;
-    left: var(--site-thread-rail-dot-left);
+    left: calc(
+      var(--site-thread-rail-line-left) + var(--site-thread-rail-line-width) /
+        2 - 6px - var(--site-thread-rail-indent)
+    );
     top: 50%;
     transform: translateY(-50%);
     width: 12px;
@@ -2476,9 +2481,9 @@
 
   .thread-group-preview,
   .thread-group-detail {
-    --site-thread-rail-dot-left: -32px;
     --site-thread-rail-indent: 0px;
     --site-thread-rail-line-left: -27px;
+    --site-thread-rail-line-width: 1px;
   }
 
   @media (max-width: 700px) {
@@ -2491,7 +2496,6 @@
 
   .thread-group-preview::before,
   .thread-group-detail::before {
-    width: 1px;
     background: linear-gradient(
       180deg,
       transparent 0,
@@ -2507,6 +2511,10 @@
 
   .thread-group-preview .thread-item::before,
   .thread-group-detail .thread-item::before {
+    left: calc(
+      var(--site-thread-rail-line-left) + var(--site-thread-rail-line-width) /
+        2 - var(--site-thread-marker-size) / 2 - var(--site-thread-rail-indent)
+    );
     width: var(--site-thread-marker-size);
     height: var(--site-thread-marker-size);
     border: var(--site-thread-marker-border-width) solid
@@ -2561,7 +2569,11 @@
 
   .thread-group-preview .thread-item-hero::before,
   .compose-editor-row .compose-thread-dot {
-    left: calc(var(--site-thread-rail-dot-left) - 2px);
+    left: calc(
+      var(--site-thread-rail-line-left) + var(--site-thread-rail-line-width) /
+        2 - var(--site-thread-marker-hero-size) / 2 -
+        var(--site-thread-rail-indent)
+    );
     width: var(--site-thread-marker-hero-size);
     height: var(--site-thread-marker-hero-size);
     border: var(--site-thread-marker-hero-border-width) solid
@@ -2572,7 +2584,11 @@
   }
 
   .thread-group-curated .thread-item-curated::before {
-    left: calc(var(--site-thread-rail-dot-left) - 2px);
+    left: calc(
+      var(--site-thread-rail-line-left) + var(--site-thread-rail-line-width) /
+        2 - var(--site-thread-marker-hero-size) / 2 -
+        var(--site-thread-rail-indent)
+    );
     width: var(--site-thread-marker-hero-size);
     height: var(--site-thread-marker-hero-size);
     border: var(--site-thread-marker-hero-border-width) solid
