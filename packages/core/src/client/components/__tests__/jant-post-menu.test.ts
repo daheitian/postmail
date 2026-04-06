@@ -29,7 +29,11 @@ function requireElement<T extends globalThis.Element>(
 
 function click(element: globalThis.Element) {
   element.dispatchEvent(
-    new MouseEvent("click", { bubbles: true, composed: true }),
+    new MouseEvent("click", {
+      bubbles: true,
+      composed: true,
+      detail: 1,
+    }),
   );
 }
 
@@ -302,7 +306,7 @@ describe("JantPostMenu", () => {
     expect(menu.querySelector("[data-collection-quick-dialog]")).not.toBeNull();
   });
 
-  it("moves collection focus with arrow keys and toggles with Enter", async () => {
+  it("moves collection focus with arrow keys and toggles with Space", async () => {
     const selectedIds = ["collection-1"];
     const fetchMock = vi.fn(
       async (input: unknown, init?: globalThis.RequestInit) => {
@@ -390,10 +394,7 @@ describe("JantPostMenu", () => {
     );
     expect(document.activeElement).toBe(options[0]);
 
-    keydown(
-      requireElement(options[0] ?? null, "expected first option"),
-      "Enter",
-    );
+    keydown(requireElement(options[0] ?? null, "expected first option"), " ");
     await Promise.resolve();
     await menu.updateComplete;
     expect(menu._postCollectionIds).toEqual([]);
@@ -409,6 +410,65 @@ describe("JantPostMenu", () => {
     );
     await menu.updateComplete;
     expect(document.activeElement).toBe(searchInput);
+  });
+
+  it("closes the collection picker with Enter without toggling the focused option", async () => {
+    const selectedIds = ["collection-1"];
+    const fetchMock = vi.fn(
+      async (input: unknown, init?: globalThis.RequestInit) => {
+        const url = String(input);
+        const method = init?.method ?? "GET";
+
+        if (url === "/api/collections?view=compose" && method === "GET") {
+          return jsonResponse({
+            collections: [
+              { id: "collection-1", title: "Movies", slug: "movies" },
+              { id: "collection-2", title: "Books", slug: "books" },
+            ],
+          });
+        }
+
+        if (url === "/api/posts/post-1" && method === "GET") {
+          return jsonResponse({ collectionIds: [...selectedIds] });
+        }
+
+        throw new Error(`Unexpected fetch in test: ${url}`);
+      },
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { menu, trigger } = await createMenu();
+
+    click(trigger);
+    await menu.updateComplete;
+
+    click(
+      requireElement(
+        menu.querySelector<HTMLElement>("[data-post-menu-open-collections]"),
+        "expected collections button in main menu",
+      ),
+    );
+    await Promise.resolve();
+    await menu.updateComplete;
+
+    await vi.waitFor(() => {
+      expect(
+        menu.querySelectorAll<HTMLButtonElement>(".post-menu-picker-option"),
+      ).toHaveLength(2);
+    });
+
+    const firstOption = requireElement(
+      menu.querySelector<HTMLButtonElement>(".post-menu-picker-option"),
+      "expected first collection option",
+    );
+    firstOption.focus();
+
+    keydown(firstOption, "Enter");
+    await menu.updateComplete;
+
+    expect(menu._postCollectionIds).toEqual(["collection-1"]);
+    expect(menu.textContent?.trim()).toBe("");
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
   });
 
   it("keeps selected collections first when opening and after reopening", async () => {

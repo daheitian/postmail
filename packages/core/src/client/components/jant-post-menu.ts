@@ -300,9 +300,18 @@ export class JantPostMenu extends LitElement {
       event.isComposing ||
       event.altKey ||
       event.ctrlKey ||
-      event.metaKey ||
-      event.key !== "ArrowDown"
+      event.metaKey
     ) {
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      this.#close();
+      return;
+    }
+
+    if (event.key !== "ArrowDown") {
       return;
     }
 
@@ -363,10 +372,29 @@ export class JantPostMenu extends LitElement {
       return;
     }
 
-    if (event.key === "Enter") {
+    if (event.key === " " || event.key === "Spacebar") {
       event.preventDefault();
       this.#toggleCollection(collectionId);
+      return;
     }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      this.#close();
+    }
+  };
+
+  #handleCollectionOptionClick = (
+    event: globalThis.MouseEvent,
+    collectionId: string,
+  ) => {
+    // Keyboard shortcuts are handled on keydown; ignore the synthetic click that
+    // browsers dispatch for button activation so Enter/Space keep their custom meaning.
+    if (event.detail === 0) {
+      return;
+    }
+
+    this.#toggleCollection(collectionId);
   };
 
   #handleCollectionAddActionKeydown = (event: globalThis.KeyboardEvent) => {
@@ -1095,7 +1123,8 @@ export class JantPostMenu extends LitElement {
                       }`}
                       @keydown=${(event: globalThis.KeyboardEvent) =>
                         this.#handleCollectionOptionKeydown(event, c.id)}
-                      @click=${() => this.#toggleCollection(c.id)}
+                      @click=${(event: globalThis.MouseEvent) =>
+                        this.#handleCollectionOptionClick(event, c.id)}
                     >
                       <span class="post-menu-picker-title">${c.title}</span>
                       ${selected

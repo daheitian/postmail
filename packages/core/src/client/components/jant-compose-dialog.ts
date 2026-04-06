@@ -591,6 +591,8 @@ export class JantComposeDialog extends LitElement {
   private _ignoreNextEscapeClose = false;
   private _openEditRequestId = 0;
   private _collectionPickerOrder: string[] = [];
+  private _suppressCollectionOptionClickUntil = 0;
+  private _suppressedCollectionOptionId: string | null = null;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -702,8 +704,7 @@ export class JantComposeDialog extends LitElement {
     this._loading = false;
     this._openingEdit = false;
     this._collectionIds = [];
-    this._showCollection = false;
-    this._collectionSearch = "";
+    this._closeCollectionPicker();
     this._altPanelOpen = false;
     this._altPanelIndex = 0;
     this._attachedPanelOpen = false;
@@ -1117,8 +1118,7 @@ export class JantComposeDialog extends LitElement {
 
     // Dismiss any open dropdowns first
     if (this._showCollection) {
-      this._showCollection = false;
-      this._collectionSearch = "";
+      this._closeCollectionPicker();
     }
     if (this._showPublishPanel) {
       this._showPublishPanel = false;
@@ -1544,6 +1544,31 @@ export class JantComposeDialog extends LitElement {
     return true;
   }
 
+  private _closeCollectionPicker(options?: {
+    restoreFocus?: "trigger" | "editor";
+  }) {
+    this._showCollection = false;
+    this._collectionSearch = "";
+    this._suppressedCollectionOptionId = null;
+    this._suppressCollectionOptionClickUntil = 0;
+
+    if (options?.restoreFocus === "trigger") {
+      this.updateComplete.then(() => {
+        this.querySelector<HTMLElement>(".compose-collection-trigger")?.focus();
+      });
+      return;
+    }
+
+    if (options?.restoreFocus === "editor") {
+      this._restorePageEditorFocus();
+    }
+  }
+
+  private _suppressNextCollectionOptionClick(collectionId: string) {
+    this._suppressedCollectionOptionId = collectionId;
+    this._suppressCollectionOptionClickUntil = Date.now() + 250;
+  }
+
   private _isTouchViewport() {
     return (
       globalThis.matchMedia?.("(hover: none) and (pointer: coarse)")?.matches ??
@@ -1626,9 +1651,18 @@ export class JantComposeDialog extends LitElement {
       event.isComposing ||
       event.altKey ||
       event.ctrlKey ||
-      event.metaKey ||
-      event.key !== "ArrowDown"
+      event.metaKey
     ) {
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      this._closeCollectionPicker({ restoreFocus: "trigger" });
+      return;
+    }
+
+    if (event.key !== "ArrowDown") {
       return;
     }
 
@@ -1689,10 +1723,33 @@ export class JantComposeDialog extends LitElement {
       return;
     }
 
+    if (event.key === " " || event.key === "Spacebar") {
+      event.preventDefault();
+      this._suppressNextCollectionOptionClick(collectionId);
+      this._toggleCollection(collectionId);
+      return;
+    }
+
     if (event.key === "Enter") {
       event.preventDefault();
-      this._toggleCollection(collectionId);
+      this._suppressNextCollectionOptionClick(collectionId);
+      this._closeCollectionPicker({ restoreFocus: "trigger" });
     }
+  };
+
+  private _handleCollectionOptionClick = (collectionId: string) => {
+    if (
+      this._suppressedCollectionOptionId === collectionId &&
+      Date.now() <= this._suppressCollectionOptionClickUntil
+    ) {
+      this._suppressedCollectionOptionId = null;
+      this._suppressCollectionOptionClickUntil = 0;
+      return;
+    }
+
+    this._suppressedCollectionOptionId = null;
+    this._suppressCollectionOptionClickUntil = 0;
+    this._toggleCollection(collectionId);
   };
 
   private _handleCollectionAddActionKeydown = (
@@ -2146,9 +2203,7 @@ export class JantComposeDialog extends LitElement {
     }
 
     if (this._showCollection) {
-      this._showCollection = false;
-      this._collectionSearch = "";
-      this._restorePageEditorFocus();
+      this._closeCollectionPicker({ restoreFocus: "editor" });
       return true;
     }
 
@@ -3321,10 +3376,7 @@ export class JantComposeDialog extends LitElement {
         ${this._showCollection
           ? html`<div
               class="compose-dropdown-backdrop"
-              @click=${() => {
-                this._showCollection = false;
-                this._collectionSearch = "";
-              }}
+              @click=${() => this._closeCollectionPicker()}
             ></div>`
           : nothing}
         <div
@@ -3348,7 +3400,7 @@ export class JantComposeDialog extends LitElement {
               }
               this._showCollection = nextOpen;
               if (!nextOpen) {
-                this._collectionSearch = "";
+                this._closeCollectionPicker();
               }
             }}
           >
@@ -3416,7 +3468,8 @@ export class JantComposeDialog extends LitElement {
                         aria-selected=${selected ? "true" : "false"}
                         @keydown=${(event: globalThis.KeyboardEvent) =>
                           this._handleCollectionOptionKeydown(event, col.id)}
-                        @click=${() => this._toggleCollection(col.id)}
+                        @click=${() =>
+                          this._handleCollectionOptionClick(col.id)}
                       >
                         <span class="compose-collection-option-label"
                           >${col.title}</span
@@ -3469,8 +3522,7 @@ export class JantComposeDialog extends LitElement {
                 class="compose-collection-add-action"
                 @keydown=${this._handleCollectionAddActionKeydown}
                 @click=${() => {
-                  this._showCollection = false;
-                  this._collectionSearch = "";
+                  this._closeCollectionPicker();
                   this._addCollectionPanelOpen = true;
                 }}
               >

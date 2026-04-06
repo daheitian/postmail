@@ -2124,7 +2124,7 @@ describe("JantComposeDialog", () => {
     expect(el._collectionIds).toEqual(["col-2"]);
   });
 
-  it("moves collection focus with arrow keys and toggles with Enter", async () => {
+  it("moves collection focus with arrow keys and toggles with Space", async () => {
     vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
       cb(0);
       return 1;
@@ -2171,10 +2171,7 @@ describe("JantComposeDialog", () => {
     );
     expect(document.activeElement).toBe(options[0]);
 
-    keydown(
-      requireElement(options[0] ?? null, "expected first option"),
-      "Enter",
-    );
+    keydown(requireElement(options[0] ?? null, "expected first option"), " ");
     await flushUpdates(el);
     expect(el._collectionIds).toEqual(["col-1"]);
 
@@ -2189,6 +2186,62 @@ describe("JantComposeDialog", () => {
     );
     await flushUpdates(el);
     expect(document.activeElement).toBe(searchInput);
+  });
+
+  it("closes the collection picker from the search input on Enter", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    const el = await createElement();
+
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
+      "expected collection trigger",
+    );
+    trigger.click();
+    await flushUpdates(el);
+
+    const searchInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-collection-search-input"),
+      "expected collection search input",
+    );
+    expect(document.activeElement).toBe(searchInput);
+
+    keydown(searchInput, "Enter");
+    await flushUpdates(el);
+
+    expect(el._showCollection).toBe(false);
+    expect(el._collectionSearch).toBe("");
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("closes the collection picker from an option on Enter without toggling", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    const el = await createElement();
+
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
+      "expected collection trigger",
+    );
+    trigger.click();
+    await flushUpdates(el);
+
+    const firstOption = requireElement(
+      el.querySelector<HTMLButtonElement>("[data-popover] [role='option']"),
+      "expected first collection option",
+    );
+    firstOption.focus();
+
+    keydown(firstOption, "Enter");
+    await flushUpdates(el);
+
+    expect(el._collectionIds).toEqual([]);
+    expect(el._showCollection).toBe(false);
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("does not autofocus collection search on coarse pointer devices", async () => {
