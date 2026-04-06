@@ -170,7 +170,9 @@ async function logCliPgMigrationDebug(databaseUrl, phase) {
   try {
     const journal = await readPgMigrationJournal(databaseUrl);
     const constraints = await readNavItemCheckConstraints(databaseUrl);
-    logMigrationDebug(`cli.pg.${phase}.target=${describeNodeDatabaseTarget(databaseUrl)}`);
+    logMigrationDebug(
+      `cli.pg.${phase}.target=${describeNodeDatabaseTarget(databaseUrl)}`,
+    );
     logMigrationDebug(
       `cli.pg.${phase}.migrations_folder=${migrationsFolder ?? "<missing>"}`,
     );
@@ -254,25 +256,27 @@ export async function run(argv) {
   if (debugMigrate) {
     logMigrationDebug(`cli.runtime=${runtime}`);
     if (values.node) {
-      const databaseUrlSource =
-        nodeEnvLoadResult?.assignedKeys.includes("DATABASE_URL")
-          ? ".env.node"
-          : process.env.DATABASE_URL
-            ? "process.env"
-            : "<unset>";
-      const dataDirSource =
-        nodeEnvLoadResult?.assignedKeys.includes("DATA_DIR")
-          ? ".env.node"
-          : process.env.DATA_DIR
-            ? "process.env"
-            : "<unset>";
+      const databaseUrlSource = nodeEnvLoadResult?.assignedKeys.includes(
+        "DATABASE_URL",
+      )
+        ? ".env.node"
+        : process.env.DATABASE_URL
+          ? "process.env"
+          : "<unset>";
+      const dataDirSource = nodeEnvLoadResult?.assignedKeys.includes("DATA_DIR")
+        ? ".env.node"
+        : process.env.DATA_DIR
+          ? "process.env"
+          : "<unset>";
       const envPath = nodeEnvLoadResult?.envPath ?? "<unknown>";
       const envState = nodeEnvLoadResult?.found ? "loaded" : "missing";
       const skippedKeys = nodeEnvLoadResult?.skippedKeys.join(", ") || "<none>";
       logMigrationDebug(`cli.node_env.path=${envPath}`);
       logMigrationDebug(`cli.node_env.state=${envState}`);
       logMigrationDebug(`cli.node_env.skipped_keys=${skippedKeys}`);
-      logMigrationDebug(`cli.node_env.database_url_source=${databaseUrlSource}`);
+      logMigrationDebug(
+        `cli.node_env.database_url_source=${databaseUrlSource}`,
+      );
       logMigrationDebug(`cli.node_env.data_dir_source=${dataDirSource}`);
     }
 

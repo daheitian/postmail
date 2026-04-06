@@ -107,7 +107,9 @@ export async function readJsonInput(values) {
 
   const source =
     rawJson ??
-    (inputPath === "-" ? await readStdinText() : await readFile(inputPath, "utf8"));
+    (inputPath === "-"
+      ? await readStdinText()
+      : await readFile(inputPath, "utf8"));
 
   try {
     return JSON.parse(source);

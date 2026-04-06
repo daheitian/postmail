@@ -93,7 +93,9 @@ async function runList(argv) {
   });
 
   if (values.help) {
-    console.log("Usage: jant media list [--limit 50] [--mimePrefix image/] [options]");
+    console.log(
+      "Usage: jant media list [--limit 50] [--mimePrefix image/] [options]",
+    );
     return;
   }
 

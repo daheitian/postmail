@@ -242,8 +242,7 @@ function requestAssetWithNode(url, redirectCount = 0) {
 
           resolve({
             bytes,
-            contentType:
-              response.headers["content-type"]?.split(";")[0] || "",
+            contentType: response.headers["content-type"]?.split(";")[0] || "",
           });
         });
 
@@ -258,7 +257,9 @@ function requestAssetWithNode(url, redirectCount = 0) {
     });
 
     request.setTimeout(30000, () => {
-      request.destroy(Object.assign(new Error("Request timed out"), { code: "ETIMEDOUT" }));
+      request.destroy(
+        Object.assign(new Error("Request timed out"), { code: "ETIMEDOUT" }),
+      );
     });
   });
 }
@@ -280,9 +281,7 @@ async function fetchAsset(resolvedUrl, options = {}) {
     lastError = result.error;
     if (
       attempt < maxAttempts &&
-      /^(HTTP (408|425|429|500|502|503|504)|E[A-Z_]+:|UND_ERR_)/.test(
-        lastError,
-      )
+      /^(HTTP (408|425|429|500|502|503|504)|E[A-Z_]+:|UND_ERR_)/.test(lastError)
     ) {
       await sleep(150 * attempt);
       continue;

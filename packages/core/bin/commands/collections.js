@@ -246,9 +246,7 @@ async function runRemovePost(argv) {
   });
 
   if (values.help) {
-    console.log(
-      "Usage: jant collections remove-post <collectionId> <postId>",
-    );
+    console.log("Usage: jant collections remove-post <collectionId> <postId>");
     return;
   }
 
@@ -258,10 +256,7 @@ async function runRemovePost(argv) {
     throw new Error("Collection ID and post ID are required.");
   }
 
-  const siteUrl = requireSiteUrl(
-    values,
-    "Removing a post from a collection",
-  );
+  const siteUrl = requireSiteUrl(values, "Removing a post from a collection");
   const token = requireApiToken(values, "Removing a post from a collection");
   const result = await requestJson({
     siteUrl,

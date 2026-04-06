@@ -1151,7 +1151,11 @@ export function extractAttachmentBlocks(markdown) {
       const startOffset = getStartOffset(node);
       const endOffset = getEndOffset(node);
       if (typeof startOffset === "number" && typeof endOffset === "number") {
-        removalPatches.push({ start: startOffset, end: endOffset, replacement: "" });
+        removalPatches.push({
+          start: startOffset,
+          end: endOffset,
+          replacement: "",
+        });
       }
       continue;
     }
@@ -1181,7 +1185,11 @@ export function extractAttachmentBlocks(markdown) {
       const startOffset = getStartOffset(htmlNodes[i]);
       const endOffset = getEndOffset(htmlNodes[lastMergedIdx]);
       if (typeof startOffset === "number" && typeof endOffset === "number") {
-        removalPatches.push({ start: startOffset, end: endOffset, replacement: "" });
+        removalPatches.push({
+          start: startOffset,
+          end: endOffset,
+          replacement: "",
+        });
       }
     }
   }

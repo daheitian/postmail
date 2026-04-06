@@ -1,10 +1,6 @@
 import { basename, extname } from "node:path";
 import { readFile } from "node:fs/promises";
-import {
-  requestJson,
-  requestRaw,
-  resolveRequestUrl,
-} from "./http-api.js";
+import { requestJson, requestRaw, resolveRequestUrl } from "./http-api.js";
 
 const MIME_TYPES = {
   ".avif": "image/avif",
@@ -59,12 +55,7 @@ function buildCompletePayload(metadata, parts) {
   };
 }
 
-async function uploadTransportBytes({
-  fileBytes,
-  siteUrl,
-  token,
-  transport,
-}) {
+async function uploadTransportBytes({ fileBytes, siteUrl, token, transport }) {
   switch (transport.kind) {
     case "relay": {
       await requestRaw({

@@ -3,4 +3,6 @@ packages:
   - "sites/*"
 
 catalog:
+  "@types/node": ^25.5.0
+  typescript: ^6.0.2
   wrangler: ^4.76.0

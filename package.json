@@ -2,7 +2,7 @@
   "name": "jant",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.32.1",
+  "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=24.0.0"
   },
@@ -28,15 +28,14 @@
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
     "@eslint/js": "^10.0.1",
-    "@typescript-eslint/eslint-plugin": "^8.57.1",
-    "@typescript-eslint/parser": "^8.57.1",
-    "better-auth": "^1.5.5",
-    "eslint": "^10.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "@typescript-eslint/parser": "^8.58.0",
+    "eslint": "^10.2.0",
     "eslint-plugin-react": "^7.37.5",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
+    "typescript": "catalog:"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -45,8 +44,5 @@
       "sharp"
     ]
   },
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.1012.0",
-    "blurhash": "^2.0.5"
-  }
+  "dependencies": {}
 }

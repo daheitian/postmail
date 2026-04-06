@@ -344,7 +344,9 @@ export async function applyPgBackfills(pool) {
   const tableName = DEFAULT_DATA_MIGRATION_TABLE;
   await runner.execute(createPgTrackingTableSql(tableName));
   const table = quoteIdentifier(tableName);
-  const applied = await runner.query(`SELECT "name" FROM ${table} ORDER BY "id"`);
+  const applied = await runner.query(
+    `SELECT "name" FROM ${table} ORDER BY "id"`,
+  );
   const appliedNames = new Set(applied.map((row) => String(row.name)));
   const pendingFiles = files.filter((file) => !appliedNames.has(file.name));
 
@@ -353,9 +355,7 @@ export async function applyPgBackfills(pool) {
     return 0;
   }
 
-  console.log(
-    `Applying data backfills (${pendingFiles.length} pending)...`,
-  );
+  console.log(`Applying data backfills (${pendingFiles.length} pending)...`);
 
   for (const [index, file] of pendingFiles.entries()) {
     try {

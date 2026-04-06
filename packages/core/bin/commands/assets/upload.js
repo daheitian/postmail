@@ -36,7 +36,9 @@ const CONTENT_TYPES = {
 };
 
 function getContentType(filePath) {
-  return CONTENT_TYPES[extname(filePath).toLowerCase()] ?? "application/octet-stream";
+  return (
+    CONTENT_TYPES[extname(filePath).toLowerCase()] ?? "application/octet-stream"
+  );
 }
 
 /**
@@ -62,9 +64,8 @@ async function walkDir(dir) {
 }
 
 async function loadS3(config) {
-  const { S3Client, PutObjectCommand, ListObjectsV2Command } = await import(
-    "@aws-sdk/client-s3"
-  );
+  const { S3Client, PutObjectCommand, ListObjectsV2Command } =
+    await import("@aws-sdk/client-s3");
   const forcePathStyle = !config.endpoint.includes("amazonaws.com");
   const client = new S3Client({
     endpoint: config.endpoint,
@@ -75,7 +76,12 @@ async function loadS3(config) {
     },
     forcePathStyle,
   });
-  return { client, PutObjectCommand, ListObjectsV2Command, bucket: config.bucket };
+  return {
+    client,
+    PutObjectCommand,
+    ListObjectsV2Command,
+    bucket: config.bucket,
+  };
 }
 
 async function listExistingKeys(s3, prefix) {
@@ -156,7 +162,9 @@ export async function run(argv) {
       );
       process.exit(1);
     }
-    console.log(`S3 not configured (${missing.join(", ")} not set), skipping asset upload.`);
+    console.log(
+      `S3 not configured (${missing.join(", ")} not set), skipping asset upload.`,
+    );
     process.exit(0);
   }
 
@@ -179,7 +187,13 @@ export async function run(argv) {
   if (dryRun) console.log("Dry run: no files will be uploaded");
   console.log("");
 
-  const s3 = await loadS3({ endpoint, bucket, accessKeyId, secretAccessKey, region });
+  const s3 = await loadS3({
+    endpoint,
+    bucket,
+    accessKeyId,
+    secretAccessKey,
+    region,
+  });
 
   // List existing keys upfront (one API call instead of per-file HEAD)
   process.stdout.write("Listing existing keys... ");

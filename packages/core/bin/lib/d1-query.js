@@ -83,8 +83,7 @@ function extractJson(raw) {
   const idx = raw.indexOf("[");
   const idx2 = raw.indexOf("{");
   if (idx === -1 && idx2 === -1) return raw;
-  const start =
-    idx === -1 ? idx2 : idx2 === -1 ? idx : Math.min(idx, idx2);
+  const start = idx === -1 ? idx2 : idx2 === -1 ? idx : Math.min(idx, idx2);
   return raw.slice(start);
 }
 
