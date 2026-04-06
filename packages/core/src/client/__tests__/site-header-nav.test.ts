@@ -153,6 +153,9 @@ describe("site header nav drawer", () => {
     const backdrop = root.querySelector(
       ".site-nav-drawer-backdrop",
     ) as HTMLElement;
+    const closeBtn = root.querySelector(
+      ".site-nav-drawer-close",
+    ) as HTMLButtonElement;
 
     hamburger.click();
 
@@ -163,6 +166,7 @@ describe("site header nav drawer", () => {
     expect(document.documentElement.classList.contains("drawer-open")).toBe(
       true,
     );
+    expect(document.activeElement).toBe(closeBtn);
   });
 
   it("closes drawer on close button click", () => {

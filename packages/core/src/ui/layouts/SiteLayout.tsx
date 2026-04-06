@@ -55,6 +55,28 @@ function SearchIcon({ class: className = "" }: { class?: string }) {
   );
 }
 
+function ComposeFeatherIcon({ class: className = "" }: { class?: string }) {
+  return (
+    <svg
+      class={className}
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
+      <line x1="16" y1="8" x2="2" y2="22" />
+      <line x1="17.5" y1="15" x2="9" y2="15" />
+    </svg>
+  );
+}
+
 function HeaderLink({
   link,
   label,
@@ -118,10 +140,23 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   );
   const searchHref = toPublicPath("/search", sitePathPrefix);
 
+  const menuLabel = i18n._(
+    msg({
+      message: "Menu",
+      comment: "@context: Hamburger menu button label",
+    }),
+  );
   const moreLabel = i18n._(
     msg({
       message: "More",
       comment: "@context: More navigation links dropdown button",
+    }),
+  );
+  const newPostLabel = i18n._(
+    msg({
+      message: "New post",
+      comment:
+        "@context: Mobile floating action button label to open the compose dialog",
     }),
   );
 
@@ -148,9 +183,16 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     currentPath === toPublicPath("/", sitePathPrefix) ||
     currentPath === toPublicPath("/featured", sitePathPrefix) ||
     currentPath === toPublicPath("/latest", sitePathPrefix);
-  const contentClass = isHomePage
-    ? "site-content site-content-home"
-    : "site-content";
+  const showMobileComposeFab = Boolean(
+    isHomePage && isAuthenticated && showComposeDialog,
+  );
+  const contentClass = [
+    "site-content",
+    isHomePage ? "site-content-home" : "",
+    showMobileComposeFab ? "site-content-mobile-compose-enabled" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div class="site-page">
@@ -289,12 +331,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                   class="site-header-hamburger"
                   aria-controls="site-nav-drawer"
                   aria-expanded="false"
-                  aria-label={i18n._(
-                    msg({
-                      message: "Menu",
-                      comment: "@context: Hamburger menu button label",
-                    }),
-                  )}
+                  aria-label={menuLabel}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -323,6 +360,9 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       <div
         id="site-nav-drawer"
         class="site-nav-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label={menuLabel}
         aria-hidden="true"
         inert
       >
@@ -366,21 +406,6 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
             </svg>
           </button>
         </div>
-        <form
-          class="site-nav-drawer-search"
-          action={toPublicPath("/search", sitePathPrefix)}
-          method="get"
-        >
-          <SearchIcon class="site-nav-drawer-search-icon" />
-          <input
-            type="search"
-            name="q"
-            class="site-nav-drawer-search-input"
-            placeholder={searchLabel}
-            aria-label={searchLabel}
-            enterkeyhint="search"
-          />
-        </form>
         <nav class="site-nav-drawer-nav" aria-label="Primary">
           {headerLinks.map((link) => (
             <a
@@ -442,6 +467,17 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           </div>
         )}
       </main>
+
+      {showMobileComposeFab && (
+        <button
+          type="button"
+          class="site-mobile-compose-fab"
+          aria-label={newPostLabel}
+          data-on:click="document.getElementById('compose-dialog')?.querySelector('jant-compose-dialog')?.openNew()"
+        >
+          <ComposeFeatherIcon class="site-mobile-compose-fab-icon" />
+        </button>
+      )}
 
       {siteFooterHtml && (
         <footer class="site-footer" data-footer>

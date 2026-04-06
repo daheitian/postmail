@@ -1930,8 +1930,10 @@ msgstr "New Password"
 
 #. @context: Browser page title for the new post page
 #. @context: Collection page quick compose button aria label
+#. @context: Mobile floating action button label to open the compose dialog
 #. @context: Page title for the new post page
 #: src/routes/pages/new.tsx
+#: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/ComposePage.tsx
 msgid "New post"

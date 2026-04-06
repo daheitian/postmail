@@ -228,7 +228,7 @@ describe("BaseLayout", () => {
     expect(html).toContain("@media(max-width:860px)");
     expect(html).toContain(".site-header-link-overflow");
     expect(html).toContain(
-      "@media(max-width:480px){.site-header-nav,.site-header-search-slot,.site-header-more{display:none!important}",
+      "@media(max-width:480px){.site-header-nav,.site-header-more{display:none!important}.site-header-search-slot{display:flex!important}",
     );
   });
 });

@@ -76,9 +76,9 @@ export function initSiteHeaderNav(root = document) {
     hamburger.setAttribute("aria-expanded", "true");
     document.documentElement.classList.add("drawer-open");
 
-    const firstFocusable = drawer.querySelector(
-      "input, a, button:not(.site-nav-drawer-close)",
-    );
+    const firstFocusable =
+      drawer.querySelector(".site-nav-drawer-close") ??
+      drawer.querySelector("a[href], button");
     if (firstFocusable) firstFocusable.focus();
   }
 
