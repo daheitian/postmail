@@ -479,7 +479,7 @@ html:lang(ko) {
   width: min(80%, 45rem);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1024px) {
   [data-page="search"],
   .site-home-header,
   .post-detail-title,
@@ -494,6 +494,6 @@ html:lang(ko) {
   .feed-continue-link,
   [data-post-body].prose,
   [data-post-meta] {
-    width: 100%;
+    width: min(100%, 40rem);
   }
 }
