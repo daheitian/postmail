@@ -2176,8 +2176,8 @@ msgstr "Permanently delete all data and reset the blog"
 
 #. @context: Description in collection picker section
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Pin a collection to your navigation bar"
-msgstr "Pin a collection to your navigation bar"
+msgid "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours."
+msgstr "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours."
 
 #. @context: Post badge - pinned
 #: src/ui/dash/StatusBadge.tsx

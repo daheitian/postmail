@@ -668,8 +668,8 @@
     height: 6px;
     border-radius: 50%;
     background: var(--color-primary, currentColor);
-    margin-left: 2px;
-    vertical-align: super;
+    margin-right: 4px;
+    vertical-align: middle;
     flex-shrink: 0;
   }
 

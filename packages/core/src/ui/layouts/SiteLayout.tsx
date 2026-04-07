@@ -102,10 +102,10 @@ function HeaderLink({
         ? { target: "_blank", rel: "noopener noreferrer" }
         : {})}
     >
-      {label}
       {link.isFresh && (
         <span class="site-header-link-fresh" aria-hidden="true" />
       )}
+      {label}
       {link.isExternal && <ExternalLinkIcon />}
     </a>
   );
@@ -273,13 +273,13 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                               }
                             : {})}
                         >
-                          {link.displayLabel}
                           {link.isFresh && (
                             <span
                               class="site-header-link-fresh"
                               aria-hidden="true"
                             />
                           )}
+                          {link.displayLabel}
                           {link.isExternal && <ExternalLinkIcon />}
                         </a>
                       ))}
@@ -298,13 +298,13 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                               }
                             : {})}
                         >
-                          {link.displayLabel}
                           {link.isFresh && (
                             <span
                               class="site-header-link-fresh"
                               aria-hidden="true"
                             />
                           )}
+                          {link.displayLabel}
                           {link.isExternal && <ExternalLinkIcon />}
                         </a>
                       ))}
@@ -432,10 +432,10 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                 ? { target: "_blank", rel: "noopener noreferrer" }
                 : {})}
             >
-              {link.displayLabel}
               {link.isFresh && (
                 <span class="site-header-link-fresh" aria-hidden="true" />
               )}
+              {link.displayLabel}
               {link.isExternal && <ExternalLinkIcon />}
             </a>
           ))}
@@ -452,10 +452,10 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                     ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
                 >
-                  {link.displayLabel}
                   {link.isFresh && (
                     <span class="site-header-link-fresh" aria-hidden="true" />
                   )}
+                  {link.displayLabel}
                   {link.isExternal && <ExternalLinkIcon />}
                 </a>
               ))}

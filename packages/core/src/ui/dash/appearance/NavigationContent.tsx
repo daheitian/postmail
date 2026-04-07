@@ -316,7 +316,8 @@ export function NavigationContent({
     ),
     addCollectionDescription: i18n._(
       msg({
-        message: "Pin a collection to your navigation bar",
+        message:
+          "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours.",
         comment: "@context: Description in collection picker section",
       }),
     ),

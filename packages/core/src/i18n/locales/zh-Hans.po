@@ -2176,7 +2176,7 @@ msgstr "永久删除所有数据并重置博客"
 
 #. @context: Description in collection picker section
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Pin a collection to your navigation bar"
+msgid "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours."
 msgstr ""
 
 #. @context: Post badge - pinned
