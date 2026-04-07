@@ -101,10 +101,8 @@ function HeaderLink({
       {...(link.isExternal
         ? { target: "_blank", rel: "noopener noreferrer" }
         : {})}
+      {...(link.freshAt ? { "data-fresh-at": link.freshAt } : {})}
     >
-      {link.isFresh && (
-        <span class="site-header-link-fresh" aria-hidden="true" />
-      )}
       {label}
       {link.isExternal && <ExternalLinkIcon />}
     </a>
@@ -272,13 +270,10 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                                 rel: "noopener noreferrer",
                               }
                             : {})}
+                          {...(link.freshAt
+                            ? { "data-fresh-at": link.freshAt }
+                            : {})}
                         >
-                          {link.isFresh && (
-                            <span
-                              class="site-header-link-fresh"
-                              aria-hidden="true"
-                            />
-                          )}
                           {link.displayLabel}
                           {link.isExternal && <ExternalLinkIcon />}
                         </a>
@@ -297,13 +292,10 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                                 rel: "noopener noreferrer",
                               }
                             : {})}
+                          {...(link.freshAt
+                            ? { "data-fresh-at": link.freshAt }
+                            : {})}
                         >
-                          {link.isFresh && (
-                            <span
-                              class="site-header-link-fresh"
-                              aria-hidden="true"
-                            />
-                          )}
                           {link.displayLabel}
                           {link.isExternal && <ExternalLinkIcon />}
                         </a>
@@ -431,10 +423,8 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
               {...(link.isExternal
                 ? { target: "_blank", rel: "noopener noreferrer" }
                 : {})}
+              {...(link.freshAt ? { "data-fresh-at": link.freshAt } : {})}
             >
-              {link.isFresh && (
-                <span class="site-header-link-fresh" aria-hidden="true" />
-              )}
               {link.displayLabel}
               {link.isExternal && <ExternalLinkIcon />}
             </a>
@@ -451,10 +441,8 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                   {...(link.isExternal
                     ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
+                  {...(link.freshAt ? { "data-fresh-at": link.freshAt } : {})}
                 >
-                  {link.isFresh && (
-                    <span class="site-header-link-fresh" aria-hidden="true" />
-                  )}
                   {link.displayLabel}
                   {link.isExternal && <ExternalLinkIcon />}
                 </a>

@@ -662,7 +662,8 @@
     );
   }
 
-  .site-header-link-active {
+  .site-header-link-active,
+  .site-header-link-active:has(.site-header-link-fresh) {
     color: color-mix(
       in srgb,
       var(--site-text-primary) 84%,
@@ -676,11 +677,11 @@
 
   .site-header-link-fresh {
     display: inline-block;
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
     background: currentColor;
-    margin-right: 4px;
+    margin-left: 3px;
     vertical-align: middle;
     flex-shrink: 0;
   }
@@ -794,7 +795,8 @@
     );
   }
 
-  .site-header-more-link-active {
+  .site-header-more-link-active,
+  .site-header-more-link-active:has(.site-header-link-fresh) {
     color: color-mix(
       in srgb,
       var(--site-text-primary) 84%,

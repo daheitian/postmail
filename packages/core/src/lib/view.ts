@@ -387,7 +387,7 @@ export function toNavItemView(
   homeDefaultView: FeedKind = "latest",
   isAuthenticated = false,
   sitePathPrefix = "",
-  collectionFreshness?: Set<string>,
+  collectionFreshness?: Map<string, number>,
 ): NavItemView {
   let url = item.url;
   let label = item.label;
@@ -430,6 +430,12 @@ export function toNavItemView(
     }
   }
 
+  const freshAt =
+    item.type === "collection" && item.collectionId
+      ? collectionFreshness?.get(item.collectionId)
+      : undefined;
+  const isFresh = freshAt !== undefined && freshAt > 0;
+
   return {
     id: item.id,
     type: item.type as NavItemType,
@@ -440,10 +446,8 @@ export function toNavItemView(
     placement: item.placement as NavItemPlacement,
     isActive,
     isExternal,
-    isFresh:
-      item.type === "collection" && item.collectionId
-        ? collectionFreshness?.has(item.collectionId)
-        : undefined,
+    isFresh: isFresh || undefined,
+    freshAt: isFresh ? freshAt : undefined,
   };
 }
 
@@ -460,7 +464,7 @@ export function toNavItemViews(
   homeDefaultView: FeedKind = "latest",
   isAuthenticated = false,
   sitePathPrefix = "",
-  collectionFreshness?: Set<string>,
+  collectionFreshness?: Map<string, number>,
 ): NavItemView[] {
   return items.map((item) =>
     toNavItemView(

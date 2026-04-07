@@ -55,11 +55,53 @@ function initMoreDropdown(root) {
   });
 }
 
+const FRESH_VISIT_KEY = "jant:nav-fresh-visits";
+
+function createFreshDot() {
+  const dot = document.createElement("span");
+  dot.className = "site-header-link-fresh";
+  dot.setAttribute("aria-hidden", "true");
+  return dot;
+}
+
+function initNavFreshness(root) {
+  try {
+    const stored = JSON.parse(localStorage.getItem(FRESH_VISIT_KEY) || "{}");
+    const currentPath = location.pathname;
+
+    const freshLinks = root.querySelectorAll("[data-fresh-at]");
+    for (const link of freshLinks) {
+      const href = new URL(link.href).pathname;
+      const freshAt = parseInt(link.dataset.freshAt, 10);
+
+      if (href === currentPath) {
+        // User is on this collection page — record the visit
+        stored[href] = Math.floor(Date.now() / 1000);
+      } else {
+        // Show dot only if user hasn't visited since the last update
+        const visitedAt = stored[href];
+        if (!visitedAt || visitedAt < freshAt) {
+          // Insert dot after the text, before any external link icon
+          const icon = link.querySelector("svg");
+          link.insertBefore(createFreshDot(), icon);
+        }
+      }
+    }
+
+    localStorage.setItem(FRESH_VISIT_KEY, JSON.stringify(stored));
+  } catch {
+    // localStorage unavailable or corrupted — ignore
+  }
+}
+
 export function initSiteHeaderNav(root = document) {
   const hamburger = root.querySelector(".site-header-hamburger");
   const drawer = root.querySelector("#site-nav-drawer");
   const backdrop = root.querySelector(".site-nav-drawer-backdrop");
   const closeBtn = drawer?.querySelector(".site-nav-drawer-close");
+
+  // --- Freshness indicators ---
+  initNavFreshness(root);
 
   // --- More dropdown ---
   initMoreDropdown(root);

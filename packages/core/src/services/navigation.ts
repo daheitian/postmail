@@ -45,7 +45,7 @@ export interface NavItemService {
     afterId: string | null,
     beforeId: string | null,
   ): Promise<NavItem | null>;
-  getCollectionFreshness(collectionIds: string[]): Promise<Set<string>>;
+  getCollectionFreshness(collectionIds: string[]): Promise<Map<string, number>>;
 }
 
 export function createNavItemService(
@@ -406,15 +406,20 @@ export function createNavItemService(
     },
 
     async getCollectionFreshness(collectionIds) {
-      if (collectionIds.length === 0) return new Set<string>();
+      if (collectionIds.length === 0) return new Map<string, number>();
 
       const threshold = now() - COLLECTION_FRESHNESS_WINDOW_SECONDS;
 
-      // Find collections with recent activity:
+      // Find collections with recent activity and the latest update timestamp.
       // 1. A post was added to the collection within the freshness window
       // 2. A thread reply was published where the thread root is in the collection
       const rows = await db
-        .selectDistinct({ collectionId: postCollections.collectionId })
+        .select({
+          collectionId: postCollections.collectionId,
+          latestAt: sql<number>`MAX(${postCollections.createdAt})`.as(
+            "latest_at",
+          ),
+        })
         .from(postCollections)
         .where(
           and(
@@ -433,9 +438,10 @@ export function createNavItemService(
               )
             )`,
           ),
-        );
+        )
+        .groupBy(postCollections.collectionId);
 
-      return new Set(rows.map((r) => r.collectionId));
+      return new Map(rows.map((r) => [r.collectionId, r.latestAt]));
     },
   };
 }

@@ -163,6 +163,8 @@ export interface NavItemView {
   isExternal: boolean;
   /** Collection nav items: true when collection has recent activity */
   isFresh?: boolean;
+  /** Unix timestamp of the latest activity that triggered freshness */
+  freshAt?: number;
 }
 
 /**
