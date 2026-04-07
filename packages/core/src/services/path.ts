@@ -57,23 +57,8 @@ export function fromCollectionPath(path: string): string {
   return normalizePath(path);
 }
 
-function isUniqueConstraintError(err: unknown): boolean {
-  let current: unknown = err;
-  while (current) {
-    const msg = String(current);
-    if (
-      msg.includes("UNIQUE constraint") ||
-      msg.includes("SQLITE_CONSTRAINT")
-    ) {
-      return true;
-    }
-    current =
-      current instanceof Error && current.cause !== current
-        ? current.cause
-        : undefined;
-  }
-  return false;
-}
+// Re-export shared constraint detection — see db/dialect.ts
+import { isUniqueConstraintError } from "../db/dialect.js";
 
 export function createPathService(
   db: Database,

@@ -716,10 +716,13 @@ export class JantCollectionsManager extends LitElement {
 
     const hasGroups = groupSizes.length > 0;
     const maxGroupIndex = Math.max(0, groupSizes.length - 1);
-    const allCounts = hasGroups ? groupSizes : [ungroupedCount];
-    const maxItemIndex = Math.max(0, ...allCounts.map((s) => s - 1));
-    const groupWidth = hasGroups ? String(maxGroupIndex).length : 0;
-    const itemWidth = String(maxItemIndex).length;
+    const groupWidth = hasGroups
+      ? Math.max(1, maxGroupIndex.toString(36).length)
+      : 0;
+    const ungroupedItemWidth = Math.max(
+      2,
+      String(Math.max(0, ungroupedCount - 1)).length,
+    );
 
     const labels: string[] = [];
     let groupIndex = -1;
@@ -731,11 +734,15 @@ export class JantCollectionsManager extends LitElement {
         itemIndex = 0;
         labels.push("");
       } else if (isContentItem(item)) {
-        const groupPart =
-          groupWidth > 0
-            ? String(Math.max(0, groupIndex)).padStart(groupWidth, "0")
-            : "";
-        labels.push(groupPart + String(itemIndex).padStart(itemWidth, "0"));
+        if (hasGroups) {
+          const g = Math.max(0, groupIndex)
+            .toString(36)
+            .padStart(groupWidth, "0");
+          const i = itemIndex.toString(36);
+          labels.push(g + i);
+        } else {
+          labels.push(String(itemIndex).padStart(ungroupedItemWidth, "0"));
+        }
         itemIndex += 1;
       } else {
         labels.push("");
@@ -813,9 +820,7 @@ export class JantCollectionsManager extends LitElement {
               <circle cx="15" cy="19" r="1" />
             </svg>
           </div>
-          <div class="collection-directory-reorder-main" data-drag-handle>
-            ${body}
-          </div>
+          <div class="collection-directory-reorder-main">${body}</div>
         </div>
       `;
     }
@@ -985,9 +990,7 @@ export class JantCollectionsManager extends LitElement {
               <circle cx="15" cy="19" r="1" />
             </svg>
           </div>
-          <div class="collection-directory-reorder-main" data-drag-handle>
-            ${body}
-          </div>
+          <div class="collection-directory-reorder-main">${body}</div>
         </div>
       `;
     }

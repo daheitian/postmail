@@ -106,7 +106,7 @@ export function ApiTokensContent({
 
   return (
     <div
-      class="flex flex-col gap-8 max-w-2xl"
+      class="flex flex-col gap-8 max-w-form"
       data-signals="{tokenName: '', _tokenLoading: false, _newPlaintext: '', _tokenCopied: false}"
     >
       {/* New token alert — shown after creation via signal patch */}

@@ -170,7 +170,7 @@ export function SessionsContent({
   const { i18n } = useLingui();
 
   return (
-    <div class="flex flex-col gap-6 max-w-2xl">
+    <div class="flex flex-col gap-6 max-w-form">
       <div>
         <h2 class="text-lg font-medium mb-1">
           {i18n._(

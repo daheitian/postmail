@@ -300,24 +300,8 @@ function isValidSlug(value: string): boolean {
   return SLUG_RE.test(value);
 }
 
-/** Check if an error (or any of its causes) is a SQLite UNIQUE constraint violation */
-function isUniqueConstraintError(err: unknown): boolean {
-  let current: unknown = err;
-  while (current) {
-    const msg = String(current);
-    if (
-      msg.includes("UNIQUE constraint") ||
-      msg.includes("SQLITE_CONSTRAINT")
-    ) {
-      return true;
-    }
-    current =
-      current instanceof Error && current.cause !== current
-        ? current.cause
-        : undefined;
-  }
-  return false;
-}
+// Re-export shared constraint detection — see db/dialect.ts
+import { isUniqueConstraintError } from "../db/dialect.js";
 
 function hasNonEmptyText(value: string | null | undefined): boolean {
   return typeof value === "string" && value.trim().length > 0;

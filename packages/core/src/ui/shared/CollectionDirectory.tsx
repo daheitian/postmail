@@ -61,11 +61,22 @@ const computeSequenceLabels = (items: CollectionDirectoryItem[]): string[] => {
   }
 
   const hasGroups = groupSizes.length > 0;
+
+  // Grouped items use a compact base-36 scheme: the group index becomes the
+  // leading digit(s) and the item index within the group is a single base-36
+  // character (0-9, a-z).  This keeps labels fixed-width at 2 chars for up to
+  // 36 groups × 36 items, with hex-style overflow (4a, 4b, …) when a group
+  // exceeds 10 items.
+  //
+  // Ungrouped items (no dividers) use plain decimal, zero-padded to min 2.
   const maxGroupIndex = Math.max(0, groupSizes.length - 1);
-  const allCounts = hasGroups ? groupSizes : [ungroupedCount];
-  const maxItemIndex = Math.max(0, ...allCounts.map((s) => s - 1));
-  const groupWidth = hasGroups ? String(maxGroupIndex).length : 0;
-  const itemWidth = String(maxItemIndex).length;
+  const groupWidth = hasGroups
+    ? Math.max(1, maxGroupIndex.toString(36).length)
+    : 0;
+  const ungroupedItemWidth = Math.max(
+    2,
+    String(Math.max(0, ungroupedCount - 1)).length,
+  );
 
   // Second pass: assign labels
   const labels: string[] = [];
@@ -78,12 +89,15 @@ const computeSequenceLabels = (items: CollectionDirectoryItem[]): string[] => {
       itemIndex = 0;
       labels.push("");
     } else if (isContentItem(item)) {
-      const groupPart =
-        groupWidth > 0
-          ? String(Math.max(0, groupIndex)).padStart(groupWidth, "0")
-          : "";
-      const label = groupPart + String(itemIndex).padStart(itemWidth, "0");
-      labels.push(label);
+      if (hasGroups) {
+        const g = Math.max(0, groupIndex)
+          .toString(36)
+          .padStart(groupWidth, "0");
+        const i = itemIndex.toString(36);
+        labels.push(g + i);
+      } else {
+        labels.push(String(itemIndex).padStart(ungroupedItemWidth, "0"));
+      }
       itemIndex += 1;
     } else {
       labels.push("");

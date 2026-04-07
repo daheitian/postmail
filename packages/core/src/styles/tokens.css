@@ -98,6 +98,7 @@
 
   /* Layout — Tufte proportional model */
   --content-max-width: 50rem;
+  --form-max-width: 42rem;
   /* compose dialogs + feed content cap */
   --layout-body-max-width: 1400px;
   --layout-content-width: 55%;

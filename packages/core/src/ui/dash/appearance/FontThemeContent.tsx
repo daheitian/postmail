@@ -41,7 +41,7 @@ export function FontThemeContent({
         "\\u003c",
       )}
       data-on:change={`@post('${toPublicPath("/settings/font-theme", sitePathPrefix)}')`}
-      class="max-w-2xl"
+      class="max-w-form"
     >
       <fieldset>
         <legend class="text-lg font-semibold">

@@ -27,23 +27,8 @@ import { SYSTEM_NAV_KEYS } from "../types.js";
 
 const POSITION_RETRY_ATTEMPTS = 5;
 
-function isUniqueConstraintError(err: unknown): boolean {
-  let current: unknown = err;
-  while (current) {
-    const msg = String(current);
-    if (
-      msg.includes("UNIQUE constraint") ||
-      msg.includes("SQLITE_CONSTRAINT")
-    ) {
-      return true;
-    }
-    current =
-      current instanceof Error && current.cause !== current
-        ? current.cause
-        : undefined;
-  }
-  return false;
-}
+// Re-export shared constraint detection — see db/dialect.ts
+import { isUniqueConstraintError } from "../db/dialect.js";
 
 export interface NavItemService {
   list(): Promise<NavItem[]>;

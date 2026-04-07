@@ -14,7 +14,7 @@ export function AccountContent({
   const { i18n } = useLingui();
 
   return (
-    <div class="flex flex-col max-w-2xl">
+    <div class="flex flex-col max-w-form">
       <form
         data-signals="{currentPassword: '', newPassword: '', confirmPassword: ''}"
         data-on:submit__prevent={`@post('${toPublicPath("/settings/account/password", sitePathPrefix)}')`}

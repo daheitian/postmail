@@ -69,3 +69,43 @@ export function isSqliteDatabaseUrl(databaseUrl: string): boolean {
 export function isPostgresDatabaseUrl(databaseUrl: string): boolean {
   return resolveDatabaseDialect(databaseUrl) === "pg";
 }
+
+/**
+ * Check if an error (or any of its causes) is a unique constraint violation.
+ *
+ * Supports both SQLite (D1) and PostgreSQL error formats.
+ *
+ * @param err - The caught error value.
+ * @returns `true` when the error chain contains a unique constraint violation.
+ * @example
+ * try { await db.insert(...) } catch (err) {
+ *   if (isUniqueConstraintError(err)) { ... }
+ * }
+ */
+export function isUniqueConstraintError(err: unknown): boolean {
+  let current: unknown = err;
+  while (current) {
+    const msg = String(current);
+    // SQLite / D1
+    if (
+      msg.includes("UNIQUE constraint") ||
+      msg.includes("SQLITE_CONSTRAINT")
+    ) {
+      return true;
+    }
+    // PostgreSQL (code 23505 = unique_violation)
+    if (
+      msg.includes("duplicate key value violates unique constraint") ||
+      (current instanceof Error &&
+        "code" in current &&
+        (current as Record<string, unknown>).code === "23505")
+    ) {
+      return true;
+    }
+    current =
+      current instanceof Error && current.cause !== current
+        ? current.cause
+        : undefined;
+  }
+  return false;
+}

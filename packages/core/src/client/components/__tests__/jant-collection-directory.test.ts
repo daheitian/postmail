@@ -262,16 +262,20 @@ describe("JantCollectionsManager", () => {
     });
   });
 
-  it("lets collection rows initiate drag from the main content area", async () => {
+  it("restricts drag initiation to the handle icon only", async () => {
     const el = await createElement();
 
     el._reorderMode = true;
     await el.updateComplete;
 
-    const dragSurface = el.querySelector(
-      ".collection-directory-reorder-main[data-drag-handle]",
+    const handle = el.querySelector(
+      ".collection-directory-handle[data-drag-handle]",
     );
-    expect(dragSurface).not.toBeNull();
+    expect(handle).not.toBeNull();
+
+    const mainArea = el.querySelector(".collection-directory-reorder-main");
+    expect(mainArea).not.toBeNull();
+    expect(mainArea?.hasAttribute("data-drag-handle")).toBe(false);
   });
 
   it("shows the reorder actions with new divider while organizing", async () => {
