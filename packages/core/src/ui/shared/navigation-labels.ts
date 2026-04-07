@@ -3,6 +3,7 @@ import { msg } from "@lingui/core/macro";
 import type { I18n } from "../../i18n/i18n.js";
 import { isFullUrl, stripSitePathPrefix } from "../../lib/url.js";
 import type { NavItemType, SystemNavKey } from "../../types.js";
+import { SYSTEM_NAV_KEYS } from "../../types.js";
 
 type Translator = Pick<I18n, "_">;
 
@@ -144,6 +145,14 @@ export function getNavItemDisplayLabel(
   i18n: Translator,
   sitePathPrefix = "",
 ): string {
+  if (item.type === "system" && item.systemKey) {
+    const config = SYSTEM_NAV_KEYS[item.systemKey];
+    // If the user customized the label (differs from the English default),
+    // use it as-is instead of the i18n translation.
+    if (config && item.label !== config.defaultLabel) {
+      return item.label;
+    }
+  }
   const descriptor = getBuiltinNavLabelDescriptor(item, sitePathPrefix);
   return descriptor ? i18n._(descriptor) : item.label;
 }

@@ -70,18 +70,32 @@ describe("getNavItemDisplayLabel", () => {
     ).toBe("translated:Archive");
   });
 
-  it("translates the built-in settings sign-in fallback", () => {
+  it("translates the built-in settings system item", () => {
     expect(
       getNavItemDisplayLabel(
         {
           type: "system",
           systemKey: "settings",
-          label: "Sign in",
-          url: "/signin",
+          label: "Settings",
+          url: "/settings",
         },
         i18n,
       ),
-    ).toBe("translated:Sign in");
+    ).toBe("translated:Settings");
+  });
+
+  it("uses custom label for system item when label differs from default", () => {
+    expect(
+      getNavItemDisplayLabel(
+        {
+          type: "system",
+          systemKey: "collections",
+          label: "Topics",
+          url: "/collections",
+        },
+        i18n,
+      ),
+    ).toBe("Topics");
   });
 
   it("translates RSS", () => {

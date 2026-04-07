@@ -301,9 +301,9 @@ export function createNavItemService(
       if (!existing[0]) return null;
 
       if (existing[0].type === "system") {
-        if (data.label !== undefined || data.url !== undefined) {
+        if (data.url !== undefined) {
           throw new ValidationError(
-            "Built-in navigation labels and URLs are managed automatically",
+            "Built-in navigation URLs are managed automatically",
           );
         }
       }

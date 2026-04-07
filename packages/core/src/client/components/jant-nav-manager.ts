@@ -303,8 +303,6 @@ export class JantNavManager extends LitElement {
   // ===========================================================================
 
   #toggleEdit(item: NavManagerItem) {
-    if (item.type === "system") return;
-
     if (this._editingId === item.id) {
       this._editingId = null;
     } else {
@@ -573,6 +571,34 @@ export class JantNavManager extends LitElement {
   #renderEditPanel(item: NavManagerItem) {
     if (this._editingId !== item.id) return nothing;
 
+    if (item.type === "system") {
+      return html`
+        <div class="nav-item-edit">
+          <div class="field">
+            <label class="label">${this.labels.label}</label>
+            <input
+              type="text"
+              class="input"
+              required
+              .value=${this._editLabel}
+              @input=${(e: Event) => {
+                this._editLabel = (e.target as HTMLInputElement).value;
+              }}
+            />
+          </div>
+          <div class="flex items-center justify-end">
+            <button
+              type="button"
+              class="btn-sm"
+              @click=${() => this.#handleUpdate(item)}
+            >
+              ${this.labels.save}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
     if (item.type === "link") {
       return html`
         <div class="nav-item-edit">
@@ -653,12 +679,7 @@ export class JantNavManager extends LitElement {
               <circle cx="15" cy="19" r="1" />
             </svg>
           </div>
-          <div
-            class="nav-item-info"
-            @click=${item.type === "link"
-              ? () => this.#toggleEdit(item)
-              : undefined}
-          >
+          <div class="nav-item-info" @click=${() => this.#toggleEdit(item)}>
             <div class="flex items-center gap-2 min-w-0">
               <span class="text-sm font-medium truncate"
                 >${item.displayLabel ?? item.label}</span
@@ -669,31 +690,29 @@ export class JantNavManager extends LitElement {
               >${item.url}</span
             >
           </div>
-          ${item.type === "link"
-            ? html`<button
-                type="button"
-                class="nav-item-toggle"
-                @click=${() => this.#toggleEdit(item)}
-                aria-label=${this.labels.toggleEdit}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  style="transition: transform 0.15s; ${isEditing
-                    ? "transform: rotate(180deg);"
-                    : ""}"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>`
-            : nothing}
+          <button
+            type="button"
+            class="nav-item-toggle"
+            @click=${() => this.#toggleEdit(item)}
+            aria-label=${this.labels.toggleEdit}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="transition: transform 0.15s; ${isEditing
+                ? "transform: rotate(180deg);"
+                : ""}"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
         </div>
         ${this.#renderEditPanel(item)}
       </div>

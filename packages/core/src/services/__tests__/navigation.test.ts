@@ -310,7 +310,20 @@ describe("NavItemService", () => {
       expect(result).toBeNull();
     });
 
-    it("rejects label changes for built-in system items", async () => {
+    it("allows label changes for built-in system items", async () => {
+      const created = await navItemService.create({
+        type: "system",
+        systemKey: "archive",
+      });
+
+      const updated = await navItemService.update(created.id, {
+        label: "Everything",
+      });
+
+      expect(updated?.label).toBe("Everything");
+    });
+
+    it("rejects URL changes for built-in system items", async () => {
       const created = await navItemService.create({
         type: "system",
         systemKey: "archive",
@@ -318,11 +331,9 @@ describe("NavItemService", () => {
 
       await expect(
         navItemService.update(created.id, {
-          label: "Everything",
+          url: "/custom-archive",
         }),
-      ).rejects.toThrow(
-        "Built-in navigation labels and URLs are managed automatically",
-      );
+      ).rejects.toThrow("Built-in navigation URLs are managed automatically");
     });
   });
 

@@ -271,7 +271,7 @@ describe("Nav Items API Routes", () => {
       expect(res.status).toBe(404);
     });
 
-    it("rejects editing built-in system labels", async () => {
+    it("allows editing built-in system labels", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/nav-items", navItemsApiRoutes);
 
@@ -284,6 +284,26 @@ describe("Nav Items API Routes", () => {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ label: "Admin" }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.label).toBe("Admin");
+    });
+
+    it("rejects editing built-in system URLs", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      const item = await services.navItems.create({
+        type: "system",
+        systemKey: "settings",
+      });
+
+      const res = await app.request(`/api/nav-items/${item.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: "/custom-settings" }),
       });
 
       expect(res.status).toBe(400);

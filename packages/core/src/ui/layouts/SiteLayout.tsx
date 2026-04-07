@@ -488,7 +488,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         </button>
       )}
 
-      {siteFooterHtml && (
+      {isHomePage && siteFooterHtml && (
         <footer class="site-footer" data-footer>
           <div class="site-container">
             <div

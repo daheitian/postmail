@@ -59,15 +59,22 @@ export function NavigationContent({
   );
 
   // Serialize nav items for the Lit component
-  const itemsData = navItems.map((item) => ({
-    id: item.id,
-    type: item.type,
-    systemKey: item.systemKey,
-    label: item.label,
-    displayLabel: getNavItemDisplayLabel(item, i18n, sitePathPrefix),
-    url: item.url,
-    placement: item.placement ?? "header",
-  }));
+  const itemsData = navItems.map((item) => {
+    // System link URLs are always computed from constants, never from DB
+    const url =
+      item.type === "system" && item.systemKey
+        ? (SYSTEM_NAV_KEYS[item.systemKey]?.url ?? item.url)
+        : item.url;
+    return {
+      id: item.id,
+      type: item.type,
+      systemKey: item.systemKey,
+      label: item.label,
+      displayLabel: getNavItemDisplayLabel(item, i18n, sitePathPrefix),
+      url,
+      placement: item.placement ?? "header",
+    };
+  });
 
   // Build system nav config array for the Lit component
   const systemNavData: SystemNavConfig[] = (
