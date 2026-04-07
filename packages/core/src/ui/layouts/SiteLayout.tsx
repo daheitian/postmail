@@ -117,6 +117,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   collections,
   siteAvatarUrl,
   showHeaderAvatar,
+  siteDescriptionHtml,
   siteFooterHtml,
   showHomeBranding = false,
   sidebar,
@@ -451,17 +452,25 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         ) : (
           <div class="site-container">
             <div class={contentClass}>
-              {isHomePage && isAuthenticated ? (
+              {isHomePage && (
                 <div class="site-home-header">
-                  <ComposePrompt
-                    composeOpenShortcutDiscovered={
-                      composeOpenShortcutDiscovered
-                    }
-                  />
+                  {siteDescriptionHtml && (
+                    <div
+                      class="site-description prose"
+                      dangerouslySetInnerHTML={{
+                        __html: siteDescriptionHtml,
+                      }}
+                    />
+                  )}
+                  {isAuthenticated && (
+                    <ComposePrompt
+                      composeOpenShortcutDiscovered={
+                        composeOpenShortcutDiscovered
+                      }
+                    />
+                  )}
                 </div>
-              ) : isHomePage ? (
-                <div class="site-home-header" />
-              ) : null}
+              )}
               {children}
             </div>
           </div>

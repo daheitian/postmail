@@ -7,7 +7,7 @@
 import type { Context } from "hono";
 import type { Collection, FeedKind, NavItem, NavItemView } from "../types.js";
 import { toNavItemViews } from "./view.js";
-import { render as renderMarkdown } from "./markdown.js";
+import { render as renderMarkdown, toPlainText } from "./markdown.js";
 
 /**
  * Navigation data needed by public page rendering
@@ -17,8 +17,10 @@ export interface NavigationData {
   currentPath: string;
   sitePathPrefix: string;
   siteName: string;
-  /** Used as meta description fallback and in RSS/Atom feeds */
+  /** Plain-text description for meta tags and RSS/Atom feeds */
   siteDescription: string;
+  /** HTML-rendered description for homepage display */
+  siteDescriptionHtml?: string;
   isAuthenticated: boolean;
   collections: Collection[];
   homeDefaultView: FeedKind;
@@ -68,9 +70,14 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   const siteFooter = appConfig.siteFooter;
 
   // Only include description if explicitly set (DB or env), not the default
-  const siteDescription = appConfig.siteDescriptionExplicit
+  const rawDescription = appConfig.siteDescriptionExplicit
     ? appConfig.siteDescription
     : "";
+  // Plain text for meta tags / RSS; HTML for homepage display
+  const siteDescription = rawDescription ? toPlainText(rawDescription) : "";
+  const siteDescriptionHtml = rawDescription
+    ? renderMarkdown(rawDescription)
+    : undefined;
 
   // Avatar URL and display flag come from appConfig
   const siteAvatarUrl = appConfig.siteAvatarUrl || undefined;
@@ -110,6 +117,7 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
     sitePathPrefix: appConfig.sitePathPrefix,
     siteName,
     siteDescription,
+    siteDescriptionHtml,
     isAuthenticated,
     collections,
     homeDefaultView,

@@ -236,6 +236,7 @@ export interface SiteLayoutProps {
   collections?: Collection[];
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
+  siteDescriptionHtml?: string;
   siteFooterHtml?: string;
   showHomeBranding?: boolean;
   sidebar?: import("hono/jsx").Child;

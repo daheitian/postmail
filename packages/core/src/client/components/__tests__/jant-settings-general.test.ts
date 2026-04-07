@@ -7,11 +7,7 @@ import type {
   SettingsLanguage,
   SettingsSaveDetail,
 } from "../settings-types.js";
-import {
-  MAX_SITE_DESCRIPTION_LENGTH,
-  MAX_SITE_FOOTER_LENGTH,
-  MAX_SITE_NAME_LENGTH,
-} from "../../../types.js";
+import { MAX_SITE_NAME_LENGTH } from "../../../types.js";
 import "../jant-settings-general.js";
 import type { JantSettingsGeneral } from "../jant-settings-general.js";
 
@@ -199,13 +195,13 @@ describe("JantSettingsGeneral", () => {
       "expected site name input",
     );
     expect(siteNameInput.value).toBe("My Blog");
-
-    const textareas = el.querySelectorAll("textarea");
-    expect(textareas[0]?.value).toBe("A test blog");
-    expect(textareas[1]?.value).toBe("Footer text");
     expect(siteNameInput.maxLength).toBe(MAX_SITE_NAME_LENGTH);
-    expect(textareas[0]?.maxLength).toBe(MAX_SITE_DESCRIPTION_LENGTH);
-    expect(textareas[1]?.maxLength).toBe(MAX_SITE_FOOTER_LENGTH);
+
+    // Description and footer use TipTap editors instead of textareas
+    const descEditor = el.querySelector("[data-settings-desc-editor]");
+    const footerEditor = el.querySelector("[data-settings-footer-editor]");
+    expect(descEditor).not.toBeNull();
+    expect(footerEditor).not.toBeNull();
   });
 
   it("renders timezone options", async () => {
@@ -416,12 +412,11 @@ describe("JantSettingsGeneral", () => {
 
   it("includes footer in site section save", async () => {
     const el = await createElement();
-    const textareas = el.querySelectorAll("textarea");
-    const footerTextarea = textareas[1];
 
-    const footer = requireElement(footerTextarea, "expected footer textarea");
-    footer.value = "New footer";
-    footer.dispatchEvent(new Event("input", { bubbles: true }));
+    // Directly update internal state since TipTap editors may not
+    // fully initialize in happy-dom
+    (el as unknown as { _siteFooter: string })._siteFooter = "New footer";
+    (el as unknown as { _siteDirty: boolean })._siteDirty = true;
     await el.updateComplete;
 
     let detail: SettingsSaveDetail | null = null;

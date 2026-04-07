@@ -5,11 +5,15 @@
  */
 
 import { Editor, type JSONContent } from "@tiptap/core";
-import { createEditorExtensions } from "./extensions.js";
+import {
+  createEditorExtensions,
+  createSettingsEditorExtensions,
+} from "./extensions.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
 import type { PasteMediaOptions } from "./paste-media.js";
 import { normalizeFootnoteArtifacts } from "../../lib/footnotes.js";
 import { tiptapJsonToMarkdown } from "../../lib/tiptap-to-markdown.js";
+import { parseMarkdownDocument } from "../../lib/markdown-manager.js";
 
 export interface CreateEditorOptions {
   element: HTMLElement;
@@ -69,4 +73,39 @@ export function createTiptapEditor(options: CreateEditorOptions): Editor {
  */
 export function jsonToMarkdown(json: JSONContent): string {
   return tiptapJsonToMarkdown(JSON.stringify(json));
+}
+
+export interface CreateSettingsEditorOptions {
+  element: HTMLElement;
+  placeholder?: string;
+  /** Initial content as a Markdown string */
+  content?: string;
+  /** Called on every edit with the current Markdown string */
+  onUpdate?: (markdown: string) => void;
+}
+
+/**
+ * Creates a lightweight TipTap editor for settings fields (site description, footer).
+ * Accepts and emits Markdown strings.
+ *
+ * @param options - Editor configuration
+ * @returns TipTap Editor instance
+ */
+export function createSettingsEditor(
+  options: CreateSettingsEditorOptions,
+): Editor {
+  const doc = options.content
+    ? parseMarkdownDocument(options.content)
+    : undefined;
+
+  return new Editor({
+    element: options.element,
+    extensions: createSettingsEditorExtensions({
+      placeholder: options.placeholder,
+    }),
+    content: doc,
+    onUpdate: ({ editor }) => {
+      options.onUpdate?.(jsonToMarkdown(editor.getJSON()));
+    },
+  });
 }

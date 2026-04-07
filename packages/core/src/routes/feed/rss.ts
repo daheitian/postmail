@@ -22,6 +22,7 @@ import { FORMATS } from "../../types/constants.js";
 
 import { createMediaContext, toPostViews } from "../../lib/view.js";
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
+import { toPlainText } from "../../lib/markdown.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -47,7 +48,7 @@ async function buildFeedData(
   const { appConfig } = c.var;
   const i18n = getI18n(c);
   const siteName = appConfig.siteName;
-  const siteDescription = appConfig.siteDescription;
+  const siteDescription = toPlainText(appConfig.siteDescription);
   const siteUrl = appConfig.siteUrl;
   const siteLanguage = appConfig.siteLanguage;
   const feedLimit = appConfig.rssFeedLimit;

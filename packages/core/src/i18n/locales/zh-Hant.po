@@ -120,8 +120,8 @@ msgstr "供參考的連結，用於檢查語氣是否偏向編輯風格而非促
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "A short intro for search engines and feed readers. Plain text only."
-msgstr "供搜尋引擎與訂閱閱讀器使用的簡短介紹。僅限純文字。"
+msgid "A short intro shown on your home page."
+msgstr ""
 
 #. @context: Description for the brand pack card
 #: src/ui/pages/BrandPage.tsx
@@ -995,8 +995,8 @@ msgstr "在我的網站標頭顯示頭像"
 
 #. @context: Help text for site footer field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "Displayed at the bottom of all posts and pages. Markdown supported."
-msgstr "顯示於所有文章與頁面的底部。支援 Markdown."
+msgid "Displayed at the bottom of all posts and pages."
+msgstr ""
 
 #. @context: Label for a divider item while organizing collections
 #: src/ui/shared/CollectionsManager.tsx

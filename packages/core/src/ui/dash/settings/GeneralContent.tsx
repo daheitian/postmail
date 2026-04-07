@@ -93,8 +93,7 @@ export function GeneralContent({
     ),
     aboutBlogHelp: i18n._(
       msg({
-        message:
-          "A short intro for search engines and feed readers. Plain text only.",
+        message: "A short intro shown on your home page.",
         comment: "@context: Help text for site description field",
       }),
     ),
@@ -205,8 +204,7 @@ export function GeneralContent({
     ),
     footerHelp: i18n._(
       msg({
-        message:
-          "Displayed at the bottom of all posts and pages. Markdown supported.",
+        message: "Displayed at the bottom of all posts and pages.",
         comment: "@context: Help text for site footer field",
       }),
     ),

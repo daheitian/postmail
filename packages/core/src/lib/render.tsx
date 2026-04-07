@@ -89,6 +89,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     collections: navData.collections,
     siteAvatarUrl: navData.siteAvatarUrl,
     showHeaderAvatar: navData.showHeaderAvatar,
+    siteDescriptionHtml: navData.siteDescriptionHtml,
     siteFooterHtml: navData.siteFooterHtml,
     showHomeBranding,
     sidebar,

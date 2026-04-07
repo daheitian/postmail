@@ -120,8 +120,8 @@ msgstr "A reference link for checking whether the accent feels editorial instead
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "A short intro for search engines and feed readers. Plain text only."
-msgstr "A short intro for search engines and feed readers. Plain text only."
+msgid "A short intro shown on your home page."
+msgstr "A short intro shown on your home page."
 
 #. @context: Description for the brand pack card
 #: src/ui/pages/BrandPage.tsx
@@ -995,8 +995,8 @@ msgstr "Display avatar in my site header"
 
 #. @context: Help text for site footer field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "Displayed at the bottom of all posts and pages. Markdown supported."
-msgstr "Displayed at the bottom of all posts and pages. Markdown supported."
+msgid "Displayed at the bottom of all posts and pages."
+msgstr "Displayed at the bottom of all posts and pages."
 
 #. @context: Label for a divider item while organizing collections
 #: src/ui/shared/CollectionsManager.tsx

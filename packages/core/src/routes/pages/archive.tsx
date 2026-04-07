@@ -41,6 +41,7 @@ import { buildMediaMap } from "../../lib/media-helpers.js";
 import { assembleTimelineItems } from "../../lib/timeline.js";
 import { getI18n } from "../../i18n/index.js";
 import type { PostFilters } from "../../services/post.js";
+import { toPlainText } from "../../lib/markdown.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -575,7 +576,7 @@ async function buildArchiveFeedData(
 
   return {
     siteName: appConfig.siteName,
-    siteDescription: appConfig.siteDescription,
+    siteDescription: toPlainText(appConfig.siteDescription),
     siteUrl: appConfig.siteUrl,
     siteLanguage: appConfig.siteLanguage,
     title: buildArchiveFeedTitle(c, params, collection?.title),

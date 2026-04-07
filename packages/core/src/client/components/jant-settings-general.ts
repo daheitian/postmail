@@ -8,11 +8,8 @@
  */
 
 import { LitElement, html, nothing } from "lit";
-import {
-  MAX_SITE_DESCRIPTION_LENGTH,
-  MAX_SITE_FOOTER_LENGTH,
-  MAX_SITE_NAME_LENGTH,
-} from "../../types.js";
+import type { Editor } from "@tiptap/core";
+import { MAX_SITE_NAME_LENGTH } from "../../types.js";
 import type {
   SettingsInitialData,
   SettingsLabels,
@@ -20,6 +17,10 @@ import type {
   SettingsLanguage,
 } from "./settings-types.js";
 import { showToast } from "../toast.js";
+import {
+  createSettingsEditor,
+  jsonToMarkdown,
+} from "../tiptap/create-editor.js";
 
 export class JantSettingsGeneral extends LitElement {
   static properties = {
@@ -116,6 +117,10 @@ export class JantSettingsGeneral extends LitElement {
   declare _origNoindex: boolean;
   declare _searchLoading: boolean;
 
+  // TipTap editor instances
+  private _descEditor: Editor | null = null;
+  private _footerEditor: Editor | null = null;
+
   createRenderRoot() {
     this.innerHTML = "";
     return this;
@@ -167,16 +172,19 @@ export class JantSettingsGeneral extends LitElement {
     this._searchLoading = false;
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._descEditor?.destroy();
+    this._descEditor = null;
+    this._footerEditor?.destroy();
+    this._footerEditor = null;
+  }
+
   /** Initialize form state from data attributes set by the bridge */
   initData(data: SettingsInitialData) {
     this._siteName = data.siteName;
     this._siteDescription = data.siteDescription;
     this._siteFooter = data.siteFooter;
-    this._origSite = {
-      siteName: data.siteName,
-      siteDescription: data.siteDescription,
-      siteFooter: data.siteFooter,
-    };
 
     this._siteLanguage = data.siteLanguage;
     this._timeZone = data.timeZone;
@@ -193,6 +201,17 @@ export class JantSettingsGeneral extends LitElement {
 
     this._noindex = data.noindex;
     this._origNoindex = data.noindex;
+
+    // Defer editor init to after Lit renders the containers
+    this.updateComplete.then(() => {
+      this._initEditors();
+      // Normalize origSite after editors round-trip the markdown
+      this._origSite = {
+        siteName: data.siteName,
+        siteDescription: this._siteDescription,
+        siteFooter: this._siteFooter,
+      };
+    });
   }
 
   /** Called by bridge after a section save succeeds */
@@ -239,6 +258,64 @@ export class JantSettingsGeneral extends LitElement {
     } else if (section === "search") {
       this._noindex = this._origNoindex;
       this._searchLoading = false;
+    }
+  }
+
+  // ── TipTap editor helpers ──────────────────────────────────────────
+
+  private _initEditors() {
+    this._initDescEditor();
+    this._initFooterEditor();
+  }
+
+  private _initDescEditor() {
+    const container = this.querySelector<HTMLElement>(
+      "[data-settings-desc-editor]",
+    );
+    if (!container || this._descEditor) return;
+
+    this._descEditor = createSettingsEditor({
+      element: container,
+      placeholder: this.siteDescriptionFallback,
+      content: this._siteDescription || undefined,
+      onUpdate: (markdown) => {
+        this._siteDescription = markdown;
+        this._syncSiteDirty();
+      },
+    });
+
+    // Normalize initial markdown through the editor round-trip
+    this._siteDescription = jsonToMarkdown(this._descEditor.getJSON());
+
+    const pm = container.querySelector<HTMLElement>(".ProseMirror");
+    if (pm) {
+      pm.style.outline = "none";
+      pm.style.minHeight = "3rem";
+    }
+  }
+
+  private _initFooterEditor() {
+    const container = this.querySelector<HTMLElement>(
+      "[data-settings-footer-editor]",
+    );
+    if (!container || this._footerEditor) return;
+
+    this._footerEditor = createSettingsEditor({
+      element: container,
+      content: this._siteFooter || undefined,
+      onUpdate: (markdown) => {
+        this._siteFooter = markdown;
+        this._syncSiteDirty();
+      },
+    });
+
+    // Normalize initial markdown through the editor round-trip
+    this._siteFooter = jsonToMarkdown(this._footerEditor.getJSON());
+
+    const pm = container.querySelector<HTMLElement>(".ProseMirror");
+    if (pm) {
+      pm.style.outline = "none";
+      pm.style.minHeight = "6rem";
     }
   }
 
@@ -527,17 +604,7 @@ export class JantSettingsGeneral extends LitElement {
 
           <div class="field">
             <label class="label">${this.labels.aboutBlog}</label>
-            <textarea
-              class="textarea"
-              rows="2"
-              maxlength=${MAX_SITE_DESCRIPTION_LENGTH}
-              .value=${this._siteDescription}
-              placeholder=${this.siteDescriptionFallback}
-              @input=${(e: Event) => {
-                this._siteDescription = (e.target as HTMLTextAreaElement).value;
-                this._syncSiteDirty();
-              }}
-            ></textarea>
+            <div class="settings-tiptap-editor" data-settings-desc-editor></div>
             <p class="text-sm text-muted-foreground mt-1">
               ${this.labels.aboutBlogHelp}
             </p>
@@ -545,17 +612,10 @@ export class JantSettingsGeneral extends LitElement {
 
           <div class="field">
             <label class="label">${this.labels.siteFooter}</label>
-            <textarea
-              class="textarea font-mono text-sm"
-              rows="4"
-              maxlength=${MAX_SITE_FOOTER_LENGTH}
-              .value=${this._siteFooter}
-              placeholder=${this.labels.markdownSupported}
-              @input=${(e: Event) => {
-                this._siteFooter = (e.target as HTMLTextAreaElement).value;
-                this._syncSiteDirty();
-              }}
-            ></textarea>
+            <div
+              class="settings-tiptap-editor"
+              data-settings-footer-editor
+            ></div>
             <p class="text-sm text-muted-foreground mt-1">
               ${this.labels.footerHelp}
             </p>
