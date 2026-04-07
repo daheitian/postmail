@@ -677,11 +677,22 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     composeEl.loading = false;
   };
   const clearRecoveredLocalDraft = () => {
-    if (isEdit) return;
+    if (isEdit) {
+      if (detail.editPostId) {
+        composeEl?.clearEditDraftFromStorage?.(detail.editPostId);
+      }
+      return;
+    }
     composeEl?.clearLocalDraftFromStorage?.();
   };
   const reopenComposeAfterFailure = async () => {
-    if (!composeEl || isPageMode || isEdit) return;
+    if (!composeEl || isPageMode) return;
+
+    if (isEdit && detail.editPostId) {
+      if (typeof composeEl.openEdit !== "function") return;
+      await composeEl.openEdit(detail.editPostId);
+      return;
+    }
 
     if (detail.replyToId) {
       if (typeof composeEl.openReply !== "function") return;
@@ -950,6 +961,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     }
 
     if (isEdit) {
+      clearRecoveredLocalDraft();
       queueSuccessToast("Post updated.");
       if (isPageMode) {
         globalThis.location.assign(globalThis.location.pathname);

@@ -6,6 +6,8 @@ import { QUEUED_TOAST_STORAGE_KEY } from "../toast.js";
 
 type ComposeHarness = HTMLElement & {
   clearLocalDraftFromStorage?: () => void;
+  clearEditDraftFromStorage?: (postId: string) => void;
+  openEdit?: (id: string) => Promise<void>;
   openNew?: (options?: { restoreDraft?: boolean }) => Promise<void>;
   openReply?: (
     id: string,

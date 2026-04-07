@@ -684,8 +684,8 @@ export class JantComposeDialog extends LitElement {
       changed.has("_publishedAtInput") ||
       changed.has("_visibility")
     ) {
-      // Schedule draft auto-save for new-post mode only
-      if (!this._editPostId && !this._draftSourceId) {
+      // Schedule draft auto-save (new-post and edit modes, not draft-load)
+      if (!this._draftSourceId) {
         this._scheduleDraftSave();
       }
     }
@@ -836,22 +836,30 @@ export class JantComposeDialog extends LitElement {
       await this.updateComplete;
       if (requestId !== this._openEditRequestId) return;
 
-      this._editor?.populate({
-        format: post.format,
-        title: post.format === "quote" ? undefined : (post.title ?? undefined),
-        bodyJson: post.body ?? undefined,
-        url:
-          post.format === "quote"
-            ? (post.sourceUrl ?? undefined)
-            : (post.url ?? undefined),
-        quoteText: post.quoteText ?? undefined,
-        quoteAuthor:
-          post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
-        rating: post.rating ?? undefined,
-        media,
-        textAttachments,
-        attachmentOrder,
-      });
+      // Check for a local edit draft (unsaved changes from a previous session)
+      const restored = this._restoreEditDraftIfAvailable(id);
+
+      if (!restored) {
+        this._editor?.populate({
+          format: post.format,
+          title:
+            post.format === "quote" ? undefined : (post.title ?? undefined),
+          bodyJson: post.body ?? undefined,
+          url:
+            post.format === "quote"
+              ? (post.sourceUrl ?? undefined)
+              : (post.url ?? undefined),
+          quoteText: post.quoteText ?? undefined,
+          quoteAuthor:
+            post.format === "quote"
+              ? (post.sourceName ?? undefined)
+              : undefined,
+          rating: post.rating ?? undefined,
+          media,
+          textAttachments,
+          attachmentOrder,
+        });
+      }
 
       globalThis.requestAnimationFrame(() => {
         if (requestId !== this._openEditRequestId) return;
@@ -1399,7 +1407,7 @@ export class JantComposeDialog extends LitElement {
   private _dispatchSubmit(status: "published" | "draft"): boolean {
     if (this._loading) return false;
     if (this._focusBlockedSubmitField(status)) return false;
-    if (!this._editPostId && !this._draftSourceId) {
+    if (!this._draftSourceId) {
       this._cancelDraftSaveTimer();
       this._saveDraftToStorage();
     }
@@ -2713,15 +2721,23 @@ export class JantComposeDialog extends LitElement {
   // ── Local draft auto-save (globalThis.localStorage) ──────────────────────────
 
   private static _DRAFT_KEY = "jant:compose-draft";
+  private static _EDIT_DRAFT_KEY_PREFIX = "jant:compose-edit:";
   private static _DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+  private _currentDraftStorageKey(): string {
+    if (this._editPostId) {
+      return JantComposeDialog._EDIT_DRAFT_KEY_PREFIX + this._editPostId;
+    }
+    return JantComposeDialog._DRAFT_KEY;
+  }
 
   private _onContentChanged = () => {
     this.requestUpdate();
     if (!this._hasManualSlug()) {
       this._scheduleSuggestedSlugRefresh();
     }
-    // Schedule localStorage auto-save for new-post mode only
-    if (!this._editPostId && !this._draftSourceId) {
+    // Schedule localStorage auto-save (new-post and edit modes, not draft-load)
+    if (!this._draftSourceId) {
       this._scheduleDraftSave();
     }
   };
@@ -2777,7 +2793,7 @@ export class JantComposeDialog extends LitElement {
       });
 
       if (!hasContent) {
-        globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
+        globalThis.localStorage.removeItem(this._currentDraftStorageKey());
         return;
       }
 
@@ -2828,7 +2844,7 @@ export class JantComposeDialog extends LitElement {
 
       try {
         globalThis.localStorage.setItem(
-          JantComposeDialog._DRAFT_KEY,
+          this._currentDraftStorageKey(),
           JSON.stringify(draft),
         );
       } catch {
@@ -2897,11 +2913,17 @@ export class JantComposeDialog extends LitElement {
 
   private _clearDraftFromStorage() {
     this._cancelDraftSaveTimer();
-    globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
+    globalThis.localStorage.removeItem(this._currentDraftStorageKey());
   }
 
   clearLocalDraftFromStorage() {
     this._clearDraftFromStorage();
+  }
+
+  clearEditDraftFromStorage(postId: string) {
+    globalThis.localStorage.removeItem(
+      JantComposeDialog._EDIT_DRAFT_KEY_PREFIX + postId,
+    );
   }
 
   async restoreLocalDraft(options?: { expectedReplyToId?: string }) {
@@ -3048,6 +3070,75 @@ export class JantComposeDialog extends LitElement {
     globalThis.requestAnimationFrame(() => {
       this._captureInitialSnapshot();
     });
+  }
+
+  /**
+   * Check for a local edit draft for the given post ID and restore it if valid.
+   * Returns true if a draft was restored, false otherwise.
+   */
+  private _restoreEditDraftIfAvailable(postId: string): boolean {
+    const key = JantComposeDialog._EDIT_DRAFT_KEY_PREFIX + postId;
+
+    let raw: string | null;
+    try {
+      raw = globalThis.localStorage.getItem(key);
+    } catch {
+      return false;
+    }
+    if (!raw) return false;
+
+    let draft: LocalDraft;
+    try {
+      draft = JSON.parse(raw) as LocalDraft;
+    } catch {
+      globalThis.localStorage.removeItem(key);
+      return false;
+    }
+
+    if (Date.now() - draft.savedAt > JantComposeDialog._DRAFT_MAX_AGE) {
+      globalThis.localStorage.removeItem(key);
+      return false;
+    }
+
+    // Restore metadata
+    this._format = draft.format;
+    this._collectionIds = [...(draft.collectionIds ?? [])];
+    this._slug = draft.slug ?? "";
+    this._publishedAtInput = draft.publishedAtInput ?? "";
+    this._publishedAtTimeMinutes = draft.publishedAtTimeMinutes ?? null;
+    this._visibility = draft.visibility ?? "public";
+
+    // Restore editor content
+    const textAttachments = draft.attachedTexts?.flatMap((t) => {
+      const bodyJson = normalizeComposeDoc(t.bodyJson);
+      if (!bodyJson) return [];
+      return [
+        {
+          clientId: t.clientId,
+          bodyJson: JSON.stringify(bodyJson),
+          bodyHtml: t.bodyHtml,
+          summary: t.summary,
+        },
+      ];
+    });
+
+    this._editor?.populate({
+      format: draft.format,
+      title: draft.title || undefined,
+      bodyJson: draft.bodyJson ? JSON.stringify(draft.bodyJson) : undefined,
+      url: draft.url || undefined,
+      quoteText: draft.quoteText || undefined,
+      quoteAuthor: draft.quoteAuthor || undefined,
+      rating: draft.rating || undefined,
+      showTitle: draft.showTitle,
+      showRating: draft.showRating,
+      textAttachments: textAttachments?.length ? textAttachments : undefined,
+      attachmentOrder: draft.attachmentOrder,
+    });
+
+    this._draftRestored = true;
+    showToast(this.labels.draftRestored);
+    return true;
   }
 
   private async _focusPageEditorOnMount() {
