@@ -23,7 +23,7 @@ const FORMATS = ["note", "link", "quote"] as const;
 const STATUSES = ["draft", "published"] as const;
 const VISIBILITIES = ["public", "latest_hidden", "private"] as const;
 const COLLECTION_SORT_ORDERS = ["newest", "oldest", "rating_desc"] as const;
-const NAV_ITEM_TYPES = ["link", "system"] as const;
+const NAV_ITEM_TYPES = ["link", "system", "collection"] as const;
 const NAV_ITEM_PLACEMENTS = ["header", "more"] as const;
 const SYSTEM_NAV_KEYS = [
   "latest",
@@ -582,6 +582,9 @@ export const navItems = sqliteTable(
     systemKey: text("system_key", {
       enum: SYSTEM_NAV_KEYS,
     }),
+    collectionId: text("collection_id").references(() => collections.id, {
+      onDelete: "cascade",
+    }),
     label: text("label").notNull(),
     url: text("url").notNull(),
     placement: text("placement", {
@@ -607,15 +610,24 @@ export const navItems = sqliteTable(
       sql`(
         ${table.type} = 'link'
         AND ${table.systemKey} IS NULL
+        AND ${table.collectionId} IS NULL
       ) OR (
         ${table.type} = 'system'
         AND ${table.systemKey} IS NOT NULL
+        AND ${table.collectionId} IS NULL
+      ) OR (
+        ${table.type} = 'collection'
+        AND ${table.systemKey} IS NULL
+        AND ${table.collectionId} IS NOT NULL
       )`,
     ),
     uniqueIndex("uq_nav_item_site_position").on(table.siteId, table.position),
     uniqueIndex("uq_nav_item_site_system_key")
       .on(table.siteId, table.systemKey)
       .where(sql`${table.systemKey} IS NOT NULL`),
+    uniqueIndex("uq_nav_item_site_collection_id")
+      .on(table.siteId, table.collectionId)
+      .where(sql`${table.collectionId} IS NOT NULL`),
   ],
 );
 

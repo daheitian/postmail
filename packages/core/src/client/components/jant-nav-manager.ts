@@ -40,6 +40,7 @@ export class JantNavManager extends LitElement {
     items: { type: Array },
     labels: { type: Object },
     systemNavItems: { type: Array, attribute: "system-nav-items" },
+    collections: { type: Array },
     siteName: { type: String, attribute: "site-name" },
 
     _items: { state: true },
@@ -52,11 +53,14 @@ export class JantNavManager extends LitElement {
     _newLinkUrl: { state: true },
     _addingLink: { state: true },
     _showPreviewMore: { state: true },
+    _selectedCollectionId: { state: true },
+    _addingCollection: { state: true },
   };
 
   declare items: NavManagerItem[];
   declare labels: NavManagerLabels;
   declare systemNavItems: SystemNavConfig[];
+  declare collections: { id: string; title: string; slug: string }[];
   declare siteName: string;
 
   declare _items: NavManagerItem[];
@@ -70,6 +74,8 @@ export class JantNavManager extends LitElement {
   declare _newLinkUrl: string;
   declare _addingLink: boolean;
   declare _showPreviewMore: boolean;
+  declare _selectedCollectionId: string;
+  declare _addingCollection: boolean;
 
   #sortableHeader: { destroy(): void } | null = null;
   #sortableMore: { destroy(): void } | null = null;
@@ -107,6 +113,7 @@ export class JantNavManager extends LitElement {
     this.items = [];
     this.labels = {} as NavManagerLabels;
     this.systemNavItems = [];
+    this.collections = [];
     this.siteName = "";
 
     this._items = [];
@@ -119,6 +126,8 @@ export class JantNavManager extends LitElement {
     this._newLinkUrl = "";
     this._addingLink = false;
     this._showPreviewMore = false;
+    this._selectedCollectionId = "";
+    this._addingCollection = false;
   }
 
   protected update(changedProperties: PropertyValueMap<JantNavManager>): void {
@@ -334,9 +343,15 @@ export class JantNavManager extends LitElement {
   }
 
   async #handleDelete(item: NavManagerItem) {
+    const message =
+      item.type === "collection"
+        ? this.labels.confirmDeleteCollection
+        : this.labels.confirmDeleteLink;
+    const confirmLabel =
+      item.type === "collection" ? this.labels.remove : this.labels.delete;
     const confirmed = await showConfirmDialog({
-      message: this.labels.confirmDeleteLink,
-      confirmLabel: this.labels.delete,
+      message,
+      confirmLabel,
       cancelLabel: this.labels.cancel,
       tone: "danger",
     });
@@ -385,6 +400,41 @@ export class JantNavManager extends LitElement {
       showToast(this.labels.saveFailed, "error");
     } finally {
       this._addingLink = false;
+    }
+  }
+
+  // ===========================================================================
+  // Add collection handler
+  // ===========================================================================
+
+  async #handleAddCollection() {
+    const collectionId = this._selectedCollectionId;
+    if (!collectionId) return;
+
+    this._addingCollection = true;
+    try {
+      const res = await fetch("/api/nav-items", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          type: "collection",
+          collectionId,
+          placement: "header",
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const created: NavManagerItem = await res.json();
+      this.#destroySortables();
+      this._items = [...this._items, created];
+      this._selectedCollectionId = "";
+    } catch {
+      showToast(this.labels.saveFailed, "error");
+    } finally {
+      this._addingCollection = false;
     }
   }
 
@@ -564,7 +614,12 @@ export class JantNavManager extends LitElement {
   }
 
   #renderTypeBadge(type: string) {
-    const label = type === "system" ? this.labels.system : this.labels.link;
+    const label =
+      type === "system"
+        ? this.labels.system
+        : type === "collection"
+          ? this.labels.collection
+          : this.labels.link;
     return html`<span class="badge-secondary">${label}</span>`;
   }
 
@@ -587,6 +642,41 @@ export class JantNavManager extends LitElement {
             />
           </div>
           <div class="flex items-center justify-end">
+            <button
+              type="button"
+              class="btn-sm"
+              @click=${() => this.#handleUpdate(item)}
+            >
+              ${this.labels.save}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    if (item.type === "collection") {
+      return html`
+        <div class="nav-item-edit">
+          <div class="field">
+            <label class="label">${this.labels.label}</label>
+            <input
+              type="text"
+              class="input"
+              required
+              .value=${this._editLabel}
+              @input=${(e: Event) => {
+                this._editLabel = (e.target as HTMLInputElement).value;
+              }}
+            />
+          </div>
+          <div class="flex items-center justify-between">
+            <button
+              type="button"
+              class="btn-sm-ghost text-destructive"
+              @click=${() => void this.#handleDelete(item)}
+            >
+              ${this.labels.remove}
+            </button>
             <button
               type="button"
               class="btn-sm"
@@ -823,6 +913,70 @@ export class JantNavManager extends LitElement {
     `;
   }
 
+  #renderAddCollectionSection() {
+    if (!this.collections?.length) {
+      return html`
+        <section class="mt-8">
+          <h2 class="text-lg font-semibold mb-1">
+            ${this.labels.addCollection}
+          </h2>
+          <p class="text-sm text-muted-foreground">
+            ${this.labels.noCollections}
+          </p>
+        </section>
+      `;
+    }
+
+    const addedCollectionIds = new Set(
+      this._items
+        .filter((i) => i.type === "collection" && i.collectionId)
+        .map((i) => i.collectionId),
+    );
+    const available = this.collections.filter(
+      (c) => !addedCollectionIds.has(c.id),
+    );
+
+    return html`
+      <section class="mt-8">
+        <h2 class="text-lg font-semibold mb-1">${this.labels.addCollection}</h2>
+        <p class="text-sm text-muted-foreground mb-3">
+          ${this.labels.addCollectionDescription}
+        </p>
+        ${available.length === 0
+          ? html`<p class="text-sm text-muted-foreground">
+              ${this.labels.allCollectionsAdded}
+            </p>`
+          : html`
+              <div class="flex items-center gap-2">
+                <select
+                  class="input flex-1"
+                  .value=${this._selectedCollectionId}
+                  @change=${(e: Event) => {
+                    this._selectedCollectionId = (
+                      e.target as HTMLSelectElement
+                    ).value;
+                  }}
+                >
+                  <option value="">${this.labels.selectCollection}</option>
+                  ${available.map(
+                    (c) => html`<option value=${c.id}>${c.title}</option>`,
+                  )}
+                </select>
+                <button
+                  type="button"
+                  class="btn-sm"
+                  ?disabled=${!this._selectedCollectionId ||
+                  this._addingCollection}
+                  @click=${() => this.#handleAddCollection()}
+                >
+                  ${this.labels.addCollection}
+                </button>
+              </div>
+            `}
+      </section>
+    `;
+  }
+
   #renderSystemToggles() {
     if (!this.systemNavItems?.length) return nothing;
 
@@ -901,7 +1055,8 @@ export class JantNavManager extends LitElement {
         </div>
       </section>
 
-      ${this.#renderAddLinkSection()} ${this.#renderSystemToggles()}
+      ${this.#renderAddLinkSection()} ${this.#renderAddCollectionSection()}
+      ${this.#renderSystemToggles()}
     `;
   }
 }

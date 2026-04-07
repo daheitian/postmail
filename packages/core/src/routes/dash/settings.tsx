@@ -576,7 +576,10 @@ settingsRoutes.post("/avatar/display", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/navigation", async (c) => {
-  const navItems = await c.var.services.navItems.list();
+  const [navItems, collections] = await Promise.all([
+    c.var.services.navItems.list(),
+    c.var.services.collections.list(),
+  ]);
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
@@ -591,6 +594,7 @@ settingsRoutes.get("/navigation", async (c) => {
         />
         <NavigationContent
           navItems={navItems}
+          collections={collections}
           mainRssFeed={c.var.appConfig.mainRssFeed}
           siteName={navData.siteName}
           sitePathPrefix={c.var.appConfig.sitePathPrefix}

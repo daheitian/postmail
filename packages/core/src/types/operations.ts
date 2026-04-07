@@ -86,6 +86,14 @@ export type CreateNavItem =
       systemKey: SystemNavKey;
       placement?: NavItemPlacement;
       position?: string;
+    }
+  | {
+      type: "collection";
+      collectionId: string;
+      label: string;
+      url: string;
+      placement?: NavItemPlacement;
+      position?: string;
     };
 
 export interface UpdateNavItem {

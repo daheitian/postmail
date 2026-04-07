@@ -208,7 +208,9 @@ msgid "Add alt text"
 msgstr "添加替代文本"
 
 #. @context: Action to create a new collection from compose
+#. @context: Button and section heading for adding a collection to nav
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Collection"
 msgstr "添加合集"
 
@@ -243,6 +245,11 @@ msgstr "所有可用的端点和请求格式。"
 #: src/ui/pages/ArchivePage.tsx
 msgid "All collections"
 msgstr "所有合集"
+
+#. @context: Message when every collection is already added to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "All collections are already in your navigation."
+msgstr ""
 
 #. @context: Archive filter - all formats select option
 #: src/ui/pages/ArchivePage.tsx
@@ -526,6 +533,11 @@ msgstr "修改后，订阅 /feed 的用户会收到不同内容。"
 msgid "Checking link..."
 msgstr "正在检查链接..."
 
+#. @context: Placeholder for collection picker dropdown
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Choose a collection…"
+msgstr ""
+
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
@@ -570,10 +582,12 @@ msgstr "清除筛选"
 msgid "Close menu"
 msgstr "关闭菜单"
 
+#. @context: Nav item type badge for collection items
 #. @context: Singular collection count label
 #. @context: Singular collection count label
 #. @context: Singular collection count label
 #. @context: Singular collection count label on an aggregate collection page
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/shared/CollectionsManager.tsx
@@ -1970,6 +1984,11 @@ msgstr "目前没有活动会话。已登录的设备会显示在这里。"
 msgid "No collections match that search. Try a different name."
 msgstr "没有合集匹配这次搜索。试试别的名称。"
 
+#. @context: Empty state when no collections exist for nav picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No collections yet. Create one first, then add it to your navigation."
+msgstr ""
+
 #. @context: Empty state message on collections page
 #. @context: Empty state message on collections page
 #. @context: Empty state message on collections page
@@ -2159,6 +2178,11 @@ msgstr "路径"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Permanently delete all data and reset the blog"
 msgstr "永久删除所有数据并重置博客"
+
+#. @context: Description in collection picker section
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Pin a collection to your navigation bar"
+msgstr ""
 
 #. @context: Post badge - pinned
 #: src/ui/dash/StatusBadge.tsx
@@ -2407,6 +2431,11 @@ msgstr "删除链接"
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Remove this avatar? Your favicon and header icon will go back to the default."
 msgstr "移除这个头像？你的 favicon 和页眉图标会恢复为默认状态。"
+
+#. @context: Confirm dialog for removing a collection nav item
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Remove this collection from navigation? The collection itself won't be deleted."
+msgstr ""
 
 #. @context: Confirm dialog for deleting a custom collections link
 #: src/ui/shared/collection-management-labels.ts

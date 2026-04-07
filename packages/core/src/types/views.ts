@@ -152,6 +152,7 @@ export interface NavItemView {
   id: string;
   type: NavItemType;
   systemKey?: SystemNavKey;
+  collectionId?: string;
   label: string;
   url: string;
   /** "header" = visible in nav bar, "more" = under More dropdown */
@@ -160,6 +161,8 @@ export interface NavItemView {
   isActive: boolean;
   /** Pre-computed: starts with http(s):// */
   isExternal: boolean;
+  /** Collection nav items: true when collection has recent activity */
+  isFresh?: boolean;
 }
 
 /**

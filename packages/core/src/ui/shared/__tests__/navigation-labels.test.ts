@@ -124,6 +124,15 @@ describe("getNavItemDisplayLabel", () => {
       ),
     ).toBe("Collections");
   });
+
+  it("uses the stored label for collection nav items", () => {
+    expect(
+      getNavItemDisplayLabel(
+        { type: "collection", label: "Design Notes", url: "/design-notes" },
+        i18n,
+      ),
+    ).toBe("Design Notes");
+  });
 });
 
 describe("system nav labels", () => {

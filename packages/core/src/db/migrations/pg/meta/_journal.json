@@ -78,6 +78,13 @@
       "when": 1775369900000,
       "tag": "0010_overjoyed_gertrude_yorkes",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1775538682750,
+      "tag": "0011_fixed_hulk",
+      "breakpoints": true
     }
   ]
 }

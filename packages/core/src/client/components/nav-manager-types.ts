@@ -6,8 +6,9 @@ import type { SystemNavKey } from "../../types/constants.js";
 
 export interface NavManagerItem {
   id: string;
-  type: "link" | "system";
+  type: "link" | "system" | "collection";
   systemKey?: SystemNavKey;
+  collectionId?: string;
   label: string;
   displayLabel?: string;
   url: string;
@@ -44,6 +45,13 @@ export interface NavManagerLabels {
   addLinkDescription: string;
   urlPlaceholder: string;
   labelAndUrlRequired: string;
+  collection: string;
+  addCollection: string;
+  addCollectionDescription: string;
+  selectCollection: string;
+  allCollectionsAdded: string;
+  noCollections: string;
+  confirmDeleteCollection: string;
   headerSection: string;
   moreSection: string;
   moreEmptyHint: string;

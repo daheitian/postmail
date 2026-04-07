@@ -387,6 +387,7 @@ export function toNavItemView(
   homeDefaultView: FeedKind = "latest",
   isAuthenticated = false,
   sitePathPrefix = "",
+  collectionFreshness?: Set<string>,
 ): NavItemView {
   let url = item.url;
   let label = item.label;
@@ -433,11 +434,16 @@ export function toNavItemView(
     id: item.id,
     type: item.type as NavItemType,
     systemKey: item.systemKey,
+    collectionId: item.collectionId,
     label,
     url: publicUrl,
     placement: item.placement as NavItemPlacement,
     isActive,
     isExternal,
+    isFresh:
+      item.type === "collection" && item.collectionId
+        ? collectionFreshness?.has(item.collectionId)
+        : undefined,
   };
 }
 
@@ -454,6 +460,7 @@ export function toNavItemViews(
   homeDefaultView: FeedKind = "latest",
   isAuthenticated = false,
   sitePathPrefix = "",
+  collectionFreshness?: Set<string>,
 ): NavItemView[] {
   return items.map((item) =>
     toNavItemView(
@@ -462,6 +469,7 @@ export function toNavItemViews(
       homeDefaultView,
       isAuthenticated,
       sitePathPrefix,
+      collectionFreshness,
     ),
   );
 }

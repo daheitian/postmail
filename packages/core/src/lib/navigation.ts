@@ -98,12 +98,25 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
     // Not authenticated
   }
 
+  // Compute freshness for collection nav items
+  const collectionNavIds: string[] = [];
+  for (const item of items) {
+    if (item.type === "collection" && item.collectionId) {
+      collectionNavIds.push(item.collectionId);
+    }
+  }
+  const collectionFreshness =
+    collectionNavIds.length > 0
+      ? await c.var.services.navItems.getCollectionFreshness(collectionNavIds)
+      : undefined;
+
   const links = toNavItemViews(
     items,
     currentPath,
     homeDefaultView,
     isAuthenticated,
     appConfig.sitePathPrefix,
+    collectionFreshness,
   );
 
   // Only load collections when authenticated (for compose dialog)

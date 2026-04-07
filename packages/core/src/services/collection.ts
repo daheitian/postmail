@@ -39,6 +39,7 @@ import {
   toCollectionPath,
   type PathService,
 } from "./path.js";
+import { getCollectionPagePath } from "../lib/collection-paths.js";
 import {
   CreateCollectionDirectoryItemSchema,
   CollectionDirectoryLabelSchema,
@@ -146,6 +147,7 @@ export function createCollectionService(
     collectionDirectoryItems: directoryItemsTable,
     postCollections,
     posts,
+    navItems,
   } = databaseSchema;
   const usesBatchWrites = !supportsDrizzleTransaction(db, databaseDialect);
 
@@ -695,6 +697,22 @@ export function createCollectionService(
       }
 
       const timestamp = now();
+
+      // Update nav item URLs when the collection slug changes
+      if (
+        normalizedData.slug !== undefined &&
+        normalizedData.slug !== existing.slug
+      ) {
+        await db
+          .update(navItems)
+          .set({
+            url: getCollectionPagePath(normalizedData.slug),
+            updatedAt: timestamp,
+          })
+          .where(
+            and(eq(navItems.siteId, siteId), eq(navItems.collectionId, id)),
+          );
+      }
       const updates: Partial<typeof collections.$inferInsert> = {
         updatedAt: timestamp,
       };
@@ -735,6 +753,9 @@ export function createCollectionService(
             eq(directoryItemsTable.collectionId, id),
           ),
         );
+      await db
+        .delete(navItems)
+        .where(and(eq(navItems.siteId, siteId), eq(navItems.collectionId, id)));
       const result = await db
         .delete(collections)
         .where(and(eq(collections.siteId, siteId), eq(collections.id, id)))

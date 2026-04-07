@@ -310,6 +310,105 @@ describe("Nav Items API Routes", () => {
     });
   });
 
+  describe("POST /api/nav-items (collection)", () => {
+    it("creates a collection nav item with auto-resolved label and URL", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      // Create a collection via service
+      const collection = await services.collections.create({
+        title: "Design Notes",
+        slug: "design-notes",
+      });
+
+      const res = await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "collection",
+          collectionId: collection.id,
+        }),
+      });
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body.type).toBe("collection");
+      expect(body.collectionId).toBe(collection.id);
+      expect(body.label).toBe("Design Notes");
+      expect(body.url).toBe("/design-notes");
+    });
+
+    it("uses custom label when provided", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      const collection = await services.collections.create({
+        title: "Design Notes",
+        slug: "design-notes",
+      });
+
+      const res = await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "collection",
+          collectionId: collection.id,
+          label: "Design",
+        }),
+      });
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body.label).toBe("Design");
+    });
+
+    it("returns 404 for non-existent collection", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      const res = await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "collection",
+          collectionId: "col_nonexistent000000000000000",
+        }),
+      });
+
+      expect(res.status).toBe(404);
+    });
+
+    it("returns 400 for duplicate collection nav items", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      const collection = await services.collections.create({
+        title: "Design",
+        slug: "design",
+      });
+
+      await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "collection",
+          collectionId: collection.id,
+        }),
+      });
+
+      const res = await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "collection",
+          collectionId: collection.id,
+        }),
+      });
+
+      expect(res.status).toBe(400);
+    });
+  });
+
   describe("DELETE /api/nav-items/:id", () => {
     it("returns 401 when not authenticated", async () => {
       const { app, services } = createTestApp({ authenticated: false });

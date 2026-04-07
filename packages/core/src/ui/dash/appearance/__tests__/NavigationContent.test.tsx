@@ -21,6 +21,7 @@ function renderNavigationContent(
   return renderToString(
     NavigationContent({
       navItems: [],
+      collections: [],
       mainRssFeed: "latest",
       siteName: "Test Site",
       ...props,

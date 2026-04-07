@@ -662,6 +662,17 @@
     );
   }
 
+  .site-header-link-fresh {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-primary, currentColor);
+    margin-left: 2px;
+    vertical-align: super;
+    flex-shrink: 0;
+  }
+
   /* --- More dropdown ------------------------------------------------------ */
 
   .site-header-more {

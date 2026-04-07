@@ -4,7 +4,7 @@
 
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "../../../i18n/context.js";
-import type { NavItem, SystemNavKey } from "../../../types.js";
+import type { Collection, NavItem, SystemNavKey } from "../../../types.js";
 import { SYSTEM_NAV_KEYS } from "../../../types.js";
 import type {
   NavManagerLabels,
@@ -23,11 +23,13 @@ import {
 
 export function NavigationContent({
   navItems,
+  collections,
   mainRssFeed,
   siteName,
   sitePathPrefix = "",
 }: {
   navItems: NavItem[];
+  collections: Collection[];
   mainRssFeed: string;
   siteName: string;
   sitePathPrefix?: string;
@@ -69,12 +71,20 @@ export function NavigationContent({
       id: item.id,
       type: item.type,
       systemKey: item.systemKey,
+      collectionId: item.collectionId,
       label: item.label,
       displayLabel: getNavItemDisplayLabel(item, i18n, sitePathPrefix),
       url,
       placement: item.placement ?? "header",
     };
   });
+
+  // Serialize collections for the Lit component dropdown
+  const collectionsData = collections.map((c) => ({
+    id: c.id,
+    title: c.title,
+    slug: c.slug,
+  }));
 
   // Build system nav config array for the Lit component
   const systemNavData: SystemNavConfig[] = (
@@ -263,6 +273,53 @@ export function NavigationContent({
         comment: "@context: Error toast when nav link fields are empty",
       }),
     ),
+    collection: i18n._(
+      msg({
+        message: "collection",
+        comment: "@context: Nav item type badge for collection items",
+      }),
+    ),
+    addCollection: i18n._(
+      msg({
+        message: "Add Collection",
+        comment:
+          "@context: Button and section heading for adding a collection to nav",
+      }),
+    ),
+    addCollectionDescription: i18n._(
+      msg({
+        message: "Pin a collection to your navigation bar",
+        comment: "@context: Description in collection picker section",
+      }),
+    ),
+    selectCollection: i18n._(
+      msg({
+        message: "Choose a collection…",
+        comment: "@context: Placeholder for collection picker dropdown",
+      }),
+    ),
+    allCollectionsAdded: i18n._(
+      msg({
+        message: "All collections are already in your navigation.",
+        comment:
+          "@context: Message when every collection is already added to nav",
+      }),
+    ),
+    noCollections: i18n._(
+      msg({
+        message:
+          "No collections yet. Create one first, then add it to your navigation.",
+        comment:
+          "@context: Empty state when no collections exist for nav picker",
+      }),
+    ),
+    confirmDeleteCollection: i18n._(
+      msg({
+        message:
+          "Remove this collection from navigation? The collection itself won't be deleted.",
+        comment: "@context: Confirm dialog for removing a collection nav item",
+      }),
+    ),
   };
 
   const escapeJson = (data: unknown) =>
@@ -274,6 +331,7 @@ export function NavigationContent({
         items={escapeJson(itemsData)}
         labels={escapeJson(labels)}
         system-nav-items={escapeJson(systemNavData)}
+        collections={escapeJson(collectionsData)}
         site-name={siteName}
       >
         {/* SSR fallback: static preview until JS hydrates */}

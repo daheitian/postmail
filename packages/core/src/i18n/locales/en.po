@@ -208,7 +208,9 @@ msgid "Add alt text"
 msgstr "Add alt text"
 
 #. @context: Action to create a new collection from compose
+#. @context: Button and section heading for adding a collection to nav
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Collection"
 msgstr "Add Collection"
 
@@ -243,6 +245,11 @@ msgstr "all available endpoints and request formats."
 #: src/ui/pages/ArchivePage.tsx
 msgid "All collections"
 msgstr "All collections"
+
+#. @context: Message when every collection is already added to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "All collections are already in your navigation."
+msgstr "All collections are already in your navigation."
 
 #. @context: Archive filter - all formats select option
 #: src/ui/pages/ArchivePage.tsx
@@ -526,6 +533,11 @@ msgstr "Changing this updates what subscribers get from /feed."
 msgid "Checking link..."
 msgstr "Checking link..."
 
+#. @context: Placeholder for collection picker dropdown
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Choose a collection…"
+msgstr "Choose a collection…"
+
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
@@ -570,10 +582,12 @@ msgstr "Clear filter"
 msgid "Close menu"
 msgstr "Close menu"
 
+#. @context: Nav item type badge for collection items
 #. @context: Singular collection count label
 #. @context: Singular collection count label
 #. @context: Singular collection count label
 #. @context: Singular collection count label on an aggregate collection page
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/shared/CollectionsManager.tsx
@@ -1970,6 +1984,11 @@ msgstr "No active sessions right now. Signed-in devices show up here."
 msgid "No collections match that search. Try a different name."
 msgstr "No collections match that search. Try a different name."
 
+#. @context: Empty state when no collections exist for nav picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No collections yet. Create one first, then add it to your navigation."
+msgstr "No collections yet. Create one first, then add it to your navigation."
+
 #. @context: Empty state message on collections page
 #. @context: Empty state message on collections page
 #. @context: Empty state message on collections page
@@ -2159,6 +2178,11 @@ msgstr "Path"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Permanently delete all data and reset the blog"
 msgstr "Permanently delete all data and reset the blog"
+
+#. @context: Description in collection picker section
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Pin a collection to your navigation bar"
+msgstr "Pin a collection to your navigation bar"
 
 #. @context: Post badge - pinned
 #: src/ui/dash/StatusBadge.tsx
@@ -2407,6 +2431,11 @@ msgstr "Remove Link"
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Remove this avatar? Your favicon and header icon will go back to the default."
 msgstr "Remove this avatar? Your favicon and header icon will go back to the default."
+
+#. @context: Confirm dialog for removing a collection nav item
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Remove this collection from navigation? The collection itself won't be deleted."
+msgstr "Remove this collection from navigation? The collection itself won't be deleted."
 
 #. @context: Confirm dialog for deleting a custom collections link
 #: src/ui/shared/collection-management-labels.ts

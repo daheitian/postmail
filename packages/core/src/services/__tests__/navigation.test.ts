@@ -5,14 +5,35 @@ import {
 } from "../../__tests__/helpers/db.js";
 import { createNavItemService } from "../navigation.js";
 import type { Database } from "../../db/index.js";
+import { now } from "../../lib/time.js";
+
+const TEST_COLLECTION_ID = "col_test00000000000000000000001";
+const TEST_COLLECTION_ID_2 = "col_test00000000000000000000002";
+
+function insertTestCollection(
+  sqlite: ReturnType<typeof createTestDatabase>["sqlite"],
+  id: string,
+  _slug: string,
+  title: string,
+) {
+  const ts = now();
+  sqlite
+    .prepare(
+      `INSERT INTO collection (id, site_id, title, sort_order, created_at, updated_at)
+       VALUES (?, ?, ?, 'newest', ?, ?)`,
+    )
+    .run(id, DEFAULT_TEST_SITE_ID, title, ts, ts);
+}
 
 describe("NavItemService", () => {
   let db: Database;
+  let sqlite: ReturnType<typeof createTestDatabase>["sqlite"];
   let navItemService: ReturnType<typeof createNavItemService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
+    sqlite = testDb.sqlite;
     navItemService = createNavItemService(db, DEFAULT_TEST_SITE_ID);
   });
 
@@ -446,6 +467,205 @@ describe("NavItemService", () => {
         null,
       );
       expect(result).toBeNull();
+    });
+  });
+
+  describe("collection nav items", () => {
+    beforeEach(() => {
+      insertTestCollection(sqlite, TEST_COLLECTION_ID, "design", "Design");
+      insertTestCollection(sqlite, TEST_COLLECTION_ID_2, "reading", "Reading");
+    });
+
+    it("creates a collection nav item", async () => {
+      const item = await navItemService.create({
+        type: "collection",
+        collectionId: TEST_COLLECTION_ID,
+        label: "Design",
+        url: "/design",
+      });
+
+      expect(item.type).toBe("collection");
+      expect(item.collectionId).toBe(TEST_COLLECTION_ID);
+      expect(item.label).toBe("Design");
+      expect(item.url).toBe("/design");
+      expect(item.placement).toBe("header");
+    });
+
+    it("rejects duplicate collection nav items", async () => {
+      await navItemService.create({
+        type: "collection",
+        collectionId: TEST_COLLECTION_ID,
+        label: "Design",
+        url: "/design",
+      });
+
+      await expect(
+        navItemService.create({
+          type: "collection",
+          collectionId: TEST_COLLECTION_ID,
+          label: "Design Again",
+          url: "/design",
+        }),
+      ).rejects.toThrow("Collection already added to navigation");
+    });
+
+    it("allows different collections as separate nav items", async () => {
+      await navItemService.create({
+        type: "collection",
+        collectionId: TEST_COLLECTION_ID,
+        label: "Design",
+        url: "/design",
+      });
+      const second = await navItemService.create({
+        type: "collection",
+        collectionId: TEST_COLLECTION_ID_2,
+        label: "Reading",
+        url: "/reading",
+      });
+
+      expect(second.collectionId).toBe(TEST_COLLECTION_ID_2);
+      const items = await navItemService.list();
+      expect(items.filter((i) => i.type === "collection")).toHaveLength(2);
+    });
+
+    it("allows label updates for collection nav items", async () => {
+      const item = await navItemService.create({
+        type: "collection",
+        collectionId: TEST_COLLECTION_ID,
+        label: "Design",
+        url: "/design",
+      });
+
+      const updated = await navItemService.update(item.id, {
+        label: "Design Notes",
+      });
+      expect(updated?.label).toBe("Design Notes");
+    });
+
+    it("rejects URL updates for collection nav items", async () => {
+      const item = await navItemService.create({
+        type: "collection",
+        collectionId: TEST_COLLECTION_ID,
+        label: "Design",
+        url: "/design",
+      });
+
+      await expect(
+        navItemService.update(item.id, { url: "/other" }),
+      ).rejects.toThrow("Collection navigation URLs are managed automatically");
+    });
+  });
+
+  describe("getCollectionFreshness", () => {
+    beforeEach(() => {
+      insertTestCollection(sqlite, TEST_COLLECTION_ID, "design", "Design");
+    });
+
+    it("returns empty set when no collections have recent activity", async () => {
+      const result = await navItemService.getCollectionFreshness([
+        TEST_COLLECTION_ID,
+      ]);
+      expect(result.size).toBe(0);
+    });
+
+    it("returns collection ID when a post was recently added", async () => {
+      const ts = now();
+      // Insert a post
+      sqlite
+        .prepare(
+          `INSERT INTO post (id, site_id, thread_id, format, status, visibility, created_at, updated_at, last_activity_at)
+           VALUES (?, ?, ?, 'note', 'published', 'public', ?, ?, ?)`,
+        )
+        .run("pst_test001", DEFAULT_TEST_SITE_ID, "pst_test001", ts, ts, ts);
+      // Add it to the collection recently
+      sqlite
+        .prepare(
+          `INSERT INTO post_collection (site_id, post_id, collection_id, created_at, position)
+           VALUES (?, ?, ?, ?, 0)`,
+        )
+        .run(DEFAULT_TEST_SITE_ID, "pst_test001", TEST_COLLECTION_ID, ts);
+
+      const result = await navItemService.getCollectionFreshness([
+        TEST_COLLECTION_ID,
+      ]);
+      expect(result.has(TEST_COLLECTION_ID)).toBe(true);
+    });
+
+    it("does not return collection with old activity", async () => {
+      const oldTs = now() - 60 * 60 * 72; // 72 hours ago
+      sqlite
+        .prepare(
+          `INSERT INTO post (id, site_id, thread_id, format, status, visibility, created_at, updated_at, last_activity_at)
+           VALUES (?, ?, ?, 'note', 'published', 'public', ?, ?, ?)`,
+        )
+        .run(
+          "pst_test002",
+          DEFAULT_TEST_SITE_ID,
+          "pst_test002",
+          oldTs,
+          oldTs,
+          oldTs,
+        );
+      sqlite
+        .prepare(
+          `INSERT INTO post_collection (site_id, post_id, collection_id, created_at, position)
+           VALUES (?, ?, ?, ?, 0)`,
+        )
+        .run(DEFAULT_TEST_SITE_ID, "pst_test002", TEST_COLLECTION_ID, oldTs);
+
+      const result = await navItemService.getCollectionFreshness([
+        TEST_COLLECTION_ID,
+      ]);
+      expect(result.has(TEST_COLLECTION_ID)).toBe(false);
+    });
+
+    it("detects freshness from recent thread replies", async () => {
+      const oldTs = now() - 60 * 60 * 72; // 72 hours ago
+      const recentTs = now();
+
+      // Create a thread root post (old)
+      sqlite
+        .prepare(
+          `INSERT INTO post (id, site_id, thread_id, format, status, visibility, created_at, updated_at, last_activity_at)
+           VALUES (?, ?, ?, 'note', 'published', 'public', ?, ?, ?)`,
+        )
+        .run(
+          "pst_root",
+          DEFAULT_TEST_SITE_ID,
+          "pst_root",
+          oldTs,
+          oldTs,
+          recentTs,
+        );
+
+      // Add the root to the collection (old)
+      sqlite
+        .prepare(
+          `INSERT INTO post_collection (site_id, post_id, collection_id, created_at, position)
+           VALUES (?, ?, ?, ?, 0)`,
+        )
+        .run(DEFAULT_TEST_SITE_ID, "pst_root", TEST_COLLECTION_ID, oldTs);
+
+      // Create a recent reply to the thread
+      sqlite
+        .prepare(
+          `INSERT INTO post (id, site_id, thread_id, reply_to_id, format, status, visibility, created_at, updated_at, last_activity_at)
+           VALUES (?, ?, ?, ?, 'note', 'published', 'public', ?, ?, ?)`,
+        )
+        .run(
+          "pst_reply",
+          DEFAULT_TEST_SITE_ID,
+          "pst_root",
+          "pst_root",
+          recentTs,
+          recentTs,
+          recentTs,
+        );
+
+      const result = await navItemService.getCollectionFreshness([
+        TEST_COLLECTION_ID,
+      ]);
+      expect(result.has(TEST_COLLECTION_ID)).toBe(true);
     });
   });
 });

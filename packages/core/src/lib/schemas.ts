@@ -519,6 +519,12 @@ export const CreateNavItemSchema = z.discriminatedUnion("type", [
     systemKey: SystemNavKeySchema,
     placement: z.enum(["header", "more"]).optional(),
   }),
+  z.object({
+    type: z.literal("collection"),
+    collectionId: z.string().min(1),
+    label: sanitizeText(100).pipe(z.string().min(1)).optional(),
+    placement: z.enum(["header", "more"]).optional(),
+  }),
 ]);
 
 /**

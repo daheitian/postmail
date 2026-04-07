@@ -48,6 +48,15 @@ const labels: NavManagerLabels = {
   moreEmptyHint: "Move links here to hide them under More.",
   placementSaved: "Navigation placement updated.",
   cancel: "Cancel",
+  collection: "collection",
+  addCollection: "Add Collection",
+  addCollectionDescription: "Pin a collection to your navigation bar",
+  selectCollection: "Choose a collection…",
+  allCollectionsAdded: "All collections are already in your navigation.",
+  noCollections:
+    "No collections yet. Create one first, then add it to your navigation.",
+  confirmDeleteCollection:
+    "Remove this collection from navigation? The collection itself won't be deleted.",
 };
 
 const items: NavManagerItem[] = [

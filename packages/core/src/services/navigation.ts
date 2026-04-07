@@ -5,7 +5,7 @@
  * with fractional indexing for efficient reordering.
  */
 
-import { and, eq, asc, sql } from "drizzle-orm";
+import { and, eq, asc, sql, inArray } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
 import type { Database } from "../db/index.js";
 import {
@@ -15,6 +15,7 @@ import {
 import { createEntityId } from "../lib/ids.js";
 import { ValidationError } from "../lib/errors.js";
 import { now } from "../lib/time.js";
+import { COLLECTION_FRESHNESS_WINDOW_SECONDS } from "../types.js";
 import type {
   NavItem,
   NavItemType,
@@ -44,6 +45,7 @@ export interface NavItemService {
     afterId: string | null,
     beforeId: string | null,
   ): Promise<NavItem | null>;
+  getCollectionFreshness(collectionIds: string[]): Promise<Set<string>>;
 }
 
 export function createNavItemService(
@@ -51,7 +53,7 @@ export function createNavItemService(
   siteId: string,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): NavItemService {
-  const { navItems } = databaseSchema;
+  const { navItems, postCollections, posts } = databaseSchema;
 
   const defaultSystemOrder = [
     "latest",
@@ -68,6 +70,7 @@ export function createNavItemService(
       siteId: row.siteId,
       type: row.type as NavItemType,
       systemKey: (row.systemKey as SystemNavKey | null) ?? undefined,
+      collectionId: row.collectionId ?? undefined,
       label: row.label,
       url: row.url,
       placement: (row.placement ?? "header") as NavItemPlacement,
@@ -87,6 +90,7 @@ export function createNavItemService(
       return {
         type: data.type,
         systemKey: data.systemKey,
+        collectionId: null,
         label: config.defaultLabel,
         url: config.url,
         placement: data.placement ?? config.defaultPlacement,
@@ -94,9 +98,22 @@ export function createNavItemService(
       };
     }
 
+    if (data.type === "collection") {
+      return {
+        type: data.type,
+        systemKey: null,
+        collectionId: data.collectionId,
+        label: data.label,
+        url: data.url,
+        placement: data.placement ?? "header",
+        position: data.position,
+      };
+    }
+
     return {
       type: data.type,
       systemKey: null,
+      collectionId: null,
       label: data.label,
       url: data.url,
       placement: data.placement ?? "header",
@@ -198,6 +215,23 @@ export function createNavItemService(
         }
       }
 
+      if (normalized.collectionId) {
+        const existingCollectionItem = await db
+          .select({ id: navItems.id })
+          .from(navItems)
+          .where(
+            and(
+              eq(navItems.siteId, siteId),
+              eq(navItems.collectionId, normalized.collectionId),
+            ),
+          )
+          .limit(1);
+
+        if (existingCollectionItem[0]) {
+          throw new ValidationError("Collection already added to navigation");
+        }
+      }
+
       if (normalized.position !== undefined) {
         const result = await db
           .insert(navItems)
@@ -206,6 +240,7 @@ export function createNavItemService(
             siteId,
             type: normalized.type,
             systemKey: normalized.systemKey,
+            collectionId: normalized.collectionId,
             label: normalized.label,
             url: normalized.url,
             placement: normalized.placement,
@@ -228,6 +263,7 @@ export function createNavItemService(
               siteId,
               type: normalized.type,
               systemKey: normalized.systemKey,
+              collectionId: normalized.collectionId,
               label: normalized.label,
               url: normalized.url,
               placement: normalized.placement,
@@ -300,10 +336,12 @@ export function createNavItemService(
         .limit(1);
       if (!existing[0]) return null;
 
-      if (existing[0].type === "system") {
+      if (existing[0].type === "system" || existing[0].type === "collection") {
         if (data.url !== undefined) {
           throw new ValidationError(
-            "Built-in navigation URLs are managed automatically",
+            existing[0].type === "system"
+              ? "Built-in navigation URLs are managed automatically"
+              : "Collection navigation URLs are managed automatically",
           );
         }
       }
@@ -365,6 +403,39 @@ export function createNavItemService(
       }
 
       throw new Error("Failed to assign a unique nav item position");
+    },
+
+    async getCollectionFreshness(collectionIds) {
+      if (collectionIds.length === 0) return new Set<string>();
+
+      const threshold = now() - COLLECTION_FRESHNESS_WINDOW_SECONDS;
+
+      // Find collections with recent activity:
+      // 1. A post was added to the collection within the freshness window
+      // 2. A thread reply was published where the thread root is in the collection
+      const rows = await db
+        .selectDistinct({ collectionId: postCollections.collectionId })
+        .from(postCollections)
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            inArray(postCollections.collectionId, collectionIds),
+            sql`(
+              ${postCollections.createdAt} > ${threshold}
+              OR EXISTS (
+                SELECT 1 FROM ${posts} reply
+                WHERE reply.site_id = ${postCollections.siteId}
+                  AND reply.thread_id = ${postCollections.postId}
+                  AND reply.reply_to_id IS NOT NULL
+                  AND reply.deleted_at IS NULL
+                  AND reply.status = 'published'
+                  AND reply.created_at > ${threshold}
+              )
+            )`,
+          ),
+        );
+
+      return new Set(rows.map((r) => r.collectionId));
     },
   };
 }

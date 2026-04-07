@@ -103,6 +103,9 @@ function HeaderLink({
         : {})}
     >
       {label}
+      {link.isFresh && (
+        <span class="site-header-link-fresh" aria-hidden="true" />
+      )}
       {link.isExternal && <ExternalLinkIcon />}
     </a>
   );
@@ -271,6 +274,12 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                             : {})}
                         >
                           {link.displayLabel}
+                          {link.isFresh && (
+                            <span
+                              class="site-header-link-fresh"
+                              aria-hidden="true"
+                            />
+                          )}
                           {link.isExternal && <ExternalLinkIcon />}
                         </a>
                       ))}
@@ -290,6 +299,12 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                             : {})}
                         >
                           {link.displayLabel}
+                          {link.isFresh && (
+                            <span
+                              class="site-header-link-fresh"
+                              aria-hidden="true"
+                            />
+                          )}
                           {link.isExternal && <ExternalLinkIcon />}
                         </a>
                       ))}
@@ -418,6 +433,9 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                 : {})}
             >
               {link.displayLabel}
+              {link.isFresh && (
+                <span class="site-header-link-fresh" aria-hidden="true" />
+              )}
               {link.isExternal && <ExternalLinkIcon />}
             </a>
           ))}
@@ -435,6 +453,9 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                     : {})}
                 >
                   {link.displayLabel}
+                  {link.isFresh && (
+                    <span class="site-header-link-fresh" aria-hidden="true" />
+                  )}
                   {link.isExternal && <ExternalLinkIcon />}
                 </a>
               ))}

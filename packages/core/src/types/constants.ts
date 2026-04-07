@@ -29,7 +29,7 @@ export const COLLECTION_SORT_ORDERS = [
 ] as const;
 export type CollectionSortOrder = (typeof COLLECTION_SORT_ORDERS)[number];
 
-export const NAV_ITEM_TYPES = ["link", "system"] as const;
+export const NAV_ITEM_TYPES = ["link", "system", "collection"] as const;
 export type NavItemType = (typeof NAV_ITEM_TYPES)[number];
 
 export const NAV_ITEM_PLACEMENTS = ["header", "more"] as const;
@@ -109,6 +109,9 @@ export type StorageDriver = (typeof STORAGE_DRIVERS)[number];
 
 export const PATH_KINDS = ["slug", "alias", "redirect", "archive"] as const;
 export type PathKind = (typeof PATH_KINDS)[number];
+
+/** How long a collection nav item stays "fresh" after new content is added */
+export const COLLECTION_FRESHNESS_WINDOW_SECONDS = 48 * 60 * 60;
 
 export const SITE_STATUSES = ["active", "suspended"] as const;
 export type SiteStatus = (typeof SITE_STATUSES)[number];
