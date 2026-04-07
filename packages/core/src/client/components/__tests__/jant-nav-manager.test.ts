@@ -51,7 +51,6 @@ const labels: NavManagerLabels = {
   collection: "collection",
   addCollection: "Add Collection",
   addCollectionDescription: "Pin a collection to your navigation bar",
-  selectCollection: "Choose a collection…",
   allCollectionsAdded: "All collections are already in your navigation.",
   noCollections:
     "No collections yet. Create one first, then add it to your navigation.",

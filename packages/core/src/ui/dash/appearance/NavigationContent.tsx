@@ -4,9 +4,14 @@
 
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "../../../i18n/context.js";
-import type { Collection, NavItem, SystemNavKey } from "../../../types.js";
+import type {
+  CollectionsDirectoryData,
+  NavItem,
+  SystemNavKey,
+} from "../../../types.js";
 import { SYSTEM_NAV_KEYS } from "../../../types.js";
 import type {
+  NavManagerCollection,
   NavManagerLabels,
   SystemNavConfig,
 } from "../../../client/components/nav-manager-types.js";
@@ -23,13 +28,13 @@ import {
 
 export function NavigationContent({
   navItems,
-  collections,
+  directoryData,
   mainRssFeed,
   siteName,
   sitePathPrefix = "",
 }: {
   navItems: NavItem[];
-  collections: Collection[];
+  directoryData: CollectionsDirectoryData;
   mainRssFeed: string;
   siteName: string;
   sitePathPrefix?: string;
@@ -79,12 +84,35 @@ export function NavigationContent({
     };
   });
 
-  // Serialize collections for the Lit component dropdown
-  const collectionsData = collections.map((c) => ({
-    id: c.id,
-    title: c.title,
-    slug: c.slug,
-  }));
+  // Serialize collections in directory order with group labels from dividers
+  const collectionsData: NavManagerCollection[] = (() => {
+    const { items } = directoryData;
+    const result: NavManagerCollection[] = [];
+    let currentGroup: string | null = null;
+
+    for (const item of items) {
+      if (item.type === "divider") {
+        currentGroup = item.label ?? null;
+      } else if (item.type === "collection" && item.collection) {
+        result.push({
+          id: item.collection.id,
+          title: item.collection.title,
+          slug: item.collection.slug,
+          group: currentGroup,
+        });
+      }
+    }
+
+    // Append collections not in directory items
+    const includedIds = new Set(result.map((c) => c.id));
+    for (const c of directoryData.collections) {
+      if (!includedIds.has(c.id)) {
+        result.push({ id: c.id, title: c.title, slug: c.slug, group: null });
+      }
+    }
+
+    return result;
+  })();
 
   // Build system nav config array for the Lit component
   const systemNavData: SystemNavConfig[] = (
@@ -290,12 +318,6 @@ export function NavigationContent({
       msg({
         message: "Pin a collection to your navigation bar",
         comment: "@context: Description in collection picker section",
-      }),
-    ),
-    selectCollection: i18n._(
-      msg({
-        message: "Choose a collection…",
-        comment: "@context: Placeholder for collection picker dropdown",
       }),
     ),
     allCollectionsAdded: i18n._(

@@ -533,11 +533,6 @@ msgstr "Changing this updates what subscribers get from /feed."
 msgid "Checking link..."
 msgstr "Checking link..."
 
-#. @context: Placeholder for collection picker dropdown
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Choose a collection…"
-msgstr "Choose a collection…"
-
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."

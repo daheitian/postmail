@@ -28,6 +28,7 @@ import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
 import type {
+  NavManagerCollection,
   NavManagerItem,
   NavManagerLabels,
   NavManagerUpdateDetail,
@@ -53,14 +54,14 @@ export class JantNavManager extends LitElement {
     _newLinkUrl: { state: true },
     _addingLink: { state: true },
     _showPreviewMore: { state: true },
-    _selectedCollectionId: { state: true },
-    _addingCollection: { state: true },
+    _addingCollectionId: { state: true },
+    _showCollectionPicker: { state: true },
   };
 
   declare items: NavManagerItem[];
   declare labels: NavManagerLabels;
   declare systemNavItems: SystemNavConfig[];
-  declare collections: { id: string; title: string; slug: string }[];
+  declare collections: NavManagerCollection[];
   declare siteName: string;
 
   declare _items: NavManagerItem[];
@@ -74,8 +75,9 @@ export class JantNavManager extends LitElement {
   declare _newLinkUrl: string;
   declare _addingLink: boolean;
   declare _showPreviewMore: boolean;
-  declare _selectedCollectionId: string;
-  declare _addingCollection: boolean;
+  /** ID of the collection currently being added (for loading state) */
+  declare _addingCollectionId: string | null;
+  declare _showCollectionPicker: boolean;
 
   #sortableHeader: { destroy(): void } | null = null;
   #sortableMore: { destroy(): void } | null = null;
@@ -84,6 +86,10 @@ export class JantNavManager extends LitElement {
   #closeLinkForm = () => {
     this._showLinkForm = false;
     document.removeEventListener("click", this.#closeLinkForm);
+  };
+  #closeCollectionPicker = () => {
+    this._showCollectionPicker = false;
+    document.removeEventListener("click", this.#closeCollectionPicker);
   };
   #handlePreviewMoreDocumentClick = (event: Event) => {
     if (!(event.target instanceof Node)) return;
@@ -126,8 +132,8 @@ export class JantNavManager extends LitElement {
     this._newLinkUrl = "";
     this._addingLink = false;
     this._showPreviewMore = false;
-    this._selectedCollectionId = "";
-    this._addingCollection = false;
+    this._addingCollectionId = null;
+    this._showCollectionPicker = false;
   }
 
   protected update(changedProperties: PropertyValueMap<JantNavManager>): void {
@@ -152,6 +158,7 @@ export class JantNavManager extends LitElement {
     this.#sortableMore?.destroy();
     this.#sortableMore = null;
     document.removeEventListener("click", this.#closeLinkForm);
+    document.removeEventListener("click", this.#closeCollectionPicker);
     this.#closePreviewMore();
   }
 
@@ -407,11 +414,10 @@ export class JantNavManager extends LitElement {
   // Add collection handler
   // ===========================================================================
 
-  async #handleAddCollection() {
-    const collectionId = this._selectedCollectionId;
-    if (!collectionId) return;
+  async #handleAddCollection(collectionId: string) {
+    if (!collectionId || this._addingCollectionId) return;
 
-    this._addingCollection = true;
+    this._addingCollectionId = collectionId;
     try {
       const res = await fetch("/api/nav-items", {
         method: "POST",
@@ -430,11 +436,11 @@ export class JantNavManager extends LitElement {
       const created: NavManagerItem = await res.json();
       this.#destroySortables();
       this._items = [...this._items, created];
-      this._selectedCollectionId = "";
+      this.#closeCollectionPicker();
     } catch {
       showToast(this.labels.saveFailed, "error");
     } finally {
-      this._addingCollection = false;
+      this._addingCollectionId = null;
     }
   }
 
@@ -936,43 +942,136 @@ export class JantNavManager extends LitElement {
       (c) => !addedCollectionIds.has(c.id),
     );
 
+    if (available.length === 0) {
+      return html`
+        <section class="mt-8">
+          <h2 class="text-lg font-semibold mb-1">
+            ${this.labels.addCollection}
+          </h2>
+          <p class="text-sm text-muted-foreground">
+            ${this.labels.allCollectionsAdded}
+          </p>
+        </section>
+      `;
+    }
+
+    // Group available collections by their directory group label
+    const groups: { label: string | null; items: typeof available }[] = [];
+    let currentGroup: { label: string | null; items: typeof available } | null =
+      null;
+
+    for (const c of available) {
+      const groupLabel = c.group ?? null;
+      if (!currentGroup || currentGroup.label !== groupLabel) {
+        currentGroup = { label: groupLabel, items: [] };
+        groups.push(currentGroup);
+      }
+      currentGroup.items.push(c);
+    }
+
     return html`
       <section class="mt-8">
         <h2 class="text-lg font-semibold mb-1">${this.labels.addCollection}</h2>
         <p class="text-sm text-muted-foreground mb-3">
           ${this.labels.addCollectionDescription}
         </p>
-        ${available.length === 0
-          ? html`<p class="text-sm text-muted-foreground">
-              ${this.labels.allCollectionsAdded}
-            </p>`
-          : html`
-              <div class="flex items-center gap-2">
-                <select
-                  class="input flex-1"
-                  .value=${this._selectedCollectionId}
-                  @change=${(e: Event) => {
-                    this._selectedCollectionId = (
-                      e.target as HTMLSelectElement
-                    ).value;
-                  }}
+        <div class="relative inline-block">
+          <button
+            type="button"
+            aria-expanded=${this._showCollectionPicker}
+            aria-haspopup="menu"
+            class="btn-outline"
+            @click=${(e: Event) => {
+              e.stopPropagation();
+              this._showCollectionPicker = !this._showCollectionPicker;
+              if (this._showCollectionPicker) {
+                setTimeout(() => {
+                  document.addEventListener(
+                    "click",
+                    this.#closeCollectionPicker,
+                  );
+                });
+              } else {
+                document.removeEventListener(
+                  "click",
+                  this.#closeCollectionPicker,
+                );
+              }
+            }}
+          >
+            ${this.labels.addCollection}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="ml-1.5 -mr-0.5"
+              aria-hidden="true"
+              style="transition: transform 0.15s; ${this._showCollectionPicker
+                ? "transform: rotate(180deg);"
+                : ""}"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          ${this._showCollectionPicker
+            ? html`
+                <div
+                  class="collection-picker"
+                  role="menu"
+                  @click=${(e: Event) => e.stopPropagation()}
                 >
-                  <option value="">${this.labels.selectCollection}</option>
-                  ${available.map(
-                    (c) => html`<option value=${c.id}>${c.title}</option>`,
+                  ${groups.map(
+                    (group) => html`
+                      ${group.label
+                        ? html`<div class="collection-picker-group">
+                            ${group.label}
+                          </div>`
+                        : nothing}
+                      ${group.items.map((c) => {
+                        const adding = this._addingCollectionId === c.id;
+                        return html`
+                          <button
+                            type="button"
+                            role="menuitem"
+                            class="collection-picker-item"
+                            ?disabled=${adding ||
+                            this._addingCollectionId !== null}
+                            @click=${() => this.#handleAddCollection(c.id)}
+                          >
+                            <span class="collection-picker-title">
+                              ${c.title}
+                            </span>
+                            ${adding
+                              ? html`<svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  class="animate-spin shrink-0 text-muted-foreground"
+                                >
+                                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                </svg>`
+                              : nothing}
+                          </button>
+                        `;
+                      })}
+                    `,
                   )}
-                </select>
-                <button
-                  type="button"
-                  class="btn-sm"
-                  ?disabled=${!this._selectedCollectionId ||
-                  this._addingCollection}
-                  @click=${() => this.#handleAddCollection()}
-                >
-                  ${this.labels.addCollection}
-                </button>
-              </div>
-            `}
+                </div>
+              `
+            : nothing}
+        </div>
       </section>
     `;
   }

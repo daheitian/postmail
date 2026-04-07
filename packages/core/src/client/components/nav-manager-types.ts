@@ -21,6 +21,15 @@ export interface SystemNavConfig {
   description: string;
 }
 
+/** A collection entry in the picker, with optional group context */
+export interface NavManagerCollection {
+  id: string;
+  title: string;
+  slug: string;
+  /** Group label from directory divider, if this collection belongs to one */
+  group?: string | null;
+}
+
 export interface NavManagerLabels {
   preview: string;
   navigationItems: string;
@@ -48,7 +57,6 @@ export interface NavManagerLabels {
   collection: string;
   addCollection: string;
   addCollectionDescription: string;
-  selectCollection: string;
   allCollectionsAdded: string;
   noCollections: string;
   confirmDeleteCollection: string;

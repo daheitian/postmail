@@ -1148,6 +1148,47 @@ svg[stroke-width].icon-fine {
     @apply flex flex-col gap-3 px-4 pb-3 pt-3 border-t mx-1 mb-1;
     border-color: var(--color-border);
   }
+
+  /* Collection picker dropdown menu */
+  .collection-picker {
+    @apply absolute left-0 z-10 mt-1.5 w-64 overflow-y-auto rounded-lg border py-1.5;
+    max-height: 20rem;
+    background-color: var(--color-popover);
+    box-shadow: var(--shadow-md);
+  }
+
+  .collection-picker-group {
+    @apply px-3 pb-1 pt-3 text-xs font-medium;
+    color: var(--color-muted-foreground);
+
+    &:first-child {
+      padding-top: 0.5rem;
+    }
+  }
+
+  .collection-picker-item {
+    @apply flex items-center gap-2 rounded-md text-left border-0 bg-transparent cursor-pointer;
+    font-size: 0.9375rem;
+    line-height: 1.35;
+    padding: 0.5rem 0.625rem;
+    margin: 0 0.25rem;
+    width: calc(100% - 0.5rem);
+    color: var(--color-foreground);
+    transition: background-color 0.1s;
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-accent);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .collection-picker-title {
+    @apply truncate flex-1;
+  }
 }
 
 /* Skeleton screen sizing — used in SSR fallbacks while Lit hydrates */
