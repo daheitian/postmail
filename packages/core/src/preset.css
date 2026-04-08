@@ -227,20 +227,20 @@ html:lang(ko) {
   }
 
   :where(h1) {
-    font-size: var(--type-display);
+    font-size: var(--type-content-display);
     margin-top: 4rem;
     margin-bottom: 1.5rem;
   }
 
   :where(h2) {
-    font-size: var(--type-title);
+    font-size: var(--type-content-title);
     font-style: italic;
     margin-top: 2.1rem;
     margin-bottom: 1.4rem;
   }
 
   :where(h3) {
-    font-size: var(--type-subtitle);
+    font-size: var(--type-content-subtitle);
     font-style: italic;
     margin-top: 2rem;
     margin-bottom: 1.4rem;

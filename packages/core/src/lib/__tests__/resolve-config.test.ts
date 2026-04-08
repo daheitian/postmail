@@ -287,9 +287,38 @@ describe("resolveConfig", () => {
     const config = resolveConfig(makeEnv({ DEFAULT_THEME: "dark" }), {});
     expect(config.defaultThemeId).toBe("dark");
 
-    // Falls back to default
+    // Falls back to hardcoded default
     const config2 = resolveConfig(makeEnv(), {});
     expect(config2.defaultThemeId).toBe("tufte");
+  });
+
+  it("themeId falls through DB → ENV → hardcoded default", () => {
+    // DB wins
+    const c1 = resolveConfig(makeEnv({ DEFAULT_THEME: "linen" }), {
+      THEME: "frost",
+    });
+    expect(c1.themeId).toBe("frost");
+
+    // ENV fallback
+    const c2 = resolveConfig(makeEnv({ DEFAULT_THEME: "linen" }), {});
+    expect(c2.themeId).toBe("linen");
+
+    // Hardcoded default
+    const c3 = resolveConfig(makeEnv(), {});
+    expect(c3.themeId).toBe("tufte");
+  });
+
+  it("fontThemeId falls through DB → ENV → hardcoded default", () => {
+    const c1 = resolveConfig(makeEnv({ DEFAULT_FONT_THEME: "classic" }), {
+      FONT_THEME: "geometric",
+    });
+    expect(c1.fontThemeId).toBe("geometric");
+
+    const c2 = resolveConfig(makeEnv({ DEFAULT_FONT_THEME: "classic" }), {});
+    expect(c2.fontThemeId).toBe("classic");
+
+    const c3 = resolveConfig(makeEnv(), {});
+    expect(c3.fontThemeId).toBe("tufte");
   });
 
   it("uses unprefixed env names across the config surface", () => {

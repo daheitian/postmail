@@ -26,7 +26,7 @@ function createContext(
       noindex: false,
       customCSS: "",
       themeMode: overrides?.themeMode ?? "auto",
-      themeId: overrides?.themeId ?? "",
+      themeId: overrides?.themeId ?? overrides?.defaultThemeId ?? "linen",
       defaultThemeId: overrides?.defaultThemeId ?? "linen",
       assetBasePath: overrides?.assetBasePath ?? "/_assets",
     },

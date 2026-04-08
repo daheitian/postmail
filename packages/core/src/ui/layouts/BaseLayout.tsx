@@ -86,6 +86,13 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     ? "/"
     : appConfig?.assetBasePath || getPublicAssetBasePath(sitePathPrefix);
   const currentUrl = c ? c.get("publicRequestUrl") : undefined;
+  const rawPath = c?.req?.path ?? "/";
+  const manifestStartPath = sitePathPrefix
+    ? rawPath.replace(
+        new RegExp(`^${sitePathPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`),
+        "",
+      ) || "/"
+    : rawPath;
   const siteName = appConfig?.siteName;
   const i18n = c ? c.get("i18n") : undefined;
   const assetPath = (path: string) =>
@@ -100,10 +107,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   // Read custom CSS from appConfig
   const customCSS = appConfig?.customCSS || undefined;
   const themeMode = appConfig?.themeMode ?? "auto";
-  const activeTheme = resolveBuiltinTheme(
-    appConfig?.themeId,
-    appConfig?.defaultThemeId,
-  );
+  const activeTheme = resolveBuiltinTheme(appConfig?.themeId);
   const browserThemeColors = getThemeBrowserColors(activeTheme);
   const resolvedClientBundle =
     clientBundle ?? (isAuthenticated ? "full" : "public");
@@ -252,6 +256,15 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           )}
           <link rel="icon" href={resolvedFaviconHref} sizes="16x16 32x32" />
           <link rel="apple-touch-icon" href={resolvedAppleTouchHref} />
+          <link
+            rel="manifest"
+            href={toPublicPath(
+              manifestStartPath && manifestStartPath !== "/"
+                ? `/manifest.webmanifest?start=${encodeURIComponent(manifestStartPath)}&name=${encodeURIComponent(title)}`
+                : "/manifest.webmanifest",
+              sitePathPrefix,
+            )}
+          />
           {mainFeedHref && (
             <link
               rel="alternate"

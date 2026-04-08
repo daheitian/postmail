@@ -101,24 +101,18 @@ export function getAvailableThemes(): ColorTheme[] {
 }
 
 /**
- * Resolve the active built-in color theme from configured IDs.
+ * Resolve the active built-in color theme from a configured ID.
  *
- * @param themeId - Explicit theme ID
- * @param fallbackThemeId - Fallback/default theme ID
- * @returns Matching built-in theme, if configured
+ * @param themeId - Theme ID (already resolved via DB → ENV → default chain)
+ * @returns Matching built-in theme, if found
  *
  * @example
  * ```typescript
- * const activeTheme = resolveBuiltinTheme("linen", "dune");
+ * const activeTheme = resolveBuiltinTheme("linen");
  * ```
  */
-export function resolveBuiltinTheme(
-  themeId?: string,
-  fallbackThemeId?: string,
-): ColorTheme | undefined {
-  return BUILTIN_COLOR_THEMES.find(
-    (theme) => theme.id === (themeId || fallbackThemeId),
-  );
+export function resolveBuiltinTheme(themeId?: string): ColorTheme | undefined {
+  return BUILTIN_COLOR_THEMES.find((theme) => theme.id === themeId);
 }
 
 /**

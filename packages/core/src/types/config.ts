@@ -57,6 +57,11 @@ export const CONFIG_FIELDS = {
     envOnly: true,
     envKeys: ["DEFAULT_THEME"],
   },
+  DEFAULT_FONT_THEME: {
+    defaultValue: "tufte",
+    envOnly: true,
+    envKeys: ["DEFAULT_FONT_THEME"],
+  },
   SITE_ORIGIN: {
     defaultValue: "",
     envOnly: true,
@@ -334,6 +339,7 @@ export interface AppConfig {
   themeId: string;
   defaultThemeId: string;
   fontThemeId: string;
+  defaultFontThemeId: string;
   themeMode: ThemeMode;
   customCSS: string;
 

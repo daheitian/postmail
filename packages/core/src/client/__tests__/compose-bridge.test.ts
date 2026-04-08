@@ -22,6 +22,8 @@ type ComposeHarness = HTMLElement & {
   refreshCollections: () => Promise<boolean>;
   pageMode?: boolean;
   preparePageLeave?: () => void;
+  reset?: () => void;
+  updateComplete?: Promise<void>;
   labels?: {
     uploadFailedDraft?: string;
     publishFailedDraft?: string;
@@ -116,13 +118,14 @@ describe("compose bridge", () => {
     expect(refreshCollections).toHaveBeenCalledTimes(1);
   });
 
-  it("queues a success toast before navigating away after page-mode publish", async () => {
+  it("stays on page and resets form after page-mode publish", async () => {
     const composeEl = document.createElement(
       "jant-compose-dialog",
     ) as ComposeHarness;
     composeEl.refreshCollections = vi.fn(async () => true);
     composeEl.pageMode = true;
-    composeEl.preparePageLeave = vi.fn();
+    composeEl.reset = vi.fn();
+    composeEl.updateComplete = Promise.resolve();
     composeEl.labels = {
       published: "Published!",
       view: "View",
@@ -181,11 +184,8 @@ describe("compose bridge", () => {
 
     await flushBridgeWork();
 
-    expect(composeEl.preparePageLeave).toHaveBeenCalledTimes(1);
-    expect(assignSpy).toHaveBeenCalledWith("/published-post");
-    expect(globalThis.sessionStorage.getItem(QUEUED_TOAST_STORAGE_KEY)).toBe(
-      '{"message":"Published!","type":"success"}',
-    );
+    expect(composeEl.reset).toHaveBeenCalled();
+    expect(assignSpy).not.toHaveBeenCalled();
   });
 
   it("submits inline text attachments through the attachments API shape", async () => {

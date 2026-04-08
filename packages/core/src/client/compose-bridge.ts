@@ -864,10 +864,10 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
       if (threadStatus === "published") {
         clearRecoveredLocalDraft();
-        if (isPageMode && threadPermalink) {
-          queueSuccessToast(publishedMsg);
-          composeEl?.preparePageLeave?.();
-          globalThis.location.assign(threadPermalink);
+        if (isPageMode) {
+          await refreshComposeCollections();
+          resetPageCompose();
+          toastMsg(publishedMsg);
         } else {
           queueSuccessToast(
             publishedMsg,
@@ -989,10 +989,10 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
     if (status === "published") {
       clearRecoveredLocalDraft();
-      if (isPageMode && permalink) {
-        queueSuccessToast(publishedMsg);
-        composeEl?.preparePageLeave?.();
-        globalThis.location.assign(permalink);
+      if (isPageMode) {
+        await refreshComposeCollections();
+        resetPageCompose();
+        toastMsg(publishedMsg);
       } else if (detail.replyToId) {
         await refreshComposeCollections();
         const updated = await refreshReplyTarget(detail);

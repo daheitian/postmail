@@ -41,9 +41,9 @@ describe("Font theme save & CSS generation", () => {
     await settings.set("FONT_THEME", "geometric");
     expect(await settings.get("FONT_THEME")).toBe("geometric");
 
-    // Remove (reset to default)
-    await settings.remove("FONT_THEME");
-    expect(await settings.get("FONT_THEME")).toBeNull();
+    // Switch to classic
+    await settings.set("FONT_THEME", "classic");
+    expect(await settings.get("FONT_THEME")).toBe("classic");
   });
 
   it("generates correct CSS with typography overrides", async () => {
@@ -70,31 +70,12 @@ describe("Font theme save & CSS generation", () => {
     expect(css).not.toContain("Charter");
   });
 
-  it("generates no font override when default theme is selected", async () => {
-    // Default theme -> no FONT_THEME setting -> no font override
-    const fontThemeId = await settings.get("FONT_THEME");
-    expect(fontThemeId).toBeNull();
-
-    const fontTheme = fontThemeId
-      ? BUILTIN_FONT_THEMES.find((f) => f.id === fontThemeId)
-      : undefined;
-    expect(fontTheme).toBeUndefined();
-
-    const fontOverrides: Record<string, string> = {};
-    if (fontTheme) {
-      Object.assign(fontOverrides, getFontThemeCssVariables(fontTheme));
-    }
-
-    const css = buildThemeStyle(undefined, "auto", fontOverrides);
-    expect(css).toBe("");
-  });
-
-  it("default theme data uses serif heading and sans body", async () => {
+  it("classic theme data uses serif heading and sans body", async () => {
     const fontTheme = BUILTIN_FONT_THEMES.find(
-      (f) => f.id === "default",
+      (f) => f.id === "classic",
     ) as (typeof BUILTIN_FONT_THEMES)[number];
 
-    expect(fontTheme.id).toBe("default");
+    expect(fontTheme.id).toBe("classic");
     expect(fontTheme.headingFontFamily).toContain("Charter");
     expect(fontTheme.bodyFontFamily).toContain("ui-sans-serif");
 

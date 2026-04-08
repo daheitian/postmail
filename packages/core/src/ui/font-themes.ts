@@ -158,7 +158,7 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
   },
 
   {
-    id: "default",
+    id: "classic",
     name: {
       id: "Classic",
       message: "Classic",

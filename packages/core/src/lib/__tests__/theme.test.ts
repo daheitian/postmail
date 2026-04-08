@@ -101,10 +101,10 @@ describe("buildThemeStyle", () => {
     expect(css).toContain(':root:root:not([data-theme-mode="light"])');
   });
 
-  it("resolves the active built-in theme from primary and fallback IDs", () => {
-    expect(resolveBuiltinTheme("linen", "dune")?.id).toBe("linen");
-    expect(resolveBuiltinTheme("", "dune")?.id).toBe("dune");
-    expect(resolveBuiltinTheme("missing", "dune")).toBeUndefined();
+  it("resolves the active built-in theme from ID", () => {
+    expect(resolveBuiltinTheme("linen")?.id).toBe("linen");
+    expect(resolveBuiltinTheme("")?.id).toBeUndefined();
+    expect(resolveBuiltinTheme("missing")).toBeUndefined();
   });
 
   it("returns theme-aware browser chrome colors", () => {

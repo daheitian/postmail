@@ -55,6 +55,7 @@ import { composeRoutes } from "./routes/compose.js";
 // Routes - Feed
 import { rssRoutes } from "./routes/feed/rss.js";
 import { sitemapRoutes } from "./routes/feed/sitemap.js";
+import { manifestRoutes } from "./routes/feed/manifest.js";
 
 // Middleware
 import { requireAuth } from "./middleware/auth.js";
@@ -500,6 +501,7 @@ export function createApp(): App {
   // Feed routes
   app.route("/feed", rssRoutes);
   app.route("/", sitemapRoutes);
+  app.route("/", manifestRoutes);
 
   // Frontend routes
   app.route("/search", searchRoutes);

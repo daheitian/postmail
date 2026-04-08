@@ -198,11 +198,20 @@ export function resolveConfig(
     demoMode,
 
     // Theme (DB internal)
-    themeId: allSettings["THEME"] ?? "",
+    themeId:
+      allSettings["THEME"] ||
+      getEnvString(env, "DEFAULT_THEME") ||
+      CONFIG_FIELDS.DEFAULT_THEME.defaultValue,
     defaultThemeId:
       getEnvString(env, "DEFAULT_THEME") ||
       CONFIG_FIELDS.DEFAULT_THEME.defaultValue,
-    fontThemeId: allSettings["FONT_THEME"] ?? "tufte",
+    fontThemeId:
+      allSettings["FONT_THEME"] ||
+      getEnvString(env, "DEFAULT_FONT_THEME") ||
+      CONFIG_FIELDS.DEFAULT_FONT_THEME.defaultValue,
+    defaultFontThemeId:
+      getEnvString(env, "DEFAULT_FONT_THEME") ||
+      CONFIG_FIELDS.DEFAULT_FONT_THEME.defaultValue,
     themeMode:
       allSettings["THEME_MODE"] === "light" ||
       allSettings["THEME_MODE"] === "dark"

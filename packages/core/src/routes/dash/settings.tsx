@@ -609,9 +609,7 @@ settingsRoutes.get("/navigation", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/color-theme", async (c) => {
-  const defaultThemeId = c.var.appConfig.fallbacks.defaultTheme;
-  const currentThemeId =
-    c.var.allSettings[SETTINGS_KEYS.THEME] ?? defaultThemeId;
+  const currentThemeId = c.var.appConfig.themeId;
   const currentThemeMode = c.var.appConfig.themeMode;
   const themes = getAvailableThemes();
   const saved = c.req.query("saved") !== undefined;
@@ -658,12 +656,7 @@ settingsRoutes.post("/color-theme", async (c) => {
     );
   }
 
-  const defaultThemeId = c.var.appConfig.fallbacks.defaultTheme;
-  if (validTheme.id === defaultThemeId) {
-    await settings.remove(SETTINGS_KEYS.THEME);
-  } else {
-    await settings.set(SETTINGS_KEYS.THEME, validTheme.id);
-  }
+  await settings.set(SETTINGS_KEYS.THEME, validTheme.id);
 
   const themeMode: ThemeMode = THEME_MODES.includes(body.themeMode as ThemeMode)
     ? (body.themeMode as ThemeMode)
@@ -727,11 +720,7 @@ settingsRoutes.post("/font-theme", async (c) => {
     );
   }
 
-  if (validFont.id === "default") {
-    await settings.remove("FONT_THEME");
-  } else {
-    await settings.set("FONT_THEME", validFont.id);
-  }
+  await settings.set("FONT_THEME", validFont.id);
 
   return dsRedirect(publicPath(c, "/settings/font-theme?saved"));
 });

@@ -33,7 +33,7 @@ describe("BUILTIN_FONT_THEMES", () => {
 
   it("includes expected theme IDs", () => {
     const ids = BUILTIN_FONT_THEMES.map((t) => t.id);
-    expect(ids).toContain("default");
+    expect(ids).toContain("classic");
     expect(ids).toContain("system-sans");
     expect(ids).toContain("humanist-sans");
     expect(ids).toContain("modern-editorial");
@@ -42,9 +42,9 @@ describe("BUILTIN_FONT_THEMES", () => {
     expect(ids).toContain("geometric");
   });
 
-  it("default theme uses serif heading and sans body", () => {
+  it("classic theme uses serif heading and sans body", () => {
     const defaultTheme = BUILTIN_FONT_THEMES.find(
-      (t) => t.id === "default",
+      (t) => t.id === "classic",
     ) as (typeof BUILTIN_FONT_THEMES)[number];
     expect(defaultTheme.name.message).toBe("Classic");
     expect(defaultTheme.headingFontFamily).not.toBe(
@@ -55,7 +55,7 @@ describe("BUILTIN_FONT_THEMES", () => {
   });
 
   it("pairing themes have distinct heading and body fonts", () => {
-    const pairingIds = ["default", "modern-editorial"];
+    const pairingIds = ["classic", "modern-editorial"];
     for (const id of pairingIds) {
       const theme = BUILTIN_FONT_THEMES.find(
         (t) => t.id === id,

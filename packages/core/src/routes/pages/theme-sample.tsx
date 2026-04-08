@@ -37,8 +37,7 @@ export const themeSampleRoutes = new Hono<Env>();
 themeSampleRoutes.get("/theme-sample", async (c) => {
   const navData = await getNavigationData(c);
   const i18n = getI18n(c);
-  const currentThemeId =
-    c.var.appConfig.themeId || c.var.appConfig.defaultThemeId;
+  const currentThemeId = c.var.appConfig.themeId;
   const queryThemeId = c.req.query("theme");
   const fallbackTheme = BUILTIN_COLOR_THEMES[0];
   if (!fallbackTheme) {

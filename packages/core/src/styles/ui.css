@@ -1339,7 +1339,7 @@
     align-items: center;
     gap: 0.45rem;
     font-family: var(--font-heading);
-    font-size: var(--type-body);
+    font-size: var(--type-content-body);
     font-weight: var(--type-heading-weight);
     line-height: var(--collection-directory-title-line-height);
     letter-spacing: -0.02em;
@@ -1614,7 +1614,7 @@
   }
 
   .collection-page-title {
-    font-size: var(--type-title);
+    font-size: var(--type-content-title);
     font-weight: var(--type-heading-weight);
     line-height: var(--type-heading-leading);
     letter-spacing: var(--type-heading-tracking);
@@ -2238,7 +2238,7 @@
 
   [data-page="post"] .post-detail-title {
     color: var(--site-reading-title);
-    font-size: var(--type-display);
+    font-size: var(--type-content-display);
     font-weight: var(--type-heading-weight);
     line-height: var(--type-heading-leading);
     letter-spacing: var(--type-heading-tracking);
@@ -2764,7 +2764,7 @@
     padding-left: 0;
     font-family: var(--font-serif);
     color: var(--site-text-primary);
-    font-size: var(--type-subtitle);
+    font-size: var(--type-content-subtitle);
     line-height: var(--type-heading-leading);
     white-space: pre-line;
     text-wrap: pretty;
@@ -2874,7 +2874,7 @@
   }
 
   .feed-quote-post .feed-quote-commentary {
-    font-size: var(--type-body);
+    font-size: var(--type-content-body);
     line-height: var(--type-body-leading);
   }
 
@@ -2979,6 +2979,7 @@
     align-items: center;
     gap: 10px;
     margin-top: 4px;
+    font-size: var(--type-ui-hint);
   }
 
   .post-footer-detail {
@@ -3045,7 +3046,6 @@
 
   .post-footer-link {
     color: var(--site-text-secondary);
-    font-size: var(--type-ui-meta);
     text-decoration: none;
     white-space: nowrap;
     flex-shrink: 0;
@@ -3054,10 +3054,6 @@
   .post-footer-link:hover {
     color: var(--site-text-primary);
     text-decoration: underline;
-  }
-
-  .post-footer-detail .post-footer-link {
-    font-size: inherit;
   }
 
   .post-footer-external-link {
@@ -3088,7 +3084,6 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: var(--type-ui-meta);
     position: relative;
     min-width: 0;
     max-width: 100%;
@@ -4097,6 +4092,7 @@
   }
 
   .compose-page {
+    margin-top: -1rem;
     margin-inline: calc(var(--site-padding) * -1);
     margin-bottom: calc(var(--space-xl) * -1);
     min-height: 100dvh;
@@ -4273,9 +4269,9 @@
 
   .compose-dialog,
   .compose-page-shell > jant-compose-dialog {
-    --compose-title-input-size: var(--type-subtitle);
+    --compose-title-input-size: var(--type-content-subtitle);
     --compose-title-input-leading: var(--type-display-leading);
-    --compose-quote-input-size: var(--type-subtitle);
+    --compose-quote-input-size: var(--type-content-subtitle);
     --compose-inline-input-size: var(--type-ui-input);
     --compose-panel-label-size: var(--type-ui-control);
     --compose-panel-hint-size: var(--type-ui-hint);
@@ -4660,15 +4656,14 @@
     position: relative;
     z-index: 1;
     flex: 1;
-    min-height: 2rem;
-    padding: 4px 14px;
+    padding: 6px 1.15rem;
     border-radius: 8px;
     border: none;
     background: transparent;
     color: var(--site-text-secondary);
     font-size: var(--type-ui-control);
     font-weight: var(--fw-medium);
-    line-height: 1.1;
+    line-height: 1.2;
     cursor: pointer;
     transition: color 0.2s ease;
     letter-spacing: 0.01em;
@@ -4676,7 +4671,8 @@
 
   @media (min-width: 700px) {
     .compose-segmented-item {
-      padding-inline: 1.2rem;
+      padding: 0.48rem 1.35rem;
+      font-size: var(--type-ui-meta);
     }
   }
 
@@ -4789,7 +4785,7 @@
     outline: none;
     background: transparent;
     color: var(--site-text-primary);
-    font-size: var(--type-body);
+    font-size: var(--type-content-body);
     font-family: var(--font-body);
     line-height: var(--type-body-leading);
     letter-spacing: var(--type-body-tracking);
@@ -8775,7 +8771,7 @@
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     padding: 0.875rem var(--space-xl) var(--space-xl);
-    font-size: var(--type-body);
+    font-size: var(--type-content-body);
     line-height: var(--type-body-leading);
     letter-spacing: var(--type-body-tracking);
     color: var(--color-foreground);
@@ -8906,7 +8902,7 @@
   .compose-tiptap-body .tiptap {
     outline: none;
     min-height: 120px;
-    font-size: var(--type-body);
+    font-size: var(--type-content-body);
     line-height: var(--type-body-leading);
     letter-spacing: var(--type-body-tracking);
     color: var(--site-text-primary);
@@ -8938,7 +8934,7 @@
   /* Tiptap prose styling */
   .compose-tiptap-body .tiptap h1 {
     font-family: var(--font-heading);
-    font-size: var(--type-body);
+    font-size: var(--type-content-body);
     font-weight: var(--type-heading-weight);
     line-height: var(--type-heading-leading);
     letter-spacing: var(--type-heading-tracking);
@@ -10180,7 +10176,7 @@
     background: none;
     color: var(--site-text-secondary);
     font-family: var(--font-heading);
-    font-size: var(--type-display);
+    font-size: var(--type-content-display);
     font-weight: var(--type-display-weight);
     line-height: var(--type-display-leading);
     letter-spacing: var(--type-display-tracking);
@@ -10209,7 +10205,7 @@
     width: 100%;
     min-width: 0;
     font-family: var(--font-heading);
-    font-size: var(--type-display);
+    font-size: var(--type-content-display);
     font-weight: var(--type-display-weight);
     color: var(--site-text-primary);
     letter-spacing: var(--type-display-tracking);
@@ -10256,7 +10252,7 @@
   .compose-fullscreen .compose-tiptap-body .tiptap {
     min-height: calc(100dvh - 14rem);
     padding-bottom: max(18vh, 8rem);
-    font-size: var(--type-body);
+    font-size: var(--type-content-body);
     line-height: var(--type-body-leading);
   }
 
@@ -10278,11 +10274,11 @@
     }
 
     .compose-fullscreen-title {
-      font-size: var(--type-subtitle);
+      font-size: var(--type-content-subtitle);
     }
 
     .compose-fullscreen-title-placeholder {
-      font-size: var(--type-subtitle);
+      font-size: var(--type-content-subtitle);
     }
 
     .compose-fullscreen-title-reply {

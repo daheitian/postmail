@@ -842,7 +842,7 @@ function buildConfigToml(
     `apple_touch_mode = "${iconAssets.appleTouchMode}"`,
     "nav_exported = true",
     "collections_directory_exported = true",
-    `theme_id = "${escapeToml(config.themeId || config.defaultThemeId)}"`,
+    `theme_id = "${escapeToml(config.themeId)}"`,
     `default_theme_id = "${escapeToml(config.defaultThemeId)}"`,
     `font_theme_id = "${escapeToml(config.fontThemeId)}"`,
     `theme_mode = "${escapeToml(config.themeMode)}"`,

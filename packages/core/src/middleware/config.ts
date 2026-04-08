@@ -45,15 +45,12 @@ export function withConfig(): MiddlewareHandler<Env> {
     c.set("appConfig", appConfig);
 
     // Resolve active color theme
-    const activeTheme = resolveBuiltinTheme(
-      appConfig.themeId,
-      appConfig.defaultThemeId,
-    );
+    const activeTheme = resolveBuiltinTheme(appConfig.themeId);
 
     // Build font theme CSS variables
-    const fontTheme = appConfig.fontThemeId
-      ? BUILTIN_FONT_THEMES.find((f) => f.id === appConfig.fontThemeId)
-      : undefined;
+    const fontTheme = BUILTIN_FONT_THEMES.find(
+      (f) => f.id === appConfig.fontThemeId,
+    );
     const fontOverrides = {
       ...getCjkSerifCssVariables(appConfig.siteLanguage),
       ...(fontTheme ? getFontThemeCssVariables(fontTheme) : {}),

@@ -591,7 +591,7 @@ export function createSiteAdminService(
         siteUrl: getManagedSiteBaseUrl(deps.env, primaryDomain) ?? undefined,
       });
       const activeTheme = BUILTIN_COLOR_THEMES.find(
-        (theme) => theme.id === (appConfig.themeId || appConfig.defaultThemeId),
+        (theme) => theme.id === appConfig.themeId,
       );
       const fontTheme = appConfig.fontThemeId
         ? BUILTIN_FONT_THEMES.find(
