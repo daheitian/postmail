@@ -676,7 +676,7 @@ settingsRoutes.post("/color-theme", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/font-theme", async (c) => {
-  const currentFontThemeId = c.var.allSettings["FONT_THEME"] ?? "default";
+  const currentFontThemeId = c.var.appConfig.fontThemeId;
   const saved = c.req.query("saved") !== undefined;
   const navData = await getNavigationData(c);
 

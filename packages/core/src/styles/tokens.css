@@ -70,11 +70,16 @@
   --type-2xs: 0.65rem;
 
   /* Content reading tokens — desktop maps to core scale,
-     mobile overrides below cap sizes for small screens */
-  --type-content-display: var(--type-display);
-  --type-content-title: var(--type-title);
-  --type-content-subtitle: var(--type-subtitle);
-  --type-content-body: var(--type-body);
+     mobile overrides below cap sizes for small screens.
+     --type-content-scale (default 1) lets font themes with small x-heights
+     (e.g. ET Book) bump all content sizes uniformly. */
+  --type-content-scale: 1;
+  --type-content-display: calc(var(--type-display) * var(--type-content-scale));
+  --type-content-title: calc(var(--type-title) * var(--type-content-scale));
+  --type-content-subtitle: calc(
+    var(--type-subtitle) * var(--type-content-scale)
+  );
+  --type-content-body: calc(var(--type-body) * var(--type-content-scale));
 
   /* Semantic aliases */
   --type-code: var(--type-base);
@@ -399,10 +404,10 @@
        Ratio ≈ 1.9 : 1.4 : 1.15 : 1 (display:title:subtitle:body)
        Latin 13px base → 31.9 / 24 / 19.5 / 16.9
        CJK   12px base → 29.4 / 22.2 / 18 / 15.6 */
-    --type-content-display: 2.45rem;
-    --type-content-title: 1.85rem;
-    --type-content-subtitle: 1.5rem;
-    --type-content-body: 1.3rem;
+    --type-content-display: calc(2.45rem * var(--type-content-scale));
+    --type-content-title: calc(1.85rem * var(--type-content-scale));
+    --type-content-subtitle: calc(1.5rem * var(--type-content-scale));
+    --type-content-body: calc(1.3rem * var(--type-content-scale));
 
     /* UI layer — pixel floors for touch targets */
     --type-ui-title: max(16px, var(--type-secondary));

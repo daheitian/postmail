@@ -149,7 +149,13 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
     },
     headingFontFamily: TUFTE_SERIF,
     bodyFontFamily: TUFTE_SERIF,
-    cssVariables: {},
+    cssVariables: {
+      /* ET Book has a notably small x-height (~0.44 vs ~0.52 for system sans).
+         Scale up content tokens so Latin text reads at the same optical size
+         as other font themes. The factor is applied inside tokens.css via
+         calc(), so it works across both desktop and mobile breakpoints. */
+      "--type-content-scale": "1.12",
+    },
     description: {
       id: "Palatino-based old-style serif matching Tufte CSS proportions",
       message: "Palatino-based old-style serif matching Tufte CSS proportions",
