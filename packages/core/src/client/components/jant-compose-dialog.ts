@@ -2269,6 +2269,18 @@ export class JantComposeDialog extends LitElement {
         return;
       }
       void this._submit("published");
+    } else if (ke.altKey && !ke.ctrlKey && !ke.metaKey && !ke.shiftKey) {
+      const formats = JantComposeDialog._FORMATS;
+      if (ke.key >= "1" && ke.key <= String(formats.length)) {
+        ke.preventDefault();
+        this._switchFormat(formats[Number(ke.key) - 1]);
+      } else if (ke.key === "[") {
+        ke.preventDefault();
+        this._cycleFormat(-1);
+      } else if (ke.key === "]") {
+        ke.preventDefault();
+        this._cycleFormat(1);
+      }
     }
   };
 
@@ -3352,10 +3364,29 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private static readonly _FORMATS: ComposeFormat[] = ["note", "link", "quote"];
+
+  private _switchFormat(target: ComposeFormat) {
+    if (this._format === target) return;
+    if (this._editPostId || this._threadItems.length > 0) return;
+    this._format = target;
+    this._showPublishPanel = false;
+    if (this._shouldAutofocusFormatInput()) {
+      globalThis.requestAnimationFrame(() => this._editor?.focusInput());
+    }
+  }
+
+  private _cycleFormat(direction: 1 | -1) {
+    const formats = JantComposeDialog._FORMATS;
+    const idx = formats.indexOf(this._format);
+    const next = (idx + direction + formats.length) % formats.length;
+    this._switchFormat(formats[next]);
+  }
+
   // ── Render helpers ────────────────────────────────────────────────
 
   private _renderHeader() {
-    const formats: ComposeFormat[] = ["note", "link", "quote"];
+    const formats = JantComposeDialog._FORMATS;
     const formatLabels: Record<ComposeFormat, string> = {
       note: this.labels.note,
       link: this.labels.link,
@@ -3401,20 +3432,7 @@ export class JantComposeDialog extends LitElement {
                             "compose-segmented-item": true,
                             "compose-segmented-item-active": this._format === f,
                           })}
-                          @click=${() => {
-                            const formatChanged = this._format !== f;
-                            this._format = f;
-                            this._showPublishPanel = false;
-                            if (
-                              !formatChanged ||
-                              !this._shouldAutofocusFormatInput()
-                            ) {
-                              return;
-                            }
-                            globalThis.requestAnimationFrame(() =>
-                              this._editor?.focusInput(),
-                            );
-                          }}
+                          @click=${() => this._switchFormat(f)}
                         >
                           ${formatLabels[f]}
                         </button>
