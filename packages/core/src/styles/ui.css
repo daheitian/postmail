@@ -25,6 +25,7 @@
   .site-page {
     min-height: 100vh;
     min-height: 100dvh;
+    overflow-x: clip;
     background-color: var(--site-page-bg);
     counter-reset: sidenote-counter;
   }
@@ -33,21 +34,19 @@
    * Tufte horizontal frame — single source of truth for left/right positioning.
    * Every page-level section gets the same asymmetric padding.
    * Inner elements must NOT add their own horizontal padding.
-   */
-  /*
-   * Tufte horizontal frame (border-box).
    *
-   * width: 100% with percentage padding gives content = 83.5% of viewport.
-   * max-width caps the box at 1680px (= 1400px content + padding).
-   * min() prevents padding from growing beyond the cap point so
-   * content stays at ~1400px on very wide viewports.
+   * 12.5% left + 4% right = 16.5% padding → content = 83.5% of box.
+   * max-width = body-max-width / 0.835 so inner content area
+   * exactly equals --layout-body-max-width on wide viewports.
+   * min() caps prevent padding from growing beyond 210px / 67px.
    */
   .site-page > header,
   .site-page > main,
   .site-page > footer,
   .site-page > .home-branding-credit {
     width: 100%;
-    max-width: calc(var(--layout-body-max-width) + 280px);
+    /* 12.5% left + 4% right = 16.5% padding → content = 83.5% */
+    max-width: calc(var(--layout-body-max-width) / 0.835);
     padding-left: min(12.5%, 210px);
     padding-right: min(4%, 67px);
     margin-left: auto;
@@ -8939,37 +8938,36 @@
   }
 
   /* Tiptap prose styling */
-  .compose-tiptap-body .tiptap h1 {
+  .compose-tiptap-body .tiptap :is(h1, h2, h3, h4) {
     font-family: var(--font-heading);
-    font-size: var(--type-content-body);
     font-weight: var(--type-heading-weight);
-    line-height: var(--type-heading-leading);
     letter-spacing: var(--type-heading-tracking);
-    margin: 0.75em 0 0.25em;
+    line-height: var(--type-heading-leading);
+  }
+
+  .compose-tiptap-body .tiptap h1 {
+    font-size: var(--type-content-display);
+    margin-top: 4rem;
+    margin-bottom: 1.5rem;
   }
 
   .compose-tiptap-body .tiptap h2 {
-    font-family: var(--font-heading);
-    font-size: var(--type-secondary);
+    font-size: var(--type-content-title);
     font-style: italic;
-    font-weight: var(--type-heading-weight);
-    line-height: calc(var(--type-heading-leading) + 0.05);
-    letter-spacing: var(--type-heading-tracking);
-    margin: 0.75em 0 0.25em;
+    margin-top: 2.1rem;
+    margin-bottom: 1.4rem;
   }
 
   .compose-tiptap-body .tiptap h3 {
-    font-family: var(--font-heading);
-    font-size: var(--type-secondary);
+    font-size: var(--type-content-subtitle);
     font-style: italic;
-    font-weight: var(--type-heading-weight);
-    line-height: calc(var(--type-heading-leading) + 0.1);
-    letter-spacing: var(--type-heading-tracking);
-    margin: 0.75em 0 0.25em;
+    margin-top: 2rem;
+    margin-bottom: 1.4rem;
   }
 
   .compose-tiptap-body .tiptap p {
-    margin: 0.25em 0;
+    margin-top: 1.4rem;
+    margin-bottom: 1.4rem;
   }
 
   .compose-tiptap-body .tiptap ul {
@@ -10064,7 +10062,7 @@
 
   .compose-fullscreen-toolbar-inner,
   .compose-fullscreen-inner {
-    width: min(100%, 802px);
+    width: min(100%, 640px);
     margin: 0 auto;
     padding-inline: 16px;
   }

@@ -3,7 +3,11 @@ import { z } from "zod";
 import type { Bindings, Collection, Media, Post } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
 import { getCollectionPagePath } from "../../../lib/collection-paths.js";
-import { FormatSchema, parseValidated } from "../../../lib/schemas.js";
+import {
+  CollectionSortOrderSchema,
+  FormatSchema,
+  parseValidated,
+} from "../../../lib/schemas.js";
 import { NotFoundError } from "../../../lib/errors.js";
 import { toApiAttachment } from "../../../lib/api-posts.js";
 import { tiptapJsonToMarkdown } from "../../../lib/tiptap-to-markdown.js";
@@ -13,6 +17,10 @@ import {
   getMediaUrl,
   getPublicUrlForProvider,
 } from "../../../lib/image.js";
+import {
+  resolveCollectionSortOrder,
+  supportsCollectionRatingSort,
+} from "../../../lib/collection-sort.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -20,6 +28,8 @@ export const publicPostsApiRoutes = new Hono<Env>();
 
 const ListPublicPostsQuerySchema = z.object({
   format: FormatSchema.optional(),
+  collection: z.string().optional(),
+  sort: CollectionSortOrderSchema.optional(),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).optional().default(20),
   content: z.enum(["markdown"]).optional(),
@@ -184,13 +194,60 @@ function toPublicPost(
 }
 
 publicPostsApiRoutes.get("/", async (c) => {
-  const { format, cursor, limit, content } = parseValidated(
+  const { format, collection, sort, cursor, limit, content } = parseValidated(
     ListPublicPostsQuerySchema,
     c.req.query(),
   );
 
+  // Resolve collection slug(s) — accepts comma-separated (e.g. "tech,art")
+  // or "+" separated (e.g. "tech+art"), matching the page URL convention.
+  let collectionIds: string[] | undefined;
+  let sortOrder: "newest" | "oldest" | "rating_desc" | undefined;
+
+  if (collection) {
+    // Normalize: commas → "+" so resolveSelection handles both forms
+    const slugExpression = collection.replace(/,/g, "+");
+    const selection =
+      await c.var.services.collections.resolveSelection(slugExpression);
+    if (!selection) {
+      return c.json({ posts: [], nextCursor: null });
+    }
+
+    collectionIds = selection.collections.map((col) => col.id);
+
+    // Determine sort order: single collection uses its configured default,
+    // aggregate selections default to "newest"
+    const isAggregate = selection.collections.length > 1;
+    const primaryCollection = selection.collections[0];
+    if (!primaryCollection) {
+      return c.json({ posts: [], nextCursor: null });
+    }
+    const requestedDefaultSort = isAggregate
+      ? "newest"
+      : primaryCollection.sortOrder;
+
+    const ratedPostCount = await c.var.services.posts.countUpTo(
+      {
+        collectionIds,
+        status: "published",
+        excludePrivate: true,
+        hasRating: true,
+      },
+      2,
+    );
+    const showRatingSort = supportsCollectionRatingSort(ratedPostCount);
+    const defaultSort = resolveCollectionSortOrder(
+      undefined,
+      requestedDefaultSort,
+      showRatingSort,
+    );
+    sortOrder = resolveCollectionSortOrder(sort, defaultSort, showRatingSort);
+  }
+
   const posts = await c.var.services.posts.list({
     format,
+    collectionIds,
+    sortOrder,
     status: "published",
     cursor: cursor ?? undefined,
     limit,

@@ -99,6 +99,152 @@ describe("Public Posts API Routes", () => {
       expect(body.posts[0]).not.toHaveProperty("bodyHtml");
       expect(body.posts[0]).not.toHaveProperty("bodyText");
     });
+
+    it("filters posts by a single collection slug", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/public/posts", publicPostsApiRoutes);
+
+      const collection = await services.collections.create({
+        slug: "design",
+        title: "Design",
+      });
+      const inCollection = await services.posts.create({
+        format: "note",
+        title: "Design post",
+        bodyMarkdown: "in collection",
+        collectionIds: [collection.id],
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Other post",
+        bodyMarkdown: "not in collection",
+      });
+
+      const res = await app.request("/api/public/posts?collection=design");
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.posts).toHaveLength(1);
+      expect(body.posts[0].id).toBe(inCollection.id);
+    });
+
+    it("filters posts by multiple collection slugs (aggregate)", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/public/posts", publicPostsApiRoutes);
+
+      const col1 = await services.collections.create({
+        slug: "tech",
+        title: "Tech",
+      });
+      const col2 = await services.collections.create({
+        slug: "art",
+        title: "Art",
+      });
+      const techPost = await services.posts.create({
+        format: "note",
+        title: "Tech post",
+        bodyMarkdown: "tech",
+        collectionIds: [col1.id],
+      });
+      const artPost = await services.posts.create({
+        format: "note",
+        title: "Art post",
+        bodyMarkdown: "art",
+        collectionIds: [col2.id],
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Unrelated",
+        bodyMarkdown: "neither",
+      });
+
+      const res = await app.request("/api/public/posts?collection=tech,art");
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.posts).toHaveLength(2);
+      const ids = body.posts.map((p: { id: string }) => p.id);
+      expect(ids).toContain(techPost.id);
+      expect(ids).toContain(artPost.id);
+    });
+
+    it("returns empty array for unknown collection slug", async () => {
+      const { app } = createTestApp({ authenticated: false });
+      app.route("/api/public/posts", publicPostsApiRoutes);
+
+      const res = await app.request("/api/public/posts?collection=nonexistent");
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.posts).toHaveLength(0);
+      expect(body.nextCursor).toBeNull();
+    });
+
+    it("respects collection sort order (oldest)", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/public/posts", publicPostsApiRoutes);
+
+      const collection = await services.collections.create({
+        slug: "chronological",
+        title: "Chronological",
+        sortOrder: "oldest",
+      });
+      const older = await services.posts.create({
+        format: "note",
+        title: "Older",
+        bodyMarkdown: "first",
+        collectionIds: [collection.id],
+      });
+      const newer = await services.posts.create({
+        format: "note",
+        title: "Newer",
+        bodyMarkdown: "second",
+        collectionIds: [collection.id],
+      });
+
+      const res = await app.request(
+        "/api/public/posts?collection=chronological",
+      );
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.posts).toHaveLength(2);
+      expect(body.posts[0].id).toBe(older.id);
+      expect(body.posts[1].id).toBe(newer.id);
+    });
+
+    it("allows overriding collection sort order via sort parameter", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/public/posts", publicPostsApiRoutes);
+
+      const collection = await services.collections.create({
+        slug: "readings",
+        title: "Readings",
+        sortOrder: "oldest",
+      });
+      const older = await services.posts.create({
+        format: "note",
+        title: "Older",
+        bodyMarkdown: "first",
+        collectionIds: [collection.id],
+      });
+      const newer = await services.posts.create({
+        format: "note",
+        title: "Newer",
+        bodyMarkdown: "second",
+        collectionIds: [collection.id],
+      });
+
+      const res = await app.request(
+        "/api/public/posts?collection=readings&sort=newest",
+      );
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.posts).toHaveLength(2);
+      expect(body.posts[0].id).toBe(newer.id);
+      expect(body.posts[1].id).toBe(older.id);
+    });
   });
 
   describe("GET /api/public/posts/:slug", () => {

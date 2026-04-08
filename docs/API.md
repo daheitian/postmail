@@ -417,12 +417,23 @@ Auth: `Public`
 
 Query parameters:
 
-| Parameter | Type                        | Required | Default | Notes                                                 |
-| --------- | --------------------------- | -------- | ------- | ----------------------------------------------------- |
-| `format`  | `note` \| `link` \| `quote` | no       | all     | Format filter                                         |
-| `cursor`  | string                      | no       | none    | Pass the previous `nextCursor` back unchanged         |
-| `limit`   | integer                     | no       | `20`    | `1` to `100`                                          |
-| `content` | `markdown`                  | no       | none    | Return `bodyMarkdown` instead of rendered body fields |
+| Parameter    | Type                                  | Required | Default              | Notes                                                                                               |
+| ------------ | ------------------------------------- | -------- | -------------------- | --------------------------------------------------------------------------------------------------- |
+| `format`     | `note` \| `link` \| `quote`           | no       | all                  | Format filter                                                                                       |
+| `collection` | string                                | no       | none                 | Filter by collection slug(s). Single slug (`design`) or multiple comma-separated (`tech,art`)       |
+| `sort`       | `newest` \| `oldest` \| `rating_desc` | no       | collection's default | Sort order override. Only effective when `collection` is set. Without `collection`, this is ignored |
+| `cursor`     | string                                | no       | none                 | Pass the previous `nextCursor` back unchanged                                                       |
+| `limit`      | integer                               | no       | `20`                 | `1` to `100`                                                                                        |
+| `content`    | `markdown`                            | no       | none                 | Return `bodyMarkdown` instead of rendered body fields                                               |
+
+Collection filtering notes:
+
+- Single collection: `?collection=design`
+- Multiple collections (union): `?collection=tech,art`
+- When filtering by a single collection, results default to that collection's configured `sortOrder`.
+- When filtering by multiple collections, results default to `newest`.
+- Use `sort` to override the default: `?collection=design&sort=oldest`
+- If any slug in the `collection` parameter does not resolve, the endpoint returns an empty result set.
 
 Response:
 
