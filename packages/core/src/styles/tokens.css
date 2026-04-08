@@ -73,7 +73,7 @@
      mobile overrides below cap sizes for small screens.
      --type-content-scale uniformly scales all content sizes
      without affecting UI controls. */
-  --type-content-scale: 0.9;
+  --type-content-scale: 0.83;
   --type-content-display: calc(var(--type-display) * var(--type-content-scale));
   --type-content-title: calc(var(--type-title) * var(--type-content-scale));
   --type-content-subtitle: calc(
@@ -412,7 +412,7 @@
     --type-ui-title: max(16px, var(--type-secondary));
     --type-ui-control: max(15px, var(--type-base));
     --type-ui-meta: max(15px, var(--type-secondary));
-    --type-ui-hint: max(14px, var(--type-sm));
+    --type-ui-hint: max(13px, var(--type-sm));
     --type-ui-caption: max(13px, var(--type-xs));
     --type-ui-micro: max(12px, var(--type-2xs));
     --type-ui-input: max(16px, var(--type-secondary));

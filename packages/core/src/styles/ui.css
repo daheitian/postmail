@@ -2977,7 +2977,6 @@
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    margin-top: 4px;
     font-size: var(--type-ui-hint);
   }
 
@@ -7281,14 +7280,14 @@
     .post-menu-trigger,
     .reply-trigger,
     .post-footer-external-link {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2.2rem;
+      height: 2.2rem;
       border-radius: 0.88rem;
     }
 
     .post-menu-trigger {
-      width: 2.62rem;
-      height: 2.62rem;
+      width: 2.2rem;
+      height: 2.2rem;
     }
 
     .reply-trigger {
