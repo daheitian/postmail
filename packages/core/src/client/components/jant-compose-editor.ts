@@ -715,12 +715,16 @@ export class JantComposeEditor extends LitElement {
 
     // Lock editor min-height once so new lines fill existing space
     // instead of growing the dialog line-by-line.
+    // Skip in page mode where the editor grows freely with the page.
     this._scrollBufferApplied = false;
     const dom = this._editor.view.dom as HTMLElement;
-    const last = dom.lastElementChild as HTMLElement | null;
-    const contentH = last ? last.offsetTop + last.offsetHeight : 0;
-    const buffer = this.format !== "note" ? 60 : 120;
-    dom.style.minHeight = `${contentH + buffer}px`;
+    const isPageMode = !!this.closest(".compose-page-shell");
+    if (!isPageMode) {
+      const last = dom.lastElementChild as HTMLElement | null;
+      const contentH = last ? last.offsetTop + last.offsetHeight : 0;
+      const buffer = this.format !== "note" ? 60 : 120;
+      dom.style.minHeight = `${contentH + buffer}px`;
+    }
   }
 
   /**

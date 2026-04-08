@@ -4092,17 +4092,20 @@
   }
 
   .compose-page {
-    margin-top: -1rem;
-    margin-inline: calc(var(--site-padding) * -1);
-    margin-bottom: calc(var(--space-xl) * -1);
+    position: fixed;
+    inset: 0;
+    z-index: 50;
     min-height: 100dvh;
+    background-color: var(--compose-paper-bg);
   }
 
   .compose-page-shell {
     --compose-margin-top: 0px;
 
     width: 100%;
-    background-color: var(--compose-paper-bg);
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .compose-page-intro {
@@ -4111,7 +4114,7 @@
 
   .compose-page-title {
     margin: 0;
-    font-family: var(--font-heading);
+    font-family: var(--font-ui);
     font-size: var(--type-title);
     font-weight: var(--type-display-weight);
     letter-spacing: var(--type-display-tracking);
@@ -4175,14 +4178,17 @@
 
   @media (min-width: 701px) and (min-height: 761px) {
     .compose-page {
-      margin-inline: 0;
-      margin-bottom: 0;
+      position: static;
+      background-color: transparent;
+      min-height: auto;
       padding: 32px 0 44px;
     }
 
     .compose-page-shell {
       max-width: min(760px, calc(100vw - var(--site-padding) * 2));
       margin: 0 auto;
+      height: auto;
+      overflow-y: visible;
       background: transparent;
     }
 
@@ -4229,7 +4235,8 @@
       min-height: clamp(16rem, 36vh, 24rem);
     }
 
-    .compose-page-shell .compose-dialog-inner-page .compose-tools-row {
+    .compose-page-shell .compose-dialog-inner-page .compose-tools-row,
+    .compose-page-shell .compose-dialog-inner-page .compose-add-thread-trigger {
       padding-inline: 0;
       background: transparent;
     }
