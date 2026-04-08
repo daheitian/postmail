@@ -455,7 +455,7 @@ function buildPostMarkdown(
   // Taxonomies
   if (postCollections.length > 0) {
     parts.push("taxonomies:");
-    parts.push("  c:");
+    parts.push("  collections:");
     for (const c of postCollections) {
       const colSlug = collectionSlugMap.get(c.id) ?? c.slug;
       parts.push(`    - ${yamlString(colSlug)}`);
@@ -867,9 +867,7 @@ function buildConfigToml(
     parts.push(`type = "${escapeToml(item.type)}"`);
     parts.push(`label = "${escapeToml(item.label)}"`);
     parts.push(`url = "${escapeToml(item.url)}"`);
-    if (item.systemKey) {
-      parts.push(`system_key = "${escapeToml(item.systemKey)}"`);
-    }
+    parts.push(`system_key = "${escapeToml(item.systemKey ?? "")}"`);
   }
 
   for (const item of collectionDirectoryItems) {
@@ -1094,6 +1092,17 @@ function buildExportedCollectionMetrics(
 
   for (const post of posts) {
     if (post.deletedAt !== null) {
+      continue;
+    }
+    // Skip posts that Zola will treat as drafts — they won't register
+    // taxonomy terms, so they shouldn't count toward collection entry_count.
+    if (post.status === "draft" || post.visibility === "private") {
+      continue;
+    }
+    // Replies are merged into their thread root's page — their collections
+    // are not written to the root's frontmatter, so they don't create
+    // Zola taxonomy terms and must not inflate entry_count.
+    if (post.replyToId !== null) {
       continue;
     }
 
