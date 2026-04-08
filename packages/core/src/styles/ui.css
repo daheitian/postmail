@@ -2531,7 +2531,7 @@
     --site-thread-rail-line-width: 1px;
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 760px) {
     .thread-group-preview,
     .thread-group-detail {
       --site-thread-rail-indent: 8px;
