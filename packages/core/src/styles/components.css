@@ -15,7 +15,7 @@ mark {
 
 .search-snippet {
   font-family: var(--font-body);
-  font-size: var(--type-sm);
+  font-size: var(--type-base);
   color: var(--muted-foreground);
   line-height: var(--type-body-leading);
 }
@@ -23,7 +23,7 @@ mark {
 /* Untitled notes: snippet IS the primary content, so use normal text color */
 .search-snippet-primary {
   font-family: var(--font-body);
-  font-size: var(--type-sm);
+  font-size: var(--type-base);
   line-height: var(--type-body-leading);
 }
 

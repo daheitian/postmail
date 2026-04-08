@@ -11,7 +11,6 @@ import type { PathService } from "./path.js";
 import type { CollectionService } from "./collection.js";
 import type { MediaService } from "./media.js";
 import {
-  buildJantLogoSvgMarkup,
   getDefaultJantAppleTouchIconBytes,
   getDefaultJantFaviconIcoBytes,
   HOME_BRANDING_LINK_LABEL,
@@ -266,7 +265,8 @@ export function createExportService(
 
       for (const collection of allCollections) {
         const slug = collectionSlugMap.get(collection.id) ?? collection.slug;
-        const section = buildCollectionSection(collection);
+        const entryCount = collectionMetrics.get(collection.id)?.postCount ?? 0;
+        const section = buildCollectionSection(collection, slug, entryCount);
         files[`content/${slug}/_index.md`] = new TextEncoder().encode(section);
       }
 
@@ -299,6 +299,9 @@ export function createExportService(
       );
       files["templates/taxonomy_single.html"] = new TextEncoder().encode(
         TEMPLATE_TAXONOMY_SINGLE,
+      );
+      files["templates/collection.html"] = new TextEncoder().encode(
+        TEMPLATE_COLLECTION,
       );
       files["templates/atom.xml"] = new TextEncoder().encode(TEMPLATE_ATOM);
       files["templates/macros.html"] = new TextEncoder().encode(
@@ -560,16 +563,22 @@ function buildPostMarkdown(
   return parts.join("\n");
 }
 
-function buildCollectionSection(collection: Collection): string {
+function buildCollectionSection(
+  collection: Collection,
+  slug: string,
+  entryCount: number,
+): string {
   const parts: string[] = ["+++"];
   parts.push(`title = "${escapeToml(collection.title)}"`);
-  parts.push("render = false");
+  parts.push('template = "collection.html"');
   if (collection.description) {
     parts.push(`description = "${escapeToml(collection.description)}"`);
   }
   parts.push("[extra]");
   parts.push(`sort_order = "${escapeToml(collection.sortOrder)}"`);
   parts.push("jant_collection = true");
+  parts.push(`collection_term = "${escapeToml(slug)}"`);
+  parts.push(`entry_count = ${entryCount}`);
   parts.push("+++");
   parts.push("");
   return parts.join("\n");
@@ -1277,7 +1286,6 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
   <footer class="home-branding-credit">
     ${HOME_BRANDING_PREFIX}
     <a href="${JANT_REPO_URL}" target="_blank" rel="noopener noreferrer">
-      ${buildJantLogoSvgMarkup("positive")}
       <span>${HOME_BRANDING_LINK_LABEL}</span>
     </a>
   </footer>
@@ -1371,7 +1379,7 @@ const TEMPLATE_ARCHIVE = `{% extends "base.html" %}
                 {% set collections = page.taxonomies.collections | default(value=[]) %}
                 {% for col in collections %}
                 {% set col_meta = get_section(path= col ~ '/_index.md') %}
-                <a href="{{ get_taxonomy_url(kind='collections', name=col) }}" class="archive-entry-tag">{{ col_meta.title | default(value=col) }}</a>
+                <a href="/{{ col }}" class="archive-entry-tag">{{ col_meta.title | default(value=col) }}</a>
                 {% endfor %}
               </div>
             </div>
@@ -1440,7 +1448,7 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
           <span class="collection-directory-sequence" aria-hidden="true"></span>
           <div class="collection-directory-title-row">
             {% if has_collection_page %}
-            <a href="{{ get_taxonomy_url(kind='collections', name=item.slug) }}" class="collection-directory-title-link">
+            <a href="/{{ item.slug }}" class="collection-directory-title-link">
               <span class="collection-directory-title">{{ item.title | default(value=item.slug) }}</span>
             </a>
             {% else %}
@@ -1473,7 +1481,7 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
     {% set term_meta = get_section(path= term.name ~ '/_index.md') %}
     {% set latest_page = term.pages | first %}
     <li class="collection-list-item">
-      <a href="{{ term.permalink }}" class="collection-list-link">
+      <a href="/{{ term.name }}" class="collection-list-link">
         <span class="collection-list-sequence" aria-hidden="true"></span>
         <span class="collection-list-content">
           <span class="collection-list-title">{{ term_meta.title | default(value=term.name) }}</span>
@@ -1521,6 +1529,43 @@ const TEMPLATE_TAXONOMY_SINGLE = `{% extends "base.html" %}
       </div>
     </div>
   </div>
+</div>
+{% endblock %}
+`;
+
+const TEMPLATE_COLLECTION = `{% extends "base.html" %}
+{% import "macros.html" as macros %}
+
+{% block title %}{{ section.title }} &mdash; {{ config.title }}{% endblock %}
+
+{% block content %}
+<div class="section-shell">
+  <header class="section-header">
+    <h1 class="section-title">{{ section.title }}</h1>
+    {% if section.description %}
+    <p class="section-description">{{ section.description }}</p>
+    {% endif %}
+  </header>
+  {% set entry_count = section.extra.entry_count | default(value=0) %}
+  {% if entry_count > 0 %}
+  {% set term = get_taxonomy_term(kind="collections", term=section.extra.collection_term) %}
+  <div data-feed>
+    <div id="timeline-feed">
+      <div id="timeline-items">
+        {% for page in term.pages %}
+          {% if page.extra.visibility | default(value="public") != "latest_hidden" %}
+          <div class="feed-item" data-timeline-item data-timeline-item-content>
+            {% if not loop.first %}<hr class="feed-divider">{% endif %}
+            {{ macros::post_card(page=page) }}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <p class="section-empty">No posts in this collection yet.</p>
+  {% endif %}
 </div>
 {% endblock %}
 `;
@@ -1647,7 +1692,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
       {% if show_collection_separator %}
       <span class="post-collection-sep" aria-hidden="true">&middot;</span>
       {% endif %}
-      <a href="{{ get_taxonomy_url(kind='collections', name=first_collection) }}" class="post-collection-tag">
+      <a href="/{{ first_collection }}" class="post-collection-tag">
         {% if detail %}
         <span class="post-collection-primary-icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
@@ -1662,7 +1707,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
       {% set second_collection = collections | nth(n=1) %}
       {% set second_collection_meta = get_section(path= second_collection ~ '/_index.md') %}
       <span class="post-collection-second-sep" aria-hidden="true">, </span>
-      <a href="{{ get_taxonomy_url(kind='collections', name=second_collection) }}" class="post-collection-tag">
+      <a href="/{{ second_collection }}" class="post-collection-tag">
         <span class="post-collection-tag-text">{{ second_collection_meta.title | default(value=second_collection) }}</span>
       </a>
       {% endif %}
@@ -1674,7 +1719,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
           {% for col in collections %}
           {% if loop.index > 2 %}
           {% set col_meta = get_section(path= col ~ '/_index.md') %}
-          <a href="{{ get_taxonomy_url(kind='collections', name=col) }}" class="post-collection-popover-item" role="menuitem">{{ col_meta.title | default(value=col) }}</a>
+          <a href="/{{ col }}" class="post-collection-popover-item" role="menuitem">{{ col_meta.title | default(value=col) }}</a>
           {% endif %}
           {% endfor %}
         </span>
@@ -1732,7 +1777,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
 
 {% macro link_card(page, detail=false) %}
 <article
-  class="h-entry post-menu-target {% if detail %}post-detail-shell post-detail-link{% else %}feed-link-post{% endif %}"
+  class="h-entry post-menu-target {% if detail %}post-detail-shell post-detail-link{% else %}post-card-shell feed-link-post{% endif %}"
   {% if detail %}data-page="post"{% endif %}
   data-post
   data-format="link"
@@ -1742,9 +1787,6 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% if page.extra.featured %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
-  {% if not detail %}
-  <div class="feed-card feed-card-link">
-  {% endif %}
   {{ self::post_status_badges() }}
   {% if page.extra.link_url %}
   <a href="{{ page.extra.link_url }}" class="feed-link-domain" rel="noopener noreferrer" target="_blank">
@@ -1777,9 +1819,6 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% endif %}
   {% if not detail or not page.title %}
   {{ self::post_rating(page=page) }}
-  {% endif %}
-  {% if not detail %}
-  </div>
   {% endif %}
   {{ self::post_footer(page=page, detail=detail) }}
 </article>
@@ -1845,7 +1884,9 @@ const STYLE_CSS = `/* Jant Export Theme */
 
 :root {
   color-scheme: light;
-  --content-max-width: 500px;
+  --content-max-width: 50rem;
+  --layout-body-max-width: 1024px;
+  --layout-content-width: 55%;
   --font-cjk-serif-fallback:
     "Songti SC", STSong, SimSun, "Songti TC", PMingLiU, MingLiU,
     "Noto Serif SC", "Noto Serif CJK SC", "Noto Serif TC", "Noto Serif CJK TC";
@@ -1874,9 +1915,19 @@ const STYLE_CSS = `/* Jant Export Theme */
   --text-sm: 0.8125rem;
   --text-base: 1rem;
   --text-lg: 1.125rem;
-  --feed-note-title-size: 1.7rem;
+  --type-display: 3.2rem;
+  --type-title: 2.2rem;
+  --type-subtitle: 1.7rem;
+  --type-body: 1.4rem;
+  --type-secondary: 1.1rem;
+  --type-content-scale: 0.83;
+  --type-content-display: calc(var(--type-display) * var(--type-content-scale));
+  --type-content-title: calc(var(--type-title) * var(--type-content-scale));
+  --type-content-subtitle: calc(var(--type-subtitle) * var(--type-content-scale));
+  --type-content-body: calc(var(--type-body) * var(--type-content-scale));
+  --feed-note-title-size: var(--type-content-title);
   --feed-note-title-leading: 1;
-  --type-body-size: 1.4rem;
+  --type-body-size: var(--type-content-body);
   --type-body-leading: 1.43;
   --type-body-tracking: 0;
   --type-heading-weight: var(--fw-regular);
@@ -1953,21 +2004,6 @@ const STYLE_CSS = `/* Jant Export Theme */
   );
   --site-text-placeholder: oklch(from var(--muted-foreground) l c h / 0.5);
   --site-divider: var(--border);
-  --site-feed-card-bg: color-mix(
-    in srgb,
-    var(--site-elevated-bg) 88%,
-    var(--site-nav-hover-bg)
-  );
-  --site-feed-card-border: color-mix(
-    in srgb,
-    var(--site-divider) 78%,
-    transparent
-  );
-  --site-feed-card-shadow: color-mix(
-    in srgb,
-    var(--site-text-primary) 12%,
-    transparent
-  );
   --site-feed-divider-color: color-mix(
     in srgb,
     var(--site-text-secondary) 30%,
@@ -2063,12 +2099,27 @@ img {
   min-height: 100vh;
   min-height: 100dvh;
   background-color: var(--site-page-bg);
+  counter-reset: sidenote-counter;
+}
+
+/*
+ * Tufte horizontal frame — asymmetric padding.
+ * 12.5% left + 4% right = 16.5% padding → content = 83.5% of box.
+ */
+.site-page > header,
+.site-page > main,
+.site-page > footer,
+.site-page > .home-branding-credit {
+  width: 100%;
+  max-width: calc(var(--layout-body-max-width) / 0.835);
+  padding-left: min(12.5%, 210px);
+  padding-right: min(4%, 67px);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .site-header {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-  padding: 24px var(--site-padding) 0;
+  padding-top: 24px;
 }
 
 .site-header-inner {
@@ -2108,10 +2159,10 @@ img {
   align-items: center;
   gap: 10px;
   padding: 0.15rem 0;
-  font-size: clamp(1.18rem, 1.08rem + 0.45vw, 1.34rem);
-  font-weight: var(--fw-medium);
+  font-size: var(--type-subtitle);
+  font-weight: var(--fw-regular);
   font-family: var(--font-site-title);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--site-text-primary);
   text-decoration: none;
   line-height: var(--type-display-leading);
@@ -2177,14 +2228,11 @@ img {
   transform: scaleX(0.82);
 }
 
-.site-container {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-}
+.site-container {}
 
 .site-content {
   background-color: var(--site-elevated-bg);
-  padding: 1rem var(--site-padding) var(--space-xl);
+  padding: 1rem 0 var(--space-xl);
 }
 
 .site-content-home {
@@ -2235,7 +2283,8 @@ img {
   border: none;
   width: 30px;
   height: 9px;
-  margin: 3rem auto;
+  margin: 4rem 0;
+  margin-left: calc(var(--layout-content-width) / 2 - 15px);
   color: var(--site-feed-divider-color);
   background-color: currentColor;
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='black' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
@@ -2258,36 +2307,9 @@ img {
   padding: 0.45rem 0 0.35rem;
 }
 
-.feed-card {
-  position: relative;
-  padding: 1rem 1.1rem 0.95rem;
-  border: 1px solid color-mix(in srgb, var(--site-divider) 78%, transparent);
-  border-radius: 18px;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--site-accent) 4%, transparent),
-      transparent 58%
-    ),
-    color-mix(in srgb, var(--site-elevated-bg) 88%, var(--site-nav-hover-bg));
-  box-shadow: 0 20px 40px -36px var(--site-feed-card-shadow);
-}
-
-.feed-card-link {
-  border-radius: 14px;
-}
-
 .feed-link-post {
-  --feed-link-post-footer-inset: 0.65rem;
   display: flex;
   flex-direction: column;
-}
-
-.feed-link-post > .post-menu-footer {
-  margin-top: 0.5rem;
-  padding-inline: 0;
-  padding-inline-start: var(--feed-link-post-footer-inset);
-  padding-inline-end: 0.15rem;
 }
 
 .feed-link-domain {
@@ -2395,7 +2417,7 @@ img {
 
 .detail-title {
   margin: 0 0 1rem;
-  font-size: clamp(1.56rem, 1.34rem + 1vw, 2.02rem);
+  font-size: var(--type-content-display);
   font-weight: var(--fw-medium);
   line-height: 1.08;
   letter-spacing: -0.03em;
@@ -2468,7 +2490,7 @@ img {
 .feed-quote-content {
   font-family: var(--font-serif);
   color: var(--site-text-primary);
-  font-size: clamp(1.34rem, 1.23rem + 0.44vw, 1.58rem);
+  font-size: var(--type-content-subtitle);
   line-height: 1.36;
   letter-spacing: -0.02em;
   text-wrap: pretty;
@@ -2536,7 +2558,6 @@ img {
 
 .feed-quote-commentary {
   position: relative;
-  max-width: 34rem;
   margin-top: 1.1rem;
   padding-top: 0.95rem;
   color: color-mix(in srgb, var(--site-text-secondary) 84%, var(--site-text-primary));
@@ -2635,7 +2656,7 @@ article[data-post-featured] .post-footer-featured {
   --site-prose-link-color: var(--site-content-link);
   --site-prose-link-hover: var(--site-content-link-hover);
   --site-prose-link-underline: var(--site-content-link-underline);
-  max-width: 35rem;
+  max-width: none;
   font-size: var(--type-body-size);
   line-height: var(--type-body-leading);
   letter-spacing: var(--type-body-tracking);
@@ -2655,8 +2676,8 @@ article[data-post-featured] .post-footer-featured {
     --site-prose-link-underline,
     var(--site-content-link-underline)
   );
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.14em;
+  text-decoration-thickness: 0.05em;
+  text-underline-offset: 0.1em;
   transition:
     color 0.18s ease,
     text-decoration-color 0.18s ease;
@@ -3044,7 +3065,7 @@ article[data-post-featured] .post-footer-featured {
 
 .section-title {
   margin: 0;
-  font-size: clamp(1.45rem, 1.3rem + 0.5vw, 1.85rem);
+  font-size: var(--type-content-display);
   font-weight: var(--fw-medium);
   line-height: 1.12;
   letter-spacing: -0.03em;
@@ -3143,8 +3164,8 @@ article[data-post-featured] .post-footer-featured {
   align-items: center;
   gap: 0.45rem;
   font-family: var(--font-heading);
-  font-size: clamp(1rem, 1.5vw, 1.12rem);
-  font-weight: var(--fw-medium);
+  font-size: var(--type-content-body);
+  font-weight: var(--type-heading-weight);
   line-height: var(--collection-directory-title-line-height);
   letter-spacing: -0.02em;
 }
@@ -3280,8 +3301,8 @@ article[data-post-featured] .post-footer-featured {
   align-items: center;
   gap: 0.45rem;
   font-family: var(--font-heading);
-  font-size: clamp(1rem, 1.5vw, 1.12rem);
-  font-weight: var(--fw-medium);
+  font-size: var(--type-content-body);
+  font-weight: var(--type-heading-weight);
   line-height: 1.18;
   letter-spacing: -0.01em;
 }
@@ -3416,9 +3437,8 @@ article[data-post-featured] .post-footer-featured {
 }
 
 .site-footer {
-  max-width: var(--content-max-width);
-  margin: var(--space-xl) auto 0;
-  padding: 0 var(--site-padding) var(--space-xl);
+  margin-top: var(--space-xl);
+  padding-bottom: var(--space-xl);
   color: var(--site-text-secondary);
   font-size: var(--text-sm);
 }
@@ -3445,10 +3465,46 @@ article[data-post-featured] .post-footer-featured {
     color-mix(in srgb, var(--site-text-secondary) 45%, transparent);
 }
 
-.home-branding-credit a svg {
-  width: 1rem;
-  height: 1rem;
-  flex: none;
+/*
+ * Tufte content-width constraint.
+ * Text blocks occupy 55% of the page section width,
+ * leaving 45% right margin for breathing room.
+ */
+.site-home-header,
+.post-detail-body,
+.post-body-summary,
+.feed-note-title,
+.feed-link-title,
+.feed-quote,
+.feed-quote-attribution,
+.feed-quote-commentary,
+.feed-link-domain,
+.feed-continue-link,
+[data-post-body].prose,
+[data-post-meta] {
+  width: var(--layout-content-width);
+}
+
+.post-detail-title {
+  width: min(80%, 45rem);
+}
+
+@media (max-width: 1024px) {
+  .site-home-header,
+  .post-detail-title,
+  .post-detail-body,
+  .post-body-summary,
+  .feed-note-title,
+  .feed-link-title,
+  .feed-quote,
+  .feed-quote-attribution,
+  .feed-quote-commentary,
+  .feed-link-domain,
+  .feed-continue-link,
+  [data-post-body].prose,
+  [data-post-meta] {
+    width: min(100%, 35rem);
+  }
 }
 
 @media (min-width: 700px) {
@@ -3458,6 +3514,20 @@ article[data-post-featured] .post-footer-featured {
 
   .site-header-top-bordered {
     padding-bottom: 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --layout-content-width: 100%;
+  }
+
+  .site-page > header,
+  .site-page > main,
+  .site-page > footer,
+  .site-page > .home-branding-credit {
+    padding-left: max(5%, 28px);
+    padding-right: 5%;
   }
 }
 

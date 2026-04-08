@@ -92,7 +92,7 @@ const SearchResultCard: FC<{
           </div>
         )}
         {(titleHighlighted ?? post.title) && (
-          <h3 class="font-semibold text-base mb-1">
+          <h3 class="font-semibold text-lg mb-1">
             {titleHighlighted ? (
               <a
                 href={post.url || post.permalink}
@@ -131,7 +131,7 @@ const SearchResultCard: FC<{
         {quoteHighlighted && (
           <blockquote class="feed-quote mb-1">
             <p
-              class="text-sm"
+              class="text-base"
               dangerouslySetInnerHTML={{ __html: quoteHighlighted }}
             />
             {post.title && (
@@ -167,7 +167,7 @@ const SearchResultCard: FC<{
   if (post.title) {
     return (
       <article {...postAttrs}>
-        <h3 class="font-semibold text-base mb-1">
+        <h3 class="font-semibold text-lg mb-1">
           {titleHighlighted ? (
             <a
               href={post.permalink}
