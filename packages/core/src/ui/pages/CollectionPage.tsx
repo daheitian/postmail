@@ -13,6 +13,7 @@ import {
   getCollectionSelectionPath,
   getCollectionsDirectoryPath,
 } from "../../lib/collection-paths.js";
+import { render as renderMarkdown } from "../../lib/markdown.js";
 import { formatPageLabel } from "../../lib/pagination.js";
 import { toPublicPath } from "../../lib/url.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
@@ -222,9 +223,12 @@ export const CollectionPage: FC<CollectionPageProps> = ({
             <span>{selectionTitle}</span>
           </h1>
           {!isAggregate && primaryCollection.description ? (
-            <p class="collection-page-description">
-              {primaryCollection.description}
-            </p>
+            <div
+              class="collection-page-description prose"
+              dangerouslySetInnerHTML={{
+                __html: renderMarkdown(primaryCollection.description),
+              }}
+            />
           ) : null}
           {isAggregate ? (
             <div class="collection-page-meta">

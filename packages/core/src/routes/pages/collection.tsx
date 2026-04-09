@@ -19,6 +19,7 @@ import {
 } from "../../lib/collection-sort.js";
 import { assembleCollectionTimeline } from "../../lib/timeline.js";
 import { defaultRssRenderer } from "../../lib/feed.js";
+import { toPlainText as markdownToPlainText } from "../../lib/markdown.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 import { toISOString } from "../../lib/time.js";
 import { createMediaContext, toPostViews } from "../../lib/view.js";
@@ -193,7 +194,9 @@ export async function renderCollectionPage(
         : buildPageTitle(selectionTitle, navData.siteName),
     description: isAggregate
       ? undefined
-      : (primaryCollection.description ?? undefined),
+      : primaryCollection.description
+        ? markdownToPlainText(primaryCollection.description)
+        : undefined,
     navData,
     content: (
       <CollectionPage
@@ -311,8 +314,8 @@ export async function renderCollectionFeed(
   const xml = defaultRssRenderer({
     siteName: buildPageTitle(selectionTitle, siteName),
     siteDescription:
-      selection.collections.length === 1
-        ? (primaryCollection.description ?? "")
+      selection.collections.length === 1 && primaryCollection.description
+        ? markdownToPlainText(primaryCollection.description)
         : "",
     siteUrl,
     selfUrl: toAbsoluteSiteUrl(

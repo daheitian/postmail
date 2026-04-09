@@ -15,13 +15,31 @@ vi.mock("../../lazy-slugify.js", () => ({
   preloadSlug: () => {},
 }));
 
+// Mock the TipTap editor factory — happy-dom doesn't support contenteditable
+let lastEditorOnUpdate: ((markdown: string) => void) | undefined;
+vi.mock("../../tiptap/create-editor.js", () => ({
+  createSettingsEditor: (opts: {
+    element: HTMLElement;
+    content?: string;
+    onUpdate?: (markdown: string) => void;
+  }) => {
+    lastEditorOnUpdate = opts.onUpdate;
+    opts.element.innerHTML =
+      '<div class="ProseMirror" contenteditable="true"></div>';
+    return {
+      getJSON: () => ({ type: "doc", content: [] }),
+      destroy: () => {},
+    };
+  },
+  jsonToMarkdown: () => "",
+}));
+
 import type {
   CollectionFormInitial,
   CollectionFormLabels,
   CollectionSubmitDetail,
 } from "../collection-types.js";
 import {
-  MAX_COLLECTION_DESCRIPTION_LENGTH,
   MAX_COLLECTION_SLUG_LENGTH,
   MAX_COLLECTION_TITLE_LENGTH,
 } from "../../../types.js";
@@ -72,6 +90,9 @@ async function createElement(
   Object.assign(el, overrides);
   document.body.appendChild(el);
   await el.updateComplete;
+  // Wait for the editor init that happens in updateComplete.then()
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await el.updateComplete;
   return el;
 }
 
@@ -83,6 +104,7 @@ async function flushSlugify(el: JantCollectionForm) {
 describe("JantCollectionForm", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    lastEditorOnUpdate = undefined;
   });
 
   it("renders the core form fields", async () => {
@@ -94,20 +116,21 @@ describe("JantCollectionForm", () => {
     const slugInput = el.querySelector<HTMLInputElement>(
       "[data-collection-slug-input]",
     );
-    const descriptionTextarea =
-      el.querySelector<HTMLTextAreaElement>("textarea");
+    const editorContainer = el.querySelector<HTMLElement>(
+      "[data-collection-desc-editor]",
+    );
 
     expect(titleInput).not.toBeNull();
     expect(slugInput).not.toBeNull();
-    expect(descriptionTextarea).not.toBeNull();
-    if (!select || !titleInput || !slugInput || !descriptionTextarea) {
-      throw new Error("Expected sort order select");
+    expect(editorContainer).not.toBeNull();
+    if (!select || !titleInput || !slugInput || !editorContainer) {
+      throw new Error("Expected core form fields");
     }
 
     expect(titleInput.maxLength).toBe(MAX_COLLECTION_TITLE_LENGTH);
     expect(slugInput.maxLength).toBe(MAX_COLLECTION_SLUG_LENGTH);
-    expect(descriptionTextarea.maxLength).toBe(
-      MAX_COLLECTION_DESCRIPTION_LENGTH,
+    expect(editorContainer.classList.contains("settings-tiptap-editor")).toBe(
+      true,
     );
     expect(Array.from(select.options).map((option) => option.value)).toEqual([
       "newest",
@@ -212,11 +235,9 @@ describe("JantCollectionForm", () => {
     const slugInput = el.querySelector<HTMLInputElement>(
       "[data-collection-slug-input]",
     );
-    const descriptionTextarea =
-      el.querySelector<HTMLTextAreaElement>("textarea");
     const select = el.querySelector("select") as HTMLSelectElement | null;
 
-    if (!titleInput || !slugInput || !descriptionTextarea || !select) {
+    if (!titleInput || !slugInput || !select) {
       throw new Error("Expected full form inputs");
     }
 
@@ -224,10 +245,11 @@ describe("JantCollectionForm", () => {
     titleInput.dispatchEvent(new Event("input", { bubbles: true }));
     slugInput.value = "books";
     slugInput.dispatchEvent(new Event("input", { bubbles: true }));
-    descriptionTextarea.value = "All about books";
-    descriptionTextarea.dispatchEvent(new Event("input", { bubbles: true }));
     select.value = "rating_desc";
     select.dispatchEvent(new Event("change", { bubbles: true }));
+
+    // Simulate TipTap editor updating the description via the onUpdate callback
+    lastEditorOnUpdate?.("All about books");
 
     let submittedData: CollectionSubmitDetail["data"] | null = null;
     el.addEventListener("jant:collection-submit", (event) => {
@@ -245,87 +267,6 @@ describe("JantCollectionForm", () => {
       description: "All about books",
       sortOrder: "rating_desc",
     });
-  });
-
-  it("submits the form from the description textarea on Cmd/Ctrl+Enter", async () => {
-    const el = await createElement();
-    const titleInput = el.querySelector<HTMLInputElement>(
-      "[data-collection-title-input]",
-    );
-    const slugInput = el.querySelector<HTMLInputElement>(
-      "[data-collection-slug-input]",
-    );
-    const descriptionTextarea =
-      el.querySelector<HTMLTextAreaElement>("textarea");
-
-    if (!titleInput || !slugInput || !descriptionTextarea) {
-      throw new Error("Expected full form inputs");
-    }
-
-    titleInput.value = "Wisdom";
-    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
-    slugInput.value = "wisdom";
-    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
-    descriptionTextarea.value = "Short notes worth keeping.";
-    descriptionTextarea.dispatchEvent(new Event("input", { bubbles: true }));
-
-    let submittedData: CollectionSubmitDetail["data"] | null = null;
-    el.addEventListener("jant:collection-submit", (event) => {
-      submittedData = (event as CustomEvent<CollectionSubmitDetail>).detail
-        .data;
-    });
-
-    descriptionTextarea.dispatchEvent(
-      new globalThis.KeyboardEvent("keydown", {
-        key: "Enter",
-        metaKey: true,
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
-
-    expect(submittedData).toEqual({
-      title: "Wisdom",
-      slug: "wisdom",
-      description: "Short notes worth keeping.",
-      sortOrder: "newest",
-    });
-  });
-
-  it("does not submit the form from the description textarea on plain Enter", async () => {
-    const el = await createElement();
-    const titleInput = el.querySelector<HTMLInputElement>(
-      "[data-collection-title-input]",
-    );
-    const slugInput = el.querySelector<HTMLInputElement>(
-      "[data-collection-slug-input]",
-    );
-    const descriptionTextarea =
-      el.querySelector<HTMLTextAreaElement>("textarea");
-
-    if (!titleInput || !slugInput || !descriptionTextarea) {
-      throw new Error("Expected full form inputs");
-    }
-
-    titleInput.value = "Wisdom";
-    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
-    slugInput.value = "wisdom";
-    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
-
-    let detail: CollectionSubmitDetail | null = null;
-    el.addEventListener("jant:collection-submit", (event) => {
-      detail = (event as CustomEvent<CollectionSubmitDetail>).detail;
-    });
-
-    descriptionTextarea.dispatchEvent(
-      new globalThis.KeyboardEvent("keydown", {
-        key: "Enter",
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
-
-    expect(detail).toBeNull();
   });
 
   it("shows a slug error and blocks submit when the slug is invalid", async () => {
@@ -366,7 +307,7 @@ describe("JantCollectionForm", () => {
   it("uses the quick variant without rendering extra fields", async () => {
     const el = await createElement({ variant: "quick" });
 
-    expect(el.querySelector("textarea")).toBeNull();
+    expect(el.querySelector("[data-collection-desc-editor]")).toBeNull();
     expect(el.querySelector("select")).toBeNull();
     expect(el.querySelector("[data-collection-slug-input]")).toBeNull();
 

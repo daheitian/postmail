@@ -11,8 +11,8 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
+import type { Editor } from "@tiptap/core";
 import {
-  MAX_COLLECTION_DESCRIPTION_LENGTH,
   MAX_COLLECTION_SLUG_LENGTH,
   MAX_COLLECTION_TITLE_LENGTH,
   type CollectionSortOrder,
@@ -21,6 +21,10 @@ import { getCollectionPagePath } from "../../lib/collection-paths.js";
 import { getSlugValidationIssue, truncateSlug } from "../../lib/slug-format.js";
 import { slugify } from "../lazy-slugify.js";
 import { publicPath } from "../runtime-paths.js";
+import {
+  createSettingsEditor,
+  jsonToMarkdown,
+} from "../tiptap/create-editor.js";
 import type {
   CollectionFormInitial,
   CollectionFormLabels,
@@ -63,6 +67,7 @@ export class JantCollectionForm extends LitElement {
   declare _loading: boolean;
 
   #initialized = false;
+  private _descEditor: Editor | null = null;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -93,6 +98,12 @@ export class JantCollectionForm extends LitElement {
     this._loading = false;
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._descEditor?.destroy();
+    this._descEditor = null;
+  }
+
   protected update(
     changedProperties: PropertyValueMap<JantCollectionForm>,
   ): void {
@@ -120,6 +131,35 @@ export class JantCollectionForm extends LitElement {
     this._sortOrder = this.initial.sortOrder ?? "newest";
     this._slugEdited = this.isEdit || Boolean(this._slug.trim());
     this._showSlugEditor = this.variant !== "quick";
+
+    if (this.variant !== "quick") {
+      this.updateComplete.then(() => this.#initDescEditor());
+    }
+  }
+
+  #initDescEditor() {
+    const container = this.querySelector<HTMLElement>(
+      "[data-collection-desc-editor]",
+    );
+    if (!container || this._descEditor) return;
+
+    this._descEditor = createSettingsEditor({
+      element: container,
+      placeholder: this.isEdit ? undefined : this.labels.descriptionPlaceholder,
+      content: this._description || undefined,
+      onUpdate: (markdown) => {
+        this._description = markdown;
+      },
+    });
+
+    // Normalize initial markdown through the editor round-trip
+    this._description = jsonToMarkdown(this._descEditor.getJSON());
+
+    const pm = container.querySelector<HTMLElement>(".ProseMirror");
+    if (pm) {
+      pm.style.outline = "none";
+      pm.style.minHeight = "5rem";
+    }
   }
 
   async #handleTitleInput(event: Event) {
@@ -346,22 +386,6 @@ export class JantCollectionForm extends LitElement {
     );
   }
 
-  #handleDescriptionKeydown(event: globalThis.KeyboardEvent) {
-    if (
-      event.key !== "Enter" ||
-      event.defaultPrevented ||
-      event.isComposing ||
-      !(event.metaKey || event.ctrlKey) ||
-      event.altKey
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-    const form = (event.currentTarget as HTMLTextAreaElement | null)?.form;
-    form?.requestSubmit();
-  }
-
   render() {
     const isQuick = this.variant === "quick";
     const formClass = isQuick
@@ -435,21 +459,10 @@ export class JantCollectionForm extends LitElement {
               <div class="collection-editor-secondary-grid">
                 <div class="field collection-editor-description-field">
                   <label class="label">${this.labels.descriptionLabel}</label>
-                  <textarea
-                    class="textarea"
-                    rows="4"
-                    maxlength=${MAX_COLLECTION_DESCRIPTION_LENGTH}
-                    .value=${this._description}
-                    placeholder=${this.isEdit
-                      ? nothing
-                      : this.labels.descriptionPlaceholder}
-                    @input=${(event: Event) => {
-                      const target = event.target as HTMLTextAreaElement;
-                      this._description = target.value;
-                    }}
-                    @keydown=${(event: globalThis.KeyboardEvent) =>
-                      this.#handleDescriptionKeydown(event)}
-                  ></textarea>
+                  <div
+                    class="settings-tiptap-editor"
+                    data-collection-desc-editor
+                  ></div>
                 </div>
 
                 <div class="field collection-editor-sort-field">

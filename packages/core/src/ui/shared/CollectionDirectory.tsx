@@ -4,6 +4,7 @@ import { useLingui } from "../../i18n/context.js";
 import type { CollectionDirectoryItem } from "../../types.js";
 import { getCollectionSelectionPath } from "../../lib/collection-paths.js";
 import { getDividerCollectionGroup } from "../../lib/collection-groups.js";
+import { render as renderMarkdown } from "../../lib/markdown.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
 import { toPublicHref, toPublicPath } from "../../lib/url.js";
 
@@ -245,9 +246,12 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                 </a>
               </div>
               {collection.description && (
-                <p class="collection-directory-description">
-                  {collection.description}
-                </p>
+                <div
+                  class="collection-directory-description prose"
+                  dangerouslySetInnerHTML={{
+                    __html: renderMarkdown(collection.description),
+                  }}
+                />
               )}
               <p class="collection-directory-summary">
                 <span class="collection-directory-meta">
