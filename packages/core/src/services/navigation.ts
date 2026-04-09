@@ -421,21 +421,33 @@ export function createNavItemService(
 
       // Find collections with recent activity and the latest update timestamp.
       // 1. A post was added to the collection within the freshness window
-      // 2. A thread reply was published where the thread root is in the collection
+      // 2. A post in the collection was edited within the freshness window
+      // 3. A thread reply was published where the thread root is in the collection
       const rows = await db
         .select({
           collectionId: postCollections.collectionId,
-          latestAt: sql<number>`MAX(${postCollections.createdAt})`.as(
-            "latest_at",
-          ),
+          latestAt:
+            sql<number>`MAX(${postCollections.createdAt}, ${posts.updatedAt})`.as(
+              "latest_at",
+            ),
         })
         .from(postCollections)
+        .innerJoin(
+          posts,
+          and(
+            eq(posts.id, postCollections.postId),
+            eq(posts.siteId, postCollections.siteId),
+          ),
+        )
         .where(
           and(
             eq(postCollections.siteId, siteId),
             inArray(postCollections.collectionId, collectionIds),
             sql`(
               ${postCollections.createdAt} > ${threshold}
+              OR (${posts.updatedAt} > ${threshold}
+                AND ${posts.deletedAt} IS NULL
+                AND ${posts.status} = 'published')
               OR EXISTS (
                 SELECT 1 FROM ${posts} reply
                 WHERE reply.site_id = ${postCollections.siteId}

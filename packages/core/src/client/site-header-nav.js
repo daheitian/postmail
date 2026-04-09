@@ -57,11 +57,12 @@ function initMoreDropdown(root) {
 
 const FRESH_VISIT_KEY = "jant:nav-fresh-visits";
 
-function createFreshDot() {
-  const dot = document.createElement("span");
-  dot.className = "site-header-link-fresh";
-  dot.setAttribute("aria-hidden", "true");
-  return dot;
+function createFreshBadge() {
+  const badge = document.createElement("span");
+  badge.className = "site-header-link-fresh";
+  badge.setAttribute("aria-hidden", "true");
+  badge.textContent = "(New)";
+  return badge;
 }
 
 function initNavFreshness(root) {
@@ -83,7 +84,7 @@ function initNavFreshness(root) {
         if (!visitedAt || visitedAt < freshAt) {
           // Insert dot after the text, before any external link icon
           const icon = link.querySelector("svg");
-          link.insertBefore(createFreshDot(), icon);
+          link.insertBefore(createFreshBadge(), icon);
         }
       }
     }
