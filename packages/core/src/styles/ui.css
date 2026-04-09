@@ -9462,9 +9462,22 @@
   }
 
   .settings-tiptap-editor .tiptap a {
-    color: var(--primary);
+    color: var(--site-prose-link-color, var(--site-content-link));
     text-decoration: underline;
-    text-underline-offset: 2px;
+    text-decoration-color: var(
+      --site-prose-link-underline,
+      var(--site-content-link-underline)
+    );
+    text-decoration-thickness: 0.05em;
+    text-underline-offset: 0.1em;
+    transition:
+      color 0.18s ease,
+      text-decoration-color 0.18s ease;
+  }
+
+  .settings-tiptap-editor .tiptap a:hover {
+    color: var(--site-prose-link-hover, var(--site-content-link-hover));
+    text-decoration-color: currentColor;
   }
 
   .settings-tiptap-editor .tiptap ul,
