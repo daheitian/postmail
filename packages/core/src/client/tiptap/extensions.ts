@@ -13,6 +13,7 @@ import type { PasteMediaOptions } from "./paste-media.js";
 import { BubbleMenu } from "./bubble-menu.js";
 import { LinkToolbar } from "./link-toolbar.js";
 import { ExitableMarks } from "./exitable-marks.js";
+import { TabIndent } from "./tab-indent.js";
 import { LinkInputRules } from "./link-input-rules.js";
 import { Footnotes } from "./footnotes.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
@@ -109,5 +110,6 @@ export function createEditorExtensions(
       toolbarMode: options.toolbarMode ?? "default",
     }),
     ExitableMarks,
+    TabIndent,
   ];
 }
