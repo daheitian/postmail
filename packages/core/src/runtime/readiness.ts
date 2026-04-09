@@ -96,7 +96,7 @@ async function getDatabaseReadiness(
 /**
  * Perform instance-scoped readiness checks that bypass site resolution.
  *
- * This is intentionally stricter than `/health`: it verifies startup
+ * This is intentionally stricter than `/healthz`: it verifies startup
  * configuration and performs a lightweight database/schema query against the
  * shared `site` table through the service layer.
  */

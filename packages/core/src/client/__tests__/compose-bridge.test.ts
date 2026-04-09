@@ -511,6 +511,15 @@ describe("compose bridge", () => {
           );
         }
 
+        // After a successful edit the bridge tries to refresh the post
+        // card view in-place — return empty HTML so it gracefully no-ops.
+        if (url.pathname === `/_/post-card/pst_123`) {
+          return new Response("", {
+            status: 200,
+            headers: { "Content-Type": "text/html" },
+          });
+        }
+
         throw new Error(`Unexpected fetch: ${url.pathname}`);
       });
 
@@ -538,6 +547,6 @@ describe("compose bridge", () => {
 
     await flushBridgeWork();
 
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 });

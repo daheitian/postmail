@@ -45,7 +45,7 @@ function createApp(complete: boolean) {
   app.get("/archive", (c) => c.text("Archive"));
   app.get("/p/abc", (c) => c.text("Post"));
   app.get("/setup", (c) => c.text("Setup"));
-  app.get("/health", (c) => c.text("OK"));
+  app.get("/healthz", (c) => c.text("OK"));
   app.get("/signin", (c) => c.text("Signin"));
   app.post("/signout", (c) => c.text("Signout"));
   app.get("/reset", (c) => c.text("Reset"));
@@ -138,9 +138,9 @@ describe("requireOnboarding", () => {
       expect(getCallCount()).toBe(0);
     });
 
-    it("allows /health", async () => {
+    it("allows /healthz", async () => {
       const { app, getCallCount } = createApp(false);
-      const res = await app.request("/health");
+      const res = await app.request("/healthz");
       expect(res.status).toBe(200);
       expect(getCallCount()).toBe(0);
     });

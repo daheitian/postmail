@@ -271,7 +271,7 @@ export function createApp(): App {
 
   // Instance health checks must bypass hosted site resolution so container
   // health probes keep working in host-based mode before any site matches.
-  app.get("/health", (c) => c.json({ status: "ok" }));
+  app.get("/healthz", (c) => c.json({ status: "ok" }));
   app.get("/readyz", async (c) => {
     const readiness = await getInstanceReadiness(c.env);
     return c.json(readiness, readiness.status === "ok" ? 200 : 503);

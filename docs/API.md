@@ -2196,7 +2196,7 @@ Archive contents:
 
 - `config.toml`
 - `content/<post-slug>/index.md` for each root post or merged thread
-- `content/c/<collection-slug>/_index.md` for each collection
+- `content/collections/<collection-slug>/_index.md` for each collection
 - `content/_index.md` and `content/archive/_index.md`
 - `templates/*` and `static/*`
 - `README.md`
@@ -2521,7 +2521,7 @@ These are not part of the JSON content-management API, but they are often useful
 
 | Endpoint                      | Auth   | Response | Notes                                                           |
 | ----------------------------- | ------ | -------- | --------------------------------------------------------------- |
-| `GET /health`                 | Public | JSON     | Lightweight liveness probe                                      |
+| `GET /healthz`                | Public | JSON     | Lightweight liveness probe                                      |
 | `GET /readyz`                 | Public | JSON     | Readiness check for startup config and database                 |
 | `GET /feed`                   | Public | RSS      | Canonical site feed (`latest` or `featured`, based on settings) |
 | `GET /feed/atom.xml`          | Public | Atom     | Canonical site feed in Atom format                              |
@@ -2540,7 +2540,7 @@ These are not part of the JSON content-management API, but they are often useful
 
 #### Liveness
 
-`GET /health`
+`GET /healthz`
 
 Auth: `Public`
 

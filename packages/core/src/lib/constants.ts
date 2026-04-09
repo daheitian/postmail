@@ -12,7 +12,6 @@ export const RESERVED_PATHS = [
   "signout",
   "setup",
   "settings",
-  "posts",
   "dash",
   "api",
   "feed",
@@ -26,7 +25,8 @@ export const RESERVED_PATHS = [
   "static",
   "assets",
   "_assets",
-  "health",
+  "healthz",
+  "readyz",
 ] as const;
 
 export type ReservedPath = (typeof RESERVED_PATHS)[number];

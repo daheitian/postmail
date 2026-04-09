@@ -43,7 +43,7 @@ describe("SiteLayout", () => {
 
   it("does not render the mobile compose FAB for collection pages", () => {
     const html = renderSiteLayout({
-      currentPath: "/c/writing",
+      currentPath: "/collections/writing",
       isAuthenticated: true,
       children: "Collection",
     });

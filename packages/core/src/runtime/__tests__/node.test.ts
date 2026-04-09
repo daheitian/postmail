@@ -49,7 +49,7 @@ describe("createNodeRequestRuntime", () => {
         STORAGE_DRIVER: "local",
         LOCAL_STORAGE_PATH: "/tmp/jant-node-runtime-test",
       } as Bindings,
-      "http://localhost:3000/health",
+      "http://localhost:3000/healthz",
     );
 
     expect(runtime.storage).not.toBeNull();
