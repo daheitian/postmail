@@ -1361,10 +1361,24 @@
     grid-column: 2;
     grid-row: 2;
     margin: 0;
+    --type-body-size: var(--type-sm);
     color: var(--site-text-secondary);
     font-family: var(--font-body);
     font-size: var(--type-sm);
     line-height: 1.45;
+  }
+
+  .collection-directory-description :where(p) {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+  }
+
+  .collection-directory-description :where(p:first-child) {
+    margin-top: 0;
+  }
+
+  .collection-directory-description :where(p:last-child) {
+    margin-bottom: 0;
   }
 
   .collection-directory-description + .collection-directory-summary {
@@ -1628,10 +1642,24 @@
   }
 
   .collection-page-description {
+    --type-body-size: var(--type-secondary);
     color: var(--site-text-secondary);
     font-family: var(--font-body);
     font-size: var(--type-secondary);
-    line-height: 1.3;
+    line-height: 1.5;
+  }
+
+  .collection-page-description :where(p) {
+    margin-top: 0.4em;
+    margin-bottom: 0.4em;
+  }
+
+  .collection-page-description :where(p:first-child) {
+    margin-top: 0;
+  }
+
+  .collection-page-description :where(p:last-child) {
+    margin-bottom: 0;
   }
 
   .collection-page-meta {
@@ -5987,7 +6015,7 @@
   .compose-publish-panel-desktop {
     position: absolute;
     right: 0;
-    width: min(24rem, calc(100vw - 1.5rem));
+    width: min(25rem, calc(100vw - 1.5rem));
     max-height: var(
       --compose-publish-panel-max-height,
       min(
@@ -6155,9 +6183,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: 0.3rem;
     min-height: 2.45rem;
-    padding: 0.46rem 0.7rem;
+    padding: 0.46rem 0.5rem;
     border-radius: 10px;
     border: none;
     background: transparent;
@@ -6188,7 +6216,7 @@
   }
 
   .compose-publish-chip-label {
-    font-size: var(--compose-panel-control-size);
+    font-size: 0.875rem;
     font-weight: var(--fw-medium);
     letter-spacing: 0.005em;
     line-height: 1.28;
