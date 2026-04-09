@@ -470,6 +470,41 @@ async function resolveApiAttachments(allAttachments: ApiAttachment[]) {
 export class JantComposeDialog extends LitElement {
   private static _lastNewPostVisibility: ComposeVisibility = "public";
 
+  /** The collection ID that triggered this compose session (for per-collection visibility memory). */
+  private _sourceCollectionId: string | null = null;
+
+  private static _collectionVisibilityKey(collectionId: string): string {
+    return `jant:collection-visibility:${collectionId}`;
+  }
+
+  private static _getCollectionVisibility(
+    collectionId: string,
+  ): ComposeVisibility | null {
+    try {
+      const v = globalThis.localStorage.getItem(
+        JantComposeDialog._collectionVisibilityKey(collectionId),
+      );
+      if (v === "public" || v === "latest_hidden" || v === "private") return v;
+    } catch {
+      // localStorage unavailable
+    }
+    return null;
+  }
+
+  private static _setCollectionVisibility(
+    collectionId: string,
+    visibility: ComposeVisibility,
+  ) {
+    try {
+      globalThis.localStorage.setItem(
+        JantComposeDialog._collectionVisibilityKey(collectionId),
+        visibility,
+      );
+    } catch {
+      // localStorage unavailable
+    }
+  }
+
   static properties = {
     collections: { type: Array },
     labels: { type: Object },
@@ -643,6 +678,7 @@ export class JantComposeDialog extends LitElement {
     this._initialPublishedAtInput = "";
     this._initialSlug = "";
     this._visibility = JantComposeDialog._lastNewPostVisibility;
+    this._sourceCollectionId = null;
     this._showPublishPanel = false;
     this._publishPanelFullscreen = false;
     this._suggestedSlug = "";
@@ -734,6 +770,7 @@ export class JantComposeDialog extends LitElement {
     this._initialPublishedAtInput = "";
     this._initialSlug = "";
     this._visibility = JantComposeDialog._lastNewPostVisibility;
+    this._sourceCollectionId = null;
     this._showPublishPanel = false;
     this._suggestedSlug = "";
     this._suggestedSlugLoading = false;
@@ -887,6 +924,17 @@ export class JantComposeDialog extends LitElement {
       !this._collectionIds.includes(options.collectionId)
     ) {
       this._collectionIds = [options.collectionId, ...this._collectionIds];
+    }
+
+    // Restore per-collection visibility preference (only for new posts, not restored drafts)
+    if (options?.collectionId) {
+      this._sourceCollectionId = options.collectionId;
+      const saved = JantComposeDialog._getCollectionVisibility(
+        options.collectionId,
+      );
+      if (saved) {
+        this._visibility = saved;
+      }
     }
 
     this.closest("dialog")?.showModal();
@@ -4269,6 +4317,12 @@ export class JantComposeDialog extends LitElement {
     this._visibility = visibility;
     if (!this._editPostId && !this._draftSourceId && !this._replyToId) {
       JantComposeDialog._lastNewPostVisibility = visibility;
+      if (this._sourceCollectionId) {
+        JantComposeDialog._setCollectionVisibility(
+          this._sourceCollectionId,
+          visibility,
+        );
+      }
     }
   }
 
