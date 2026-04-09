@@ -117,7 +117,7 @@ describe("NavItemService", () => {
 
       expect(item.type).toBe("system");
       expect(item.systemKey).toBe("settings");
-      expect(item.label).toBe("Settings");
+      expect(item.label).toBe("");
       expect(item.url).toBe("/settings");
     });
 

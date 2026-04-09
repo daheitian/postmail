@@ -97,7 +97,7 @@ describe("Nav Items API Routes", () => {
       expect(body.type).toBe("system");
       expect(body.systemKey).toBe("archive");
       expect(body.url).toBe("/archive");
-      expect(body.label).toBe("Archive");
+      expect(body.label).toBe("");
       expect(body.placement).toBe("header");
     });
 

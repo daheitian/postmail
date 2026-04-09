@@ -13,46 +13,42 @@ const i18n = {
 } satisfies Pick<I18n, "_">;
 
 describe("getNavItemDisplayLabel", () => {
-  it("translates the built-in latest system item", () => {
+  it("translates system items with empty label (default)", () => {
     expect(
       getNavItemDisplayLabel(
-        {
-          type: "system",
-          systemKey: "latest",
-          label: "Latest",
-          url: "/latest",
-        },
+        { type: "system", systemKey: "latest", label: "", url: "/latest" },
         i18n,
       ),
     ).toBe("translated:Latest");
-  });
-
-  it("translates the built-in featured system item", () => {
     expect(
       getNavItemDisplayLabel(
-        {
-          type: "system",
-          systemKey: "featured",
-          label: "Featured",
-          url: "/featured",
-        },
+        { type: "system", systemKey: "featured", label: "", url: "/featured" },
         i18n,
       ),
     ).toBe("translated:Featured");
-  });
-
-  it("translates the built-in collections system item", () => {
     expect(
       getNavItemDisplayLabel(
         {
           type: "system",
           systemKey: "collections",
-          label: "Collections",
+          label: "",
           url: "/collections",
         },
         i18n,
       ),
     ).toBe("translated:Collections");
+    expect(
+      getNavItemDisplayLabel(
+        { type: "system", systemKey: "settings", label: "", url: "/settings" },
+        i18n,
+      ),
+    ).toBe("translated:Settings");
+    expect(
+      getNavItemDisplayLabel(
+        { type: "system", systemKey: "rss", label: "", url: "/feed" },
+        i18n,
+      ),
+    ).toBe("translated:RSS");
   });
 
   it("translates prefixed public archive system items", () => {
@@ -61,7 +57,7 @@ describe("getNavItemDisplayLabel", () => {
         {
           type: "system",
           systemKey: "archive",
-          label: "Archive",
+          label: "",
           url: "/blog/archive",
         },
         i18n,
@@ -70,21 +66,7 @@ describe("getNavItemDisplayLabel", () => {
     ).toBe("translated:Archive");
   });
 
-  it("translates the built-in settings system item", () => {
-    expect(
-      getNavItemDisplayLabel(
-        {
-          type: "system",
-          systemKey: "settings",
-          label: "Settings",
-          url: "/settings",
-        },
-        i18n,
-      ),
-    ).toBe("translated:Settings");
-  });
-
-  it("uses custom label for system item when label differs from default", () => {
+  it("uses custom label for system item when label is non-empty", () => {
     expect(
       getNavItemDisplayLabel(
         {
@@ -98,13 +80,18 @@ describe("getNavItemDisplayLabel", () => {
     ).toBe("Topics");
   });
 
-  it("translates RSS", () => {
+  it("preserves explicit English label as custom override", () => {
     expect(
       getNavItemDisplayLabel(
-        { type: "system", systemKey: "rss", label: "RSS", url: "/feed" },
+        {
+          type: "system",
+          systemKey: "latest",
+          label: "Latest",
+          url: "/latest",
+        },
         i18n,
       ),
-    ).toBe("translated:RSS");
+    ).toBe("Latest");
   });
 
   it("leaves custom links untouched", () => {

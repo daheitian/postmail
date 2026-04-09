@@ -91,7 +91,7 @@ export function createNavItemService(
         type: data.type,
         systemKey: data.systemKey,
         collectionId: null,
-        label: config.defaultLabel,
+        label: "",
         url: config.url,
         placement: data.placement ?? config.defaultPlacement,
         position: data.position,
@@ -344,6 +344,15 @@ export function createNavItemService(
               : "Collection navigation URLs are managed automatically",
           );
         }
+      }
+
+      // Non-system items require a non-empty label
+      if (
+        data.label !== undefined &&
+        !data.label &&
+        existing[0].type !== "system"
+      ) {
+        throw new ValidationError("Label is required");
       }
 
       const timestamp = now();

@@ -330,7 +330,7 @@ export class JantNavManager extends LitElement {
 
   #handleUpdate(item: NavManagerItem) {
     const label = this._editLabel.trim();
-    if (!label) {
+    if (!label && item.type !== "system") {
       showToast(this.labels.labelRequired, "error");
       return;
     }
@@ -640,7 +640,7 @@ export class JantNavManager extends LitElement {
             <input
               type="text"
               class="input"
-              required
+              placeholder=${item.displayLabel ?? ""}
               .value=${this._editLabel}
               @input=${(e: Event) => {
                 this._editLabel = (e.target as HTMLInputElement).value;

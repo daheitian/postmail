@@ -531,7 +531,7 @@ export const CreateNavItemSchema = z.discriminatedUnion("type", [
  * API request body schema for updating a navigation item
  */
 export const UpdateNavItemSchema = z.object({
-  label: sanitizeText(100).pipe(z.string().min(1)).optional(),
+  label: sanitizeSettingText(100).optional(),
   url: z
     .string()
     .min(1)
