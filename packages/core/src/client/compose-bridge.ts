@@ -962,15 +962,45 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
     if (isEdit) {
       clearRecoveredLocalDraft();
-      queueSuccessToast("Post updated.");
       const editData = await readJsonObject(res);
+      const editPostId = detail.editPostId ?? "";
       const newSlug = getJsonString(editData, "slug");
       const newPath = newSlug ? publicPath(`/${newSlug}`) : null;
-      if (newPath && newPath !== globalThis.location.pathname) {
-        globalThis.location.assign(newPath);
-      } else if (isPageMode) {
-        globalThis.location.assign(globalThis.location.pathname);
+
+      if (isPageMode) {
+        // On the post detail page: refresh or navigate if slug changed
+        if (newPath && newPath !== globalThis.location.pathname) {
+          queueSuccessToast("Post updated.");
+          globalThis.location.assign(newPath);
+        } else {
+          const refreshed =
+            editPostId && (await refreshPostPageView(editPostId));
+          if (!refreshed) {
+            queueSuccessToast("Post updated.");
+            globalThis.location.assign(globalThis.location.pathname);
+          } else {
+            toastMsg("Post updated.");
+          }
+        }
+      } else if (editPostId) {
+        // On the timeline: try in-place refresh
+        const article = document.querySelector<HTMLElement>(
+          `article[data-post-id="${editPostId}"]`,
+        );
+        const threadRootId = article?.closest<HTMLElement>(
+          "[data-timeline-item]",
+        )?.dataset.threadRootId;
+        const refreshed = threadRootId
+          ? await refreshTimelineThreadView(threadRootId)
+          : await refreshPostCardView(editPostId);
+        if (refreshed) {
+          toastMsg("Post updated.");
+        } else {
+          queueSuccessToast("Post updated.");
+          globalThis.location.reload();
+        }
       } else {
+        queueSuccessToast("Post updated.");
         globalThis.location.reload();
       }
       return;
