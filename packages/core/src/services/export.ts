@@ -1885,7 +1885,7 @@ const STYLE_CSS = `/* Jant Export Theme */
 :root {
   color-scheme: light;
   --content-max-width: 50rem;
-  --layout-body-max-width: 1024px;
+  --layout-body-max-width: 1088px;
   --layout-content-width: 55%;
   --font-cjk-serif-fallback:
     "Songti SC", STSong, SimSun, "Songti TC", PMingLiU, MingLiU,
@@ -1920,7 +1920,7 @@ const STYLE_CSS = `/* Jant Export Theme */
   --type-subtitle: 1.7rem;
   --type-body: 1.4rem;
   --type-secondary: 1.1rem;
-  --type-content-scale: 0.83;
+  --type-content-scale: 0.81;
   --type-content-display: calc(var(--type-display) * var(--type-content-scale));
   --type-content-title: calc(var(--type-title) * var(--type-content-scale));
   --type-content-subtitle: calc(var(--type-subtitle) * var(--type-content-scale));

@@ -60,7 +60,9 @@ sitemapRoutes.get("/robots.txt", async (c) => {
   const siteUrl = appConfig.siteUrl;
   const noindex = appConfig.noindex;
 
-  const rules = noindex ? ["Disallow: /"] : ["Allow: /", "Disallow: /_/"];
+  const rules = noindex
+    ? ["Disallow: /"]
+    : ["Allow: /", "Disallow: /_/", "Disallow: /*/text/"];
   const robots = [
     `User-agent: *`,
     ...rules,

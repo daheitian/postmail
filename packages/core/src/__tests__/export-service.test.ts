@@ -182,9 +182,7 @@ describe("createExportService", () => {
     );
     expect(taxonomyListTemplate).toContain("item.entry_count");
     expect(taxonomyListTemplate).toContain("item.recent_activity_label");
-    expect(taxonomyListTemplate).toContain(
-      "get_taxonomy_url(kind='collections', name=item.slug)",
-    );
+    expect(taxonomyListTemplate).toContain('href="/{{ item.slug }}"');
     expect(taxonomyListTemplate).toContain(
       "has_collection_page = entry_count != 0",
     );

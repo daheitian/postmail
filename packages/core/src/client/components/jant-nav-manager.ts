@@ -647,7 +647,22 @@ export class JantNavManager extends LitElement {
               }}
             />
           </div>
-          <div class="flex items-center justify-end">
+          <div class="flex items-center justify-between">
+            <button
+              type="button"
+              class="btn-sm-ghost text-destructive"
+              @click=${() => {
+                const config = this.systemNavItems.find(
+                  (c) => c.key === item.systemKey,
+                );
+                if (config) {
+                  this._editingId = null;
+                  this.#handleSystemToggle(config, false);
+                }
+              }}
+            >
+              ${this.labels.remove}
+            </button>
             <button
               type="button"
               class="btn-sm"

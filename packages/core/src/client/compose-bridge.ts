@@ -964,7 +964,11 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       clearRecoveredLocalDraft();
       queueSuccessToast("Post updated.");
       if (isPageMode) {
-        globalThis.location.assign(globalThis.location.pathname);
+        const data = await readJsonObject(res);
+        const newSlug = getJsonString(data, "slug");
+        globalThis.location.assign(
+          newSlug ? publicPath(`/${newSlug}`) : globalThis.location.pathname,
+        );
       } else {
         globalThis.location.reload();
       }

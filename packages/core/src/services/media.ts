@@ -142,6 +142,20 @@ export interface MediaService {
     id: string,
     storage?: StorageDriver | null,
   ): Promise<TextAttachmentContent | null>;
+  /**
+   * Return the pre-rendered HTML stored in the text-attachment envelope.
+   * Used for SSR pages where we can serve the HTML directly without a
+   * round-trip through markdown conversion.
+   */
+  getTextAttachmentHtml(
+    id: string,
+    storage?: StorageDriver | null,
+  ): Promise<{
+    id: string;
+    html: string;
+    summary: string | null;
+    chars: number | null;
+  } | null>;
   attachToPost(postId: string, mediaIds: string[]): Promise<void>;
   detachFromPost(postId: string): Promise<void>;
   updateAlt(id: string, alt: string): Promise<void>;
@@ -501,6 +515,31 @@ export function createMediaService(
         type: "text",
         contentFormat: "markdown",
         content: tiptapJsonToMarkdown(json),
+        summary: record.summary,
+        chars: record.chars,
+      };
+    },
+
+    async getTextAttachmentHtml(id, storage) {
+      const record = await this.getById(id);
+      if (!record || record.mimeType !== ATTACHED_TEXT_MIME_TYPE) {
+        return null;
+      }
+      if (!storage) {
+        throw new ConfigurationError(
+          "File storage isn't set up. Check your server config.",
+        );
+      }
+
+      const object = await storage.get(record.storageKey);
+      if (!object) return null;
+
+      const raw = await new Response(object.body).text();
+      const envelope = JSON.parse(raw) as { html?: string };
+
+      return {
+        id: record.id,
+        html: envelope.html ?? "",
         summary: record.summary,
         chars: record.chars,
       };

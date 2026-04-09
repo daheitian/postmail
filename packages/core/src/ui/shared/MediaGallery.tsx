@@ -17,6 +17,8 @@ import {
 
 export interface MediaGalleryProps {
   attachments: MediaView[];
+  /** Post permalink — used to build shareable text-attachment URLs */
+  postPermalink?: string;
 }
 
 const DEFAULT_VISUAL_RATIO = 4 / 3;
@@ -186,7 +188,10 @@ const FileIcon = ({
   );
 };
 
-export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
+export const MediaGallery: FC<MediaGalleryProps> = ({
+  attachments,
+  postPermalink,
+}) => {
   if (attachments.length === 0) return null;
 
   // Category checks for layout decisions
@@ -617,6 +622,11 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                   key={item.id}
                   type="button"
                   data-text-preview-id={item.id}
+                  data-text-preview-href={
+                    postPermalink
+                      ? `${postPermalink}/text/${item.id}`
+                      : undefined
+                  }
                   class="media-gallery-card shrink-0 snap-start"
                   style={{
                     width: `${docCardWidth}px`,

@@ -83,7 +83,7 @@
   }
 
   .site-header-top {
-    --site-header-search-width: clamp(14rem, 26vw, 19rem);
+    --site-header-search-width: clamp(12rem, 22vw, 16rem);
     --site-header-hairline: color-mix(
       in srgb,
       var(--site-divider) 74%,
@@ -629,8 +629,8 @@
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    gap: clamp(0.85rem, 2vw, 1.3rem);
-    margin-left: clamp(0.9rem, 2vw, 1.25rem);
+    gap: clamp(0.6rem, 1.5vw, 1rem);
+    margin-left: clamp(0.6rem, 1.5vw, 1rem);
     min-width: 0;
     font-family: var(--font-ui);
   }
@@ -8731,6 +8731,12 @@
       color-mix(in srgb, var(--color-background) 94%, var(--color-muted) 6%) 0%,
       var(--color-background) 100%
     );
+  }
+
+  .text-preview-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
   }
 
   .text-preview-btn {

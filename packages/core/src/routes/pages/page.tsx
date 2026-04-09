@@ -22,6 +22,61 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const pageRoutes = new Hono<Env>();
 
+interface TextPreviewAutoOpen {
+  html: string;
+  shareHref: string;
+  postHref: string;
+  /** Attachment summary used as page title for link previews */
+  attachmentTitle: string;
+}
+
+async function renderPostWithTextPreview(
+  c: Context<Env>,
+  post: Post,
+  autoOpen: TextPreviewAutoOpen,
+) {
+  const navDataPromise = getNavigationData(c);
+  const display = await assemblePostPageDisplay(c, post, {
+    isAuthenticated: true,
+  });
+  if (!display) {
+    return c.notFound();
+  }
+
+  const navData = await navDataPromise;
+  const meta = buildPostMeta(post, navData.siteName);
+
+  // Use the attachment summary as the page title (for OG/link previews),
+  // and pass the post title in the payload so the client can restore it
+  // when the dialog closes.
+  const pageTitle = autoOpen.attachmentTitle || meta.title;
+  const autoOpenJson = JSON.stringify({
+    html: autoOpen.html,
+    shareHref: autoOpen.shareHref,
+    postHref: autoOpen.postHref,
+    postTitle: meta.title,
+  });
+
+  return renderPublicPage(c, {
+    title: pageTitle,
+    description: meta.description,
+    navData,
+    content: (
+      <>
+        <PostPage
+          post={display.postView}
+          threadPosts={display.threadPostViews}
+        />
+        <script
+          type="application/json"
+          id="text-preview-autoopen"
+          dangerouslySetInnerHTML={{ __html: autoOpenJson }}
+        />
+      </>
+    ),
+  });
+}
+
 async function renderPost(c: Context<Env>, post: Post) {
   // Start navData fetch immediately — it's independent of thread/media queries
   const navDataPromise = getNavigationData(c);
@@ -88,6 +143,68 @@ pageRoutes.get("/*", async (c) => {
         );
         return result ?? c.notFound();
       }
+    }
+  }
+
+  // Text attachment deep-link: /{post-slug}/text/{media-id}
+  const textMatch = fullPath.match(/^(.+)\/text\/([a-zA-Z0-9_-]+)$/);
+  if (textMatch) {
+    const slugPart = textMatch[1] ?? "";
+    const mediaId = textMatch[2] ?? "";
+    if (!slugPart || !mediaId) return c.notFound();
+    const resolvedPost = await c.var.services.paths.resolve(slugPart);
+
+    if (resolvedPost?.postId) {
+      const post = await c.var.services.posts.getById(resolvedPost.postId);
+      if (!post || post.status === "draft") return c.notFound();
+
+      if (post.visibility === "private") {
+        const navData = await getNavigationData(c);
+        if (!navData.isAuthenticated) return c.notFound();
+      }
+
+      // Redirect slug → alias if one exists (same pattern as post pages)
+      if (resolvedPost.kind === "slug") {
+        const alias = await c.var.services.customUrls.getByTarget(
+          "post",
+          post.id,
+        );
+        if (alias) {
+          return c.redirect(
+            toPublicPath(`/${alias.path}/text/${mediaId}`, sitePathPrefix),
+            301,
+          );
+        }
+      }
+
+      // Verify the media belongs to this post and is a text attachment
+      const media = await c.var.services.media.getById(mediaId);
+      if (
+        !media ||
+        media.postId !== post.id ||
+        media.mimeType !== "text/x-tiptap+json"
+      ) {
+        return c.notFound();
+      }
+
+      const attachment = await c.var.services.media.getTextAttachmentHtml(
+        media.id,
+        c.var.storage ?? null,
+      );
+      if (!attachment) return c.notFound();
+
+      const postPermalink = toPublicPath(
+        resolvedPost.path ? `/${resolvedPost.path}` : `/${post.slug}`,
+        sitePathPrefix,
+      );
+
+      // Render the parent post page with auto-open data for the text preview dialog
+      return renderPostWithTextPreview(c, post, {
+        html: attachment.html,
+        shareHref: c.req.path,
+        postHref: postPermalink,
+        attachmentTitle: attachment.summary ?? "",
+      });
     }
   }
 

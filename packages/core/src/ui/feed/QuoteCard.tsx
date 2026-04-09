@@ -80,7 +80,10 @@ export const QuoteCard: FC<TimelineCardProps> = ({
       )}
       {!isCompact && post.media.length > 0 && (
         <div class="mt-3" data-post-media>
-          <MediaGallery attachments={post.media} />
+          <MediaGallery
+            attachments={post.media}
+            postPermalink={post.permalink}
+          />
         </div>
       )}
       {!isCompact && !display?.hideRating && (
