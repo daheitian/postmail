@@ -4480,7 +4480,7 @@
 
   .compose-dialog-title {
     font-weight: var(--fw-semibold);
-    font-size: var(--type-ui-title);
+    font-size: var(--type-ui-control);
     line-height: 1.2;
   }
 
@@ -4661,12 +4661,12 @@
     position: relative;
     z-index: 1;
     flex: 1;
-    padding: 6px 1.15rem;
+    padding: 5px 0.95rem;
     border-radius: 8px;
     border: none;
     background: transparent;
     color: var(--site-text-secondary);
-    font-size: var(--type-ui-control);
+    font-size: var(--type-ui-hint);
     font-weight: var(--fw-medium);
     line-height: 1.2;
     cursor: pointer;
@@ -4676,8 +4676,8 @@
 
   @media (min-width: 700px) {
     .compose-segmented-item {
-      padding: 0.48rem 1.35rem;
-      font-size: var(--type-ui-meta);
+      padding: 0.4rem 1.15rem;
+      font-size: var(--type-ui-control);
     }
   }
 
