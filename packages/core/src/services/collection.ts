@@ -215,6 +215,7 @@ export function createCollectionService(
       collectionId: row.collectionId,
       label: row.label,
       url: row.url,
+      description: row.description,
       position: row.position,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -235,6 +236,17 @@ export function createCollectionService(
 
   function normalizeDirectoryUrl(url: string): string {
     return parseValidated(CollectionDirectoryLinkUrlSchema, url);
+  }
+
+  function normalizeDirectoryDescription(
+    description?: string | null,
+  ): string | null {
+    if (description === null || description === undefined) return null;
+    const trimmed = parseValidated(
+      CollectionDescriptionValueSchema,
+      description,
+    );
+    return trimmed || null;
   }
 
   function normalizeCreateDirectoryItemInput(
@@ -259,6 +271,7 @@ export function createCollectionService(
       type: "link",
       label: normalizeDirectoryLinkLabel(normalized.label),
       url: normalizeDirectoryUrl(normalized.url),
+      description: normalizeDirectoryDescription(normalized.description),
     };
   }
 
@@ -443,6 +456,7 @@ export function createCollectionService(
           type: "link",
           label: item.label,
           url: item.url,
+          description: item.description,
         });
         continue;
       }
@@ -796,6 +810,10 @@ export function createCollectionService(
                     ? normalizedData.label
                     : null,
               url: normalizedData.type === "link" ? normalizedData.url : null,
+              description:
+                normalizedData.type === "link"
+                  ? (normalizedData.description ?? null)
+                  : null,
               position: await getAppendDirectoryPosition(),
               createdAt: timestamp,
               updatedAt: timestamp,
@@ -867,12 +885,17 @@ export function createCollectionService(
       const item = existing[0];
       if (!item) return null;
 
-      if (data.label === undefined && data.url === undefined) {
+      if (
+        data.label === undefined &&
+        data.url === undefined &&
+        data.description === undefined
+      ) {
         return toDirectoryItem(item);
       }
 
       let nextLabel = item.label;
       let nextUrl = item.url;
+      let nextDescription = item.description;
 
       if (item.type === "divider" && data.label !== undefined) {
         nextLabel = normalizeDirectoryLabel(data.label);
@@ -888,6 +911,9 @@ export function createCollectionService(
         if (data.url !== undefined) {
           nextUrl = normalizeDirectoryUrl(data.url);
         }
+        if (data.description !== undefined) {
+          nextDescription = normalizeDirectoryDescription(data.description);
+        }
       }
 
       const result = await db
@@ -895,6 +921,7 @@ export function createCollectionService(
         .set({
           label: item.type === "collection" ? null : nextLabel,
           url: item.type === "link" ? nextUrl : null,
+          description: item.type === "link" ? nextDescription : null,
           updatedAt: now(),
         })
         .where(

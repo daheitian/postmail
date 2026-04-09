@@ -169,6 +169,15 @@ const collectionMutationMessages = {
     message: "/archive?format=quote or https://example.com",
     comment: "@context: Placeholder for the custom collections link URL",
   }),
+  linkDescriptionLabel: msg({
+    message: "Description (optional)",
+    comment: "@context: Field label for a custom collections link description",
+  }),
+  linkDescriptionPlaceholder: msg({
+    message: "Link",
+    comment:
+      "@context: Placeholder for the custom collections link description editor, shown on the directory when no description is provided",
+  }),
   labelAndUrlRequired: msg({
     message: "Add a label and URL.",
     comment:
@@ -219,6 +228,10 @@ export const getCollectionMutationLabels = (i18n: Translator) => ({
   addLinkDescription: i18n._(collectionMutationMessages.addLinkDescription),
   linkLabelPlaceholder: i18n._(collectionMutationMessages.linkLabelPlaceholder),
   linkUrlPlaceholder: i18n._(collectionMutationMessages.linkUrlPlaceholder),
+  linkDescriptionLabel: i18n._(collectionMutationMessages.linkDescriptionLabel),
+  linkDescriptionPlaceholder: i18n._(
+    collectionMutationMessages.linkDescriptionPlaceholder,
+  ),
   labelAndUrlRequired: i18n._(collectionMutationMessages.labelAndUrlRequired),
   formLabels: getCollectionFormLabels(i18n),
 });

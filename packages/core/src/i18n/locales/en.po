@@ -965,6 +965,8 @@ msgid "Describe this for people with visual impairments..."
 msgstr "Describe this for people with visual impairments..."
 
 #. @context: Collection form field
+#. @context: Field label for a custom collections link description
+#: src/ui/shared/collection-management-labels.ts
 #: src/ui/shared/collection-management-labels.ts
 msgid "Description (optional)"
 msgstr "Description (optional)"
@@ -1677,11 +1679,15 @@ msgid "link"
 msgstr "link"
 
 #. @context: Compose format tab
+#. @context: Default type label for a custom link on the collections directory when no description is provided
+#. @context: Placeholder for the custom collections link description editor, shown on the directory when no description is provided
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/FormatBadge.tsx
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/collection-management-labels.ts
+#: src/ui/shared/CollectionDirectory.tsx
 msgid "Link"
 msgstr "Link"
 

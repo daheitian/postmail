@@ -41,6 +41,8 @@ const labels: CollectionManagerLabels = {
   url: "URL",
   linkLabelPlaceholder: "Quotes",
   linkUrlPlaceholder: "/archive?format=quote",
+  linkDescriptionLabel: "Description (optional)",
+  linkDescriptionPlaceholder: "Link",
   labelAndUrlRequired: "Add a label and URL.",
   deleteDivider: "Delete divider",
   moreActions: "More actions",

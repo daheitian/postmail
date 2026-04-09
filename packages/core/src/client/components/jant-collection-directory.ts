@@ -13,6 +13,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
+import type { Editor } from "@tiptap/core";
 import { classMap } from "lit/directives/class-map.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import Sortable from "sortablejs";
@@ -35,6 +36,10 @@ import {
 } from "../../lib/collection-paths.js";
 import { render as renderMarkdown } from "../../lib/markdown.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
+import {
+  createSettingsEditor,
+  jsonToMarkdown,
+} from "../tiptap/create-editor.js";
 import type {
   CollectionManagerItem,
   CollectionManagerLabels,
@@ -57,6 +62,7 @@ interface CollectionsResponse {
     collectionId: string | null;
     label: string | null;
     url: string | null;
+    description: string | null;
     position: string;
   }>;
 }
@@ -64,6 +70,7 @@ interface CollectionsResponse {
 interface DirectoryItemUpdateResponse {
   label?: string | null;
   url?: string | null;
+  description?: string | null;
 }
 
 export class JantCollectionsManager extends LitElement {
@@ -77,10 +84,12 @@ export class JantCollectionsManager extends LitElement {
     _editingLinkId: { state: true },
     _editLinkLabel: { state: true },
     _editLinkUrl: { state: true },
+    _editLinkDescription: { state: true },
     _showMoreMenu: { state: true },
     _showLinkForm: { state: true },
     _newLinkLabel: { state: true },
     _newLinkUrl: { state: true },
+    _newLinkDescription: { state: true },
     _addingLink: { state: true },
     _hoveringId: { state: true },
     _showItemMenuId: { state: true },
@@ -95,10 +104,12 @@ export class JantCollectionsManager extends LitElement {
   declare _editingLinkId: string | null;
   declare _editLinkLabel: string;
   declare _editLinkUrl: string;
+  declare _editLinkDescription: string;
   declare _showMoreMenu: boolean;
   declare _showLinkForm: boolean;
   declare _newLinkLabel: string;
   declare _newLinkUrl: string;
+  declare _newLinkDescription: string;
   declare _addingLink: boolean;
   declare _hoveringId: string | null;
   declare _showItemMenuId: string | null;
@@ -107,6 +118,8 @@ export class JantCollectionsManager extends LitElement {
   #initialized = false;
   #revertNextSibling: Node | null = null;
   #managerRoot: HTMLElement | null = null;
+  #newLinkDescEditor: Editor | null = null;
+  #editLinkDescEditor: Editor | null = null;
 
   #closeMoreMenu = () => {
     this._showMoreMenu = false;
@@ -189,10 +202,12 @@ export class JantCollectionsManager extends LitElement {
     this._editingLinkId = null;
     this._editLinkLabel = "";
     this._editLinkUrl = "";
+    this._editLinkDescription = "";
     this._showMoreMenu = false;
     this._showLinkForm = false;
     this._newLinkLabel = "";
     this._newLinkUrl = "";
+    this._newLinkDescription = "";
     this._addingLink = false;
     this._hoveringId = null;
     this._showItemMenuId = null;
@@ -214,6 +229,10 @@ export class JantCollectionsManager extends LitElement {
     this.#sortable = null;
     this.#managerRoot?.removeEventListener("click", this.#handleHeaderClick);
     this.#managerRoot = null;
+    this.#newLinkDescEditor?.destroy();
+    this.#newLinkDescEditor = null;
+    this.#editLinkDescEditor?.destroy();
+    this.#editLinkDescEditor = null;
     document.removeEventListener("click", this.#closeMoreMenu);
     document.removeEventListener("click", this.#closeItemMenu);
   }
@@ -355,6 +374,7 @@ export class JantCollectionsManager extends LitElement {
         collectionId: item.collectionId,
         label: item.label,
         url: item.url,
+        description: item.description,
         position: item.position,
         collection,
       });
@@ -492,7 +512,52 @@ export class JantCollectionsManager extends LitElement {
       if (input && this.ownerDocument.activeElement !== input) {
         input.focus();
       }
+      this.#initNewLinkDescEditor();
     }
+
+    if (changedProperties.has("_editingLinkId") && this._editingLinkId) {
+      this.#initEditLinkDescEditor();
+    }
+  }
+
+  #initNewLinkDescEditor() {
+    const container = this.querySelector<HTMLElement>(
+      "[data-new-link-desc-editor]",
+    );
+    if (!container || this.#newLinkDescEditor) return;
+
+    this.#newLinkDescEditor = createSettingsEditor({
+      element: container,
+      placeholder: this.labels.linkDescriptionPlaceholder,
+      content: this._newLinkDescription || undefined,
+      onUpdate: (markdown) => {
+        this._newLinkDescription = markdown;
+      },
+    });
+
+    this._newLinkDescription = jsonToMarkdown(
+      this.#newLinkDescEditor.getJSON(),
+    );
+  }
+
+  #initEditLinkDescEditor() {
+    const container = this.querySelector<HTMLElement>(
+      "[data-edit-link-desc-editor]",
+    );
+    if (!container || this.#editLinkDescEditor) return;
+
+    this.#editLinkDescEditor = createSettingsEditor({
+      element: container,
+      placeholder: this.labels.linkDescriptionPlaceholder,
+      content: this._editLinkDescription || undefined,
+      onUpdate: (markdown) => {
+        this._editLinkDescription = markdown;
+      },
+    });
+
+    this._editLinkDescription = jsonToMarkdown(
+      this.#editLinkDescEditor.getJSON(),
+    );
   }
 
   async #addDivider() {
@@ -519,6 +584,9 @@ export class JantCollectionsManager extends LitElement {
     this._showLinkForm = true;
     this._newLinkLabel = "";
     this._newLinkUrl = "";
+    this._newLinkDescription = "";
+    this.#newLinkDescEditor?.destroy();
+    this.#newLinkDescEditor = null;
     document.removeEventListener("click", this.#closeMoreMenu);
   }
 
@@ -532,6 +600,7 @@ export class JantCollectionsManager extends LitElement {
 
     this._addingLink = true;
     try {
+      const description = this._newLinkDescription.trim() || null;
       const res = await fetch("/api/collections/directory-items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -539,6 +608,7 @@ export class JantCollectionsManager extends LitElement {
           type: "link",
           label,
           url,
+          description,
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -546,6 +616,9 @@ export class JantCollectionsManager extends LitElement {
       this._showLinkForm = false;
       this._newLinkLabel = "";
       this._newLinkUrl = "";
+      this._newLinkDescription = "";
+      this.#newLinkDescEditor?.destroy();
+      this.#newLinkDescEditor = null;
       showToast(this.labels.linkCreated);
       await this.#refreshList();
     } catch {
@@ -623,12 +696,18 @@ export class JantCollectionsManager extends LitElement {
       this._editingLinkId = null;
       this._editLinkLabel = "";
       this._editLinkUrl = "";
+      this._editLinkDescription = "";
+      this.#editLinkDescEditor?.destroy();
+      this.#editLinkDescEditor = null;
       return;
     }
 
     this._editingLinkId = item.id;
     this._editLinkLabel = item.label ?? "";
     this._editLinkUrl = item.url ?? "";
+    this._editLinkDescription = item.description ?? "";
+    this.#editLinkDescEditor?.destroy();
+    this.#editLinkDescEditor = null;
   }
 
   async #saveLink(item: CollectionManagerItem) {
@@ -640,10 +719,11 @@ export class JantCollectionsManager extends LitElement {
     }
 
     try {
+      const description = this._editLinkDescription.trim() || null;
       const res = await fetch(`/api/collections/directory-items/${item.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label, url }),
+        body: JSON.stringify({ label, url, description }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
@@ -654,12 +734,16 @@ export class JantCollectionsManager extends LitElement {
               ...entry,
               label: updated.label ?? label,
               url: updated.url ?? url,
+              description: updated.description ?? null,
             }
           : entry,
       );
       this._editingLinkId = null;
       this._editLinkLabel = "";
       this._editLinkUrl = "";
+      this._editLinkDescription = "";
+      this.#editLinkDescEditor?.destroy();
+      this.#editLinkDescEditor = null;
       showToast(this.labels.linkSaved);
     } catch {
       showToast(this.labels.saveFailed, "error");
@@ -688,6 +772,9 @@ export class JantCollectionsManager extends LitElement {
       this._editingLinkId = null;
       this._editLinkLabel = "";
       this._editLinkUrl = "";
+      this._editLinkDescription = "";
+      this.#editLinkDescEditor?.destroy();
+      this.#editLinkDescEditor = null;
       showToast(this.labels.linkDeleted);
       this._items = this._items.filter((entry) => entry.id !== item.id);
     } catch {
@@ -898,6 +985,13 @@ export class JantCollectionsManager extends LitElement {
               }}
             />
           </div>
+          <div class="field">
+            <label class="label"> ${this.labels.linkDescriptionLabel} </label>
+            <div
+              class="settings-tiptap-editor"
+              data-edit-link-desc-editor
+            ></div>
+          </div>
           <div class="collections-link-edit-actions">
             <button
               type="button"
@@ -960,9 +1054,19 @@ export class JantCollectionsManager extends LitElement {
             </span>
           </a>
         </div>
-        <p class="collection-directory-summary">
-          <span class="collection-directory-meta">Link</span>
-        </p>
+        ${item.description
+          ? html`
+              <div class="collection-directory-description prose">
+                ${unsafeHTML(renderMarkdown(item.description))}
+              </div>
+            `
+          : html`
+              <p class="collection-directory-summary">
+                <span class="collection-directory-meta"
+                  >${this.labels.linkDescriptionPlaceholder}</span
+                >
+              </p>
+            `}
       </div>
     `;
 
@@ -1286,6 +1390,10 @@ export class JantCollectionsManager extends LitElement {
               }}
             />
           </div>
+          <div class="field">
+            <label class="label"> ${this.labels.linkDescriptionLabel} </label>
+            <div class="settings-tiptap-editor" data-new-link-desc-editor></div>
+          </div>
           <div class="collections-link-edit-actions">
             <button
               type="button"
@@ -1294,6 +1402,9 @@ export class JantCollectionsManager extends LitElement {
                 this._showLinkForm = false;
                 this._newLinkLabel = "";
                 this._newLinkUrl = "";
+                this._newLinkDescription = "";
+                this.#newLinkDescEditor?.destroy();
+                this.#newLinkDescEditor = null;
               }}
             >
               ${this.labels.cancel}

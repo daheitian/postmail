@@ -214,9 +214,26 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                     </span>
                   </a>
                 </div>
-                <p class="collection-directory-summary">
-                  <span class="collection-directory-meta">Link</span>
-                </p>
+                {item.description ? (
+                  <div
+                    class="collection-directory-description prose"
+                    dangerouslySetInnerHTML={{
+                      __html: renderMarkdown(item.description),
+                    }}
+                  />
+                ) : (
+                  <p class="collection-directory-summary">
+                    <span class="collection-directory-meta">
+                      {i18n._(
+                        msg({
+                          message: "Link",
+                          comment:
+                            "@context: Default type label for a custom link on the collections directory when no description is provided",
+                        }),
+                      )}
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
           );

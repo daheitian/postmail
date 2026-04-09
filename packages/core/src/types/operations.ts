@@ -130,9 +130,11 @@ export type CreateCollectionDirectoryEntry =
       type: "link";
       label: string;
       url: string;
+      description?: string | null;
     };
 
 export interface UpdateCollectionDirectoryEntry {
   label?: string | null;
   url?: string;
+  description?: string | null;
 }

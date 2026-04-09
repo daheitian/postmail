@@ -1,0 +1,2 @@
+ALTER TABLE "collection_directory_item" ADD COLUMN "description" text;--> statement-breakpoint
+ALTER TABLE "collection_directory_item" ADD CONSTRAINT "chk_collection_directory_item_description" CHECK ("collection_directory_item"."type" = 'link' OR "collection_directory_item"."description" IS NULL);

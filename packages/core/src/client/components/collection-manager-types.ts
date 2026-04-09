@@ -23,6 +23,8 @@ export interface CollectionManagerLabels {
   url: string;
   linkLabelPlaceholder: string;
   linkUrlPlaceholder: string;
+  linkDescriptionLabel: string;
+  linkDescriptionPlaceholder: string;
   labelAndUrlRequired: string;
   deleteDivider: string;
   moreActions: string;
@@ -60,6 +62,7 @@ export interface CollectionManagerItem {
   collectionId?: string | null;
   label?: string | null;
   url?: string | null;
+  description?: string | null;
   position?: string;
   collection?: ManagedCollection;
 }

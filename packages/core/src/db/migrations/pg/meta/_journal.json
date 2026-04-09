@@ -85,6 +85,13 @@
       "when": 1775538682750,
       "tag": "0011_fixed_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1775749590270,
+      "tag": "0012_cute_shockwave",
+      "breakpoints": true
     }
   ]
 }

@@ -553,6 +553,10 @@ export const CollectionDirectoryLinkUrlSchema = z
     message: "URL must use http:, https:, or mailto: protocol",
   });
 
+export const CollectionDescriptionValueSchema = sanitizeText(
+  MAX_COLLECTION_DESCRIPTION_LENGTH,
+);
+
 export const CreateCollectionDirectoryItemSchema = z.discriminatedUnion(
   "type",
   [
@@ -564,6 +568,7 @@ export const CreateCollectionDirectoryItemSchema = z.discriminatedUnion(
       type: z.literal("link"),
       label: CollectionDirectoryLinkLabelSchema,
       url: CollectionDirectoryLinkUrlSchema,
+      description: CollectionDescriptionValueSchema.nullable().optional(),
     }),
   ],
 );
@@ -571,6 +576,7 @@ export const CreateCollectionDirectoryItemSchema = z.discriminatedUnion(
 export const UpdateCollectionDirectoryItemSchema = z.object({
   label: z.union([CollectionDirectoryLabelSchema, z.null()]).optional(),
   url: CollectionDirectoryLinkUrlSchema.optional(),
+  description: CollectionDescriptionValueSchema.nullable().optional(),
 });
 
 export {
@@ -611,10 +617,6 @@ export const CollectionSlugSchema = z
 export const CollectionTitleSchema = sanitizeText(
   MAX_COLLECTION_TITLE_LENGTH,
 ).pipe(z.string().min(1));
-
-export const CollectionDescriptionValueSchema = sanitizeText(
-  MAX_COLLECTION_DESCRIPTION_LENGTH,
-);
 
 export const CreateCollectionSchema = z.object({
   slug: CollectionSlugSchema,

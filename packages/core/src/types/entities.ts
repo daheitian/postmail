@@ -146,6 +146,7 @@ export interface CollectionDirectoryEntry {
   collectionId: string | null;
   label: string | null;
   url: string | null;
+  description: string | null;
   position: string;
   createdAt: number;
   updatedAt: number;
@@ -156,6 +157,7 @@ export interface CollectionDirectoryItem {
   type: CollectionDirectoryEntryType;
   label?: string | null;
   url?: string | null;
+  description?: string | null;
   collection?: CollectionDirectoryCollection;
 }
 

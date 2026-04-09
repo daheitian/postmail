@@ -503,6 +503,7 @@ export const collectionDirectoryItems = pgTable(
     }),
     label: text("label"),
     url: text("url"),
+    description: text("description"),
     position: text("position").notNull().default("a0"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -546,6 +547,10 @@ export const collectionDirectoryItems = pgTable(
     check(
       "chk_collection_directory_item_label",
       sql`${table.type} <> 'collection' OR ${table.label} IS NULL`,
+    ),
+    check(
+      "chk_collection_directory_item_description",
+      sql`${table.type} = 'link' OR ${table.description} IS NULL`,
     ),
   ],
 );
