@@ -88,7 +88,7 @@
   --type-body-tracking: 0;
   --type-ui-title: var(--type-secondary);
   --type-ui-control: var(--type-base);
-  --type-ui-meta: var(--type-secondary);
+  --type-ui-meta: var(--type-base);
   --type-ui-hint: var(--type-sm);
   --type-ui-caption: var(--type-xs);
   --type-ui-micro: var(--type-2xs);
@@ -109,7 +109,7 @@
   --type-label-tracking: 0.08em;
 
   /* Layout — Tufte proportional model */
-  --content-max-width: 50rem;
+  --content-max-width: 42rem;
   --form-max-width: 42rem;
   /* compose dialogs + feed content cap */
   --layout-body-max-width: 1088px;
