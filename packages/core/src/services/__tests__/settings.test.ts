@@ -162,6 +162,7 @@ describe("SettingsService", () => {
       siteDescription: "",
       siteFooter: "",
       siteLanguage: "en",
+      cjkSerifFont: "off",
       showJantBrandingOnHome: false,
       homeDefaultView: "latest",
       mainRssFeed: "featured",
@@ -372,7 +373,8 @@ describe("SettingsService", () => {
     it("updates locale fields and reports when the language changed", async () => {
       const result = await settingsService.updateLocaleSettings(
         {
-          siteLanguage: "zh-Hans",
+          siteLanguage: "sv",
+          cjkSerifFont: "zh-Hans",
           timeZone: "America/New_York",
         },
         {
@@ -381,18 +383,34 @@ describe("SettingsService", () => {
       );
 
       expect(result.languageChanged).toBe(true);
-      expect(await settingsService.get("SITE_LANGUAGE")).toBe("zh-Hans");
+      expect(await settingsService.get("SITE_LANGUAGE")).toBe("sv");
+      expect(await settingsService.get("CJK_SERIF_FONT")).toBe("zh-Hans");
       expect(await settingsService.get("TIME_ZONE")).toBe("America/New_York");
+    });
+
+    it("removes CJK_SERIF_FONT when set to off", async () => {
+      await settingsService.set("CJK_SERIF_FONT", "zh-Hans");
+      await settingsService.updateLocaleSettings(
+        {
+          siteLanguage: "en",
+          cjkSerifFont: "off",
+          timeZone: "UTC",
+        },
+        { oldLanguage: "en" },
+      );
+
+      expect(await settingsService.get("CJK_SERIF_FONT")).toBeNull();
     });
 
     it("stores the base locale when language input is blank", async () => {
       const result = await settingsService.updateLocaleSettings(
         {
           siteLanguage: "",
+          cjkSerifFont: "off",
           timeZone: "UTC",
         },
         {
-          oldLanguage: "zh-Hans",
+          oldLanguage: "sv",
         },
       );
 

@@ -29,15 +29,16 @@ export interface FontTheme {
   description: MessageDescriptor;
 }
 
-const HANS_SITE_LANGUAGES = new Set(["zh-hans", "zh-cn", "zh-sg"]);
-const HANT_SITE_LANGUAGES = new Set(["zh-hant", "zh-tw", "zh-hk", "zh-mo"]);
-
 const DEFAULT_CJK_SERIF_FALLBACK =
   '"Songti SC", STSong, SimSun, "Songti TC", PMingLiU, MingLiU, "Noto Serif SC", "Noto Serif CJK SC", "Noto Serif TC", "Noto Serif CJK TC"';
 const HANS_CJK_SERIF_FALLBACK =
   '"Songti SC", STSong, SimSun, "Noto Serif SC", "Noto Serif CJK SC", "Songti TC", PMingLiU, MingLiU, "Noto Serif TC", "Noto Serif CJK TC"';
 const HANT_CJK_SERIF_FALLBACK =
   '"Songti TC", PMingLiU, MingLiU, "Noto Serif TC", "Noto Serif CJK TC", "Songti SC", STSong, SimSun, "Noto Serif SC", "Noto Serif CJK SC"';
+const JP_CJK_SERIF_FALLBACK =
+  '"Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", YuMincho, "Noto Serif JP", "Noto Serif CJK JP", "MS PMincho", "MS Mincho", serif';
+const KO_CJK_SERIF_FALLBACK =
+  '"Batang", "Noto Serif KR", "Noto Serif CJK KR", "NanumMyeongjo", serif';
 const CJK_SERIF_FALLBACK_VAR = "var(--font-cjk-serif-fallback)";
 
 /** System sans-serif stack */
@@ -106,10 +107,10 @@ export function getFontThemeCssVariables(
 }
 
 /**
- * Resolve runtime CJK serif fallbacks for the current site language.
+ * Resolve runtime CJK serif fallbacks for the configured CJK font setting.
  *
- * @param siteLanguage - Resolved site language from config
- * @returns CSS variable overrides for zh-Hans/zh-Hant sites
+ * @param cjkSerifFont - CJK serif font setting ("off", "zh-Hans", "zh-Hant", "ja", "ko")
+ * @returns CSS variable overrides for CJK sites
  *
  * @example
  * ```typescript
@@ -118,23 +119,20 @@ export function getFontThemeCssVariables(
  * ```
  */
 export function getCjkSerifCssVariables(
-  siteLanguage?: string,
+  cjkSerifFont?: string,
 ): Record<string, string> {
-  const normalizedLanguage = siteLanguage?.toLowerCase();
-
-  if (normalizedLanguage && HANS_SITE_LANGUAGES.has(normalizedLanguage)) {
-    return {
-      "--font-cjk-serif-fallback": HANS_CJK_SERIF_FALLBACK,
-    };
+  switch (cjkSerifFont) {
+    case "zh-Hans":
+      return { "--font-cjk-serif-fallback": HANS_CJK_SERIF_FALLBACK };
+    case "zh-Hant":
+      return { "--font-cjk-serif-fallback": HANT_CJK_SERIF_FALLBACK };
+    case "ja":
+      return { "--font-cjk-serif-fallback": JP_CJK_SERIF_FALLBACK };
+    case "ko":
+      return { "--font-cjk-serif-fallback": KO_CJK_SERIF_FALLBACK };
+    default:
+      return {};
   }
-
-  if (normalizedLanguage && HANT_SITE_LANGUAGES.has(normalizedLanguage)) {
-    return {
-      "--font-cjk-serif-fallback": HANT_CJK_SERIF_FALLBACK,
-    };
-  }
-
-  return {};
 }
 
 export const DEFAULT_FONT_CJK_SERIF_FALLBACK = DEFAULT_CJK_SERIF_FALLBACK;

@@ -18,6 +18,8 @@ declare const __CLIENT_AUTH_JS_FILE__: string;
 declare const __CLIENT_CSS_FILE__: string;
 declare const __CLIENT_CJK_CSS_FILE__: string;
 declare const __CLIENT_CJK_TC_CSS_FILE__: string;
+declare const __CLIENT_CJK_JP_CSS_FILE__: string;
+declare const __CLIENT_CJK_KR_CSS_FILE__: string;
 
 export const IS_VITE_DEV =
   typeof __JANT_DEV__ !== "undefined" && __JANT_DEV__ === true;
@@ -28,3 +30,5 @@ export const CLIENT_AUTH_JS_FILE = __CLIENT_AUTH_JS_FILE__;
 export const CLIENT_CSS_FILE = __CLIENT_CSS_FILE__;
 export const CLIENT_CJK_CSS_FILE = __CLIENT_CJK_CSS_FILE__;
 export const CLIENT_CJK_TC_CSS_FILE = __CLIENT_CJK_TC_CSS_FILE__;
+export const CLIENT_CJK_JP_CSS_FILE = __CLIENT_CJK_JP_CSS_FILE__;
+export const CLIENT_CJK_KR_CSS_FILE = __CLIENT_CJK_KR_CSS_FILE__;

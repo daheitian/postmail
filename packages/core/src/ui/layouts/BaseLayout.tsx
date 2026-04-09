@@ -23,6 +23,8 @@ import { isFullUrl, toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import {
   CLIENT_AUTH_JS_FILE,
   CLIENT_CJK_CSS_FILE,
+  CLIENT_CJK_JP_CSS_FILE,
+  CLIENT_CJK_KR_CSS_FILE,
   CLIENT_CJK_TC_CSS_FILE,
   CLIENT_CSS_FILE,
   CLIENT_JS_FILE,
@@ -111,22 +113,25 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   const browserThemeColors = getThemeBrowserColors(activeTheme);
   const resolvedClientBundle =
     clientBundle ?? (isAuthenticated ? "full" : "public");
-  const fontLanguage = appConfig?.siteLanguage?.toLowerCase() ?? "";
+  const cjkSerifFont = appConfig?.cjkSerifFont ?? "off";
   const cjkStylesheetPath =
-    fontLanguage === "zh-hans" ||
-    fontLanguage === "zh-cn" ||
-    fontLanguage === "zh-sg"
+    cjkSerifFont === "zh-Hans"
       ? IS_VITE_DEV
         ? assetPath("/src/style-cjk.css")
         : toPublicAssetPath(CLIENT_CJK_CSS_FILE, assetBasePath)
-      : fontLanguage === "zh-hant" ||
-          fontLanguage === "zh-tw" ||
-          fontLanguage === "zh-hk" ||
-          fontLanguage === "zh-mo"
+      : cjkSerifFont === "zh-Hant"
         ? IS_VITE_DEV
           ? assetPath("/src/style-cjk-tc.css")
           : toPublicAssetPath(CLIENT_CJK_TC_CSS_FILE, assetBasePath)
-        : null;
+        : cjkSerifFont === "ja"
+          ? IS_VITE_DEV
+            ? assetPath("/src/style-cjk-jp.css")
+            : toPublicAssetPath(CLIENT_CJK_JP_CSS_FILE, assetBasePath)
+          : cjkSerifFont === "ko"
+            ? IS_VITE_DEV
+              ? assetPath("/src/style-cjk-kr.css")
+              : toPublicAssetPath(CLIENT_CJK_KR_CSS_FILE, assetBasePath)
+            : null;
   const clientScriptPath = IS_VITE_DEV
     ? resolvedClientBundle === "full"
       ? assetPath("/src/client-auth.ts")

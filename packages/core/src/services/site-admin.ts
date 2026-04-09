@@ -288,6 +288,7 @@ export function createSiteAdminService(
         siteLanguage: input.siteLanguage?.trim()
           ? detectLocaleFromHeader(input.siteLanguage)
           : baseLocale,
+        cjkSerifFont: "off",
         timeZone: input.timeZone?.trim() ?? "",
       },
       {
@@ -599,7 +600,7 @@ export function createSiteAdminService(
           )
         : undefined;
       const fontOverrides = {
-        ...getCjkSerifCssVariables(appConfig.siteLanguage),
+        ...getCjkSerifCssVariables(appConfig.cjkSerifFont),
         ...(fontTheme ? getFontThemeCssVariables(fontTheme) : {}),
       };
       const themeCss = buildThemeStyle(

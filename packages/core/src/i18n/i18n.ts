@@ -14,8 +14,6 @@ import type {
 import { I18n as LinguiI18nRuntime } from "@lingui/core";
 import { locales, baseLocale, isLocale, type Locale } from "./locales.js";
 import { messages as messagesEn } from "./locales/en.js";
-import { messages as messagesZhHans } from "./locales/zh-Hans.js";
-import { messages as messagesZhHant } from "./locales/zh-Hant.js";
 
 export { locales, baseLocale, isLocale, type Locale };
 
@@ -36,12 +34,7 @@ export interface I18n extends LinguiI18n {
   _(descriptor: MessageDescriptor, values?: TranslationValues): string;
 }
 
-// Pre-compute merged catalogs at module load time (done once, not per request)
-// For non-English locales, merge English as fallback so missing translations
-// fall back to English rather than showing hash IDs.
 const catalogEn: Messages = messagesEn;
-const catalogZhHans: Messages = { ...messagesEn, ...messagesZhHans };
-const catalogZhHant: Messages = { ...messagesEn, ...messagesZhHant };
 
 /**
  * Create a new i18n instance for a specific locale.
@@ -52,8 +45,6 @@ export function createI18n(locale: Locale): I18n {
   const i18n = new LinguiI18nRuntime({}) as I18n;
 
   i18n.load("en", catalogEn);
-  i18n.load("zh-Hans", catalogZhHans);
-  i18n.load("zh-Hant", catalogZhHant);
 
   i18n.activate(locale);
 

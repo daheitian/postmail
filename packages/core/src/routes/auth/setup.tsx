@@ -15,8 +15,8 @@ import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SetupSchema } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { mapIanaToTimezone } from "../../lib/timezones.js";
-import { getI18n, baseLocale } from "../../i18n/index.js";
-import { detectLocaleFromHeader } from "../../i18n/detect.js";
+import { getI18n } from "../../i18n/index.js";
+import { detectCjkFontFromHeader } from "../../i18n/detect.js";
 import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -222,16 +222,16 @@ setupRoutes.post("/setup", async (c) => {
     }
 
     const timeZone = mapIanaToTimezone(browserTimezone ?? "");
-    const siteLanguage =
+    const cjkSerifFont =
       browserLanguage && browserLanguage.trim()
-        ? detectLocaleFromHeader(browserLanguage)
-        : baseLocale;
+        ? detectCjkFontFromHeader(browserLanguage)
+        : "off";
 
     await c.var.services.bootstrap.completeInitialSetup({
       ownerUserId,
       siteName,
       timeZone,
-      siteLanguage,
+      cjkSerifFont,
     });
 
     return dsRedirect(

@@ -54,6 +54,7 @@ export const settingsRoutes = new Hono<Env>();
 
 const UpdateLocaleSettingsSchema = z.object({
   siteLanguage: z.string(),
+  cjkSerifFont: z.string(),
   timeZone: z.string(),
 });
 
@@ -171,6 +172,7 @@ settingsRoutes.get("/general", async (c) => {
           siteName={dbSiteName || ""}
           siteDescription={dbSiteDescription || ""}
           siteLanguage={appConfig.siteLanguage}
+          cjkSerifFont={appConfig.cjkSerifFont}
           siteNameFallback={appConfig.fallbacks.siteName}
           siteDescriptionFallback={appConfig.fallbacks.siteDescription}
           mainRssFeed={appConfig.mainRssFeed}
@@ -278,6 +280,7 @@ settingsRoutes.post("/general/language-time", async (c) => {
   const { languageChanged } =
     await c.var.services.settings.updateLocaleSettings(body, {
       oldLanguage: c.var.appConfig.siteLanguage,
+      oldCjkSerifFont: c.var.appConfig.cjkSerifFont,
     });
 
   const wantsJson = c.req.header("accept")?.includes("application/json");

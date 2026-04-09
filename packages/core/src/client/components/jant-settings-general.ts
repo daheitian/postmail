@@ -14,7 +14,7 @@ import type {
   SettingsInitialData,
   SettingsLabels,
   SettingsTimezone,
-  SettingsLanguage,
+  SettingsCjkFont,
 } from "./settings-types.js";
 import { showToast } from "../toast.js";
 import {
@@ -26,7 +26,7 @@ export class JantSettingsGeneral extends LitElement {
   static properties = {
     labels: { type: Object },
     timezones: { type: Array },
-    languages: { type: Array },
+    cjkFonts: { type: Array, attribute: "cjk-fonts" },
     siteNameFallback: { type: String, attribute: "sitename-fallback" },
     siteDescriptionFallback: {
       type: String,
@@ -45,8 +45,9 @@ export class JantSettingsGeneral extends LitElement {
     _siteDirty: { state: true },
     _siteLoading: { state: true },
 
-    // Language & time group
+    // Language, CJK & time group
     _siteLanguage: { state: true },
+    _cjkSerifFont: { state: true },
     _timeZone: { state: true },
     _origLocale: { state: true },
     _localeDirty: { state: true },
@@ -71,7 +72,7 @@ export class JantSettingsGeneral extends LitElement {
 
   declare labels: SettingsLabels;
   declare timezones: SettingsTimezone[];
-  declare languages: SettingsLanguage[];
+  declare cjkFonts: SettingsCjkFont[];
   declare siteNameFallback: string;
   declare siteDescriptionFallback: string;
   declare demoMode: boolean;
@@ -91,11 +92,13 @@ export class JantSettingsGeneral extends LitElement {
   declare _siteDirty: boolean;
   declare _siteLoading: boolean;
 
-  // Language & time
+  // Language, CJK & time
   declare _siteLanguage: string;
+  declare _cjkSerifFont: string;
   declare _timeZone: string;
   declare _origLocale: {
     siteLanguage: string;
+    cjkSerifFont: string;
     timeZone: string;
   };
   declare _localeDirty: boolean;
@@ -130,7 +133,7 @@ export class JantSettingsGeneral extends LitElement {
     super();
     this.labels = {} as SettingsLabels;
     this.timezones = [];
-    this.languages = [];
+    this.cjkFonts = [];
     this.siteNameFallback = "";
     this.siteDescriptionFallback = "";
     this.demoMode = false;
@@ -150,9 +153,11 @@ export class JantSettingsGeneral extends LitElement {
     this._siteLoading = false;
 
     this._siteLanguage = "en";
+    this._cjkSerifFont = "off";
     this._timeZone = "UTC";
     this._origLocale = {
       siteLanguage: "en",
+      cjkSerifFont: "off",
       timeZone: "UTC",
     };
 
@@ -187,9 +192,11 @@ export class JantSettingsGeneral extends LitElement {
     this._siteFooter = data.siteFooter;
 
     this._siteLanguage = data.siteLanguage;
+    this._cjkSerifFont = data.cjkSerifFont;
     this._timeZone = data.timeZone;
     this._origLocale = {
       siteLanguage: data.siteLanguage,
+      cjkSerifFont: data.cjkSerifFont,
       timeZone: data.timeZone,
     };
 
@@ -227,6 +234,7 @@ export class JantSettingsGeneral extends LitElement {
     } else if (section === "language-time") {
       this._origLocale = {
         siteLanguage: this._siteLanguage,
+        cjkSerifFont: this._cjkSerifFont,
         timeZone: this._timeZone,
       };
       this._localeDirty = false;
@@ -352,6 +360,7 @@ export class JantSettingsGeneral extends LitElement {
   private _syncLocaleDirty() {
     this._localeDirty =
       this._siteLanguage !== this._origLocale.siteLanguage ||
+      this._cjkSerifFont !== this._origLocale.cjkSerifFont ||
       this._timeZone !== this._origLocale.timeZone;
   }
 
@@ -365,6 +374,7 @@ export class JantSettingsGeneral extends LitElement {
           endpoint: "/settings/general/language-time",
           data: {
             siteLanguage: this._siteLanguage,
+            cjkSerifFont: this._cjkSerifFont,
             timeZone: this._timeZone,
           },
           section: "language-time",
@@ -638,25 +648,28 @@ export class JantSettingsGeneral extends LitElement {
         >
           ${this._renderSectionTitle(this.labels.languageAndTime)}
           <div class="field">
-            <label class="label">${this.labels.language}</label>
+            <label class="label">${this.labels.cjkFont}</label>
             <select
               class="select"
               @change=${(e: Event) => {
-                this._siteLanguage = (e.target as HTMLSelectElement).value;
+                this._cjkSerifFont = (e.target as HTMLSelectElement).value;
                 this._syncLocaleDirty();
               }}
             >
-              ${this.languages.map(
-                (lang) => html`
+              ${this.cjkFonts.map(
+                (font) => html`
                   <option
-                    value=${lang.value}
-                    ?selected=${this._siteLanguage === lang.value}
+                    value=${font.value}
+                    ?selected=${this._cjkSerifFont === font.value}
                   >
-                    ${lang.label}
+                    ${font.label}
                   </option>
                 `,
               )}
             </select>
+            <p class="text-sm text-muted-foreground mt-1">
+              ${this.labels.cjkFontHelp}
+            </p>
           </div>
 
           <div class="field">

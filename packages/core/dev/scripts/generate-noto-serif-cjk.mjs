@@ -38,6 +38,26 @@ const variants = {
       700: "noto-serif-tc-chinese-traditional-700-normal.woff2",
     },
   },
+  jp: {
+    family: "Noto Serif JP",
+    label: "Japanese",
+    outputDir: "noto-serif-jp",
+    packageName: "@fontsource/noto-serif-jp",
+    sourceFiles: {
+      400: "noto-serif-jp-japanese-400-normal.woff2",
+      700: "noto-serif-jp-japanese-700-normal.woff2",
+    },
+  },
+  kr: {
+    family: "Noto Serif KR",
+    label: "Korean",
+    outputDir: "noto-serif-kr",
+    packageName: "@fontsource/noto-serif-kr",
+    sourceFiles: {
+      400: "noto-serif-kr-korean-400-normal.woff2",
+      700: "noto-serif-kr-korean-700-normal.woff2",
+    },
+  },
 };
 
 const requestedVariant = process.argv[2];
@@ -47,7 +67,7 @@ if (
   !(requestedVariant in variants || requestedVariant === "all")
 ) {
   console.error(
-    "Usage: node dev/scripts/generate-noto-serif-cjk.mjs <sc|tc|all>",
+    "Usage: node dev/scripts/generate-noto-serif-cjk.mjs <sc|tc|jp|kr|all>",
   );
   process.exit(1);
 }

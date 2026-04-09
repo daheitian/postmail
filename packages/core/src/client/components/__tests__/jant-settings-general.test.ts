@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import type {
   SettingsLabels,
   SettingsTimezone,
-  SettingsLanguage,
+  SettingsCjkFont,
   SettingsSaveDetail,
 } from "../settings-types.js";
 import { MAX_SITE_NAME_LENGTH } from "../../../types.js";
@@ -81,7 +81,9 @@ const labels: SettingsLabels = {
   siteName: "Site Name",
   aboutBlog: "About this blog",
   aboutBlogHelp: "Displayed above your blog posts.",
-  language: "Language",
+  cjkFont: "CJK Font",
+  cjkFontHelp:
+    "Load a serif font optimized for Chinese, Japanese, or Korean content.",
   timeZone: "Time Zone",
   feeds: "Feeds",
   mainRssFeed: "Main RSS feed",
@@ -116,15 +118,16 @@ const timezones: SettingsTimezone[] = [
   { value: "America/New_York", label: "(UTC-05:00) Eastern Time" },
 ];
 
-const languages: SettingsLanguage[] = [
-  { value: "en", label: "English" },
-  { value: "zh-Hans", label: "简体中文" },
+const cjkFonts: SettingsCjkFont[] = [
+  { value: "off", label: "None" },
+  { value: "zh-Hans", label: "简体中文 (Simplified Chinese)" },
 ];
 
 const initialData = {
   siteName: "My Blog",
   siteDescription: "A test blog",
   siteLanguage: "en",
+  cjkSerifFont: "off",
   timeZone: "UTC",
   mainRssFeed: "featured",
   siteFooter: "Footer text",
@@ -153,7 +156,7 @@ async function createElement(
   ) as JantSettingsGeneral;
   el.labels = labels;
   el.timezones = timezones;
-  el.languages = languages;
+  el.cjkFonts = cjkFonts;
   el.siteNameFallback = "Fallback Name";
   el.siteDescriptionFallback = "Fallback Description";
   el.mainFeedUrl = "/feed";
@@ -215,15 +218,15 @@ describe("JantSettingsGeneral", () => {
     expect(options?.[0]?.value).toBe("UTC");
   });
 
-  it("renders language options", async () => {
+  it("renders CJK font options", async () => {
     const el = await createElement();
-    const langSelect = requireElement(
-      findSelectByLabel(el, labels.language),
-      "expected language select",
+    const cjkSelect = requireElement(
+      findSelectByLabel(el, labels.cjkFont),
+      "expected CJK font select",
     );
-    const options = langSelect?.querySelectorAll("option");
+    const options = cjkSelect?.querySelectorAll("option");
     expect(options?.length).toBe(2);
-    expect(options?.[0]?.value).toBe("en");
+    expect(options?.[0]?.value).toBe("off");
     expect(options?.[1]?.value).toBe("zh-Hans");
   });
 

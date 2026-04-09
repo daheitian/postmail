@@ -62,14 +62,16 @@ describe("Setup bootstrap logic", () => {
     expect(onboardingRow?.value).toBe("completed");
   });
 
-  it("stores the initial language and timezone during setup", async () => {
+  it("stores the initial language, CJK font, and timezone during setup", async () => {
     await runSetupBootstrap(services, {
-      siteLanguage: "zh-Hans",
+      siteLanguage: "en",
+      cjkSerifFont: "zh-Hans",
       timeZone: "Asia/Shanghai",
     });
 
     const rows = await services.db.select().from(settings);
-    expect(rows.find((row) => row.key === "SITE_LANGUAGE")?.value).toBe(
+    expect(rows.find((row) => row.key === "SITE_LANGUAGE")?.value).toBe("en");
+    expect(rows.find((row) => row.key === "CJK_SERIF_FONT")?.value).toBe(
       "zh-Hans",
     );
     expect(rows.find((row) => row.key === "TIME_ZONE")?.value).toBe(

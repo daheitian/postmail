@@ -57,6 +57,16 @@ const clientCjkTcCssFile = readClientManifestFile(
   "client-cjk-tc",
   ".css",
 );
+const clientCjkJpCssFile = readClientManifestFile(
+  "src/style-cjk-jp.css",
+  "client-cjk-jp",
+  ".css",
+);
+const clientCjkKrCssFile = readClientManifestFile(
+  "src/style-cjk-kr.css",
+  "client-cjk-kr",
+  ".css",
+);
 
 export default defineConfig({
   // SWC handles the server/library transforms in this build.
@@ -69,6 +79,8 @@ export default defineConfig({
     __CLIENT_CSS_FILE__: JSON.stringify(clientCssFile),
     __CLIENT_CJK_CSS_FILE__: JSON.stringify(clientCjkCssFile),
     __CLIENT_CJK_TC_CSS_FILE__: JSON.stringify(clientCjkTcCssFile),
+    __CLIENT_CJK_JP_CSS_FILE__: JSON.stringify(clientCjkJpCssFile),
+    __CLIENT_CJK_KR_CSS_FILE__: JSON.stringify(clientCjkKrCssFile),
     // __JANT_DEV__ intentionally omitted — typeof check evaluates to false
   },
 

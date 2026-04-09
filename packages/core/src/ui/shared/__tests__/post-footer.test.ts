@@ -47,7 +47,7 @@ function createPostView(overrides: Partial<PostView> = {}): PostView {
 function renderPostFooter(
   post: PostView,
   detail = false,
-  locale: "en" | "zh-Hans" | "zh-Hant" = "en",
+  locale: "en" = "en",
   display?: PostFooterDisplayOptions,
 ): string {
   const i18n = createI18n(locale);

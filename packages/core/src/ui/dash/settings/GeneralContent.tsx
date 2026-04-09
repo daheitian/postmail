@@ -15,6 +15,7 @@ export function GeneralContent({
   siteName,
   siteDescription,
   siteLanguage,
+  cjkSerifFont,
   siteNameFallback,
   siteDescriptionFallback,
   mainRssFeed,
@@ -31,6 +32,7 @@ export function GeneralContent({
   siteName: string;
   siteDescription: string;
   siteLanguage: string;
+  cjkSerifFont: string;
   siteNameFallback: string;
   siteDescriptionFallback: string;
   mainRssFeed: string;
@@ -97,10 +99,17 @@ export function GeneralContent({
         comment: "@context: Help text for site description field",
       }),
     ),
-    language: i18n._(
+    cjkFont: i18n._(
       msg({
-        message: "Language",
-        comment: "@context: Settings form field",
+        message: "CJK Font",
+        comment: "@context: Settings form field for CJK serif font selection",
+      }),
+    ),
+    cjkFontHelp: i18n._(
+      msg({
+        message:
+          "Load a serif font optimized for Chinese, Japanese, or Korean content.",
+        comment: "@context: Help text for CJK serif font selection",
       }),
     ),
     timeZone: i18n._(
@@ -272,16 +281,25 @@ export function GeneralContent({
     timezones.map((tz) => ({ value: tz.value, label: tz.label })),
   ).replace(/</g, "\\u003c");
 
-  const languagesJson = JSON.stringify([
-    { value: "en", label: "English" },
-    { value: "zh-Hans", label: "\u7B80\u4F53\u4E2D\u6587" },
-    { value: "zh-Hant", label: "\u7E41\u9AD4\u4E2D\u6587" },
+  const cjkFontsJson = JSON.stringify([
+    { value: "off", label: "None" },
+    {
+      value: "zh-Hans",
+      label: "\u7B80\u4F53\u4E2D\u6587 (Simplified Chinese)",
+    },
+    {
+      value: "zh-Hant",
+      label: "\u7E41\u9AD4\u4E2D\u6587 (Traditional Chinese)",
+    },
+    { value: "ja", label: "\u65E5\u672C\u8A9E (Japanese)" },
+    { value: "ko", label: "\uD55C\uAD6D\uC5B4 (Korean)" },
   ]).replace(/</g, "\\u003c");
 
   const initialData = JSON.stringify({
     siteName,
     siteDescription,
     siteLanguage,
+    cjkSerifFont,
     mainRssFeed,
     timeZone,
     siteFooter,
@@ -295,7 +313,7 @@ export function GeneralContent({
         <jant-settings-general
           labels={labels}
           timezones={timezonesJson}
-          languages={languagesJson}
+          cjk-fonts={cjkFontsJson}
           sitename-fallback={siteNameFallback}
           sitedescription-fallback={siteDescriptionFallback}
           main-feed-url={mainFeedUrl}

@@ -41,6 +41,11 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     envKeys: ["SITE_LANGUAGE"],
   },
+  CJK_SERIF_FONT: {
+    defaultValue: "off",
+    envOnly: false,
+    envKeys: ["CJK_SERIF_FONT"],
+  },
   HOME_DEFAULT_VIEW: {
     defaultValue: "latest",
     envOnly: false,
@@ -288,6 +293,8 @@ export interface AppConfig {
   /** true only when description is set in DB or ENV (not just the default) */
   siteDescriptionExplicit: boolean;
   siteLanguage: string;
+  /** CJK serif font locale: "off", "zh-Hans", "zh-Hant", "ja", or "ko" */
+  cjkSerifFont: string;
   homeDefaultView: string;
   mainRssFeed: string;
   /** Canonical IANA timezone identifier used for date/time display. */

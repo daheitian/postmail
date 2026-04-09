@@ -18,6 +18,7 @@ import {
   type SettingsKey,
 } from "../lib/constants.js";
 import { baseLocale } from "../i18n/locales.js";
+import { isCjkSerifFont } from "../i18n/detect.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
 import {
@@ -36,6 +37,7 @@ export interface GeneralSettingsData {
   siteDescription: string;
   siteFooter: string;
   siteLanguage: string;
+  cjkSerifFont: string;
   showJantBrandingOnHome: boolean;
   homeDefaultView?: FeedKind;
   mainRssFeed?: FeedKind;
@@ -55,6 +57,7 @@ export interface SiteSettingsResult {
 
 export interface LocaleSettingsData {
   siteLanguage: string;
+  cjkSerifFont: string;
   timeZone: string;
 }
 
@@ -90,7 +93,7 @@ export interface SettingsService {
   ): Promise<SiteSettingsResult>;
   updateLocaleSettings(
     data: LocaleSettingsData,
-    opts: { oldLanguage: string },
+    opts: { oldLanguage: string; oldCjkSerifFont?: string },
   ): Promise<{ languageChanged: boolean }>;
   updateFeedSettings(data: { mainRssFeed?: FeedKind }): Promise<void>;
   updateHomeBranding(showJantBrandingOnHome: boolean): Promise<void>;
@@ -108,7 +111,11 @@ export interface SettingsService {
    */
   updateGeneral(
     data: GeneralSettingsData,
-    opts: { oldLanguage: string; fallbackSiteName: string },
+    opts: {
+      oldLanguage: string;
+      oldCjkSerifFont?: string;
+      fallbackSiteName: string;
+    },
   ): Promise<GeneralSettingsResult>;
   /**
    * Upload an avatar image: validates file, stores in storage, creates media record,
@@ -279,6 +286,14 @@ export function createSettingsService(
       const trimmedLanguage = data.siteLanguage.trim() || baseLocale;
       await this.set("SITE_LANGUAGE", trimmedLanguage);
 
+      // CJK serif font setting
+      const cjkFont = data.cjkSerifFont?.trim() ?? "";
+      if (cjkFont && isCjkSerifFont(cjkFont) && cjkFont !== "off") {
+        await this.set("CJK_SERIF_FONT", cjkFont);
+      } else {
+        await this.remove("CJK_SERIF_FONT");
+      }
+
       if (data.timeZone) {
         if (!isSupportedTimeZone(data.timeZone)) {
           throw new ValidationError("Choose a valid time zone.");
@@ -294,8 +309,12 @@ export function createSettingsService(
         await this.remove("TIME_ZONE");
       }
 
+      const effectiveCjkFont =
+        cjkFont && isCjkSerifFont(cjkFont) ? cjkFont : "off";
       return {
-        languageChanged: opts.oldLanguage !== trimmedLanguage,
+        languageChanged:
+          opts.oldLanguage !== trimmedLanguage ||
+          (opts.oldCjkSerifFont ?? "off") !== effectiveCjkFont,
       };
     },
 
@@ -333,6 +352,7 @@ export function createSettingsService(
       await this.updateHomeBranding(data.showJantBrandingOnHome);
       const { languageChanged } = await this.updateLocaleSettings(data, {
         oldLanguage: opts.oldLanguage,
+        oldCjkSerifFont: opts.oldCjkSerifFont,
       });
 
       // Homepage default view: only update if provided (may be managed separately)

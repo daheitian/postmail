@@ -565,6 +565,11 @@ msgstr "Choose today or an earlier date, or leave it blank to publish now."
 msgid "Circle tile"
 msgstr "Circle tile"
 
+#. @context: Settings form field for CJK serif font selection
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "CJK Font"
+msgstr "CJK Font"
+
 #. @context: Archive filter button label to clear the active filter
 #. @context: Archive filter button label to clear the active filter
 #: src/ui/pages/ArchivePage.tsx
@@ -1600,11 +1605,6 @@ msgstr "Label and URL are required"
 msgid "Label is required"
 msgstr "Label is required"
 
-#. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "Language"
-msgstr "Language"
-
 #. @context: Settings subsection heading for language and time zone fields
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Language & Time"
@@ -1743,6 +1743,11 @@ msgstr "List posts:"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "live theme controls"
 msgstr "live theme controls"
+
+#. @context: Help text for CJK serif font selection
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Load a serif font optimized for Chinese, Japanese, or Korean content."
+msgstr "Load a serif font optimized for Chinese, Japanese, or Korean content."
 
 #. @context: Pagination button - load more items
 #: src/ui/shared/Pagination.tsx

@@ -52,7 +52,7 @@ export function withConfig(): MiddlewareHandler<Env> {
       (f) => f.id === appConfig.fontThemeId,
     );
     const fontOverrides = {
-      ...getCjkSerifCssVariables(appConfig.siteLanguage),
+      ...getCjkSerifCssVariables(appConfig.cjkSerifFont),
       ...(fontTheme ? getFontThemeCssVariables(fontTheme) : {}),
     };
 

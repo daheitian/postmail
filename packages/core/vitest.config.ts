@@ -10,6 +10,8 @@ export default defineConfig({
     __CLIENT_CSS_FILE__: JSON.stringify("/_assets/client.css"),
     __CLIENT_CJK_CSS_FILE__: JSON.stringify("/_assets/client-cjk.css"),
     __CLIENT_CJK_TC_CSS_FILE__: JSON.stringify("/_assets/client-cjk-tc.css"),
+    __CLIENT_CJK_JP_CSS_FILE__: JSON.stringify("/_assets/client-cjk-jp.css"),
+    __CLIENT_CJK_KR_CSS_FILE__: JSON.stringify("/_assets/client-cjk-kr.css"),
   },
   resolve: {
     alias: {

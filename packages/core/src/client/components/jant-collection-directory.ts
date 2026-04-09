@@ -14,6 +14,7 @@
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
 import { classMap } from "lit/directives/class-map.js";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import Sortable from "sortablejs";
 import {
   captureSortableRevertNextSibling,
@@ -32,6 +33,7 @@ import {
   getCollectionSelectionPath,
   getCollectionsDirectoryPath,
 } from "../../lib/collection-paths.js";
+import { render as renderMarkdown } from "../../lib/markdown.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
 import type {
   CollectionManagerItem,
@@ -772,9 +774,9 @@ export class JantCollectionsManager extends LitElement {
         </div>
         ${collection.description
           ? html`
-              <p class="collection-directory-description">
-                ${collection.description}
-              </p>
+              <div class="collection-directory-description prose">
+                ${unsafeHTML(renderMarkdown(collection.description))}
+              </div>
             `
           : nothing}
         <p class="collection-directory-summary">

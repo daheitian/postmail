@@ -41,7 +41,8 @@ export interface SettingsLabels {
   featuredFeedOptionDescription: string;
   showJantBrandingOnHome: string;
   markdownSupported: string;
-  language: string;
+  cjkFont: string;
+  cjkFontHelp: string;
   timeZone: string;
 
   // Search
@@ -62,8 +63,8 @@ export interface SettingsTimezone {
   label: string;
 }
 
-/** Language option for the select dropdown */
-export interface SettingsLanguage {
+/** CJK font option for the select dropdown */
+export interface SettingsCjkFont {
   value: string;
   label: string;
 }
@@ -72,6 +73,7 @@ export interface SettingsInitialData {
   siteName: string;
   siteDescription: string;
   siteLanguage: string;
+  cjkSerifFont: string;
   mainRssFeed: string;
   timeZone: string;
   siteFooter: string;

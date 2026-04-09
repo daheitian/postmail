@@ -57,6 +57,8 @@ export const CLIENT_TARGET = "es2022" as const;
  * - `client.css` for the shared site styles
  * - `client-cjk.css` for optional Simplified Chinese font assets
  * - `client-cjk-tc.css` for optional Traditional Chinese font assets
+ * - `client-cjk-jp.css` for optional Japanese font assets
+ * - `client-cjk-kr.css` for optional Korean font assets
  */
 export const clientBuildOptions = {
   outDir: "dist/client",
@@ -68,6 +70,8 @@ export const clientBuildOptions = {
       style: resolve(dir, "src/style.css"),
       "style-cjk": resolve(dir, "src/style-cjk.css"),
       "style-cjk-tc": resolve(dir, "src/style-cjk-tc.css"),
+      "style-cjk-jp": resolve(dir, "src/style-cjk-jp.css"),
+      "style-cjk-kr": resolve(dir, "src/style-cjk-kr.css"),
     },
     output: {
       // Content-hashed entry names so cross-bundle ES module imports always
@@ -84,6 +88,10 @@ export const clientBuildOptions = {
             return `${ASSET_BASE_SEGMENT}/client-cjk-[hash].css`;
           case "style-cjk-tc.css":
             return `${ASSET_BASE_SEGMENT}/client-cjk-tc-[hash].css`;
+          case "style-cjk-jp.css":
+            return `${ASSET_BASE_SEGMENT}/client-cjk-jp-[hash].css`;
+          case "style-cjk-kr.css":
+            return `${ASSET_BASE_SEGMENT}/client-cjk-kr-[hash].css`;
           default:
             return `${ASSET_BASE_SEGMENT}/${ASSET_CHUNK_SEGMENT}/[name]-[hash][extname]`;
         }

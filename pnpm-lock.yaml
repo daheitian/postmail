@@ -204,6 +204,12 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20260317.1
         version: 4.20260317.1
+      '@fontsource/noto-serif-jp':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource/noto-serif-kr':
+        specifier: ^5.2.9
+        version: 5.2.9
       '@fontsource/noto-serif-sc':
         specifier: ^5.2.9
         version: 5.2.9
@@ -1313,6 +1319,12 @@ packages:
 
   '@fontsource/news-cycle@5.2.7':
     resolution: {integrity: sha512-gs2cRwp08PhxrDo5XsjgBBWrVs37jwPI0EySPv4sAIPYyvujJPfQX//KzX3iDLaHL8ywVOIoir8xfYRo8e0aJw==}
+
+  '@fontsource/noto-serif-jp@5.2.8':
+    resolution: {integrity: sha512-x+tGrrK+4t/hoHLxAl7Ry5nN8CVPermqz0fD7HtCXzBJSxzFKxNH9y+cuOD3gZW0tyKZ2CD7WvuAfHbISvjL5Q==}
+
+  '@fontsource/noto-serif-kr@5.2.9':
+    resolution: {integrity: sha512-DqWJwPt1yduqF/XRD7S1QrJPoLw3qFxtGgp8sZMB2Tb+mahDXkVm3zD/G+MvF0fIxqSWrnl/iyHotKkfFosepw==}
 
   '@fontsource/noto-serif-sc@5.2.9':
     resolution: {integrity: sha512-+wosdNmyrtRjnqJ/4A6i99jApm6ye34n8Nh7jUO3P/+6Hd1ZBY1gB9yGaI5jVxb56RS1lM2kTc0DzX1ifRO2MA==}
@@ -6670,6 +6682,10 @@ snapshots:
   '@fontsource-variable/source-sans-3@5.2.9': {}
 
   '@fontsource/news-cycle@5.2.7': {}
+
+  '@fontsource/noto-serif-jp@5.2.8': {}
+
+  '@fontsource/noto-serif-kr@5.2.9': {}
 
   '@fontsource/noto-serif-sc@5.2.9': {}
 

@@ -90,7 +90,7 @@ describe("BUILTIN_FONT_THEMES", () => {
     expect(variables["--type-label-weight"]).toBe("var(--fw-semibold)");
   });
 
-  it("routes zh-Hans sites to the simplified CJK serif fallback first", () => {
+  it("routes zh-Hans to the simplified CJK serif fallback first", () => {
     const variables = getCjkSerifCssVariables("zh-Hans");
     const stack = variables["--font-cjk-serif-fallback"];
 
@@ -101,7 +101,7 @@ describe("BUILTIN_FONT_THEMES", () => {
     );
   });
 
-  it("routes zh-Hant sites to the traditional CJK serif fallback first", () => {
+  it("routes zh-Hant to the traditional CJK serif fallback first", () => {
     const variables = getCjkSerifCssVariables("zh-Hant");
     const stack = variables["--font-cjk-serif-fallback"];
 
@@ -112,7 +112,25 @@ describe("BUILTIN_FONT_THEMES", () => {
     );
   });
 
-  it("does not inject a runtime override for non-Chinese sites", () => {
+  it("routes ja to the Japanese CJK serif fallback", () => {
+    const variables = getCjkSerifCssVariables("ja");
+    const stack = variables["--font-cjk-serif-fallback"];
+
+    expect(stack).toContain('"Noto Serif JP"');
+  });
+
+  it("routes ko to the Korean CJK serif fallback", () => {
+    const variables = getCjkSerifCssVariables("ko");
+    const stack = variables["--font-cjk-serif-fallback"];
+
+    expect(stack).toContain('"Noto Serif KR"');
+  });
+
+  it("does not inject a runtime override when CJK is off", () => {
+    expect(getCjkSerifCssVariables("off")).toEqual({});
+  });
+
+  it("does not inject a runtime override for unrecognized values", () => {
     expect(getCjkSerifCssVariables("en")).toEqual({});
   });
 

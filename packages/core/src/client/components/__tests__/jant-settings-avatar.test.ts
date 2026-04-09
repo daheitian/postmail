@@ -38,7 +38,9 @@ const labels: SettingsLabels = {
   siteName: "Site Name",
   aboutBlog: "About this blog",
   aboutBlogHelp: "Displayed above your blog posts.",
-  language: "Language",
+  cjkFont: "CJK Font",
+  cjkFontHelp:
+    "Load a serif font optimized for Chinese, Japanese, or Korean content.",
   timeZone: "Time Zone",
   feeds: "Feeds",
   mainRssFeed: "Main RSS feed",

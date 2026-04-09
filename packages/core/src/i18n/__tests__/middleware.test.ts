@@ -20,32 +20,30 @@ function createApp(allSettings: Record<string, string>) {
 }
 
 describe("i18nMiddleware", () => {
-  it("uses the browser language during onboarding before SITE_LANGUAGE is saved", async () => {
+  it("always returns en as the locale", async () => {
     const app = createApp({ ONBOARDING_STATUS: "pending" });
     const res = await app.request("/", {
       headers: { "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8" },
     });
 
-    expect(await res.text()).toBe("zh-Hans");
+    expect(await res.text()).toBe("en");
   });
 
-  it("uses the saved site language after onboarding is complete", async () => {
+  it("returns en after onboarding is complete", async () => {
     const app = createApp({
       ONBOARDING_STATUS: "completed",
-      SITE_LANGUAGE: "zh-Hant",
+      SITE_LANGUAGE: "en",
     });
     const res = await app.request("/", {
       headers: { "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8" },
     });
 
-    expect(await res.text()).toBe("zh-Hant");
+    expect(await res.text()).toBe("en");
   });
 
-  it("falls back to the base locale after onboarding when SITE_LANGUAGE is missing", async () => {
+  it("falls back to en when SITE_LANGUAGE is missing", async () => {
     const app = createApp({ ONBOARDING_STATUS: "completed" });
-    const res = await app.request("/", {
-      headers: { "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8" },
-    });
+    const res = await app.request("/");
 
     expect(await res.text()).toBe("en");
   });

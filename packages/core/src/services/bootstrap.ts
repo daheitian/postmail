@@ -18,6 +18,7 @@ export interface CompleteInitialSetupData {
   ownerUserId: string;
   siteName: string;
   siteLanguage?: string | null;
+  cjkSerifFont?: string | null;
   timeZone?: string | null;
 }
 
@@ -55,6 +56,9 @@ export function createBootstrapService(
       await settings.set("SITE_NAME", data.siteName.trim());
       await settings.set("TIME_ZONE", data.timeZone ?? "UTC");
       await settings.set("SITE_LANGUAGE", data.siteLanguage ?? "en");
+      if (data.cjkSerifFont && data.cjkSerifFont !== "off") {
+        await settings.set("CJK_SERIF_FONT", data.cjkSerifFont);
+      }
 
       await settings.completeOnboarding();
     },
