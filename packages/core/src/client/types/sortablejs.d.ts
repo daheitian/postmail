@@ -17,6 +17,8 @@ declare module "sortablejs" {
     animation?: number;
     bubbleScroll?: boolean;
     chosenClass?: string;
+    delay?: number;
+    delayOnTouchOnly?: boolean;
     direction?: "horizontal" | "vertical";
     draggable?: string;
     dragClass?: string;
