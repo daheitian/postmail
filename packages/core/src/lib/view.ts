@@ -190,6 +190,7 @@ export function toPostView(
   postCollections?: Collection[],
   isLastInThread?: boolean,
   aliasPath?: string,
+  pinnedInCollection?: boolean,
 ): PostView {
   const id = post.id;
   const permalink = toPublicPath(
@@ -269,6 +270,7 @@ export function toPostView(
     status: post.status as Status,
     visibility: post.visibility,
     pinned: post.pinnedAt !== null,
+    pinnedInCollection: pinnedInCollection || undefined,
     featured: featuredAt !== null,
     featuredAt: featuredAt !== null ? toISOString(featuredAt) : undefined,
     featuredAtFormatted:

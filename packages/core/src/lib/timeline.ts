@@ -184,6 +184,7 @@ async function buildCuratedThreadItems(
   rootIds: string[],
   threadsByRootId: Map<string, Post[]>,
   selectedPostIdsByThread: CuratedThreadSelectionMap,
+  collectionPinnedPostIds?: Set<string>,
 ): Promise<TimelineItemView[]> {
   const orderedThreads = rootIds
     .map((rootId) => threadsByRootId.get(rootId) ?? [])
@@ -228,6 +229,7 @@ async function buildCuratedThreadItems(
         collectionsMap.get(post.id),
         post.id === lastPostId,
         curatedAliasesMap.get(post.id)?.[0],
+        collectionPinnedPostIds?.has(post.id),
       ),
     );
     const rootView = postViews[0];
@@ -502,13 +504,15 @@ export async function assembleCollectionTimeline(
     return { items: [], currentPage: page, totalPages, totalCount };
   }
 
-  const [threadsByRootId, collectedPostIdsByThread] = await Promise.all([
-    c.var.services.posts.getPublishedThreads(rootIds),
-    c.var.services.posts.getCollectionPostIdsByThreadForCollections(
-      options.collectionIds,
-      rootIds,
-    ),
-  ]);
+  const [threadsByRootId, collectedPostIdsByThread, pinnedPostIds] =
+    await Promise.all([
+      c.var.services.posts.getPublishedThreads(rootIds),
+      c.var.services.posts.getCollectionPostIdsByThreadForCollections(
+        options.collectionIds,
+        rootIds,
+      ),
+      c.var.services.collections.getPinnedPostIds(options.collectionIds),
+    ]);
   const selectedPostIdsByThread: CuratedThreadSelectionMap = new Map(
     [...collectedPostIdsByThread.entries()].map(([threadId, postIds]) => [
       threadId,
@@ -520,6 +524,7 @@ export async function assembleCollectionTimeline(
     rootIds,
     threadsByRootId,
     selectedPostIdsByThread,
+    pinnedPostIds,
   );
 
   return { items, currentPage: page, totalPages, totalCount };

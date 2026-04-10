@@ -2630,10 +2630,16 @@ export function createPostService(
         "rating_value",
       );
 
+      const collectionPinnedAt =
+        sql<number>`MAX(coalesce(${postCollections.pinnedAt}, -1))`.as(
+          "collection_pinned_at",
+        );
+
       const baseQuery = db
         .select({
           threadId: posts.threadId,
           collectedAt,
+          collectionPinnedAt,
           ratingPresence,
           ratingValue,
         })
@@ -2650,15 +2656,24 @@ export function createPostService(
 
       let query =
         sortOrder === "oldest"
-          ? baseQuery.orderBy(asc(collectedAt), asc(posts.threadId))
+          ? baseQuery.orderBy(
+              desc(collectionPinnedAt),
+              asc(collectedAt),
+              asc(posts.threadId),
+            )
           : sortOrder === "rating_desc"
             ? baseQuery.orderBy(
+                desc(collectionPinnedAt),
                 desc(ratingPresence),
                 desc(ratingValue),
                 desc(collectedAt),
                 desc(posts.threadId),
               )
-            : baseQuery.orderBy(desc(collectedAt), desc(posts.threadId));
+            : baseQuery.orderBy(
+                desc(collectionPinnedAt),
+                desc(collectedAt),
+                desc(posts.threadId),
+              );
 
       if (options.limit !== undefined) {
         query = query.limit(options.limit) as typeof query;
@@ -2686,11 +2701,16 @@ export function createPostService(
       const collectedAt = sql<number>`MAX(${postCollections.createdAt})`.as(
         "collected_at",
       );
+      const collectionPinnedAt =
+        sql<number>`MAX(coalesce(${postCollections.pinnedAt}, -1))`.as(
+          "collection_pinned_at",
+        );
 
       let query = db
         .select({
           threadId: posts.threadId,
           collectedAt,
+          collectionPinnedAt,
         })
         .from(posts)
         .innerJoin(
@@ -2702,7 +2722,11 @@ export function createPostService(
         )
         .where(and(...conditions))
         .groupBy(posts.threadId)
-        .orderBy(desc(collectedAt), desc(posts.threadId));
+        .orderBy(
+          desc(collectionPinnedAt),
+          desc(collectedAt),
+          desc(posts.threadId),
+        );
 
       if (options.limit !== undefined) {
         query = query.limit(options.limit) as typeof query;

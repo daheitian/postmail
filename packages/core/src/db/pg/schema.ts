@@ -573,6 +573,7 @@ export const postCollections = pgTable(
       .references(() => collections.id, { onDelete: "cascade" }),
     createdAt: integer("created_at").notNull(),
     position: integer("position").notNull().default(0),
+    pinnedAt: integer("pinned_at"),
   },
   (table) => [
     primaryKey({ columns: [table.siteId, table.postId, table.collectionId] }),

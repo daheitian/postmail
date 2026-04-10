@@ -121,6 +121,12 @@ export interface CollectionService {
   addPost(collectionId: string, postId: string): Promise<void>;
   /** Remove a post from a collection */
   removePost(collectionId: string, postId: string): Promise<void>;
+  /** Pin a post within a collection */
+  pinPost(collectionId: string, postId: string): Promise<void>;
+  /** Unpin a post within a collection */
+  unpinPost(collectionId: string, postId: string): Promise<void>;
+  /** Get pinned post IDs for given collections */
+  getPinnedPostIds(collectionIds: string[]): Promise<Set<string>>;
   /** Get all collections a post belongs to */
   getCollectionsByPostId(postId: string): Promise<Collection[]>;
   /** Batch get collections for multiple posts */
@@ -1035,6 +1041,47 @@ export function createCollectionService(
             eq(postCollections.collectionId, collectionId),
           ),
         );
+    },
+
+    async pinPost(collectionId, postId) {
+      await db
+        .update(postCollections)
+        .set({ pinnedAt: now() })
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.postId, postId),
+            eq(postCollections.collectionId, collectionId),
+          ),
+        );
+    },
+
+    async unpinPost(collectionId, postId) {
+      await db
+        .update(postCollections)
+        .set({ pinnedAt: null })
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.postId, postId),
+            eq(postCollections.collectionId, collectionId),
+          ),
+        );
+    },
+
+    async getPinnedPostIds(collectionIds) {
+      if (collectionIds.length === 0) return new Set<string>();
+      const rows = await db
+        .select({ postId: postCollections.postId })
+        .from(postCollections)
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            inArray(postCollections.collectionId, collectionIds),
+            sql`${postCollections.pinnedAt} IS NOT NULL`,
+          ),
+        );
+      return new Set(rows.map((r) => r.postId));
     },
 
     async getCollectionsByPostId(postId) {

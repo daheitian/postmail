@@ -427,7 +427,7 @@ export function createNavItemService(
         .select({
           collectionId: postCollections.collectionId,
           latestAt:
-            sql<number>`MAX(${postCollections.createdAt}, ${posts.updatedAt})`.as(
+            sql<number>`MAX(CASE WHEN ${postCollections.createdAt} > ${posts.updatedAt} THEN ${postCollections.createdAt} ELSE ${posts.updatedAt} END)`.as(
               "latest_at",
             ),
         })

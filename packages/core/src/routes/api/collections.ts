@@ -207,3 +207,31 @@ collectionsApiRoutes.delete(
     return c.json({ success: true });
   },
 );
+
+// Pin a post within a collection (requires auth)
+collectionsApiRoutes.put(
+  "/:id/posts/:postId/pin",
+  requireAuthApi(),
+  async (c) => {
+    const id = parseIdParam(c.req.param("id"), ID_PREFIX.collection);
+    const postId = parseIdParam(c.req.param("postId"), ID_PREFIX.post);
+
+    await c.var.services.collections.pinPost(id, postId);
+
+    return c.json({ success: true });
+  },
+);
+
+// Unpin a post within a collection (requires auth)
+collectionsApiRoutes.delete(
+  "/:id/posts/:postId/pin",
+  requireAuthApi(),
+  async (c) => {
+    const id = parseIdParam(c.req.param("id"), ID_PREFIX.collection);
+    const postId = parseIdParam(c.req.param("postId"), ID_PREFIX.post);
+
+    await c.var.services.collections.unpinPost(id, postId);
+
+    return c.json({ success: true });
+  },
+);

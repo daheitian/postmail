@@ -2968,6 +2968,7 @@
 
   /* Show the container when at least one status is active */
   article[data-post-pinned] .post-status-badges,
+  article[data-post-pinned-in-collection] .post-status-badges,
   article[data-post-visibility="private"] .post-status-badges {
     display: flex;
   }
@@ -2982,6 +2983,16 @@
 
   article[data-post-pinned] .post-status-pinned {
     display: inline-flex;
+  }
+
+  article[data-post-pinned-in-collection] .post-status-pinned-in-collection {
+    display: inline-flex;
+  }
+
+  /* Hide collection-pinned badge when already showing global pinned */
+  article[data-post-pinned][data-post-pinned-in-collection]
+    .post-status-pinned-in-collection {
+    display: none;
   }
 
   article[data-post-visibility="private"] .post-status-private {

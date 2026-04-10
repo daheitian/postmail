@@ -28,6 +28,7 @@ import type { CollectionSubmitDetail } from "./collection-types.js";
 interface PostMenuData {
   id: string;
   pinned: boolean;
+  pinnedInCollection: boolean;
   featured: boolean;
   visibility: string;
   isReply: boolean;
@@ -254,6 +255,9 @@ export class JantPostMenu extends LitElement {
       this._data = {
         id: postId,
         pinned: article.hasAttribute("data-post-pinned"),
+        pinnedInCollection: article.hasAttribute(
+          "data-post-pinned-in-collection",
+        ),
         featured: article.hasAttribute("data-post-featured"),
         visibility: article.dataset.postVisibility ?? "public",
         isReply: article.hasAttribute("data-post-reply"),
@@ -471,6 +475,9 @@ export class JantPostMenu extends LitElement {
     this._data = {
       id: postId,
       pinned: article.hasAttribute("data-post-pinned"),
+      pinnedInCollection: article.hasAttribute(
+        "data-post-pinned-in-collection",
+      ),
       featured: article.hasAttribute("data-post-featured"),
       visibility: article.dataset.postVisibility ?? "public",
       isReply: article.hasAttribute("data-post-reply"),
@@ -635,6 +642,54 @@ export class JantPostMenu extends LitElement {
           }
         }
         showToast("Could not update post. Try again.", "error");
+      });
+  }
+
+  #toggleCollectionPin() {
+    if (!this._data) return;
+    const postId = this._data.id;
+    const collectionId = document.querySelector<HTMLElement>(
+      "[data-collection-id]",
+    )?.dataset.collectionId;
+    if (!collectionId) return;
+
+    const newPinned = !this._data.pinnedInCollection;
+
+    // Optimistic update
+    const article = document.querySelector<HTMLElement>(
+      `article[data-post-id="${postId}"]`,
+    );
+    if (article) {
+      if (newPinned) {
+        article.setAttribute("data-post-pinned-in-collection", "");
+      } else {
+        article.removeAttribute("data-post-pinned-in-collection");
+      }
+    }
+    this._data = { ...this._data, pinnedInCollection: newPinned };
+
+    showToast(
+      newPinned ? "Pinned in collection." : "Unpinned from collection.",
+    );
+    this.#close();
+
+    const method = newPinned ? "PUT" : "DELETE";
+    fetch(`/api/collections/${collectionId}/posts/${postId}/pin`, { method })
+      .then((res) => {
+        if (!res.ok) throw new Error();
+      })
+      .catch(() => {
+        const el = document.querySelector<HTMLElement>(
+          `article[data-post-id="${postId}"]`,
+        );
+        if (el) {
+          if (newPinned) {
+            el.removeAttribute("data-post-pinned-in-collection");
+          } else {
+            el.setAttribute("data-post-pinned-in-collection", "");
+          }
+        }
+        showToast("Could not update pin. Try again.", "error");
       });
   }
 
@@ -1395,6 +1450,10 @@ export class JantPostMenu extends LitElement {
     if (!this._data) return nothing;
     const visibility = this._data.visibility;
     const isPinned = this._data.pinned;
+    const isPinnedInCollection = this._data.pinnedInCollection;
+    const collectionId = document.querySelector<HTMLElement>(
+      "[data-collection-id]",
+    )?.dataset.collectionId;
     const isFeatured = this._data.featured;
 
     return html`
@@ -1482,6 +1541,27 @@ export class JantPostMenu extends LitElement {
                     >
                   </button>
                 `}
+            ${collectionId
+              ? html`
+                  <button
+                    type="button"
+                    role="menuitem"
+                    class="post-menu-item"
+                    @click=${() => this.#toggleCollectionPin()}
+                  >
+                    <span class="post-menu-item-label"
+                      >${isPinnedInCollection
+                        ? "Unpin from collection"
+                        : "Pin in collection"}</span
+                    >
+                    <span class="post-menu-item-trailing"
+                      >${isPinnedInCollection
+                        ? this.#iconPinOff()
+                        : this.#iconPin()}</span
+                    >
+                  </button>
+                `
+              : nothing}
           </div>
 
           <div class="post-menu-section post-menu-section-danger">

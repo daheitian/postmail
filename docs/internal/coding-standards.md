@@ -63,3 +63,18 @@ See also: [testing-guide.md](./testing-guide.md) for practical patterns and help
 - **Test what we own**: business logic, contracts, boundary behavior. Do not test third-party internals.
 - **Regression policy**: every bug fix includes a test that fails before the fix.
 - **Test environment**: in-memory SQLite helpers, fresh DB state per test (`beforeEach`).
+
+## SQL Dialect Pitfalls (SQLite vs Postgres)
+
+Tests run against SQLite only. Raw SQL fragments (`` sql`...` ``) that work on SQLite may fail silently on Postgres. When writing raw SQL, check this list:
+
+| SQLite                          | Postgres                                 | Portable alternative                          |
+| ------------------------------- | ---------------------------------------- | --------------------------------------------- |
+| `MAX(a, b)` (scalar, multi-arg) | Does not exist — `MAX` is aggregate-only | `CASE WHEN a > b THEN a ELSE b END`           |
+| `MIN(a, b)` (scalar, multi-arg) | Does not exist                           | `CASE WHEN a < b THEN a ELSE b END`           |
+| `\|\|` always string concat     | `\|\|` errors if either side is non-text | Cast to text first, or use `concat()`         |
+| `INTEGER` auto-casts booleans   | `INTEGER` and `BOOLEAN` are distinct     | Use explicit `CASE` or `::int` casts          |
+| `datetime('now')`               | Does not exist                           | Use `now()` from `lib/time.ts` (Unix seconds) |
+| Unquoted column aliases OK      | Some reserved words clash                | Always quote aliases or use `.as()`           |
+
+**Rule of thumb**: if you write a raw `sql` template that is more than a simple column reference, mentally run it through Postgres syntax before committing. Drizzle's typed query builder is dialect-safe; the risk lives in `sql` tagged templates and string interpolation inside `where`/`orderBy`.

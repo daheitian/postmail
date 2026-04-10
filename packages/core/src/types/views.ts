@@ -58,6 +58,8 @@ export interface PostView {
   status: Status;
   visibility: Visibility;
   pinned: boolean;
+  /** Whether pinned within the current collection context */
+  pinnedInCollection?: boolean;
   featured: boolean;
   /** ISO 8601 string for when the post was added to Featured. */
   featuredAt?: string;
