@@ -22,9 +22,7 @@ describe("resolveConfig", () => {
     const config = resolveConfig(makeEnv(), {});
 
     expect(config.siteName).toBe("Jant");
-    expect(config.siteDescription).toBe(
-      "Thoughts, links, and quotes — one post at a time",
-    );
+    expect(config.siteDescription).toBe("");
     expect(config.siteLanguage).toBe("en");
     expect(config.homeDefaultView).toBe("latest");
     expect(config.mainRssFeed).toBe("featured");

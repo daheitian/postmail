@@ -922,7 +922,7 @@
 
   .site-description {
     --type-body-size: var(--type-secondary);
-    color: var(--site-text-secondary);
+    color: color-mix(in srgb, var(--site-text-secondary) 72%, transparent);
     line-height: 1.5;
   }
 

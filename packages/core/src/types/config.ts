@@ -32,7 +32,7 @@ export const CONFIG_FIELDS = {
     envKeys: ["SITE_NAME"],
   },
   SITE_DESCRIPTION: {
-    defaultValue: "Thoughts, links, and quotes — one post at a time",
+    defaultValue: "",
     envOnly: false,
     envKeys: ["SITE_DESCRIPTION"],
   },

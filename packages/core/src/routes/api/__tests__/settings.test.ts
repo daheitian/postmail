@@ -36,9 +36,7 @@ describe("Settings API Routes", () => {
       const body = await res.json();
       expect(body.settings).toBeDefined();
       expect(body.settings.SITE_NAME).toBe("Jant");
-      expect(body.settings.SITE_DESCRIPTION).toBe(
-        "Thoughts, links, and quotes — one post at a time",
-      );
+      expect(body.settings.SITE_DESCRIPTION).toBe("");
       expect(body.settings.SITE_LANGUAGE).toBe("en");
     });
 

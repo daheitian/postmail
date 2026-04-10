@@ -15,6 +15,8 @@ import type { SortableEvent, SortableOptions } from "sortablejs";
 export const responsiveSortableOptions = {
   animation: 180,
   bubbleScroll: false,
+  delay: 150,
+  delayOnTouchOnly: true,
   fallbackTolerance: 4,
   forceAutoScrollFallback: true,
   scrollSensitivity: 56,
