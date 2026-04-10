@@ -49,9 +49,9 @@
    * Every font-size in the system — reading content AND UI controls —
    * must reference one of these tokens. No raw rem/px values elsewhere.
    *
-   *   --type-display    3.2rem  (48px)   — page titles, h1
-   *   --type-title      2.2rem  (33px)   — h2, feed card titles
-   *   --type-subtitle   1.7rem  (25.5px) — h3
+   *   --type-display    2.7rem  (40.5px) — page titles, h1
+   *   --type-title      1.9rem  (28.5px) — h2, feed card titles
+   *   --type-subtitle   1.6rem  (24px)   — h3
    *   --type-body       1.4rem  (21px)   — running text, form inputs
    *   --type-secondary  1.1rem  (16.5px) — meta, nav, sidenotes, UI labels
    *   --type-base       1.0rem  (15px)   — code, UI buttons, controls
@@ -59,9 +59,9 @@
    *   --type-xs         0.8rem  (12px)   — captions, descriptions, chips
    *   --type-2xs        0.65rem (9.75px) — tiny labels, file sizes, badges
    */
-  --type-display: 3.2rem;
-  --type-title: 2.2rem;
-  --type-subtitle: 1.7rem;
+  --type-display: 2.7rem;
+  --type-title: 1.9rem;
+  --type-subtitle: 1.6rem;
   --type-body: 1.4rem;
   --type-secondary: 1.1rem;
   --type-base: 1rem;
