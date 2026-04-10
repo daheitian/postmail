@@ -630,8 +630,8 @@
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    gap: clamp(0.6rem, 1.5vw, 1rem);
-    margin-left: clamp(0.6rem, 1.5vw, 1rem);
+    gap: clamp(0.6rem, 2.2vw, 1rem);
+    margin-left: clamp(0.6rem, 2.2vw, 1rem);
     min-width: 0;
     font-family: var(--font-ui);
   }

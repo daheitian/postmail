@@ -1916,8 +1916,8 @@ const STYLE_CSS = `/* Jant Export Theme */
   --text-base: 1rem;
   --text-lg: 1.125rem;
   --type-display: 2.7rem;
-  --type-title: 1.9rem;
-  --type-subtitle: 1.6rem;
+  --type-title: 2.1rem;
+  --type-subtitle: 1.8rem;
   --type-body: 1.4rem;
   --type-secondary: 1.1rem;
   --type-content-scale: 0.81;
