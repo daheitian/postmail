@@ -676,7 +676,12 @@
   }
 
   .site-header-link-fresh {
-    margin-left: 0.3em;
+    position: absolute;
+    top: 0em;
+    right: -0.4em;
+    font-size: 1.3em;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1;
   }
 
   /* --- More dropdown ------------------------------------------------------ */

@@ -61,7 +61,7 @@ function createFreshBadge() {
   const badge = document.createElement("span");
   badge.className = "site-header-link-fresh";
   badge.setAttribute("aria-hidden", "true");
-  badge.textContent = "(New)";
+  badge.textContent = "*";
   return badge;
 }
 
