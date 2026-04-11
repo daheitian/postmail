@@ -1,3 +1,5 @@
+import { getFieldSearchRank, normalizeSearch } from "./search-rank.js";
+
 interface CollectionLike {
   id: string;
 }
@@ -5,26 +7,6 @@ interface CollectionLike {
 interface SearchableCollectionLike extends CollectionLike {
   title: string;
   slug?: string | null;
-}
-
-function normalizeSearchValue(value: string | null | undefined): string {
-  return (value ?? "").trim().toLowerCase();
-}
-
-function getFieldSearchRank(
-  value: string | null | undefined,
-  search: string,
-): number | null {
-  const normalized = normalizeSearchValue(value);
-  if (!normalized) return null;
-
-  if (normalized === search) return 0;
-  if (normalized.startsWith(search)) return 1;
-
-  const tokens = normalized.split(/[\s\-_.:/]+/).filter(Boolean);
-  if (tokens.some((token) => token.startsWith(search))) return 2;
-
-  return normalized.includes(search) ? 3 : null;
 }
 
 function getItemSearchRank<T extends SearchableCollectionLike>(
@@ -110,7 +92,7 @@ export function filterCollectionsBySearch<T extends SearchableCollectionLike>(
   items: readonly T[],
   search: string,
 ): T[] {
-  const normalizedSearch = normalizeSearchValue(search);
+  const normalizedSearch = normalizeSearch(search);
   if (!normalizedSearch) return [...items];
 
   return items

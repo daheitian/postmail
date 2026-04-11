@@ -11,6 +11,7 @@ import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { openNewCompose } from "../compose-launch.js";
+import { getFieldSearchRank, normalizeSearch } from "../search-rank.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,6 +54,11 @@ const ICONS = {
 // ---------------------------------------------------------------------------
 
 const SYSTEM_PAGES: PaletteItem[] = [
+  { title: "Home", path: "/", type: "system" },
+  { title: "Featured", path: "/featured", type: "system" },
+  { title: "Latest", path: "/latest", type: "system" },
+  { title: "Archive", path: "/archive", type: "system" },
+  { title: "Collections", path: "/collections", type: "system" },
   { title: "Settings", path: "/settings", type: "system" },
   { title: "General", path: "/settings/general", type: "system" },
   { title: "Navigation", path: "/settings/navigation", type: "system" },
@@ -180,14 +186,28 @@ export class JantCommandPalette extends LitElement {
   // -----------------------------------------------------------------------
 
   get #navigateItems(): PaletteItem[] {
-    const q = this._query.toLowerCase();
+    const q = normalizeSearch(this._query);
     const allItems = [...(this.#itemsCache ?? []), ...SYSTEM_PAGES];
-    return allItems.filter(
-      (item) =>
-        !q ||
-        item.title.toLowerCase().includes(q) ||
-        item.path.toLowerCase().includes(q),
-    );
+    if (!q) return allItems;
+
+    return allItems
+      .map((item, index) => {
+        const titleRank = getFieldSearchRank(item.title, q);
+        const pathRank = getFieldSearchRank(item.path, q);
+        const rank =
+          titleRank !== null
+            ? titleRank
+            : pathRank !== null
+              ? pathRank + 4
+              : null;
+        return { item, index, rank };
+      })
+      .filter(
+        (entry): entry is { item: PaletteItem; index: number; rank: number } =>
+          entry.rank !== null,
+      )
+      .sort((a, b) => a.rank - b.rank || a.index - b.index)
+      .map((entry) => entry.item);
   }
 
   get #commandItems(): CommandItem[] {
