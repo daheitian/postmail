@@ -6,7 +6,7 @@
  * slash (for example: "hello-world" or "collections/reading+tools").
  */
 
-import { and, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { type Database, batchQuery } from "../db/index.js";
 import {
   sqliteSchemaBundle,
@@ -47,6 +47,14 @@ export interface PathService {
   updateCollectionSlug(collectionId: string, slug: string): Promise<void>;
   deleteByPostId(postId: string): Promise<void>;
   getPostAliases(postIds: string[]): Promise<Map<string, string[]>>;
+  listNavigableItems(): Promise<NavigableItem[]>;
+}
+
+export interface NavigableItem {
+  title: string;
+  path: string;
+  type: "post" | "collection";
+  format?: string;
 }
 
 export function toCollectionPath(slug: string): string {
@@ -65,7 +73,7 @@ export function createPathService(
   siteId: string,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): PathService {
-  const { pathRegistry, posts } = databaseSchema;
+  const { pathRegistry, posts, collections } = databaseSchema;
 
   function toPathRecord(row: typeof pathRegistry.$inferSelect): PathRecord {
     return {
@@ -396,6 +404,73 @@ export function createPathService(
         }
         return result;
       });
+    },
+
+    async listNavigableItems(): Promise<NavigableItem[]> {
+      const postRows = await db
+        .select({
+          title: posts.title,
+          format: posts.format,
+          path: pathRegistry.path,
+        })
+        .from(pathRegistry)
+        .innerJoin(
+          posts,
+          and(eq(posts.id, pathRegistry.postId), eq(posts.siteId, siteId)),
+        )
+        .where(
+          and(
+            eq(pathRegistry.siteId, siteId),
+            eq(pathRegistry.kind, "slug"),
+            isNotNull(pathRegistry.postId),
+            isNotNull(posts.title),
+            isNull(posts.deletedAt),
+            eq(posts.format, "note"),
+          ),
+        );
+
+      const collectionRows = await db
+        .select({
+          title: collections.title,
+          path: pathRegistry.path,
+        })
+        .from(pathRegistry)
+        .innerJoin(
+          collections,
+          and(
+            eq(collections.id, pathRegistry.collectionId),
+            eq(collections.siteId, siteId),
+          ),
+        )
+        .where(
+          and(
+            eq(pathRegistry.siteId, siteId),
+            eq(pathRegistry.kind, "slug"),
+            isNotNull(pathRegistry.collectionId),
+          ),
+        );
+
+      const items: NavigableItem[] = [];
+
+      for (const row of postRows) {
+        if (!row.title) continue;
+        items.push({
+          title: row.title,
+          path: row.path,
+          type: "post",
+          format: row.format,
+        });
+      }
+
+      for (const row of collectionRows) {
+        items.push({
+          title: row.title,
+          path: fromCollectionPath(row.path),
+          type: "collection",
+        });
+      }
+
+      return items;
     },
   };
 }

@@ -28,6 +28,8 @@ import "./client/nav-manager-bridge.js";
 import "./client/components/jant-post-menu.js";
 import "./client/collection-page-actions.js";
 import "./client/custom-url-menu.js";
+import "./client/components/jant-command-palette.js";
+import "./client/palette-shortcuts.js";
 
 // Mount fullscreen overlay at body level to escape the dialog's containing
 // block (dialog animation creates a containing block that traps fixed children).
@@ -36,3 +38,8 @@ if (!document.querySelector("jant-compose-fullscreen")) {
 }
 
 ensureConfirmDialog();
+
+// Mount command palette at body level (auth-only)
+if (!document.querySelector("jant-command-palette")) {
+  document.body.appendChild(document.createElement("jant-command-palette"));
+}
