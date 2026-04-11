@@ -2345,17 +2345,27 @@ export class JantComposeDialog extends LitElement {
         return;
       }
       void this._submit("published");
-    } else if (ke.altKey && !ke.ctrlKey && !ke.metaKey && !ke.shiftKey) {
-      const formats = JantComposeDialog._FORMATS;
-      if (ke.key >= "1" && ke.key <= String(formats.length)) {
-        ke.preventDefault();
-        this._switchFormat(formats[Number(ke.key) - 1]);
-      } else if (ke.key === "[") {
-        ke.preventDefault();
-        this._cycleFormat(-1);
-      } else if (ke.key === "]") {
-        ke.preventDefault();
-        this._cycleFormat(1);
+    } else if (
+      (ke.metaKey || ke.ctrlKey) &&
+      !ke.altKey &&
+      !ke.shiftKey &&
+      ke.key >= "1" &&
+      ke.key <= String(JantComposeDialog._FORMATS.length)
+    ) {
+      ke.preventDefault();
+      const target = JantComposeDialog._FORMATS[Number(ke.key) - 1];
+      if (this._threadItems.length > 0) {
+        const editor = this.querySelectorAll<JantComposeEditor>(
+          "jant-compose-editor",
+        )[this._focusedThreadIndex];
+        editor?.dispatchEvent(
+          new CustomEvent("jant:thread-format-change", {
+            detail: { format: target },
+            bubbles: true,
+          }),
+        );
+      } else {
+        this._switchFormat(target);
       }
     }
   };
@@ -3444,19 +3454,12 @@ export class JantComposeDialog extends LitElement {
 
   private _switchFormat(target: ComposeFormat) {
     if (this._format === target) return;
-    if (this._editPostId || this._threadItems.length > 0) return;
+    if (this._editPostId) return;
     this._format = target;
     this._showPublishPanel = false;
     if (this._shouldAutofocusFormatInput()) {
       globalThis.requestAnimationFrame(() => this._editor?.focusInput());
     }
-  }
-
-  private _cycleFormat(direction: 1 | -1) {
-    const formats = JantComposeDialog._FORMATS;
-    const idx = formats.indexOf(this._format);
-    const next = (idx + direction + formats.length) % formats.length;
-    this._switchFormat(formats[next]);
   }
 
   // ── Render helpers ────────────────────────────────────────────────
