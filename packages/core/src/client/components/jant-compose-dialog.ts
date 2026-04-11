@@ -1429,6 +1429,34 @@ export class JantComposeDialog extends LitElement {
       return true;
     }
 
+    // ── Thread mode: validate each editor against its own format ──────
+    if (this._threadItems.length > 0) {
+      const editors = Array.from(
+        this.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
+      );
+      for (let i = 0; i < this._threadItems.length; i++) {
+        const item = this._threadItems[i];
+        const editor = editors[i];
+        if (!editor) continue;
+        if (editor.getUrlValidationMessage()) {
+          editor.revealUrlValidation();
+          editor.focusUrlInput("end");
+          return true;
+        }
+        if (editor.getLinkTitleValidationMessage()) {
+          editor.revealLinkTitleValidation();
+          editor.focusLinkTitleInput("end");
+          return true;
+        }
+        if (item.format === "quote" && !editor._quoteText.trim()) {
+          editor.focusInput("end");
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // ── Single-post mode ─────────────────────────────────────────────
     const editor = this._editor;
     if (!editor) return false;
 

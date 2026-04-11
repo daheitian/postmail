@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { renderTiptapDocument, renderTiptapJson } from "../tiptap-render.js";
+import {
+  renderTiptapDocument,
+  renderTiptapJson,
+  trimTiptapBody,
+} from "../tiptap-render.js";
 
 function doc(...content: Record<string, unknown>[]) {
   return { type: "doc", content };
@@ -136,5 +140,85 @@ describe("renderTiptapJson", () => {
 
   it("returns an empty string for non-doc JSON", () => {
     expect(renderTiptapDocument({ type: "paragraph" })).toBe("");
+  });
+});
+
+describe("trimTiptapBody", () => {
+  it("removes leading empty paragraphs", () => {
+    const input = JSON.stringify(doc(p(), p(text("Hello"))));
+    const expected = JSON.stringify(doc(p(text("Hello"))));
+    expect(trimTiptapBody(input)).toBe(expected);
+  });
+
+  it("removes trailing empty paragraphs", () => {
+    const input = JSON.stringify(doc(p(text("Hello")), p(), p()));
+    const expected = JSON.stringify(doc(p(text("Hello"))));
+    expect(trimTiptapBody(input)).toBe(expected);
+  });
+
+  it("removes both leading and trailing empty paragraphs", () => {
+    const input = JSON.stringify(doc(p(), p(text("Hello")), p()));
+    const expected = JSON.stringify(doc(p(text("Hello"))));
+    expect(trimTiptapBody(input)).toBe(expected);
+  });
+
+  it("preserves inner empty paragraphs", () => {
+    const input = JSON.stringify(doc(p(text("A")), p(), p(text("B"))));
+    expect(trimTiptapBody(input)).toBe(input);
+  });
+
+  it("returns null when all paragraphs are empty", () => {
+    const input = JSON.stringify(doc(p(), p()));
+    expect(trimTiptapBody(input)).toBeNull();
+  });
+
+  it("returns the original string when no trimming needed", () => {
+    const input = JSON.stringify(doc(p(text("Hello"))));
+    expect(trimTiptapBody(input)).toBe(input);
+  });
+
+  it("treats whitespace-only text as empty", () => {
+    const input = JSON.stringify(
+      doc(p(text("  ")), p(text("Hello")), p(text("\n"))),
+    );
+    const expected = JSON.stringify(doc(p(text("Hello"))));
+    expect(trimTiptapBody(input)).toBe(expected);
+  });
+
+  it("does not strip paragraphs with images", () => {
+    const imgParagraph = {
+      type: "paragraph",
+      content: [{ type: "image", attrs: { src: "test.png" } }],
+    };
+    const input = JSON.stringify(doc(imgParagraph, p()));
+    const expected = JSON.stringify(doc(imgParagraph));
+    expect(trimTiptapBody(input)).toBe(expected);
+  });
+
+  it("does not strip non-paragraph blocks like headings with content", () => {
+    const heading = {
+      type: "heading",
+      attrs: { level: 1 },
+      content: [text("Title")],
+    };
+    const input = JSON.stringify(doc(p(), heading, p()));
+    const expected = JSON.stringify(doc(heading));
+    expect(trimTiptapBody(input)).toBe(expected);
+  });
+
+  it("strips empty headings", () => {
+    const emptyHeading = { type: "heading", attrs: { level: 1 } };
+    const input = JSON.stringify(doc(emptyHeading, p(text("Hello"))));
+    const expected = JSON.stringify(doc(p(text("Hello"))));
+    expect(trimTiptapBody(input)).toBe(expected);
+  });
+
+  it("returns original string for invalid JSON", () => {
+    expect(trimTiptapBody("not json")).toBe("not json");
+  });
+
+  it("returns original string for non-doc JSON", () => {
+    const input = JSON.stringify({ type: "paragraph" });
+    expect(trimTiptapBody(input)).toBe(input);
   });
 });

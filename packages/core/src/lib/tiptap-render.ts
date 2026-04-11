@@ -264,3 +264,53 @@ export function renderTiptapJson(json: string): string {
     return "";
   }
 }
+
+/**
+ * Returns true if a TipTap node is an empty block — a paragraph (or heading)
+ * with no meaningful content (no text, no images, no other inline nodes).
+ * Whitespace-only text nodes are treated as empty.
+ */
+function isEmptyBlock(node: JSONContent): boolean {
+  if (node.type !== "paragraph" && node.type !== "heading") return false;
+  if (!node.content || node.content.length === 0) return true;
+  return node.content.every(
+    (child) =>
+      child.type === "text" && (!child.text || child.text.trim() === ""),
+  );
+}
+
+/**
+ * Strips leading and trailing empty paragraphs/headings from a TipTap JSON
+ * document string. Returns `null` if the entire document becomes empty after
+ * trimming.
+ *
+ * @param json - TipTap JSON string
+ * @returns Trimmed JSON string, or `null` if nothing remains
+ *
+ * @example
+ * ```ts
+ * // Removes trailing empty paragraphs
+ * trimTiptapBody('{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Hello"}]},{"type":"paragraph"}]}');
+ * // '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Hello"}]}]}'
+ * ```
+ */
+export function trimTiptapBody(json: string): string | null {
+  let doc: JSONContent;
+  try {
+    doc = JSON.parse(json) as JSONContent;
+  } catch {
+    return json;
+  }
+  if (doc.type !== "doc" || !doc.content) return json;
+
+  let start = 0;
+  let end = doc.content.length;
+  const content = doc.content;
+  while (start < end && isEmptyBlock(content[start]!)) start++;
+  while (end > start && isEmptyBlock(content[end - 1]!)) end--;
+
+  if (start >= end) return null;
+  if (start === 0 && end === doc.content.length) return json;
+
+  return JSON.stringify({ ...doc, content: doc.content.slice(start, end) });
+}

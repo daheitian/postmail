@@ -32,7 +32,7 @@ import {
 } from "../db/schema-bundle.js";
 import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
-import { renderTiptapJson } from "../lib/tiptap-render.js";
+import { renderTiptapJson, trimTiptapBody } from "../lib/tiptap-render.js";
 import { extractSummary, extractBodyText } from "../lib/summary.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
@@ -1347,16 +1347,20 @@ export function createPostService(
           : undefined;
       const rating = ensurePostRating(data.rating);
 
-      const body = data.bodyMarkdown
+      const rawBody = data.bodyMarkdown
         ? markdownToTiptapJson(data.bodyMarkdown)
         : (data.body ?? null);
+      const body = rawBody ? trimTiptapBody(rawBody) : null;
+      const title = data.title?.trim() || null;
+      const quoteText = data.quoteText?.trim() || null;
+      const url = data.url?.trim() || null;
 
       assertPostFormatShape({
         format,
-        title: data.title,
+        title,
         body,
-        url: data.url,
-        quoteText: data.quoteText,
+        url,
+        quoteText,
         hasAttachments: data.attachments
           ? data.attachments.length > 0
           : undefined,
@@ -1367,7 +1371,7 @@ export function createPostService(
 
       // Generate summary for titled notes with body content
       let summary: string | null = null;
-      if (format === "note" && data.title && body && summaryConfig) {
+      if (format === "note" && title && body && summaryConfig) {
         summary = extractSummary(
           body,
           summaryConfig.maxParagraphs,
@@ -1436,7 +1440,7 @@ export function createPostService(
           const slugified = slugify(normalized);
           slug = await generatePostSlug({
             slug: slugified || undefined,
-            title: data.title,
+            title: title ?? undefined,
             idLength: config.slugIdLength,
             isAvailable: isSlugAvailable,
           });
@@ -1449,7 +1453,7 @@ export function createPostService(
       } else {
         slug = await generatePostSlug({
           slug: data.slug,
-          title: data.title,
+          title: title ?? undefined,
           idLength: config.slugIdLength,
           isAvailable: isSlugAvailable,
         });
@@ -1470,12 +1474,12 @@ export function createPostService(
               visibility,
               pinnedAt: data.pinned ? timestamp : null,
               featuredAt: data.featured ? timestamp : null,
-              title: data.title ?? null,
-              url: data.url ?? null,
-              body: body ?? null,
+              title,
+              url,
+              body,
               bodyHtml,
               bodyText,
-              quoteText: data.quoteText ?? null,
+              quoteText,
               summary,
               rating,
               replyToId: data.replyToId ?? null,
@@ -1549,12 +1553,12 @@ export function createPostService(
               visibility,
               pinnedAt: data.pinned ? timestamp : null,
               featuredAt: data.featured ? timestamp : null,
-              title: data.title ?? null,
-              url: data.url ?? null,
-              body: body ?? null,
+              title,
+              url,
+              body,
               bodyHtml,
               bodyText,
-              quoteText: data.quoteText ?? null,
+              quoteText,
               summary,
               rating,
               replyToId: data.replyToId ?? null,
@@ -1720,9 +1724,12 @@ export function createPostService(
         data.format !== undefined
           ? ensurePostFormat(data.format)
           : existing.format;
-      const nextUrl = data.url !== undefined ? data.url : existing.url;
+      const nextUrl =
+        data.url !== undefined ? data.url?.trim() || null : existing.url;
       const nextQuoteText =
-        data.quoteText !== undefined ? data.quoteText : existing.quoteText;
+        data.quoteText !== undefined
+          ? data.quoteText?.trim() || null
+          : existing.quoteText;
       const nextStatus =
         data.status !== undefined
           ? ensurePostStatus(data.status)
@@ -1734,9 +1741,12 @@ export function createPostService(
       const nextRating =
         data.rating !== undefined ? ensurePostRating(data.rating) : undefined;
 
+      const nextTitle =
+        data.title !== undefined ? data.title?.trim() || null : existing.title;
+
       assertPostFormatShape({
         format: nextFormat,
-        title: data.title !== undefined ? data.title : existing.title,
+        title: nextTitle,
         body:
           data.body !== undefined || data.bodyMarkdown !== undefined
             ? data.bodyMarkdown
@@ -1773,9 +1783,9 @@ export function createPostService(
       }
 
       if (data.format !== undefined) updates.format = nextFormat;
-      if (data.title !== undefined) updates.title = data.title;
-      if (data.url !== undefined) updates.url = data.url;
-      if (data.quoteText !== undefined) updates.quoteText = data.quoteText;
+      if (data.title !== undefined) updates.title = nextTitle;
+      if (data.url !== undefined) updates.url = nextUrl;
+      if (data.quoteText !== undefined) updates.quoteText = nextQuoteText;
       if (data.rating !== undefined) updates.rating = nextRating;
       if (data.pinned !== undefined)
         updates.pinnedAt = data.pinned ? now() : null;
@@ -1783,9 +1793,10 @@ export function createPostService(
         updates.featuredAt = data.featured ? now() : null;
 
       if (data.body !== undefined || data.bodyMarkdown !== undefined) {
-        const normalizedBody = data.bodyMarkdown
+        const rawBody = data.bodyMarkdown
           ? markdownToTiptapJson(data.bodyMarkdown)
           : (data.body ?? null);
+        const normalizedBody = rawBody ? trimTiptapBody(rawBody) : null;
         updates.body = normalizedBody;
         updates.bodyHtml = normalizedBody
           ? renderTiptapJson(normalizedBody)
@@ -1798,7 +1809,7 @@ export function createPostService(
       // Recompute summary when body, title, or format change
       if (summaryConfig) {
         const format = nextFormat;
-        const title = data.title !== undefined ? data.title : existing.title;
+        const title = nextTitle;
         const body =
           data.bodyMarkdown !== undefined
             ? data.bodyMarkdown
