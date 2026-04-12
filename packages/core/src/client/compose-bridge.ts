@@ -983,21 +983,35 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
           }
         }
       } else if (editPostId) {
-        // On the timeline: try in-place refresh
-        const article = document.querySelector<HTMLElement>(
-          `article[data-post-id="${editPostId}"]`,
+        // On the post detail page: refresh the full view
+        const postView = document.querySelector<HTMLElement>(
+          `[data-post-view][data-post-view-id="${editPostId}"]`,
         );
-        const threadRootId = article?.closest<HTMLElement>(
-          "[data-timeline-item]",
-        )?.dataset.threadRootId;
-        const refreshed = threadRootId
-          ? await refreshTimelineThreadView(threadRootId)
-          : await refreshPostCardView(editPostId);
-        if (refreshed) {
-          toastMsg("Post updated.");
+        if (postView) {
+          const refreshed = await refreshPostPageView(editPostId);
+          if (refreshed) {
+            toastMsg("Post updated.");
+          } else {
+            queueSuccessToast("Post updated.");
+            globalThis.location.reload();
+          }
         } else {
-          queueSuccessToast("Post updated.");
-          globalThis.location.reload();
+          // On the timeline: try in-place refresh
+          const article = document.querySelector<HTMLElement>(
+            `article[data-post-id="${editPostId}"]`,
+          );
+          const threadRootId = article?.closest<HTMLElement>(
+            "[data-timeline-item]",
+          )?.dataset.threadRootId;
+          const refreshed = threadRootId
+            ? await refreshTimelineThreadView(threadRootId)
+            : await refreshPostCardView(editPostId);
+          if (refreshed) {
+            toastMsg("Post updated.");
+          } else {
+            queueSuccessToast("Post updated.");
+            globalThis.location.reload();
+          }
         }
       } else {
         queueSuccessToast("Post updated.");
