@@ -14,7 +14,7 @@ import { createSettingsService } from "../../../services/settings.js";
 import { createMediaService } from "../../../services/media.js";
 import { DEFAULT_APP_PORT } from "../../../lib/env.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
-import { rssRoutes } from "../rss.js";
+import { feedRoutes } from "../feed.js";
 import type { Database } from "../../../db/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -57,12 +57,12 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
     await next();
   });
 
-  app.route("/feed", rssRoutes);
+  app.route("/feed", feedRoutes);
 
   return { app, services, db: db as unknown as Database };
 }
 
-describe("RSS Feed Routes", () => {
+describe("Atom Feed Routes", () => {
   describe("/feed — site main feed", () => {
     it("defaults to featured posts", async () => {
       const { app, services } = createFeedTestApp();
@@ -116,16 +116,16 @@ describe("RSS Feed Routes", () => {
       expect(xml).not.toContain("Hidden Post");
     });
 
-    it("returns RSS content type", async () => {
+    it("returns Atom content type", async () => {
       const { app } = createFeedTestApp();
 
       const res = await app.request("/feed");
       expect(res.headers.get("Content-Type")).toBe(
-        "application/rss+xml; charset=utf-8",
+        "application/atom+xml; charset=utf-8",
       );
     });
 
-    it("orders featured items and pubDate by featuredAt rather than publishedAt", async () => {
+    it("orders featured items by featuredAt and preserves original publishedAt", async () => {
       const { app, services, db } = createFeedTestApp();
 
       const olderPublished = await services.posts.create({
@@ -156,41 +156,13 @@ describe("RSS Feed Routes", () => {
       expect(res.status).toBe(200);
 
       const xml = await res.text();
+      // Older published should appear first because it has a later featuredAt
       expect(xml.indexOf("Older published")).toBeLessThan(
         xml.indexOf("Newer published"),
       );
-      expect(xml).toContain("<pubDate>Thu, 01 Jan 1970 01:06:40 GMT</pubDate>");
-      expect(xml).toContain("<pubDate>Thu, 01 Jan 1970 00:50:00 GMT</pubDate>");
-    });
-  });
-
-  describe("/feed/atom.xml — site main feed (Atom)", () => {
-    it("returns featured posts in Atom format by default", async () => {
-      const { app, services } = createFeedTestApp();
-
-      await services.posts.create({
-        format: "note",
-        title: "Regular Post",
-        bodyMarkdown: "Not featured",
-        status: "published",
-      });
-      await services.posts.create({
-        format: "note",
-        title: "Featured Post",
-        bodyMarkdown: "This is featured",
-        status: "published",
-        featured: true,
-      });
-
-      const res = await app.request("/feed/atom.xml");
-      expect(res.status).toBe(200);
-      expect(res.headers.get("Content-Type")).toBe(
-        "application/atom+xml; charset=utf-8",
-      );
-
-      const xml = await res.text();
-      expect(xml).toContain("Featured Post");
-      expect(xml).not.toContain("Regular Post");
+      // <published> should reflect original publishedAt, not featuredAt
+      expect(xml).toContain("<published>1970-01-01T00:16:40.000Z</published>");
+      expect(xml).toContain("<published>1970-01-01T00:33:20.000Z</published>");
     });
   });
 
@@ -298,67 +270,13 @@ describe("RSS Feed Routes", () => {
       expect(xml).toContain("My Link");
     });
 
-    it("returns RSS content type", async () => {
+    it("returns Atom content type", async () => {
       const { app } = createFeedTestApp();
 
       const res = await app.request("/feed/latest");
       expect(res.headers.get("Content-Type")).toBe(
-        "application/rss+xml; charset=utf-8",
-      );
-    });
-  });
-
-  describe("/feed/latest/atom.xml — latest public posts (Atom)", () => {
-    it("returns latest public posts in Atom format", async () => {
-      const { app, services } = createFeedTestApp();
-
-      await services.posts.create({
-        format: "note",
-        title: "Public Post",
-        bodyMarkdown: "Public",
-        status: "published",
-      });
-      await services.posts.create({
-        format: "note",
-        title: "Hidden Post",
-        bodyMarkdown: "Hidden",
-        status: "published",
-        visibility: "latest_hidden",
-      });
-
-      const res = await app.request("/feed/latest/atom.xml");
-      expect(res.status).toBe(200);
-      expect(res.headers.get("Content-Type")).toBe(
         "application/atom+xml; charset=utf-8",
       );
-
-      const xml = await res.text();
-      expect(xml).toContain("Public Post");
-      expect(xml).not.toContain("Hidden Post");
-    });
-
-    it("supports format filtering", async () => {
-      const { app, services } = createFeedTestApp();
-
-      await services.posts.create({
-        format: "note",
-        title: "My Note",
-        bodyMarkdown: "A note",
-        status: "published",
-      });
-      await services.posts.create({
-        format: "link",
-        title: "My Link",
-        url: "https://example.com",
-        status: "published",
-      });
-
-      const res = await app.request("/feed/latest/atom.xml?format=link");
-      expect(res.status).toBe(200);
-
-      const xml = await res.text();
-      expect(xml).not.toContain("My Note");
-      expect(xml).toContain("My Link");
     });
   });
 
@@ -389,33 +307,29 @@ describe("RSS Feed Routes", () => {
     });
   });
 
-  describe("/feed/featured/atom.xml — featured posts (Atom)", () => {
-    it("returns only featured posts in Atom format", async () => {
-      const { app, services } = createFeedTestApp();
+  describe("legacy atom.xml redirects", () => {
+    it("redirects /feed/atom.xml to /feed", async () => {
+      const { app } = createFeedTestApp();
 
-      await services.posts.create({
-        format: "note",
-        title: "Regular Post",
-        bodyMarkdown: "Not featured",
-        status: "published",
-      });
-      await services.posts.create({
-        format: "note",
-        title: "Featured Post",
-        bodyMarkdown: "This is featured",
-        status: "published",
-        featured: true,
-      });
+      const res = await app.request("/feed/atom.xml");
+      expect(res.status).toBe(308);
+      expect(res.headers.get("Location")).toBe("/feed");
+    });
+
+    it("redirects /feed/latest/atom.xml to /feed/latest", async () => {
+      const { app } = createFeedTestApp();
+
+      const res = await app.request("/feed/latest/atom.xml");
+      expect(res.status).toBe(308);
+      expect(res.headers.get("Location")).toBe("/feed/latest");
+    });
+
+    it("redirects /feed/featured/atom.xml to /feed/featured", async () => {
+      const { app } = createFeedTestApp();
 
       const res = await app.request("/feed/featured/atom.xml");
-      expect(res.status).toBe(200);
-      expect(res.headers.get("Content-Type")).toBe(
-        "application/atom+xml; charset=utf-8",
-      );
-
-      const xml = await res.text();
-      expect(xml).toContain("Featured Post");
-      expect(xml).not.toContain("Regular Post");
+      expect(res.status).toBe(308);
+      expect(res.headers.get("Location")).toBe("/feed/featured");
     });
   });
 
@@ -428,14 +342,12 @@ describe("RSS Feed Routes", () => {
       expect(res.headers.get("Location")).toBe("/feed/latest?format=note");
     });
 
-    it("redirects /feed/all/atom.xml to /feed/latest/atom.xml", async () => {
+    it("redirects /feed/all/atom.xml to /feed/latest", async () => {
       const { app } = createFeedTestApp();
 
       const res = await app.request("/feed/all/atom.xml?format=link");
       expect(res.status).toBe(308);
-      expect(res.headers.get("Location")).toBe(
-        "/feed/latest/atom.xml?format=link",
-      );
+      expect(res.headers.get("Location")).toBe("/feed/latest");
     });
   });
 
@@ -509,7 +421,7 @@ describe("RSS Feed Routes", () => {
       expect(xml).toContain("Post 1");
     });
 
-    it("also applies to the featured atom feed", async () => {
+    it("also applies to the featured feed", async () => {
       const { app, services } = createFeedTestApp({
         RSS_FEED_LIMIT: "1",
       });
@@ -524,13 +436,40 @@ describe("RSS Feed Routes", () => {
         });
       }
 
-      const res = await app.request("/feed/featured/atom.xml");
+      const res = await app.request("/feed/featured");
       expect(res.status).toBe(200);
 
       const xml = await res.text();
       expect(xml).toContain("Post 2");
       expect(xml).not.toContain("Post 1");
       expect(xml).not.toContain("Post 0");
+    });
+  });
+
+  describe("thread content in feed", () => {
+    it("includes thread replies inline with hr separators", async () => {
+      const { app, services } = createFeedTestApp();
+
+      const root = await services.posts.create({
+        format: "note",
+        title: "Thread Root",
+        bodyMarkdown: "Root content",
+        status: "published",
+      });
+      await services.posts.create({
+        format: "note",
+        bodyMarkdown: "Reply content",
+        status: "published",
+        replyToId: root.id,
+      });
+
+      const res = await app.request("/feed/latest");
+      expect(res.status).toBe(200);
+
+      const xml = await res.text();
+      expect(xml).toContain("Root content");
+      expect(xml).toContain("Reply content");
+      expect(xml).toContain("<hr/>");
     });
   });
 });

@@ -115,10 +115,12 @@ export interface PostView {
  * curation event rather than original publication time.
  */
 export interface FeedPostView extends PostView {
-  /** Optional ISO 8601 timestamp used for RSS pubDate / Atom published */
+  /** Optional ISO 8601 timestamp used for Atom `<published>` */
   feedPublishedAt?: string;
-  /** Optional ISO 8601 timestamp used for Atom updated */
+  /** Optional ISO 8601 timestamp used for Atom `<updated>` */
   feedUpdatedAt?: string;
+  /** Thread replies to render inline in the feed entry content */
+  threadReplies?: PostView[];
 }
 
 /**

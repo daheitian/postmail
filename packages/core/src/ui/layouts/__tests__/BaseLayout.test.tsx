@@ -130,7 +130,7 @@ describe("BaseLayout", () => {
     );
 
     expect(
-      html.match(/rel="alternate" type="application\/rss\+xml"/g) ?? [],
+      html.match(/rel="alternate" type="application\/atom\+xml"/g) ?? [],
     ).toHaveLength(2);
     expect(html).toContain('href="/feed"');
     expect(html).toContain('href="/feed/latest"');
@@ -148,7 +148,7 @@ describe("BaseLayout", () => {
     );
 
     expect(
-      html.match(/rel="alternate" type="application\/rss\+xml"/g) ?? [],
+      html.match(/rel="alternate" type="application\/atom\+xml"/g) ?? [],
     ).toHaveLength(2);
     expect(html).toContain('href="/feed"');
     expect(html).toContain('href="/feed/featured"');

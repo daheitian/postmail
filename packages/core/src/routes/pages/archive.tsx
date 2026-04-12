@@ -5,7 +5,7 @@
  * year, collection, format, media types, title presence.
  * Page-based pagination with media-enriched thread-root tiles.
  *
- * Also serves filtered RSS/Atom feeds at /archive/feed and /archive/feed/atom.xml.
+ * Also serves a filtered Atom feed at /archive/feed.
  */
 
 import { msg } from "@lingui/core/macro";
@@ -26,12 +26,12 @@ import type {
 } from "../../types/props.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { ArchivePage } from "../../ui/pages/ArchivePage.js";
-import { defaultRssRenderer, defaultAtomRenderer } from "../../lib/feed.js";
+import { defaultFeedRenderer } from "../../lib/feed.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
-import { formatYearMonth } from "../../lib/time.js";
-import { toAbsoluteSiteUrl } from "../../lib/url.js";
+import { formatYearMonth, toISOString } from "../../lib/time.js";
+import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import {
   createMediaContext,
   toArchiveGroupsWithMedia,
@@ -542,15 +542,45 @@ async function buildArchiveFeedData(
 
   const posts = await services.posts.list(filters);
 
-  // Batch load media and aliases
+  // Collect thread root IDs to batch-load replies
+  const rootIds = posts.filter((p) => p.threadId === p.id).map((p) => p.id);
+
+  // Batch load media, aliases, and thread replies
   const postIds = posts.map((p) => p.id);
-  const [rawMediaMap, aliasesMap] = await Promise.all([
+  const [threadMap, rawMediaMap, aliasesMap] = await Promise.all([
+    services.posts.getPublishedThreads(rootIds),
     services.media.getByPostIds(postIds),
     services.paths.getPostAliases(postIds),
   ]);
+
+  // Collect reply IDs for media loading
+  const replyIds: string[] = [];
+  for (const [rootId, thread] of threadMap) {
+    for (const reply of thread) {
+      if (reply.id !== rootId) {
+        replyIds.push(reply.id);
+      }
+    }
+  }
+
+  const replyMediaMap =
+    replyIds.length > 0
+      ? await services.media.getByPostIds(replyIds)
+      : new Map<
+          string,
+          typeof rawMediaMap extends Map<string, infer V> ? V : never
+        >();
+
   const mediaCtx = createMediaContext(appConfig);
+
+  // Merge all media
+  const allRawMedia = new Map(rawMediaMap);
+  for (const [id, media] of replyMediaMap) {
+    allRawMedia.set(id, media);
+  }
+
   const mediaMap = buildMediaMap(
-    rawMediaMap,
+    allRawMedia,
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
@@ -570,7 +600,30 @@ async function buildArchiveFeedData(
     mediaCtx,
     undefined,
     aliasMap,
-  );
+  ).map((postView, index) => {
+    const post = posts[index]!;
+
+    // Build thread replies
+    const thread = threadMap.get(post.id);
+    const replies =
+      thread && thread.length > 1
+        ? toPostViews(
+            thread
+              .filter((r) => r.id !== post.id)
+              .map((r) => ({
+                ...r,
+                mediaAttachments: mediaMap.get(r.id) ?? [],
+              })),
+            mediaCtx,
+          )
+        : undefined;
+
+    return {
+      ...postView,
+      feedUpdatedAt: toISOString(post.lastActivityAt),
+      threadReplies: replies,
+    };
+  });
 
   const feedQuery = buildArchiveFeedQuery(params);
 
@@ -589,24 +642,25 @@ async function buildArchiveFeedData(
   };
 }
 
-// RSS 2.0 — /archive/feed
+// Atom — /archive/feed
 archiveRoutes.get("/feed", async (c) => {
   const feedData = await buildArchiveFeedData(c, "/archive/feed");
-  return new Response(defaultRssRenderer(feedData), {
-    headers: {
-      "Content-Type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=180",
-    },
-  });
-});
-
-// Atom — /archive/feed/atom.xml
-archiveRoutes.get("/feed/atom.xml", async (c) => {
-  const feedData = await buildArchiveFeedData(c, "/archive/feed/atom.xml");
-  return new Response(defaultAtomRenderer(feedData), {
+  return new Response(defaultFeedRenderer(feedData), {
     headers: {
       "Content-Type": "application/atom+xml; charset=utf-8",
       "Cache-Control": "public, max-age=180",
     },
   });
+});
+
+// Legacy atom.xml redirect
+archiveRoutes.get("/feed/atom.xml", (c) => {
+  const sitePathPrefix = c.var.appConfig.sitePathPrefix;
+  const qs = c.req.url.includes("?")
+    ? c.req.url.slice(c.req.url.indexOf("?"))
+    : "";
+  return c.redirect(
+    `${toPublicPath("/archive/feed", sitePathPrefix)}${qs}`,
+    308,
+  );
 });

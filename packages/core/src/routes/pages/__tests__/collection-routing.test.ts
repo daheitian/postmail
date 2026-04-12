@@ -124,14 +124,14 @@ describe("Collection Routing", () => {
     const singleRes = await app.request("/reading/feed");
     expect(singleRes.status).toBe(200);
     expect(singleRes.headers.get("Content-Type")).toBe(
-      "application/rss+xml; charset=utf-8",
+      "application/atom+xml; charset=utf-8",
     );
     expect(await singleRes.text()).toContain("Book log");
 
     const aggregateRes = await app.request("/collections/reading+movies/feed");
     expect(aggregateRes.status).toBe(200);
     expect(aggregateRes.headers.get("Content-Type")).toBe(
-      "application/rss+xml; charset=utf-8",
+      "application/atom+xml; charset=utf-8",
     );
 
     const xml = await aggregateRes.text();

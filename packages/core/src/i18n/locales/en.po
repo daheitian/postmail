@@ -1296,12 +1296,17 @@ msgstr "Featured feed"
 msgid "Featured on {date} at {time}"
 msgstr "Featured on {date} at {time}"
 
-#. @context: RSS and Atom feed title suffix for the featured posts feed
-#. @context: RSS autodiscovery title for the featured posts feed
-#: src/routes/feed/rss.ts
+#. @context: Atom feed title suffix for the featured posts feed
+#. @context: Feed autodiscovery title for the featured posts feed
+#: src/routes/feed/feed.ts
 #: src/ui/layouts/BaseLayout.tsx
 msgid "Featured posts"
 msgstr "Featured posts"
+
+#. @context: Built-in navigation label for feed
+#: src/ui/shared/navigation-labels.ts
+msgid "Feed"
+msgstr "Feed"
 
 #. @context: Toast after saving feed settings
 #: src/routes/dash/settings.tsx
@@ -1644,9 +1649,9 @@ msgstr "Latest"
 msgid "Latest feed"
 msgstr "Latest feed"
 
-#. @context: RSS and Atom feed title suffix for the latest public posts feed
-#. @context: RSS autodiscovery title for the latest public posts feed
-#: src/routes/feed/rss.ts
+#. @context: Atom feed title suffix for the latest public posts feed
+#. @context: Feed autodiscovery title for the latest public posts feed
+#: src/routes/feed/feed.ts
 #: src/ui/layouts/BaseLayout.tsx
 msgid "Latest posts"
 msgstr "Latest posts"
@@ -1786,8 +1791,8 @@ msgstr "Logos"
 msgid "Look at the footer metadata last, to make sure the accent is not fighting the typography."
 msgstr "Look at the footer metadata last, to make sure the accent is not fighting the typography."
 
+#. @context: Feed autodiscovery title for the site's main feed
 #. @context: Label for the canonical /feed URL
-#. @context: RSS autodiscovery title for the site's main feed
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/layouts/BaseLayout.tsx
 msgid "Main feed"
@@ -2508,11 +2513,6 @@ msgstr "Revoke this session? That device will need to sign in again."
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "Revoke this token? Any scripts using it will stop working."
-
-#. @context: Built-in navigation label for RSS
-#: src/ui/shared/navigation-labels.ts
-msgid "RSS"
-msgstr "RSS"
 
 #. @context: Tooltip for the RSS feed link on a collection page
 #: src/ui/pages/CollectionPage.tsx

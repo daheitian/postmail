@@ -75,7 +75,7 @@ describe("withWorkerResponseCache", () => {
         return new Response("fresh", {
           headers: {
             "Cache-Control": "public, max-age=180",
-            "Content-Type": "application/rss+xml; charset=utf-8",
+            "Content-Type": "application/atom+xml; charset=utf-8",
           },
         });
       },
@@ -95,7 +95,7 @@ describe("withWorkerResponseCache", () => {
         return new Response("new", {
           headers: {
             "Cache-Control": "public, max-age=180",
-            "Content-Type": "application/rss+xml; charset=utf-8",
+            "Content-Type": "application/atom+xml; charset=utf-8",
           },
         });
       },
@@ -169,7 +169,7 @@ describe("withWorkerResponseCache", () => {
         return new Response("prefixed", {
           headers: {
             "Cache-Control": "public, max-age=180",
-            "Content-Type": "application/rss+xml; charset=utf-8",
+            "Content-Type": "application/atom+xml; charset=utf-8",
           },
         });
       },
@@ -188,7 +188,7 @@ describe("withWorkerResponseCache", () => {
         return new Response("new", {
           headers: {
             "Cache-Control": "public, max-age=180",
-            "Content-Type": "application/rss+xml; charset=utf-8",
+            "Content-Type": "application/atom+xml; charset=utf-8",
           },
         });
       },

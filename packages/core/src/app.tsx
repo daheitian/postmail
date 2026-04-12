@@ -54,7 +54,7 @@ import { publicPostsApiRoutes } from "./routes/api/public/posts.js";
 import { composeRoutes } from "./routes/compose.js";
 
 // Routes - Feed
-import { rssRoutes } from "./routes/feed/rss.js";
+import { feedRoutes } from "./routes/feed/feed.js";
 import { sitemapRoutes } from "./routes/feed/sitemap.js";
 import { manifestRoutes } from "./routes/feed/manifest.js";
 
@@ -501,7 +501,7 @@ export function createApp(): App {
   app.route("/compose", composeRoutes);
 
   // Feed routes
-  app.route("/feed", rssRoutes);
+  app.route("/feed", feedRoutes);
   app.route("/", sitemapRoutes);
   app.route("/", manifestRoutes);
 

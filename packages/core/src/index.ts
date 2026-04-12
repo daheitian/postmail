@@ -82,8 +82,4 @@ export {
 export type { MediaContext } from "./lib/view.js";
 
 // Default feed renderers (for custom feed implementations)
-export {
-  defaultRssRenderer,
-  defaultAtomRenderer,
-  defaultSitemapRenderer,
-} from "./lib/feed.js";
+export { defaultFeedRenderer, defaultSitemapRenderer } from "./lib/feed.js";

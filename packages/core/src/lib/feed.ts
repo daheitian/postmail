@@ -1,16 +1,21 @@
 /**
  * Default Feed Renderers
  *
- * RSS 2.0, Atom, and Sitemap XML generators.
+ * Atom and Sitemap XML generators.
  * Theme authors can import these to extend/wrap the defaults:
  *
  * @example
  * ```typescript
- * import { defaultRssRenderer } from "@jant/core/lib/feed";
+ * import { defaultFeedRenderer } from "@jant/core/lib/feed";
  * ```
  */
 
-import type { FeedData, PostView, SitemapData } from "../types.js";
+import type {
+  FeedData,
+  FeedPostView,
+  PostView,
+  SitemapData,
+} from "../types.js";
 import { extractDisplayDomain } from "./url.js";
 
 /**
@@ -75,13 +80,12 @@ function renderRatingHtml(rating: number): string {
 }
 
 /**
- * Build the full HTML content for a feed item, combining format-specific
- * fields (quote text, source URL) with body and rating.
+ * Build the HTML content for a single post (root or reply).
  *
  * @param post - Post view data
- * @param permalinkUrl - Absolute permalink URL back to the blog post (used for ★ on link posts)
+ * @param permalinkUrl - Absolute permalink URL back to the blog post
  */
-function buildFeedContent(post: PostView, permalinkUrl?: string): string {
+function buildSinglePostContent(post: PostView, permalinkUrl?: string): string {
   const parts: string[] = [];
 
   if (post.format === "quote" && post.quoteText) {
@@ -123,73 +127,45 @@ function buildFeedContent(post: PostView, permalinkUrl?: string): string {
 }
 
 /**
- * Default RSS 2.0 renderer.
+ * Build the full HTML content for a feed entry, including thread replies.
  *
- * @param data - Feed data with PostView[] (pre-computed URLs)
- * @returns RSS 2.0 XML string
+ * @param post - Root post view data
+ * @param siteUrl - Site base URL for building absolute permalinks
+ * @param permalinkUrl - Absolute permalink URL for the root post
  */
-export function defaultRssRenderer(data: FeedData): string {
-  const {
-    siteName,
-    siteDescription,
-    siteUrl,
-    siteLanguage,
-    title,
-    selfUrl,
-    posts,
-  } = data;
-  const feedTitle = title ?? siteName;
+function buildFeedContent(
+  post: FeedPostView,
+  siteUrl: string,
+  permalinkUrl?: string,
+): string {
+  const rootContent = buildSinglePostContent(post, permalinkUrl);
+  const replies = post.threadReplies;
 
-  const items = posts
-    .map((post) => {
-      const permalinkUrl = new URL(post.permalink, siteUrl).toString();
-      const escapedPermalink = escapeXml(permalinkUrl);
-      // Link-format posts point <link> to the original URL (Daring Fireball style)
-      const itemLink =
-        post.format === "link" && post.url
-          ? escapeXml(post.url)
-          : escapedPermalink;
-      const pubDate = new Date(
-        post.feedPublishedAt ?? post.publishedAt,
-      ).toUTCString();
-      const itemTitle = post.format === "quote" ? "" : (post.title ?? "");
+  if (!replies || replies.length === 0) {
+    return rootContent;
+  }
 
-      // Add enclosure for first media attachment
-      const firstMedia = post.media[0];
-      const enclosure = firstMedia
-        ? `\n      <enclosure url="${escapeXml(firstMedia.url)}" type="${escapeXml(firstMedia.mimeType)}"${firstMedia.size ? ` length="${firstMedia.size}"` : ""}/>`
-        : "";
+  const parts = [rootContent];
 
-      return `
-    <item>
-      ${itemTitle ? `<title><![CDATA[${escapeCdata(itemTitle)}]]></title>\n      ` : ""}<link>${itemLink}</link>
-      <guid isPermaLink="true">${escapedPermalink}</guid>
-      <pubDate>${pubDate}</pubDate>
-      <description><![CDATA[${escapeCdata(buildFeedContent(post, post.format === "link" ? permalinkUrl : undefined))}]]></description>${enclosure}
-    </item>`;
-    })
-    .join("");
+  for (const reply of replies) {
+    const replyPermalink = new URL(reply.permalink, siteUrl).toString();
+    parts.push("<hr/>");
+    parts.push(
+      `<p><small><time datetime="${escapeXml(reply.publishedAt)}">${escapeXml(reply.publishedAtFormatted)}</time></small></p>`,
+    );
+    parts.push(buildSinglePostContent(reply, replyPermalink));
+  }
 
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>${escapeXml(feedTitle)}</title>
-    <link>${escapeXml(siteUrl)}</link>
-    <description>${escapeXml(siteDescription)}</description>
-    <language>${siteLanguage}</language>
-    <atom:link href="${escapeXml(selfUrl)}" rel="self" type="application/rss+xml"/>
-    ${items}
-  </channel>
-</rss>`;
+  return parts.join("\n");
 }
 
 /**
- * Default Atom renderer.
+ * Default Atom feed renderer.
  *
- * @param data - Feed data with PostView[] (pre-computed URLs)
+ * @param data - Feed data with FeedPostView[] (pre-computed URLs)
  * @returns Atom XML string
  */
-export function defaultAtomRenderer(data: FeedData): string {
+export function defaultFeedRenderer(data: FeedData): string {
   const { siteName, siteDescription, siteUrl, title, selfUrl, posts } = data;
   const feedTitle = title ?? siteName;
 
@@ -220,7 +196,7 @@ export function defaultAtomRenderer(data: FeedData): string {
     <published>${publishedAt}</published>
     <updated>${updatedAt}</updated>
     <summary type="text">${escapeXml(summary)}</summary>
-    <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post, alternateUrl ? permalinkUrl : undefined))}]]></content>
+    <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post, siteUrl, alternateUrl ? permalinkUrl : undefined))}]]></content>
   </entry>`;
     })
     .join("");

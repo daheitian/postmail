@@ -18,7 +18,7 @@ import {
   supportsCollectionRatingSort,
 } from "../../lib/collection-sort.js";
 import { assembleCollectionTimeline } from "../../lib/timeline.js";
-import { defaultRssRenderer } from "../../lib/feed.js";
+import { defaultFeedRenderer } from "../../lib/feed.js";
 import { toPlainText as markdownToPlainText } from "../../lib/markdown.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 import { toISOString } from "../../lib/time.js";
@@ -267,14 +267,44 @@ export async function renderCollectionFeed(
     );
   const posts = entries.map((entry) => entry.post);
 
+  // Collect thread root IDs to batch-load replies
+  const rootIds = posts.filter((p) => p.threadId === p.id).map((p) => p.id);
+
   const postIds = posts.map((post) => post.id);
-  const [rawMediaMap, aliasesMap] = await Promise.all([
+  const [threadMap, rawMediaMap, aliasesMap] = await Promise.all([
+    c.var.services.posts.getPublishedThreads(rootIds),
     c.var.services.media.getByPostIds(postIds),
     c.var.services.paths.getPostAliases(postIds),
   ]);
+
+  // Collect reply IDs for media loading
+  const replyIds: string[] = [];
+  for (const [rootId, thread] of threadMap) {
+    for (const reply of thread) {
+      if (reply.id !== rootId) {
+        replyIds.push(reply.id);
+      }
+    }
+  }
+
+  const replyMediaMap =
+    replyIds.length > 0
+      ? await c.var.services.media.getByPostIds(replyIds)
+      : new Map<
+          string,
+          typeof rawMediaMap extends Map<string, infer V> ? V : never
+        >();
+
   const mediaCtx = createMediaContext(appConfig);
+
+  // Merge all media
+  const allRawMedia = new Map(rawMediaMap);
+  for (const [id, media] of replyMediaMap) {
+    allRawMedia.set(id, media);
+  }
+
   const mediaMap = buildMediaMap(
-    rawMediaMap,
+    allRawMedia,
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
@@ -294,15 +324,35 @@ export async function renderCollectionFeed(
     mediaCtx,
     undefined,
     aliasMap,
-  ).map((post, index) => {
+  ).map((postView, index) => {
+    const post = posts[index]!;
     const collectedAt = entries[index]?.collectedAt;
-    if (!collectedAt) return post;
 
-    const feedTimestamp = toISOString(collectedAt);
+    // Build thread replies
+    const thread = threadMap.get(post.id);
+    const replies =
+      thread && thread.length > 1
+        ? toPostViews(
+            thread
+              .filter((r) => r.id !== post.id)
+              .map((r) => ({
+                ...r,
+                mediaAttachments: mediaMap.get(r.id) ?? [],
+              })),
+            mediaCtx,
+          )
+        : undefined;
+
+    // feedUpdatedAt = max(lastActivityAt, collectedAt)
+    const lastActivity = toISOString(post.lastActivityAt);
+    const collectedIso = collectedAt ? toISOString(collectedAt) : null;
+    const feedUpdatedAt =
+      collectedIso && collectedIso > lastActivity ? collectedIso : lastActivity;
+
     return {
-      ...post,
-      feedPublishedAt: feedTimestamp,
-      feedUpdatedAt: feedTimestamp,
+      ...postView,
+      feedUpdatedAt,
+      threadReplies: replies,
     };
   });
   const i18n = getI18n(c);
@@ -311,7 +361,7 @@ export async function renderCollectionFeed(
     i18n,
   );
 
-  const xml = defaultRssRenderer({
+  const xml = defaultFeedRenderer({
     siteName: buildPageTitle(selectionTitle, siteName),
     siteDescription:
       selection.collections.length === 1 && primaryCollection.description
@@ -329,7 +379,7 @@ export async function renderCollectionFeed(
 
   return new Response(xml, {
     headers: {
-      "Content-Type": "application/rss+xml; charset=utf-8",
+      "Content-Type": "application/atom+xml; charset=utf-8",
       "Cache-Control": "public, max-age=180",
     },
   });

@@ -178,7 +178,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     i18n?._(
       msg({
         message: "Main feed",
-        comment: "@context: RSS autodiscovery title for the site's main feed",
+        comment: "@context: Feed autodiscovery title for the site's main feed",
       }),
     ) ?? "Main feed";
   const latestFeedTitle =
@@ -186,7 +186,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
       msg({
         message: "Latest posts",
         comment:
-          "@context: RSS autodiscovery title for the latest public posts feed",
+          "@context: Feed autodiscovery title for the latest public posts feed",
       }),
     ) ?? "Latest posts";
   const featuredFeedTitle =
@@ -194,7 +194,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
       msg({
         message: "Featured posts",
         comment:
-          "@context: RSS autodiscovery title for the featured posts feed",
+          "@context: Feed autodiscovery title for the featured posts feed",
       }),
     ) ?? "Featured posts";
   const alternateFeed =
@@ -273,7 +273,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           {mainFeedHref && (
             <link
               rel="alternate"
-              type="application/rss+xml"
+              type="application/atom+xml"
               title={mainFeedTitle}
               href={mainFeedHref}
             />
@@ -281,7 +281,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           {alternateFeed.href && (
             <link
               rel="alternate"
-              type="application/rss+xml"
+              type="application/atom+xml"
               title={alternateFeed.title}
               href={alternateFeed.href}
             />

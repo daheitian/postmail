@@ -35,8 +35,8 @@ const BUILTIN_NAV_LABELS = {
     comment: "@context: Built-in navigation label for settings",
   }),
   rss: msg({
-    message: "RSS",
-    comment: "@context: Built-in navigation label for RSS",
+    message: "Feed",
+    comment: "@context: Built-in navigation label for feed",
   }),
   signIn: msg({
     message: "Sign in",
