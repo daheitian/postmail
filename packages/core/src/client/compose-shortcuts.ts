@@ -68,15 +68,28 @@ async function toggleFeatured(
 
 document.addEventListener("keydown", (event: globalThis.KeyboardEvent) => {
   const key = event.key.toLowerCase();
-  if (key !== "n" && key !== "r" && key !== "e" && key !== "c" && key !== "f")
+  if (
+    key !== "n" &&
+    key !== "l" &&
+    key !== "q" &&
+    key !== "r" &&
+    key !== "e" &&
+    key !== "c" &&
+    key !== "f"
+  )
     return;
   if (shouldIgnoreShortcut(event)) return;
 
-  if (key === "n") {
+  if (key === "n" || key === "l" || key === "q") {
     event.preventDefault();
     markComposeOpenShortcutDiscovered();
     const collectionId = getActiveCollectionId();
-    void openNewCompose(collectionId ? { collectionId } : undefined);
+    const initialFormat =
+      key === "l" ? "link" : key === "q" ? "quote" : undefined;
+    void openNewCompose({
+      ...(collectionId ? { collectionId } : undefined),
+      ...(initialFormat ? { initialFormat } : undefined),
+    });
     return;
   }
 

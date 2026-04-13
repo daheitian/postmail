@@ -50,6 +50,39 @@ const ICONS = {
 };
 
 // ---------------------------------------------------------------------------
+// History helpers
+// ---------------------------------------------------------------------------
+
+const HISTORY_MAX = 5;
+
+function loadHistory(key: string): string[] {
+  try {
+    const raw = globalThis.localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((s) => typeof s === "string" && s)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(key: string, value: string) {
+  const history = loadHistory(key).filter((v) => v !== value);
+  history.unshift(value);
+  globalThis.localStorage.setItem(
+    key,
+    JSON.stringify(history.slice(0, HISTORY_MAX)),
+  );
+}
+
+/** Recently visited items in navigate mode (stored by path) */
+const NAV_HISTORY_KEY = "jant:nav-history";
+/** Recent search queries in ? mode */
+const SEARCH_HISTORY_KEY = "jant:search-history";
+
+// ---------------------------------------------------------------------------
 // Static data
 // ---------------------------------------------------------------------------
 
@@ -188,7 +221,27 @@ export class JantCommandPalette extends LitElement {
   get #navigateItems(): PaletteItem[] {
     const q = normalizeSearch(this._query);
     const allItems = [...(this.#itemsCache ?? []), ...SYSTEM_PAGES];
-    if (!q) return allItems;
+
+    if (!q) {
+      // No query — show recent items first, then the rest
+      const recent = loadHistory(NAV_HISTORY_KEY);
+      if (recent.length === 0) return allItems;
+      const recentSet = new Set(recent);
+      const recentItems: PaletteItem[] = [];
+      const rest: PaletteItem[] = [];
+      for (const item of allItems) {
+        if (recentSet.has(item.path)) {
+          recentItems.push(item);
+        } else {
+          rest.push(item);
+        }
+      }
+      // Sort recent items by history order (most recent first)
+      recentItems.sort(
+        (a, b) => recent.indexOf(a.path) - recent.indexOf(b.path),
+      );
+      return [...recentItems, ...rest];
+    }
 
     return allItems
       .map((item, index) => {
@@ -212,6 +265,8 @@ export class JantCommandPalette extends LitElement {
     label: string;
     secondary?: string;
     icon: string;
+    /** For search-mode items: the query to execute */
+    searchQuery?: string;
   }> {
     const mode = this.#mode;
 
@@ -223,13 +278,20 @@ export class JantCommandPalette extends LitElement {
     }
 
     if (mode === "search") {
-      // Show a single "Search for ..." prompt item
       const q = this._query.slice(1).trim();
-      if (!q) return [];
+      if (!q) {
+        // Show recent searches
+        return loadHistory(SEARCH_HISTORY_KEY).map((h) => ({
+          label: h,
+          icon: ICONS.search,
+          searchQuery: h,
+        }));
+      }
       return [
         {
           label: `Search for "${q}"`,
           icon: ICONS.search,
+          searchQuery: q,
         },
       ];
     }
@@ -259,8 +321,10 @@ export class JantCommandPalette extends LitElement {
     }
 
     if (mode === "search") {
-      const q = this._query.slice(1).trim();
+      const displayItem = this.#displayItems[index];
+      const q = displayItem?.searchQuery;
       if (q) {
+        saveHistory(SEARCH_HISTORY_KEY, q);
         this.close();
         window.location.href = `/search?q=${encodeURIComponent(q)}`;
       }
@@ -270,6 +334,7 @@ export class JantCommandPalette extends LitElement {
     // Navigate mode
     const item = this.#navigateItems[index];
     if (item) {
+      saveHistory(NAV_HISTORY_KEY, item.path);
       this.close();
       if (item.type === "system") {
         window.location.href = item.path;

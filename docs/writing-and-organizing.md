@@ -170,6 +170,43 @@ Feeds:
 - `/{slug}/feed` returns a collection feed
 - `/collections/{slug1}+{slug2}/feed` returns a combined collection feed
 
+## Keyboard Shortcuts
+
+Shortcuts are available on any page when the cursor is not inside an input field, editor, or open dialog.
+
+### Creating Posts
+
+| Key | Action         |
+| --- | -------------- |
+| `N` | New note       |
+| `L` | New link post  |
+| `Q` | New quote post |
+
+If you are viewing a collection page, the new post is automatically added to that collection.
+
+### Working with Posts
+
+These shortcuts apply to the post you are viewing or hovering over.
+
+| Key | Action                |
+| --- | --------------------- |
+| `R` | Reply (add to thread) |
+| `E` | Edit post             |
+| `C` | Add to collection     |
+| `F` | Toggle featured       |
+
+### Command Palette
+
+| Key                | Action               |
+| ------------------ | -------------------- |
+| `Cmd+K` / `Ctrl+K` | Open command palette |
+
+Inside the palette:
+
+- Type to filter pages and posts
+- Prefix with `>` to run a command
+- Prefix with `?` to search
+
 ## Choosing Between Thread, Collection, and Featured
 
 Use a thread when posts are part of one conversation.

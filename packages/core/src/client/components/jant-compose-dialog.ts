@@ -111,6 +111,7 @@ interface DraftsResponse {
 interface ComposeOpenOptions {
   collectionId?: string;
   restoreDraft?: boolean;
+  initialFormat?: ComposeFormat;
 }
 
 interface ComposeReplyOpenOptions {
@@ -917,6 +918,10 @@ export class JantComposeDialog extends LitElement {
 
     if (options?.restoreDraft !== false) {
       await this.restoreLocalDraft();
+    }
+
+    if (options?.initialFormat) {
+      this._format = options.initialFormat;
     }
 
     if (

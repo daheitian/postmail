@@ -14,6 +14,7 @@ interface ReplyRefreshTarget {
 export interface ComposeOpenOptions {
   collectionId?: string;
   restoreDraft?: boolean;
+  initialFormat?: "note" | "link" | "quote";
 }
 
 export function getComposeDialog(): JantComposeDialog | null {
