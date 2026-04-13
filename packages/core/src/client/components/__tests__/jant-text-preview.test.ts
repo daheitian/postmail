@@ -128,6 +128,50 @@ describe("JantTextPreview", () => {
     expect(document.body.style.overflow).toBe("");
   });
 
+  it("adopts SSR dialog content and removes it after hydration", async () => {
+    // Simulate SSR: dialog with content + metadata script
+    const ssrDialog = document.createElement("dialog");
+    ssrDialog.className = "text-preview-dialog text-preview-dialog--ssr";
+    ssrDialog.open = true;
+    ssrDialog.innerHTML = `
+      <div class="text-preview-content">
+        <div class="text-preview-toolbar"></div>
+        <div class="text-preview-body prose"><p>SSR content</p></div>
+      </div>
+    `;
+    document.body.appendChild(ssrDialog);
+
+    const script = document.createElement("script");
+    script.type = "application/json";
+    script.id = "text-preview-autoopen";
+    script.textContent = JSON.stringify({
+      shareHref: "/post/text/med_123",
+      postHref: "/post",
+      postTitle: "My Post",
+    });
+    document.body.appendChild(script);
+
+    const el = await createElement();
+    await flush(el);
+    await flush(el);
+
+    // Lit dialog should be open with the SSR content
+    const litDialog = el.querySelector<HTMLDialogElement>(
+      ".text-preview-dialog",
+    );
+    expect(litDialog).not.toBeNull();
+    expect(litDialog?.open).toBe(true);
+    expect(el.querySelector(".text-preview-body")?.innerHTML).toContain(
+      "<p>SSR content</p>",
+    );
+
+    // SSR dialog should be removed
+    expect(document.querySelector(".text-preview-dialog--ssr")).toBeNull();
+
+    // Metadata script should be removed
+    expect(document.getElementById("text-preview-autoopen")).toBeNull();
+  });
+
   it("escapes plain-text fallback content before rendering", async () => {
     const el = await createElement();
     vi.spyOn(globalThis, "fetch").mockResolvedValue(

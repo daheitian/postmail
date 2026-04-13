@@ -67,45 +67,57 @@ export class JantTextPreview extends LitElement {
   /**
    * Check for a server-rendered auto-open payload and open the dialog
    * immediately with the pre-rendered content (no API fetch needed).
+   *
+   * The SSR response includes a visible `<dialog open>` with the content
+   * (class `text-preview-dialog--ssr`) so the user sees the overlay before
+   * JS loads. This method reads its HTML, opens the Lit-managed dialog,
+   * then removes the SSR one.
    */
   async #checkAutoOpen() {
+    const ssrDialog = document.querySelector<HTMLDialogElement>(
+      ".text-preview-dialog--ssr",
+    );
     const script = document.getElementById("text-preview-autoopen");
-    if (!script) return;
+    if (!ssrDialog && !script) return;
 
     try {
-      const data = JSON.parse(script.textContent || "") as {
-        html: string;
-        shareHref: string;
-        postHref: string;
-        postTitle: string;
+      const meta = JSON.parse(script?.textContent || "{}") as {
+        shareHref?: string;
+        postHref?: string;
+        postTitle?: string;
       };
-      // Remove the script so it doesn't fire again on HMR / re-mount
-      script.remove();
+      script?.remove();
 
-      this.#shareHref = data.shareHref
-        ? `${globalThis.location.origin}${data.shareHref}`
+      // Read content from SSR dialog (avoids duplicating HTML in the script)
+      const ssrBody =
+        ssrDialog?.querySelector<HTMLElement>(".text-preview-body");
+      const contentHtml = ssrBody?.innerHTML || "";
+      const contentText = ssrBody?.innerText || "";
+
+      this.#shareHref = meta.shareHref
+        ? `${globalThis.location.origin}${meta.shareHref}`
         : "";
-      this.#postHref = data.postHref || null;
-      this.#postTitle = data.postTitle || null;
-      this._html = data.html;
+      this.#postHref = meta.postHref || null;
+      this.#postTitle = meta.postTitle || null;
+      this._html = contentHtml;
+      this.#rawText = contentText;
       this._open = true;
 
       document.body.style.overflow = "hidden";
 
       await this.updateComplete;
-      // Extract plain text from the rendered HTML for the copy button.
-      // #rawText is not reactive, so request an update to re-evaluate disabled.
-      const body = this.querySelector<HTMLElement>(".text-preview-body");
-      if (body) {
-        this.#rawText = body.innerText;
-        this.requestUpdate();
-      }
+      this.requestUpdate(); // re-evaluate #rawText-dependent disabled state
+
       this.querySelector<HTMLDialogElement>(
         ".text-preview-dialog",
       )?.showModal();
       this.querySelector<HTMLElement>(".text-preview-content")?.focus();
+
+      // Remove SSR dialog now that the Lit-managed modal is showing
+      ssrDialog?.remove();
     } catch {
-      // Malformed payload — ignore
+      // Malformed payload — clean up SSR dialog
+      ssrDialog?.remove();
     }
   }
 

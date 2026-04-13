@@ -50,8 +50,8 @@ async function renderPostWithTextPreview(
   // and pass the post title in the payload so the client can restore it
   // when the dialog closes.
   const pageTitle = autoOpen.attachmentTitle || meta.title;
-  const autoOpenJson = JSON.stringify({
-    html: autoOpen.html,
+  // Metadata only — the HTML content lives in the SSR dialog below.
+  const autoOpenMeta = JSON.stringify({
     shareHref: autoOpen.shareHref,
     postHref: autoOpen.postHref,
     postTitle: meta.title,
@@ -67,10 +67,39 @@ async function renderPostWithTextPreview(
           post={display.postView}
           threadPosts={display.threadPostViews}
         />
+        {/* SSR dialog — visible immediately before JS loads. The
+            text-preview-dialog--ssr modifier provides a CSS-based backdrop
+            and scroll lock since ::backdrop only works with showModal().
+            The Lit component adopts content and removes this on hydration. */}
+        <dialog class="text-preview-dialog text-preview-dialog--ssr" open>
+          <div class="text-preview-content">
+            <div class="text-preview-toolbar">
+              <div class="text-preview-btn" aria-hidden="true">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </div>
+              <div class="text-preview-toolbar-actions" />
+            </div>
+            <div
+              class="text-preview-body prose"
+              dangerouslySetInnerHTML={{ __html: autoOpen.html }}
+            />
+          </div>
+        </dialog>
         <script
           type="application/json"
           id="text-preview-autoopen"
-          dangerouslySetInnerHTML={{ __html: autoOpenJson }}
+          dangerouslySetInnerHTML={{ __html: autoOpenMeta }}
         />
       </>
     ),

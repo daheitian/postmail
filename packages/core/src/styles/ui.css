@@ -8703,6 +8703,18 @@
     background-color: rgba(0, 0, 0, 0.92);
   }
 
+  /* SSR dialog: shown via `open` attribute before JS loads.
+     ::backdrop only works with showModal(), so simulate it inline.
+     Removed by the Lit component on hydration. */
+  .text-preview-dialog--ssr[open] {
+    z-index: 2147483647;
+    background-color: rgba(0, 0, 0, 0.92);
+  }
+
+  body:has(.text-preview-dialog--ssr[open]) {
+    overflow: hidden;
+  }
+
   /* --- Shared confirm dialog --------------------------------------------- */
 
   .confirm-dialog {
