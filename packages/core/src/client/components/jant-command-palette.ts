@@ -11,7 +11,7 @@ import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { openNewCompose } from "../compose-launch.js";
-import { getFieldSearchRank, normalizeSearch } from "../search-rank.js";
+import { getBestFieldSearchRank, normalizeSearch } from "../search-rank.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -192,12 +192,7 @@ export class JantCommandPalette extends LitElement {
 
     return allItems
       .map((item, index) => {
-        const titleRank = getFieldSearchRank(item.title, q);
-        const pathRank = getFieldSearchRank(item.path, q);
-        const rank =
-          titleRank !== null && pathRank !== null
-            ? Math.min(titleRank, pathRank)
-            : (titleRank ?? pathRank);
+        const rank = getBestFieldSearchRank([item.title, item.path], q);
         return { item, index, rank };
       })
       .filter(

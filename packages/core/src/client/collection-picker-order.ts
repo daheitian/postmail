@@ -1,4 +1,4 @@
-import { getFieldSearchRank, normalizeSearch } from "./search-rank.js";
+import { getBestFieldSearchRank, normalizeSearch } from "./search-rank.js";
 
 interface CollectionLike {
   id: string;
@@ -13,11 +13,7 @@ function getItemSearchRank<T extends SearchableCollectionLike>(
   item: T,
   search: string,
 ): number | null {
-  const titleRank = getFieldSearchRank(item.title, search);
-  if (titleRank !== null) return titleRank;
-
-  const slugRank = getFieldSearchRank(item.slug, search);
-  return slugRank === null ? null : slugRank + 4;
+  return getBestFieldSearchRank([item.title, item.slug], search);
 }
 
 export function getSelectedFirstOrder<T extends CollectionLike>(
@@ -72,12 +68,11 @@ export function applyItemOrder<T extends CollectionLike>(
  * Filters collection-like items by a case-insensitive query and ranks
  * stronger matches first while preserving the existing order for ties.
  *
- * Match priority:
- * 1. Title match beats slug-only match
- * 2. Exact match
- * 3. Starts-with match
- * 4. Token starts-with match
- * 5. Includes match
+ * Match priority (title and slug ranked equally, best wins):
+ * 1. Exact match
+ * 2. Starts-with match
+ * 3. Token starts-with match
+ * 4. Includes match
  *
  * @param items - Collections in their current display order
  * @param search - User-entered search query
