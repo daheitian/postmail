@@ -69,6 +69,7 @@ export default [
         queueMicrotask: "readonly",
         requestAnimationFrame: "readonly",
         cancelAnimationFrame: "readonly",
+        KeyboardEvent: "readonly",
         MouseEvent: "readonly",
         PointerEvent: "readonly",
         TouchEvent: "readonly",

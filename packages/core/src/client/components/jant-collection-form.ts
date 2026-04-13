@@ -68,6 +68,7 @@ export class JantCollectionForm extends LitElement {
 
   #initialized = false;
   private _descEditor: Editor | null = null;
+  #boundKeydown: ((e: KeyboardEvent) => void) | null = null;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -98,7 +99,22 @@ export class JantCollectionForm extends LitElement {
     this._loading = false;
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.#boundKeydown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        void this.#handleSubmit(e);
+      }
+    };
+    this.addEventListener("keydown", this.#boundKeydown);
+  }
+
   disconnectedCallback() {
+    if (this.#boundKeydown) {
+      this.removeEventListener("keydown", this.#boundKeydown);
+      this.#boundKeydown = null;
+    }
     super.disconnectedCallback();
     this._descEditor?.destroy();
     this._descEditor = null;

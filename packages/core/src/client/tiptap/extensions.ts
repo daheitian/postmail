@@ -58,7 +58,7 @@ const ReclaimModEnter = Extension.create({
 /**
  * Creates a minimal extension set for settings editors (site description, footer).
  * Includes markdown parsing/rendering, basic formatting, links, and clipboard support.
- * Omits: slash commands, paste media, footnotes, image uploads, Mod-Enter override.
+ * Omits: slash commands, paste media, footnotes, image uploads.
  */
 export function createSettingsEditorExtensions(
   options: Pick<EditorExtensionOptions, "placeholder"> = {},
@@ -71,6 +71,7 @@ export function createSettingsEditorExtensions(
     Placeholder.configure({
       placeholder: options.placeholder ?? "",
     }),
+    ReclaimModEnter,
     LinkInputRules,
     MarkdownClipboard,
     ExitableMarks,

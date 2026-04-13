@@ -171,7 +171,7 @@ function buildArchivePostFilters(
     status: "published",
     excludeReplies: true,
     excludePrivate: !isAuthenticated,
-    excludeLatestHidden: !isAuthenticated,
+    excludeLatestHidden: false,
     ...(effectiveVisibility === "featured"
       ? { featured: true }
       : effectiveVisibility
