@@ -195,11 +195,9 @@ export class JantCommandPalette extends LitElement {
         const titleRank = getFieldSearchRank(item.title, q);
         const pathRank = getFieldSearchRank(item.path, q);
         const rank =
-          titleRank !== null
-            ? titleRank
-            : pathRank !== null
-              ? pathRank + 4
-              : null;
+          titleRank !== null && pathRank !== null
+            ? Math.min(titleRank, pathRank)
+            : (titleRank ?? pathRank);
         return { item, index, rank };
       })
       .filter(
