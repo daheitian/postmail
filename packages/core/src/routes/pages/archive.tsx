@@ -153,10 +153,11 @@ function buildArchivePostFilters(
   const { isAuthenticated, collectionId } = opts;
 
   // Map visibility: feed routes force public; page respects auth
+  // Authenticated users default to showing all visibilities
   const effectiveVisibility = isAuthenticated
     ? params.visibilityAll
       ? undefined
-      : (params.visibility ?? "public")
+      : (params.visibility ?? undefined)
     : undefined;
 
   let publishedAfter: number | undefined;
@@ -348,7 +349,7 @@ export async function renderArchivePage(
   const effectiveVisibility = navData.isAuthenticated
     ? params.visibilityAll
       ? undefined
-      : (params.visibility ?? "public")
+      : (params.visibility ?? undefined)
     : undefined;
 
   const archiveFilters: ArchiveFilters = {
