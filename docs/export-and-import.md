@@ -184,5 +184,6 @@ A raw SQL export is not a full Jant backup by itself. You still need your media 
 
 ## Related Reading
 
+- [GitHub Sync](github-sync.md) — automatic content backup and bidirectional editing via a GitHub repository
 - [Backups and Recovery](backups.md)
 - [API Reference](API.md)

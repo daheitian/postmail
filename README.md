@@ -32,6 +32,7 @@ And I have always liked Tumblr's core instinct: note, link, and quote should be 
 - Featured-first feeds, so publishing and syndication stay separate by default
 - Search, archive pages, and RSS feeds
 - Theme customization with built-in themes, fonts, and custom CSS
+- GitHub Sync for automatic content backup, bidirectional editing, and a file-based interface for AI tools
 - Full API, import tools, and Zola export for portability
 
 ## How It Runs
@@ -84,6 +85,7 @@ If you would rather not self-host, there is also a small hosted option. Access o
 - [Deploy on Cloudflare](docs/deployment.md)
 - [Deploy with Docker](docs/deployment-docker.md)
 - [Configuration](docs/configuration.md)
+- [GitHub Sync](docs/github-sync.md)
 - [Export and Import](docs/export-and-import.md)
 - [Backups and Recovery](docs/backups.md)
 - [Theming](docs/theming.md)

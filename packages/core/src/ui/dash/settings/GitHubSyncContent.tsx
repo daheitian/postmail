@@ -26,16 +26,16 @@ export function GitHubSyncContent({
   sitePathPrefix?: string;
 }) {
   const { i18n } = useLingui();
-  const apiBase = toPublicPath("/api/github-sync", sitePathPrefix);
+  const settingsBase = toPublicPath("/settings/github-sync", sitePathPrefix);
 
   if (!status.enabled || !status.repo) {
-    return <GitHubSyncSetupForm apiBase={apiBase} />;
+    return <GitHubSyncSetupForm settingsBase={settingsBase} />;
   }
 
-  return <GitHubSyncConnected status={status} apiBase={apiBase} />;
+  return <GitHubSyncConnected status={status} settingsBase={settingsBase} />;
 }
 
-function GitHubSyncSetupForm({ apiBase }: { apiBase: string }) {
+function GitHubSyncSetupForm({ settingsBase }: { settingsBase: string }) {
   const { i18n } = useLingui();
 
   return (
@@ -55,16 +55,7 @@ function GitHubSyncSetupForm({ apiBase }: { apiBase: string }) {
 
       <form
         class="settings-form"
-        data-on:submit__prevent={`
-          $$el = $el;
-          @post('${apiBase}/setup', {
-            body: JSON.stringify({
-              token: $$el.querySelector('[name=token]').value,
-              repo: $$el.querySelector('[name=repo]').value,
-            }),
-            headers: { 'Content-Type': 'application/json' },
-          })
-        `}
+        data-on:submit__prevent={`@post('${settingsBase}/connect')`}
       >
         <div class="field">
           <label class="field-label" for="github-token">
@@ -78,7 +69,7 @@ function GitHubSyncSetupForm({ apiBase }: { apiBase: string }) {
           </label>
           <input
             id="github-token"
-            name="token"
+            data-bind="token"
             type="password"
             class="input"
             placeholder="github_pat_..."
@@ -109,7 +100,7 @@ function GitHubSyncSetupForm({ apiBase }: { apiBase: string }) {
           </label>
           <input
             id="github-repo"
-            name="repo"
+            data-bind="repo"
             type="text"
             class="input"
             placeholder="owner/repo"
@@ -136,10 +127,10 @@ function GitHubSyncSetupForm({ apiBase }: { apiBase: string }) {
 
 function GitHubSyncConnected({
   status,
-  apiBase,
+  settingsBase,
 }: {
   status: GitHubSyncStatus;
-  apiBase: string;
+  settingsBase: string;
 }) {
   const { i18n } = useLingui();
   const repoUrl = `https://github.com/${status.repo}`;
@@ -192,7 +183,7 @@ function GitHubSyncConnected({
         <button
           type="button"
           class="btn btn-primary"
-          data-on:click__prevent={`@post('${apiBase}/push', { headers: { 'Content-Type': 'application/json' } })`}
+          data-on:click__prevent={`@post('${settingsBase}/push')`}
         >
           {i18n._(
             msg({
@@ -215,7 +206,7 @@ function GitHubSyncConnected({
                   "@context: Confirmation message when disconnecting GitHub Sync",
               }),
             )}')) {
-              @delete('${apiBase}', { headers: { 'Content-Type': 'application/json' } })
+              @post('${settingsBase}/disconnect')
             }
           `}
         >

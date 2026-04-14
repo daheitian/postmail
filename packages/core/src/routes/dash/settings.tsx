@@ -1164,6 +1164,90 @@ settingsRoutes.post("/api-tokens/:id/delete", async (c) => {
 // GitHub Sync
 // ===========================================================================
 
+settingsRoutes.post("/github-sync/connect", async (c) => {
+  const body = await c.req.json<{ token: string; repo: string }>();
+
+  if (!body.token?.trim() || !body.repo?.trim()) {
+    return dsToast("Token and repository are required.", "error");
+  }
+
+  const { parseRepoSlug, createGitHubClient } =
+    await import("../../lib/github-api.js");
+  const parsed = parseRepoSlug(body.repo);
+  if (!parsed) {
+    return dsToast("Invalid repository format. Use owner/repo.", "error");
+  }
+
+  // Validate token
+  const client = createGitHubClient(body.token);
+  try {
+    await client.getRepo(parsed.owner, parsed.repo);
+  } catch {
+    return dsToast(
+      "Could not access the repository. Check your token and repo name.",
+      "error",
+    );
+  }
+
+  // Save config
+  await c.var.services.settings.set("GITHUB_SYNC_TOKEN", body.token);
+  await c.var.services.settings.set("GITHUB_SYNC_REPO", body.repo);
+  await c.var.services.settings.set("GITHUB_SYNC_ENABLED", "true");
+
+  // Create webhook
+  const { createGitHubSyncService } =
+    await import("../../services/github-sync.js");
+  const syncService = createGitHubSyncService(
+    c.var.services,
+    buildGitHubSyncSiteConfig(c),
+  );
+  const siteUrl = c.var.appConfig.siteUrl;
+  try {
+    await syncService.setupWebhook(`${siteUrl}/api/github-sync/webhook`);
+  } catch {
+    return dsToast(
+      "Connected, but webhook creation failed. You may need to create it manually.",
+      "error",
+    );
+  }
+
+  return dsRedirect(publicPath(c, "/settings/github-sync"));
+});
+
+settingsRoutes.post("/github-sync/push", async (c) => {
+  const { createGitHubSyncService } =
+    await import("../../services/github-sync.js");
+  const syncService = createGitHubSyncService(
+    c.var.services,
+    buildGitHubSyncSiteConfig(c),
+  );
+
+  const config = await syncService.getConfig();
+  if (!config) {
+    return dsToast("GitHub Sync is not configured.", "error");
+  }
+
+  try {
+    const { commitSha } = await syncService.pushFullSync();
+    return dsToast(`Pushed to GitHub. Commit: ${commitSha.slice(0, 7)}`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Push failed.";
+    return dsToast(message, "error");
+  }
+});
+
+settingsRoutes.post("/github-sync/disconnect", async (c) => {
+  const { createGitHubSyncService } =
+    await import("../../services/github-sync.js");
+  const syncService = createGitHubSyncService(
+    c.var.services,
+    buildGitHubSyncSiteConfig(c),
+  );
+  await syncService.teardownWebhook();
+
+  return dsRedirect(publicPath(c, "/settings/github-sync"));
+});
+
 settingsRoutes.get("/github-sync", async (c) => {
   const [enabled, repo, lastPushSha, webhookId] = await Promise.all([
     c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
@@ -1199,3 +1283,33 @@ settingsRoutes.get("/github-sync", async (c) => {
     ),
   });
 });
+
+function buildGitHubSyncSiteConfig(c: Context<Env>) {
+  const cfg = c.var.appConfig;
+  return {
+    siteName: cfg.siteName,
+    siteUrl: cfg.siteUrl,
+    siteDescription: cfg.siteDescription,
+    siteLanguage: cfg.siteLanguage,
+    showJantBrandingOnHome: cfg.showJantBrandingOnHome,
+    homeDefaultView: cfg.homeDefaultView,
+    siteFooter: cfg.siteFooter,
+    showHeaderAvatar: cfg.showHeaderAvatar,
+    siteAvatarUrl: cfg.siteAvatarUrl,
+    themeId: cfg.themeId,
+    defaultThemeId: cfg.defaultThemeId,
+    fontThemeId: cfg.fontThemeId,
+    themeMode: cfg.themeMode,
+    noindex: cfg.noindex,
+    customCss: cfg.customCSS,
+    r2PublicUrl: cfg.r2PublicUrl,
+    s3PublicUrl: cfg.s3PublicUrl,
+    localPublicUrl: cfg.localPublicUrl,
+    imageTransformUrl: cfg.imageTransformUrl,
+    sitePathPrefix: cfg.sitePathPrefix,
+    navItems: [] as Pick<
+      import("../../types.js").NavItem,
+      "type" | "systemKey" | "label" | "url" | "position"
+    >[],
+  };
+}

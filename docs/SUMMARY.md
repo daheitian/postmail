@@ -14,6 +14,7 @@
 
 ## Operations
 
+- [GitHub Sync](github-sync.md)
 - [Export and import](export-and-import.md)
 - [Backups and recovery](backups.md)
 
