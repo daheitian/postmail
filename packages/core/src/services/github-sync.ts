@@ -145,9 +145,9 @@ export function createGitHubSyncService(
       const ref = await client.getRef(owner, repo, `heads/${defaultBranch}`);
       return ref.sha;
     } catch {
-      // Empty repo — seed it with a marker file via Contents API
-      await client.createOrUpdateFile(owner, repo, ".jant-sync", {
-        content: "Managed by Jant GitHub Sync.\n",
+      // Empty repo — seed it so the Git Trees API becomes available
+      await client.createOrUpdateFile(owner, repo, "README.md", {
+        content: "Jant site export\n",
         message: `Initialize repository ${SYNC_COMMIT_MARKER}`,
       });
       const ref = await client.getRef(owner, repo, `heads/${defaultBranch}`);
@@ -197,14 +197,6 @@ export function createGitHubSyncService(
           });
         }
       }
-
-      // Add sync marker
-      treeItems.push({
-        path: ".jant-sync",
-        mode: "100644",
-        type: "blob",
-        content: "Managed by Jant GitHub Sync.\n",
-      });
 
       // Get current HEAD (may not exist for empty repos)
       const repoInfo = await client.getRepo(owner, repo);
