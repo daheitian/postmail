@@ -10,6 +10,7 @@ const API_BASE = "https://api.github.com";
 const COMMON_HEADERS = {
   Accept: "application/vnd.github+json",
   "X-GitHub-Api-Version": "2022-11-28",
+  "User-Agent": "jant-github-sync",
 } as const;
 
 // ---------------------------------------------------------------------------
