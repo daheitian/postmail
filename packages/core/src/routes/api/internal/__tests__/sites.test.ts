@@ -311,7 +311,7 @@ describe("Internal site admin routes", () => {
     const configToml = new TextDecoder().decode(files["config.toml"]);
 
     expect(configToml).toContain(
-      'base_url = "https://export-demo.example.com/"',
+      'base_url = "https://export-demo.example.com"',
     );
     expect(configToml).toContain('title = "Export Demo"');
   });

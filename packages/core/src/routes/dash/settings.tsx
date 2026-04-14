@@ -1327,7 +1327,7 @@ function buildGitHubSyncSiteConfig(c: Context<Env>) {
     sitePathPrefix: cfg.sitePathPrefix,
     navItems: [] as Pick<
       import("../../types.js").NavItem,
-      "type" | "systemKey" | "label" | "url" | "position"
+      "type" | "systemKey" | "label" | "url" | "position" | "placement"
     >[],
   };
 }

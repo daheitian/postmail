@@ -77,7 +77,7 @@ export interface SiteConfig {
   sitePathPrefix?: string;
   navItems: Pick<
     NavItem,
-    "type" | "systemKey" | "label" | "url" | "position"
+    "type" | "systemKey" | "label" | "url" | "position" | "placement"
   >[];
 }
 
@@ -879,7 +879,7 @@ function buildConfigToml(
 ): string {
   const footerHtml = config.siteFooter ? renderMarkdown(config.siteFooter) : "";
   const parts = [
-    `base_url = "${escapeToml(config.siteUrl || "https://example.com")}"`,
+    `base_url = "${escapeToml((config.siteUrl || "https://example.com").replace(/\/+$/, ""))}"`,
     `title = "${escapeToml(config.siteName)}"`,
     `description = "${escapeToml(config.siteDescription)}"`,
     `default_language = "${escapeToml(config.siteLanguage)}"`,
@@ -929,6 +929,7 @@ function buildConfigToml(
     parts.push(`label = "${escapeToml(item.label)}"`);
     parts.push(`url = "${escapeToml(item.url)}"`);
     parts.push(`system_key = "${escapeToml(item.systemKey ?? "")}"`);
+    parts.push(`placement = "${escapeToml(item.placement ?? "header")}"`);
   }
 
   for (const item of collectionDirectoryItems) {
@@ -1205,7 +1206,8 @@ const DECORATIVE_QUOTE_MARK_SVG = `<span class="decorative-quote-mark feed-quote
   </svg>
 </span>`;
 
-const TEMPLATE_BASE = `<!DOCTYPE html>
+const TEMPLATE_BASE = `{% import "macros.html" as macros %}
+<!DOCTYPE html>
 <html lang="{{ config.default_language }}" data-theme-mode="{{ config.extra.jant.theme_mode | default(value='auto') }}">
 <head>
   <meta charset="utf-8">
@@ -1245,21 +1247,58 @@ const TEMPLATE_BASE = `<!DOCTYPE html>
           <div class="site-header-right">
             <nav class="site-header-nav" aria-label="Primary">
               {% if config.extra.jant.nav and config.extra.jant.nav | length > 0 %}
+                {# Split nav items into header vs more placement #}
+                {% set_global header_items = [] %}
+                {% set_global more_items = [] %}
                 {% for item in config.extra.jant.nav %}
                   {% if item.system_key == "settings" %}
-                  {% elif item.system_key == "collections" %}
-                <a href="{{ get_url(path='collections') }}" class="site-header-link">{{ item.label }}</a>
-                  {% elif item.system_key == "rss" %}
-                <a href="{{ get_url(path='atom.xml') }}" class="site-header-link">{{ item.label }}</a>
-                  {% elif item.system_key == "archive" %}
-                <a href="{{ get_url(path='archive') }}" class="site-header-link">{{ item.label }}</a>
+                  {% elif item.placement | default(value="header") == "more" %}
+                    {% set_global more_items = more_items | concat(with=item) %}
                   {% else %}
-                <a href="{{ item.url }}" class="site-header-link">{{ item.label }}</a>
+                    {% set_global header_items = header_items | concat(with=item) %}
                   {% endif %}
                 {% endfor %}
+                {# First 2 header items are primary (always visible) #}
+                {% for item in header_items %}
+                  {% if loop.index <= 2 %}
+                    {{ macros::nav_link(item=item, class="site-header-link-primary") }}
+                  {% else %}
+                    {{ macros::nav_link(item=item, class="site-header-link-overflow") }}
+                  {% endif %}
+                {% endfor %}
+                {# "More" dropdown for overflow + more-placement items #}
+                {% set overflow_items = header_items | slice(start=2) %}
+                {% if overflow_items | length > 0 or more_items | length > 0 %}
+                <div class="site-header-more{% if more_items | length == 0 %} site-header-more-responsive-only{% endif %}">
+                  <button type="button" class="site-header-more-btn" aria-haspopup="menu" aria-expanded="false">
+                    More
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                  </button>
+                  <div class="site-header-more-popover" aria-hidden="true">
+                    {% for item in overflow_items %}
+                      {{ macros::nav_more_link(item=item, class="site-header-more-link site-header-more-link-responsive") }}
+                    {% endfor %}
+                    {% if overflow_items | length > 0 and more_items | length > 0 %}
+                    <div class="site-header-more-divider site-header-more-divider-responsive"></div>
+                    {% endif %}
+                    {% for item in more_items %}
+                      {{ macros::nav_more_link(item=item, class="site-header-more-link site-header-more-link-supplemental") }}
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endif %}
               {% else %}
-              <a href="{{ config.base_url }}/collections/" class="site-header-link">Collections</a>
-              <a href="{{ get_url(path='atom.xml') }}" class="site-header-link">RSS</a>
+              <a href="{{ get_url(path='collections') }}" class="site-header-link-primary">Collections</a>
+              <a href="{{ get_url(path='archive') }}" class="site-header-link-primary">Archive</a>
+              <div class="site-header-more">
+                <button type="button" class="site-header-more-btn" aria-haspopup="menu" aria-expanded="false">
+                  More
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                </button>
+                <div class="site-header-more-popover" aria-hidden="true">
+                  <a href="{{ get_url(path='atom.xml') }}" class="site-header-more-link site-header-more-link-supplemental">Feed</a>
+                </div>
+              </div>
               {% endif %}
             </nav>
           </div>
@@ -1668,7 +1707,31 @@ const TEMPLATE_ATOM = `<?xml version="1.0" encoding="utf-8"?>
 // Shared macro — single post card used by all list/detail templates
 // ---------------------------------------------------------------------------
 
-const TEMPLATE_MACROS = `{% macro post_status_badges() %}
+const TEMPLATE_MACROS = `{% macro nav_link(item, class) %}
+{% if item.system_key == "collections" %}
+<a href="{{ get_url(path='collections') }}" class="site-header-link {{ class }}">{{ item.label }}</a>
+{% elif item.system_key == "rss" %}
+<a href="{{ get_url(path='atom.xml') }}" class="site-header-link {{ class }}">{{ item.label }}</a>
+{% elif item.system_key == "archive" %}
+<a href="{{ get_url(path='archive') }}" class="site-header-link {{ class }}">{{ item.label }}</a>
+{% else %}
+<a href="{{ item.url }}" class="site-header-link {{ class }}">{{ item.label }}</a>
+{% endif %}
+{% endmacro %}
+
+{% macro nav_more_link(item, class) %}
+{% if item.system_key == "collections" %}
+<a href="{{ get_url(path='collections') }}" class="{{ class }}">{{ item.label }}</a>
+{% elif item.system_key == "rss" %}
+<a href="{{ get_url(path='atom.xml') }}" class="{{ class }}">{{ item.label }}</a>
+{% elif item.system_key == "archive" %}
+<a href="{{ get_url(path='archive') }}" class="{{ class }}">{{ item.label }}</a>
+{% else %}
+<a href="{{ item.url }}" class="{{ class }}">{{ item.label }}</a>
+{% endif %}
+{% endmacro %}
+
+{% macro post_status_badges() %}
 <div class="post-status-badges">
   <span class="post-status-badge post-status-pinned">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
@@ -1720,7 +1783,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
       <span class="sr-only">Featured</span>
     </span>
     {% if show_date %}
-    <a href="{{ page.permalink }}" class="u-url post-date-link">
+    <a href="{{ page.permalink }}" class="u-url post-footer-link">
       <time class="dt-published" datetime="{{ page.date }}" title="{{ page.date }}">
         {{ page.date | date(format="%b %e, %Y") }}
       </time>
@@ -2280,6 +2343,168 @@ img {
   transform: scaleX(0.82);
 }
 
+.site-header-link-primary {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  min-height: 2rem;
+  padding: 0.2rem 0 0.5rem;
+  cursor: pointer;
+  font-size: 0.84rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--site-text-secondary);
+  text-decoration: none;
+  transition: color 0.15s, opacity 0.15s;
+}
+
+.site-header-link-primary:hover {
+  color: var(--site-text-primary);
+}
+
+.site-header-link-overflow {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  min-height: 2rem;
+  padding: 0.2rem 0 0.5rem;
+  cursor: pointer;
+  font-size: 0.84rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--site-text-secondary);
+  text-decoration: none;
+  transition: color 0.15s, opacity 0.15s;
+}
+
+.site-header-link-overflow:hover {
+  color: var(--site-text-primary);
+}
+
+.site-header-more {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-header-more-responsive-only {
+  display: none;
+}
+
+.site-header-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.4rem;
+  padding: 0.22rem 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--type-ui-meta, 0.84rem);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--site-text-secondary) 62%, transparent);
+  transition: color 0.15s;
+}
+
+.site-header-more-btn svg {
+  width: 0.82rem;
+  height: 0.82rem;
+  transition: transform 0.18s ease;
+}
+
+.site-header-more-btn:hover,
+.site-header-more:focus-within .site-header-more-btn {
+  color: color-mix(in srgb, var(--site-text-primary) 84%, var(--site-text-secondary));
+}
+
+.site-header-more:focus-within .site-header-more-btn svg {
+  transform: rotate(180deg);
+}
+
+.site-header-more-popover {
+  display: block;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 1.1rem;
+  min-width: 12.25rem;
+  padding: 0.2rem 0;
+  border-left: 0.5px solid var(--site-header-hairline, var(--site-divider));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transform-origin: top left;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+  z-index: 50;
+}
+
+.site-header-more:hover .site-header-more-popover,
+.site-header-more:focus-within .site-header-more-popover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+.site-header-more-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0.38rem 0.75rem 0.38rem 1.15rem;
+  font-family: var(--font-ui);
+  font-size: var(--type-ui-meta, 0.84rem);
+  color: var(--site-text-secondary);
+  text-decoration: none;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.site-header-more-link:hover {
+  color: color-mix(in srgb, var(--site-text-primary) 84%, var(--site-text-secondary));
+  background: color-mix(in srgb, var(--site-nav-hover-bg, var(--site-bg)) 58%, transparent);
+}
+
+.site-header-more-link-responsive,
+.site-header-more-divider-responsive {
+  display: none;
+}
+
+.site-header-more-divider {
+  height: 0;
+  margin: 0.35rem 0.75rem;
+  border-top: 0.5px solid color-mix(in srgb, var(--site-divider) 60%, transparent);
+}
+
+@media (max-width: 860px) {
+  .site-header-link-overflow {
+    display: none;
+  }
+
+  .site-header-more-responsive-only {
+    display: inline-flex;
+  }
+
+  .site-header-more-link-responsive {
+    display: flex;
+  }
+
+  .site-header-more-divider-responsive {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-header-nav,
+  .site-header-more {
+    display: none;
+  }
+}
+
 .site-container {}
 
 .site-content {
@@ -2573,7 +2798,7 @@ img {
 [data-page="post"] .post-footer-meta,
 [data-page="post"] .post-footer-meta a,
 [data-page="post"] .post-footer-meta time,
-[data-page="post"] .post-date-link,
+[data-page="post"] .post-footer-link,
 [data-page="post"] .post-footer-external-link,
 [data-page="post"] .post-collection-sep {
   color: var(--site-reading-meta);
@@ -2603,7 +2828,7 @@ img {
 [data-page="post"] .feed-link-domain:hover,
 [data-page="post"] .feed-quote-source:hover,
 [data-page="post"] .post-header-meta-link:hover,
-[data-page="post"] .post-date-link:hover,
+[data-page="post"] .post-footer-link:hover,
 [data-page="post"] .post-footer-external-link:hover {
   color: var(--site-reading-body);
 }
@@ -2943,7 +3168,7 @@ article[data-post-featured] .post-footer-featured {
   min-width: 0;
 }
 
-.post-date-link {
+.post-footer-link {
   color: var(--site-text-secondary);
   text-decoration: none;
   font-size: 13px;
@@ -2951,12 +3176,12 @@ article[data-post-featured] .post-footer-featured {
   flex-shrink: 0;
 }
 
-.post-date-link:hover {
+.post-footer-link:hover {
   color: var(--site-text-primary);
   text-decoration: underline;
 }
 
-.post-footer-detail .post-date-link {
+.post-footer-detail .post-footer-link {
   font-size: inherit;
 }
 
