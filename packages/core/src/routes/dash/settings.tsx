@@ -1218,7 +1218,7 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
     c.var.services,
     buildGitHubSyncSiteConfig(c),
   );
-  const siteUrl = c.var.appConfig.siteUrl;
+  const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");
   try {
     await syncService.setupWebhook(`${siteUrl}/api/github-sync/webhook`);
   } catch {

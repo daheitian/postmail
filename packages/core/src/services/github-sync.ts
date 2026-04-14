@@ -25,7 +25,11 @@ import {
 } from "../lib/github-api.js";
 import { parseFrontMatter, splitReplies } from "../lib/zola-markdown.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
-import { buildPostMarkdown, type SiteConfig } from "./export.js";
+import {
+  buildPostMarkdown,
+  buildCollectionSection,
+  type SiteConfig,
+} from "./export.js";
 import type { PostService } from "./post.js";
 import type { PathService } from "./path.js";
 import type { CollectionService } from "./collection.js";
@@ -215,10 +219,40 @@ export function createGitHubSyncService(
         list.sort((a, b) => a.createdAt - b.createdAt);
       }
 
-      // Build tree items for all posts
+      // Build tree items
       const treeItems: GitHubTreeItem[] = [];
       const sc = siteConfig;
 
+      // Marker file
+      treeItems.push({
+        path: ".jant-sync",
+        mode: "100644",
+        type: "blob",
+        content: "Managed by Jant GitHub Sync.\n",
+      });
+
+      // Collection sections
+      const collectionPostCounts = new Map<string, number>();
+      for (const [postId, cols] of collectionsByPost) {
+        for (const col of cols) {
+          collectionPostCounts.set(
+            col.id,
+            (collectionPostCounts.get(col.id) ?? 0) + 1,
+          );
+        }
+      }
+      for (const collection of allCollections) {
+        const colSlug = collectionSlugMap.get(collection.id) ?? collection.slug;
+        const entryCount = collectionPostCounts.get(collection.id) ?? 0;
+        treeItems.push({
+          path: `content/collections/${colSlug}/_index.md`,
+          mode: "100644",
+          type: "blob",
+          content: buildCollectionSection(collection, colSlug, entryCount),
+        });
+      }
+
+      // Post files
       for (const root of roots) {
         const slug = slugMap.get(root.id) ?? root.slug;
         const threadReplies = repliesByThread.get(root.id) ?? [];
