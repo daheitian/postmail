@@ -143,6 +143,14 @@ export interface GitHubClient {
     },
   ): Promise<void>;
 
+  /** Create a Git blob (for binary content). */
+  createBlob(
+    owner: string,
+    repo: string,
+    content: string,
+    encoding: "utf-8" | "base64",
+  ): Promise<{ sha: string }>;
+
   /** Create a Git tree object. */
   createTree(
     owner: string,
@@ -291,6 +299,14 @@ export function createGitHubClient(token: string): GitHubClient {
         sha: opts.sha,
         ...(opts.branch ? { branch: opts.branch } : {}),
       });
+    },
+
+    async createBlob(owner, repo, content, encoding) {
+      return request<{ sha: string }>(
+        "POST",
+        `/repos/${owner}/${repo}/git/blobs`,
+        { content, encoding },
+      );
     },
 
     async createTree(owner, repo, items, baseTree) {

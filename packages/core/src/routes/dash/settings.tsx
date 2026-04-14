@@ -1237,6 +1237,7 @@ settingsRoutes.post("/github-sync/push", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     buildGitHubSyncSiteConfig(c),
+    { storage: c.var.storage },
   );
 
   const config = await syncService.getConfig();

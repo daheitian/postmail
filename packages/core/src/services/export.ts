@@ -37,7 +37,16 @@ import type {
   TextAttachmentContent,
 } from "../types.js";
 
+/** A file entry in the exported Zola site. */
+export interface ExportFile {
+  path: string;
+  content: string | Uint8Array;
+}
+
 export interface ExportService {
+  /** Generate a flat list of files for a complete Zola site. */
+  generateZolaFiles(): Promise<ExportFile[]>;
+  /** Generate a ZIP archive of the Zola site. */
   generateZolaSite(): Promise<Uint8Array>;
 }
 
@@ -157,7 +166,7 @@ export function createExportService(
   deps: { storage?: StorageDriver | null } = {},
 ): ExportService {
   return {
-    async generateZolaSite() {
+    async generateZolaFiles() {
       const collectionDirectoryDataPromise =
         typeof services.collections.listDirectoryData === "function"
           ? services.collections.listDirectoryData()
@@ -227,9 +236,8 @@ export function createExportService(
         list.sort((a, b) => a.createdAt - b.createdAt);
       }
 
-      // 3. Build ZIP file structure
-      const { zipSync } = await import("fflate");
-      const files: Record<string, Uint8Array> = {};
+      // 3. Build file list
+      const exportFiles: ExportFile[] = [];
 
       // Generate post files
       for (const root of roots) {
@@ -260,66 +268,110 @@ export function createExportService(
           textAttachmentContents,
         );
 
-        files[`content/${slug}/index.md`] = new TextEncoder().encode(markdown);
+        exportFiles.push({
+          path: `content/${slug}/index.md`,
+          content: markdown,
+        });
       }
 
       for (const collection of allCollections) {
         const slug = collectionSlugMap.get(collection.id) ?? collection.slug;
         const entryCount = collectionMetrics.get(collection.id)?.postCount ?? 0;
         const section = buildCollectionSection(collection, slug, entryCount);
-        files[`content/${slug}/_index.md`] = new TextEncoder().encode(section);
+        exportFiles.push({
+          path: `content/${slug}/_index.md`,
+          content: section,
+        });
       }
 
       // Generate scaffold
-      files["config.toml"] = new TextEncoder().encode(
-        buildConfigToml(
+      exportFiles.push({
+        path: "config.toml",
+        content: buildConfigToml(
           siteConfig,
           iconAssets,
           exportedCollectionDirectoryItems,
         ),
-      );
-      files["content/_index.md"] = new TextEncoder().encode(buildRootSection());
-      files["content/collections/_index.md"] = new TextEncoder().encode(
-        buildCollectionsSection(),
-      );
-      files["content/archive/_index.md"] = new TextEncoder().encode(
-        buildArchiveSection(),
-      );
-      files["templates/base.html"] = new TextEncoder().encode(TEMPLATE_BASE);
-      files["templates/archive.html"] = new TextEncoder().encode(
-        TEMPLATE_ARCHIVE,
-      );
-      files["templates/index.html"] = new TextEncoder().encode(TEMPLATE_INDEX);
-      files["templates/page.html"] = new TextEncoder().encode(TEMPLATE_PAGE);
-      files["templates/section.html"] = new TextEncoder().encode(
-        TEMPLATE_SECTION,
-      );
-      files["templates/taxonomy_list.html"] = new TextEncoder().encode(
-        TEMPLATE_TAXONOMY_LIST,
-      );
-      files["templates/taxonomy_single.html"] = new TextEncoder().encode(
-        TEMPLATE_TAXONOMY_SINGLE,
-      );
-      files["templates/collection.html"] = new TextEncoder().encode(
-        TEMPLATE_COLLECTION,
-      );
-      files["templates/atom.xml"] = new TextEncoder().encode(TEMPLATE_ATOM);
-      files["templates/macros.html"] = new TextEncoder().encode(
-        TEMPLATE_MACROS,
-      );
-      files["static/style.css"] = new TextEncoder().encode(STYLE_CSS);
-      files["static/theme.css"] = new TextEncoder().encode(
-        siteConfig.themeCss ?? "",
-      );
-      files["static/custom.css"] = new TextEncoder().encode(
-        siteConfig.customCss ?? "",
-      );
-      files["static/favicon.ico"] = iconAssets.faviconBytes;
-      files["static/apple-touch-icon.png"] = iconAssets.appleTouchBytes;
-      files["README.md"] = new TextEncoder().encode(
-        buildReadme(siteConfig.siteName),
-      );
+      });
+      exportFiles.push({
+        path: "content/_index.md",
+        content: buildRootSection(),
+      });
+      exportFiles.push({
+        path: "content/collections/_index.md",
+        content: buildCollectionsSection(),
+      });
+      exportFiles.push({
+        path: "content/archive/_index.md",
+        content: buildArchiveSection(),
+      });
+      exportFiles.push({ path: "templates/base.html", content: TEMPLATE_BASE });
+      exportFiles.push({
+        path: "templates/archive.html",
+        content: TEMPLATE_ARCHIVE,
+      });
+      exportFiles.push({
+        path: "templates/index.html",
+        content: TEMPLATE_INDEX,
+      });
+      exportFiles.push({ path: "templates/page.html", content: TEMPLATE_PAGE });
+      exportFiles.push({
+        path: "templates/section.html",
+        content: TEMPLATE_SECTION,
+      });
+      exportFiles.push({
+        path: "templates/taxonomy_list.html",
+        content: TEMPLATE_TAXONOMY_LIST,
+      });
+      exportFiles.push({
+        path: "templates/taxonomy_single.html",
+        content: TEMPLATE_TAXONOMY_SINGLE,
+      });
+      exportFiles.push({
+        path: "templates/collection.html",
+        content: TEMPLATE_COLLECTION,
+      });
+      exportFiles.push({ path: "templates/atom.xml", content: TEMPLATE_ATOM });
+      exportFiles.push({
+        path: "templates/macros.html",
+        content: TEMPLATE_MACROS,
+      });
+      exportFiles.push({ path: "static/style.css", content: STYLE_CSS });
+      exportFiles.push({
+        path: "static/theme.css",
+        content: siteConfig.themeCss ?? "",
+      });
+      exportFiles.push({
+        path: "static/custom.css",
+        content: siteConfig.customCss ?? "",
+      });
+      exportFiles.push({
+        path: "static/favicon.ico",
+        content: iconAssets.faviconBytes,
+      });
+      exportFiles.push({
+        path: "static/apple-touch-icon.png",
+        content: iconAssets.appleTouchBytes,
+      });
+      exportFiles.push({
+        path: "README.md",
+        content: buildReadme(siteConfig.siteName),
+      });
 
+      return exportFiles;
+    },
+
+    async generateZolaSite() {
+      const exportFiles = await this.generateZolaFiles();
+      const { zipSync } = await import("fflate");
+      const encoder = new TextEncoder();
+      const files: Record<string, Uint8Array> = {};
+      for (const file of exportFiles) {
+        files[file.path] =
+          typeof file.content === "string"
+            ? encoder.encode(file.content)
+            : file.content;
+      }
       return zipSync(files);
     },
   };

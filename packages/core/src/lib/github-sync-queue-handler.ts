@@ -32,23 +32,28 @@ export async function handleQueueBatch(
   for (const message of batch.messages) {
     const payload = message.body as JobPayload;
     try {
-      await processGitHubSyncJob(payload, runtime.services, {
-        siteName: "",
-        siteUrl: siteOrigin,
-        siteDescription: "",
-        siteLanguage: "",
-        showJantBrandingOnHome: false,
-        homeDefaultView: "",
-        siteFooter: "",
-        showHeaderAvatar: false,
-        siteAvatarUrl: "",
-        themeId: "",
-        defaultThemeId: "",
-        fontThemeId: "",
-        themeMode: "",
-        noindex: false,
-        navItems: [],
-      });
+      await processGitHubSyncJob(
+        payload,
+        runtime.services,
+        {
+          siteName: "",
+          siteUrl: siteOrigin,
+          siteDescription: "",
+          siteLanguage: "",
+          showJantBrandingOnHome: false,
+          homeDefaultView: "",
+          siteFooter: "",
+          showHeaderAvatar: false,
+          siteAvatarUrl: "",
+          themeId: "",
+          defaultThemeId: "",
+          fontThemeId: "",
+          themeMode: "",
+          noindex: false,
+          navItems: [],
+        },
+        runtime.storage,
+      );
       message.ack();
     } catch {
       message.retry();

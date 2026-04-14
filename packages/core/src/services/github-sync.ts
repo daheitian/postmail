@@ -25,22 +25,13 @@ import {
 } from "../lib/github-api.js";
 import { parseFrontMatter, splitReplies } from "../lib/zola-markdown.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
-import {
-  buildPostMarkdown,
-  buildCollectionSection,
-  type SiteConfig,
-} from "./export.js";
+import { createExportService, type SiteConfig } from "./export.js";
 import type { PostService } from "./post.js";
 import type { PathService } from "./path.js";
 import type { CollectionService } from "./collection.js";
 import type { MediaService } from "./media.js";
 import type { SettingsService } from "./settings.js";
-import type {
-  Post,
-  Collection,
-  Media,
-  TextAttachmentContent,
-} from "../types.js";
+import type { StorageDriver } from "../lib/storage.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -95,6 +86,7 @@ export function createGitHubSyncService(
     settings: SettingsService;
   },
   siteConfig: SiteConfig,
+  deps: { storage?: StorageDriver | null } = {},
 ): GitHubSyncService {
   // -------------------------------------------------------------------
   // Helpers
@@ -175,114 +167,44 @@ export function createGitHubSyncService(
       if (!config) throw new Error("GitHub Sync is not configured");
       const { client, owner, repo } = createClient(config);
 
-      // Load all posts
-      const allPosts = await services.posts.list({
-        excludeReplies: false,
-        limit: 10000,
-      });
-      const roots = allPosts.filter((p) => p.replyToId === null);
+      // Generate full Zola site via the shared export service
+      const exportService = createExportService(services, siteConfig, deps);
+      const exportFiles = await exportService.generateZolaFiles();
 
-      const allPostIds = allPosts.map((p) => p.id);
-      const rootPostIds = roots.map((p) => p.id);
-
-      const [
-        collectionsByPost,
-        mediaByPost,
-        slugMap,
-        aliasMap,
-        allCollections,
-      ] = await Promise.all([
-        services.collections.getCollectionsByPostIds(allPostIds),
-        services.media.getByPostIds(allPostIds),
-        services.paths.getPostSlugMap(allPostIds),
-        services.paths.getPostAliases(rootPostIds),
-        services.collections.list(),
-      ]);
-
-      const collectionSlugMap = await services.paths.getCollectionSlugMap(
-        allCollections.map((c) => c.id),
-      );
-
-      // Empty text attachment map — text attachments are not downloaded for sync
-      const textAttachmentContents = new Map<string, TextAttachmentContent>();
-
-      // Group replies by thread
-      const repliesByThread = new Map<string, Post[]>();
-      for (const post of allPosts) {
-        if (post.replyToId !== null) {
-          const list = repliesByThread.get(post.threadId) ?? [];
-          list.push(post);
-          repliesByThread.set(post.threadId, list);
+      // Convert to Git tree items
+      const treeItems: GitHubTreeItem[] = [];
+      for (const file of exportFiles) {
+        if (typeof file.content === "string") {
+          treeItems.push({
+            path: file.path,
+            mode: "100644",
+            type: "blob",
+            content: file.content,
+          });
+        } else {
+          // Binary files need to be created as blobs first
+          const blob = await client.createBlob(
+            owner,
+            repo,
+            uint8ArrayToBase64(file.content),
+            "base64",
+          );
+          treeItems.push({
+            path: file.path,
+            mode: "100644",
+            type: "blob",
+            sha: blob.sha,
+          });
         }
       }
-      for (const list of repliesByThread.values()) {
-        list.sort((a, b) => a.createdAt - b.createdAt);
-      }
 
-      // Build tree items
-      const treeItems: GitHubTreeItem[] = [];
-      const sc = siteConfig;
-
-      // Marker file
+      // Add sync marker
       treeItems.push({
         path: ".jant-sync",
         mode: "100644",
         type: "blob",
         content: "Managed by Jant GitHub Sync.\n",
       });
-
-      // Collection sections
-      const collectionPostCounts = new Map<string, number>();
-      for (const [postId, cols] of collectionsByPost) {
-        for (const col of cols) {
-          collectionPostCounts.set(
-            col.id,
-            (collectionPostCounts.get(col.id) ?? 0) + 1,
-          );
-        }
-      }
-      for (const collection of allCollections) {
-        const colSlug = collectionSlugMap.get(collection.id) ?? collection.slug;
-        const entryCount = collectionPostCounts.get(collection.id) ?? 0;
-        treeItems.push({
-          path: `content/collections/${colSlug}/_index.md`,
-          mode: "100644",
-          type: "blob",
-          content: buildCollectionSection(collection, colSlug, entryCount),
-        });
-      }
-
-      // Post files
-      for (const root of roots) {
-        const slug = slugMap.get(root.id) ?? root.slug;
-        const threadReplies = repliesByThread.get(root.id) ?? [];
-        const postCollections = collectionsByPost.get(root.id) ?? [];
-        const rootAliases = [...(aliasMap.get(root.id) ?? [])];
-        const zolaAliases = [...rootAliases];
-        for (const reply of threadReplies) {
-          zolaAliases.push(`/${slugMap.get(reply.id) ?? reply.slug}`);
-        }
-
-        const markdown = buildPostMarkdown(
-          root,
-          threadReplies,
-          postCollections,
-          { rootAliases, zolaAliases },
-          slugMap,
-          collectionSlugMap,
-          mediaByPost.get(root.id) ?? [],
-          mediaByPost,
-          sc,
-          textAttachmentContents,
-        );
-
-        treeItems.push({
-          path: `${POST_DIR}/${slug}.md`,
-          mode: "100644",
-          type: "blob",
-          content: markdown,
-        });
-      }
 
       // Get current HEAD (may not exist for empty repos)
       const repoInfo = await client.getRepo(owner, repo);
@@ -294,7 +216,7 @@ export function createGitHubSyncService(
 
       // Create commit
       const commit = await client.createCommit(owner, repo, {
-        message: `Sync all posts ${SYNC_COMMIT_MARKER}`,
+        message: `Sync site ${SYNC_COMMIT_MARKER}`,
         tree: tree.sha,
         parents: [headSha],
       });
@@ -466,4 +388,12 @@ function decodeBase64Content(content: string): string {
   // GitHub API returns base64 with newlines for readability
   const cleaned = content.replace(/\n/g, "");
   return decodeURIComponent(escape(atob(cleaned)));
+}
+
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]!);
+  }
+  return btoa(binary);
 }

@@ -9,6 +9,7 @@
 import { createGitHubSyncService } from "../services/github-sync.js";
 import type { SiteConfig } from "../services/export.js";
 import type { Services } from "../services/index.js";
+import type { StorageDriver } from "../lib/storage.js";
 import type { JobPayload } from "./job-queue.js";
 
 /**
@@ -18,6 +19,7 @@ export async function processGitHubSyncJob(
   payload: JobPayload,
   services: Services,
   siteConfig: SiteConfig,
+  storage?: StorageDriver | null,
 ): Promise<void> {
   const syncService = createGitHubSyncService(
     {
@@ -28,6 +30,7 @@ export async function processGitHubSyncJob(
       settings: services.settings,
     },
     siteConfig,
+    { storage },
   );
 
   if (payload.kind === "github-sync-push") {
