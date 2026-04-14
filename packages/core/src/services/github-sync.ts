@@ -216,8 +216,12 @@ export function createGitHubSyncService(
       // Update ref
       await client.updateRef(owner, repo, `heads/${defaultBranch}`, commit.sha);
 
-      // Save last push SHA
+      // Save last push SHA and timestamp
       await services.settings.set("GITHUB_SYNC_LAST_PUSH_SHA", commit.sha);
+      await services.settings.set(
+        "GITHUB_SYNC_LAST_PUSH_AT",
+        String(Math.floor(Date.now() / 1000)),
+      );
 
       return { commitSha: commit.sha };
     },

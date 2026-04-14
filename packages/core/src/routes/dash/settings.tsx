@@ -1267,18 +1267,22 @@ settingsRoutes.post("/github-sync/disconnect", async (c) => {
 });
 
 settingsRoutes.get("/github-sync", async (c) => {
-  const [enabled, repo, lastPushSha, webhookId] = await Promise.all([
-    c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
-    c.var.services.settings.get("GITHUB_SYNC_REPO"),
-    c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
-    c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
-  ]);
+  const [enabled, repo, lastPushSha, webhookId, lastPushAt] = await Promise.all(
+    [
+      c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
+      c.var.services.settings.get("GITHUB_SYNC_REPO"),
+      c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
+      c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
+      c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
+    ],
+  );
 
   const status: GitHubSyncStatus = {
     enabled: enabled === "true",
     repo: repo ?? null,
     lastPushSha: lastPushSha ?? null,
     webhookId: webhookId ?? null,
+    lastPushAt: lastPushAt ? Number(lastPushAt) : null,
   };
 
   const navData = await getNavigationData(c);

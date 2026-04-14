@@ -306,6 +306,11 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  GITHUB_SYNC_LAST_PUSH_AT: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
   GITHUB_SYNC_PENDING: {
     defaultValue: "",
     envOnly: false,

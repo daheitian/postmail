@@ -232,8 +232,6 @@ msgid "Add Link"
 msgstr "Add Link"
 
 #. @context: Settings group label for advanced settings
-#. @context: Summary label for advanced GitHub Sync actions (push, disconnect)
-#: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Advanced"
 msgstr "Advanced"
@@ -500,6 +498,7 @@ msgstr "Buttons can stay steady, but links, thread markers, and subtle emphasis 
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel settings changes
@@ -517,6 +516,7 @@ msgstr "Buttons can stay steady, but links, thread markers, and subtle emphasis 
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/SessionsContent.tsx
 #: src/ui/shared/collection-management-labels.ts
 #: src/ui/shared/collection-management-labels.ts
@@ -719,10 +719,10 @@ msgstr "Connect"
 msgid "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
 msgstr "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
 
-#. @context: Status text when GitHub Sync is active and connected
+#. @context: Status label when GitHub Sync is active and connected
 #: src/ui/dash/settings/GitHubSyncContent.tsx
-msgid "Connected to GitHub. Post changes are synced automatically."
-msgstr "Connected to GitHub. Post changes are synced automatically."
+msgid "Connected"
+msgstr "Connected"
 
 #. @context: Controls section heading on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1039,6 +1039,8 @@ msgid "Discard changes?"
 msgstr "Discard changes?"
 
 #. @context: Button to disconnect GitHub repository on GitHub Sync settings
+#. @context: Section heading for disconnect action on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Disconnect"
 msgstr "Disconnect"
@@ -1469,6 +1471,8 @@ msgid "Generating a link..."
 msgstr "Generating a link..."
 
 #. @context: Settings item — GitHub sync settings
+#. @context: Settings section heading for GitHub Sync setup
+#: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "GitHub Sync"
 msgstr "GitHub Sync"
@@ -1678,8 +1682,13 @@ msgstr "Language and time updated."
 
 #. @context: Label for last push commit SHA on GitHub Sync status
 #: src/ui/dash/settings/GitHubSyncContent.tsx
-msgid "Last Push"
-msgstr "Last Push"
+msgid "Last commit"
+msgstr "Last commit"
+
+#. @context: Label for last sync time on GitHub Sync status
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Last synced"
+msgstr "Last synced"
 
 #. @context: Token last used date
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -1881,6 +1890,11 @@ msgstr "Manage sign-in security, exports, and irreversible actions."
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage this site's active sessions here. Password and hosted access are managed through {providerLabel}."
 msgstr "Manage this site's active sessions here. Password and hosted access are managed through {providerLabel}."
+
+#. @context: Section heading for manual push action on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Manual Push"
+msgstr "Manual Push"
 
 #. @context: Color theme preview date label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2099,6 +2113,11 @@ msgstr "No results. Try different keywords."
 #: src/ui/pages/ArchivePage.tsx
 msgid "No threads match these filters. Try adjusting your selection or clear all filters."
 msgstr "No threads match these filters. Try adjusting your selection or clear all filters."
+
+#. @context: Shown when no sync has happened yet on GitHub Sync status
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Not synced yet"
+msgstr "Not synced yet"
 
 #. @context: Color theme preview format label
 #. @context: Compose format tab
@@ -2385,10 +2404,10 @@ msgstr "Published on {date} at {time}"
 msgid "Published!"
 msgstr "Published!"
 
-#. @context: Button to trigger a full content push to GitHub on GitHub Sync settings
+#. @context: Description for manual push action on GitHub Sync settings
 #: src/ui/dash/settings/GitHubSyncContent.tsx
-msgid "Push Full Sync"
-msgstr "Push Full Sync"
+msgid "Push all posts to GitHub right now instead of waiting for the next automatic sync."
+msgstr "Push all posts to GitHub right now instead of waiting for the next automatic sync."
 
 #. @context: Archive custom URL query params field
 #: src/routes/dash/custom-urls.tsx
@@ -2506,6 +2525,11 @@ msgstr "Remove Divider"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Remove Link"
 msgstr "Remove Link"
+
+#. @context: Description for disconnect action on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Remove the webhook and stop syncing. Your repository content will not be deleted."
+msgstr "Remove the webhook and stop syncing. Your repository content will not be deleted."
 
 #. @context: Confirm dialog for removing the blog avatar
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2929,6 +2953,11 @@ msgstr "Switch the palette and mode without opening settings or changing the act
 #: src/ui/pages/BrandPage.tsx
 msgid "Switch to the white logo when the standard green version would lose contrast."
 msgstr "Switch to the white logo when the standard green version would lose contrast."
+
+#. @context: Button to trigger a full content push to GitHub on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Sync Now"
+msgstr "Sync Now"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
