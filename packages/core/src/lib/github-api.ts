@@ -164,6 +164,12 @@ export interface GitHubClient {
     },
   ): Promise<GitHubWebhook>;
 
+  /** List webhooks on the repo. */
+  listWebhooks(
+    owner: string,
+    repo: string,
+  ): Promise<Array<{ id: number; config: { url?: string } }>>;
+
   /** Delete a webhook from the repo. */
   deleteWebhook(owner: string, repo: string, hookId: number): Promise<void>;
 }
@@ -302,6 +308,13 @@ export function createGitHubClient(token: string): GitHubClient {
           insecure_ssl: "0",
         },
       });
+    },
+
+    async listWebhooks(owner, repo) {
+      return request<Array<{ id: number; config: { url?: string } }>>(
+        "GET",
+        `/repos/${owner}/${repo}/hooks`,
+      );
     },
 
     async deleteWebhook(owner, repo, hookId) {

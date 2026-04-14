@@ -1190,6 +1190,22 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
     return dsToast(`Could not access the repository: ${detail}`, "error");
   }
 
+  // Check if this repo already has a Jant webhook
+  try {
+    const hooks = await client.listWebhooks(parsed.owner, parsed.repo);
+    const existingJantHook = hooks.find((h) =>
+      h.config.url?.includes("/api/github-sync/webhook"),
+    );
+    if (existingJantHook) {
+      return dsToast(
+        "This repository is already connected to a Jant site. Disconnect it first before connecting to a new site.",
+        "error",
+      );
+    }
+  } catch {
+    // If listing webhooks fails (permissions), skip the check and continue
+  }
+
   // Save config
   await c.var.services.settings.set("GITHUB_SYNC_TOKEN", body.token);
   await c.var.services.settings.set("GITHUB_SYNC_REPO", body.repo);
