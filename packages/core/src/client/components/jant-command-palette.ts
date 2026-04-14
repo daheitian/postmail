@@ -297,11 +297,23 @@ export class JantCommandPalette extends LitElement {
     }
 
     // Navigate mode — show all items when no query (autocomplete)
-    return this.#navigateItems.map((item) => ({
+    const navItems = this.#navigateItems.map((item) => ({
       label: item.title,
       secondary: item.type === "system" ? item.path : item.path,
       icon: ICONS[item.type],
     }));
+
+    // When navigate mode has no matches, offer a full-text search fallback
+    const q = normalizeSearch(this._query);
+    if (navItems.length === 0 && q) {
+      navItems.push({
+        label: `Search for "${this._query.trim()}"`,
+        icon: ICONS.search,
+        searchQuery: this._query.trim(),
+      });
+    }
+
+    return navItems;
   }
 
   // -----------------------------------------------------------------------
@@ -331,7 +343,16 @@ export class JantCommandPalette extends LitElement {
       return;
     }
 
-    // Navigate mode
+    // Navigate mode — check if the selected item is a search fallback
+    const displayItem = this.#displayItems[index];
+    if (displayItem?.searchQuery) {
+      const q = displayItem.searchQuery;
+      saveHistory(SEARCH_HISTORY_KEY, q);
+      this.close();
+      window.location.href = `/search?q=${encodeURIComponent(q)}`;
+      return;
+    }
+
     const item = this.#navigateItems[index];
     if (item) {
       saveHistory(NAV_HISTORY_KEY, item.path);
@@ -385,6 +406,14 @@ export class JantCommandPalette extends LitElement {
 
     if (event.key === "Tab") {
       event.preventDefault();
+      return;
+    }
+
+    // Handle Escape explicitly — CJK IMEs can swallow the native dialog
+    // `cancel` event even when not actively composing, requiring two presses.
+    if (event.key === "Escape") {
+      event.preventDefault();
+      this.close();
       return;
     }
   };
