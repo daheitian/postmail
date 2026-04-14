@@ -66,6 +66,7 @@ function GitHubSyncSetupForm({ settingsBase }: { settingsBase: string }) {
       <form
         class="flex flex-col gap-4"
         data-on:submit__prevent={`@post('${settingsBase}/connect')`}
+        data-indicator="_connecting"
       >
         <div class="field">
           <label class="label" for="github-token">
@@ -120,7 +121,8 @@ function GitHubSyncSetupForm({ settingsBase }: { settingsBase: string }) {
         </div>
 
         <div class="flex mt-2">
-          <button type="submit" class="btn">
+          <button type="submit" class="btn" data-attr:disabled="$_connecting">
+            <Spinner signal="_connecting" />
             {i18n._(
               msg({
                 message: "Connect",
@@ -137,6 +139,26 @@ function GitHubSyncSetupForm({ settingsBase }: { settingsBase: string }) {
 
 /** Green circle SVG for connected status */
 const STATUS_DOT = `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg>`;
+
+function Spinner({ signal }: { signal: string }) {
+  return (
+    <svg
+      data-show={`$${signal}`}
+      style="display:none"
+      class="animate-spin size-4"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      role="status"
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+  );
+}
 
 function GitHubSyncConnected({
   status,
@@ -288,7 +310,10 @@ function GitHubSyncConnected({
             type="button"
             class="btn-outline"
             data-on:click__prevent={`@post('${settingsBase}/push')`}
+            data-indicator="_pushing"
+            data-attr:disabled="$_pushing"
           >
+            <Spinner signal="_pushing" />
             {i18n._(
               msg({
                 message: "Sync Now",
@@ -325,6 +350,8 @@ function GitHubSyncConnected({
           <button
             type="button"
             class="btn-ghost text-destructive"
+            data-indicator="_disconnecting"
+            data-attr:disabled="$_disconnecting"
             data-on:click__prevent={buildConfirmActionExpression(
               `@post('${settingsBase}/disconnect')`,
               {
@@ -342,6 +369,7 @@ function GitHubSyncConnected({
               },
             )}
           >
+            <Spinner signal="_disconnecting" />
             {disconnectLabel}
           </button>
         </div>
