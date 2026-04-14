@@ -232,6 +232,8 @@ msgid "Add Link"
 msgstr "Add Link"
 
 #. @context: Settings group label for advanced settings
+#. @context: Summary label for advanced GitHub Sync actions (push, disconnect)
+#: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Advanced"
 msgstr "Advanced"
@@ -716,6 +718,11 @@ msgstr "Connect"
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
 msgstr "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
+
+#. @context: Status text when GitHub Sync is active and connected
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connected to GitHub. Post changes are synced automatically."
+msgstr "Connected to GitHub. Post changes are synced automatically."
 
 #. @context: Controls section heading on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
