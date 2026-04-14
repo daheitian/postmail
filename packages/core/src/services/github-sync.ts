@@ -5,8 +5,8 @@
  * Posts are serialized as Zola-format Markdown files (reusing the export format).
  *
  * Push (Jant → GitHub):
- *   - Full sync: regenerate all files in a single atomic commit via Git Trees API
- *   - Incremental: update/delete a single post file via Contents API
+ *   - Always full sync: regenerate all files in a single atomic commit via Git Trees API
+ *   - Debounced: multiple rapid changes collapse into one sync
  *
  * Pull (GitHub → Jant):
  *   - Webhook-triggered: match files to existing posts by slug, update or delete
@@ -67,9 +67,6 @@ export interface GitHubSyncService {
 
   /** Full push: regenerate all files and commit atomically. */
   pushFullSync(): Promise<{ commitSha: string }>;
-
-  /** Incremental: push a single post change. */
-  pushPostChange(postId: string, action: "upsert" | "delete"): Promise<void>;
 
   /** Process an incoming GitHub webhook push event. */
   handleWebhookPush(payload: GitHubPushEvent): Promise<void>;
@@ -136,87 +133,6 @@ export function createGitHubSyncService(
       owner: parsed.owner,
       repo: parsed.repo,
     };
-  }
-
-  /**
-   * Load all data needed to serialize a single post (+ thread replies).
-   */
-  async function loadPostExportData(postId: string): Promise<{
-    root: Post;
-    threadReplies: Post[];
-    postCollections: Collection[];
-    rootAliases: string[];
-    slug: string;
-    slugMap: Map<string, string>;
-    collectionSlugMap: Map<string, string>;
-    rootMedia: Media[];
-    mediaByPost: Map<string, Media[]>;
-    textAttachmentContents: Map<string, TextAttachmentContent>;
-  } | null> {
-    const root = await services.posts.getById(postId);
-    if (!root) return null;
-
-    // For thread roots, load the whole thread
-    const thread = await services.posts.getThread(root.threadId);
-    const threadReplies = thread
-      .filter((p) => p.replyToId !== null)
-      .sort((a, b) => a.createdAt - b.createdAt);
-
-    const allIds = [root.id, ...threadReplies.map((r) => r.id)];
-
-    const [collectionsByPost, mediaByPost, slugMap, aliasMap] =
-      await Promise.all([
-        services.collections.getCollectionsByPostIds([root.id]),
-        services.media.getByPostIds(allIds),
-        services.paths.getPostSlugMap(allIds),
-        services.paths.getPostAliases([root.id]),
-      ]);
-
-    const postCollections = collectionsByPost.get(root.id) ?? [];
-    const collectionIds = postCollections.map((c) => c.id);
-    const collectionSlugMap =
-      collectionIds.length > 0
-        ? await services.paths.getCollectionSlugMap(collectionIds)
-        : new Map<string, string>();
-
-    // Text attachment contents (empty map — we don't download text attachments for sync)
-    const textAttachmentContents = new Map<string, TextAttachmentContent>();
-
-    return {
-      root,
-      threadReplies,
-      postCollections,
-      rootAliases: [...(aliasMap.get(root.id) ?? [])],
-      slug: slugMap.get(root.id) ?? root.slug,
-      slugMap,
-      collectionSlugMap,
-      rootMedia: mediaByPost.get(root.id) ?? [],
-      mediaByPost,
-      textAttachmentContents,
-    };
-  }
-
-  function serializePost(data: Awaited<ReturnType<typeof loadPostExportData>>) {
-    if (!data) return null;
-
-    const zolaAliases = [...data.rootAliases];
-    for (const reply of data.threadReplies) {
-      const replySlug = data.slugMap.get(reply.id) ?? reply.slug;
-      zolaAliases.push(`/${replySlug}`);
-    }
-
-    return buildPostMarkdown(
-      data.root,
-      data.threadReplies,
-      data.postCollections,
-      { rootAliases: data.rootAliases, zolaAliases },
-      data.slugMap,
-      data.collectionSlugMap,
-      data.rootMedia,
-      data.mediaByPost,
-      siteConfig,
-      data.textAttachmentContents,
-    );
   }
 
   /**
@@ -356,63 +272,6 @@ export function createGitHubSyncService(
       await services.settings.set("GITHUB_SYNC_LAST_PUSH_SHA", commit.sha);
 
       return { commitSha: commit.sha };
-    },
-
-    async pushPostChange(postId, action) {
-      const config = await loadConfig();
-      if (!config) return;
-      const { client, owner, repo } = createClient(config);
-
-      if (action === "delete") {
-        // We need the slug to find the file. Try to look it up via paths.
-        const slugMap = await services.paths.getPostSlugMap([postId]);
-        const slug = slugMap.get(postId);
-        if (!slug) return; // Post already fully deleted, nothing to do
-
-        const filePath = `${POST_DIR}/${slug}.md`;
-        const existing = await client.getFileContent(owner, repo, filePath);
-        if (!existing) return; // File doesn't exist on GitHub
-
-        await client.deleteFile(owner, repo, filePath, {
-          sha: existing.sha,
-          message: `Delete post: ${slug} ${SYNC_COMMIT_MARKER}`,
-        });
-        return;
-      }
-
-      // Upsert
-      const data = await loadPostExportData(postId);
-      if (!data) return;
-
-      // Skip replies — they're embedded in the root post file
-      if (data.root.replyToId !== null) {
-        // Instead, re-sync the root post
-        const rootData = await loadPostExportData(data.root.threadId);
-        if (!rootData) return;
-        const markdown = serializePost(rootData);
-        if (!markdown) return;
-
-        const filePath = `${POST_DIR}/${rootData.slug}.md`;
-        const existing = await client.getFileContent(owner, repo, filePath);
-        await client.createOrUpdateFile(owner, repo, filePath, {
-          content: markdown,
-          message: `Update thread: ${rootData.slug} ${SYNC_COMMIT_MARKER}`,
-          sha: existing?.sha,
-        });
-        return;
-      }
-
-      const markdown = serializePost(data);
-      if (!markdown) return;
-
-      const filePath = `${POST_DIR}/${data.slug}.md`;
-      const existing = await client.getFileContent(owner, repo, filePath);
-
-      await client.createOrUpdateFile(owner, repo, filePath, {
-        content: markdown,
-        message: `${existing ? "Update" : "Add"} post: ${data.slug} ${SYNC_COMMIT_MARKER}`,
-        sha: existing?.sha,
-      });
     },
 
     async handleWebhookPush(payload) {

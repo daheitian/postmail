@@ -20,7 +20,7 @@ import { assertFound, NotFoundError, parseIdParam } from "../../lib/errors.js";
 import { ID_PREFIX } from "../../lib/ids.js";
 import {
   resolveJobQueue,
-  triggerGitHubSyncPush,
+  triggerGitHubSync,
 } from "../../lib/github-sync-trigger.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -217,12 +217,10 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
   } = c.var.appConfig;
 
   // Trigger GitHub Sync in background
-  const syncPromise = triggerGitHubSyncPush(
+  const syncPromise = triggerGitHubSync(
     resolveJobQueue(c.env),
     c.var.services.settings,
     c.var.currentSite.id,
-    post.id,
-    "upsert",
   );
   try {
     c.executionCtx?.waitUntil(syncPromise);
@@ -290,12 +288,10 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   );
 
   // Trigger GitHub Sync in background
-  const updateSyncPromise = triggerGitHubSyncPush(
+  const updateSyncPromise = triggerGitHubSync(
     resolveJobQueue(c.env),
     c.var.services.settings,
     c.var.currentSite.id,
-    post.id,
-    "upsert",
   );
   try {
     c.executionCtx?.waitUntil(updateSyncPromise);
@@ -339,12 +335,10 @@ postsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
   if (!success) throw new NotFoundError("Post");
 
   // Trigger GitHub Sync in background
-  const deleteSyncPromise = triggerGitHubSyncPush(
+  const deleteSyncPromise = triggerGitHubSync(
     resolveJobQueue(c.env),
     c.var.services.settings,
     c.var.currentSite.id,
-    id,
-    "delete",
   );
   try {
     c.executionCtx?.waitUntil(deleteSyncPromise);

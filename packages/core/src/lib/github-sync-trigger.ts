@@ -1,9 +1,13 @@
 /**
  * GitHub Sync Trigger
  *
- * Thin helper called from post mutation routes to enqueue a sync job
- * when GitHub Sync is enabled. Designed to be non-blocking — the route
- * returns immediately and the actual sync happens in a background job.
+ * Debounced trigger for full-sync pushes. Multiple rapid post changes
+ * collapse into a single sync job:
+ *
+ * 1. Set GITHUB_SYNC_PENDING = "true"
+ * 2. If no job is already queued, enqueue one
+ * 3. The worker runs full sync, clears the flag, then checks again —
+ *    if the flag was re-set during execution, it runs once more.
  */
 
 import type { SettingsService } from "../services/settings.js";
@@ -22,30 +26,29 @@ export function resolveJobQueue(env: { GITHUB_SYNC_QUEUE?: Queue }): JobQueue {
 }
 
 /**
- * Enqueue a GitHub Sync push job if sync is enabled.
+ * Request a full GitHub Sync push. Safe to call on every post mutation.
  *
- * Call this after a post is created, updated, or deleted.
- * Safe to call when sync is not configured — it's a no-op.
- *
- * @param queue - Job queue instance (CF Queue or DB-backed)
- * @param settings - Settings service to check GITHUB_SYNC_ENABLED
- * @param siteId - Current site ID
- * @param postId - The post that changed
- * @param action - Whether the post was upserted or deleted
+ * Uses a pending flag for debounce: if a sync is already queued or
+ * running, no new job is created — the running job will pick up
+ * the changes when it re-checks the flag after completion.
  */
-export async function triggerGitHubSyncPush(
+export async function triggerGitHubSync(
   queue: JobQueue,
   settings: SettingsService,
   siteId: string,
-  postId: string,
-  action: "upsert" | "delete",
 ): Promise<void> {
   const enabled = await settings.get("GITHUB_SYNC_ENABLED");
   if (enabled !== "true") return;
 
+  // Check if a sync is already pending
+  const alreadyPending = await settings.get("GITHUB_SYNC_PENDING");
+  if (alreadyPending === "true") return;
+
+  // Mark as pending and enqueue
+  await settings.set("GITHUB_SYNC_PENDING", "true");
   await queue.enqueue({
     kind: "github-sync-push",
     siteId,
-    data: { postId, action },
+    data: {},
   });
 }

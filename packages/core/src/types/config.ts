@@ -306,6 +306,11 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  GITHUB_SYNC_PENDING: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
 } as const satisfies Record<string, ConfigField>;
 
 export type ConfigKey = keyof typeof CONFIG_FIELDS;

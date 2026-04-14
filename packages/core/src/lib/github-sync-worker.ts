@@ -1,8 +1,9 @@
 /**
  * GitHub Sync Worker
  *
- * Processes queued sync jobs. Used as the consumer handler for both
- * Cloudflare Queues and the DB-backed polling fallback.
+ * Processes queued sync jobs. Push jobs always run a full sync.
+ * After completing, re-checks the pending flag to catch changes
+ * that arrived during execution.
  */
 
 import { createGitHubSyncService } from "../services/github-sync.js";
@@ -12,10 +13,6 @@ import type { JobPayload } from "./job-queue.js";
 
 /**
  * Process a single GitHub Sync job.
- *
- * @param payload - The job payload from the queue
- * @param services - Jant services for the target site
- * @param siteConfig - Site configuration for export serialization
  */
 export async function processGitHubSyncJob(
   payload: JobPayload,
@@ -34,11 +31,18 @@ export async function processGitHubSyncJob(
   );
 
   if (payload.kind === "github-sync-push") {
-    const { postId, action } = payload.data as {
-      postId: string;
-      action: "upsert" | "delete";
-    };
-    await syncService.pushPostChange(postId, action);
+    // Clear pending flag before running so new triggers during
+    // execution will set it again.
+    await services.settings.set("GITHUB_SYNC_PENDING", "");
+
+    await syncService.pushFullSync();
+
+    // If the flag was re-set during execution, run once more
+    const stillPending = await services.settings.get("GITHUB_SYNC_PENDING");
+    if (stillPending === "true") {
+      await services.settings.set("GITHUB_SYNC_PENDING", "");
+      await syncService.pushFullSync();
+    }
     return;
   }
 
