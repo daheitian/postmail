@@ -2627,10 +2627,10 @@ export function createPostService(
         buildCollectionMembershipCondition(collectionIds),
       ];
       const sortOrder = options.sortOrder ?? "newest";
-      const collectedAt =
+      const publishedAt =
         sortOrder === "oldest"
-          ? sql<number>`MIN(${postCollections.createdAt})`.as("collected_at")
-          : sql<number>`MAX(${postCollections.createdAt})`.as("collected_at");
+          ? sql<number>`MIN(${posts.publishedAt})`.as("published_at")
+          : sql<number>`MAX(${posts.publishedAt})`.as("published_at");
       const ratingPresence = sql<number>`MAX(
         CASE
           WHEN ${posts.rating} IS NULL THEN 0
@@ -2649,7 +2649,7 @@ export function createPostService(
       const baseQuery = db
         .select({
           threadId: posts.threadId,
-          collectedAt,
+          publishedAt,
           collectionPinnedAt,
           ratingPresence,
           ratingValue,
@@ -2669,7 +2669,7 @@ export function createPostService(
         sortOrder === "oldest"
           ? baseQuery.orderBy(
               desc(collectionPinnedAt),
-              asc(collectedAt),
+              asc(publishedAt),
               asc(posts.threadId),
             )
           : sortOrder === "rating_desc"
@@ -2677,12 +2677,12 @@ export function createPostService(
                 desc(collectionPinnedAt),
                 desc(ratingPresence),
                 desc(ratingValue),
-                desc(collectedAt),
+                desc(publishedAt),
                 desc(posts.threadId),
               )
             : baseQuery.orderBy(
                 desc(collectionPinnedAt),
-                desc(collectedAt),
+                desc(publishedAt),
                 desc(posts.threadId),
               );
 
@@ -2709,6 +2709,9 @@ export function createPostService(
         ...buildThreadRootPageConditions(options),
         buildCollectionMembershipCondition(collectionIds),
       ];
+      const publishedAt = sql<number>`MAX(${posts.publishedAt})`.as(
+        "published_at",
+      );
       const collectedAt = sql<number>`MAX(${postCollections.createdAt})`.as(
         "collected_at",
       );
@@ -2720,6 +2723,7 @@ export function createPostService(
       let query = db
         .select({
           threadId: posts.threadId,
+          publishedAt,
           collectedAt,
           collectionPinnedAt,
         })
@@ -2735,7 +2739,7 @@ export function createPostService(
         .groupBy(posts.threadId)
         .orderBy(
           desc(collectionPinnedAt),
-          desc(collectedAt),
+          desc(publishedAt),
           desc(posts.threadId),
         );
 

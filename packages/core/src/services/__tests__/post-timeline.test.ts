@@ -465,7 +465,7 @@ describe("PostService - Timeline features", () => {
   });
 
   describe("listCollectionFeedEntries", () => {
-    it("orders collection feeds by latest addedAt and returns thread roots", async () => {
+    it("orders collection feeds by publishedAt and returns thread roots", async () => {
       const collection = await collectionService.create({
         slug: "reading",
         title: "Reading",
@@ -565,10 +565,11 @@ describe("PostService - Timeline features", () => {
       );
 
       expect(entries).toHaveLength(2);
-      expect(entries[0]?.post.id).toBe(sharedRoot.id);
-      expect(entries[0]?.collectedAt).toBe(300);
-      expect(entries[1]?.post.id).toBe(secondRoot.id);
-      expect(entries[1]?.collectedAt).toBe(200);
+      // Sorted by publishedAt DESC: secondRoot created last has latest publishedAt
+      expect(entries[0]?.post.id).toBe(secondRoot.id);
+      expect(entries[0]?.collectedAt).toBe(200);
+      expect(entries[1]?.post.id).toBe(sharedRoot.id);
+      expect(entries[1]?.collectedAt).toBe(300);
     });
   });
 });
