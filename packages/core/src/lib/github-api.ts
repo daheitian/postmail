@@ -102,6 +102,14 @@ export interface GitHubClient {
     sha: string,
   ): Promise<void>;
 
+  /** Create a new ref (e.g. for empty repos). */
+  createRef(
+    owner: string,
+    repo: string,
+    ref: string,
+    sha: string,
+  ): Promise<void>;
+
   /** Get file content at a path. Returns null if file doesn't exist. */
   getFileContent(
     owner: string,
@@ -243,6 +251,13 @@ export function createGitHubClient(token: string): GitHubClient {
       await request("PATCH", `/repos/${owner}/${repo}/git/refs/${ref}`, {
         sha,
         force: false,
+      });
+    },
+
+    async createRef(owner, repo, ref, sha) {
+      await request("POST", `/repos/${owner}/${repo}/git/refs`, {
+        ref: `refs/${ref}`,
+        sha,
       });
     },
 

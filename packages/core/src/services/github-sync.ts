@@ -310,14 +310,20 @@ export function createGitHubSyncService(
         });
       }
 
-      // Get current HEAD
+      // Get current HEAD (may not exist for empty repos)
       const repoInfo = await client.getRepo(owner, repo);
       const defaultBranch = repoInfo.default_branch;
-      const headRef = await client.getRef(
-        owner,
-        repo,
-        `heads/${defaultBranch}`,
-      );
+      let headSha: string | null = null;
+      try {
+        const headRef = await client.getRef(
+          owner,
+          repo,
+          `heads/${defaultBranch}`,
+        );
+        headSha = headRef.sha;
+      } catch {
+        // Empty repo — no HEAD yet
+      }
 
       // Create a new tree (NOT based on existing tree — this replaces everything)
       const tree = await client.createTree(owner, repo, treeItems);
@@ -326,11 +332,25 @@ export function createGitHubSyncService(
       const commit = await client.createCommit(owner, repo, {
         message: `Sync all posts ${SYNC_COMMIT_MARKER}`,
         tree: tree.sha,
-        parents: [headRef.sha],
+        parents: headSha ? [headSha] : [],
       });
 
-      // Update ref
-      await client.updateRef(owner, repo, `heads/${defaultBranch}`, commit.sha);
+      // Update or create ref
+      if (headSha) {
+        await client.updateRef(
+          owner,
+          repo,
+          `heads/${defaultBranch}`,
+          commit.sha,
+        );
+      } else {
+        await client.createRef(
+          owner,
+          repo,
+          `heads/${defaultBranch}`,
+          commit.sha,
+        );
+      }
 
       // Save last push SHA
       await services.settings.set("GITHUB_SYNC_LAST_PUSH_SHA", commit.sha);

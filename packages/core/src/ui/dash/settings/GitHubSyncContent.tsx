@@ -138,6 +138,16 @@ function GitHubSyncConnected({
   return (
     <div class="settings-form-section">
       <div class="settings-form-intro">
+        <p>
+          {i18n._(
+            msg({
+              message:
+                "Connected to GitHub. Post changes are synced automatically.",
+              comment:
+                "@context: Status text when GitHub Sync is active and connected",
+            }),
+          )}
+        </p>
         <dl class="settings-kv">
           <dt>
             {i18n._(
@@ -179,46 +189,57 @@ function GitHubSyncConnected({
         </dl>
       </div>
 
-      <div class="settings-form-actions">
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-on:click__prevent={`@post('${settingsBase}/push')`}
-        >
+      <details class="settings-form-details">
+        <summary>
           {i18n._(
             msg({
-              message: "Push Full Sync",
+              message: "Advanced",
               comment:
-                "@context: Button to trigger a full content push to GitHub on GitHub Sync settings",
+                "@context: Summary label for advanced GitHub Sync actions (push, disconnect)",
             }),
           )}
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-outline"
-          data-on:click__prevent={`
-            if (confirm('${i18n._(
+        </summary>
+        <div class="settings-form-actions" style="margin-top: var(--spacing-3)">
+          <button
+            type="button"
+            class="btn btn-outline btn-sm"
+            data-on:click__prevent={`@post('${settingsBase}/push')`}
+          >
+            {i18n._(
               msg({
-                message:
-                  "Disconnect from GitHub? The webhook will be removed. Your repository content will not be deleted.",
+                message: "Push Full Sync",
                 comment:
-                  "@context: Confirmation message when disconnecting GitHub Sync",
+                  "@context: Button to trigger a full content push to GitHub on GitHub Sync settings",
               }),
-            )}')) {
-              @post('${settingsBase}/disconnect')
-            }
-          `}
-        >
-          {i18n._(
-            msg({
-              message: "Disconnect",
-              comment:
-                "@context: Button to disconnect GitHub repository on GitHub Sync settings",
-            }),
-          )}
-        </button>
-      </div>
+            )}
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            data-on:click__prevent={`
+              if (confirm('${i18n._(
+                msg({
+                  message:
+                    "Disconnect from GitHub? The webhook will be removed. Your repository content will not be deleted.",
+                  comment:
+                    "@context: Confirmation message when disconnecting GitHub Sync",
+                }),
+              )}')) {
+                @post('${settingsBase}/disconnect')
+              }
+            `}
+          >
+            {i18n._(
+              msg({
+                message: "Disconnect",
+                comment:
+                  "@context: Button to disconnect GitHub repository on GitHub Sync settings",
+              }),
+            )}
+          </button>
+        </div>
+      </details>
     </div>
   );
 }
