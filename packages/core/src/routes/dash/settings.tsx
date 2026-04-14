@@ -38,6 +38,10 @@ import { FontThemeContent } from "../../ui/dash/appearance/FontThemeContent.js";
 import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
 import { ApiTokensContent } from "../../ui/dash/settings/ApiTokensContent.js";
 import { DeleteAccountContent } from "../../ui/dash/settings/DeleteAccountContent.js";
+import {
+  GitHubSyncContent,
+  type GitHubSyncStatus,
+} from "../../ui/dash/settings/GitHubSyncContent.js";
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import { parseValidated, UpdateSiteSettingsSchema } from "../../lib/schemas.js";
 import {
@@ -1154,4 +1158,44 @@ settingsRoutes.post("/api-tokens/:id/delete", async (c) => {
   await c.var.services.apiTokens.delete(id);
 
   return dsRedirect(publicPath(c, "/settings/api-tokens"));
+});
+
+// ===========================================================================
+// GitHub Sync
+// ===========================================================================
+
+settingsRoutes.get("/github-sync", async (c) => {
+  const [enabled, repo, lastPushSha, webhookId] = await Promise.all([
+    c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
+    c.var.services.settings.get("GITHUB_SYNC_REPO"),
+    c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
+    c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
+  ]);
+
+  const status: GitHubSyncStatus = {
+    enabled: enabled === "true",
+    repo: repo ?? null,
+    lastPushSha: lastPushSha ?? null,
+    webhookId: webhookId ?? null,
+  };
+
+  const navData = await getNavigationData(c);
+
+  return renderPublicPage(c, {
+    title: buildPageTitle("GitHub Sync", navData.siteName),
+    navData,
+    content: (
+      <>
+        <AdminBreadcrumb
+          parent="Settings"
+          parentHref={publicPath(c, "/settings")}
+          current="GitHub Sync"
+        />
+        <GitHubSyncContent
+          status={status}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
+        />
+      </>
+    ),
+  });
 });

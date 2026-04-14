@@ -48,6 +48,10 @@ import { exportApiRoutes } from "./routes/api/export.js";
 import { paletteApiRoutes } from "./routes/api/palette.js";
 import { internalApiTokensRoutes } from "./routes/api/internal/api-tokens.js";
 import { internalSitesRoutes } from "./routes/api/internal/sites.js";
+import {
+  githubSyncWebhookRoutes,
+  githubSyncAdminRoutes,
+} from "./routes/api/github-sync.js";
 import { internalUploadsRoutes } from "./routes/api/internal/uploads.js";
 import { publicPostsApiRoutes } from "./routes/api/public/posts.js";
 // Routes - Compose
@@ -329,6 +333,7 @@ export function createApp(): App {
   app.route("/api/internal/api-tokens", internalApiTokensRoutes);
   app.route("/api/internal/sites", internalSitesRoutes);
   app.route("/api/internal/uploads", internalUploadsRoutes);
+  app.route("/api/github-sync", githubSyncWebhookRoutes);
 
   // Fetch text media content by ID (same-origin proxy to avoid CORS with CDN URLs)
   app.get("/api/media/:id/content", async (c) => {
@@ -475,6 +480,7 @@ export function createApp(): App {
   app.route("/api/settings", settingsApiRoutes);
   app.route("/api/custom-urls", customUrlsApiRoutes);
   app.route("/api/export", exportApiRoutes);
+  app.route("/api/github-sync", githubSyncAdminRoutes);
 
   // Auth routes
   app.route("/", setupRoutes);

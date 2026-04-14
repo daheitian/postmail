@@ -18,6 +18,10 @@ import { requireAuthApi } from "../../middleware/auth.js";
 import { toApiAttachment, toApiPost } from "../../lib/api-posts.js";
 import { assertFound, NotFoundError, parseIdParam } from "../../lib/errors.js";
 import { ID_PREFIX } from "../../lib/ids.js";
+import {
+  resolveJobQueue,
+  triggerGitHubSyncPush,
+} from "../../lib/github-sync-trigger.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -212,6 +216,20 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
     sitePathPrefix,
   } = c.var.appConfig;
 
+  // Trigger GitHub Sync in background
+  const syncPromise = triggerGitHubSyncPush(
+    resolveJobQueue(c.env),
+    c.var.services.settings,
+    c.var.currentSite.id,
+    post.id,
+    "upsert",
+  );
+  try {
+    c.executionCtx?.waitUntil(syncPromise);
+  } catch {
+    // executionCtx not available (e.g. in tests) — ignore
+  }
+
   return c.json(
     toApiPost(post, {
       attachments: mediaList.map((m) =>
@@ -271,6 +289,20 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
     "Post",
   );
 
+  // Trigger GitHub Sync in background
+  const updateSyncPromise = triggerGitHubSyncPush(
+    resolveJobQueue(c.env),
+    c.var.services.settings,
+    c.var.currentSite.id,
+    post.id,
+    "upsert",
+  );
+  try {
+    c.executionCtx?.waitUntil(updateSyncPromise);
+  } catch {
+    // executionCtx not available (e.g. in tests) — ignore
+  }
+
   const mediaList = await c.var.services.media.getByPostId(post.id);
   const {
     r2PublicUrl,
@@ -305,6 +337,20 @@ postsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
     storage: c.var.storage,
   });
   if (!success) throw new NotFoundError("Post");
+
+  // Trigger GitHub Sync in background
+  const deleteSyncPromise = triggerGitHubSyncPush(
+    resolveJobQueue(c.env),
+    c.var.services.settings,
+    c.var.currentSite.id,
+    id,
+    "delete",
+  );
+  try {
+    c.executionCtx?.waitUntil(deleteSyncPromise);
+  } catch {
+    // executionCtx not available (e.g. in tests) — ignore
+  }
 
   return c.json({ success: true });
 });

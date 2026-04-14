@@ -41,7 +41,7 @@ export interface ExportService {
   generateZolaSite(): Promise<Uint8Array>;
 }
 
-interface SiteConfig {
+export interface SiteConfig {
   siteName: string;
   siteUrl: string;
   siteDescription: string;
@@ -412,7 +412,7 @@ function yamlString(value: string): string {
   return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n")}"`;
 }
 
-function buildPostMarkdown(
+export function buildPostMarkdown(
   root: Post,
   threadReplies: Post[],
   postCollections: Collection[],
@@ -563,7 +563,7 @@ function buildPostMarkdown(
   return parts.join("\n");
 }
 
-function buildCollectionSection(
+export function buildCollectionSection(
   collection: Collection,
   slug: string,
   entryCount: number,

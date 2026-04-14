@@ -20,31 +20,16 @@ import {
 } from "../lib/site-media-parser.js";
 import { openNodeDatabase } from "../lib/node-database.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
+import {
+  parseFrontMatter as parseFrontMatterShared,
+  splitReplies as splitRepliesShared,
+} from "../../src/lib/zola-markdown.js";
 
 /**
  * Parse front matter from a Markdown file.
- * Supports both YAML (---...---) and TOML (+++...+++) delimiters.
- * Returns { frontMatter, body }.
+ * Delegates to the shared zola-markdown module.
  */
-async function parseFrontMatter(content) {
-  // Try YAML front matter (---...---)
-  const yamlMatch = content.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-  if (yamlMatch) {
-    const { parse } = await import("yaml");
-    const frontMatter = parse(yamlMatch[1]) || {};
-    return { frontMatter, body: yamlMatch[2] };
-  }
-
-  // Try TOML front matter (+++...+++)
-  const tomlMatch = content.match(/^\+\+\+\n([\s\S]*?)\n\+\+\+\n?([\s\S]*)$/);
-  if (tomlMatch) {
-    const { parse } = await import("smol-toml");
-    const frontMatter = parse(tomlMatch[1]);
-    return { frontMatter, body: tomlMatch[2] };
-  }
-
-  return { frontMatter: {}, body: content };
-}
+const parseFrontMatter = parseFrontMatterShared;
 
 async function parseToml(content) {
   const { parse } = await import("smol-toml");
@@ -218,50 +203,9 @@ async function readMediaSpecAsset(media, field = "src") {
 
 /**
  * Parse reply markers from post body.
- * Returns array of { attrs, body } segments where the first is the root.
+ * Delegates to the shared zola-markdown module.
  */
-function splitReplies(body) {
-  const markerRegex = /<!-- jant:reply (.*?) -->/g;
-
-  // Split body by markers, keeping the marker data
-  const markers = [];
-  let match;
-  while ((match = markerRegex.exec(body)) !== null) {
-    // Parse key="value" pairs from the marker
-    const attrs = {};
-    const attrRegex = /(\w+)="([^"]*)"/g;
-    let attrMatch;
-    while ((attrMatch = attrRegex.exec(match[1])) !== null) {
-      attrs[attrMatch[1]] = attrMatch[2];
-    }
-    markers.push({
-      index: match.index,
-      endIndex: match.index + match[0].length,
-      attrs,
-    });
-  }
-
-  if (markers.length === 0) {
-    return [{ attrs: null, body: body.trim() }];
-  }
-
-  const segments = [];
-
-  // Root segment: everything before the first marker
-  segments.push({ attrs: null, body: body.slice(0, markers[0].index).trim() });
-
-  // Reply segments: between consecutive markers
-  for (let i = 0; i < markers.length; i++) {
-    const start = markers[i].endIndex;
-    const end = i + 1 < markers.length ? markers[i + 1].index : body.length;
-    segments.push({
-      attrs: markers[i].attrs,
-      body: body.slice(start, end).trim(),
-    });
-  }
-
-  return segments;
-}
+const splitReplies = splitRepliesShared;
 
 function normalizeImportPathKey(value) {
   if (typeof value !== "string") {

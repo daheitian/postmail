@@ -735,6 +735,45 @@ export const account = sqliteTable("account", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
+// ---------------------------------------------------------------------------
+// Sync Jobs (GitHub Sync queue fallback)
+// ---------------------------------------------------------------------------
+
+const SYNC_JOB_STATUSES = [
+  "pending",
+  "processing",
+  "completed",
+  "failed",
+] as const;
+
+export const syncJobs = sqliteTable(
+  "sync_job",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    payload: text("payload").notNull(),
+    status: text("status", { enum: SYNC_JOB_STATUSES })
+      .notNull()
+      .default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(3),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+    lockedUntil: integer("locked_until"),
+  },
+  (table) => [
+    index("idx_sync_job_status_created").on(table.status, table.createdAt),
+    index("idx_sync_job_site_id").on(table.siteId),
+    check(
+      "chk_sync_job_status",
+      sql`${table.status} IN (${sqlTextEnum(SYNC_JOB_STATUSES)})`,
+    ),
+  ],
+);
+
 export const verification = sqliteTable("verification", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),

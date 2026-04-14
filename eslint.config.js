@@ -104,6 +104,8 @@ export default [
         D1Result: "readonly",
         R2Bucket: "readonly",
         KVNamespace: "readonly",
+        Queue: "readonly",
+        MessageBatch: "readonly",
       },
     },
     plugins: {

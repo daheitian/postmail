@@ -407,6 +407,11 @@ msgstr "Avatar-ready"
 msgid "Back"
 msgstr "Back"
 
+#. @context: Settings item description for GitHub sync
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Back up and sync content with a GitHub repository"
+msgstr "Back up and sync content with a GitHub repository"
+
 #. @context: Link to backup and restore documentation from account settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Backup & Restore Guide"
@@ -702,6 +707,16 @@ msgstr "Confirm New Password"
 msgid "Confirm Password"
 msgstr "Confirm Password"
 
+#. @context: Button label to connect GitHub repository on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connect"
+msgstr "Connect"
+
+#. @context: Intro text on GitHub Sync settings page when not connected
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
+msgstr "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
+
 #. @context: Controls section heading on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Controls"
@@ -769,6 +784,11 @@ msgstr "Couldn't save. Try again in a moment."
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Create a collection to get started."
 msgstr "Create a collection to get started."
+
+#. @context: Help text for GitHub PAT input explaining required permissions
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Create a fine-grained token with Contents (read/write) and Webhooks (read/write) permissions for your repository."
+msgstr "Create a fine-grained token with Contents (read/write) and Webhooks (read/write) permissions for your repository."
 
 #. @context: Label for curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -865,7 +885,9 @@ msgid "Dark backgrounds"
 msgstr "Dark backgrounds"
 
 #. @context: Settings group label for data export/import
+#. @context: Settings group label for data/sync settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Data"
 msgstr "Data"
 
@@ -949,6 +971,11 @@ msgstr "Delete this navigation link? Visitors won't see it in your site header a
 msgid "Demo credentials are pre-filled — hit Sign In to continue."
 msgstr "Demo credentials are pre-filled — hit Sign In to continue."
 
+#. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Demo limits"
+msgstr "Demo limits"
+
 #. @context: Notice shown on the account page when demo restrictions are enabled
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Demo mode hides sessions, password changes, and account deletion. Export still works."
@@ -1003,6 +1030,16 @@ msgstr "Discard"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard changes?"
 msgstr "Discard changes?"
+
+#. @context: Button to disconnect GitHub repository on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Disconnect"
+msgstr "Disconnect"
+
+#. @context: Confirmation message when disconnecting GitHub Sync
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Disconnect from GitHub? The webhook will be removed. Your repository content will not be deleted."
+msgstr "Disconnect from GitHub? The webhook will be removed. Your repository content will not be deleted."
 
 #. @context: Checkbox to show avatar in the site header
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -1101,6 +1138,11 @@ msgstr "Download SVG"
 #: src/ui/pages/BrandPage.tsx
 msgid "Download the official Jant logo, icons, and preview files."
 msgstr "Download the official Jant logo, icons, and preview files."
+
+#. @context: Settings item description for export site
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Download your entire site as a portable archive"
+msgstr "Download your entire site as a portable archive"
 
 #. @context: Post status badge - draft
 #: src/ui/dash/StatusBadge.tsx
@@ -1238,15 +1280,15 @@ msgstr "Everything on this page is ready to use for articles, launch posts, dire
 msgid "Exit fullscreen"
 msgstr "Exit fullscreen"
 
-#. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
-#: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Export and demo limits"
-msgstr "Export and demo limits"
-
 #. @context: Confirmation text after downloading the site export in delete flow
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Export downloaded."
 msgstr "Export downloaded."
+
+#. @context: Settings item — export site
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Export Site"
+msgstr "Export Site"
 
 #. @context: Settings item — export a Zola static site ZIP
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1418,6 +1460,11 @@ msgstr "Generate Token"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Generating a link..."
 msgstr "Generating a link..."
+
+#. @context: Settings item — GitHub sync settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "GitHub Sync"
+msgstr "GitHub Sync"
 
 #. @context: Compose link title placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -1621,6 +1668,11 @@ msgstr "Language & Time"
 #: src/routes/dash/settings.tsx
 msgid "Language and time updated."
 msgstr "Language and time updated."
+
+#. @context: Label for last push commit SHA on GitHub Sync status
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Last Push"
+msgstr "Last Push"
 
 #. @context: Token last used date
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -2190,6 +2242,11 @@ msgstr "Path"
 msgid "Permanently delete all data and reset the blog"
 msgstr "Permanently delete all data and reset the blog"
 
+#. @context: Label for GitHub PAT input on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Personal Access Token"
+msgstr "Personal Access Token"
+
 #. @context: Description in collection picker section
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours."
@@ -2320,6 +2377,11 @@ msgstr "Published on {date} at {time}"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Published!"
 msgstr "Published!"
+
+#. @context: Button to trigger a full content push to GitHub on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Push Full Sync"
+msgstr "Push Full Sync"
 
 #. @context: Archive custom URL query params field
 #: src/routes/dash/custom-urls.tsx
@@ -2471,6 +2533,13 @@ msgstr "Reply"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Reply quietly"
 msgstr "Reply quietly"
+
+#. @context: Label for GitHub repository input on GitHub Sync settings
+#. @context: Label for connected repository on GitHub Sync status
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Repository"
+msgstr "Repository"
 
 #. @context: Button to restore the automatically generated collection link from the title
 #. @context: Compose custom slug action that clears the manual slug and falls back to automatic generation
@@ -2649,8 +2718,8 @@ msgstr "Sessions"
 
 #. @context: Settings item description for account settings on the settings home page
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Sessions, password, export"
-msgstr "Sessions, password, export"
+msgid "Sessions and password"
+msgstr "Sessions and password"
 
 #. @context: Built-in navigation label for settings
 #. @context: Page title for the settings home page

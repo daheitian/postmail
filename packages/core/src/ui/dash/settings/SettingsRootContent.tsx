@@ -22,6 +22,8 @@ const ICONS = {
   lock: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
   key: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>`,
   shield: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>`,
+  gitBranch: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>`,
+  download: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>`,
 };
 
 export function SettingsRootContent({
@@ -35,14 +37,14 @@ export function SettingsRootContent({
   const accountDescription = demoMode
     ? i18n._(
         msg({
-          message: "Export and demo limits",
+          message: "Demo limits",
           comment:
             "@context: Settings item description for account settings on the settings home page when demo restrictions are enabled",
         }),
       )
     : i18n._(
         msg({
-          message: "Sessions, password, export",
+          message: "Sessions and password",
           comment:
             "@context: Settings item description for account settings on the settings home page",
         }),
@@ -228,6 +230,50 @@ export function SettingsRootContent({
             msg({
               message: "Bearer tokens for scripts and automation",
               comment: "@context: Settings item description for API tokens",
+            }),
+          )}
+        />
+      </SettingsDirectorySection>
+
+      <SettingsDirectorySection
+        title={i18n._(
+          msg({
+            message: "Data",
+            comment: "@context: Settings group label for data/sync settings",
+          }),
+        )}
+      >
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/github-sync", sitePathPrefix)}
+          icon={ICONS.gitBranch}
+          tone="subtle"
+          name={i18n._(
+            msg({
+              message: "GitHub Sync",
+              comment: "@context: Settings item — GitHub sync settings",
+            }),
+          )}
+          description={i18n._(
+            msg({
+              message: "Back up and sync content with a GitHub repository",
+              comment: "@context: Settings item description for GitHub sync",
+            }),
+          )}
+        />
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/account", sitePathPrefix)}
+          icon={ICONS.download}
+          tone="subtle"
+          name={i18n._(
+            msg({
+              message: "Export Site",
+              comment: "@context: Settings item — export site",
+            }),
+          )}
+          description={i18n._(
+            msg({
+              message: "Download your entire site as a portable archive",
+              comment: "@context: Settings item description for export site",
             }),
           )}
         />

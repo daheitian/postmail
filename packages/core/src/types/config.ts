@@ -274,6 +274,38 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+
+  // GitHub Sync (DB-only, managed via GitHub Sync settings page)
+  GITHUB_SYNC_ENABLED: {
+    defaultValue: "false",
+    envOnly: false,
+    internal: true,
+  },
+  GITHUB_SYNC_REPO: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  GITHUB_SYNC_TOKEN: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  GITHUB_SYNC_WEBHOOK_SECRET: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  GITHUB_SYNC_WEBHOOK_ID: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  GITHUB_SYNC_LAST_PUSH_SHA: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
 } as const satisfies Record<string, ConfigField>;
 
 export type ConfigKey = keyof typeof CONFIG_FIELDS;
