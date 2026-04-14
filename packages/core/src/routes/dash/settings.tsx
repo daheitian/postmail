@@ -1182,11 +1182,12 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
   const client = createGitHubClient(body.token);
   try {
     await client.getRepo(parsed.owner, parsed.repo);
-  } catch {
-    return dsToast(
-      "Could not access the repository. Check your token and repo name.",
-      "error",
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : JSON.stringify(err);
+    process.stderr.write(
+      `[Jant] GitHub Sync connect failed for ${body.repo}: ${detail}\n`,
     );
+    return dsToast(`Could not access the repository: ${detail}`, "error");
   }
 
   // Save config
