@@ -219,6 +219,30 @@ export function createGitHubSyncService(
     );
   }
 
+  /**
+   * Get the HEAD SHA, initializing an empty repo if needed.
+   * GitHub's Git Trees API requires at least one commit to exist.
+   */
+  async function getOrInitHead(
+    client: GitHubClient,
+    owner: string,
+    repo: string,
+    defaultBranch: string,
+  ): Promise<string> {
+    try {
+      const ref = await client.getRef(owner, repo, `heads/${defaultBranch}`);
+      return ref.sha;
+    } catch {
+      // Empty repo — seed it with a marker file via Contents API
+      await client.createOrUpdateFile(owner, repo, ".jant-sync", {
+        content: "Managed by Jant GitHub Sync.\n",
+        message: `Initialize repository ${SYNC_COMMIT_MARKER}`,
+      });
+      const ref = await client.getRef(owner, repo, `heads/${defaultBranch}`);
+      return ref.sha;
+    }
+  }
+
   // -------------------------------------------------------------------
   // Service methods
   // -------------------------------------------------------------------
@@ -313,17 +337,7 @@ export function createGitHubSyncService(
       // Get current HEAD (may not exist for empty repos)
       const repoInfo = await client.getRepo(owner, repo);
       const defaultBranch = repoInfo.default_branch;
-      let headSha: string | null = null;
-      try {
-        const headRef = await client.getRef(
-          owner,
-          repo,
-          `heads/${defaultBranch}`,
-        );
-        headSha = headRef.sha;
-      } catch {
-        // Empty repo — no HEAD yet
-      }
+      const headSha = await getOrInitHead(client, owner, repo, defaultBranch);
 
       // Create a new tree (NOT based on existing tree — this replaces everything)
       const tree = await client.createTree(owner, repo, treeItems);
@@ -332,25 +346,11 @@ export function createGitHubSyncService(
       const commit = await client.createCommit(owner, repo, {
         message: `Sync all posts ${SYNC_COMMIT_MARKER}`,
         tree: tree.sha,
-        parents: headSha ? [headSha] : [],
+        parents: [headSha],
       });
 
-      // Update or create ref
-      if (headSha) {
-        await client.updateRef(
-          owner,
-          repo,
-          `heads/${defaultBranch}`,
-          commit.sha,
-        );
-      } else {
-        await client.createRef(
-          owner,
-          repo,
-          `heads/${defaultBranch}`,
-          commit.sha,
-        );
-      }
+      // Update ref
+      await client.updateRef(owner, repo, `heads/${defaultBranch}`, commit.sha);
 
       // Save last push SHA
       await services.settings.set("GITHUB_SYNC_LAST_PUSH_SHA", commit.sha);
