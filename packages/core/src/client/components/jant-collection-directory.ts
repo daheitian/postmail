@@ -1013,6 +1013,8 @@ export class JantCollectionsManager extends LitElement {
     if (!item.label || !item.url) return nothing;
 
     const linkHref = publicPath(item.url);
+    const isExternal =
+      item.url.startsWith("http://") || item.url.startsWith("https://");
 
     const body = html`
       <div class="collection-directory-main">
@@ -1023,8 +1025,8 @@ export class JantCollectionsManager extends LitElement {
           <a
             href=${linkHref}
             class="collection-directory-title-link"
-            target="_blank"
-            rel="noopener noreferrer"
+            target=${isExternal ? "_blank" : nothing}
+            rel=${isExternal ? "noopener noreferrer" : nothing}
           >
             <span class="collection-directory-title">
               ${item.label}

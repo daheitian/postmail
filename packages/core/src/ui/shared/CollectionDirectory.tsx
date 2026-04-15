@@ -173,6 +173,8 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
 
         if (item.type === "link" && item.label && item.url) {
           const sequence = sequenceLabels[index];
+          const isExternal =
+            item.url.startsWith("http://") || item.url.startsWith("https://");
 
           return (
             <div
@@ -187,8 +189,9 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                   <a
                     href={toPublicHref(item.url, sitePathPrefix)}
                     class="collection-directory-title-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    {...(isExternal
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
                   >
                     <span class="collection-directory-title">
                       {item.label}
