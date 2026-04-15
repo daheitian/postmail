@@ -49,6 +49,26 @@ export function getBestFieldSearchRank(
   return best;
 }
 
+/**
+ * Normalize a search string for comparison.
+ *
+ * Handles CJK input quirks:
+ *   - Fullwidth ASCII (U+FF01–U+FF5E) is folded to halfwidth so a query typed
+ *     with an IME still on (e.g. `？`, `＞`, `Ｈｅｌｌｏ`) matches as expected.
+ *   - Ideographic space (U+3000) is folded to a regular space.
+ */
 export function normalizeSearch(value: string | null | undefined): string {
-  return (value ?? "").trim().toLowerCase();
+  if (!value) return "";
+  let out = "";
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    if (code >= 0xff01 && code <= 0xff5e) {
+      out += String.fromCharCode(code - 0xfee0);
+    } else if (code === 0x3000) {
+      out += " ";
+    } else {
+      out += value[i];
+    }
+  }
+  return out.trim().toLowerCase();
 }

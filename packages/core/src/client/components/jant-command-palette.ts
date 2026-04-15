@@ -209,8 +209,11 @@ export class JantCommandPalette extends LitElement {
   // -----------------------------------------------------------------------
 
   get #mode(): "navigate" | "command" | "search" {
-    if (this._query.startsWith(">")) return "command";
-    if (this._query.startsWith("?")) return "search";
+    // Accept both halfwidth (>, ?) and fullwidth (＞, ？) prefixes so CJK
+    // users don't have to toggle their IME to enter command/search mode.
+    const first = this._query.charAt(0);
+    if (first === ">" || first === "＞") return "command";
+    if (first === "?" || first === "？") return "search";
     return "navigate";
   }
 
@@ -257,7 +260,7 @@ export class JantCommandPalette extends LitElement {
   }
 
   get #commandItems(): CommandItem[] {
-    const q = this._query.slice(1).trim().toLowerCase();
+    const q = normalizeSearch(this._query.slice(1));
     return COMMANDS.filter((c) => !q || c.label.toLowerCase().includes(q));
   }
 
