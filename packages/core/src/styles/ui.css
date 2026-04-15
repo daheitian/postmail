@@ -3523,13 +3523,23 @@
     line-height: 1.2;
   }
 
+  .post-menu-item:has(> .post-menu-item-meta) .post-menu-item-label {
+    flex: 0 0 auto;
+  }
+
   .post-menu-item-meta {
+    flex: 1 1 auto;
     margin-left: auto;
     padding-right: 0.35rem;
     color: var(--site-text-secondary);
     font-size: var(--type-ui-caption);
     font-weight: var(--fw-medium);
     letter-spacing: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
   }
 
   .post-menu-item-trailing {
