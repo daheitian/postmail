@@ -100,6 +100,18 @@ export async function parseFrontMatter(
  * const replies = segments.slice(1); // [{ attrs: { slug: "...", ... }, body: "..." }]
  * ```
  */
+/**
+ * Strip the optional visual decoration that the exporter emits before each
+ * reply marker: a thematic break (`---`) followed by a `<time>` line.
+ *
+ * The decoration mirrors the Atom feed's thread rendering. It lives *before*
+ * each reply marker, which means it ends up as trailing content on the
+ * preceding segment's body. Stripping it here keeps re-import lossless.
+ */
+function stripTrailingReplyDecoration(segment: string): string {
+  return segment.replace(/\n+---\s*\n+\s*<time\b[^>]*>[^<]*<\/time>\s*$/, "");
+}
+
 export function splitReplies(body: string): ReplySegment[] {
   const markerRegex = /<!-- jant:reply (.*?) -->/g;
 
@@ -130,15 +142,22 @@ export function splitReplies(body: string): ReplySegment[] {
   const segments: ReplySegment[] = [];
 
   // Root segment: everything before the first marker
-  segments.push({ attrs: null, body: body.slice(0, markers[0]!.index).trim() });
+  segments.push({
+    attrs: null,
+    body: stripTrailingReplyDecoration(body.slice(0, markers[0]!.index)).trim(),
+  });
 
   // Reply segments: between consecutive markers
   for (let i = 0; i < markers.length; i++) {
     const start = markers[i]!.endIndex;
     const end = i + 1 < markers.length ? markers[i + 1]!.index : body.length;
+    const raw = body.slice(start, end);
+    // Last segment has no following marker, so no trailing decoration to strip.
+    const cleaned =
+      i + 1 < markers.length ? stripTrailingReplyDecoration(raw) : raw;
     segments.push({
       attrs: markers[i]!.attrs,
-      body: body.slice(start, end).trim(),
+      body: cleaned.trim(),
     });
   }
 

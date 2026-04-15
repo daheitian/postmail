@@ -26,7 +26,7 @@ import { getMediaUrl, getPublicUrlForProvider } from "../lib/image.js";
 import { FEATURED_SPARKLE_PATH } from "../lib/featured-icons.js";
 import { escapeHtml } from "../lib/html.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
-import { toISOString } from "../lib/time.js";
+import { toISOString, formatDate } from "../lib/time.js";
 // Shared design tokens — single source of truth for colors, typography,
 // and layout variables. Consumed verbatim by both the main site (via
 // Tailwind) and the Zola export (written to static/tokens.css). Using
@@ -618,6 +618,17 @@ export function buildPostMarkdown(
   // Thread replies
   for (const reply of threadReplies) {
     parts.push("");
+
+    // Visual separator + timestamp (mirrors Atom feed rendering).
+    // Importers strip this decoration via splitReplies, so round-tripping is safe.
+    if (reply.publishedAt) {
+      parts.push("---");
+      parts.push("");
+      parts.push(
+        `<time datetime="${toISOString(reply.publishedAt)}">${formatDate(reply.publishedAt)}</time>`,
+      );
+      parts.push("");
+    }
 
     // Reply marker comment
     const replySlug = slugMap.get(reply.id) ?? reply.slug;
