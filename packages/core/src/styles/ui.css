@@ -1642,10 +1642,10 @@
   }
 
   .collection-page-description {
-    --type-body-size: var(--type-secondary);
-    color: var(--site-text-secondary);
+    --type-body-size: var(--type-sm);
+    color: color-mix(in srgb, var(--site-text-secondary) 72%, transparent);
     font-family: var(--font-body);
-    font-size: var(--type-secondary);
+    font-size: var(--type-sm);
     line-height: 1.5;
   }
 
