@@ -52,11 +52,19 @@ import {
   getHostedControlPlaneSiteDeleteUrl,
 } from "../../lib/hosted-signin.js";
 import { syncHostedControlPlaneSiteAvatar } from "../../lib/hosted-control-plane-sync.js";
-import { getGitHubAppConfig } from "../../lib/env.js";
+import {
+  getGitHubAppConfig,
+  getHostedControlPlaneSsoSecret,
+} from "../../lib/env.js";
 import {
   buildInstallUrl,
   listInstallationRepos,
 } from "../../lib/github-app.js";
+import {
+  generateInstallNonce,
+  signInstallState,
+  verifyInstallState,
+} from "../../lib/github-app-state.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -1292,12 +1300,20 @@ settingsRoutes.get("/github-sync/app/install", async (c) => {
     return c.text("GitHub App is not configured on this deployment.", 404);
   }
 
-  // Short random state value, scoped via cookie so the callback can verify it.
-  const stateBytes = new Uint8Array(16);
-  crypto.getRandomValues(stateBytes);
-  const state = Array.from(stateBytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  // Build the state token. When running behind a hosted control plane we
+  // sign host+nonce with the shared SSO secret so the control plane can
+  // verify and route the callback back to the correct site host. In
+  // self-hosted single-site mode the secret is absent and a plain nonce
+  // suffices (the App's Callback URL points directly at this site).
+  const nonce = generateInstallNonce();
+  const ssoSecret = getHostedControlPlaneSsoSecret(c.env);
+  const host = new URL(c.var.appConfig.siteUrl).host;
+  const state = ssoSecret
+    ? await signInstallState(host, nonce, ssoSecret)
+    : nonce;
+
+  // Cookie is pinned to this host; compared byte-for-byte on the callback
+  // to defeat CSRF regardless of whether the state is signed.
   setCookie(c, "jant_gh_app_state", state, {
     httpOnly: true,
     sameSite: "Lax",
@@ -1331,6 +1347,20 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
   if (!state || !expected || expected !== state) {
     return c.text("Invalid or expired state.", 400);
   }
+
+  // Defense in depth: when an SSO secret is present the state should also
+  // HMAC-verify and its embedded host must match the host serving this
+  // request. This blocks a rogue control plane from redirecting a victim
+  // to the wrong site with a replayed token.
+  const ssoSecret = getHostedControlPlaneSsoSecret(c.env);
+  if (ssoSecret) {
+    const payload = await verifyInstallState(state, ssoSecret);
+    const currentHost = new URL(c.var.appConfig.siteUrl).host;
+    if (!payload || payload.host !== currentHost) {
+      return c.text("State signature invalid for this host.", 400);
+    }
+  }
+
   // One-shot: clear the cookie so it can't be replayed.
   setCookie(c, "jant_gh_app_state", "", {
     httpOnly: true,
