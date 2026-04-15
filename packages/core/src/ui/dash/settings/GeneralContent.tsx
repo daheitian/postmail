@@ -303,6 +303,10 @@ export function GeneralContent({
       value: "zh-Hans",
       label: "\u7B80\u4F53\u4E2D\u6587 (Simplified Chinese)",
     },
+    {
+      value: "zh-Hant",
+      label: "\u7E41\u9AD4\u4E2D\u6587 (Traditional Chinese)",
+    },
   ]).replace(/</g, "\\u003c");
 
   const cjkFontsJson = JSON.stringify([

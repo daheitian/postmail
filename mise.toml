@@ -338,7 +338,7 @@ run = "pnpm --filter @jant/core i18n:compile"
 
 [tasks.i18n-translate]
 description = "Translate settings catalog using AI (requires OPENAI_API_KEY)"
-depends = ["i18n-translate-zh-Hans"]
+depends = ["i18n-translate-zh-Hans", "i18n-translate-zh-Hant"]
 
 # Only the settings catalog is auto-translated. The public catalog is
 # intentionally English-only — at runtime, non-English locales fall back to
@@ -355,6 +355,23 @@ npx lingui-po-translate \
   --targetLng=zh-Hans \
   --targetFormat=po \
   --glossaryFile=packages/core/src/i18n/locales/glossary.zh-Hans.yml \
+  --service=openai \
+  --serviceConfig="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
+  --baseUrl="${CUSTOM_OPENAI_BASE_URL:-https://api.openai.com/v1}"
+"""
+
+[tasks.i18n-translate-zh-Hant]
+description = "Translate settings catalog to Traditional Chinese"
+run = """
+OPENAI_API_KEY="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
+npx lingui-po-translate \
+  --srcFile=packages/core/src/i18n/locales/settings/en.po \
+  --srcLng=en \
+  --srcFormat=po \
+  --targetFile=packages/core/src/i18n/locales/settings/zh-Hant.po \
+  --targetLng=zh-Hant \
+  --targetFormat=po \
+  --glossaryFile=packages/core/src/i18n/locales/glossary.zh-Hant.yml \
   --service=openai \
   --serviceConfig="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
   --baseUrl="${CUSTOM_OPENAI_BASE_URL:-https://api.openai.com/v1}"

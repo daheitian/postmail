@@ -16,6 +16,7 @@ import { locales, baseLocale, isLocale, type Locale } from "./locales.js";
 import { messages as publicEn } from "./locales/public/en.js";
 import { messages as settingsEn } from "./locales/settings/en.js";
 import { messages as settingsZhHans } from "./locales/settings/zh-Hans.js";
+import { messages as settingsZhHant } from "./locales/settings/zh-Hant.js";
 
 export { locales, baseLocale, isLocale, type Locale };
 
@@ -42,6 +43,7 @@ export interface I18n extends LinguiI18n {
 // descriptor when a key isn't found in the active locale.
 const catalogEn: Messages = { ...publicEn, ...settingsEn };
 const catalogZhHans: Messages = settingsZhHans;
+const catalogZhHant: Messages = settingsZhHant;
 
 /**
  * Create a new i18n instance for a specific locale.
@@ -53,6 +55,7 @@ export function createI18n(locale: Locale): I18n {
 
   i18n.load("en", catalogEn);
   i18n.load("zh-Hans", catalogZhHans);
+  i18n.load("zh-Hant", catalogZhHant);
 
   i18n.activate(locale);
 

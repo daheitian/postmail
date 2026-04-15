@@ -1,0 +1,2327 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-04-15 23:23+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: zh-Hant\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. @context: Hosted SSO expired link message segment shown after the hosted control-plane link
+#: src/routes/auth/hosted-sso-expired-page.tsx
+msgid " and try again."
+msgstr ""
+
+#. @context: Link showing count of hidden thread posts between curated posts
+#: src/ui/feed/CuratedThreadPreview.tsx
+msgid "{count, plural, one {# hidden post} other {# hidden posts}}"
+msgstr ""
+
+#. @context: Link showing count of hidden thread posts between root and latest
+#: src/ui/feed/ThreadPreview.tsx
+msgid "{count, plural, one {# more post} other {# more posts}}"
+msgstr ""
+
+#. @context: Search results count - multiple
+#: src/ui/pages/SearchPage.tsx
+msgid "{count, plural, one {Found # result} other {Found # results}}"
+msgstr ""
+
+#. @context: Placeholder for the custom collections link URL
+#: src/ui/shared/collection-management-labels.ts
+msgid "/archive?format=quote or https://example.com"
+msgstr ""
+
+#. @context: Compose collection trigger label when multiple collections selected. %name% is the first collection name, %count% is how many more
+#: src/ui/compose/ComposeDialog.tsx
+msgid "%name% + %count% more"
+msgstr ""
+
+#. @context: Add alt text label under attachment thumbnail
+#: src/ui/compose/ComposeDialog.tsx
+msgid "+ ALT"
+msgstr ""
+
+#. @context: Search snippet prefix on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A calmer accent makes"
+msgstr ""
+
+#. @context: Excerpt for the sample note post
+#. @context: Plain-text summary for the sample note post
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A calmer, warmer accent makes the default theme feel quieter and more intentional."
+msgstr ""
+
+#. @context: Section title for the usage guidance section on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "A few simple rules."
+msgstr ""
+
+#. @context: Second paragraph on the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A good default accent in Jant should feel like editorial structure, not product branding. That means links, emphasis, and thread cues can be visible without turning the page into UI chrome."
+msgstr ""
+
+#. @context: Excerpt for the sample detail article
+#. @context: Plain-text body fallback for the sample detail article
+#. @context: Plain-text summary for the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A long-form article sample for checking the default palette in a true reading context."
+msgstr ""
+
+#. @context: Subheading in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A practical checklist"
+msgstr ""
+
+#. @context: Excerpt for the sample quote post
+#. @context: Plain-text summary for the sample quote post
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A quote card for judging accent color against softer, citation-heavy content."
+msgstr ""
+
+#. @context: Description for the square logo PNG asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "A ready-made 1:1 PNG for decks, mockups, directories, and other square placements."
+msgstr ""
+
+#. @context: Excerpt for the sample link post
+#. @context: Plain-text summary for the sample link post
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A reference link for checking whether the accent feels editorial instead of promotional."
+msgstr ""
+
+#. @context: Description for the brand pack card
+#: src/ui/pages/BrandPage.tsx
+msgid "A single ZIP with the main logo, reverse logo, square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and social preview image."
+msgstr ""
+
+#. @context: Main sample article title
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A softer blue feels more like ink than product chrome."
+msgstr ""
+
+#. @context: Thread helper text on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Accent should feel present, not loud."
+msgstr ""
+
+#. @context: Add more attachments button
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add"
+msgstr ""
+
+#. @context: Helper text for the custom collections link form on collections page
+#: src/ui/shared/collection-management-labels.ts
+msgid "Add a custom shortcut to any page or site."
+msgstr ""
+
+#. @context: Validation message when creating or editing a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Add a label and URL."
+msgstr ""
+
+#. @context: Description for the RSS system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Add a link to your main RSS feed. Change what /feed returns in General."
+msgstr ""
+
+#. @context: Compose link title required error
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add a title before posting this link."
+msgstr ""
+
+#. @context: Compose link URL required error
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add a URL before posting this link."
+msgstr ""
+
+#. @context: Alt text panel title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add alt text"
+msgstr ""
+
+#. @context: Action to create a new collection from compose
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add Collection"
+msgstr ""
+
+#. @context: Primary action to add a custom link on collections page
+#: src/ui/shared/collection-management-labels.ts
+msgid "Add Link"
+msgstr ""
+
+#. @context: Archive filter - collection dropdown default
+#: src/ui/pages/ArchivePage.tsx
+msgid "All collections"
+msgstr ""
+
+#. @context: Archive filter - all formats select option
+#: src/ui/pages/ArchivePage.tsx
+msgid "All formats"
+msgstr ""
+
+#. @context: Archive filter - all visibility select option
+#: src/ui/pages/ArchivePage.tsx
+msgid "All visibility"
+msgstr ""
+
+#. @context: Archive filter - year dropdown default
+#: src/ui/pages/ArchivePage.tsx
+msgid "All years"
+msgstr ""
+
+#. @context: Alt text for the sample detail article image
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "An abstract editorial layout in warm paper colors"
+msgstr ""
+
+#. @context: Sample link post body suffix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "and checking whether the accent is guiding attention or pulling too hard."
+msgstr ""
+
+#. @context: Compose publish settings help text for public visibility
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Appears in Latest."
+msgstr ""
+
+#. @context: Title for the apple touch icon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Apple touch icon"
+msgstr ""
+
+#. @context: Archive feed title prefix
+#. @context: Archive page title
+#. @context: Inactive nav link label on sample page
+#: src/routes/pages/archive.tsx
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Archive"
+msgstr ""
+
+#. @context: Built-in navigation label for the archive page
+#: src/ui/shared/navigation-labels.ts
+msgctxt "nav"
+msgid "Archive"
+msgstr ""
+
+#. @context: Section heading for the detail article sample on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Article detail page"
+msgstr ""
+
+#. @context: Archive media filter - audio
+#: src/ui/pages/ArchivePage.tsx
+msgid "Audio"
+msgstr ""
+
+#. @context: Error toast when authentication secret is missing from server config
+#: src/routes/auth/setup.tsx
+msgid "Auth secret is missing. Check your environment variables."
+msgstr ""
+
+#. @context: Error toast when authentication system is unavailable
+#: src/routes/auth/signin.tsx
+msgid "Authentication isn't set up. Check your server config."
+msgstr ""
+
+#. @context: Compose quote author placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Author (optional)"
+msgstr ""
+
+#. @context: Theme mode option on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Auto"
+msgstr ""
+
+#. @context: Compose summary shown near the submit controls when a manual custom link is cleared
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Auto link"
+msgstr ""
+
+#. @context: Usage label for the circle tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Avatar-ready"
+msgstr ""
+
+#. @context: Link back from the new post page
+#: src/ui/pages/ComposePage.tsx
+msgid "Back"
+msgstr ""
+
+#. @context: Sample note post body suffix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "before deciding whether the accent is carrying too much product energy."
+msgstr ""
+
+#. @context: Browser page title for the public brand asset page
+#. @context: Eyebrow on the public brand asset page
+#: src/routes/pages/brand.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Brand assets"
+msgstr ""
+
+#. @context: Title for the brand pack card
+#. @context: Title for the brand pack card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Brand pack"
+msgstr ""
+
+#. @context: Asset keyword on the public brand asset page
+#. @context: Title for the brand tile asset card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Brand tile"
+msgstr ""
+
+#. @context: Breadcrumb label on collection detail page
+#. @context: Breadcrumb label on collection editor page
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/pages/CollectionPage.tsx
+msgid "Breadcrumb"
+msgstr ""
+
+#. @context: Secondary hero button label to jump to the file list
+#: src/ui/pages/BrandPage.tsx
+msgid "Browse files"
+msgstr ""
+
+#. @context: Usage label for the favicon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Browser tab"
+msgstr ""
+
+#. @context: Usage label for the brand tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Built-in background"
+msgstr ""
+
+#. @context: Sample note post second paragraph on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Buttons can stay steady, but links, thread markers, and subtle emphasis should feel closer to ink on paper than dashboard chrome."
+msgstr ""
+
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button to cancel form
+#. @context: Close compose dialog
+#. @context: Confirm close action sheet - cancel and return to editor
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
+#: src/ui/shared/collection-management-labels.ts
+msgid "Cancel"
+msgstr ""
+
+#. @context: Compose custom slug helper while checking whether a manual slug is available
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Checking link..."
+msgstr ""
+
+#. @context: Password reset page description
+#: src/routes/auth/reset.tsx
+msgid "Choose a new password."
+msgstr ""
+
+#. @context: Body copy for the logo downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Choose the standard logo for most placements and the reverse logo when you need more contrast."
+msgstr ""
+
+#. @context: Guidance body on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Choose the standard logo for websites, docs, directories, and editorial layouts."
+msgstr ""
+
+#. @context: Compose publish settings validation error when a future publish date is selected
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Choose today or an earlier date, or leave it blank to publish now."
+msgstr ""
+
+#. @context: Asset keyword on the public brand asset page
+#. @context: Title for the circle tile asset card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Circle tile"
+msgstr ""
+
+#. @context: Archive filter button label to clear the active filter
+#. @context: Archive filter button label to clear the active filter
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Clear filter"
+msgstr ""
+
+#. @context: Close drawer button label
+#: src/ui/layouts/SiteLayout.tsx
+msgid "Close menu"
+msgstr ""
+
+#. @context: Singular collection count label
+#. @context: Singular collection count label
+#. @context: Singular collection count label
+#. @context: Singular collection count label on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "collection"
+msgstr ""
+
+#. @context: Compose collection selector trigger label
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Collection"
+msgstr ""
+
+#. @context: Toast shown after creating a collection
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection created."
+msgstr ""
+
+#. @context: Toast after deleting a collection
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection deleted."
+msgstr ""
+
+#. @context: Collection form field
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection link"
+msgstr ""
+
+#. @context: Toast after reordering collections
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Collection order updated."
+msgstr ""
+
+#. @context: Toast after saving a collection
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection saved."
+msgstr ""
+
+#. @context: Plural collection count label
+#. @context: Plural collection count label
+#. @context: Plural collection count label
+#. @context: Plural collection count label on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "collections"
+msgstr ""
+
+#. @context: Breadcrumb link to collections page
+#. @context: Breadcrumb link to collections page
+#. @context: Collections page heading
+#. @context: Collections page heading
+#. @context: Inactive nav link label on sample page
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/pages/CollectionsPage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Collections"
+msgstr ""
+
+#. @context: Built-in navigation label for the collections page
+#: src/ui/shared/navigation-labels.ts
+msgctxt "nav"
+msgid "Collections"
+msgstr ""
+
+#. @context: Alert title on theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Color check"
+msgstr ""
+
+#. @context: Page heading when viewing multiple collections together
+#. @context: Page title when viewing multiple collections together
+#: src/routes/pages/collection.tsx
+#: src/ui/pages/CollectionPage.tsx
+msgid "Combined Collections"
+msgstr ""
+
+#. @context: Inline link label in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Compare it against the theme controls"
+msgstr ""
+
+#. @context: Setup form submit button
+#: src/routes/auth/setup.tsx
+msgid "Complete Setup"
+msgstr ""
+
+#. @context: Password reset form field
+#: src/routes/auth/reset.tsx
+msgid "Confirm Password"
+msgstr ""
+
+#. @context: Controls section heading on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Controls"
+msgstr ""
+
+#. @context: Error toast when account creation fails
+#. @context: Error toast when account creation fails
+#. @context: Error toast when account creation fails
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/setup.tsx
+msgid "Couldn't create your account. Check the details and try again."
+msgstr ""
+
+#. @context: Toast shown when edit mode fails to load a post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Couldn't load this post. Try again."
+msgstr ""
+
+#. @context: Toast when publish fails and post is auto-saved as draft
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Couldn't publish. Saved as draft."
+msgstr ""
+
+#. @context: Toast when save fails
+#: src/ui/shared/collection-management-labels.ts
+msgid "Couldn't save. Try again in a moment."
+msgstr ""
+
+#. @context: Compose collection combobox empty state when no collections exist
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Create a collection to get started."
+msgstr ""
+
+#. @context: Setup page description
+#: src/routes/auth/setup.tsx
+msgid "Create your admin account."
+msgstr ""
+
+#. @context: Thread item label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Current post"
+msgstr ""
+
+#. @context: Compose publish settings slug section label
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Custom link"
+msgstr ""
+
+#. @context: Destructive badge label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Danger"
+msgstr ""
+
+#. @context: Theme mode option on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Dark"
+msgstr ""
+
+#. @context: Usage label for the reverse logo asset card
+#. @context: Usage label for the reverse logo card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Dark backgrounds"
+msgstr ""
+
+#. @context: Badge label on sample page
+#. @context: Usage label for the default logo asset card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Default"
+msgstr ""
+
+#. @context: Usage label for the default logo card
+#: src/ui/pages/BrandPage.tsx
+msgid "Default logo"
+msgstr ""
+
+#. @context: Inline link label in the sample link post body
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "default note sample"
+msgstr ""
+
+#. @context: Description for the social preview image asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Default preview image for social shares and link unfurls."
+msgstr ""
+
+#. @context: Delete collection action
+#: src/ui/shared/collection-management-labels.ts
+msgid "Delete"
+msgstr ""
+
+#. @context: Draft item action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Delete Draft"
+msgstr ""
+
+#. @context: Confirm dialog for deleting a collection
+#: src/ui/shared/collection-management-labels.ts
+msgid "Delete this collection permanently? Posts inside won't be removed."
+msgstr ""
+
+#. @context: Hint shown on signin page when demo credentials are pre-filled
+#: src/routes/auth/signin.tsx
+msgid "Demo credentials are pre-filled — hit Sign In to continue."
+msgstr ""
+
+#. @context: Alt text textarea placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Describe this for people with visual impairments..."
+msgstr ""
+
+#. @context: Collection form field
+#. @context: Field label for a custom collections link description
+#: src/ui/shared/collection-management-labels.ts
+#: src/ui/shared/collection-management-labels.ts
+msgid "Description (optional)"
+msgstr ""
+
+#. @context: Collection label on theme sample content card
+#. @context: Collection tag on sample note post
+#. @context: Collection tag on the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Design"
+msgstr ""
+
+#. @context: Title for the sample detail article on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Designing a calmer default accent for Jant"
+msgstr ""
+
+#. @context: Confirm close action sheet - discard changes button for editing published post
+#. @context: More menu - discard post
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Discard"
+msgstr ""
+
+#. @context: Confirm dialog shown before discarding attached text edits
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Discard changes?"
+msgstr ""
+
+#. @context: Label for a divider item while organizing collections
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Divider"
+msgstr ""
+
+#. @context: Guidance body on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Do not recolor, stretch, rotate, outline, or add effects to the logo."
+msgstr ""
+
+#. @context: Confirm close action sheet subtitle when editing a published post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Do you want to publish your changes or discard them?"
+msgstr ""
+
+#. @context: Compose publish settings help text for posts hidden from Latest
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Doesn't appear in Latest. Still appears in collections you add it to."
+msgstr ""
+
+#. @context: Confirm action sheet - discard text attachment changes button
+#. @context: Confirm close action sheet - discard button
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Don't save"
+msgstr ""
+
+#. @context: Button to exit collection organize mode
+#. @context: Close attached text panel
+#. @context: Compose button - update existing post
+#. @context: Primary button in the quick-create collection dialog
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Done"
+msgstr ""
+
+#. @context: Primary hero button label for the brand pack ZIP
+#: src/ui/pages/BrandPage.tsx
+msgid "Download Brand Pack"
+msgstr ""
+
+#. @context: Download button label for a non-SVG brand asset
+#: src/ui/pages/BrandPage.tsx
+msgid "Download file"
+msgstr ""
+
+#. @context: Meta description for the public brand asset page
+#: src/routes/pages/brand.tsx
+msgid "Download official Jant logos, icons, and preview assets."
+msgstr ""
+
+#. @context: Download button label for a PNG logo asset
+#: src/ui/pages/BrandPage.tsx
+msgid "Download PNG"
+msgstr ""
+
+#. @context: Download button label for a logo asset
+#: src/ui/pages/BrandPage.tsx
+msgid "Download SVG"
+msgstr ""
+
+#. @context: Hero title on the public brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Download the official Jant logo, icons, and preview files."
+msgstr ""
+
+#. @context: Toast after draft deletion
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Draft deleted."
+msgstr ""
+
+#. @context: Toast shown when a local draft is restored on compose open
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Draft restored."
+msgstr ""
+
+#. @context: Toast after saving a draft post
+#. @context: Toast after saving a draft post
+#. @context: Toast after saving a draft post
+#: src/routes/compose.tsx
+#: src/routes/compose.tsx
+#: src/routes/compose.tsx
+msgid "Draft saved."
+msgstr ""
+
+#. @context: Drafts panel title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Drafts"
+msgstr ""
+
+#. @context: Helper text shown while organizing collections
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Drag collections, links, and dividers into the order you want."
+msgstr ""
+
+#. @context: Per-collection edit action
+#. @context: Per-collection edit action
+#. @context: Per-collection edit action
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Edit"
+msgstr ""
+
+#. @context: Compose action to reopen the custom link field from the action row summary
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Edit custom link"
+msgstr ""
+
+#. @context: Button to manually edit the collection link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Edit link"
+msgstr ""
+
+#. @context: Compose dialog header title in edit mode
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Edit post"
+msgstr ""
+
+#. @context: Compose action to reopen the publish date field from the action row summary
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Edit publish date"
+msgstr ""
+
+#. @context: Sample link post title on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Editorial interfaces worth borrowing from"
+msgstr ""
+
+#. @context: Setup/signin form field - email
+#. @context: Setup/signin form field - email
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/signin.tsx
+msgid "Email"
+msgstr ""
+
+#. @context: Compose toolbar - emoji picker tooltip
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Emoji"
+msgstr ""
+
+#. @context: Compose publish settings validation error for an invalid publish date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Enter a valid date."
+msgstr ""
+
+#. @context: Compose URL field error message
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Enter a valid URL starting with http://, https://, or mailto:."
+msgstr ""
+
+#. @context: Plural entry count label
+#. @context: Plural entry count label
+#: src/ui/shared/CollectionDirectory.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "entries"
+msgstr ""
+
+#. @context: Singular entry count label
+#. @context: Singular entry count label
+#: src/ui/shared/CollectionDirectory.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "entry"
+msgstr ""
+
+#. @context: Usage label for the brand pack card
+#: src/ui/pages/BrandPage.tsx
+msgid "Everything in one download"
+msgstr ""
+
+#. @context: Section title for the quick-start panel on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Everything most people need is in one ZIP."
+msgstr ""
+
+#. @context: Intro paragraph on the public brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Everything on this page is ready to use for articles, launch posts, directories, and product coverage."
+msgstr ""
+
+#. @context: Compose fullscreen - button tooltip to collapse back to normal editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Exit fullscreen"
+msgstr ""
+
+#. @context: Title for the favicon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Favicon"
+msgstr ""
+
+#. @context: Archive visibility filter - featured posts
+#. @context: Browser page title for the featured feed
+#. @context: Browser page title for the featured feed
+#. @context: Inactive browse tab label on sample page
+#. @context: Page heading for the featured posts feed
+#. @context: Tooltip and screen reader label for the featured-post icon in the post footer when no featured date is available
+#: src/routes/pages/featured.tsx
+#: src/routes/pages/home.tsx
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/FeaturedPage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/PostFooter.tsx
+msgid "Featured"
+msgstr ""
+
+#. @context: Built-in navigation label for the featured feed
+#: src/ui/shared/navigation-labels.ts
+msgctxt "nav"
+msgid "Featured"
+msgstr ""
+
+#. @context: Tooltip and screen reader label for the featured-post icon in the post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "Featured on {date} at {time}"
+msgstr ""
+
+#. @context: Atom feed title suffix for the featured posts feed
+#. @context: Feed autodiscovery title for the featured posts feed
+#: src/routes/feed/feed.ts
+#: src/ui/layouts/BaseLayout.tsx
+msgid "Featured posts"
+msgstr ""
+
+#. @context: Built-in navigation label for feed
+#: src/ui/shared/navigation-labels.ts
+msgctxt "nav"
+msgid "Feed"
+msgstr ""
+
+#. @context: Search snippet suffix on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "feel deliberate instead of washed out."
+msgstr ""
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Feel editorial and slightly quieter."
+msgstr ""
+
+#. @context: Sample quote attribution title on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Field Notes on Interface Tone"
+msgstr ""
+
+#. @context: Input value on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Field notes on quiet design"
+msgstr ""
+
+#. @context: Error when file storage is not set up
+#: src/routes/api/upload.ts
+msgid "File storage isn't set up. Check your server config."
+msgstr ""
+
+#. @context: Toast after successful file upload
+#: src/routes/api/upload.ts
+msgid "File uploaded."
+msgstr ""
+
+#. @context: Archive media filter - files/documents
+#: src/ui/pages/ArchivePage.tsx
+msgid "Files"
+msgstr ""
+
+#. @context: Paragraph mentioning code on the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(green, 12%) should not suddenly become the loudest thing on the page."
+msgstr ""
+
+#. @context: Compose dialog - open fullscreen editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Fullscreen"
+msgstr ""
+
+#. @context: Compose publish settings slug summary when no custom slug is set
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Generate automatically"
+msgstr ""
+
+#. @context: Compose custom slug helper while generating a suggested slug
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Generating a link..."
+msgstr ""
+
+#. @context: Compose link title placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Give it a title..."
+msgstr ""
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Guide the eye without taking over the layout."
+msgstr ""
+
+#. @context: Section kicker for the usage guidance section on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Guidelines"
+msgstr ""
+
+#. @context: Usage label for the square tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Hard edge"
+msgstr ""
+
+#. @context: Bullet item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Headings should keep their hierarchy even when the accent gets softer."
+msgstr ""
+
+#. @context: Hint text in alt text panel
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Helps screen readers describe the image"
+msgstr ""
+
+#. @context: Archive visibility filter for posts hidden from Latest
+#. @context: Compose publish settings visibility option
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Hidden from Latest"
+msgstr ""
+
+#. @context: Compose dropdown option for hiding a post from the Latest view
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Hide from Latest"
+msgstr ""
+
+#. @context: Collection sort order option
+#. @context: Collection sort order option
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Highest rated"
+msgstr ""
+
+#. @context: Description for the apple touch icon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Home screen icon for iPhone and iPad shortcuts."
+msgstr ""
+
+#. @context: Section kicker for the icon and preview downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Icons and previews"
+msgstr ""
+
+#. @context: Closing paragraph on the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "If this article still feels like a page you want to keep reading, the palette is probably close."
+msgstr ""
+
+#. @context: Alert body on theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "If this page feels too branded, the first place to soften is the default theme’s site accent, not the border or body text."
+msgstr ""
+
+#. @context: Archive media filter - images
+#: src/ui/pages/ArchivePage.tsx
+msgid "Images"
+msgstr ""
+
+#. @context: Accessible label for the asset keyword list on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Included assets"
+msgstr ""
+
+#. @context: Label above the included collections list on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
+msgid "Includes"
+msgstr ""
+
+#. @context: Site accent sample badge
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Inline emphasis"
+msgstr ""
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Inline link"
+msgstr ""
+
+#. @context: Sample note summary suffix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "instead of judging it as an isolated swatch."
+msgstr ""
+
+#. @context: Sample quote text on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Interfaces for reading should guide the eye, not keep asking for attention."
+msgstr ""
+
+#. @context: Usage label for the apple touch icon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "iOS home screen"
+msgstr ""
+
+#. @context: test fixture — not shipped anywhere
+#. @context: test fixture — not shipped anywhere
+#: src/i18n/__tests__/fallback.test.ts
+#: src/i18n/__tests__/fallback.test.ts
+msgid "Jant fallback canary string"
+msgstr ""
+
+#. @context: Accessible label for the Jant logo mark
+#: src/ui/pages/BrandPage.tsx
+msgid "Jant logo"
+msgstr ""
+
+#. @context: Body paragraph on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Jant looks best when the accent feels editorial. Buttons can stay sturdy, but inline emphasis should feel like a pen mark, not a dashboard highlight."
+msgstr ""
+
+#. @context: Active nav link label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Journal"
+msgstr ""
+
+#. @context: Guidance title on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Keep the artwork unchanged."
+msgstr ""
+
+#. @context: Collection slug validation error for links that are too long
+#: src/ui/shared/collection-management-labels.ts
+msgid "Keep this link under 200 characters."
+msgstr ""
+
+#. @context: Field label for a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Label"
+msgstr ""
+
+#. @context: Placeholder for an optional divider label in collections organize mode
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Label (optional)"
+msgstr ""
+
+#. @context: Active browse tab label on sample page
+#. @context: Browser page title for the latest feed
+#. @context: Browser page title for the latest feed
+#. @context: Page heading for the latest posts feed
+#: src/routes/pages/home.tsx
+#: src/routes/pages/latest.tsx
+#: src/ui/pages/HomePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Latest"
+msgstr ""
+
+#. @context: Built-in navigation label for the latest feed
+#: src/ui/shared/navigation-labels.ts
+msgctxt "nav"
+msgid "Latest"
+msgstr ""
+
+#. @context: Atom feed title suffix for the latest public posts feed
+#. @context: Feed autodiscovery title for the latest public posts feed
+#: src/routes/feed/feed.ts
+#: src/ui/layouts/BaseLayout.tsx
+msgid "Latest posts"
+msgstr ""
+
+#. @context: Compose publish settings slug help text
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Leave blank to generate one automatically."
+msgstr ""
+
+#. @context: Compose publish settings help text for publish date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Leave blank to publish now. Use an earlier date when importing older posts."
+msgstr ""
+
+#. @context: Theme mode option on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Light"
+msgstr ""
+
+#. @context: Compose format tab
+#. @context: Default type label for a custom link on the collections directory when no description is provided
+#. @context: Placeholder for the custom collections link description editor, shown on the directory when no description is provided
+#. @context: Post format label - link
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/collection-management-labels.ts
+#: src/ui/shared/CollectionDirectory.tsx
+msgid "Link"
+msgstr ""
+
+#. @context: Toast after creating a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Link added."
+msgstr ""
+
+#. @context: Toast after deleting a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Link removed."
+msgstr ""
+
+#. @context: Description for the archive system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to the post archive"
+msgstr ""
+
+#. @context: Description for the collections system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to your collections page"
+msgstr ""
+
+#. @context: Description for the featured system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to your featured posts. If it comes before Latest, the homepage opens here."
+msgstr ""
+
+#. @context: Description for the latest system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to your latest posts. If it comes before Featured, the homepage opens here."
+msgstr ""
+
+#. @context: Toast after saving a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Link updated."
+msgstr ""
+
+#. @context: Archive feed title segment for link format filter
+#. @context: Post format label plural - links
+#: src/routes/pages/archive.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Links"
+msgstr ""
+
+#. @context: Bullet item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Links should read clearly without glowing against the page."
+msgstr ""
+
+#. @context: Inline link label in the sample note post body
+#. @context: Inline link label in the sample note summary
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "live theme controls"
+msgstr ""
+
+#. @context: Pagination button - load more items
+#: src/ui/shared/Pagination.tsx
+msgid "Load more"
+msgstr ""
+
+#. @context: Status text while opening the post editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Loading post..."
+msgstr ""
+
+#. @context: Asset keyword on the public brand asset page
+#. @context: Asset keyword on the public brand asset page
+#. @context: Title for the default logo asset card
+#. @context: Title for the default logo card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Logo"
+msgstr ""
+
+#. @context: Section kicker for the logo downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Logos"
+msgstr ""
+
+#. @context: Ordered list item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Look at the footer metadata last, to make sure the accent is not fighting the typography."
+msgstr ""
+
+#. @context: Feed autodiscovery title for the site's main feed
+#: src/ui/layouts/BaseLayout.tsx
+msgid "Main feed"
+msgstr ""
+
+#. @context: Date label on theme sample content card
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "March 15"
+msgstr ""
+
+#. @context: Compose toolbar - media tooltip
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Media"
+msgstr ""
+
+#. @context: Hamburger menu button label
+#: src/ui/layouts/SiteLayout.tsx
+msgid "Menu"
+msgstr ""
+
+#. @context: Built-in navigation label for the More dropdown
+#: src/ui/shared/navigation-labels.ts
+msgctxt "nav"
+msgid "More"
+msgstr ""
+
+#. @context: Aria-label for collections page more button
+#. @context: Post menu trigger label in post actions
+#: src/ui/shared/collection-management-labels.ts
+#: src/ui/shared/PostFooter.tsx
+msgid "More actions"
+msgstr ""
+
+#. @context: Helper text in the quick-create collection dialog
+#: src/ui/shared/collection-management-labels.ts
+msgid "More options are available after you create it."
+msgstr ""
+
+#. @context: Secondary badge label on sample page
+#. @context: Token label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Muted"
+msgstr ""
+
+#. @context: Collection title placeholder
+#: src/ui/shared/collection-management-labels.ts
+msgid "My Collection"
+msgstr ""
+
+#. @context: Navigation section heading on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Navigation and reading states"
+msgstr ""
+
+#. @context: Button to create a collection from collections page
+#. @context: Page title for new collection
+#. @context: Page title for new collection
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "New Collection"
+msgstr ""
+
+#. @context: Menu action to create a divider on collections page
+#: src/ui/shared/CollectionsManager.tsx
+msgid "New Divider"
+msgstr ""
+
+#. @context: Menu action to create a custom link on collections page
+#: src/ui/shared/CollectionsManager.tsx
+msgid "New Link"
+msgstr ""
+
+#. @context: Password reset form field
+#: src/routes/auth/reset.tsx
+msgid "New Password"
+msgstr ""
+
+#. @context: Browser page title for the new post page
+#. @context: Collection page quick compose button aria label
+#. @context: Mobile floating action button label to open the compose dialog
+#. @context: Page title for the new post page
+#: src/routes/pages/new.tsx
+#: src/ui/layouts/SiteLayout.tsx
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/pages/ComposePage.tsx
+msgid "New post"
+msgstr ""
+
+#. @context: Compose dialog header title when composing a thread
+#: src/ui/compose/ComposeDialog.tsx
+msgid "New Thread"
+msgstr ""
+
+#. @context: Collection sort order option
+#. @context: Collection sort order option
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Newest first"
+msgstr ""
+
+#. @context: Pagination button - next page
+#. @context: Pagination button - next page
+#. @context: Pagination next label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/Pagination.tsx
+#: src/ui/shared/Pagination.tsx
+msgid "Next"
+msgstr ""
+
+#. @context: Compose collection combobox empty state when search has no results
+#: src/ui/compose/ComposeDialog.tsx
+msgid "No collections match that search. Try a different name."
+msgstr ""
+
+#. @context: Empty state message on collections page
+#. @context: Empty state message on collections page
+#. @context: Empty state message on collections page
+#: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionDirectory.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "No collections yet. Start one to organize posts by topic."
+msgstr ""
+
+#. @context: Drafts panel empty state
+#: src/ui/compose/ComposeDialog.tsx
+msgid "No drafts yet. Save a draft to find it here."
+msgstr ""
+
+#. @context: Error when no file was selected for upload
+#: src/routes/api/upload.ts
+msgid "No file selected. Choose a file to upload."
+msgstr ""
+
+#. @context: Search empty results
+#: src/ui/pages/SearchPage.tsx
+msgid "No results. Try different keywords."
+msgstr ""
+
+#. @context: Archive empty state with filters applied
+#: src/ui/pages/ArchivePage.tsx
+msgid "No threads match these filters. Try adjusting your selection or clear all filters."
+msgstr ""
+
+#. @context: Compose format tab
+#. @context: Post format label - note
+#. @context: Post format label on theme sample content card
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Note"
+msgstr ""
+
+#. @context: Inline link label in the sample quote commentary
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "note treatment"
+msgstr ""
+
+#. @context: Archive feed title segment for note format filter
+#. @context: Post format label plural - notes
+#: src/routes/pages/archive.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Notes"
+msgstr ""
+
+#. @context: Empty state message on home page
+#: src/ui/pages/HomePage.tsx
+msgid "Nothing here yet."
+msgstr ""
+
+#. @context: Empty state message on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
+msgid "Nothing here yet. Add posts to one of these collections to fill this view."
+msgstr ""
+
+#. @context: Empty state message on featured page
+#: src/ui/pages/FeaturedPage.tsx
+msgid "Nothing in Featured yet. Mark a post as featured to show it here."
+msgstr ""
+
+#. @context: Collection sort order option
+#. @context: Collection sort order option
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Oldest first"
+msgstr ""
+
+#. @context: Compose publish settings help text for private visibility
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Only visible when signed in."
+msgstr ""
+
+#. @context: Ordered list item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Open a few links and check whether they still feel native to the page."
+msgstr ""
+
+#. @context: Accessible label for the external-link icon in the post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "Open external link"
+msgstr ""
+
+#. @context: Button label to open a raw brand asset in the browser
+#: src/ui/pages/BrandPage.tsx
+msgid "Open raw asset"
+msgstr ""
+
+#. @context: Button label to open the raw PNG asset in the browser
+#: src/ui/pages/BrandPage.tsx
+msgid "Open raw PNG"
+msgstr ""
+
+#. @context: Button label to open the raw SVG asset in the browser
+#: src/ui/pages/BrandPage.tsx
+msgid "Open raw SVG"
+msgstr ""
+
+#. @context: Menu action to organize collections
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Organize"
+msgstr ""
+
+#. @context: Outline badge label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Outline"
+msgstr ""
+
+#. @context: Setup/signin form field - password
+#. @context: Setup/signin form field - password
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/signin.tsx
+msgid "Password"
+msgstr ""
+
+#. @context: Error shown when password reset is blocked in demo mode
+#: src/routes/auth/reset.tsx
+msgid "Password changes are off in demo mode. Sign in with the shared demo credentials."
+msgstr ""
+
+#. @context: Attached text placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid ""
+"Paste a long article, AI response, or any text...\n"
+"\n"
+"Markdown formatting will be preserved."
+msgstr ""
+
+#. @context: Compose link URL placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Paste a URL..."
+msgstr ""
+
+#. @context: Compose button - publish post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post"
+msgstr ""
+
+#. @context: Compose dropdown option - publish post visible only when logged in
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post as Private"
+msgstr ""
+
+#. @context: Compose publish button for posts hidden from Latest
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post hidden"
+msgstr ""
+
+#. @context: Compose publish button for private visibility
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post privately"
+msgstr ""
+
+#. @context: Hover hint for the homepage compose shortcut
+#: src/ui/compose/ComposePrompt.tsx
+msgid "Press N to write"
+msgstr ""
+
+#. @context: Ghost button label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Preview"
+msgstr ""
+
+#. @context: Pagination button - previous page
+#. @context: Pagination button - previous page
+#. @context: Pagination previous label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/Pagination.tsx
+#: src/ui/shared/Pagination.tsx
+msgid "Previous"
+msgstr ""
+
+#. @context: Token label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Primary"
+msgstr ""
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Primary button"
+msgstr ""
+
+#. @context: Description for the default logo asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Primary Jant logo for websites, docs, press coverage, and editorial layouts."
+msgstr ""
+
+#. @context: Section title for the logo downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Primary logo files"
+msgstr ""
+
+#. @context: Archive visibility filter - private posts
+#. @context: Compose publish settings visibility option
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Private"
+msgstr ""
+
+#. @context: Archive visibility filter - public posts
+#. @context: Compose publish settings visibility option
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Public"
+msgstr ""
+
+#. @context: Confirm close action sheet - publish update button for editing published post
+#. @context: Primary button label on sample page
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Publish"
+msgstr ""
+
+#. @context: Compose summary shown near the submit controls when an edited post no longer has a custom publish date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Publish now"
+msgstr ""
+
+#. @context: Compose publish settings panel title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Publish settings"
+msgstr ""
+
+#. @context: Compose publish settings publish date section label
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Published on"
+msgstr ""
+
+#. @context: Tooltip text for the archive tile published timestamp
+#. @context: Tooltip text for the published timestamp in post metadata
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/PostFooter.tsx
+msgid "Published on {date} at {time}"
+msgstr ""
+
+#. @context: Toast shown after successful deferred publish
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Published!"
+msgstr ""
+
+#. @context: Search highlight text on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "quiet design"
+msgstr ""
+
+#. @context: Muted sample label
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Quiet metadata"
+msgstr ""
+
+#. @context: Compose format tab
+#. @context: Post format label - quote
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Quote"
+msgstr ""
+
+#. @context: Bullet item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Quoted or highlighted passages should feel like annotations, not warnings."
+msgstr ""
+
+#. @context: Archive feed title segment for quote format filter
+#. @context: Placeholder for the custom collections link label
+#. @context: Post format label plural - quotes
+#: src/routes/pages/archive.tsx
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Quotes"
+msgstr ""
+
+#. @context: Compose toolbar - rate tooltip
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Rate"
+msgstr ""
+
+#. @context: Ordered list item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Read the page from top to bottom without looking at the swatches."
+msgstr ""
+
+#. @context: Inline link label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Read the palette as content first"
+msgstr ""
+
+#. @context: Collection tag on sample quote post
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Reading"
+msgstr ""
+
+#. @context: Section heading for real post component samples on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Real post components"
+msgstr ""
+
+#. @context: Collection tag on sample link post
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "References"
+msgstr ""
+
+#. @context: Button to remove an uploaded attachment in compose
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Remove attachment"
+msgstr ""
+
+#. @context: Tooltip for divider delete button
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Remove Divider"
+msgstr ""
+
+#. @context: Delete custom link action on collections page
+#: src/ui/shared/collection-management-labels.ts
+msgid "Remove Link"
+msgstr ""
+
+#. @context: Confirm dialog for deleting a custom collections link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Remove this link from Collections? The destination won't change."
+msgstr ""
+
+#. @context: Archive tile label for multiple thread replies
+#: src/ui/pages/ArchivePage.tsx
+msgid "Replies"
+msgstr ""
+
+#. @context: Archive tile label for a single thread reply
+#. @context: Compose button - reply to post
+#. @context: Reply button label in the post footer
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/PostFooter.tsx
+msgid "Reply"
+msgstr ""
+
+#. @context: Compose publish settings switch label — reply without bumping thread to top of timeline
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Reply quietly"
+msgstr ""
+
+#. @context: Button to restore the automatically generated collection link from the title
+#. @context: Compose custom slug action that clears the manual slug and falls back to automatic generation
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Reset link"
+msgstr ""
+
+#. @context: Password reset form submit button
+#. @context: Password reset page heading
+#: src/routes/auth/reset.tsx
+#: src/routes/auth/reset.tsx
+msgid "Reset Password"
+msgstr ""
+
+#. @context: Asset keyword on the public brand asset page
+#. @context: Title for the reverse logo asset card
+#. @context: Title for the reverse logo card
+#. @context: Title for the reverse logo card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Reverse logo"
+msgstr ""
+
+#. @context: Tooltip for the RSS feed link on a collection page
+#: src/ui/pages/CollectionPage.tsx
+msgid "RSS feed"
+msgstr ""
+
+#. @context: Tooltip for the RSS feed button on the archive page
+#: src/ui/pages/ArchivePage.tsx
+msgid "RSS feed for this view"
+msgstr ""
+
+#. @context: Button to save collection
+#. @context: Confirm action sheet - save text attachment changes button
+#. @context: Confirm close action sheet - save draft button
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Save"
+msgstr ""
+
+#. @context: More menu - save draft
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save as draft"
+msgstr ""
+
+#. @context: Header draft button tooltip
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save as Draft"
+msgstr ""
+
+#. @context: Secondary button label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Save draft"
+msgstr ""
+
+#. @context: Confirm action sheet title when closing text attachment editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save text attachment?"
+msgstr ""
+
+#. @context: Filled primary button label
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Save theme"
+msgstr ""
+
+#. @context: Confirm action sheet subtitle when closing text attachment editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save these changes to the text attachment, discard them, or keep editing."
+msgstr ""
+
+#. @context: Confirm close action sheet subtitle
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save to drafts to edit and post at a later time."
+msgstr ""
+
+#. @context: Confirm close action sheet title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save to drafts?"
+msgstr ""
+
+#. @context: Search page title
+#. @context: Search submit button
+#: src/ui/pages/SearchPage.tsx
+#: src/ui/pages/SearchPage.tsx
+msgid "Search"
+msgstr ""
+
+#. @context: Search icon link in browse nav
+#: src/ui/layouts/SiteLayout.tsx
+msgctxt "nav"
+msgid "Search"
+msgstr ""
+
+#. @context: Search input placeholder
+#: src/ui/pages/SearchPage.tsx
+msgid "Search posts..."
+msgstr ""
+
+#. @context: Search snippet label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Search snippet"
+msgstr ""
+
+#. @context: Compose collection combobox search placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Search..."
+msgstr ""
+
+#. @context: Built-in navigation label for settings
+#: src/ui/shared/navigation-labels.ts
+msgctxt "nav"
+msgid "Settings"
+msgstr ""
+
+#. @context: Usage label for the social preview image asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Shared links"
+msgstr ""
+
+#. @context: Button to collapse expanded thread context
+#. @context: Collapse reply context
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/feed/ThreadPreview.tsx
+msgid "Show less"
+msgstr ""
+
+#. @context: Button to expand faded thread context
+#. @context: Expand reply context
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/feed/ThreadPreview.tsx
+msgid "Show more"
+msgstr ""
+
+#. @context: Description for the settings system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Shows 'Settings' when logged in, 'Sign in' when logged out"
+msgstr ""
+
+#. @context: Built-in navigation label shown when auth is required
+#: src/ui/shared/navigation-labels.ts
+msgctxt "nav"
+msgid "Sign in"
+msgstr ""
+
+#. @context: Sign in form submit button
+#. @context: Sign in page heading
+#. @context: Sign in page heading
+#: src/routes/auth/signin.tsx
+#: src/routes/auth/signin.tsx
+#: src/routes/auth/signin.tsx
+msgid "Sign In"
+msgstr ""
+
+#. @context: Token label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Site accent"
+msgstr ""
+
+#. @context: Setup form field - site name
+#: src/routes/auth/setup.tsx
+msgid "Site Name"
+msgstr ""
+
+#. @context: Description for the favicon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Small browser icon used in tabs and bookmarks."
+msgstr ""
+
+#. @context: Asset keyword on the public brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Social preview"
+msgstr ""
+
+#. @context: Title for the social preview image asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Social preview image"
+msgstr ""
+
+#. @context: Toast when uploads fail and post is auto-saved as draft
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Some uploads failed. Saved as draft."
+msgstr ""
+
+#. @context: Fallback validation error for compose form
+#. @context: Fallback validation error for password reset form
+#. @context: Fallback validation error for setup form
+#. @context: Fallback validation error for sign-in form
+#. @context: Fallback validation error for thread compose form
+#: src/routes/auth/reset.tsx
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/signin.tsx
+#: src/routes/compose.tsx
+#: src/routes/compose.tsx
+msgid "Something doesn't look right. Check the form and try again."
+msgstr ""
+
+#. @context: Sort menu label on collection detail page
+#: src/ui/pages/CollectionPage.tsx
+msgid "Sort"
+msgstr ""
+
+#. @context: Collection form field
+#: src/ui/shared/collection-management-labels.ts
+msgid "Sort Order"
+msgstr ""
+
+#. @context: Compose quote source link placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Source link (optional)"
+msgstr ""
+
+#. @context: Section title for the icon and preview downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Square assets for avatars, apps, browsers, and shared links"
+msgstr ""
+
+#. @context: Asset keyword on the public brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Square logo"
+msgstr ""
+
+#. @context: Title for the square logo PNG asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Square logo PNG"
+msgstr ""
+
+#. @context: Title for the square tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Square tile"
+msgstr ""
+
+#. @context: Heading for the quick-start panel on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Start here"
+msgstr ""
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Stay sturdy and readable."
+msgstr ""
+
+#. @context: Compose custom slug helper label for the suggested slug
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Suggested link"
+msgstr ""
+
+#. @context: Textarea label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Summary"
+msgstr ""
+
+#. @context: Attached text panel hint
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Supplementary content attached to your post"
+msgstr ""
+
+#. @context: Table header in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Surface"
+msgstr ""
+
+#. @context: Helper text for theme picker pills on the sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Switch the palette and mode without opening settings or changing the active site theme."
+msgstr ""
+
+#. @context: Guidance body on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Switch to the white logo when the standard green version would lose contrast."
+msgstr ""
+
+#. @context: Label on failed upload overlay button, tells user tapping retries the upload
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Tap to retry"
+msgstr ""
+
+#. @context: Archive media filter - posts without any media attachments
+#. @context: Archive media filter - posts without any media attachments
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Text"
+msgstr ""
+
+#. @context: Archive media filter - text file attachments
+#. @context: Attached text panel title
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Text attachment"
+msgstr ""
+
+#. @context: Blockquote in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The best default color is the one you notice only after reading for a while."
+msgstr ""
+
+#. @context: Intro copy for the quick-start panel on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image."
+msgstr ""
+
+#. @context: Plain-text body fallback for the sample note post
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The default accent should feel written, not branded."
+msgstr ""
+
+#. @context: Sample note summary prefix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The default accent should support reading first. Start by comparing it against the"
+msgstr ""
+
+#. @context: Sample note post body prefix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The default accent works best when it reads like a fountain-pen underline. Compare it against the"
+msgstr ""
+
+#. @context: Caption for the sample detail article image
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The image should sit quietly inside the article instead of feeling like a card preview."
+msgstr ""
+
+#. @context: Blockquote on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The right accent should disappear into the writing until you need it."
+msgstr ""
+
+#. @context: Section heading for theme picker pills
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Theme"
+msgstr ""
+
+#. @context: Browser page title for the public theme sample page
+#. @context: Eyebrow on the public theme sample page
+#: src/routes/pages/theme-sample.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Theme sample"
+msgstr ""
+
+#. @context: Helper text for the real post component section on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "These are actual feed components with real footers, summaries, and inline links. Use this section to judge whether the theme still feels calm once it is applied to realistic content."
+msgstr ""
+
+#. @context: Opening paragraph on the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
+msgstr ""
+
+#. @context: Empty state message
+#: src/ui/pages/CollectionPage.tsx
+msgid "This collection is empty. Add posts from the editor."
+msgstr ""
+
+#. @context: Collection link help text
+#: src/ui/shared/collection-management-labels.ts
+msgid "This is the last part of the collection link."
+msgstr ""
+
+#. @context: Sample quote commentary prefix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "This is useful as a color check because it puts the accent next to quotation styling, metadata, and a quieter explanatory paragraph. Compare it back to the"
+msgstr ""
+
+#. @context: Hosted SSO expired link page heading
+#. @context: Hosted SSO expired link page title
+#. @context: Password reset error heading
+#: src/routes/auth/hosted-sso-expired-page.tsx
+#: src/routes/auth/hosted-sso-expired-page.tsx
+#: src/routes/auth/reset.tsx
+msgid "This Link Has Expired"
+msgstr ""
+
+#. @context: Compose custom slug validation error when the entered slug is already taken
+#: src/ui/compose/ComposeDialog.tsx
+msgid "This link is already in use. Choose something else."
+msgstr ""
+
+#. @context: Collection slug validation error for reserved paths
+#. @context: Compose custom slug validation error for reserved paths
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "This link is reserved. Choose something else."
+msgstr ""
+
+#. @context: Sample link post body prefix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "This reference is useful because it treats links and citations as part of the reading rhythm. Keep that in mind while tuning the"
+msgstr ""
+
+#. @context: Password reset error description
+#: src/routes/auth/reset.tsx
+msgid "This reset link is no longer valid. Request a new one to continue."
+msgstr ""
+
+#. @context: Hosted SSO expired link message segment shown before the hosted control-plane link
+#: src/routes/auth/hosted-sso-expired-page.tsx
+msgid "This sign-in link has expired. Return to "
+msgstr ""
+
+#. @context: Error shown when a hosted upload would exceed the shared account media limit
+#. @context: Error shown when a hosted upload would exceed the shared account media limit
+#: src/routes/api/upload-multipart.ts
+#: src/routes/api/upload.ts
+msgid "This upload would exceed your shared hosted media limit. Remove files or upgrade storage to continue."
+msgstr ""
+
+#. @context: Helper text for the detail article sample on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "This uses the real single-post detail rendering with a longer article, inline image, tables, lists, quotes, and code. The content column stays at the same width as the live site."
+msgstr ""
+
+#. @context: Archive month header count unit for a single thread
+#. @context: Archive page summary unit for a single matching thread
+#. @context: Singular thread count label on collection detail page
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/CollectionPage.tsx
+msgid "thread"
+msgstr ""
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Thread accent"
+msgstr ""
+
+#. @context: Thread accents section heading on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Thread accents"
+msgstr ""
+
+#. @context: Archive month header count unit for multiple threads
+#. @context: Archive page summary unit for multiple matching threads
+#. @context: Plural thread count label on collection detail page
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/CollectionPage.tsx
+msgid "threads"
+msgstr ""
+
+#. @context: Toast shown when compose reaches the maximum allowed thread length
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Threads can include up to {count} posts."
+msgstr ""
+
+#. @context: Collection form field
+#. @context: Compose note title placeholder
+#. @context: Compose toolbar - title tooltip
+#. @context: Input label on sample page
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Title"
+msgstr ""
+
+#. @context: Archive filter - notes that have a title
+#. @context: Archive filter - notes that have a title
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Titled"
+msgstr ""
+
+#. @context: Sample quote commentary suffix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "to make sure both still feel like they belong to the same product."
+msgstr ""
+
+#. @context: Usage label for the square logo PNG asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Transparent square"
+msgstr ""
+
+#. @context: Title on the public theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Tune color in a real reading context"
+msgstr ""
+
+#. @context: Compose quote text placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Type the quote..."
+msgstr ""
+
+#. @context: Archive filter - notes without a title
+#. @context: Archive filter - notes without a title
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Untitled"
+msgstr ""
+
+#. @context: Error when file upload fails
+#: src/routes/api/upload.ts
+msgid "Upload didn't go through. Try again in a moment."
+msgstr ""
+
+#. @context: Toast shown during background upload
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Uploading..."
+msgstr ""
+
+#. @context: Field label for a custom collections link URL
+#: src/ui/shared/collection-management-labels.ts
+msgid "URL"
+msgstr ""
+
+#. @context: Test string for Lingui interpolation support
+#: src/i18n/__tests__/context.test.tsx
+msgid "Use {brandColorName}"
+msgstr ""
+
+#. @context: Compose publish settings action to reset the publish date to the current date
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Use current date"
+msgstr ""
+
+#. @context: Collection slug validation error for invalid characters
+#. @context: Compose custom slug validation error for invalid characters
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Use lowercase letters, numbers, and hyphens only."
+msgstr ""
+
+#. @context: Guidance title on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Use the logo on light backgrounds."
+msgstr ""
+
+#. @context: Guidance title on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Use the reverse logo on dark backgrounds."
+msgstr ""
+
+#. @context: Body copy for the icon and preview downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Use these when you need a transparent square logo, a shaped tile with a built-in background, a browser icon, or a default preview image."
+msgstr ""
+
+#. @context: Description for the default logo card
+#: src/ui/pages/BrandPage.tsx
+msgid "Use this for websites, docs, articles, and other light or neutral surfaces."
+msgstr ""
+
+#. @context: Description for the reverse logo card
+#: src/ui/pages/BrandPage.tsx
+msgid "Use this on dark backgrounds, image-backed surfaces, and any placement where the green logo would lose contrast."
+msgstr ""
+
+#. @context: Introductory description on the public theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Use this page to judge buttons, links, cards, forms, thread accents, and quiet surfaces before changing a theme globally."
+msgstr ""
+
+#. @context: Archive media filter - video
+#: src/ui/pages/ArchivePage.tsx
+msgid "Video"
+msgstr ""
+
+#. @context: Toast action button to view the published post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "View"
+msgstr ""
+
+#. @context: Thread link label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "View earlier notes in this thread"
+msgstr ""
+
+#. @context: Compose publish settings section label
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Visibility"
+msgstr ""
+
+#. @context: Setup page welcome heading
+#: src/routes/auth/setup.tsx
+msgid "Welcome to Jant"
+msgstr ""
+
+#. @context: Table header in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "What the accent should do"
+msgstr ""
+
+#. @context: Section heading in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "What to look for while tuning it"
+msgstr ""
+
+#. @context: Compose prompt placeholder text
+#: src/ui/compose/ComposePrompt.tsx
+msgid "What's on your mind?"
+msgstr ""
+
+#. @context: Compose body placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "What's on your mind..."
+msgstr ""
+
+#. @context: Collection description placeholder
+#: src/ui/shared/collection-management-labels.ts
+msgid "What's this collection about?"
+msgstr ""
+
+#. @context: Textarea value on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "When primary is too rigid, the whole page starts reading like product UI instead of writing space."
+msgstr ""
+
+#. @context: Sample note summary second paragraph on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
+msgstr ""
+
+#. @context: Description for the circle tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "White logo on the Jant green circle for profile images, badges, and other round placements where you want a ready-made asset."
+msgstr ""
+
+#. @context: Description for the brand tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "White logo on the Jant green rounded tile for app icon mockups, touch icons, directory listings, and other square placements that should feel softer."
+msgstr ""
+
+#. @context: Description for the square tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "White logo on the Jant green square tile for platforms and layouts that expect a true edge-to-edge square."
+msgstr ""
+
+#. @context: Sample note post title on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Why the default accent should feel written, not branded"
+msgstr ""
+
+#. @context: Archive feed title segment for hasMedia=1 filter
+#: src/routes/pages/archive.tsx
+msgid "with media"
+msgstr ""
+
+#. @context: Archive feed title segment for hasTitle=1 filter
+#: src/routes/pages/archive.tsx
+msgid "with title"
+msgstr ""
+
+#. @context: Archive feed title segment for hasMedia=0 filter
+#: src/routes/pages/archive.tsx
+msgid "without media"
+msgstr ""
+
+#. @context: Archive feed title segment for hasTitle=0 filter
+#: src/routes/pages/archive.tsx
+msgid "without title"
+msgstr ""
+
+#. @context: Compose publish settings hint for quiet reply switch
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Won't move the thread to the top of latest."
+msgstr ""
+
+#. @context: Error toast when sign-in credentials are wrong
+#: src/routes/auth/signin.tsx
+msgid "Wrong email or password. Check your credentials and try again."
+msgstr ""
+
+#. @context: Confirm close action sheet title when editing a published post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "You have unsaved changes"
+msgstr ""
+
+#. @context: Compose thoughts placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Your thoughts (optional)"
+msgstr ""
+
+#. @context: Compose publish settings slug input placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "your-post-link"
+msgstr ""
