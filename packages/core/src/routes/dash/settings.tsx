@@ -1179,6 +1179,17 @@ settingsRoutes.post("/api-tokens/:id/delete", async (c) => {
 // ===========================================================================
 
 settingsRoutes.post("/github-sync/connect", async (c) => {
+  // When a GitHub App is configured on this deployment, PAT connect is
+  // disabled — users must go through the App install flow so we don't end
+  // up with a mix of auth modes per site (harder to audit, easier to leak
+  // a long-lived token by accident). The UI hides the PAT form too.
+  if (getGitHubAppConfig(c.env)) {
+    return dsToast(
+      "This deployment uses GitHub App authentication. Use Install GitHub App instead.",
+      "error",
+    );
+  }
+
   const body = await c.req.json<{ token: string; repo: string }>();
 
   if (!body.token?.trim() || !body.repo?.trim()) {

@@ -198,6 +198,7 @@ export async function renderCollectionPage(
         ? markdownToPlainText(primaryCollection.description)
         : undefined,
     navData,
+    composeCollectionId: !isAggregate ? primaryCollection.id : undefined,
     content: (
       <CollectionPage
         collections={selection.collections}

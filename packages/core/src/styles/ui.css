@@ -955,13 +955,13 @@
   .site-mobile-compose-fab {
     position: fixed;
     right: max(1rem, calc(env(safe-area-inset-right) + 0.75rem));
-    bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.75rem));
+    bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1.75rem));
     z-index: 35;
     display: none;
     align-items: center;
     justify-content: center;
-    width: 3.25rem;
-    height: 3.25rem;
+    width: 2.875rem;
+    height: 2.875rem;
     padding: 0;
     border: 0.5px solid
       color-mix(in srgb, var(--site-text-primary) 12%, transparent);

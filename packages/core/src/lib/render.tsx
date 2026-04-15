@@ -38,6 +38,8 @@ export interface RenderPublicPageOptions {
   showHeader?: boolean;
   /** Whether to render the home branding credit after the site footer */
   showHomeBranding?: boolean;
+  /** When set, the mobile compose FAB pre-selects this collection. */
+  composeCollectionId?: string;
 }
 
 /**
@@ -71,6 +73,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     showComposeDialog,
     showHeader,
     showHomeBranding,
+    composeCollectionId,
   } = options;
 
   // Use siteDescription as meta description fallback when not explicitly provided
@@ -99,6 +102,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     composeOpenShortcutDiscovered: Boolean(
       allSettings[SETTINGS_KEYS.DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT],
     ),
+    composeCollectionId,
   };
   const faviconUrl = appConfig.siteAvatarUrl || undefined;
   const faviconVersion = appConfig.faviconVersion || undefined;

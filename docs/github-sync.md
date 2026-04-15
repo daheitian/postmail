@@ -70,27 +70,33 @@ When these environment variables are set on the Jant deployment, the GitHub App 
 
 Go to **Settings > Developer settings > GitHub Apps > New GitHub App** (on your user or org). Two configurations are documented — pick the one that matches your deployment.
 
+> **Setup URL vs Callback URL.** GitHub Apps expose two confusingly similar fields. The install flow uses **Setup URL** — that's where GitHub sends the browser after the user finishes installing, with `installation_id` and `state`. **Callback URL** is for OAuth user-to-server identification ("Sign in with GitHub"), which Jant does not use. Always set **Setup URL**, leave Callback URL blank.
+
 #### Self-hosted (single site, one host)
 
 1. **Homepage URL**: your Jant site.
-2. **Callback URL**: `https://<your-jant-site>/settings/github-sync/app/callback`.
-3. **Webhook**: uncheck **Active**. Jant registers per-repo webhooks itself — no App-level webhook is needed.
-4. **Repository permissions**: `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
-5. **Subscribe to events**: `Push`.
-6. **Where can this GitHub App be installed**: "Only on this account".
-7. Generate a private key (PKCS#8 PEM) and copy the App ID.
+2. **Setup URL (optional)**: `https://<your-jant-site>/settings/github-sync/app/callback`.
+3. **Redirect on update**: ✅ checked.
+4. **Callback URL**: leave blank.
+5. **Webhook**: uncheck **Active**. Jant registers per-repo webhooks itself — no App-level webhook is needed.
+6. **Repository permissions**: `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
+7. **Subscribe to events**: `Push`.
+8. **Where can this GitHub App be installed**: "Only on this account".
+9. Generate a private key (PKCS#8 PEM) and copy the App ID.
 
 #### Hosted / multi-site (one control plane, many site hosts)
 
-A GitHub App only supports one Callback URL, but hosted sites live on different hosts. The control plane (`jant-cloud`) ships a dispatcher at `/api/github/install-callback` that verifies the signed install state and 302s the browser to the originating site.
+A GitHub App only supports one Setup URL, but hosted sites live on different hosts. The control plane (`jant-cloud`) ships a dispatcher at `/api/github/install-callback` that verifies the signed install state and 302s the browser to the originating site.
 
 1. **Homepage URL**: your control plane URL.
-2. **Callback URL**: `https://<your-control-plane>/api/github/install-callback`.
-3. **Webhook**: uncheck **Active**. Each site registers its own repo-level webhook at its own host, so there's nothing to route centrally.
-4. **Repository permissions**: same as self-hosted — `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
-5. **Subscribe to events**: `Push`.
-6. **Where can this GitHub App be installed**: "Any account".
-7. Generate a private key (PKCS#8 PEM) and copy the App ID.
+2. **Setup URL (optional)**: `https://<your-control-plane>/api/github/install-callback`.
+3. **Redirect on update**: ✅ checked.
+4. **Callback URL**: leave blank.
+5. **Webhook**: uncheck **Active**. Each site registers its own repo-level webhook at its own host, so there's nothing to route centrally.
+6. **Repository permissions**: same as self-hosted — `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
+7. **Subscribe to events**: `Push`.
+8. **Where can this GitHub App be installed**: "Any account".
+9. Generate a private key (PKCS#8 PEM) and copy the App ID.
 
 In this mode the install `state` is signed with `HOSTED_CONTROL_PLANE_SSO_SECRET` — the same secret hosted deployments already share between core and control plane. Both services must see the same value; no extra env var is needed.
 

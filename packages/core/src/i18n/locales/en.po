@@ -721,8 +721,8 @@ msgstr "Connect a GitHub repository to automatically back up your posts as Markd
 
 #. @context: Heading for the GitHub App connect option on GitHub Sync setup
 #: src/ui/dash/settings/GitHubSyncContent.tsx
-msgid "Connect with GitHub App (recommended)"
-msgstr "Connect with GitHub App (recommended)"
+msgid "Connect with GitHub App"
+msgstr "Connect with GitHub App"
 
 #. @context: Status label when GitHub Sync is active using the GitHub App
 #: src/ui/dash/settings/GitHubSyncContent.tsx
@@ -2225,11 +2225,6 @@ msgstr "Open raw SVG"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
 msgstr "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
-
-#. @context: Divider label between GitHub App and PAT connect options
-#: src/ui/dash/settings/GitHubSyncContent.tsx
-msgid "Or use a Personal Access Token"
-msgstr "Or use a Personal Access Token"
 
 #. @context: Menu action to organize collections
 #: src/ui/shared/CollectionsManager.tsx

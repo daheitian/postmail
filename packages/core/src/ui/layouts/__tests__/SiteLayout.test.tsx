@@ -51,6 +51,19 @@ describe("SiteLayout", () => {
     expect(html).not.toContain('class="site-mobile-compose-fab"');
   });
 
+  it("renders the mobile compose FAB with collection context on collection detail pages", () => {
+    const html = renderSiteLayout({
+      currentPath: "/collections/writing",
+      isAuthenticated: true,
+      composeCollectionId: "col_abc123",
+      children: "Collection",
+    });
+
+    expect(html).toContain('class="site-mobile-compose-fab"');
+    expect(html).toContain("col_abc123");
+    expect(html).toContain("collectionId");
+  });
+
   it("does not render the mobile compose FAB for signed-out readers", () => {
     const html = renderSiteLayout({
       currentPath: "/featured",

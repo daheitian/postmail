@@ -126,6 +126,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   showComposeDialog = true,
   showHeader = true,
   composeOpenShortcutDiscovered = false,
+  composeCollectionId,
   children,
 }) => {
   const { i18n } = useLingui();
@@ -186,8 +187,13 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     currentPath === toPublicPath("/featured", sitePathPrefix) ||
     currentPath === toPublicPath("/latest", sitePathPrefix);
   const showMobileComposeFab = Boolean(
-    isHomePage && isAuthenticated && showComposeDialog,
+    (isHomePage || composeCollectionId) && isAuthenticated && showComposeDialog,
   );
+  const mobileComposeFabClick = composeCollectionId
+    ? `document.getElementById('compose-dialog')?.querySelector('jant-compose-dialog')?.openNew(${JSON.stringify(
+        { collectionId: composeCollectionId },
+      )})`
+    : "document.getElementById('compose-dialog')?.querySelector('jant-compose-dialog')?.openNew()";
   const contentClass = [
     "site-content",
     isHomePage ? "site-content-home" : "",
@@ -491,7 +497,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           type="button"
           class="site-mobile-compose-fab"
           aria-label={newPostLabel}
-          data-on:click="document.getElementById('compose-dialog')?.querySelector('jant-compose-dialog')?.openNew()"
+          data-on:click={mobileComposeFabClick}
         >
           <ComposeFeatherIcon class="site-mobile-compose-fab-icon" />
         </button>

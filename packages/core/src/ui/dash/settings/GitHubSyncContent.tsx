@@ -78,13 +78,13 @@ function GitHubSyncSetupForm({
         </p>
       </div>
 
-      {appConfigured && (
+      {appConfigured ? (
         <div class="rounded-xl border border-border/70 bg-muted/30 p-5 flex flex-col gap-3">
           <div>
             <h3 class="text-sm font-semibold">
               {i18n._(
                 msg({
-                  message: "Connect with GitHub App (recommended)",
+                  message: "Connect with GitHub App",
                   comment:
                     "@context: Heading for the GitHub App connect option on GitHub Sync setup",
                 }),
@@ -113,105 +113,93 @@ function GitHubSyncSetupForm({
             </a>
           </div>
         </div>
-      )}
-
-      {appConfigured && (
-        <div class="text-xs uppercase tracking-wide text-muted-foreground">
-          {i18n._(
-            msg({
-              message: "Or use a Personal Access Token",
-              comment:
-                "@context: Divider label between GitHub App and PAT connect options",
-            }),
-          )}
-        </div>
-      )}
-
-      <form
-        class="flex flex-col gap-4"
-        data-on:submit__prevent={`@post('${settingsBase}/connect')`}
-        data-indicator="_connecting"
-      >
-        <div class="field">
-          <label class="label" for="github-token">
-            {i18n._(
-              msg({
-                message: "Personal Access Token",
-                comment:
-                  "@context: Label for GitHub PAT input on GitHub Sync settings",
-              }),
-            )}
-          </label>
-          <input
-            id="github-token"
-            data-bind="token"
-            type="password"
-            class="input"
-            placeholder="github_pat_..."
-            required
-            autocomplete="off"
-          />
-          <p class="text-sm text-muted-foreground mt-1">
-            {i18n._(
-              msg({
-                message:
-                  "Needs Contents (read/write) and Webhooks (read/write) on the target repository.",
-                comment:
-                  "@context: Help text for GitHub PAT input explaining required permissions",
-              }),
-            )}{" "}
-            <a
-              href="https://github.com/settings/personal-access-tokens/new"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="underline hover:no-underline"
-            >
+      ) : (
+        <form
+          class="flex flex-col gap-4"
+          data-on:submit__prevent={`@post('${settingsBase}/connect')`}
+          data-indicator="_connecting"
+        >
+          <div class="field">
+            <label class="label" for="github-token">
               {i18n._(
                 msg({
-                  message: "Create one on GitHub",
+                  message: "Personal Access Token",
                   comment:
-                    "@context: Link text pointing to GitHub's fine-grained PAT creation page",
+                    "@context: Label for GitHub PAT input on GitHub Sync settings",
                 }),
               )}
-            </a>
-            .
-          </p>
-        </div>
+            </label>
+            <input
+              id="github-token"
+              data-bind="token"
+              type="password"
+              class="input"
+              placeholder="github_pat_..."
+              required
+              autocomplete="off"
+            />
+            <p class="text-sm text-muted-foreground mt-1">
+              {i18n._(
+                msg({
+                  message:
+                    "Needs Contents (read/write) and Webhooks (read/write) on the target repository.",
+                  comment:
+                    "@context: Help text for GitHub PAT input explaining required permissions",
+                }),
+              )}{" "}
+              <a
+                href="https://github.com/settings/personal-access-tokens/new"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="underline hover:no-underline"
+              >
+                {i18n._(
+                  msg({
+                    message: "Create one on GitHub",
+                    comment:
+                      "@context: Link text pointing to GitHub's fine-grained PAT creation page",
+                  }),
+                )}
+              </a>
+              .
+            </p>
+          </div>
 
-        <div class="field">
-          <label class="label" for="github-repo">
-            {i18n._(
-              msg({
-                message: "Repository",
-                comment:
-                  "@context: Label for GitHub repository input on GitHub Sync settings",
-              }),
-            )}
-          </label>
-          <input
-            id="github-repo"
-            data-bind="repo"
-            type="text"
-            class="input"
-            placeholder="owner/repo"
-            required
-            autocomplete="off"
-          />
-        </div>
+          <div class="field">
+            <label class="label" for="github-repo">
+              {i18n._(
+                msg({
+                  message: "Repository",
+                  comment:
+                    "@context: Label for GitHub repository input on GitHub Sync settings",
+                }),
+              )}
+            </label>
+            <input
+              id="github-repo"
+              data-bind="repo"
+              type="text"
+              class="input"
+              placeholder="owner/repo"
+              required
+              autocomplete="off"
+            />
+          </div>
 
-        <div class="flex mt-2">
-          <button type="submit" class="btn" data-attr:disabled="$_connecting">
-            <Spinner signal="_connecting" />
-            {i18n._(
-              msg({
-                message: "Connect",
-                comment:
-                  "@context: Button label to connect GitHub repository on GitHub Sync settings",
-              }),
-            )}
-          </button>
-        </div>
-      </form>
+          <div class="flex mt-2">
+            <button type="submit" class="btn" data-attr:disabled="$_connecting">
+              <Spinner signal="_connecting" />
+              {i18n._(
+                msg({
+                  message: "Connect",
+                  comment:
+                    "@context: Button label to connect GitHub repository on GitHub Sync settings",
+                }),
+              )}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

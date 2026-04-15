@@ -253,4 +253,6 @@ export interface SiteLayoutProps {
   showComposeDialog?: boolean;
   showHeader?: boolean;
   composeOpenShortcutDiscovered?: boolean;
+  /** When set, the mobile compose FAB pre-selects this collection. */
+  composeCollectionId?: string;
 }
