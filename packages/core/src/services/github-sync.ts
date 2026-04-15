@@ -185,18 +185,20 @@ export function createGitHubSyncService(
     owner: string,
     repo: string,
     defaultBranch: string,
-  ): Promise<string> {
+  ): Promise<{ sha: string; justInitialized: boolean }> {
     try {
       const ref = await client.getRef(owner, repo, `heads/${defaultBranch}`);
-      return ref.sha;
+      return { sha: ref.sha, justInitialized: false };
     } catch {
-      // Empty repo — seed it so the Git Trees API becomes available
-      await client.createOrUpdateFile(owner, repo, "README.md", {
-        content: "Jant site export\n",
+      // Empty repo — seed it so the Git Trees API becomes available.
+      // Use a hidden placeholder (not README.md) so the seed README from the
+      // export service still lands on the follow-up push.
+      await client.createOrUpdateFile(owner, repo, ".jant-init", {
+        content: "",
         message: `Initialize repository ${SYNC_COMMIT_MARKER}`,
       });
       const ref = await client.getRef(owner, repo, `heads/${defaultBranch}`);
-      return ref.sha;
+      return { sha: ref.sha, justInitialized: true };
     }
   }
 
@@ -216,9 +218,45 @@ export function createGitHubSyncService(
       const exportService = createExportService(services, siteConfig, deps);
       const exportFiles = await exportService.generateZolaFiles();
 
+      // Resolve HEAD before building the tree — needed both as the commit
+      // parent / base_tree and to probe for existing "seed" files below.
+      const repoInfo = await client.getRepo(owner, repo);
+      const defaultBranch = repoInfo.default_branch;
+      const { sha: headSha, justInitialized } = await getOrInitHead(
+        client,
+        owner,
+        repo,
+        defaultBranch,
+      );
+
+      // Seed files (e.g. .gitignore, README.md) are write-once: users are
+      // expected to customize them, so we must not overwrite existing copies.
+      // Probe HEAD in parallel and drop any that already exist. Skip the
+      // probe entirely for repos we just initialized — only our own placeholder
+      // is there, so every seed should be written.
+      const seedFiles = exportFiles.filter((f) => f.managed === "seed");
+      const existingSeedPaths = new Set<string>(
+        justInitialized
+          ? []
+          : (
+              await Promise.all(
+                seedFiles.map(async (f) => {
+                  const existing = await client.getFileContent(
+                    owner,
+                    repo,
+                    f.path,
+                    headSha,
+                  );
+                  return existing ? f.path : null;
+                }),
+              )
+            ).filter((p): p is string => p !== null),
+      );
+
       // Convert to Git tree items
       const treeItems: GitHubTreeItem[] = [];
       for (const file of exportFiles) {
+        if (existingSeedPaths.has(file.path)) continue;
         if (typeof file.content === "string") {
           treeItems.push({
             path: file.path,
@@ -242,11 +280,6 @@ export function createGitHubSyncService(
           });
         }
       }
-
-      // Get current HEAD (may not exist for empty repos)
-      const repoInfo = await client.getRepo(owner, repo);
-      const defaultBranch = repoInfo.default_branch;
-      const headSha = await getOrInitHead(client, owner, repo, defaultBranch);
 
       // Base the new tree on the current HEAD's tree so files outside Jant's
       // managed paths (user-added READMEs, CI config, etc.) are preserved.

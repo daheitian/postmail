@@ -47,6 +47,19 @@ import type {
 export interface ExportFile {
   path: string;
   content: string | Uint8Array;
+  /**
+   * How this file should be managed when syncing to a long-lived destination
+   * (e.g. GitHub repo):
+   * - `"always"` (default): regenerated on every sync; user edits will be
+   *   overwritten. Use for files Jant needs to keep authoritative (templates,
+   *   config, generated content).
+   * - `"seed"`: written only when the destination does not already have the
+   *   file. Use for files users are expected to customize (`.gitignore`,
+   *   `README.md`).
+   *
+   * ZIP/local exports always include every file regardless of this flag.
+   */
+  managed?: "always" | "seed";
 }
 
 export interface ExportService {
@@ -397,6 +410,12 @@ export function createExportService(
       exportFiles.push({
         path: "README.md",
         content: buildReadme(siteConfig.siteName),
+        managed: "seed",
+      });
+      exportFiles.push({
+        path: ".gitignore",
+        content: buildGitignore(),
+        managed: "seed",
       });
 
       return exportFiles;
@@ -1114,6 +1133,23 @@ function buildFeaturedSection(): string {
 title = "Featured"
 template = "featured.html"
 +++
+`;
+}
+
+function buildGitignore(): string {
+  return `# Zola build output
+public/
+static/processed_images/
+.zola-cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
 `;
 }
 
