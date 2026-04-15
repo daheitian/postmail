@@ -94,6 +94,13 @@ export interface GitHubClient {
   /** Get a ref (e.g. "heads/main") SHA. */
   getRef(owner: string, repo: string, ref: string): Promise<GitHubRef>;
 
+  /** Get a commit's tree SHA. */
+  getCommit(
+    owner: string,
+    repo: string,
+    sha: string,
+  ): Promise<{ sha: string; treeSha: string }>;
+
   /** Update a ref to point to a new SHA. */
   updateRef(
     owner: string,
@@ -253,6 +260,14 @@ export function createGitHubClient(token: string): GitHubClient {
         `/repos/${owner}/${repo}/git/ref/${ref}`,
       );
       return { sha: data.object.sha };
+    },
+
+    async getCommit(owner, repo, sha) {
+      const data = await request<{ sha: string; tree: { sha: string } }>(
+        "GET",
+        `/repos/${owner}/${repo}/git/commits/${sha}`,
+      );
+      return { sha: data.sha, treeSha: data.tree.sha };
     },
 
     async updateRef(owner, repo, ref, sha) {

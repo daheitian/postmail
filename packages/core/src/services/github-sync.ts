@@ -5,12 +5,15 @@
  * Posts are serialized as Zola-format Markdown files (reusing the export format).
  *
  * Push (Jant → GitHub):
- *   - Always full sync: regenerate all files in a single atomic commit via Git Trees API
+ *   - Always full sync: regenerate Jant-managed files in a single atomic commit
+ *   - Uses base_tree so untracked files in the repo (READMEs, CI, etc.) are preserved
  *   - Debounced: multiple rapid changes collapse into one sync
  *
  * Pull (GitHub → Jant):
- *   - Webhook-triggered: match files to existing posts by slug, update or delete
+ *   - Webhook-triggered: match modified files to existing posts by slug and update
  *   - Unknown files are skipped; new posts cannot be created from GitHub
+ *   - File deletions are intentionally ignored to avoid catastrophic data loss
+ *     (e.g. user deletes the repo → site wiped). Deletes must go through Jant's UI.
  *
  * Anti-loop: all commits from Jant include `[jant-sync]` in the message.
  * Incoming webhooks with this marker are skipped.
@@ -203,8 +206,15 @@ export function createGitHubSyncService(
       const defaultBranch = repoInfo.default_branch;
       const headSha = await getOrInitHead(client, owner, repo, defaultBranch);
 
-      // Create a new tree (NOT based on existing tree — this replaces everything)
-      const tree = await client.createTree(owner, repo, treeItems);
+      // Base the new tree on the current HEAD's tree so files outside Jant's
+      // managed paths (user-added READMEs, CI config, etc.) are preserved.
+      const headCommit = await client.getCommit(owner, repo, headSha);
+      const tree = await client.createTree(
+        owner,
+        repo,
+        treeItems,
+        headCommit.treeSha,
+      );
 
       // Create commit
       const commit = await client.createCommit(owner, repo, {
@@ -233,30 +243,17 @@ export function createGitHubSyncService(
       );
       if (hasOwnCommits && payload.commits.length === 1) return;
 
-      // Collect all file changes from non-Jant commits
+      // Collect modified/added post files from non-Jant commits.
+      // Deletions are intentionally ignored — removing a file in Git must not
+      // delete posts, so users can't wipe the site by deleting the repo.
       const modified = new Set<string>();
-      const removed = new Set<string>();
 
       for (const commit of payload.commits) {
         if (commit.message.includes(SYNC_COMMIT_MARKER)) continue;
 
-        for (const file of commit.modified) {
+        for (const file of [...commit.modified, ...commit.added]) {
           if (file.startsWith(`${POST_DIR}/`) && file.endsWith(".md")) {
             modified.add(file);
-            removed.delete(file);
-          }
-        }
-        for (const file of commit.added) {
-          if (file.startsWith(`${POST_DIR}/`) && file.endsWith(".md")) {
-            // Added files are treated like modified — but we only update existing posts
-            modified.add(file);
-            removed.delete(file);
-          }
-        }
-        for (const file of commit.removed) {
-          if (file.startsWith(`${POST_DIR}/`) && file.endsWith(".md")) {
-            removed.add(file);
-            modified.delete(file);
           }
         }
       }
@@ -311,19 +308,6 @@ export function createGitHubSyncService(
         if (Object.keys(updateData).length > 0) {
           await services.posts.update(existingPost.id, updateData);
         }
-      }
-
-      // Process removed files
-      for (const filePath of removed) {
-        // Extract slug from path: "content/posts/{slug}.md"
-        const slug = filePath.slice(`${POST_DIR}/`.length).replace(/\.md$/, "");
-        if (!slug) continue;
-
-        const pathRecord = await services.paths.getByPath(slug);
-        if (!pathRecord?.postId) continue;
-
-        // Soft-delete the post
-        await services.posts.delete(pathRecord.postId);
       }
     },
 
