@@ -27,6 +27,12 @@ import { FEATURED_SPARKLE_PATH } from "../lib/featured-icons.js";
 import { escapeHtml } from "../lib/html.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
 import { toISOString } from "../lib/time.js";
+// Shared design tokens — single source of truth for colors, typography,
+// and layout variables. Consumed verbatim by both the main site (via
+// Tailwind) and the Zola export (written to static/tokens.css). Using
+// ?raw inlines the file contents as a string at build time so the
+// Worker bundle ships without any filesystem access.
+import TOKENS_CSS from "../styles/tokens.css?raw";
 import type { StorageDriver } from "../lib/storage.js";
 import { base64ToUint8Array } from "../lib/favicon.js";
 import type {
@@ -79,6 +85,8 @@ export interface SiteConfig {
     NavItem,
     "type" | "systemKey" | "label" | "url" | "position" | "placement"
   >[];
+  /** Items per page for Zola pagination — kept in sync with the main site's PAGE_SIZE. */
+  pageSize: number;
 }
 
 interface AttachmentExportMeta {
@@ -190,12 +198,14 @@ export function createExportService(
 
       const [
         collectionsByPost,
+        collectionPinsByPost,
         rawMediaByPost,
         slugMap,
         aliasMap,
         collectionSlugMap,
       ] = await Promise.all([
         services.collections.getCollectionsByPostIds(allPostIds),
+        services.collections.getCollectionPinsByPostIds(allPostIds),
         services.media.getByPostIds(allPostIds),
         services.paths.getPostSlugMap(allPostIds),
         services.paths.getPostAliases(rootPostIds),
@@ -248,6 +258,18 @@ export function createExportService(
         const zolaAliases = [...rootAliases];
         const rootMedia = rawMediaByPost.get(root.id) ?? [];
 
+        // Resolve which collection slugs this post is pinned in. The Zola
+        // collection template reads this list to sort pinned posts to the
+        // top of each collection page (mirrors the live site behavior).
+        const pinnedCollectionIds = collectionPinsByPost.get(root.id);
+        const pinnedCollectionSlugs: string[] = [];
+        if (pinnedCollectionIds) {
+          for (const collectionId of pinnedCollectionIds) {
+            const colSlug = collectionSlugMap.get(collectionId);
+            if (colSlug) pinnedCollectionSlugs.push(colSlug);
+          }
+        }
+
         // Reply URLs must resolve back to the merged thread page in Zola, but
         // they are not root aliases when round-tripping into Jant.
         for (const reply of threadReplies) {
@@ -266,6 +288,7 @@ export function createExportService(
           rawMediaByPost,
           siteConfig,
           textAttachmentContents,
+          pinnedCollectionSlugs,
         );
 
         exportFiles.push({
@@ -295,7 +318,7 @@ export function createExportService(
       });
       exportFiles.push({
         path: "content/_index.md",
-        content: buildRootSection(),
+        content: buildRootSection(siteConfig.pageSize),
       });
       exportFiles.push({
         path: "content/collections/_index.md",
@@ -305,6 +328,23 @@ export function createExportService(
         path: "content/archive/_index.md",
         content: buildArchiveSection(),
       });
+      // /featured section — root-URL listing of posts with extra.featured == true.
+      // Skipped if "featured" is already taken by a post or collection slug
+      // (path_registry on the main site should prevent this, but we belt-and-
+      // braces: Zola would otherwise fail to build with a directory clash).
+      const usedSlugs = new Set<string>();
+      for (const s of slugMap.values()) usedSlugs.add(s);
+      for (const s of collectionSlugMap.values()) usedSlugs.add(s);
+      if (!usedSlugs.has("featured")) {
+        exportFiles.push({
+          path: "content/featured/_index.md",
+          content: buildFeaturedSection(),
+        });
+        exportFiles.push({
+          path: "templates/featured.html",
+          content: TEMPLATE_FEATURED,
+        });
+      }
       exportFiles.push({ path: "templates/base.html", content: TEMPLATE_BASE });
       exportFiles.push({
         path: "templates/archive.html",
@@ -336,6 +376,7 @@ export function createExportService(
         path: "templates/macros.html",
         content: TEMPLATE_MACROS,
       });
+      exportFiles.push({ path: "static/tokens.css", content: TOKENS_CSS });
       exportFiles.push({ path: "static/style.css", content: STYLE_CSS });
       exportFiles.push({
         path: "static/theme.css",
@@ -478,6 +519,7 @@ export function buildPostMarkdown(
   mediaByPost: Map<string, Media[]>,
   siteConfig: SiteConfig,
   textAttachmentContents: Map<string, TextAttachmentContent>,
+  pinnedCollectionSlugs: string[] = [],
 ): string {
   const parts: string[] = [];
 
@@ -543,6 +585,12 @@ export function buildPostMarkdown(
   }
   if (root.pinnedAt !== null) {
     parts.push("  pinned: true");
+  }
+  if (pinnedCollectionSlugs.length > 0) {
+    parts.push("  collection_pins:");
+    for (const colSlug of pinnedCollectionSlugs) {
+      parts.push(`    - ${yamlString(colSlug)}`);
+    }
   }
   if (root.featuredAt !== null) {
     parts.push("  featured: true");
@@ -872,6 +920,57 @@ function formatCollectionActivityLabel(
   return toISOString(timestamp).slice(0, 10);
 }
 
+/**
+ * System nav items on the main site store an empty `label` in the DB and
+ * resolve their display text at render time through i18n
+ * (`getNavItemDisplayLabel`). The Zola export has no i18n runtime, so fall
+ * back to these English defaults when serializing to config.toml. Users can
+ * still override by setting a custom label on the nav item.
+ */
+const SYSTEM_NAV_FALLBACK_LABELS: Record<string, string> = {
+  latest: "Latest",
+  featured: "Featured",
+  collections: "Collections",
+  archive: "Archive",
+  rss: "RSS",
+  settings: "Settings",
+};
+
+function resolveNavItemLabel(item: SiteConfig["navItems"][number]): string {
+  if (item.label) return item.label;
+  if (item.systemKey && SYSTEM_NAV_FALLBACK_LABELS[item.systemKey]) {
+    return SYSTEM_NAV_FALLBACK_LABELS[item.systemKey]!;
+  }
+  return item.label;
+}
+
+/**
+ * Resolves a nav item's final href for the Zola export.
+ *
+ * Mirrors the runtime logic in `lib/view.ts:toNavItemView` (which the main
+ * site applies before rendering). System URLs stored in the DB ("/latest",
+ * "/featured") are not real routes — they get rewritten to "/" when they
+ * match `homeDefaultView`, otherwise we keep the dedicated path.
+ *
+ * Trailing slashes match Zola's canonical section URLs so the active-state
+ * comparison in the Tera macro can match `current_url` exactly.
+ */
+function resolveNavItemUrl(
+  item: SiteConfig["navItems"][number],
+  homeDefaultView: string,
+): string {
+  if (item.systemKey === "latest") {
+    return homeDefaultView === "latest" ? "/" : "/latest/";
+  }
+  if (item.systemKey === "featured") {
+    return homeDefaultView === "featured" ? "/" : "/featured/";
+  }
+  if (item.systemKey === "collections") return "/collections/";
+  if (item.systemKey === "archive") return "/archive/";
+  if (item.systemKey === "rss") return "/atom.xml";
+  return item.url;
+}
+
 function buildConfigToml(
   config: SiteConfig,
   iconAssets: SiteIconAssets,
@@ -926,8 +1025,10 @@ function buildConfigToml(
     parts.push("");
     parts.push("[[extra.jant.nav]]");
     parts.push(`type = "${escapeToml(item.type)}"`);
-    parts.push(`label = "${escapeToml(item.label)}"`);
-    parts.push(`url = "${escapeToml(item.url)}"`);
+    parts.push(`label = "${escapeToml(resolveNavItemLabel(item))}"`);
+    parts.push(
+      `url = "${escapeToml(resolveNavItemUrl(item, config.homeDefaultView))}"`,
+    );
     parts.push(`system_key = "${escapeToml(item.systemKey ?? "")}"`);
     parts.push(`placement = "${escapeToml(item.placement ?? "header")}"`);
   }
@@ -973,10 +1074,10 @@ function buildConfigToml(
 `;
 }
 
-function buildRootSection(): string {
+function buildRootSection(pageSize: number): string {
   return `+++
 sort_by = "date"
-paginate_by = 20
+paginate_by = ${pageSize}
 +++
 `;
 }
@@ -993,6 +1094,14 @@ function buildArchiveSection(): string {
   return `+++
 title = "Archive"
 template = "archive.html"
++++
+`;
+}
+
+function buildFeaturedSection(): string {
+  return `+++
+title = "Featured"
+template = "featured.html"
 +++
 `;
 }
@@ -1246,19 +1355,19 @@ const TEMPLATE_BASE = `{% import "macros.html" as macros %}
           </a>
           <div class="site-header-right">
             <nav class="site-header-nav" aria-label="Primary">
+              {# Mirrors the main site's nav: first 2 header-placed items stay
+                 inline as primary links, the rest collapse into a "More"
+                 dropdown on narrow viewports. Skipped entirely: items with
+                 system_key == "settings" (admin-only) and items with
+                 placement == "more" (configured as supplemental links on the
+                 main site — not surfaced in the static export). #}
               {% if config.extra.jant.nav and config.extra.jant.nav | length > 0 %}
-                {# Split nav items into header vs more placement #}
                 {% set_global header_items = [] %}
-                {% set_global more_items = [] %}
                 {% for item in config.extra.jant.nav %}
-                  {% if item.system_key == "settings" %}
-                  {% elif item.placement | default(value="header") == "more" %}
-                    {% set_global more_items = more_items | concat(with=item) %}
-                  {% else %}
+                  {% if item.system_key != "settings" and item.placement | default(value="header") != "more" %}
                     {% set_global header_items = header_items | concat(with=item) %}
                   {% endif %}
                 {% endfor %}
-                {# First 2 header items are primary (always visible) #}
                 {% for item in header_items %}
                   {% if loop.index <= 2 %}
                     {{ macros::nav_link(item=item, class="site-header-link-primary") }}
@@ -1266,10 +1375,9 @@ const TEMPLATE_BASE = `{% import "macros.html" as macros %}
                     {{ macros::nav_link(item=item, class="site-header-link-overflow") }}
                   {% endif %}
                 {% endfor %}
-                {# "More" dropdown for overflow + more-placement items #}
                 {% set overflow_items = header_items | slice(start=2) %}
-                {% if overflow_items | length > 0 or more_items | length > 0 %}
-                <div class="site-header-more{% if more_items | length == 0 %} site-header-more-responsive-only{% endif %}">
+                {% if overflow_items | length > 0 %}
+                <div class="site-header-more site-header-more-responsive-only">
                   <button type="button" class="site-header-more-btn" aria-haspopup="menu" aria-expanded="false">
                     More
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
@@ -1278,27 +1386,12 @@ const TEMPLATE_BASE = `{% import "macros.html" as macros %}
                     {% for item in overflow_items %}
                       {{ macros::nav_more_link(item=item, class="site-header-more-link site-header-more-link-responsive") }}
                     {% endfor %}
-                    {% if overflow_items | length > 0 and more_items | length > 0 %}
-                    <div class="site-header-more-divider site-header-more-divider-responsive"></div>
-                    {% endif %}
-                    {% for item in more_items %}
-                      {{ macros::nav_more_link(item=item, class="site-header-more-link site-header-more-link-supplemental") }}
-                    {% endfor %}
                   </div>
                 </div>
                 {% endif %}
               {% else %}
               <a href="{{ get_url(path='collections') }}" class="site-header-link-primary">Collections</a>
               <a href="{{ get_url(path='archive') }}" class="site-header-link-primary">Archive</a>
-              <div class="site-header-more">
-                <button type="button" class="site-header-more-btn" aria-haspopup="menu" aria-expanded="false">
-                  More
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-                </button>
-                <div class="site-header-more-popover" aria-hidden="true">
-                  <a href="{{ get_url(path='atom.xml') }}" class="site-header-more-link site-header-more-link-supplemental">Feed</a>
-                </div>
-              </div>
               {% endif %}
             </nav>
           </div>
@@ -1345,7 +1438,7 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
           {% if page.extra.visibility | default(value="public") != "latest_hidden" %}
           <div class="feed-item" data-timeline-item data-timeline-item-content>
             {% if not loop.first %}<hr class="feed-divider">{% endif %}
-            {{ macros::post_card(page=page) }}
+            {{ macros::post_card(page=page, context="home") }}
           </div>
           {% endif %}
         {% endfor %}
@@ -1354,22 +1447,43 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
   </div>
 
   {% if paginator.previous or paginator.next %}
+  {# Mirrors PagePagination in src/ui/shared/Pagination.tsx: flex-centered
+     numbered pagination that always shows first/last page, current ±1,
+     and inserts ellipses for gaps. Previous/Next stay rendered when
+     disabled so the control's width is stable across pages. #}
   <nav class="pagination" aria-label="Pagination">
-    <div class="pagination-side">
-      {% if paginator.previous %}
-      <a href="{{ paginator.previous }}" class="pagination-link">&larr; Previous</a>
+    {% if paginator.previous %}
+    <a href="{{ paginator.previous }}" class="pagination-link">Previous</a>
+    {% else %}
+    <span class="pagination-disabled">Previous</span>
+    {% endif %}
+
+    {% set total = paginator.number_pagers %}
+    {% set current = paginator.current_index %}
+    {% set_global prev_shown = 0 %}
+    {% for n in range(start=1, end=total + 1) %}
+      {% set show = total <= 7 or n == 1 or n == total or n == current or n == current - 1 or n == current + 1 %}
+      {% if show %}
+        {% if n > prev_shown + 1 %}<span class="pagination-ellipsis" aria-hidden="true">…</span>{% endif %}
+        {% if n == current %}
+        <span aria-current="page" class="pagination-current">{{ n }}</span>
+        {% else %}
+          {% if n == 1 %}
+            {% set page_url = paginator.first %}
+          {% else %}
+            {% set page_url = paginator.base_url ~ n ~ "/" %}
+          {% endif %}
+        <a href="{{ page_url }}" class="pagination-link">{{ n }}</a>
+        {% endif %}
+        {% set_global prev_shown = n %}
       {% endif %}
-    </div>
-    <div class="pagination-center">
-      {% if paginator.number_pagers > 1 %}
-      <span class="pagination-label">Page {{ paginator.current_index }} of {{ paginator.number_pagers }}</span>
-      {% endif %}
-    </div>
-    <div class="pagination-side pagination-side-end">
-      {% if paginator.next %}
-      <a href="{{ paginator.next }}" class="pagination-link">Next &rarr;</a>
-      {% endif %}
-    </div>
+    {% endfor %}
+
+    {% if paginator.next %}
+    <a href="{{ paginator.next }}" class="pagination-link">Next</a>
+    {% else %}
+    <span class="pagination-disabled">Next</span>
+    {% endif %}
   </nav>
   {% endif %}
 
@@ -1481,6 +1595,40 @@ const TEMPLATE_ARCHIVE = `{% extends "base.html" %}
       {% endfor %}
     {% endfor %}
   </div>
+</div>
+{% endblock %}
+`;
+
+const TEMPLATE_FEATURED = `{% extends "base.html" %}
+{% import "macros.html" as macros %}
+
+{% block title %}Featured &mdash; {{ config.title }}{% endblock %}
+
+{% block content %}
+{% set root = get_section(path="_index.md") %}
+{% set featured = root.pages | filter(attribute="extra.featured", value=true) %}
+<div class="section-shell">
+  <header class="section-header">
+    <h1 class="section-title">Featured</h1>
+  </header>
+  {% if featured | length > 0 %}
+  <div data-feed>
+    <div id="timeline-feed">
+      <div id="timeline-items">
+        {% for page in featured %}
+          {% if page.extra.visibility | default(value="public") != "latest_hidden" %}
+          <div class="feed-item" data-timeline-item data-timeline-item-content>
+            {% if not loop.first %}<hr class="feed-divider">{% endif %}
+            {{ macros::post_card(page=page) }}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <p class="section-empty">Nothing featured yet. Pin a post as featured from the admin to see it here.</p>
+  {% endif %}
 </div>
 {% endblock %}
 `;
@@ -1640,10 +1788,30 @@ const TEMPLATE_COLLECTION = `{% extends "base.html" %}
   {% set entry_count = section.extra.entry_count | default(value=0) %}
   {% if entry_count > 0 %}
   {% set term = get_taxonomy_term(kind="collections", term=section.extra.collection_term) %}
+  {# Partition posts: collection-pinned ones first (matching the live site's
+     per-collection pin sort), then everything else in date-desc order.
+     A post is collection-pinned when its extra.collection_pins array
+     contains this collection's slug. #}
+  {% set this_slug = section.extra.collection_term %}
+  {% set_global pinned_pages = [] %}
+  {% set_global rest_pages = [] %}
+  {% for page in term.pages %}
+    {% set pins = page.extra.collection_pins | default(value=[]) %}
+    {% set_global is_pinned_here = false %}
+    {% for p in pins %}
+      {% if p == this_slug %}{% set_global is_pinned_here = true %}{% endif %}
+    {% endfor %}
+    {% if is_pinned_here %}
+      {% set_global pinned_pages = pinned_pages | concat(with=page) %}
+    {% else %}
+      {% set_global rest_pages = rest_pages | concat(with=page) %}
+    {% endif %}
+  {% endfor %}
+  {% set ordered_pages = pinned_pages | concat(with=rest_pages) %}
   <div data-feed>
     <div id="timeline-feed">
       <div id="timeline-items">
-        {% for page in term.pages %}
+        {% for page in ordered_pages %}
           {% if page.extra.visibility | default(value="public") != "latest_hidden" %}
           <div class="feed-item" data-timeline-item data-timeline-item-content>
             {% if not loop.first %}<hr class="feed-divider">{% endif %}
@@ -1707,28 +1875,30 @@ const TEMPLATE_ATOM = `<?xml version="1.0" encoding="utf-8"?>
 // Shared macro — single post card used by all list/detail templates
 // ---------------------------------------------------------------------------
 
-const TEMPLATE_MACROS = `{% macro nav_link(item, class) %}
-{% if item.system_key == "collections" %}
-<a href="{{ get_url(path='collections') }}" class="site-header-link {{ class }}">{{ item.label }}</a>
-{% elif item.system_key == "rss" %}
-<a href="{{ get_url(path='atom.xml') }}" class="site-header-link {{ class }}">{{ item.label }}</a>
-{% elif item.system_key == "archive" %}
-<a href="{{ get_url(path='archive') }}" class="site-header-link {{ class }}">{{ item.label }}</a>
-{% else %}
-<a href="{{ item.url }}" class="site-header-link {{ class }}">{{ item.label }}</a>
-{% endif %}
+const TEMPLATE_MACROS = `{# Strip the site's base_url prefix from current_url to get a leading-slash
+   path, then compare against item.url (also leading-slash, pre-resolved by
+   resolveNavItemUrl in export.ts). Both sides are normalized to drop any
+   trailing slash before equality check. #}
+{% macro nav_link(item, class) %}
+{% set base = config.base_url | trim_end_matches(pat="/") %}
+{% set cp = current_url | default(value="") | trim_start_matches(pat=base) %}
+{% if cp == "" %}{% set cp = "/" %}{% endif %}
+{% set norm_cp = cp | trim_end_matches(pat="/") %}
+{% if norm_cp == "" %}{% set norm_cp = "/" %}{% endif %}
+{% set norm_link = item.url | trim_end_matches(pat="/") %}
+{% if norm_link == "" %}{% set norm_link = "/" %}{% endif %}
+<a href="{{ item.url }}" class="site-header-link {{ class }}{% if norm_cp == norm_link %} site-header-link-active{% endif %}">{{ item.label }}</a>
 {% endmacro %}
 
 {% macro nav_more_link(item, class) %}
-{% if item.system_key == "collections" %}
-<a href="{{ get_url(path='collections') }}" class="{{ class }}">{{ item.label }}</a>
-{% elif item.system_key == "rss" %}
-<a href="{{ get_url(path='atom.xml') }}" class="{{ class }}">{{ item.label }}</a>
-{% elif item.system_key == "archive" %}
-<a href="{{ get_url(path='archive') }}" class="{{ class }}">{{ item.label }}</a>
-{% else %}
-<a href="{{ item.url }}" class="{{ class }}">{{ item.label }}</a>
-{% endif %}
+{% set base = config.base_url | trim_end_matches(pat="/") %}
+{% set cp = current_url | default(value="") | trim_start_matches(pat=base) %}
+{% if cp == "" %}{% set cp = "/" %}{% endif %}
+{% set norm_cp = cp | trim_end_matches(pat="/") %}
+{% if norm_cp == "" %}{% set norm_cp = "/" %}{% endif %}
+{% set norm_link = item.url | trim_end_matches(pat="/") %}
+{% if norm_link == "" %}{% set norm_link = "/" %}{% endif %}
+<a href="{{ item.url }}" class="{{ class }}{% if norm_cp == norm_link %} site-header-more-link-active{% endif %}">{{ item.label }}</a>
 {% endmacro %}
 
 {% macro post_status_badges() %}
@@ -1846,7 +2016,7 @@ const TEMPLATE_MACROS = `{% macro nav_link(item, class) %}
 </footer>
 {% endmacro %}
 
-{% macro note_card(page, detail=false) %}
+{% macro note_card(page, detail=false, context="") %}
 <article
   class="h-entry post-menu-target {% if detail %}post-detail-shell{% else %}post-card-shell{% endif %}"
   {% if detail %}data-page="post"{% endif %}
@@ -1854,7 +2024,10 @@ const TEMPLATE_MACROS = `{% macro nav_link(item, class) %}
   data-format="note"
   data-post-permalink="{{ page.permalink }}"
   {% if page.title %}data-post-has-title{% endif %}
-  {% if page.extra.pinned %}data-post-pinned{% endif %}
+  {# Pin icon is intentionally restricted to the home/latest feed.
+     Featured, collection, and detail contexts deliberately don't emit
+     this attribute, so the CSS-driven badge stays hidden there. #}
+  {% if context == "home" and page.extra.pinned %}data-post-pinned{% endif %}
   {% if page.extra.featured %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
@@ -1890,7 +2063,7 @@ const TEMPLATE_MACROS = `{% macro nav_link(item, class) %}
 </article>
 {% endmacro %}
 
-{% macro link_card(page, detail=false) %}
+{% macro link_card(page, detail=false, context="") %}
 <article
   class="h-entry post-menu-target {% if detail %}post-detail-shell post-detail-link{% else %}post-card-shell feed-link-post{% endif %}"
   {% if detail %}data-page="post"{% endif %}
@@ -1898,7 +2071,10 @@ const TEMPLATE_MACROS = `{% macro nav_link(item, class) %}
   data-format="link"
   data-post-permalink="{{ page.permalink }}"
   {% if page.title %}data-post-has-title{% endif %}
-  {% if page.extra.pinned %}data-post-pinned{% endif %}
+  {# Pin icon is intentionally restricted to the home/latest feed.
+     Featured, collection, and detail contexts deliberately don't emit
+     this attribute, so the CSS-driven badge stays hidden there. #}
+  {% if context == "home" and page.extra.pinned %}data-post-pinned{% endif %}
   {% if page.extra.featured %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
@@ -1939,14 +2115,17 @@ const TEMPLATE_MACROS = `{% macro nav_link(item, class) %}
 </article>
 {% endmacro %}
 
-{% macro quote_card(page, detail=false) %}
+{% macro quote_card(page, detail=false, context="") %}
 <article
   class="h-entry post-menu-target feed-quote-post {% if detail %}post-detail-shell{% endif %}"
   {% if detail %}data-page="post"{% endif %}
   data-post
   data-format="quote"
   data-post-permalink="{{ page.permalink }}"
-  {% if page.extra.pinned %}data-post-pinned{% endif %}
+  {# Pin icon is intentionally restricted to the home/latest feed.
+     Featured, collection, and detail contexts deliberately don't emit
+     this attribute, so the CSS-driven badge stays hidden there. #}
+  {% if context == "home" and page.extra.pinned %}data-post-pinned{% endif %}
   {% if page.extra.featured %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
@@ -1980,13 +2159,13 @@ const TEMPLATE_MACROS = `{% macro nav_link(item, class) %}
 </article>
 {% endmacro %}
 
-{% macro post_card(page, detail=false) %}
+{% macro post_card(page, detail=false, context="") %}
 {% if page.extra.format == "link" %}
-{{ self::link_card(page=page, detail=detail) }}
+{{ self::link_card(page=page, detail=detail, context=context) }}
 {% elif page.extra.format == "quote" %}
-{{ self::quote_card(page=page, detail=detail) }}
+{{ self::quote_card(page=page, detail=detail, context=context) }}
 {% else %}
-{{ self::note_card(page=page, detail=detail) }}
+{{ self::note_card(page=page, detail=detail, context=context) }}
 {% endif %}
 {% endmacro %}
 `;
@@ -1997,177 +2176,10 @@ const TEMPLATE_MACROS = `{% macro nav_link(item, class) %}
 
 const STYLE_CSS = `/* Jant Export Theme */
 
-:root {
-  color-scheme: light;
-  --content-max-width: 50rem;
-  --layout-body-max-width: 1088px;
-  --layout-content-width: 55%;
-  --font-cjk-serif-fallback:
-    "Songti SC", STSong, SimSun, "Songti TC", PMingLiU, MingLiU,
-    "Noto Serif SC", "Noto Serif CJK SC", "Noto Serif TC", "Noto Serif CJK TC";
-  --font-body:
-    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC",
-    "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei",
-    "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif;
-  --font-heading:
-    "New York Small", "New York", "Iowan Old Style", Charter,
-    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
-    var(--font-cjk-serif-fallback), ui-serif, serif;
-  --font-site-title:
-    "New York Small", "New York", "Iowan Old Style", Charter,
-    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
-    var(--font-cjk-serif-fallback), ui-serif, serif;
-  --font-serif:
-    var(--font-cjk-serif-fallback), ui-serif, "New York Small", "New York",
-    "Iowan Old Style", Charter, Georgia, "Times New Roman", Times, serif;
-  --font-mono:
-    ui-monospace, Menlo, Monaco, Consolas, "Cascadia Code", "Courier New",
-    monospace;
-  --fw-regular: 400;
-  --fw-medium: 500;
-  --fw-semibold: 600;
-  --text-sm: 0.8125rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --type-display: 2.7rem;
-  --type-title: 2.1rem;
-  --type-subtitle: 1.8rem;
-  --type-body: 1.4rem;
-  --type-secondary: 1.1rem;
-  --type-content-scale: 0.81;
-  --type-content-display: calc(var(--type-display) * var(--type-content-scale));
-  --type-content-title: calc(var(--type-title) * var(--type-content-scale));
-  --type-content-subtitle: calc(var(--type-subtitle) * var(--type-content-scale));
-  --type-content-body: calc(var(--type-body) * var(--type-content-scale));
-  --feed-note-title-size: var(--type-content-title);
-  --feed-note-title-leading: 1;
-  --type-body-size: var(--type-content-body);
-  --type-body-leading: 1.43;
-  --type-body-tracking: 0;
-  --type-heading-weight: var(--fw-regular);
-  --type-heading-leading: 1;
-  --type-heading-tracking: -0.02em;
-  --type-display-leading: 1.04;
-  --type-label-weight: var(--fw-medium);
-  --type-label-tracking: 0.08em;
-  --site-padding: 1.5rem;
-  --content-gap: 1rem;
-  --space-xl: 2rem;
-  --avatar-size: 28px;
-  --avatar-radius: 50%;
-  --media-radius: 0.5rem;
-  --background: oklch(0.975 0.015 92);
-  --foreground: oklch(0.29 0.01 70);
-  --card: oklch(0.975 0.015 92);
-  --primary: oklch(0.3633 0.0697 159.95);
-  --primary-foreground: oklch(0.985 0.008 92);
-  --muted: oklch(0.942 0.014 96);
-  --muted-foreground: oklch(0.52 0.008 70);
-  --accent: oklch(0.942 0.014 96);
-  --border: oklch(0.892 0.014 98);
-  --site-accent: oklch(0.4406 0.0568 159.95);
-  --site-accent-text: var(--primary-foreground);
-  --site-page-bg: var(--background);
-  --site-elevated-bg: var(--background);
-  --site-nav-hover-bg: var(--accent);
-  --site-text-primary: var(--foreground);
-  --site-text-secondary: var(--muted-foreground);
-  --site-reading-title: color-mix(
-    in oklch,
-    var(--site-text-primary) 81%,
-    black
-  );
-  --site-reading-heading: color-mix(
-    in oklch,
-    var(--site-text-primary) 86%,
-    black
-  );
-  --site-reading-body: color-mix(
-    in oklch,
-    var(--site-text-primary) 90%,
-    black
-  );
-  --site-reading-quote: color-mix(
-    in oklch,
-    var(--site-text-primary) 95%,
-    black
-  );
-  --site-reading-meta: color-mix(
-    in srgb,
-    var(--site-text-secondary) 72%,
-    var(--site-text-primary)
-  );
-  --site-reading-caption: color-mix(
-    in srgb,
-    var(--site-text-secondary) 88%,
-    var(--site-text-primary)
-  );
-  --site-content-link: inherit;
-  --site-content-link-hover: var(--site-text-primary);
-  --site-content-link-underline: color-mix(
-    in srgb,
-    var(--site-text-secondary) 58%,
-    transparent
-  );
-  --site-reading-link: var(--site-reading-body);
-  --site-reading-link-hover: var(--site-reading-heading);
-  --site-reading-link-underline: color-mix(
-    in srgb,
-    var(--site-reading-meta) 58%,
-    transparent
-  );
-  --site-text-placeholder: oklch(from var(--muted-foreground) l c h / 0.5);
-  --site-divider: var(--border);
-  --site-feed-divider-color: color-mix(
-    in srgb,
-    var(--site-text-secondary) 30%,
-    transparent
-  );
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme-mode="light"]) {
-    color-scheme: dark;
-    --background: oklch(0.182 0.003 95);
-    --foreground: oklch(0.895 0.006 88);
-    --card: oklch(0.182 0.003 95);
-    --primary: oklch(0.6966 0.0528 159.95);
-    --primary-foreground: oklch(0.17 0.003 95);
-    --muted: oklch(0.238 0.003 95);
-    --muted-foreground: oklch(0.67 0.005 88);
-    --accent: oklch(0.238 0.003 95);
-    --border: oklch(0.305 0.003 95);
-    --site-accent: oklch(0.7306 0.0478 159.95);
-    --site-reading-title: var(--site-text-primary);
-    --site-reading-heading: color-mix(
-      in oklch,
-      var(--site-text-primary) 94%,
-      var(--site-text-secondary)
-    );
-    --site-reading-body: color-mix(
-      in oklch,
-      var(--site-text-primary) 96%,
-      black
-    );
-    --site-reading-quote: color-mix(
-      in oklch,
-      var(--site-text-primary) 98%,
-      black
-    );
-    --site-reading-meta: color-mix(
-      in srgb,
-      var(--site-text-secondary) 92%,
-      var(--site-text-primary)
-    );
-    --site-reading-caption: color-mix(
-      in srgb,
-      var(--site-text-secondary) 96%,
-      var(--site-text-primary)
-    );
-    --site-reading-link: var(--site-reading-body);
-  }
-}
+/* Design tokens (colors, typography, layout variables) are synced from
+   the main site's src/styles/tokens.css and written to static/tokens.css
+   during export. Edit tokens.css to change the theme — not this file. */
+@import "./tokens.css";
 
 *,
 *::before,
@@ -2243,13 +2255,14 @@ img {
   align-items: flex-start;
 }
 
+/* Mirrors src/styles/ui.css .site-header-top values. */
 .site-header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.85rem;
-  flex-wrap: wrap;
-  min-height: 2.5rem;
+  gap: 1rem;
+  flex-wrap: nowrap;
+  min-height: 2.75rem;
   width: 100%;
 }
 
@@ -2264,9 +2277,7 @@ img {
 .site-header-right {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  margin-left: auto;
-  min-width: 0;
+  flex-shrink: 0;
 }
 
 .site-logo {
@@ -2291,12 +2302,15 @@ img {
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--site-divider) 82%, transparent);
 }
 
+/* Mirrors src/styles/ui.css .site-header-nav values — fluid gap and
+   a small margin off the logo so items don't crowd the title. */
 .site-header-nav {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 1rem;
+  flex-wrap: nowrap;
+  gap: clamp(0.6rem, 2.2vw, 1rem);
+  min-width: 0;
+  font-family: var(--font-ui);
 }
 
 .site-header-link {
@@ -2360,6 +2374,23 @@ img {
 
 .site-header-link-primary:hover {
   color: var(--site-text-primary);
+}
+
+/* Active page indicator — mirrors src/styles/ui.css. */
+.site-header-link-active {
+  color: color-mix(
+    in srgb,
+    var(--site-text-primary) 84%,
+    var(--site-text-secondary)
+  );
+}
+
+.site-header-more-link-active {
+  color: color-mix(
+    in srgb,
+    var(--site-text-primary) 84%,
+    var(--site-text-secondary)
+  );
 }
 
 .site-header-link-overflow {
@@ -2469,15 +2500,8 @@ img {
   background: color-mix(in srgb, var(--site-nav-hover-bg, var(--site-bg)) 58%, transparent);
 }
 
-.site-header-more-link-responsive,
-.site-header-more-divider-responsive {
+.site-header-more-link-responsive {
   display: none;
-}
-
-.site-header-more-divider {
-  height: 0;
-  margin: 0.35rem 0.75rem;
-  border-top: 0.5px solid color-mix(in srgb, var(--site-divider) 60%, transparent);
 }
 
 @media (max-width: 860px) {
@@ -2492,15 +2516,10 @@ img {
   .site-header-more-link-responsive {
     display: flex;
   }
-
-  .site-header-more-divider-responsive {
-    display: block;
-  }
 }
 
 @media (max-width: 480px) {
-  .site-header-nav,
-  .site-header-more {
+  .site-header-nav {
     display: none;
   }
 }
@@ -2535,7 +2554,7 @@ img {
 }
 
 .site-browse-link {
-  font-size: var(--text-base);
+  font-size: var(--type-base);
   font-weight: var(--fw-regular);
   color: var(--site-text-primary);
   opacity: 0.42;
@@ -2549,7 +2568,7 @@ img {
 .page-context-label {
   margin: 0 0 1rem;
   color: var(--site-text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--type-sm);
 }
 
 .feed-item {
@@ -3044,7 +3063,7 @@ article[data-post-featured] .post-footer-featured {
 .prose table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--text-sm);
+  font-size: var(--type-sm);
 }
 
 .prose th,
@@ -3071,7 +3090,7 @@ article[data-post-featured] .post-footer-featured {
 .prose figcaption {
   margin-top: 0.55rem;
   color: var(--site-text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--type-sm);
 }
 
 [data-jant-node="attachments"] {
@@ -3151,12 +3170,17 @@ article[data-post-featured] .post-footer-featured {
   justify-content: flex-start;
   align-items: center;
   margin-top: 0.9rem;
+  /* Mirror main site src/styles/ui.css: footers use the dedicated UI scale
+     so they don't inherit the larger reading-content body size. */
+  font-size: var(--type-ui-hint);
 }
 
 .post-footer-detail {
   margin-top: 1.35rem;
   padding-top: 1rem;
   border-top: 1px solid color-mix(in srgb, var(--site-divider) 86%, transparent);
+  font-size: var(--type-ui-meta);
+  color: var(--site-text-secondary);
 }
 
 .post-footer-meta {
@@ -3211,7 +3235,9 @@ article[data-post-featured] .post-footer-featured {
 }
 
 .post-collection-sep {
-  color: var(--site-text-secondary);
+  /* Middot separator is emitted in HTML for semantic completeness but
+     hidden visually to match the main site (ui.css). */
+  display: none;
 }
 
 .post-collection-tag {
@@ -3468,7 +3494,7 @@ article[data-post-featured] .post-footer-featured {
   gap: 0.2rem 0.5rem;
   margin: 0;
   color: var(--site-text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--type-sm);
   line-height: 1.5;
   white-space: nowrap;
 }
@@ -3589,7 +3615,7 @@ article[data-post-featured] .post-footer-featured {
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
   color: var(--site-text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--type-sm);
 }
 
 .archive-shell {
@@ -3630,7 +3656,7 @@ article[data-post-featured] .post-footer-featured {
 
 .archive-entry-date {
   color: var(--site-text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--type-sm);
   line-height: 1.5;
   text-decoration: none;
 }
@@ -3684,19 +3710,12 @@ article[data-post-featured] .post-footer-featured {
 }
 
 .pagination {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
-  padding: 2rem 0 0.5rem;
-}
-
-.pagination-side-end {
-  text-align: right;
-}
-
-.pagination-center {
-  text-align: center;
+  padding: 1.5rem 0;
 }
 
 .pagination-link {
@@ -3708,16 +3727,23 @@ article[data-post-featured] .post-footer-featured {
   color: var(--site-text-primary);
 }
 
-.pagination-label {
+.pagination-current {
+  color: var(--site-text-primary);
+}
+
+.pagination-disabled {
+  color: color-mix(in srgb, var(--site-text-secondary) 50%, transparent);
+}
+
+.pagination-ellipsis {
   color: var(--site-text-secondary);
-  font-size: var(--text-sm);
 }
 
 .site-footer {
   margin-top: var(--space-xl);
   padding-bottom: var(--space-xl);
   color: var(--site-text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--type-sm);
 }
 
 .site-footer > .site-container {
@@ -3729,7 +3755,7 @@ article[data-post-featured] .post-footer-featured {
   margin-top: var(--space-xl);
   text-align: center;
   color: var(--site-text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--type-base);
 }
 
 .home-branding-credit a {
@@ -3813,11 +3839,6 @@ article[data-post-featured] .post-footer-featured {
     --site-padding: 1.875rem;
   }
 
-  .site-header-right {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
   .site-header-nav {
     justify-content: flex-start;
   }
@@ -3838,13 +3859,7 @@ article[data-post-featured] .post-footer-featured {
   }
 
   .pagination {
-    grid-template-columns: 1fr;
     gap: 0.55rem;
-  }
-
-  .pagination-side-end,
-  .pagination-center {
-    text-align: left;
   }
 }
 `;

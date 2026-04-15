@@ -643,6 +643,7 @@ export function createSiteAdminService(
           imageTransformUrl: appConfig.imageTransformUrl,
           sitePathPrefix: appConfig.sitePathPrefix,
           navItems: navItemList,
+          pageSize: appConfig.pageSize,
         },
         {
           storage: deps.storage ?? null,

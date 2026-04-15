@@ -45,6 +45,7 @@ exportApiRoutes.post("/zola", requireAuthApi(), async (c) => {
       imageTransformUrl: appConfig.imageTransformUrl,
       sitePathPrefix: appConfig.sitePathPrefix,
       navItems,
+      pageSize: appConfig.pageSize,
     },
     {
       storage: c.var.storage,

@@ -1333,5 +1333,6 @@ function buildGitHubSyncSiteConfig(c: Context<Env>) {
       import("../../types.js").NavItem,
       "type" | "systemKey" | "label" | "url" | "position" | "placement"
     >[],
+    pageSize: cfg.pageSize,
   };
 }

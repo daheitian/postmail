@@ -205,5 +205,6 @@ function buildSiteConfigFromContext(c: {
     imageTransformUrl: cfg.imageTransformUrl,
     sitePathPrefix: cfg.sitePathPrefix,
     navItems: [],
+    pageSize: cfg.pageSize,
   };
 }

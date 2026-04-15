@@ -51,6 +51,7 @@ export async function handleQueueBatch(
           themeMode: "",
           noindex: false,
           navItems: [],
+          pageSize: 50,
         },
         runtime.storage,
       );

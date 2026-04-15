@@ -133,6 +133,16 @@ export interface CollectionService {
   getCollectionsByPostIds(
     postIds: string[],
   ): Promise<Map<string, Collection[]>>;
+  /**
+   * Batch get the set of collection IDs each post is pinned in.
+   *
+   * Used by the Zola export to surface per-collection pins so the static
+   * collection page can sort pinned posts to the top, mirroring the live
+   * site behavior.
+   */
+  getCollectionPinsByPostIds(
+    postIds: string[],
+  ): Promise<Map<string, Set<string>>>;
   /** Get all post IDs in a collection */
   getPostIds(collectionId: string): Promise<string[]>;
   /** Sync a post's collection memberships (replace all with given IDs) */
@@ -1142,6 +1152,35 @@ export function createCollectionService(
         if (!slug) continue;
         const existing = result.get(row.postId) ?? [];
         existing.push(toCollection(row.collection, slug));
+        result.set(row.postId, existing);
+      }
+
+      return result;
+    },
+
+    async getCollectionPinsByPostIds(postIds) {
+      const result = new Map<string, Set<string>>();
+      if (postIds.length === 0) return result;
+
+      const rows = await batchQueryRows(postIds, (chunk) =>
+        db
+          .select({
+            postId: postCollections.postId,
+            collectionId: postCollections.collectionId,
+          })
+          .from(postCollections)
+          .where(
+            and(
+              eq(postCollections.siteId, siteId),
+              inArray(postCollections.postId, chunk),
+              sql`${postCollections.pinnedAt} IS NOT NULL`,
+            ),
+          ),
+      );
+
+      for (const row of rows) {
+        const existing = result.get(row.postId) ?? new Set<string>();
+        existing.add(row.collectionId);
         result.set(row.postId, existing);
       }
 

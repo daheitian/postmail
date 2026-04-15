@@ -94,6 +94,7 @@ describe("createExportService", () => {
         }),
         getCollectionsByPostIds: async () =>
           new Map([["post-1", [collection]]]),
+        getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
         getByPostIds: async () => new Map(),
@@ -118,6 +119,7 @@ describe("createExportService", () => {
       themeMode: "auto",
       noindex: false,
       navItems: [],
+      pageSize: 50,
     };
 
     const zip = await createExportService(
@@ -294,6 +296,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
         getByPostIds: async () => new Map([["post-1", [textAttachment]]]),
@@ -327,6 +330,7 @@ describe("createExportService", () => {
       themeMode: "auto",
       noindex: false,
       navItems: [],
+      pageSize: 50,
     };
 
     const zip = await createExportService(services, siteConfig, {
@@ -393,6 +397,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
         getByPostIds: async () => new Map(),
@@ -418,6 +423,7 @@ describe("createExportService", () => {
       themeMode: "auto",
       noindex: false,
       navItems: [],
+      pageSize: 50,
     };
 
     const zip = await createExportService(
@@ -481,6 +487,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
         getByPostIds: async () => new Map(),
@@ -508,6 +515,7 @@ describe("createExportService", () => {
       themeMode: "auto",
       noindex: false,
       navItems: [],
+      pageSize: 50,
     };
 
     const zip = await createExportService(services, siteConfig, {
@@ -571,6 +579,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
         getByPostIds: async () => new Map(),
@@ -596,6 +605,7 @@ describe("createExportService", () => {
       themeMode: "auto",
       noindex: false,
       navItems: [],
+      pageSize: 50,
     };
 
     const zip = await createExportService(services, siteConfig, {
@@ -655,6 +665,7 @@ describe("createExportService", () => {
         list: async () => [],
         getCollectionsByPostIds: async () =>
           new Map([["post-numeric-title", []]]),
+        getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
         getByPostIds: async () => new Map(),
@@ -679,6 +690,7 @@ describe("createExportService", () => {
       themeMode: "auto",
       noindex: false,
       navItems: [],
+      pageSize: 50,
     };
 
     const zip = await createExportService(
@@ -733,6 +745,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-quote-1", []]]),
+        getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
         getByPostIds: async () => new Map(),
@@ -757,6 +770,7 @@ describe("createExportService", () => {
       themeMode: "auto",
       noindex: false,
       navItems: [],
+      pageSize: 50,
     };
 
     const zip = await createExportService(
@@ -837,6 +851,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
         getByPostIds: async () => new Map(),
@@ -861,6 +876,7 @@ describe("createExportService", () => {
       themeMode: "auto",
       noindex: false,
       navItems: [],
+      pageSize: 50,
     };
 
     const zip = await createExportService(
