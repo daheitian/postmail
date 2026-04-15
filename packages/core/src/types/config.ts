@@ -316,6 +316,44 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  /** "pat" (default) or "app" — indicates which auth path to use for sync. */
+  GITHUB_SYNC_AUTH_MODE: {
+    defaultValue: "pat",
+    envOnly: false,
+    internal: true,
+  },
+  /** GitHub App installation id (only when AUTH_MODE = "app"). */
+  GITHUB_SYNC_APP_INSTALLATION_ID: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+
+  // GitHub App (env-only, shared across all sites on a hosted control plane).
+  // When all three are configured, the GitHub App connect flow becomes
+  // available in the GitHub Sync settings UI alongside the PAT flow.
+  GITHUB_APP_ID: {
+    defaultValue: "",
+    envOnly: true,
+    envKeys: ["GITHUB_APP_ID"],
+  },
+  GITHUB_APP_PRIVATE_KEY: {
+    defaultValue: "",
+    envOnly: true,
+    envKeys: ["GITHUB_APP_PRIVATE_KEY"],
+  },
+  /** App slug used to build the installation URL `github.com/apps/<slug>`. */
+  GITHUB_APP_SLUG: {
+    defaultValue: "",
+    envOnly: true,
+    envKeys: ["GITHUB_APP_SLUG"],
+  },
+  /** Optional app-level webhook secret (overrides per-site secret for App-mode sites). */
+  GITHUB_APP_WEBHOOK_SECRET: {
+    defaultValue: "",
+    envOnly: true,
+    envKeys: ["GITHUB_APP_WEBHOOK_SECRET"],
+  },
 } as const satisfies Record<string, ConfigField>;
 
 export type ConfigKey = keyof typeof CONFIG_FIELDS;

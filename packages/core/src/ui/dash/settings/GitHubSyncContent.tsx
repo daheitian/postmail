@@ -18,6 +18,10 @@ export interface GitHubSyncStatus {
   lastPushSha: string | null;
   webhookId: string | null;
   lastPushAt: number | null;
+  /** Which auth path is currently in use ("pat" | "app"). */
+  authMode: "pat" | "app";
+  /** Whether GITHUB_APP_* env vars are configured on this deployment. */
+  appConfigured: boolean;
 }
 
 export function GitHubSyncContent({
@@ -30,13 +34,24 @@ export function GitHubSyncContent({
   const settingsBase = toPublicPath("/settings/github-sync", sitePathPrefix);
 
   if (!status.enabled || !status.repo) {
-    return <GitHubSyncSetupForm settingsBase={settingsBase} />;
+    return (
+      <GitHubSyncSetupForm
+        settingsBase={settingsBase}
+        appConfigured={status.appConfigured}
+      />
+    );
   }
 
   return <GitHubSyncConnected status={status} settingsBase={settingsBase} />;
 }
 
-function GitHubSyncSetupForm({ settingsBase }: { settingsBase: string }) {
+function GitHubSyncSetupForm({
+  settingsBase,
+  appConfigured,
+}: {
+  settingsBase: string;
+  appConfigured: boolean;
+}) {
   const { i18n } = useLingui();
 
   return (
@@ -62,6 +77,55 @@ function GitHubSyncSetupForm({ settingsBase }: { settingsBase: string }) {
           )}
         </p>
       </div>
+
+      {appConfigured && (
+        <div class="rounded-xl border border-border/70 bg-muted/30 p-5 flex flex-col gap-3">
+          <div>
+            <h3 class="text-sm font-semibold">
+              {i18n._(
+                msg({
+                  message: "Connect with GitHub App (recommended)",
+                  comment:
+                    "@context: Heading for the GitHub App connect option on GitHub Sync setup",
+                }),
+              )}
+            </h3>
+            <p class="text-sm text-muted-foreground mt-1">
+              {i18n._(
+                msg({
+                  message:
+                    "Install the GitHub App to grant access without managing personal tokens. Permissions are scoped per repository and revocable from GitHub.",
+                  comment:
+                    "@context: Help text for the GitHub App connect option on GitHub Sync setup",
+                }),
+              )}
+            </p>
+          </div>
+          <div>
+            <a href={`${settingsBase}/app/install`} class="btn">
+              {i18n._(
+                msg({
+                  message: "Install GitHub App",
+                  comment:
+                    "@context: Button label to start the GitHub App install flow on GitHub Sync setup",
+                }),
+              )}
+            </a>
+          </div>
+        </div>
+      )}
+
+      {appConfigured && (
+        <div class="text-xs uppercase tracking-wide text-muted-foreground">
+          {i18n._(
+            msg({
+              message: "Or use a Personal Access Token",
+              comment:
+                "@context: Divider label between GitHub App and PAT connect options",
+            }),
+          )}
+        </div>
+      )}
 
       <form
         class="flex flex-col gap-4"
@@ -91,11 +155,26 @@ function GitHubSyncSetupForm({ settingsBase }: { settingsBase: string }) {
             {i18n._(
               msg({
                 message:
-                  "Create a fine-grained token with Contents (read/write) and Webhooks (read/write) permissions for your repository.",
+                  "Needs Contents (read/write) and Webhooks (read/write) on the target repository.",
                 comment:
                   "@context: Help text for GitHub PAT input explaining required permissions",
               }),
-            )}
+            )}{" "}
+            <a
+              href="https://github.com/settings/personal-access-tokens/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline hover:no-underline"
+            >
+              {i18n._(
+                msg({
+                  message: "Create one on GitHub",
+                  comment:
+                    "@context: Link text pointing to GitHub's fine-grained PAT creation page",
+                }),
+              )}
+            </a>
+            .
           </p>
         </div>
 
@@ -195,13 +274,21 @@ function GitHubSyncConnected({
               class="text-green-600 dark:text-green-500"
               dangerouslySetInnerHTML={{ __html: STATUS_DOT }}
             />
-            {i18n._(
-              msg({
-                message: "Connected",
-                comment:
-                  "@context: Status label when GitHub Sync is active and connected",
-              }),
-            )}
+            {status.authMode === "app"
+              ? i18n._(
+                  msg({
+                    message: "Connected via GitHub App",
+                    comment:
+                      "@context: Status label when GitHub Sync is active using the GitHub App",
+                  }),
+                )
+              : i18n._(
+                  msg({
+                    message: "Connected via Personal Access Token",
+                    comment:
+                      "@context: Status label when GitHub Sync is active using a PAT",
+                  }),
+                )}
           </div>
 
           {/* Details */}

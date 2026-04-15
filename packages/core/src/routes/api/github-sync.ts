@@ -20,6 +20,7 @@ import {
 import type { SiteConfig } from "../../services/export.js";
 import type { GitHubPushEvent } from "../../lib/github-api.js";
 import { parseValidated } from "../../lib/schemas.js";
+import { getGitHubAppConfig } from "../../lib/env.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -30,9 +31,13 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const githubSyncWebhookRoutes = new Hono<Env>();
 
 githubSyncWebhookRoutes.post("/webhook", async (c) => {
-  const secret = await c.var.services.settings.get(
-    "GITHUB_SYNC_WEBHOOK_SECRET",
-  );
+  // Prefer an app-level webhook secret when configured (GitHub App deployments
+  // can set a single shared secret on the App and skip per-site secrets);
+  // otherwise fall back to the per-site secret saved during setup.
+  const app = getGitHubAppConfig(c.env);
+  const secret =
+    app?.webhookSecret ??
+    (await c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_SECRET"));
   if (!secret) {
     return c.json({ error: "GitHub Sync not configured" }, 404);
   }
@@ -113,6 +118,8 @@ githubSyncAdminRoutes.post("/setup", requireAuthApi(), async (c) => {
   // Save token and repo
   await c.var.services.settings.set("GITHUB_SYNC_TOKEN", body.token);
   await c.var.services.settings.set("GITHUB_SYNC_REPO", body.repo);
+  await c.var.services.settings.set("GITHUB_SYNC_AUTH_MODE", "pat");
+  await c.var.services.settings.set("GITHUB_SYNC_APP_INSTALLATION_ID", "");
   await c.var.services.settings.set("GITHUB_SYNC_ENABLED", "true");
 
   // Build webhook callback URL
@@ -123,6 +130,7 @@ githubSyncAdminRoutes.post("/setup", requireAuthApi(), async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     buildSiteConfigFromContext(c),
+    { githubApp: getGitHubAppConfig(c.env) },
   );
   const { webhookId } = await syncService.setupWebhook(callbackUrl);
 
@@ -134,6 +142,7 @@ githubSyncAdminRoutes.post("/push", requireAuthApi(), async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     buildSiteConfigFromContext(c),
+    { githubApp: getGitHubAppConfig(c.env) },
   );
 
   const config = await syncService.getConfig();
@@ -150,6 +159,7 @@ githubSyncAdminRoutes.delete("/", requireAuthApi(), async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     buildSiteConfigFromContext(c),
+    { githubApp: getGitHubAppConfig(c.env) },
   );
   await syncService.teardownWebhook();
   return c.json({ ok: true });

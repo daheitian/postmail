@@ -7,6 +7,7 @@
  */
 
 import { Hono, type Context } from "hono";
+import { getCookie, setCookie } from "hono/cookie";
 import { msg } from "@lingui/core/macro";
 import { z } from "zod";
 import type { Bindings } from "../../types.js";
@@ -51,6 +52,11 @@ import {
   getHostedControlPlaneSiteDeleteUrl,
 } from "../../lib/hosted-signin.js";
 import { syncHostedControlPlaneSiteAvatar } from "../../lib/hosted-control-plane-sync.js";
+import { getGitHubAppConfig } from "../../lib/env.js";
+import {
+  buildInstallUrl,
+  listInstallationRepos,
+} from "../../lib/github-app.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -1209,6 +1215,8 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
   // Save config
   await c.var.services.settings.set("GITHUB_SYNC_TOKEN", body.token);
   await c.var.services.settings.set("GITHUB_SYNC_REPO", body.repo);
+  await c.var.services.settings.set("GITHUB_SYNC_AUTH_MODE", "pat");
+  await c.var.services.settings.set("GITHUB_SYNC_APP_INSTALLATION_ID", "");
   await c.var.services.settings.set("GITHUB_SYNC_ENABLED", "true");
 
   // Create webhook
@@ -1217,6 +1225,7 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     buildGitHubSyncSiteConfig(c),
+    { githubApp: getGitHubAppConfig(c.env) },
   );
   const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");
   try {
@@ -1237,7 +1246,7 @@ settingsRoutes.post("/github-sync/push", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     buildGitHubSyncSiteConfig(c),
-    { storage: c.var.storage },
+    { storage: c.var.storage, githubApp: getGitHubAppConfig(c.env) },
   );
 
   const config = await syncService.getConfig();
@@ -1260,22 +1269,211 @@ settingsRoutes.post("/github-sync/disconnect", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     buildGitHubSyncSiteConfig(c),
+    { githubApp: getGitHubAppConfig(c.env) },
   );
   await syncService.teardownWebhook();
 
   return dsRedirect(publicPath(c, "/settings/github-sync"));
 });
 
+// ---------------------------------------------------------------------------
+// GitHub App install flow
+// ---------------------------------------------------------------------------
+
+/**
+ * Redirect the user to GitHub to install the App on their account/org.
+ *
+ * Only available when GitHub App env vars are configured. Uses a signed
+ * state cookie for CSRF protection.
+ */
+settingsRoutes.get("/github-sync/app/install", async (c) => {
+  const app = getGitHubAppConfig(c.env);
+  if (!app) {
+    return c.text("GitHub App is not configured on this deployment.", 404);
+  }
+
+  // Short random state value, scoped via cookie so the callback can verify it.
+  const stateBytes = new Uint8Array(16);
+  crypto.getRandomValues(stateBytes);
+  const state = Array.from(stateBytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  setCookie(c, "jant_gh_app_state", state, {
+    httpOnly: true,
+    sameSite: "Lax",
+    path: "/",
+    maxAge: 600,
+  });
+
+  return c.redirect(buildInstallUrl(app.slug, state));
+});
+
+/**
+ * Landing page after the user installs the GitHub App.
+ *
+ * GitHub redirects here with `installation_id`, `setup_action`, and the
+ * `state` we sent. We verify the state, list the installation's repos, and
+ * render a repo picker that POSTs back to `/github-sync/app/connect`.
+ */
+settingsRoutes.get("/github-sync/app/callback", async (c) => {
+  const app = getGitHubAppConfig(c.env);
+  if (!app) {
+    return c.text("GitHub App is not configured on this deployment.", 404);
+  }
+
+  const installationId = c.req.query("installation_id");
+  const state = c.req.query("state");
+  if (!installationId) {
+    return c.text("Missing installation_id.", 400);
+  }
+
+  const expected = getCookie(c, "jant_gh_app_state");
+  if (!state || !expected || expected !== state) {
+    return c.text("Invalid or expired state.", 400);
+  }
+  // One-shot: clear the cookie so it can't be replayed.
+  setCookie(c, "jant_gh_app_state", "", {
+    httpOnly: true,
+    sameSite: "Lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  let repos: Awaited<ReturnType<typeof listInstallationRepos>>;
+  try {
+    repos = await listInstallationRepos(app, installationId);
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    return c.text(`Could not list installation repositories: ${detail}`, 500);
+  }
+
+  const navData = await getNavigationData(c);
+  const base = publicPath(c, "/settings/github-sync");
+
+  return renderPublicPage(c, {
+    title: buildPageTitle("GitHub Sync — Pick Repository", navData.siteName),
+    navData,
+    content: (
+      <>
+        <AdminBreadcrumb
+          parent="Settings"
+          parentHref={publicPath(c, "/settings")}
+          current="GitHub Sync"
+        />
+        <div class="flex flex-col gap-6 max-w-form">
+          <div>
+            <h2 class="text-lg font-medium mb-1">Pick a repository</h2>
+            <p class="text-sm text-muted-foreground">
+              The GitHub App is installed. Choose which repository should back
+              up this site.
+            </p>
+          </div>
+          {repos.length === 0 ? (
+            <p class="text-sm text-muted-foreground">
+              No repositories are accessible to this installation. Grant the App
+              access to a repository on GitHub, then reload this page.
+            </p>
+          ) : (
+            <form
+              class="flex flex-col gap-3"
+              method="post"
+              action={`${base}/app/connect`}
+            >
+              <input
+                type="hidden"
+                name="installationId"
+                value={installationId}
+              />
+              <div class="field">
+                <label class="label" for="app-repo">
+                  Repository
+                </label>
+                <select id="app-repo" name="repo" class="input" required>
+                  {repos.map((r) => (
+                    <option value={r.fullName}>
+                      {r.fullName}
+                      {r.private ? " (private)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div class="flex mt-2">
+                <button type="submit" class="btn">
+                  Connect
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </>
+    ),
+  });
+});
+
+/**
+ * Finalize the App connection: validate access, persist the installation id
+ * and chosen repo, then register the webhook.
+ */
+settingsRoutes.post("/github-sync/app/connect", async (c) => {
+  const app = getGitHubAppConfig(c.env);
+  if (!app) {
+    return c.text("GitHub App is not configured on this deployment.", 404);
+  }
+
+  const form = await c.req.parseBody();
+  const installationId = String(form.installationId ?? "").trim();
+  const repo = String(form.repo ?? "").trim();
+  if (!installationId || !repo) {
+    return c.text("Missing installationId or repo.", 400);
+  }
+
+  const { parseRepoSlug } = await import("../../lib/github-api.js");
+  const parsed = parseRepoSlug(repo);
+  if (!parsed) {
+    return c.text("Invalid repository format.", 400);
+  }
+
+  // Persist config before creating webhook so the sync service can load it.
+  await c.var.services.settings.set("GITHUB_SYNC_AUTH_MODE", "app");
+  await c.var.services.settings.set(
+    "GITHUB_SYNC_APP_INSTALLATION_ID",
+    installationId,
+  );
+  await c.var.services.settings.set("GITHUB_SYNC_REPO", repo);
+  await c.var.services.settings.set("GITHUB_SYNC_TOKEN", "");
+  await c.var.services.settings.set("GITHUB_SYNC_ENABLED", "true");
+
+  const { createGitHubSyncService } =
+    await import("../../services/github-sync.js");
+  const syncService = createGitHubSyncService(
+    c.var.services,
+    buildGitHubSyncSiteConfig(c),
+    { githubApp: app },
+  );
+  const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");
+  try {
+    await syncService.setupWebhook(`${siteUrl}/api/github-sync/webhook`);
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    return c.text(
+      `Connected, but webhook creation failed: ${detail}. You may need to create it manually.`,
+      500,
+    );
+  }
+
+  return c.redirect(publicPath(c, "/settings/github-sync"));
+});
+
 settingsRoutes.get("/github-sync", async (c) => {
-  const [enabled, repo, lastPushSha, webhookId, lastPushAt] = await Promise.all(
-    [
+  const [enabled, repo, lastPushSha, webhookId, lastPushAt, authMode] =
+    await Promise.all([
       c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
       c.var.services.settings.get("GITHUB_SYNC_REPO"),
       c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
       c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
       c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
-    ],
-  );
+      c.var.services.settings.get("GITHUB_SYNC_AUTH_MODE"),
+    ]);
 
   const status: GitHubSyncStatus = {
     enabled: enabled === "true",
@@ -1283,6 +1481,8 @@ settingsRoutes.get("/github-sync", async (c) => {
     lastPushSha: lastPushSha ?? null,
     webhookId: webhookId ?? null,
     lastPushAt: lastPushAt ? Number(lastPushAt) : null,
+    authMode: authMode === "app" ? "app" : "pat",
+    appConfigured: getGitHubAppConfig(c.env) !== null,
   };
 
   const navData = await getNavigationData(c);

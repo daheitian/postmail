@@ -199,15 +199,25 @@ export interface GitHubClient {
 }
 
 /**
- * Create a GitHub API client authenticated with a Personal Access Token.
+ * Create a GitHub API client.
+ *
+ * Accepts either a static token (PAT) or a provider function that returns a
+ * fresh token on each request (used for short-lived GitHub App installation
+ * tokens which need to be refreshed before expiry — the provider handles
+ * caching internally).
  */
-export function createGitHubClient(token: string): GitHubClient {
+export function createGitHubClient(
+  auth: string | (() => Promise<string>),
+): GitHubClient {
+  const getToken = typeof auth === "string" ? async () => auth : auth;
+
   async function request<T>(
     method: string,
     path: string,
     body?: unknown,
   ): Promise<T> {
     const url = `${API_BASE}${path}`;
+    const token = await getToken();
     const res = await fetch(url, {
       method,
       headers: {
@@ -232,6 +242,7 @@ export function createGitHubClient(token: string): GitHubClient {
     path: string,
   ): Promise<T | null> {
     const url = `${API_BASE}${path}`;
+    const token = await getToken();
     const res = await fetch(url, {
       method,
       headers: {

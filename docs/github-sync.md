@@ -26,9 +26,18 @@ Jant marks its own commits with `[jant-sync]` in the commit message. Incoming we
 - Media attachments are not modified. They remain at their original URLs.
 - Settings, navigation, collections, and themes are not affected by incoming webhooks.
 
-## Prerequisites
+## Two Ways to Connect
 
-You need a GitHub **fine-grained Personal Access Token** (PAT) with these permissions on the target repository:
+Jant supports two authentication methods for GitHub Sync:
+
+1. **Personal Access Token (PAT)** — always available. You create a token and paste it into Jant. Best for self-hosters.
+2. **GitHub App** — available when the deployment has a GitHub App configured. Users install the App on their repo with a single click and Jant never touches a long-lived token. Best for hosted platforms.
+
+When a GitHub App is configured, the setup page shows both options and recommends the App.
+
+## Option A — Personal Access Token
+
+You need a GitHub **fine-grained Personal Access Token** with these permissions on the target repository:
 
 | Permission   | Access     | Why                          |
 | ------------ | ---------- | ---------------------------- |
@@ -37,7 +46,7 @@ You need a GitHub **fine-grained Personal Access Token** (PAT) with these permis
 
 Create the token at [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta). Scope it to a single repository for least privilege.
 
-## Setup
+### Setup
 
 1. Create a repository on GitHub (public or private, either works).
 2. Open **Settings > Data > GitHub Sync** in your Jant dashboard.
@@ -45,6 +54,36 @@ Create the token at [github.com/settings/tokens?type=beta](https://github.com/se
 4. Click **Connect**.
 
 Jant validates the token, saves the configuration, and creates a webhook on the repository. No manual webhook setup required.
+
+## Option B — GitHub App (recommended for hosted)
+
+When these environment variables are set on the Jant deployment, the GitHub App connect flow is enabled:
+
+| Variable                    | Required | What it is                                                                                                                                  |
+| --------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_APP_ID`             | Yes      | Numeric App ID from the GitHub App settings page.                                                                                           |
+| `GITHUB_APP_PRIVATE_KEY`    | Yes      | PKCS#8 PEM private key generated in the GitHub App settings. `\n` escapes are expanded automatically, so you can store it on a single line. |
+| `GITHUB_APP_SLUG`           | Yes      | App slug (the last segment of `github.com/apps/<slug>`). Used to build install URLs.                                                        |
+| `GITHUB_APP_WEBHOOK_SECRET` | No       | Shared webhook secret configured in the GitHub App. When set, it takes precedence over the per-site secret.                                 |
+
+### Creating the GitHub App
+
+1. Go to **Settings > Developer settings > GitHub Apps > New GitHub App** (on your user or org).
+2. **Homepage URL**: your Jant site.
+3. **Callback URL**: `https://<your-jant-site>/settings/github-sync/app/callback`.
+4. **Webhook URL**: `https://<your-jant-site>/api/github-sync/webhook`. Set a webhook secret and put the same value in `GITHUB_APP_WEBHOOK_SECRET` (optional but recommended for multi-site deployments).
+5. **Repository permissions**: `Contents: Read & write`, `Metadata: Read-only`. Webhooks permission is **not** needed — the App delivers events directly.
+6. **Subscribe to events**: `Push`.
+7. **Where can this GitHub App be installed**: choose "Any account" for hosted platforms, or "Only on this account" for private use.
+8. After creating the App, generate a private key (PKCS#8 PEM) and copy the App ID.
+
+### User Setup
+
+1. Open **Settings > Data > GitHub Sync** in the Jant dashboard.
+2. Click **Install GitHub App**. You will be redirected to GitHub to pick which repositories the App can access.
+3. After installing, GitHub redirects you back. Pick the repository you want to sync and click **Connect**.
+
+Jant uses the installation to issue short-lived tokens on demand — no token is ever stored long-term.
 
 ## Push a Full Sync
 

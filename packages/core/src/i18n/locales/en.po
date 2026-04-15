@@ -719,10 +719,20 @@ msgstr "Connect"
 msgid "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
 msgstr "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
 
-#. @context: Status label when GitHub Sync is active and connected
+#. @context: Heading for the GitHub App connect option on GitHub Sync setup
 #: src/ui/dash/settings/GitHubSyncContent.tsx
-msgid "Connected"
-msgstr "Connected"
+msgid "Connect with GitHub App (recommended)"
+msgstr "Connect with GitHub App (recommended)"
+
+#. @context: Status label when GitHub Sync is active using the GitHub App
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connected via GitHub App"
+msgstr "Connected via GitHub App"
+
+#. @context: Status label when GitHub Sync is active using a PAT
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connected via Personal Access Token"
+msgstr "Connected via Personal Access Token"
 
 #. @context: Controls section heading on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -792,11 +802,6 @@ msgstr "Couldn't save. Try again in a moment."
 msgid "Create a collection to get started."
 msgstr "Create a collection to get started."
 
-#. @context: Help text for GitHub PAT input explaining required permissions
-#: src/ui/dash/settings/GitHubSyncContent.tsx
-msgid "Create a fine-grained token with Contents (read/write) and Webhooks (read/write) permissions for your repository."
-msgstr "Create a fine-grained token with Contents (read/write) and Webhooks (read/write) permissions for your repository."
-
 #. @context: Label for curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Create a post with curl:"
@@ -806,6 +811,11 @@ msgstr "Create a post with curl:"
 #: src/routes/dash/custom-urls.tsx
 msgid "Create Custom URL"
 msgstr "Create Custom URL"
+
+#. @context: Link text pointing to GitHub's fine-grained PAT creation page
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Create one on GitHub"
+msgstr "Create one on GitHub"
 
 #. @context: Setup page description
 #: src/routes/auth/setup.tsx
@@ -1608,6 +1618,16 @@ msgstr "Inline emphasis"
 msgid "Inline link"
 msgstr "Inline link"
 
+#. @context: Button label to start the GitHub App install flow on GitHub Sync setup
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Install GitHub App"
+msgstr "Install GitHub App"
+
+#. @context: Help text for the GitHub App connect option on GitHub Sync setup
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Install the GitHub App to grant access without managing personal tokens. Permissions are scoped per repository and revocable from GitHub."
+msgstr "Install the GitHub App to grant access without managing personal tokens. Permissions are scoped per repository and revocable from GitHub."
+
 #. @context: Sample note summary suffix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "instead of judging it as an isolated swatch."
@@ -1991,6 +2011,11 @@ msgstr "Navigation placement updated."
 msgid "Navigation Preview"
 msgstr "Navigation Preview"
 
+#. @context: Help text for GitHub PAT input explaining required permissions
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Needs Contents (read/write) and Webhooks (read/write) on the target repository."
+msgstr "Needs Contents (read/write) and Webhooks (read/write) on the target repository."
+
 #. @context: Button to create a collection from collections page
 #. @context: Page title for new collection
 #. @context: Page title for new collection
@@ -2200,6 +2225,11 @@ msgstr "Open raw SVG"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
 msgstr "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
+
+#. @context: Divider label between GitHub App and PAT connect options
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Or use a Personal Access Token"
+msgstr "Or use a Personal Access Token"
 
 #. @context: Menu action to organize collections
 #: src/ui/shared/CollectionsManager.tsx

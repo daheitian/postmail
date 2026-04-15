@@ -264,6 +264,39 @@ export function getCorsOrigins(env: EnvSource): "*" | string[] | undefined {
   return origins.length > 0 ? origins : undefined;
 }
 
+/**
+ * GitHub App credentials resolved from environment bindings.
+ *
+ * Returned only when all three required fields are present. The private key
+ * accepts either raw PEM or a PEM with `\n` escape sequences (common in env
+ * var tooling); callers receive the normalized PEM.
+ */
+export interface GitHubAppEnvConfig {
+  appId: string;
+  privateKey: string;
+  slug: string;
+  webhookSecret?: string;
+}
+
+export function getGitHubAppConfig(env: EnvSource): GitHubAppEnvConfig | null {
+  const appId = getEnvString(env, "GITHUB_APP_ID");
+  const rawKey = getEnvString(env, "GITHUB_APP_PRIVATE_KEY");
+  const slug = getEnvString(env, "GITHUB_APP_SLUG");
+  if (!appId || !rawKey || !slug) return null;
+
+  // Allow `\n` escapes (Fly/Workers secrets paste-friendly)
+  const privateKey = rawKey.includes("\\n")
+    ? rawKey.replace(/\\n/g, "\n")
+    : rawKey;
+
+  return {
+    appId,
+    privateKey,
+    slug,
+    webhookSecret: getEnvString(env, "GITHUB_APP_WEBHOOK_SECRET"),
+  };
+}
+
 export function shouldTrustProxy(env: EnvSource): boolean {
   return getEnvString(env, "TRUST_PROXY") === "true";
 }

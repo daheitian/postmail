@@ -8,6 +8,7 @@
 
 import { createRequestRuntime } from "../runtime/index.js";
 import { processGitHubSyncJob } from "./github-sync-worker.js";
+import { getGitHubAppConfig } from "./env.js";
 import type { JobPayload } from "./job-queue.js";
 import type { Bindings } from "../types/bindings.js";
 
@@ -54,6 +55,7 @@ export async function handleQueueBatch(
           pageSize: 50,
         },
         runtime.storage,
+        getGitHubAppConfig(env),
       );
       message.ack();
     } catch {

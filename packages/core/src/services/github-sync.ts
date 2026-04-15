@@ -26,6 +26,8 @@ import {
   type GitHubPushEvent,
   type GitHubTreeItem,
 } from "../lib/github-api.js";
+import { getInstallationToken } from "../lib/github-app.js";
+import type { GitHubAppEnvConfig } from "../lib/env.js";
 import { parseFrontMatter, splitReplies } from "../lib/zola-markdown.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { createExportService, type SiteConfig } from "./export.js";
@@ -50,8 +52,15 @@ const POST_DIR = "content/posts";
 // Types
 // ---------------------------------------------------------------------------
 
+export type GitHubSyncAuthMode = "pat" | "app";
+
 export interface GitHubSyncConfig {
-  token: string;
+  /** Auth path: "pat" uses the stored token; "app" uses the GitHub App installation. */
+  authMode: GitHubSyncAuthMode;
+  /** PAT string (only set when `authMode === "pat"`). */
+  token?: string;
+  /** GitHub App installation id (only set when `authMode === "app"`). */
+  installationId?: string;
   repo: string; // "owner/repo"
   enabled: boolean;
   webhookId?: string;
@@ -89,29 +98,43 @@ export function createGitHubSyncService(
     settings: SettingsService;
   },
   siteConfig: SiteConfig,
-  deps: { storage?: StorageDriver | null } = {},
+  deps: {
+    storage?: StorageDriver | null;
+    /** GitHub App env config — required to create clients in "app" auth mode. */
+    githubApp?: GitHubAppEnvConfig | null;
+  } = {},
 ): GitHubSyncService {
   // -------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------
 
   async function loadConfig(): Promise<GitHubSyncConfig | null> {
-    const [token, repo, enabled] = await Promise.all([
-      services.settings.get("GITHUB_SYNC_TOKEN"),
+    const [repo, enabled, authModeRaw] = await Promise.all([
       services.settings.get("GITHUB_SYNC_REPO"),
       services.settings.get("GITHUB_SYNC_ENABLED"),
+      services.settings.get("GITHUB_SYNC_AUTH_MODE"),
     ]);
 
-    if (!token || !repo || enabled !== "true") return null;
+    if (!repo || enabled !== "true") return null;
 
-    const [webhookId, webhookSecret, lastPushSha] = await Promise.all([
-      services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
-      services.settings.get("GITHUB_SYNC_WEBHOOK_SECRET"),
-      services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
-    ]);
+    const authMode: GitHubSyncAuthMode = authModeRaw === "app" ? "app" : "pat";
+
+    const [token, installationId, webhookId, webhookSecret, lastPushSha] =
+      await Promise.all([
+        services.settings.get("GITHUB_SYNC_TOKEN"),
+        services.settings.get("GITHUB_SYNC_APP_INSTALLATION_ID"),
+        services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
+        services.settings.get("GITHUB_SYNC_WEBHOOK_SECRET"),
+        services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
+      ]);
+
+    if (authMode === "pat" && !token) return null;
+    if (authMode === "app" && !installationId) return null;
 
     return {
-      token,
+      authMode,
+      token: token ?? undefined,
+      installationId: installationId ?? undefined,
       repo,
       enabled: true,
       webhookId: webhookId ?? undefined,
@@ -127,11 +150,30 @@ export function createGitHubSyncService(
   } {
     const parsed = parseRepoSlug(config.repo);
     if (!parsed) throw new Error(`Invalid repo slug: ${config.repo}`);
-    return {
-      client: createGitHubClient(config.token),
-      owner: parsed.owner,
-      repo: parsed.repo,
-    };
+
+    let client: GitHubClient;
+    if (config.authMode === "app") {
+      if (!deps.githubApp) {
+        throw new Error(
+          "GitHub App is not configured on this deployment. Set GITHUB_APP_ID, GITHUB_APP_PRIVATE_KEY, and GITHUB_APP_SLUG to use App auth.",
+        );
+      }
+      if (!config.installationId) {
+        throw new Error("GitHub App installation id is missing.");
+      }
+      const app = deps.githubApp;
+      const installationId = config.installationId;
+      client = createGitHubClient(() =>
+        getInstallationToken(app, installationId),
+      );
+    } else {
+      if (!config.token) {
+        throw new Error("GitHub sync PAT is missing.");
+      }
+      client = createGitHubClient(config.token);
+    }
+
+    return { client, owner: parsed.owner, repo: parsed.repo };
   }
 
   /**
@@ -356,6 +398,8 @@ export function createGitHubSyncService(
       await services.settings.set("GITHUB_SYNC_WEBHOOK_SECRET", "");
       await services.settings.set("GITHUB_SYNC_WEBHOOK_ID", "");
       await services.settings.set("GITHUB_SYNC_LAST_PUSH_SHA", "");
+      await services.settings.set("GITHUB_SYNC_AUTH_MODE", "pat");
+      await services.settings.set("GITHUB_SYNC_APP_INSTALLATION_ID", "");
     },
   };
 }

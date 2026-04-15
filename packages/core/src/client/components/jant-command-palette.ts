@@ -300,7 +300,12 @@ export class JantCommandPalette extends LitElement {
     }
 
     // Navigate mode — show all items when no query (autocomplete)
-    const navItems = this.#navigateItems.map((item) => ({
+    const navItems: Array<{
+      label: string;
+      secondary?: string;
+      icon: string;
+      searchQuery?: string;
+    }> = this.#navigateItems.map((item) => ({
       label: item.title,
       secondary: item.type === "system" ? item.path : item.path,
       icon: ICONS[item.type],
