@@ -10079,12 +10079,40 @@
     z-index: 10001;
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 4px 4px 10px;
+    gap: 6px;
+    padding: 6px 6px 6px 10px;
     background: var(--color-background);
     border: 1px solid var(--color-border);
     border-radius: 8px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  }
+
+  .tiptap-link-input-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 240px;
+    flex: 1;
+  }
+
+  .tiptap-link-input-docked .tiptap-link-input-fields {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .tiptap-link-input-text {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: var(--type-sm);
+    color: var(--color-foreground);
+    padding: 2px 0;
+    border-bottom: 1px solid var(--color-border);
+    width: 100%;
+  }
+
+  .tiptap-link-input-text::placeholder {
+    color: var(--color-muted-foreground);
   }
 
   .tiptap-link-input-docked {
@@ -10130,13 +10158,9 @@
     outline: none;
     background: transparent;
     font-size: var(--type-sm);
-    min-width: 240px;
-    color: var(--color-foreground);
-  }
-
-  .tiptap-link-input-docked .tiptap-link-input-field {
-    min-width: 0;
     width: 100%;
+    color: var(--color-foreground);
+    padding: 2px 0;
   }
 
   .tiptap-link-input-field::placeholder {
@@ -10160,87 +10184,6 @@
   .tiptap-link-input-confirm:hover {
     background: var(--color-accent);
     color: var(--color-foreground);
-  }
-
-  /* Link preview tooltip — dark with URL + edit/delete buttons */
-  .tiptap-link-preview {
-    position: fixed;
-    z-index: 10001;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 4px 4px 10px;
-    background: var(--color-foreground);
-    border-radius: 8px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-    max-width: 360px;
-  }
-
-  .tiptap-link-preview-docked {
-    left: 50% !important;
-    top: auto !important;
-    bottom: calc(
-      env(safe-area-inset-bottom) + var(--tiptap-docked-offset, 16px)
-    );
-    transform: translateX(-50%);
-    width: min(calc(100vw - 24px), 420px);
-    max-width: calc(100vw - 24px);
-  }
-
-  .tiptap-link-preview::after {
-    content: "";
-    position: absolute;
-    bottom: -4px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid var(--color-foreground);
-  }
-
-  .tiptap-link-preview-docked::after {
-    display: none;
-  }
-
-  .tiptap-link-preview-url {
-    font-size: var(--type-xs);
-    color: var(--color-background);
-    opacity: 0.7;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 220px;
-  }
-
-  .tiptap-link-preview-docked .tiptap-link-preview-url {
-    flex: 1;
-    max-width: none;
-  }
-
-  .tiptap-link-preview-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: var(--color-background);
-    opacity: 0.7;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .tiptap-link-preview-btn:hover {
-    background: oklch(from var(--color-background) l c h / 0.15);
-    opacity: 1;
-  }
-
-  .tiptap-link-preview-btn svg {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
   }
 
   /* Fullscreen editor dialog — enters browser top layer via showModal() */

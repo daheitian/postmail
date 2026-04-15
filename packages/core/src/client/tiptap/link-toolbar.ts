@@ -1,9 +1,10 @@
 /**
  * Link Toolbar Extension
  *
- * Floating toolbar for link editing with two modes:
- * - Input mode: light popup with URL field + confirm button (speech-bubble arrow)
- * - Preview mode: dark tooltip showing truncated URL + edit/delete buttons
+ * Unified floating popover with two fields (text + URL) and a confirm button.
+ * - Shown automatically (unfocused) when the cursor enters a link.
+ * - Shown focused when the bubble-menu link action is triggered.
+ * - Clearing the URL and confirming removes the link (keeps the text).
  *
  * Replaces the browser prompt() dialog for link creation.
  */
@@ -24,18 +25,20 @@ import {
 
 const linkToolbarKey = new PluginKey("linkToolbar");
 
-type Mode = "hidden" | "input" | "preview";
+type Mode = "hidden" | "input";
 let currentMode: Mode = "hidden";
+let currentFocused = false;
 
-/** Returns true when the link input popup is visible. Used by bubble menu to hide itself. */
+/**
+ * Returns true when the link input popup has keyboard focus. Used by bubble
+ * menu to hide itself only when the user is actively editing a link — a
+ * passive (unfocused) popup should not suppress the bubble menu.
+ */
 export function isLinkToolbarInputActive(): boolean {
-  return currentMode === "input";
+  return currentMode === "input" && currentFocused;
 }
 
-// SVG icons (14×14 for preview buttons, 16×16 for confirm)
 const ICON_ENTER = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>`;
-const ICON_EDIT = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>`;
-const ICON_TRASH = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
 
 interface LinkRange {
   from: number;
@@ -105,27 +108,40 @@ export const LinkToolbar = Extension.create({
 
     // DOM elements
     let inputEl: HTMLElement | null = null;
-    let previewEl: HTMLElement | null = null;
     let inputField: HTMLInputElement | null = null;
+    let textField: HTMLInputElement | null = null;
 
     // State
     let savedFrom = 0;
     let savedTo = 0;
     let suppressNextUpdate = false;
-    let suppressPreview = false;
+    // Suppresses auto-showing the popup when the cursor sits inside a link —
+    // set after the user explicitly dismisses (Escape / outside click) so the
+    // popup doesn't reappear until the cursor moves off and back onto a link.
+    let suppressAutoShow = false;
     let outsideClickHandler: ((e: MouseEvent) => void) | null = null;
 
     function createElements() {
-      // --- Input popup ---
       inputEl = document.createElement("div");
       inputEl.className = "tiptap-link-input";
       inputEl.dataset.editorFloatingUi = "true";
       inputEl.style.display = "none";
 
+      const fieldsEl = document.createElement("div");
+      fieldsEl.className = "tiptap-link-input-fields";
+
+      textField = document.createElement("input");
+      textField.type = "text";
+      textField.className = "tiptap-link-input-text";
+      textField.placeholder = "Link text";
+
       inputField = document.createElement("input");
       inputField.type = "url";
       inputField.className = "tiptap-link-input-field";
-      inputField.placeholder = "https://";
+      inputField.placeholder = "https:// (empty to unlink)";
+
+      fieldsEl.appendChild(textField);
+      fieldsEl.appendChild(inputField);
 
       const confirmBtn = document.createElement("button");
       confirmBtn.type = "button";
@@ -133,11 +149,11 @@ export const LinkToolbar = Extension.create({
       confirmBtn.innerHTML = ICON_ENTER;
       confirmBtn.title = "Apply link";
 
-      inputEl.appendChild(inputField);
+      inputEl.appendChild(fieldsEl);
       inputEl.appendChild(confirmBtn);
 
-      // Input key handling
-      inputField.addEventListener("keydown", (e) => {
+      // Input key handling — shared for both fields
+      const fieldKeyHandler = (e: globalThis.KeyboardEvent) => {
         if (e.key === "Enter") {
           e.preventDefault();
           e.stopPropagation();
@@ -145,10 +161,30 @@ export const LinkToolbar = Extension.create({
         } else if (e.key === "Escape") {
           e.preventDefault();
           e.stopPropagation();
+          suppressAutoShow = true;
           hideAll();
           editor.commands.focus();
         }
-      });
+      };
+      textField.addEventListener("keydown", fieldKeyHandler);
+      inputField.addEventListener("keydown", fieldKeyHandler);
+
+      const focusHandler = () => {
+        currentFocused = true;
+      };
+      const blurHandler = () => {
+        // Delay so another field within the popup can regain focus first.
+        requestAnimationFrame(() => {
+          const active = document.activeElement;
+          if (!inputEl || !inputEl.contains(active)) {
+            currentFocused = false;
+          }
+        });
+      };
+      textField.addEventListener("focus", focusHandler);
+      inputField.addEventListener("focus", focusHandler);
+      textField.addEventListener("blur", blurHandler);
+      inputField.addEventListener("blur", blurHandler);
 
       // Confirm button
       confirmBtn.addEventListener("mousedown", (e) => {
@@ -156,55 +192,8 @@ export const LinkToolbar = Extension.create({
         confirmLink();
       });
 
-      // Prevent input popup clicks from bubbling
+      // Prevent popup clicks from bubbling to editor / outside-click handler
       inputEl.addEventListener("mousedown", (e) => {
-        e.stopPropagation();
-      });
-
-      // --- Preview tooltip ---
-      previewEl = document.createElement("div");
-      previewEl.className = "tiptap-link-preview";
-      previewEl.dataset.editorFloatingUi = "true";
-      previewEl.style.display = "none";
-
-      const urlSpan = document.createElement("span");
-      urlSpan.className = "tiptap-link-preview-url";
-
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "tiptap-link-preview-btn";
-      editBtn.innerHTML = ICON_EDIT;
-      editBtn.title = "Edit link";
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "tiptap-link-preview-btn";
-      deleteBtn.innerHTML = ICON_TRASH;
-      deleteBtn.title = "Remove link";
-
-      previewEl.appendChild(urlSpan);
-      previewEl.appendChild(editBtn);
-      previewEl.appendChild(deleteBtn);
-
-      // Edit button — switch to input with current href
-      editBtn.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        const url = urlSpan.textContent ?? "";
-        const range = getLinkRange(editor.state);
-        if (range) {
-          showInput(editor.view, url, range.from, range.to);
-        }
-      });
-
-      // Delete button — remove link
-      deleteBtn.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        hideAll();
-        editor.chain().focus().unsetLink().run();
-      });
-
-      // Prevent preview clicks from bubbling
-      previewEl.addEventListener("mousedown", (e) => {
         e.stopPropagation();
       });
     }
@@ -216,12 +205,7 @@ export const LinkToolbar = Extension.create({
       to: number,
     ) {
       const docked = isComposeDockedToolbar(toolbarMode);
-      const dockedClass =
-        el === inputEl
-          ? "tiptap-link-input-docked"
-          : "tiptap-link-preview-docked";
-
-      el.classList.toggle(dockedClass, docked);
+      el.classList.toggle("tiptap-link-input-docked", docked);
       el.style.display = "flex";
 
       if (docked) {
@@ -254,73 +238,45 @@ export const LinkToolbar = Extension.create({
       el.style.top = `${layout.top}px`;
     }
 
-    function showInput(
-      view: EditorView,
-      href: string,
-      from?: number,
-      to?: number,
-    ) {
-      if (!inputEl || !inputField) return;
+    interface ShowInputOptions {
+      href: string;
+      from?: number;
+      to?: number;
+      text?: string;
+      /** When true, focuses the first relevant field. Defaults to false. */
+      focus?: boolean;
+    }
 
-      // Save selection range
-      if (from !== undefined && to !== undefined) {
-        savedFrom = from;
-        savedTo = to;
+    function showInput(view: EditorView, opts: ShowInputOptions) {
+      if (!inputEl || !inputField || !textField) return;
+
+      if (opts.from !== undefined && opts.to !== undefined) {
+        savedFrom = opts.from;
+        savedTo = opts.to;
       } else {
         savedFrom = view.state.selection.from;
         savedTo = view.state.selection.to;
       }
 
-      // Hide preview if showing
-      if (previewEl) previewEl.style.display = "none";
-
       currentMode = "input";
-      inputField.value = href;
+      inputField.value = opts.href;
+      textField.value =
+        opts.text ?? view.state.doc.textBetween(savedFrom, savedTo, "");
       positionPopup(inputEl, view, savedFrom, savedTo);
 
-      // Focus field after a tick so positioning is settled
-      const field = inputField;
-      requestAnimationFrame(() => {
-        field.focus();
-        field.select();
-      });
+      if (opts.focus) {
+        const focusUrl = textField.value.length > 0;
+        const field = focusUrl ? inputField : textField;
+        requestAnimationFrame(() => {
+          field.focus();
+          field.select();
+        });
+      }
 
-      // Register outside-click handler
       removeOutsideClickHandler();
       outsideClickHandler = (e: MouseEvent) => {
         if (inputEl && !inputEl.contains(e.target as Node)) {
-          hideAll();
-          // Don't refocus editor here — user clicked somewhere intentionally
-        }
-      };
-      // Use setTimeout so the current click doesn't immediately trigger it
-      setTimeout(() => {
-        if (outsideClickHandler) {
-          document.addEventListener("mousedown", outsideClickHandler, true);
-        }
-      }, 0);
-    }
-
-    function showPreview(view: EditorView, range: LinkRange) {
-      if (!previewEl) return;
-
-      currentMode = "preview";
-      const urlSpan = previewEl.querySelector(".tiptap-link-preview-url");
-      if (urlSpan) {
-        // Truncate display URL
-        const display =
-          range.href.length > 40 ? range.href.slice(0, 40) + "…" : range.href;
-        urlSpan.textContent = display;
-        urlSpan.setAttribute("title", range.href);
-      }
-
-      positionPopup(previewEl, view, range.from, range.to);
-
-      // Register outside-click handler to dismiss preview
-      removeOutsideClickHandler();
-      outsideClickHandler = (e: MouseEvent) => {
-        if (previewEl && !previewEl.contains(e.target as Node)) {
-          suppressPreview = true;
+          suppressAutoShow = true;
           hideAll();
         }
       };
@@ -333,8 +289,8 @@ export const LinkToolbar = Extension.create({
 
     function hideAll() {
       if (inputEl) inputEl.style.display = "none";
-      if (previewEl) previewEl.style.display = "none";
       currentMode = "hidden";
+      currentFocused = false;
       removeOutsideClickHandler();
     }
 
@@ -346,21 +302,17 @@ export const LinkToolbar = Extension.create({
     }
 
     function confirmLink() {
-      if (!inputField) return;
+      if (!inputField || !textField) return;
       const url = inputField.value.trim();
+      const currentText = editor.state.doc.textBetween(savedFrom, savedTo, "");
+      const rawText = textField.value;
+      // Fall back to URL when the text field is empty so the link is never
+      // empty; if both are empty we'll unlink below.
+      const newText = rawText.length > 0 ? rawText : url;
       hideAll();
 
-      if (url) {
-        // Restore selection and apply link
-        editor
-          .chain()
-          .focus()
-          .setTextSelection({ from: savedFrom, to: savedTo })
-          .setLink({ href: url })
-          .setTextSelection(savedTo)
-          .run();
-      } else {
-        // Empty URL — remove link if one existed
+      if (!url) {
+        // Empty URL — unlink but keep the original text intact.
         editor
           .chain()
           .focus()
@@ -368,9 +320,35 @@ export const LinkToolbar = Extension.create({
           .unsetLink()
           .setTextSelection(savedTo)
           .run();
+        suppressNextUpdate = true;
+        return;
       }
 
-      // Suppress the next update so the newly-created link doesn't trigger preview
+      const textChanged = newText !== currentText;
+      const endPos = savedFrom + newText.length;
+
+      if (textChanged) {
+        editor
+          .chain()
+          .focus()
+          .command(({ tr }) => {
+            tr.insertText(newText, savedFrom, savedTo);
+            return true;
+          })
+          .setTextSelection({ from: savedFrom, to: endPos })
+          .setLink({ href: url })
+          .setTextSelection(endPos)
+          .run();
+      } else {
+        editor
+          .chain()
+          .focus()
+          .setTextSelection({ from: savedFrom, to: savedTo })
+          .setLink({ href: url })
+          .setTextSelection(savedTo)
+          .run();
+      }
+
       suppressNextUpdate = true;
     }
 
@@ -381,20 +359,23 @@ export const LinkToolbar = Extension.create({
           createElements();
           const dialog = editorView.dom.closest("dialog");
           if (inputEl) (dialog ?? document.body).appendChild(inputEl);
-          if (previewEl) (dialog ?? document.body).appendChild(previewEl);
 
-          // Listen for bubble menu link button
-          const handler = () => {
-            showInput(editorView, "");
+          // Bubble menu link button — opens focused for immediate typing.
+          const openHandler = () => {
+            suppressAutoShow = false;
+            showInput(editorView, { href: "", focus: true });
           };
-          editorView.dom.addEventListener("tiptap:open-link-input", handler);
+          editorView.dom.addEventListener(
+            "tiptap:open-link-input",
+            openHandler,
+          );
 
-          // Escape key dismisses preview
+          // Escape from the editor (not just the fields) dismisses the popup.
           const keyHandler = (e: globalThis.KeyboardEvent) => {
-            if (e.key === "Escape" && currentMode === "preview") {
+            if (e.key === "Escape" && currentMode === "input") {
               e.preventDefault();
               e.stopPropagation();
-              suppressPreview = true;
+              suppressAutoShow = true;
               hideAll();
             }
           };
@@ -407,24 +388,30 @@ export const LinkToolbar = Extension.create({
                 return;
               }
 
-              // While input is open, just reposition
-              if (currentMode === "input") {
+              const range = getLinkRange(view.state);
+
+              // If the popup is already open with focus, don't steal focus
+              // from the user; just reposition to follow the current range.
+              if (currentMode === "input" && currentFocused) {
                 if (inputEl) {
                   positionPopup(inputEl, view, savedFrom, savedTo);
                 }
                 return;
               }
 
-              // Detect link under cursor for preview mode
-              const range = getLinkRange(view.state);
               if (range) {
-                if (!suppressPreview) {
-                  showPreview(view, range);
-                }
+                if (suppressAutoShow) return;
+                // Show passive (unfocused) popup over the link under cursor.
+                showInput(view, {
+                  href: range.href,
+                  from: range.from,
+                  to: range.to,
+                  focus: false,
+                });
               } else {
-                // Cursor moved off link — reset suppress flag
-                suppressPreview = false;
-                if (currentMode === "preview") {
+                // Cursor left the link — reset suppress flag and hide.
+                suppressAutoShow = false;
+                if (currentMode === "input") {
                   hideAll();
                 }
               }
@@ -432,15 +419,14 @@ export const LinkToolbar = Extension.create({
             destroy() {
               editorView.dom.removeEventListener(
                 "tiptap:open-link-input",
-                handler,
+                openHandler,
               );
               editorView.dom.removeEventListener("keydown", keyHandler);
               removeOutsideClickHandler();
               inputEl?.remove();
-              previewEl?.remove();
               inputEl = null;
-              previewEl = null;
               currentMode = "hidden";
+              currentFocused = false;
             },
           };
         },
