@@ -99,6 +99,19 @@ export function GeneralContent({
         comment: "@context: Help text for site description field",
       }),
     ),
+    siteLanguage: i18n._(
+      msg({
+        message: "Language",
+        comment: "@context: Settings form field for site/dashboard language",
+      }),
+    ),
+    siteLanguageHelp: i18n._(
+      msg({
+        message:
+          "Controls the language of the dashboard and settings. Public pages stay in English.",
+        comment: "@context: Help text under the site language select",
+      }),
+    ),
     cjkFont: i18n._(
       msg({
         message: "CJK Font",
@@ -281,6 +294,17 @@ export function GeneralContent({
     timezones.map((tz) => ({ value: tz.value, label: tz.label })),
   ).replace(/</g, "\\u003c");
 
+  // Language options — `value` must stay in sync with `src/i18n/locales.ts`.
+  // Labels are native names (untranslated) so they stay recognizable to any
+  // reader regardless of the currently active dashboard locale.
+  const languagesJson = JSON.stringify([
+    { value: "en", label: "English" },
+    {
+      value: "zh-Hans",
+      label: "\u7B80\u4F53\u4E2D\u6587 (Simplified Chinese)",
+    },
+  ]).replace(/</g, "\\u003c");
+
   const cjkFontsJson = JSON.stringify([
     { value: "off", label: "None" },
     {
@@ -314,6 +338,7 @@ export function GeneralContent({
           labels={labels}
           timezones={timezonesJson}
           cjk-fonts={cjkFontsJson}
+          languages={languagesJson}
           sitename-fallback={siteNameFallback}
           sitedescription-fallback={siteDescriptionFallback}
           main-feed-url={mainFeedUrl}

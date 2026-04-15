@@ -10,6 +10,7 @@ import { locales, baseLocale, isLocale, type Locale } from "./locales.js";
 export function getLanguageDisplayName(locale: Locale): string {
   const names: Record<Locale, string> = {
     en: "English",
+    "zh-Hans": "简体中文",
   };
   return names[locale];
 }

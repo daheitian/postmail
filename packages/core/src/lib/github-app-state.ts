@@ -29,7 +29,7 @@ export interface InstallStatePayload {
 function toBase64Url(bytes: Uint8Array): string {
   let binary = "";
   for (let i = 0; i < bytes.length; i++)
-    binary += String.fromCharCode(bytes[i]!);
+    binary += String.fromCharCode(bytes[i] as number);
   return btoa(binary)
     .replace(/\+/g, "-")
     .replace(/\//g, "_")

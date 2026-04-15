@@ -81,6 +81,8 @@ const labels: SettingsLabels = {
   siteName: "Site Name",
   aboutBlog: "About this blog",
   aboutBlogHelp: "Displayed above your blog posts.",
+  siteLanguage: "Site Language",
+  siteLanguageHelp: "Language used for the site UI.",
   cjkFont: "CJK Font",
   cjkFontHelp:
     "Load a serif font optimized for Chinese, Japanese, or Korean content.",

@@ -13,7 +13,9 @@ import type {
 } from "@lingui/core";
 import { I18n as LinguiI18nRuntime } from "@lingui/core";
 import { locales, baseLocale, isLocale, type Locale } from "./locales.js";
-import { messages as messagesEn } from "./locales/en.js";
+import { messages as publicEn } from "./locales/public/en.js";
+import { messages as settingsEn } from "./locales/settings/en.js";
+import { messages as settingsZhHans } from "./locales/settings/zh-Hans.js";
 
 export { locales, baseLocale, isLocale, type Locale };
 
@@ -34,7 +36,12 @@ export interface I18n extends LinguiI18n {
   _(descriptor: MessageDescriptor, values?: TranslationValues): string;
 }
 
-const catalogEn: Messages = messagesEn;
+// The `en` runtime catalog merges both surfaces. For non-English locales we
+// only load the `settings` catalog — the public surface intentionally has no
+// translations, so Lingui falls back to the source English message on the
+// descriptor when a key isn't found in the active locale.
+const catalogEn: Messages = { ...publicEn, ...settingsEn };
+const catalogZhHans: Messages = settingsZhHans;
 
 /**
  * Create a new i18n instance for a specific locale.
@@ -45,6 +52,7 @@ export function createI18n(locale: Locale): I18n {
   const i18n = new LinguiI18nRuntime({}) as I18n;
 
   i18n.load("en", catalogEn);
+  i18n.load("zh-Hans", catalogZhHans);
 
   i18n.activate(locale);
 

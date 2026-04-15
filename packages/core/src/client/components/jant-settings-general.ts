@@ -15,6 +15,7 @@ import type {
   SettingsLabels,
   SettingsTimezone,
   SettingsCjkFont,
+  SettingsLanguage,
 } from "./settings-types.js";
 import { showToast } from "../toast.js";
 import {
@@ -27,6 +28,7 @@ export class JantSettingsGeneral extends LitElement {
     labels: { type: Object },
     timezones: { type: Array },
     cjkFonts: { type: Array, attribute: "cjk-fonts" },
+    languages: { type: Array },
     siteNameFallback: { type: String, attribute: "sitename-fallback" },
     siteDescriptionFallback: {
       type: String,
@@ -73,6 +75,7 @@ export class JantSettingsGeneral extends LitElement {
   declare labels: SettingsLabels;
   declare timezones: SettingsTimezone[];
   declare cjkFonts: SettingsCjkFont[];
+  declare languages: SettingsLanguage[];
   declare siteNameFallback: string;
   declare siteDescriptionFallback: string;
   declare demoMode: boolean;
@@ -134,6 +137,7 @@ export class JantSettingsGeneral extends LitElement {
     this.labels = {} as SettingsLabels;
     this.timezones = [];
     this.cjkFonts = [];
+    this.languages = [];
     this.siteNameFallback = "";
     this.siteDescriptionFallback = "";
     this.demoMode = false;
@@ -647,6 +651,31 @@ export class JantSettingsGeneral extends LitElement {
             )}
         >
           ${this._renderSectionTitle(this.labels.languageAndTime)}
+          <div class="field">
+            <label class="label">${this.labels.siteLanguage}</label>
+            <select
+              class="select"
+              @change=${(e: Event) => {
+                this._siteLanguage = (e.target as HTMLSelectElement).value;
+                this._syncLocaleDirty();
+              }}
+            >
+              ${this.languages.map(
+                (lang) => html`
+                  <option
+                    value=${lang.value}
+                    ?selected=${this._siteLanguage === lang.value}
+                  >
+                    ${lang.label}
+                  </option>
+                `,
+              )}
+            </select>
+            <p class="text-sm text-muted-foreground mt-1">
+              ${this.labels.siteLanguageHelp}
+            </p>
+          </div>
+
           <div class="field">
             <label class="label">${this.labels.cjkFont}</label>
             <select

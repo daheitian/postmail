@@ -14,37 +14,70 @@ function createApp(allSettings: Record<string, string>) {
     await next();
   });
   app.use("*", i18nMiddleware());
-  app.get("/", (c) => c.text(c.get("lang")));
+  // Returns `${lang}|${i18n.locale}` so tests can assert both independently.
+  app.get("*", (c) => c.text(`${c.get("lang")}|${c.get("i18n").locale}`));
 
   return app;
 }
 
 describe("i18nMiddleware", () => {
-  it("always returns en as the locale", async () => {
-    const app = createApp({ ONBOARDING_STATUS: "pending" });
-    const res = await app.request("/", {
-      headers: { "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8" },
-    });
-
-    expect(await res.text()).toBe("en");
-  });
-
-  it("returns en after onboarding is complete", async () => {
+  it("sets html lang to SITE_LANGUAGE but renders public UI in en", async () => {
     const app = createApp({
       ONBOARDING_STATUS: "completed",
-      SITE_LANGUAGE: "en",
+      SITE_LANGUAGE: "zh-Hans",
     });
     const res = await app.request("/", {
       headers: { "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8" },
     });
 
-    expect(await res.text()).toBe("en");
+    // `lang` reflects content language (posts), i18n is en on public routes.
+    expect(await res.text()).toBe("zh-Hans|en");
   });
 
-  it("falls back to en when SITE_LANGUAGE is missing", async () => {
-    const app = createApp({ ONBOARDING_STATUS: "completed" });
-    const res = await app.request("/");
+  it("activates SITE_LANGUAGE on /settings routes", async () => {
+    const app = createApp({
+      ONBOARDING_STATUS: "completed",
+      SITE_LANGUAGE: "zh-Hans",
+    });
+    const res = await app.request("/settings/general");
 
-    expect(await res.text()).toBe("en");
+    expect(await res.text()).toBe("zh-Hans|zh-Hans");
+  });
+
+  it("activates SITE_LANGUAGE on /dash routes", async () => {
+    const app = createApp({
+      ONBOARDING_STATUS: "completed",
+      SITE_LANGUAGE: "zh-Hans",
+    });
+    const res = await app.request("/dash");
+
+    expect(await res.text()).toBe("zh-Hans|zh-Hans");
+  });
+
+  it("keeps public routes in en regardless of SITE_LANGUAGE", async () => {
+    const app = createApp({
+      ONBOARDING_STATUS: "completed",
+      SITE_LANGUAGE: "zh-Hans",
+    });
+    const res = await app.request("/collections");
+
+    expect(await res.text()).toBe("zh-Hans|en");
+  });
+
+  it("falls back to en on admin routes when SITE_LANGUAGE is missing", async () => {
+    const app = createApp({ ONBOARDING_STATUS: "completed" });
+    const res = await app.request("/settings");
+
+    expect(await res.text()).toBe("en|en");
+  });
+
+  it("falls back to en on admin routes when SITE_LANGUAGE is unsupported", async () => {
+    const app = createApp({
+      ONBOARDING_STATUS: "completed",
+      SITE_LANGUAGE: "fr",
+    });
+    const res = await app.request("/settings");
+
+    expect(await res.text()).toBe("en|en");
   });
 });

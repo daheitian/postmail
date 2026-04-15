@@ -20,6 +20,7 @@ import {
   getNavItemDisplayLabel,
   getSystemNavDescription,
   getSystemNavDisplayLabel,
+  NAV_MORE_LABEL,
 } from "../../shared/navigation-labels.js";
 
 // =============================================================================
@@ -58,12 +59,7 @@ export function NavigationContent({
       comment: "@context: Label for nav preview section",
     }),
   );
-  const moreLabel = i18n._(
-    msg({
-      message: "More",
-      comment: "@context: More dropdown button label in nav preview",
-    }),
-  );
+  const moreLabel = i18n._(NAV_MORE_LABEL);
 
   // Serialize nav items for the Lit component
   const itemsData = navItems.map((item) => {

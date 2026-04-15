@@ -16,7 +16,10 @@ import { SetupSchema } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { mapIanaToTimezone } from "../../lib/timezones.js";
 import { getI18n } from "../../i18n/index.js";
-import { detectCjkFontFromHeader } from "../../i18n/detect.js";
+import {
+  detectCjkFontFromHeader,
+  detectLocaleFromHeader,
+} from "../../i18n/detect.js";
 import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -226,12 +229,17 @@ setupRoutes.post("/setup", async (c) => {
       browserLanguage && browserLanguage.trim()
         ? detectCjkFontFromHeader(browserLanguage)
         : "off";
+    const siteLanguage =
+      browserLanguage && browserLanguage.trim()
+        ? detectLocaleFromHeader(browserLanguage)
+        : undefined;
 
     await c.var.services.bootstrap.completeInitialSetup({
       ownerUserId,
       siteName,
       timeZone,
       cjkSerifFont,
+      siteLanguage,
     });
 
     return dsRedirect(

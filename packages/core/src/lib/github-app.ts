@@ -49,26 +49,80 @@ function base64UrlEncode(input: ArrayBuffer | Uint8Array | string): string {
   }
   let binary = "";
   for (let i = 0; i < bytes.length; i++)
-    binary += String.fromCharCode(bytes[i]!);
+    binary += String.fromCharCode(bytes[i] as number);
   return btoa(binary)
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
 }
 
+/**
+ * ASN.1 DER length encoding (short form for < 128, long form otherwise).
+ * Used to wrap a PKCS#1 key inside a PKCS#8 envelope.
+ */
+function encodeDerLength(len: number): number[] {
+  if (len < 0x80) return [len];
+  if (len <= 0xff) return [0x81, len];
+  if (len <= 0xffff) return [0x82, (len >> 8) & 0xff, len & 0xff];
+  throw new Error("Private key too large to encode");
+}
+
+/**
+ * Wrap a PKCS#1 `RSAPrivateKey` DER blob in a PKCS#8 `PrivateKeyInfo` envelope.
+ * Web Crypto's `importKey("pkcs8", ...)` only accepts PKCS#8, but GitHub
+ * hands out PKCS#1 PEMs (`-----BEGIN RSA PRIVATE KEY-----`) by default, so
+ * we wrap on the fly when we detect that header.
+ */
+function wrapPkcs1AsPkcs8(pkcs1: Uint8Array): Uint8Array {
+  // AlgorithmIdentifier for rsaEncryption (OID 1.2.840.113549.1.1.1) + NULL params.
+  const rsaAlgorithmIdentifier = [
+    0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01,
+    0x01, 0x05, 0x00,
+  ];
+  const version = [0x02, 0x01, 0x00]; // INTEGER 0
+  const octetStringHeader = [0x04, ...encodeDerLength(pkcs1.length)];
+  const bodyLen =
+    version.length +
+    rsaAlgorithmIdentifier.length +
+    octetStringHeader.length +
+    pkcs1.length;
+  const outerHeader = [0x30, ...encodeDerLength(bodyLen)];
+
+  const out = new Uint8Array(outerHeader.length + bodyLen);
+  let off = 0;
+  out.set(outerHeader, off);
+  off += outerHeader.length;
+  out.set(version, off);
+  off += version.length;
+  out.set(rsaAlgorithmIdentifier, off);
+  off += rsaAlgorithmIdentifier.length;
+  out.set(octetStringHeader, off);
+  off += octetStringHeader.length;
+  out.set(pkcs1, off);
+  return out;
+}
+
 function pemToPkcs8(pem: string): ArrayBuffer {
-  // Accept PKCS#8 ("BEGIN PRIVATE KEY") directly; PKCS#1 ("BEGIN RSA PRIVATE KEY")
-  // is not handled — users of GitHub Apps should download the PKCS#8 PEM from
-  // GitHub (which is the default format).
+  // GitHub Apps hand out PKCS#1 PEMs (`BEGIN RSA PRIVATE KEY`), but Web
+  // Crypto only imports PKCS#8 (`BEGIN PRIVATE KEY`). Accept either and
+  // auto-wrap PKCS#1 as PKCS#8 so users don't have to run openssl.
+  const isPkcs1 = /-----BEGIN RSA PRIVATE KEY-----/.test(pem);
   const cleaned = pem
     .replace(/-----BEGIN [^-]+-----/g, "")
     .replace(/-----END [^-]+-----/g, "")
     .replace(/\s+/g, "");
   if (!cleaned) throw new Error("Empty GitHub App private key");
   const binary = atob(cleaned);
-  const buf = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) buf[i] = binary.charCodeAt(i);
-  return buf.buffer;
+  const rawDer = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) rawDer[i] = binary.charCodeAt(i);
+
+  const pkcs8 = isPkcs1 ? wrapPkcs1AsPkcs8(rawDer) : rawDer;
+  // Copy into a fresh ArrayBuffer so the type is narrow (Web Crypto
+  // rejects SharedArrayBuffer in some type signatures) and detached from
+  // any larger backing store.
+  const out = new ArrayBuffer(pkcs8.byteLength);
+  new Uint8Array(out).set(pkcs8);
+  return out;
 }
 
 async function importPrivateKey(pem: string) {

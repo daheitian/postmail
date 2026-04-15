@@ -1,0 +1,1408 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-04-15 21:58+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: lingui-po-translate\n"
+"Language: zh-Hans\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. @context: Custom CSS textarea placeholder
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "/* Your custom CSS here */"
+msgstr "/* 在此填写您的自定义 CSS */"
+
+#. @context: Redirect type option
+#: src/routes/dash/custom-urls.tsx
+msgid "301 (Permanent)"
+msgstr "301 (永久)"
+
+#. @context: Redirect type option
+#: src/routes/dash/custom-urls.tsx
+msgid "302 (Temporary)"
+msgstr "302 (临时)"
+
+#. @context: Help text for site description field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "A short intro shown on your home page."
+msgstr "在您的主页上显示的简短介绍."
+
+#. @context: Settings form field for site description
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "About this blog"
+msgstr "关于本博客"
+
+#. @context: Breadcrumb label
+#. @context: Page title for the account settings menu
+#. @context: Settings group label for account settings
+#. @context: Settings item — account settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Account"
+msgstr "账户"
+
+#. @context: Error shown when account deletion is blocked in demo mode
+#: src/routes/dash/settings.tsx
+msgid "Account deletion is off in demo mode. The shared demo resets separately."
+msgstr "演示模式下已禁用账号删除。共享演示会单独重置。"
+
+#. @context: Settings section heading for active sessions
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Active Sessions"
+msgstr "活动会话"
+
+#. @context: Heading for list of active API tokens
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Active Tokens"
+msgstr "活动令牌"
+
+#. @context: Description in link popover form
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add a custom link to any URL"
+msgstr "向任意 URL 添加自定义链接"
+
+#. @context: Button and section heading for adding a collection to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add Collection"
+msgstr "添加合集"
+
+#. @context: Custom CSS settings description
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
+msgstr "添加自定义 CSS 以覆盖任何样式. 使用数据属性如 [data-page], [data-post], [data-format] 来定位特定元素."
+
+#. @context: Section heading for adding custom link to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add custom link to navigation"
+msgstr "向导航添加自定义链接"
+
+#. @context: Button and heading for adding custom link
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add Link"
+msgstr "添加链接"
+
+#. @context: Settings group label for advanced settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Advanced"
+msgstr "高级"
+
+#. @context: Description after API reference link
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "all available endpoints and request formats."
+msgstr "所有可用的端点和请求格式。"
+
+#. @context: Message when every collection is already added to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "All collections are already in your navigation."
+msgstr "所有合集已在您的导航中。"
+
+#. @context: Checkbox for allowing search engine indexing
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Allow search engines to index my site"
+msgstr "允许搜索引擎索引我的网站"
+
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Always show the dark version of the theme."
+msgstr "始终显示暗色主题."
+
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Always show the light version of the theme."
+msgstr "始终显示浅色主题。"
+
+#. @context: Link to API documentation
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "API reference"
+msgstr "API 参考"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — API token settings
+#. @context: Settings section heading
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "API Tokens"
+msgstr "API 令牌"
+
+#. @context: Settings group label for design settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Appearance"
+msgstr "外观"
+
+#. @context: Appearance settings description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
+msgstr "应用于整个站点，包括管理页面。选择一个调色板，然后选择它是随系统变化还是保持固定。"
+
+#. @context: Custom URL target type badge for an archive view
+#. @context: Custom URL type option for filtered archive view
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+msgid "Archive"
+msgstr "归档"
+
+#. @context: Help text for archive custom URL query params
+#: src/routes/dash/custom-urls.tsx
+msgid "Archive filter parameters (e.g. format=note&view=list)"
+msgstr "归档 筛选参数 (例如 format=笔记&view=list)"
+
+#. @context: Theme mode option label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Auto"
+msgstr "自动"
+
+#. @context: Description after theming guide link on Custom CSS page
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "available CSS variables, data attributes, and examples."
+msgstr "可用的 CSS 变量, 数据属性, 和 示例."
+
+#. @context: Breadcrumb label
+#. @context: Settings item — avatar settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Avatar"
+msgstr "头像"
+
+#. @context: Toast after saving avatar display preference
+#. @context: Toast after saving avatar display preference
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Avatar display updated."
+msgstr "头像显示已更新."
+
+#. @context: Settings item description for GitHub sync
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Back up and sync content with a GitHub repository"
+msgstr "将内容备份并与 GitHub 仓库同步"
+
+#. @context: Link to backup and restore documentation from account settings
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Backup & Restore Guide"
+msgstr "备份与恢复指南"
+
+#. @context: Settings item description for API tokens
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Bearer tokens for scripts and automation"
+msgstr "用于脚本和自动化的 Bearer 令牌"
+
+#. @context: Step 1 description for site export before account deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Before deleting, download a site export. You won't be able to recover this account after deletion."
+msgstr "在删除之前，请下载站点导出。删除后将无法恢复此账户。"
+
+#. @context: Settings section heading for avatar
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Blog Avatar"
+msgstr "博客头像"
+
+#. @context: Section heading for built-in nav items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Built-in links"
+msgstr "内置链接"
+
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button to cancel form
+#. @context: Button to cancel settings changes
+#. @context: Button to cancel unsaved changes and revert to original values
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+#: src/ui/dash/ActionButtons.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/DangerZone.tsx
+#: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Cancel"
+msgstr "取消"
+
+#. @context: Button to change password
+#. @context: Settings section heading
+#: src/ui/dash/settings/AccountContent.tsx
+#: src/ui/dash/settings/AccountContent.tsx
+msgid "Change Password"
+msgstr "更改密码"
+
+#. @context: Warning shown when changing the canonical RSS feed selection
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Changing this updates what subscribers get from /feed."
+msgstr "更改此项会更新订阅者从 /feed 获取的内容。"
+
+#. @context: Font theme settings description
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
+msgstr "为您的网站选择一种排版方向。每个主题都会同时改变字体搭配和阅读节奏。"
+
+#. @context: Settings form field for CJK serif font selection
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "CJK Font"
+msgstr "CJK 字体"
+
+#. @context: Nav item type badge for collection items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "collection"
+msgstr "合集"
+
+#. @context: Custom URL target type badge for a collection
+#. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+msgid "Collection"
+msgstr "合集"
+
+#. @context: Appearance settings heading
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Color theme"
+msgstr "配色主题"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — color theme settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Color Theme"
+msgstr "颜色主题"
+
+#. @context: Step 2 heading — user must type confirmation phrase
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Confirm account deletion"
+msgstr "确认删除账户"
+
+#. @context: Password form field
+#: src/ui/dash/settings/AccountContent.tsx
+msgid "Confirm New Password"
+msgstr "确认新密码"
+
+#. @context: Button label to connect GitHub repository on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connect"
+msgstr "连接"
+
+#. @context: Intro text on GitHub Sync settings page when not connected
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
+msgstr "将 GitHub 仓库连接以自动将您的文章备份为 Markdown 文件。您在 GitHub 上的编辑会同步回您的网站。"
+
+#. @context: Heading for the GitHub App connect option on GitHub Sync setup
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connect with GitHub App"
+msgstr "使用 GitHub 应用连接"
+
+#. @context: Status label when GitHub Sync is active using the GitHub App
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connected via GitHub App"
+msgstr "已通过 GitHub App 连接"
+
+#. @context: Status label when GitHub Sync is active using a PAT
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Connected via Personal Access Token"
+msgstr "通过个人访问令牌连接"
+
+#. @context: Help text under the site language select
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Controls the language of the dashboard and settings. Public pages stay in English."
+msgstr "控制仪表板和设置所用的语言。公共页面保持英文。"
+
+#. @context: Feedback after copying API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Copied"
+msgstr "已复制"
+
+#. @context: Button to copy a URL to the clipboard
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Copy"
+msgstr "复制"
+
+#. @context: Button to copy API token to clipboard
+#. @context: Button to copy API token to clipboard
+#: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Copy Token"
+msgstr "复制令牌"
+
+#. @context: Warning to copy newly created API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Copy your token now — it won't be shown again."
+msgstr "现在复制您的令牌 — 它不会再次显示。"
+
+#. @context: Error toast when copying text to the clipboard fails
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Could not copy. Try again."
+msgstr "无法复制。请再试一次。"
+
+#. @context: Error toast when nav delete fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Couldn't delete. Try again in a moment."
+msgstr "删除失败。请稍后再试。"
+
+#. @context: Error toast when nav save fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Couldn't save. Try again in a moment."
+msgstr "保存失败。请稍后再试。"
+
+#. @context: Label for curl example
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Create a post with curl:"
+msgstr "使用 curl 创建帖子："
+
+#. @context: Button to save new custom URL
+#: src/routes/dash/custom-urls.tsx
+msgid "Create Custom URL"
+msgstr "创建自定义 URL"
+
+#. @context: Link text pointing to GitHub's fine-grained PAT creation page
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Create one on GitHub"
+msgstr "在 GitHub 上创建一个"
+
+#. @context: Token creation date
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Created {date}"
+msgstr "创建于 {date}"
+
+#. @context: Badge indicating the current active session
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Current"
+msgstr "当前"
+
+#. @context: Password form field
+#: src/ui/dash/settings/AccountContent.tsx
+msgid "Current Password"
+msgstr "当前密码"
+
+#. @context: Error toast when current password verification fails
+#: src/routes/dash/settings.tsx
+msgid "Current password doesn't match. Try again."
+msgstr "当前密码不正确。请重试。"
+
+#. @context: Appearance settings heading for custom CSS
+#. @context: Breadcrumb label
+#. @context: Link to Custom CSS settings from color theme page
+#. @context: Settings item — custom CSS settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/appearance/AdvancedContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Custom CSS"
+msgstr "自定义 CSS"
+
+#. @context: Toast after saving custom CSS
+#: src/routes/dash/settings.tsx
+msgid "Custom CSS updated."
+msgstr "自定义 CSS 已更新."
+
+#. @context: Settings item — custom URL settings
+#. @context: Settings section heading
+#: src/routes/dash/custom-urls.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Custom URLs"
+msgstr "自定义 URL"
+
+#. @context: Section heading for dangerous/destructive actions
+#. @context: Settings group label for destructive account actions
+#. @context: Settings group label for destructive account actions
+#: src/ui/dash/DangerZone.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Danger Zone"
+msgstr "危险操作"
+
+#. @context: Theme mode option label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Dark"
+msgstr "深色"
+
+#. @context: Settings group label for data export/import
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Data"
+msgstr "数据"
+
+#. @context: Button to delete custom URL
+#. @context: Button to delete item
+#. @context: Delete nav item
+#: src/routes/dash/custom-urls.tsx
+#: src/ui/dash/ActionButtons.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Delete"
+msgstr "删除"
+
+#. @context: Breadcrumb label
+#. @context: Page title for account deletion
+#. @context: Settings item — delete account and all data
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Delete Account"
+msgstr "删除账号"
+
+#. @context: Final destructive button to delete account and all data
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Delete Account Permanently"
+msgstr "永久删除账号"
+
+#. @context: Settings item — open the hosted site danger zone in the control plane
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Delete Hosted Site"
+msgstr "删除托管站点"
+
+#. @context: Final browser confirm dialog before account deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Delete this blog permanently? This cannot be undone."
+msgstr "永久删除此博客？此操作不可撤销。"
+
+#. @context: Confirm dialog for deleting a custom URL
+#: src/routes/dash/custom-urls.tsx
+msgid "Delete this custom URL? Visitors using it won't be redirected anymore."
+msgstr "要删除此自定义 URL 吗？使用它的访问者将不再被重定向。"
+
+#. @context: Confirm dialog for deleting a custom navigation link
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Delete this navigation link? Visitors won't see it in your site header anymore."
+msgstr "删除此导航链接？ 访客将不再在您网站的页眉中看到它。"
+
+#. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Demo limits"
+msgstr "演示限制"
+
+#. @context: Notice shown on the account page when demo restrictions are enabled
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Demo mode hides sessions, password changes, and account deletion. Export still works."
+msgstr "演示模式会隐藏会话、密码更改和账号删除。导出仍然可用."
+
+#. @context: Help text explaining that SEO indexing is locked in demo mode
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Demo sites always stay hidden from search engines."
+msgstr "演示站点始终对搜索引擎隐藏。"
+
+#. @context: Color theme preview collection label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Design"
+msgstr "设计"
+
+#. @context: Redirect destination field
+#: src/routes/dash/custom-urls.tsx
+msgid "Destination"
+msgstr "目标地址"
+
+#. @context: Button to disconnect GitHub repository on GitHub Sync settings
+#. @context: Section heading for disconnect action on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Disconnect"
+msgstr "断开连接"
+
+#. @context: Confirmation message when disconnecting GitHub Sync
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Disconnect from GitHub? The webhook will be removed. Your repository content will not be deleted."
+msgstr "要与 GitHub 断开连接吗？该 webhook 将被移除。您的仓库内容不会被删除。"
+
+#. @context: Checkbox to show avatar in the site header
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Display avatar in my site header"
+msgstr "在我的站点页眉显示头像"
+
+#. @context: Help text for site footer field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Displayed at the bottom of all posts and pages."
+msgstr "显示在所有文章和页面的底部。"
+
+#. @context: Step 1 heading — user must download a site export before deleting
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Download a site export"
+msgstr "下载网站导出"
+
+#. @context: Settings item description for static site export
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Download a Zola-compatible archive — host it statically or move to another Jant."
+msgstr "下载一个与 Zola 兼容的归档 — 将其静态托管或移动到另一个 Jant."
+
+#. @context: Button to download the site export ZIP before deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Download Export ZIP"
+msgstr "下载导出 ZIP"
+
+#. @context: Alert when site export download fails during account deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Download failed. Please try again."
+msgstr "下载失败。请重试。"
+
+#. @context: Post status badge - draft
+#: src/ui/dash/StatusBadge.tsx
+msgid "Draft"
+msgstr "草稿"
+
+#. @context: Hint text shown in empty More section of nav settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Drag links here to show them under the More menu"
+msgstr "将链接拖到此处以在更多菜单下显示它们"
+
+#. @context: Placeholder for API token name input
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "e.g. iOS Shortcuts"
+msgstr "例如 iOS Shortcuts"
+
+#. @context: Button to edit item
+#: src/ui/dash/ActionButtons.tsx
+msgid "Edit"
+msgstr "编辑"
+
+#. @context: Confirmation text after downloading the site export in delete flow
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Export downloaded."
+msgstr "导出文件已下载."
+
+#. @context: Settings item — export the site as a Zola archive
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Export Site"
+msgstr "导出站点"
+
+#. @context: Settings item description for avatar
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Favicon and the profile mark in your header"
+msgstr "Favicon 和页眉中的个人标识"
+
+#. @context: Browse filter label for featured posts
+#. @context: Post badge - featured
+#. @context: Select option for using featured posts as the main RSS feed
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/StatusBadge.tsx
+msgid "Featured"
+msgstr "精选"
+
+#. @context: Label for the explicit featured RSS feed URL
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Featured feed"
+msgstr "精选订阅源"
+
+#. @context: Toast after saving feed settings
+#: src/routes/dash/settings.tsx
+msgid "Feed settings updated."
+msgstr "订阅源设置已更新。"
+
+#. @context: Toast after copying a feed URL to the clipboard
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Feed URL copied."
+msgstr "订阅源 URL 已复制。"
+
+#. @context: Settings section heading for RSS feed configuration
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Feeds"
+msgstr "订阅源"
+
+#. @context: Color theme preview card title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Field notes on quiet design"
+msgstr "关于静谧设计的笔记"
+
+#. @context: Error toast when file storage is not set up
+#: src/routes/dash/settings.tsx
+msgid "File storage isn't set up. Check your server config."
+msgstr "文件存储尚未设置。请检查服务器配置。"
+
+#. @context: Settings item description for custom CSS
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Fine-grained styling overrides"
+msgstr "细粒度样式覆盖"
+
+#. @context: Label for the list of stable RSS feed URLs
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Fixed feed URLs"
+msgstr "固定订阅源 URL"
+
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Follow each visitor's system preference."
+msgstr "遵循每位访客的系统偏好。"
+
+#. @context: Appearance settings heading for font theme
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Font theme"
+msgstr "字体主题"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — font theme settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Font Theme"
+msgstr "字体主题"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — general settings
+#. @context: Settings section heading
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "General"
+msgstr "常规"
+
+#. @context: Button to create new API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Generate Token"
+msgstr "生成令牌"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — GitHub sync settings
+#. @context: Settings section heading for GitHub Sync setup
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "GitHub Sync"
+msgstr "GitHub 同步"
+
+#. @context: Section label for nav items shown in header
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Header"
+msgstr "页眉"
+
+#. @context: Settings item description for navigation
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Header links, home feed, and overflow menu"
+msgstr "页眉链接、首页信息流和溢出菜单"
+
+#. @context: Description for the RSS system navigation toggle. {feed} is either Latest or Featured.
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Header RSS points to your {feed} feed (/feed). Change what /feed returns in General."
+msgstr "页眉 RSS 指向你的 {feed} 源 (/feed)。在 常规 中更改 /feed 返回的内容。"
+
+#. @context: Post badge for posts hidden from Latest
+#: src/ui/dash/StatusBadge.tsx
+msgid "Hidden from Latest"
+msgstr "从最新中隐藏 (不出现在 Latest 中，但仍可通过固定链接和集合访问的状态。)"
+
+#. @context: Settings subsection heading for home page settings
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Home"
+msgstr "首页"
+
+#. @context: Toast after auto-saving home settings
+#: src/routes/dash/settings.tsx
+msgid "Home settings updated."
+msgstr "主页设置已更新."
+
+#. @context: Generic hosted auth provider label when no explicit provider name is configured
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Hosted account"
+msgstr "托管账户"
+
+#. @context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "I want to delete {siteName}"
+msgstr "我想删除 {siteName}"
+
+#. @context: Button label to start the GitHub App install flow on GitHub Sync setup
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Install GitHub App"
+msgstr "安装 GitHub App"
+
+#. @context: Help text for the GitHub App connect option on GitHub Sync setup
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Install the GitHub App to grant access without managing personal tokens. Permissions are scoped per repository and revocable from GitHub."
+msgstr "安装 GitHub App 以在无需管理个人令牌的情况下授予访问权限。权限按仓库范围授予，可在 GitHub 上撤销。"
+
+#. @context: Settings group label for third-party integrations
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Integrations"
+msgstr "集成"
+
+#. @context: Nav item label field
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Label"
+msgstr "标签"
+
+#. @context: Error toast when nav link fields are empty
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Label and URL are required"
+msgstr "标签和 URL 为必填项"
+
+#. @context: Error toast when nav label is empty
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Label is required"
+msgstr "标签为必填项"
+
+#. @context: Settings form field for site/dashboard language
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Language"
+msgstr "语言"
+
+#. @context: Settings subsection heading for language and time zone fields
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Language & Time"
+msgstr "语言与时间"
+
+#. @context: Toast after saving language and time settings
+#: src/routes/dash/settings.tsx
+msgid "Language and time updated."
+msgstr "语言和时间已更新。"
+
+#. @context: Label for last push commit SHA on GitHub Sync status
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Last commit"
+msgstr "最近一次提交"
+
+#. @context: Label for last sync time on GitHub Sync status
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Last synced"
+msgstr "上次同步"
+
+#. @context: Token last used date
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Last used {date}"
+msgstr "上次使用 {date}"
+
+#. @context: Browse filter label for latest posts
+#. @context: Select option for using latest posts as the main RSS feed
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Latest"
+msgstr "最新"
+
+#. @context: Label for the explicit latest RSS feed URL
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Latest feed"
+msgstr "最新订阅源"
+
+#. @context: Suffix after Custom CSS link on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "lets you override any theme variable."
+msgstr "允许您覆盖任何主题变量."
+
+#. @context: Theme mode option label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Light"
+msgstr "浅色"
+
+#. @context: Nav item type badge
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "link"
+msgstr "链接"
+
+#. @context: Post format badge - link
+#: src/ui/dash/FormatBadge.tsx
+msgid "Link"
+msgstr "链接"
+
+#. @context: Label for list posts curl example
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "List posts:"
+msgstr "列出帖子："
+
+#. @context: Help text for CJK serif font selection
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Load a serif font optimized for Chinese, Japanese, or Korean content."
+msgstr "加载针对中文、日文或韩文内容优化的衬线字体。"
+
+#. @context: Label for the canonical /feed URL
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Main feed"
+msgstr "主订阅源"
+
+#. @context: Settings field label for the canonical /feed output
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Main RSS feed"
+msgstr "主 RSS 源"
+
+#. @context: Settings item label for opening the hosted account management page
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage Account"
+msgstr "管理账户"
+
+#. @context: Settings item description for hosted account management in the connected provider
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage password and hosted access in {providerLabel}"
+msgstr "在 {providerLabel} 管理密码和托管访问"
+
+#. @context: Intro text on the account settings menu page below the title
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage sign-in security, exports, and irreversible actions."
+msgstr "管理登录安全、导出和不可逆操作."
+
+#. @context: Intro text on the hosted account settings menu page below the title
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage this site's active sessions here. Password and hosted access are managed through {providerLabel}."
+msgstr "在此管理本站点的活动会话。密码和托管访问通过 {providerLabel} 管理。"
+
+#. @context: Section heading for manual push action on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Manual Push"
+msgstr "手动推送"
+
+#. @context: Color theme preview date label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "March 14"
+msgstr "3月14日"
+
+#. @context: Placeholder hint for markdown-enabled textareas
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Markdown supported"
+msgstr "支持 Markdown"
+
+#. @context: Section label for nav items hidden under More dropdown
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "More"
+msgstr "更多"
+
+#. @context: Button label for a menu with more actions
+#: src/routes/dash/custom-urls.tsx
+msgid "More actions"
+msgstr "更多操作"
+
+#. @context: Settings item description for general
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Name, metadata, language, and search defaults"
+msgstr "名称、元数据、语言和搜索默认设置"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — navigation settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Navigation"
+msgstr "导航"
+
+#. @context: Section heading for nav items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation items"
+msgstr "导航项"
+
+#. @context: Toast after saving navigation item order
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation order updated."
+msgstr "导航顺序已更新。"
+
+#. @context: Toast after moving nav item between header/more
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation placement updated."
+msgstr "导航位置已更新."
+
+#. @context: Label for nav preview section
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation Preview"
+msgstr "导航预览"
+
+#. @context: Help text for GitHub PAT input explaining required permissions
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Needs Contents (read/write) and Webhooks (read/write) on the target repository."
+msgstr "需要对目标仓库的 Contents（读/写）和 Webhooks（读/写）。"
+
+#. @context: Button to create new custom URL
+#. @context: Button to create new custom URL
+#. @context: Page heading
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+msgid "New Custom URL"
+msgstr "新建自定义 URL"
+
+#. @context: Password form field
+#: src/ui/dash/settings/AccountContent.tsx
+msgid "New Password"
+msgstr "新密码"
+
+#. @context: Empty state when no sessions exist (shouldn't normally appear)
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "No active sessions right now. Signed-in devices show up here."
+msgstr "当前没有活动会话。 已登录的设备会显示在此处。"
+
+#. @context: Empty state when no collections exist for nav picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No collections yet. Create one first, then add it to your navigation."
+msgstr "还没有合集。请先创建一个，然后将其添加到你的导航中。"
+
+#. @context: Empty state message
+#: src/routes/dash/custom-urls.tsx
+msgid "No custom URLs yet. Create one to add redirects or custom paths for posts."
+msgstr "尚无自定义 URL。创建一个以便为文章添加重定向或自定义路径。"
+
+#. @context: Error toast when no file was selected for upload
+#: src/routes/dash/settings.tsx
+msgid "No file selected. Choose a file to upload."
+msgstr "未选择文件。请选择要上传的文件。"
+
+#. @context: Empty state for navigation items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No navigation items yet. Add links or enable system items below."
+msgstr "当前还没有导航项目。添加链接或在下方启用系统项目。"
+
+#. @context: Shown when no sync has happened yet on GitHub Sync status
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Not synced yet"
+msgstr "尚未同步"
+
+#. @context: Color theme preview format label
+#. @context: Post format badge - note
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/dash/FormatBadge.tsx
+msgid "Note"
+msgstr "笔记"
+
+#. @context: Settings item description for the hosted delete-site entry in the account menu
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
+msgstr "在 {providerLabel} 打开托管站点控制以取消计费或永久删除此站点。"
+
+#. @context: Settings item description for color theme
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Palette, surface tone, and overall mood"
+msgstr "调色板、表面色调与整体氛围"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — password settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Password"
+msgstr "密码"
+
+#. @context: Toast after changing account password
+#: src/routes/dash/settings.tsx
+msgid "Password changed."
+msgstr "密码已更改."
+
+#. @context: Error shown when password changes are blocked in demo mode
+#: src/routes/dash/settings.tsx
+msgid "Password changes are off in demo mode. Sign in with the shared demo credentials."
+msgstr "演示模式下已禁用密码更改。请使用共享的演示凭证登录。"
+
+#. @context: Error toast when new password and confirmation differ
+#: src/routes/dash/settings.tsx
+msgid "Passwords don't match. Make sure both fields are identical."
+msgstr "密码不匹配。请确保两个字段相同。"
+
+#. @context: Custom URL form field
+#: src/routes/dash/custom-urls.tsx
+msgid "Path"
+msgstr "路径"
+
+#. @context: Settings item description for account deletion
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Permanently delete all data and reset the blog"
+msgstr "永久删除所有数据并重置博客"
+
+#. @context: Label for GitHub PAT input on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Personal Access Token"
+msgstr "个人访问令牌"
+
+#. @context: Description in collection picker section
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours."
+msgstr "将合集固定到导航栏。 在过去 48 小时内更新的合集旁会出现一个点。"
+
+#. @context: Post badge - pinned
+#: src/ui/dash/StatusBadge.tsx
+msgid "Pinned"
+msgstr "已置顶"
+
+#. @context: Custom URL target type badge for a post
+#. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+msgid "Post"
+msgstr "文章"
+
+#. @context: Avatar upload button text while generating favicon variants
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Processing..."
+msgstr "处理中..."
+
+#. @context: Post status badge - published
+#: src/ui/dash/StatusBadge.tsx
+msgid "Published"
+msgstr "已发布"
+
+#. @context: Description for manual push action on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Push all posts to GitHub right now instead of waiting for the next automatic sync."
+msgstr "立即将所有文章推送到 GitHub，而不是等待下一次自动同步。"
+
+#. @context: Archive custom URL query params field
+#: src/routes/dash/custom-urls.tsx
+msgid "Query Parameters"
+msgstr "查询参数"
+
+#. @context: Color theme preview card secondary sentence
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Quiet surfaces let writing lead."
+msgstr "低调的界面让写作成为焦点."
+
+#. @context: Post format badge - quote
+#: src/ui/dash/FormatBadge.tsx
+msgid "Quote"
+msgstr "引用 (Jant 的帖子格式之一。)"
+
+#. @context: Color theme preview inline link label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Read why"
+msgstr "了解原因"
+
+#. @context: Custom URL target type badge for a redirect
+#. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+msgid "Redirect"
+msgstr "重定向"
+
+#. @context: Redirect type field
+#: src/routes/dash/custom-urls.tsx
+msgid "Redirect Type"
+msgstr "重定向类型"
+
+#. @context: Settings item description for custom URLs
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Redirects, vanity paths, and URL control"
+msgstr "重定向、个性化路径和 URL 控制"
+
+#. @context: Button to remove the blog avatar
+#. @context: Remove system item from navigation
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Remove"
+msgstr "移除"
+
+#. @context: Description for disconnect action on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Remove the webhook and stop syncing. Your repository content will not be deleted."
+msgstr "移除 webhook 并停止同步。您的仓库内容不会被删除。"
+
+#. @context: Confirm dialog for removing the blog avatar
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Remove this avatar? Your favicon and header icon will go back to the default."
+msgstr "移除此头像？您的网站图标和页眉图标将恢复为默认设置。"
+
+#. @context: Confirm dialog for removing a collection nav item
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Remove this collection from navigation? The collection itself won't be deleted."
+msgstr "要从导航中移除此合集吗？合集本身不会被删除。"
+
+#. @context: Label for GitHub repository input on GitHub Sync settings
+#. @context: Label for connected repository on GitHub Sync status
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Repository"
+msgstr "仓库"
+
+#. @context: Button to revoke API token
+#. @context: Button to revoke a session
+#: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Revoke"
+msgstr "撤销"
+
+#. @context: Confirm dialog for revoking an active session
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Revoke this session? That device will need to sign in again."
+msgstr "撤销此会话? 该设备需要重新登录."
+
+#. @context: Confirm dialog for revoking API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Revoke this token? Any scripts using it will stop working."
+msgstr "撤销此令牌？任何使用它的脚本将停止工作。"
+
+#. @context: Button to save settings
+#. @context: Button to save settings changes
+#. @context: Save nav item changes
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Save"
+msgstr "保存"
+
+#. @context: Button to save custom CSS
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "Save CSS"
+msgstr "保存 CSS"
+
+#. @context: Settings section heading for search engine indexing settings
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Search"
+msgstr "搜索"
+
+#. @context: Toast after saving search settings
+#. @context: Toast after saving search settings
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Search settings updated."
+msgstr "搜索设置已更新。"
+
+#. @context: Settings group label for account security settings
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Security"
+msgstr "安全"
+
+#. @context: Error toast when CSRF token is invalid or expired
+#: src/routes/dash/settings.tsx
+msgid "Security token expired. Refresh the page and try again."
+msgstr "安全令牌已过期。刷新页面后重试。"
+
+#. @context: Error toast when CSRF token is missing from delete request
+#: src/routes/dash/settings.tsx
+msgid "Security token missing. Refresh the page and try again."
+msgstr "缺少安全令牌。刷新页面后重试。"
+
+#. @context: Settings item description for sessions
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "See where you're signed in and revoke old sessions"
+msgstr "查看你的登录位置并撤销旧会话"
+
+#. @context: Error shown when session management is blocked in demo mode
+#: src/routes/dash/settings.tsx
+msgid "Session management is off in demo mode. Use the shared demo session instead."
+msgstr "会话管理在演示模式下已关闭。请使用共享的演示会话。"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — session management
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Sessions"
+msgstr "会话"
+
+#. @context: Settings item description for account settings on the settings home page
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Sessions and password"
+msgstr "会话与密码"
+
+#. @context: Breadcrumb label
+#. @context: Page title for the settings home page
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Settings"
+msgstr "设置"
+
+#. @context: Checkbox for showing the optional Jant credit link on the home page
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Show \"Build with Jant\" at the bottom of the home page"
+msgstr "在主页底部显示 \"Build with Jant\""
+
+#. @context: Settings link — sign out action
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Sign Out"
+msgstr "退出登录"
+
+#. @context: Session creation date
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Signed in {date}"
+msgstr "于 {date} 登录"
+
+#. @context: Settings group label for site settings
+#. @context: Settings subsection heading for basic site fields
+#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Site"
+msgstr "站点"
+
+#. @context: Settings section heading for site footer
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Site Footer"
+msgstr "网站页脚"
+
+#. @context: Settings form field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Site Name"
+msgstr "站点名称"
+
+#. @context: Toast after saving site settings
+#: src/routes/dash/settings.tsx
+msgid "Site settings updated."
+msgstr "站点设置已更新."
+
+#. @context: Color theme preview card body sentence
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Soft color should still carry a clear reading rhythm."
+msgstr "柔和的颜色仍应保持清晰的阅读节奏。"
+
+#. @context: Button to trigger a full content push to GitHub on GitHub Sync settings
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Sync Now"
+msgstr "立即同步"
+
+#. @context: Nav item type badge
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "system"
+msgstr "系统"
+
+#. @context: Custom URL target slug field
+#: src/routes/dash/custom-urls.tsx
+msgid "Target Slug"
+msgstr "目标 slug"
+
+#. @context: Error toast when selected font theme is not valid
+#: src/routes/dash/settings.tsx
+msgid "That font theme isn't available. Pick another one."
+msgstr "该字体主题不可用。请选择另一个。"
+
+#. @context: Error toast when selected theme is not valid
+#: src/routes/dash/settings.tsx
+msgid "That theme isn't available. Pick another one."
+msgstr "该主题不可用。请选择其他主题。"
+
+#. @context: Custom URL target slug help text
+#: src/routes/dash/custom-urls.tsx
+msgid "The slug of the target post or collection"
+msgstr "目标文章或合集的 slug"
+
+#. @context: Link to theming documentation on Custom CSS page
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "Theming guide"
+msgstr "主题指南"
+
+#. @context: Description for session management
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "These devices are currently signed in to your account. Revoke any session you don't recognize."
+msgstr "以下设备当前已登录到您的帐户。撤销任何您不认识的会话。"
+
+#. @context: Generic fallback blog name in the delete-account confirmation phrase when the site name is unavailable
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "this blog"
+msgstr "此博客"
+
+#. @context: Help text for choosing whether /feed points to latest or featured posts
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "This controls what /feed returns."
+msgstr "这将控制 /feed 返回的内容。"
+
+#. @context: Notice shown on hosted account settings explaining that password and hosted account controls live in the connected hosted auth provider
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "This hosted site signs in through {providerLabel}. Manage password and hosted access there."
+msgstr "此托管站点通过 {providerLabel} 登录。请在那里管理密码和托管访问权限。"
+
+#. @context: Help text for avatar upload
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
+msgstr "此图用于您的 favicon 和 apple-touch-icon。为获得最佳效果，请上传至少 512×512 像素、纯色背景的方形 PNG。"
+
+#. @context: Warning text on account deletion page
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "This will permanently delete all your data — posts, media, collections, settings, and your account. Your blog will be reset to its initial setup state. This cannot be undone."
+msgstr "这将永久删除您所有的数据 — 帖子、媒体、合集、设置和您的账户。您的博客将重置为初始设置状态。此操作不可撤销。"
+
+#. @context: Settings form field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Time Zone"
+msgstr "时区"
+
+#. @context: Description for built-in nav toggles
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Toggle built-in navigation items. Their order controls what shows in the header and which feed the homepage opens first."
+msgstr "切换内置导航项. 它们的顺序决定页眉显示的内容以及首页首先打开哪个订阅源."
+
+#. @context: Button to expand/collapse nav item edit
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Toggle edit panel"
+msgstr "切换编辑面板"
+
+#. @context: API token name field label
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Token name"
+msgstr "令牌名称"
+
+#. @context: API tokens description
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
+msgstr "令牌让您无需登录即可从脚本、快捷方式和其他工具访问 API。"
+
+#. @context: Intro text on the settings home page below the title
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Tune how your site looks, reads, and runs."
+msgstr "调整你的网站的外观、阅读体验和运行方式。"
+
+#. @context: Custom URL form field
+#: src/routes/dash/custom-urls.tsx
+msgid "Type"
+msgstr "类型"
+
+#. @context: Instruction to type confirmation phrase before deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Type the following phrase to confirm:"
+msgstr "输入以下短语以确认："
+
+#. @context: Settings item description for font theme
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Typography choices and reading texture"
+msgstr "排版选项与阅读质感"
+
+#. @context: Fallback label when session device can't be identified
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Unknown device"
+msgstr "未知设备"
+
+#. @context: Settings item description for password change
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Update the password you use to sign in"
+msgstr "更新您用于登录的密码"
+
+#. @context: Button to upload avatar image
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Upload Avatar"
+msgstr "上传头像"
+
+#. @context: Error toast when avatar upload fails
+#: src/routes/dash/settings.tsx
+msgid "Upload didn't go through. Try again in a moment."
+msgstr "上传未成功。请稍后再试。"
+
+#. @context: Error message when avatar upload fails
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Upload failed. Please try again."
+msgstr "上传失败。请重试。"
+
+#. @context: Avatar upload button text while uploading
+#: src/ui/dash/settings/AvatarContent.tsx
+msgid "Uploading..."
+msgstr "正在上传..."
+
+#. @context: Nav item URL field
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "URL"
+msgstr "网址"
+
+#. @context: Heading for API token usage examples
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Usage"
+msgstr "用法"
+
+#. @context: Help text for the explicit latest and featured feed URLs
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Use these when you want a feed URL that never changes."
+msgstr "当你想要一个永远不变的订阅源 URL 时使用它们。"
+
+#. @context: Description for choosing featured posts as the main RSS feed
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Uses featured posts for /feed."
+msgstr "将精选文章用于 /feed。"
+
+#. @context: Description for choosing the latest posts as the main RSS feed
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Uses the latest public posts for /feed."
+msgstr "为 /feed 使用最新的公开帖子。"
+
+#. @context: Button to view item on public site
+#: src/ui/dash/ActionButtons.tsx
+msgid "View"
+msgstr "查看"
+
+#. @context: Prefix before Custom CSS link on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Want more control?"
+msgstr "想要更多控制？"
+
+#. @context: Description for backup and restore documentation link in account settings
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "When to use site export, database backups, and recovery drills."
+msgstr "何时使用站点导出、数据库备份和恢复演练。"

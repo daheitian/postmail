@@ -62,16 +62,16 @@ export async function parseFrontMatter(
   const yamlMatch = content.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (yamlMatch) {
     const { parse } = await import("yaml");
-    const frontMatter = (parse(yamlMatch[1]!) || {}) as ParsedFrontMatter;
-    return { frontMatter, body: yamlMatch[2]! };
+    const frontMatter = (parse(yamlMatch[1] ?? "") || {}) as ParsedFrontMatter;
+    return { frontMatter, body: yamlMatch[2] ?? "" };
   }
 
   // Try TOML front matter (+++...+++)
   const tomlMatch = content.match(/^\+\+\+\n([\s\S]*?)\n\+\+\+\n?([\s\S]*)$/);
   if (tomlMatch) {
     const { parse } = await import("smol-toml");
-    const frontMatter = parse(tomlMatch[1]!) as ParsedFrontMatter;
-    return { frontMatter, body: tomlMatch[2]! };
+    const frontMatter = parse(tomlMatch[1] ?? "") as ParsedFrontMatter;
+    return { frontMatter, body: tomlMatch[2] ?? "" };
   }
 
   return { frontMatter: {} as ParsedFrontMatter, body: content };
@@ -125,8 +125,9 @@ export function splitReplies(body: string): ReplySegment[] {
     const attrs: Record<string, string> = {};
     const attrRegex = /(\w+)="([^"]*)"/g;
     let attrMatch: RegExpExecArray | null;
-    while ((attrMatch = attrRegex.exec(match[1]!)) !== null) {
-      attrs[attrMatch[1]!] = attrMatch[2]!;
+    while ((attrMatch = attrRegex.exec(match[1] ?? "")) !== null) {
+      const key = attrMatch[1];
+      if (key) attrs[key] = attrMatch[2] ?? "";
     }
     markers.push({
       index: match.index,
@@ -144,19 +145,22 @@ export function splitReplies(body: string): ReplySegment[] {
   // Root segment: everything before the first marker
   segments.push({
     attrs: null,
-    body: stripTrailingReplyDecoration(body.slice(0, markers[0]!.index)).trim(),
+    body: stripTrailingReplyDecoration(
+      body.slice(0, (markers[0] as (typeof markers)[number]).index),
+    ).trim(),
   });
 
   // Reply segments: between consecutive markers
   for (let i = 0; i < markers.length; i++) {
-    const start = markers[i]!.endIndex;
-    const end = i + 1 < markers.length ? markers[i + 1]!.index : body.length;
+    const current = markers[i] as (typeof markers)[number];
+    const next = markers[i + 1];
+    const start = current.endIndex;
+    const end = next ? next.index : body.length;
     const raw = body.slice(start, end);
     // Last segment has no following marker, so no trailing decoration to strip.
-    const cleaned =
-      i + 1 < markers.length ? stripTrailingReplyDecoration(raw) : raw;
+    const cleaned = next ? stripTrailingReplyDecoration(raw) : raw;
     segments.push({
-      attrs: markers[i]!.attrs,
+      attrs: current.attrs,
       body: cleaned.trim(),
     });
   }

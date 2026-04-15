@@ -30,7 +30,7 @@ export function isCodeEditorHtml(html: string): boolean {
     /^[^<]*(?:<(?:meta|html|head|body)\b[^>]*>\s*)*<(?:div|pre)\b[^>]*style="([^"]*)"/i,
   );
   if (outerStyleMatch) {
-    const style = outerStyleMatch[1]!;
+    const style = outerStyleMatch[1] ?? "";
     const hasMonospace =
       /font-family:[^;"]*\b(?:monospace|Menlo|Monaco|Consolas|Courier|JetBrains Mono|Fira Code|Source Code Pro)\b/i.test(
         style,

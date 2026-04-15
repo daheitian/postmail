@@ -12,7 +12,10 @@ import type { NavItemView, SiteLayoutProps } from "../../types.js";
 import { toPublicPath } from "../../lib/url.js";
 import { ComposeDialog } from "../compose/ComposeDialog.js";
 import { ComposePrompt } from "../compose/ComposePrompt.js";
-import { getNavItemDisplayLabel } from "../shared/navigation-labels.js";
+import {
+  getNavItemDisplayLabel,
+  NAV_MORE_LABEL,
+} from "../shared/navigation-labels.js";
 import { HomePageBranding } from "../shared/HomePageBranding.js";
 
 const ExternalLinkIcon = () => (
@@ -138,6 +141,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   const searchLabel = i18n._(
     msg({
       message: "Search",
+      context: "nav",
       comment: "@context: Search icon link in browse nav",
     }),
   );
@@ -149,12 +153,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       comment: "@context: Hamburger menu button label",
     }),
   );
-  const moreLabel = i18n._(
-    msg({
-      message: "More",
-      comment: "@context: More navigation links dropdown button",
-    }),
-  );
+  const moreLabel = i18n._(NAV_MORE_LABEL);
   const newPostLabel = i18n._(
     msg({
       message: "New post",

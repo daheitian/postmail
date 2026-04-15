@@ -14,7 +14,7 @@ export default [
       "**/*.config.ts",
       "**/.lingui/**",
       "**/assets.gen.ts",
-      "**/i18n/locales/*.ts",
+      "**/i18n/locales/**/*.ts",
       "**/src/assets/**",
       "**/bin/**",
       "references/**",

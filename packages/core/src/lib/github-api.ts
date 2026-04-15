@@ -391,5 +391,7 @@ export function parseRepoSlug(
 ): { owner: string; repo: string } | null {
   const match = /^([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)$/.exec(slug.trim());
   if (!match) return null;
-  return { owner: match[1]!, repo: match[2]! };
+  const [, owner, repo] = match;
+  if (!owner || !repo) return null;
+  return { owner, repo };
 }

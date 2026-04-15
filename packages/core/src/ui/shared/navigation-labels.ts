@@ -13,36 +13,62 @@ type NavigationLabelItem = {
   url: string;
 };
 
+// `context: "nav"` gives these site-header labels a distinct Lingui hash so
+// they don't collide with identically-worded strings in the settings surface
+// (e.g. the "Latest"/"Featured" radios on the General settings page). The
+// header nav is shared between public and admin pages — keeping it untranslated
+// everywhere makes the chrome feel consistent and avoids routing quirks.
 const BUILTIN_NAV_LABELS = {
   latest: msg({
     message: "Latest",
+    context: "nav",
     comment: "@context: Built-in navigation label for the latest feed",
   }),
   featured: msg({
     message: "Featured",
+    context: "nav",
     comment: "@context: Built-in navigation label for the featured feed",
   }),
   collections: msg({
     message: "Collections",
+    context: "nav",
     comment: "@context: Built-in navigation label for the collections page",
   }),
   archive: msg({
     message: "Archive",
+    context: "nav",
     comment: "@context: Built-in navigation label for the archive page",
   }),
   settings: msg({
     message: "Settings",
+    context: "nav",
     comment: "@context: Built-in navigation label for settings",
   }),
   rss: msg({
     message: "Feed",
+    context: "nav",
     comment: "@context: Built-in navigation label for feed",
   }),
   signIn: msg({
     message: "Sign in",
+    context: "nav",
     comment: "@context: Built-in navigation label shown when auth is required",
   }),
+  more: msg({
+    message: "More",
+    context: "nav",
+    comment: "@context: Built-in navigation label for the More dropdown",
+  }),
 } as const;
+
+/**
+ * Shared message descriptor for the nav "More" dropdown button. Re-exported
+ * so the real site header (public) and the nav preview inside settings resolve
+ * to the same Lingui hash in the public catalog — the preview would otherwise
+ * produce a colliding hash in the settings catalog and leak a translation
+ * back onto the real header.
+ */
+export const NAV_MORE_LABEL = BUILTIN_NAV_LABELS.more;
 
 const SYSTEM_NAV_TITLES: Partial<Record<SystemNavKey, MessageDescriptor>> = {
   latest: BUILTIN_NAV_LABELS.latest,

@@ -17,7 +17,7 @@ import {
   ONBOARDING_STATUS,
   type SettingsKey,
 } from "../lib/constants.js";
-import { baseLocale } from "../i18n/locales.js";
+import { baseLocale, isLocale } from "../i18n/locales.js";
 import { isCjkSerifFont } from "../i18n/detect.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
@@ -284,6 +284,9 @@ export function createSettingsService(
 
     async updateLocaleSettings(data, opts) {
       const trimmedLanguage = data.siteLanguage.trim() || baseLocale;
+      if (!isLocale(trimmedLanguage)) {
+        throw new ValidationError("Choose a supported language.");
+      }
       await this.set("SITE_LANGUAGE", trimmedLanguage);
 
       // CJK serif font setting

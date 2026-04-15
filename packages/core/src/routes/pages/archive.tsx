@@ -602,7 +602,7 @@ async function buildArchiveFeedData(
     undefined,
     aliasMap,
   ).map((postView, index) => {
-    const post = posts[index]!;
+    const post = posts[index] as (typeof posts)[number];
 
     // Build thread replies
     const thread = threadMap.get(post.id);

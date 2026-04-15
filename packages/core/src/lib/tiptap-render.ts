@@ -306,8 +306,8 @@ export function trimTiptapBody(json: string): string | null {
   let start = 0;
   let end = doc.content.length;
   const content = doc.content;
-  while (start < end && isEmptyBlock(content[start]!)) start++;
-  while (end > start && isEmptyBlock(content[end - 1]!)) end--;
+  while (start < end && isEmptyBlock(content[start] as JSONContent)) start++;
+  while (end > start && isEmptyBlock(content[end - 1] as JSONContent)) end--;
 
   if (start >= end) return null;
   if (start === 0 && end === doc.content.length) return json;

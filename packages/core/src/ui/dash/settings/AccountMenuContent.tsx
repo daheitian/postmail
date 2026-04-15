@@ -226,15 +226,15 @@ export function AccountMenuContent({
               icon={ICONS.download}
               name={i18n._(
                 msg({
-                  message: "Export Static Site",
+                  message: "Export Site",
                   comment:
-                    "@context: Settings item — export a Zola static site ZIP",
+                    "@context: Settings item — export the site as a Zola archive",
                 }),
               )}
               description={i18n._(
                 msg({
                   message:
-                    "Download a Zola site ZIP for static publishing or import into another Jant.",
+                    "Download a Zola-compatible archive — host it statically or move to another Jant.",
                   comment:
                     "@context: Settings item description for static site export",
                 }),

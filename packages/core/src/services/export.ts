@@ -968,8 +968,9 @@ const SYSTEM_NAV_FALLBACK_LABELS: Record<string, string> = {
 
 function resolveNavItemLabel(item: SiteConfig["navItems"][number]): string {
   if (item.label) return item.label;
-  if (item.systemKey && SYSTEM_NAV_FALLBACK_LABELS[item.systemKey]) {
-    return SYSTEM_NAV_FALLBACK_LABELS[item.systemKey]!;
+  if (item.systemKey) {
+    const fallback = SYSTEM_NAV_FALLBACK_LABELS[item.systemKey];
+    if (fallback) return fallback;
   }
   return item.label;
 }

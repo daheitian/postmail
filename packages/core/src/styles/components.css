@@ -389,7 +389,7 @@ svg[stroke-width].icon-fine {
   .settings-directory-item {
     @apply flex items-center w-full text-left;
     gap: 0.68rem;
-    padding: 0.58rem 0.6rem 0.58rem 0;
+    padding: 0.85rem 0.6rem 0.85rem 0;
     border: none;
     border-radius: 0.85rem;
     background: transparent;
@@ -726,7 +726,7 @@ svg[stroke-width].icon-fine {
   @media (max-width: 699px) {
     .settings-directory-item {
       gap: 0.62rem;
-      padding: 0.52rem 0.52rem 0.52rem 0;
+      padding: 0.78rem 0.52rem 0.78rem 0;
       border-radius: 0.8rem;
     }
 

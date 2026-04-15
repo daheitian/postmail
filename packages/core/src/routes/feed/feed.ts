@@ -155,7 +155,7 @@ async function buildLatestFeedData(
     undefined,
     aliasMap,
   ).map((postView, index) => {
-    const post = posts[index]!;
+    const post = posts[index] as (typeof posts)[number];
     return {
       ...postView,
       feedUpdatedAt: toISOString(post.lastActivityAt),
@@ -234,7 +234,7 @@ async function buildFeaturedFeedData(
     undefined,
     aliasMap,
   ).map((postView, index) => {
-    const post = posts[index]!;
+    const post = posts[index] as (typeof posts)[number];
 
     // feedUpdatedAt = max(lastActivityAt, featuredAt)
     const lastActivity = toISOString(post.lastActivityAt);

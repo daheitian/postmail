@@ -92,6 +92,92 @@ function publicPath(c: Context<Env>, path: string): string {
   return toPublicPath(path, c.var.appConfig.sitePathPrefix);
 }
 
+/**
+ * Breadcrumb labels for admin settings pages.
+ *
+ * These duplicate labels defined in the corresponding UI components (e.g.
+ * `SettingsRootContent`, `AccountMenuContent`) on purpose: Lingui hashes are
+ * computed from `message` alone, so identical text produces the same catalog
+ * entry and shares the translation. Keep the text in sync with the UI source
+ * of truth.
+ */
+function breadcrumbLabel(
+  c: Context<Env>,
+  key:
+    | "settings"
+    | "general"
+    | "avatar"
+    | "navigation"
+    | "colorTheme"
+    | "fontTheme"
+    | "customCss"
+    | "account"
+    | "sessions"
+    | "password"
+    | "deleteAccount"
+    | "apiTokens"
+    | "githubSync",
+): string {
+  const i18n = getI18n(c);
+  switch (key) {
+    case "settings":
+      return i18n._(
+        msg({ message: "Settings", comment: "@context: Breadcrumb label" }),
+      );
+    case "general":
+      return i18n._(
+        msg({ message: "General", comment: "@context: Breadcrumb label" }),
+      );
+    case "avatar":
+      return i18n._(
+        msg({ message: "Avatar", comment: "@context: Breadcrumb label" }),
+      );
+    case "navigation":
+      return i18n._(
+        msg({ message: "Navigation", comment: "@context: Breadcrumb label" }),
+      );
+    case "colorTheme":
+      return i18n._(
+        msg({ message: "Color Theme", comment: "@context: Breadcrumb label" }),
+      );
+    case "fontTheme":
+      return i18n._(
+        msg({ message: "Font Theme", comment: "@context: Breadcrumb label" }),
+      );
+    case "customCss":
+      return i18n._(
+        msg({ message: "Custom CSS", comment: "@context: Breadcrumb label" }),
+      );
+    case "account":
+      return i18n._(
+        msg({ message: "Account", comment: "@context: Breadcrumb label" }),
+      );
+    case "sessions":
+      return i18n._(
+        msg({ message: "Sessions", comment: "@context: Breadcrumb label" }),
+      );
+    case "password":
+      return i18n._(
+        msg({ message: "Password", comment: "@context: Breadcrumb label" }),
+      );
+    case "deleteAccount":
+      return i18n._(
+        msg({
+          message: "Delete Account",
+          comment: "@context: Breadcrumb label",
+        }),
+      );
+    case "apiTokens":
+      return i18n._(
+        msg({ message: "API Tokens", comment: "@context: Breadcrumb label" }),
+      );
+    case "githubSync":
+      return i18n._(
+        msg({ message: "GitHub Sync", comment: "@context: Breadcrumb label" }),
+      );
+  }
+}
+
 type DemoRestriction = "sessions" | "password" | "accountDeletion";
 
 function getDemoRestrictionMessage(
@@ -182,9 +268,9 @@ settingsRoutes.get("/general", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="General"
+          current={breadcrumbLabel(c, "general")}
         />
         <GeneralContent
           siteName={dbSiteName || ""}
@@ -407,9 +493,9 @@ settingsRoutes.get("/avatar", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="Avatar"
+          current={breadcrumbLabel(c, "avatar")}
         />
         <AvatarContent
           siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
@@ -609,9 +695,9 @@ settingsRoutes.get("/navigation", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="Navigation"
+          current={breadcrumbLabel(c, "navigation")}
         />
         <NavigationContent
           navItems={navItems}
@@ -643,9 +729,9 @@ settingsRoutes.get("/color-theme", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="Color Theme"
+          current={breadcrumbLabel(c, "colorTheme")}
         />
         <ColorThemeContent
           themes={themes}
@@ -708,9 +794,9 @@ settingsRoutes.get("/font-theme", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="Font Theme"
+          current={breadcrumbLabel(c, "fontTheme")}
         />
         <FontThemeContent
           fontThemes={BUILTIN_FONT_THEMES}
@@ -760,9 +846,9 @@ settingsRoutes.get("/custom-css", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="Custom CSS"
+          current={breadcrumbLabel(c, "customCss")}
         />
         <AdvancedContent
           customCSS={customCSS}
@@ -817,9 +903,9 @@ settingsRoutes.get("/account", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="Account"
+          current={breadcrumbLabel(c, "account")}
         />
         <AccountMenuContent
           sitePathPrefix={c.var.appConfig.sitePathPrefix}
@@ -883,9 +969,9 @@ settingsRoutes.get("/account/sessions", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Account"
+          parent={breadcrumbLabel(c, "account")}
           parentHref={publicPath(c, "/settings/account")}
-          current="Sessions"
+          current={breadcrumbLabel(c, "sessions")}
         />
         <SessionsContent
           sessions={sessions}
@@ -938,9 +1024,9 @@ settingsRoutes.get("/account/password", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Account"
+          parent={breadcrumbLabel(c, "account")}
           parentHref={publicPath(c, "/settings/account")}
-          current="Password"
+          current={breadcrumbLabel(c, "password")}
         />
         <AccountContent sitePathPrefix={c.var.appConfig.sitePathPrefix} />
       </>
@@ -1049,9 +1135,9 @@ settingsRoutes.get("/account/delete-account", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Account"
+          parent={breadcrumbLabel(c, "account")}
           parentHref={publicPath(c, "/settings/account")}
-          current="Delete Account"
+          current={breadcrumbLabel(c, "deleteAccount")}
         />
         <DeleteAccountContent
           siteName={navData.siteName}
@@ -1135,9 +1221,9 @@ settingsRoutes.get("/api-tokens", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="API Tokens"
+          current={breadcrumbLabel(c, "apiTokens")}
         />
         <ApiTokensContent
           tokens={tokens}
@@ -1397,9 +1483,9 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="GitHub Sync"
+          current={breadcrumbLabel(c, "githubSync")}
         />
         <div class="flex flex-col gap-6 max-w-form">
           <div>
@@ -1534,9 +1620,9 @@ settingsRoutes.get("/github-sync", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
+          parent={breadcrumbLabel(c, "settings")}
           parentHref={publicPath(c, "/settings")}
-          current="GitHub Sync"
+          current={breadcrumbLabel(c, "githubSync")}
         />
         <GitHubSyncContent
           status={status}

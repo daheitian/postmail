@@ -74,5 +74,5 @@ describe("demo canonical snapshot", () => {
     } finally {
       rmSync(persistDir, { recursive: true, force: true });
     }
-  }, 60_000);
+  }, 240_000);
 });

@@ -15,7 +15,7 @@ packages/core/dev/scripts/seed-site.sql
 packages/core/.data/
 packages/core/data/
 # Lingui compiled catalogs (generated from .po files via `lingui compile`)
-packages/core/src/i18n/locales/*.ts
+packages/core/src/i18n/locales/**/*.ts
 
 # Cloudflare
 .wrangler/

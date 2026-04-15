@@ -326,7 +326,7 @@ export async function renderCollectionFeed(
     undefined,
     aliasMap,
   ).map((postView, index) => {
-    const post = posts[index]!;
+    const post = posts[index] as (typeof posts)[number];
     const collectedAt = entries[index]?.collectedAt;
 
     // Build thread replies

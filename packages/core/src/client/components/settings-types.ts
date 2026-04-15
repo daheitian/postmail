@@ -41,6 +41,8 @@ export interface SettingsLabels {
   featuredFeedOptionDescription: string;
   showJantBrandingOnHome: string;
   markdownSupported: string;
+  siteLanguage: string;
+  siteLanguageHelp: string;
   cjkFont: string;
   cjkFontHelp: string;
   timeZone: string;
@@ -65,6 +67,12 @@ export interface SettingsTimezone {
 
 /** CJK font option for the select dropdown */
 export interface SettingsCjkFont {
+  value: string;
+  label: string;
+}
+
+/** Site language option for the select dropdown */
+export interface SettingsLanguage {
   value: string;
   label: string;
 }

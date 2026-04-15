@@ -257,11 +257,20 @@ describe("SettingsService", () => {
 
     it("detects language change", async () => {
       const result = await settingsService.updateGeneral(
-        { ...defaults, siteLanguage: "sv" },
+        { ...defaults, siteLanguage: "zh-Hans" },
         { oldLanguage: "en", fallbackSiteName: "Jant" },
       );
 
       expect(result.languageChanged).toBe(true);
+    });
+
+    it("rejects unsupported locales", async () => {
+      await expect(
+        settingsService.updateGeneral(
+          { ...defaults, siteLanguage: "sv" },
+          { oldLanguage: "en", fallbackSiteName: "Jant" },
+        ),
+      ).rejects.toThrow(/supported language/i);
     });
 
     it("returns no language change when same", async () => {
@@ -373,7 +382,7 @@ describe("SettingsService", () => {
     it("updates locale fields and reports when the language changed", async () => {
       const result = await settingsService.updateLocaleSettings(
         {
-          siteLanguage: "sv",
+          siteLanguage: "zh-Hans",
           cjkSerifFont: "zh-Hans",
           timeZone: "America/New_York",
         },
@@ -383,7 +392,7 @@ describe("SettingsService", () => {
       );
 
       expect(result.languageChanged).toBe(true);
-      expect(await settingsService.get("SITE_LANGUAGE")).toBe("sv");
+      expect(await settingsService.get("SITE_LANGUAGE")).toBe("zh-Hans");
       expect(await settingsService.get("CJK_SERIF_FONT")).toBe("zh-Hans");
       expect(await settingsService.get("TIME_ZONE")).toBe("America/New_York");
     });
