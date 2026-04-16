@@ -74,6 +74,19 @@ const TEXT_ATTACHMENT_FILENAME = "attached-text.html";
 const TEXT_ATTACHMENT_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
 /**
+ * MIME type assigned to legacy envelope-format text attachments (pre-refactor).
+ * Still referenced by the migration helper to identify unmigrated records.
+ */
+const LEGACY_TEXT_ATTACHMENT_ENVELOPE_MIME_TYPE = "text/x-tiptap+json";
+
+/**
+ * Default maximum number of legacy records processed per migration call.
+ * Keeps a single invocation bounded so callers can drive progress in batches.
+ */
+const TEXT_ATTACHMENT_MIGRATION_DEFAULT_LIMIT = 50;
+const TEXT_ATTACHMENT_MIGRATION_MAX_LIMIT = 500;
+
+/**
  * Derive the JSON sibling key for a text-attachment `.html` storage key.
  *
  * Text attachments live as a pair of sibling objects in storage:
@@ -213,8 +226,8 @@ export interface MediaService {
     storage?: StorageDriver | null,
   ): Promise<TextAttachmentContent | null>;
   /**
-   * Return the pre-rendered HTML stored in the text-attachment envelope.
-   * Used for SSR pages where we can serve the HTML directly without a
+   * Return the pre-rendered HTML sibling stored alongside the Tiptap AST.
+   * Used for SSR pages where the HTML can be served directly without a
    * round-trip through markdown conversion.
    */
   getTextAttachmentHtml(
@@ -229,6 +242,27 @@ export interface MediaService {
   attachToPost(postId: string, mediaIds: string[]): Promise<void>;
   detachFromPost(postId: string): Promise<void>;
   updateAlt(id: string, alt: string): Promise<void>;
+  /**
+   * One-off maintenance operation that converts legacy envelope-format text
+   * attachments (`text/x-tiptap+json` MIME, single JSON object with `json`
+   * and `html` fields) into the current split-sibling layout (`.html` public
+   * artifact + `.json` source).
+   *
+   * Safe to re-run: completed records are detected by MIME and skipped.
+   * Processes records in batches; pass `limit` to control batch size when
+   * running against large sites. Returns a summary so the caller can decide
+   * whether to keep invoking until the unmigrated count reaches zero.
+   */
+  migrateEnvelopeTextAttachments(deps: {
+    storage: StorageDriver;
+    storageDriver: string;
+    limit?: number;
+  }): Promise<{
+    migrated: number;
+    failed: number;
+    remaining: number;
+    errors: Array<{ mediaId: string; message: string }>;
+  }>;
 }
 
 export interface CreateMediaData {
@@ -312,6 +346,96 @@ export function createMediaService(
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
+  }
+
+  async function migrateOneEnvelopeTextAttachment(
+    row: typeof media.$inferSelect,
+    storage: StorageDriver,
+    storageDriver: string,
+  ): Promise<void> {
+    const envelopeKey = row.storageKey;
+    const object = await storage.get(envelopeKey);
+    if (!object) {
+      throw new Error(
+        `Legacy envelope object missing from storage at ${envelopeKey}`,
+      );
+    }
+
+    const raw = await new Response(object.body).text();
+    const envelope = JSON.parse(raw) as { json?: unknown; html?: string };
+
+    if (!envelope.json || typeof envelope.html !== "string") {
+      throw new Error(
+        `Envelope at ${envelopeKey} is missing expected json/html fields`,
+      );
+    }
+
+    // New keys share the envelope's prefix (media/site/... up to the filename)
+    // so locality is preserved. The extension swap is the only change.
+    const baseKey = envelopeKey.replace(/\.[^.]+$/, "");
+    const htmlKey = `${baseKey}.html`;
+    const jsonKey = `${baseKey}.json`;
+
+    const htmlBody = envelope.html;
+    const jsonBody = JSON.stringify(envelope.json);
+    const encoder = new TextEncoder();
+    const htmlBytes = encoder.encode(htmlBody);
+    const jsonBytes = encoder.encode(jsonBody);
+
+    // Write order mirrors createTextAttachment: JSON source first, then
+    // public HTML. If HTML fails we roll back the JSON so we don't strand
+    // orphan sibling files.
+    await storage.put(jsonKey, jsonBytes, {
+      contentType: TEXT_ATTACHMENT_JSON_MIME_TYPE,
+      cacheControl: TEXT_ATTACHMENT_CACHE_CONTROL,
+    });
+
+    try {
+      await storage.put(htmlKey, htmlBytes, {
+        contentType: TEXT_ATTACHMENT_HTML_MIME_TYPE,
+        cacheControl: TEXT_ATTACHMENT_CACHE_CONTROL,
+      });
+    } catch (error) {
+      await storage.delete(jsonKey).catch(() => undefined);
+      throw error;
+    }
+
+    // Filename tracks the storageKey's trailing segment so downstream code
+    // that inspects `media.filename` stays consistent with the object layout.
+    const newFilename = htmlKey.split("/").pop() ?? row.filename;
+    const provider = ensureStorageProvider(row.provider, Error);
+    const expectedProvider = ensureStorageProvider(storageDriver, Error);
+    if (provider !== expectedProvider) {
+      // Guard: migrating a row whose storage lives on a different provider
+      // than the driver we were handed is a bug — bail so we don't write to
+      // the wrong backend.
+      throw new Error(
+        `Row ${row.id} lives on provider "${provider}" but migration was called with driver "${expectedProvider}"`,
+      );
+    }
+
+    await db
+      .update(media)
+      .set({
+        storageKey: htmlKey,
+        filename: newFilename,
+        originalName: TEXT_ATTACHMENT_FILENAME,
+        mimeType: TEXT_ATTACHMENT_HTML_MIME_TYPE,
+        size: htmlBytes.byteLength,
+        updatedAt: now(),
+      })
+      .where(and(eq(media.siteId, siteId), eq(media.id, row.id)));
+
+    // Remove the old envelope last — only when its key is distinct from the
+    // new pair (it always should be, because the extension changed). Any
+    // failure here is best-effort: the DB row already points to the new
+    // keys, so readers have already migrated.
+    if (envelopeKey !== htmlKey && envelopeKey !== jsonKey) {
+      await storage.delete(envelopeKey).catch((err) => {
+        // eslint-disable-next-line no-console -- Visibility helps operators spot stuck garbage
+        console.error(`Failed to delete legacy envelope ${envelopeKey}:`, err);
+      });
+    }
   }
 
   async function assertCanWriteBytes(additionalBytes: number): Promise<void> {
@@ -721,6 +845,58 @@ export function createMediaService(
         .update(media)
         .set({ alt, updatedAt: now() })
         .where(and(eq(media.siteId, siteId), eq(media.id, id)));
+    },
+
+    async migrateEnvelopeTextAttachments(deps) {
+      const limit = Math.min(
+        Math.max(deps.limit ?? TEXT_ATTACHMENT_MIGRATION_DEFAULT_LIMIT, 1),
+        TEXT_ATTACHMENT_MIGRATION_MAX_LIMIT,
+      );
+
+      const legacyRows = await db
+        .select()
+        .from(media)
+        .where(
+          and(
+            eq(media.siteId, siteId),
+            eq(media.mimeType, LEGACY_TEXT_ATTACHMENT_ENVELOPE_MIME_TYPE),
+          ),
+        )
+        .orderBy(asc(media.createdAt))
+        .limit(limit + 1);
+
+      const toProcess = legacyRows.slice(0, limit);
+      const remainingBeyondBatch = legacyRows.length > limit;
+
+      const errors: Array<{ mediaId: string; message: string }> = [];
+      let migrated = 0;
+      let failed = 0;
+
+      for (const row of toProcess) {
+        try {
+          await migrateOneEnvelopeTextAttachment(
+            row,
+            deps.storage,
+            deps.storageDriver,
+          );
+          migrated += 1;
+        } catch (error) {
+          failed += 1;
+          errors.push({
+            mediaId: row.id,
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+
+      // If we processed the entire batch and there was a peek row beyond it,
+      // there's at least one more remaining. Otherwise the remainder is
+      // exactly whatever this call couldn't migrate (plus the peek row, if
+      // any). Callers can keep invoking until remaining === 0.
+      const remaining =
+        (remainingBeyondBatch ? 1 : 0) + (toProcess.length - migrated);
+
+      return { migrated, failed, remaining, errors };
     },
 
     async delete(id, storage) {

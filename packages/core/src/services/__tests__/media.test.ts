@@ -583,6 +583,237 @@ describe("MediaService", () => {
     });
   });
 
+  describe("migrateEnvelopeTextAttachments", () => {
+    /**
+     * Seeds a legacy envelope-format text attachment directly in the DB and
+     * mock storage, bypassing `createTextAttachment` (which writes the new
+     * split layout). Used to simulate pre-refactor records.
+     */
+    async function seedLegacyEnvelope(
+      key: string,
+      envelope: { json: unknown; html: string },
+    ) {
+      const storage = createMockStorage();
+      const bytes = new TextEncoder().encode(JSON.stringify(envelope));
+      await storage.put(key, bytes, { contentType: "text/x-tiptap+json" });
+      const row = await mediaService.create({
+        filename: key.split("/").pop() ?? "attached-text.md",
+        originalName: "attached-text.md",
+        mimeType: "text/x-tiptap+json",
+        size: bytes.byteLength,
+        storageKey: key,
+        provider: "local",
+        mediaKind: "text",
+        summary: "Legacy note",
+        chars: 10,
+      });
+      return { row, storage };
+    }
+
+    it("converts a legacy envelope into split .html + .json siblings", async () => {
+      const legacyKey = "media/legacy-01.md";
+      const envelope = {
+        json: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Hello" }],
+            },
+          ],
+        },
+        html: "<p>Hello</p>",
+      };
+      const { row, storage } = await seedLegacyEnvelope(legacyKey, envelope);
+
+      const result = await mediaService.migrateEnvelopeTextAttachments({
+        storage,
+        storageDriver: "local",
+      });
+
+      expect(result).toEqual({
+        migrated: 1,
+        failed: 0,
+        remaining: 0,
+        errors: [],
+      });
+
+      // Old envelope gone, new siblings written.
+      expect(storage.files.has(legacyKey)).toBe(false);
+      const htmlKey = "media/legacy-01.html";
+      const jsonKey = "media/legacy-01.json";
+      expect(storage.files.get(htmlKey)?.contentType).toBe(
+        "text/html; charset=utf-8",
+      );
+      expect(storage.files.get(htmlKey)?.cacheControl).toBe(
+        "public, max-age=31536000, immutable",
+      );
+      expect(storage.files.get(jsonKey)?.contentType).toBe("application/json");
+      expect(storage.files.get(jsonKey)?.cacheControl).toBe(
+        "public, max-age=31536000, immutable",
+      );
+
+      const decoder = new TextDecoder();
+      expect(decoder.decode(storage.files.get(htmlKey)!.body)).toBe(
+        "<p>Hello</p>",
+      );
+      const jsonText = decoder.decode(storage.files.get(jsonKey)!.body);
+      expect(JSON.parse(jsonText)).toEqual(envelope.json);
+
+      // DB row points at the new public artifact.
+      const updated = await mediaService.getById(row.id);
+      expect(updated?.storageKey).toBe(htmlKey);
+      expect(updated?.mimeType).toBe("text/html; charset=utf-8");
+      expect(updated?.originalName).toBe("attached-text.html");
+      expect(updated?.size).toBe(storage.files.get(htmlKey)!.body.byteLength);
+      expect(updated?.filename).toBe("legacy-01.html");
+    });
+
+    it("is idempotent: re-running on already-migrated data is a no-op", async () => {
+      const { storage } = await seedLegacyEnvelope("media/legacy-02.md", {
+        json: { type: "doc", content: [] },
+        html: "<p></p>",
+      });
+
+      const first = await mediaService.migrateEnvelopeTextAttachments({
+        storage,
+        storageDriver: "local",
+      });
+      expect(first.migrated).toBe(1);
+
+      const second = await mediaService.migrateEnvelopeTextAttachments({
+        storage,
+        storageDriver: "local",
+      });
+      expect(second).toEqual({
+        migrated: 0,
+        failed: 0,
+        remaining: 0,
+        errors: [],
+      });
+    });
+
+    it("respects the batch limit and reports remaining count accurately", async () => {
+      const storage = createMockStorage();
+      const seedRows: string[] = [];
+      for (let i = 0; i < 3; i += 1) {
+        const key = `media/legacy-batch-${i}.md`;
+        const bytes = new TextEncoder().encode(
+          JSON.stringify({
+            json: { type: "doc", content: [] },
+            html: `<p>${i}</p>`,
+          }),
+        );
+        await storage.put(key, bytes, { contentType: "text/x-tiptap+json" });
+        const row = await mediaService.create({
+          filename: `legacy-batch-${i}.md`,
+          originalName: "attached-text.md",
+          mimeType: "text/x-tiptap+json",
+          size: bytes.byteLength,
+          storageKey: key,
+          provider: "local",
+          mediaKind: "text",
+          summary: `Legacy ${i}`,
+          chars: 1,
+        });
+        seedRows.push(row.id);
+      }
+
+      const first = await mediaService.migrateEnvelopeTextAttachments({
+        storage,
+        storageDriver: "local",
+        limit: 2,
+      });
+      expect(first.migrated).toBe(2);
+      expect(first.remaining).toBeGreaterThan(0);
+
+      const second = await mediaService.migrateEnvelopeTextAttachments({
+        storage,
+        storageDriver: "local",
+        limit: 2,
+      });
+      expect(second.migrated).toBe(1);
+      expect(second.remaining).toBe(0);
+    });
+
+    it("continues processing the batch when one record fails", async () => {
+      const good = await seedLegacyEnvelope("media/legacy-good.md", {
+        json: { type: "doc", content: [] },
+        html: "<p>good</p>",
+      });
+      // Seed a broken envelope — missing the `html` field.
+      const brokenKey = "media/legacy-broken.md";
+      const brokenBytes = new TextEncoder().encode(
+        JSON.stringify({ json: { type: "doc" } }),
+      );
+      await good.storage.put(brokenKey, brokenBytes, {
+        contentType: "text/x-tiptap+json",
+      });
+      const brokenRow = await mediaService.create({
+        filename: "legacy-broken.md",
+        originalName: "attached-text.md",
+        mimeType: "text/x-tiptap+json",
+        size: brokenBytes.byteLength,
+        storageKey: brokenKey,
+        provider: "local",
+        mediaKind: "text",
+        summary: "Broken",
+        chars: 1,
+      });
+
+      const result = await mediaService.migrateEnvelopeTextAttachments({
+        storage: good.storage,
+        storageDriver: "local",
+      });
+
+      expect(result.migrated).toBe(1);
+      expect(result.failed).toBe(1);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].mediaId).toBe(brokenRow.id);
+
+      // Good record migrated normally; broken record left alone and still
+      // identifiable as unmigrated for manual recovery.
+      const stillBroken = await mediaService.getById(brokenRow.id);
+      expect(stillBroken?.mimeType).toBe("text/x-tiptap+json");
+    });
+
+    it("rolls back the .json sibling when the HTML put fails", async () => {
+      const { row, storage } = await seedLegacyEnvelope(
+        "media/legacy-fail.md",
+        {
+          json: { type: "doc", content: [] },
+          html: "<p>fail</p>",
+        },
+      );
+      const originalPut = storage.put.bind(storage);
+      storage.put = vi.fn(
+        async (key: string, body: Uint8Array, opts?: unknown) => {
+          if (key.endsWith(".html")) {
+            throw new Error("simulated HTML write failure");
+          }
+          return originalPut(key, body, opts as never);
+        },
+      ) as typeof storage.put;
+
+      const result = await mediaService.migrateEnvelopeTextAttachments({
+        storage,
+        storageDriver: "local",
+      });
+
+      expect(result.migrated).toBe(0);
+      expect(result.failed).toBe(1);
+
+      // Neither new sibling should remain; the old envelope is still in place
+      // so a later retry can complete the migration.
+      expect(storage.files.has("media/legacy-fail.html")).toBe(false);
+      expect(storage.files.has("media/legacy-fail.json")).toBe(false);
+      expect(storage.files.has("media/legacy-fail.md")).toBe(true);
+
+      const stillLegacy = await mediaService.getById(row.id);
+      expect(stillLegacy?.mimeType).toBe("text/x-tiptap+json");
+    });
+  });
+
   describe("getById", () => {
     it("returns media by ID", async () => {
       const created = await mediaService.create(sampleMedia);
