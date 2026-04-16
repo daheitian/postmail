@@ -316,6 +316,16 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  /**
+   * Set "true" when a trigger arrives while PENDING is already true.
+   * The running sync consults this after its push and loops once more
+   * so mid-push edits aren't lost.
+   */
+  GITHUB_SYNC_DIRTY: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
   /** Last sync error message — surfaced on the status page when non-empty. */
   GITHUB_SYNC_LAST_ERROR: {
     defaultValue: "",

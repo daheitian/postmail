@@ -17,10 +17,10 @@ import {
   createGitHubSyncService,
   SYNC_COMMIT_MARKER,
 } from "../../services/github-sync.js";
-import type { SiteConfig } from "../../services/export.js";
 import type { GitHubPushEvent } from "../../lib/github-api.js";
 import { parseValidated } from "../../lib/schemas.js";
 import { getGitHubAppConfig } from "../../lib/env.js";
+import { buildSyncSiteConfig } from "../../lib/github-sync-site-config.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -142,7 +142,7 @@ githubSyncAdminRoutes.post("/setup", requireAuthApi(), async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildSiteConfigFromContext(c),
+    buildSyncSiteConfig(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
   const { webhookId } = await syncService.setupWebhook(callbackUrl);
@@ -155,7 +155,7 @@ githubSyncAdminRoutes.post("/push", requireAuthApi(), async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildSiteConfigFromContext(c),
+    buildSyncSiteConfig(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
 
@@ -173,7 +173,7 @@ githubSyncAdminRoutes.delete("/", requireAuthApi(), async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildSiteConfigFromContext(c),
+    buildSyncSiteConfig(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
   await syncService.teardownWebhook();
@@ -210,40 +210,3 @@ githubSyncAdminRoutes.get("/status", requireAuthApi(), async (c) => {
     lastError: lastError || null,
   });
 });
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function buildSiteConfigFromContext(c: {
-  var: {
-    appConfig: AppVariables["appConfig"];
-    allSettings: Record<string, string>;
-  };
-}): SiteConfig {
-  const cfg = c.var.appConfig;
-  return {
-    siteName: cfg.siteName,
-    siteUrl: cfg.siteUrl,
-    siteDescription: cfg.siteDescription,
-    siteLanguage: cfg.siteLanguage,
-    showJantBrandingOnHome: cfg.showJantBrandingOnHome,
-    homeDefaultView: cfg.homeDefaultView,
-    siteFooter: cfg.siteFooter,
-    showHeaderAvatar: cfg.showHeaderAvatar,
-    siteAvatarUrl: cfg.siteAvatarUrl,
-    themeId: cfg.themeId,
-    defaultThemeId: cfg.defaultThemeId,
-    fontThemeId: cfg.fontThemeId,
-    themeMode: cfg.themeMode,
-    noindex: cfg.noindex,
-    customCss: cfg.customCSS,
-    r2PublicUrl: cfg.r2PublicUrl,
-    s3PublicUrl: cfg.s3PublicUrl,
-    localPublicUrl: cfg.localPublicUrl,
-    imageTransformUrl: cfg.imageTransformUrl,
-    sitePathPrefix: cfg.sitePathPrefix,
-    navItems: [],
-    pageSize: cfg.pageSize,
-  };
-}

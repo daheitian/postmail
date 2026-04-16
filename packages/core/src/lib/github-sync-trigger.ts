@@ -1,18 +1,32 @@
 /**
  * GitHub Sync Trigger
  *
- * Debounced trigger for full-sync pushes. Multiple rapid post changes
- * collapse into a single sync job:
+ * Two dispatch paths:
  *
- * 1. Set GITHUB_SYNC_PENDING = "true"
- * 2. If no job is already queued, enqueue one
- * 3. The worker runs full sync, clears the flag, then checks again —
- *    if the flag was re-set during execution, it runs once more.
+ * - `triggerGitHubSync` (queue-based): the original design, kept for
+ *   future use when a Cloudflare Queue binding is actually wired up.
+ *   Falls back to a no-op queue today, which silently drops jobs.
+ * - `triggerGitHubSyncInline` (inline): runs pushFullSync in the
+ *   current worker invocation via `c.executionCtx.waitUntil`. Works
+ *   uniformly on Workers and Node, no queue binding required. This
+ *   is what every caller uses today.
+ *
+ * Both paths debounce through a PENDING flag. When a new trigger
+ * arrives while a sync is running, the inline runner records it via
+ * DIRTY; the running sync re-runs once more after completion so the
+ * new edits land.
  */
 
+import type { Context } from "hono";
 import type { SettingsService } from "../services/settings.js";
+import type { GitHubSyncService } from "../services/github-sync.js";
+import type { AppVariables } from "../types/app-context.js";
+import type { Bindings } from "../types/bindings.js";
 import { noopQueue, type JobQueue } from "./job-queue.js";
 import { createCfJobQueue } from "./job-queue-cf.js";
+import { buildSyncSiteConfig } from "./github-sync-site-config.js";
+
+type Env = { Bindings: Bindings; Variables: AppVariables };
 
 /**
  * Resolve the appropriate job queue from the environment.
@@ -26,11 +40,10 @@ export function resolveJobQueue(env: { GITHUB_SYNC_QUEUE?: Queue }): JobQueue {
 }
 
 /**
- * Request a full GitHub Sync push. Safe to call on every post mutation.
- *
- * Uses a pending flag for debounce: if a sync is already queued or
- * running, no new job is created — the running job will pick up
- * the changes when it re-checks the flag after completion.
+ * Queue-based trigger. Safe to call on every post mutation. Kept for
+ * compatibility with the original design but currently enqueues to a
+ * noop queue on every known deployment — callers should use
+ * `triggerGitHubSyncInline` instead.
  */
 export async function triggerGitHubSync(
   queue: JobQueue,
@@ -40,15 +53,98 @@ export async function triggerGitHubSync(
   const enabled = await settings.get("GITHUB_SYNC_ENABLED");
   if (enabled !== "true") return;
 
-  // Check if a sync is already pending
   const alreadyPending = await settings.get("GITHUB_SYNC_PENDING");
   if (alreadyPending === "true") return;
 
-  // Mark as pending and enqueue
   await settings.set("GITHUB_SYNC_PENDING", "true");
   await queue.enqueue({
     kind: "github-sync-push",
     siteId,
     data: {},
   });
+}
+
+/**
+ * Run a full GitHub Sync push in the background, managing the lifecycle
+ * flags (`GITHUB_SYNC_PENDING`, `GITHUB_SYNC_DIRTY`, `GITHUB_SYNC_LAST_ERROR`).
+ *
+ * If a trigger arrives mid-push, the dirty flag is set and we loop
+ * once more after the current push completes so those edits land.
+ * That's what `triggerGitHubSyncInline` relies on to guarantee
+ * mid-sync writes aren't lost despite the PENDING gate blocking
+ * concurrent pushes.
+ */
+export async function runBackgroundSync(
+  settings: SettingsService,
+  syncService: GitHubSyncService,
+): Promise<void> {
+  try {
+    // Loop: push, then check whether another trigger came in during
+    // execution. Clearing DIRTY *before* the push means anything set
+    // after that cutoff causes exactly one more pass.
+    while (true) {
+      await settings.set("GITHUB_SYNC_DIRTY", "");
+      await syncService.pushFullSync();
+      const dirty = await settings.get("GITHUB_SYNC_DIRTY");
+      if (dirty !== "true") break;
+    }
+    await settings.set("GITHUB_SYNC_LAST_ERROR", "");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await settings.set("GITHUB_SYNC_LAST_ERROR", message);
+  } finally {
+    await settings.set("GITHUB_SYNC_PENDING", "");
+    await settings.set("GITHUB_SYNC_DIRTY", "");
+  }
+}
+
+/**
+ * Debounced inline trigger. Every caller that wants a sync after a
+ * content change should use this — it is the direct replacement for
+ * the queue-based `triggerGitHubSync`.
+ *
+ * Debounce semantics:
+ *   - If a sync is running already, mark DIRTY and return. The
+ *     running sync picks up the flag and re-runs once finished.
+ *   - Otherwise, set PENDING, build a sync service, and hand the
+ *     push to `c.executionCtx.waitUntil` so the HTTP response can
+ *     return immediately.
+ *
+ * Safe no-op when GitHub Sync isn't enabled for this site.
+ */
+export async function triggerGitHubSyncInline(c: Context<Env>): Promise<void> {
+  const settings = c.var.services.settings;
+
+  const enabled = await settings.get("GITHUB_SYNC_ENABLED");
+  if (enabled !== "true") return;
+
+  const pending = await settings.get("GITHUB_SYNC_PENDING");
+  if (pending === "true") {
+    // Another sync is in flight. Record this request so the running
+    // sync re-runs after it finishes. No new push is kicked off here
+    // — the `runBackgroundSync` loop handles it.
+    await settings.set("GITHUB_SYNC_DIRTY", "true");
+    return;
+  }
+
+  await settings.set("GITHUB_SYNC_PENDING", "true");
+  await settings.set("GITHUB_SYNC_DIRTY", "");
+
+  const { createGitHubSyncService } =
+    await import("../services/github-sync.js");
+  const { getGitHubAppConfig } = await import("./env.js");
+  const syncService = createGitHubSyncService(
+    c.var.services,
+    c.var.currentSite.id,
+    buildSyncSiteConfig(c),
+    { storage: c.var.storage, githubApp: getGitHubAppConfig(c.env) },
+  );
+
+  const run = runBackgroundSync(settings, syncService);
+  try {
+    c.executionCtx?.waitUntil(run);
+  } catch {
+    // executionCtx not available (e.g. tests, Node) — let the promise
+    // resolve on its own; HTTP response still returns immediately.
+  }
 }

@@ -67,7 +67,8 @@ import {
   removeStoredInstallation,
   upsertStoredInstallation,
 } from "../../lib/github-sync-installations.js";
-import type { GitHubSyncService } from "../../services/github-sync.js";
+import { runBackgroundSync } from "../../lib/github-sync-trigger.js";
+import { buildSyncSiteConfig } from "../../lib/github-sync-site-config.js";
 import {
   generateInstallNonce,
   signInstallState,
@@ -1338,7 +1339,7 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildGitHubSyncSiteConfig(c),
+    buildSyncSiteConfig(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
   const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");
@@ -1355,7 +1356,7 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
   // "Not synced yet" until the user's next edit. See the App flow's
   // equivalent block below for why we bypass the queue.
   await c.var.services.settings.set("GITHUB_SYNC_PENDING", "true");
-  const initialSync = runBackgroundSync(c, syncService);
+  const initialSync = runBackgroundSync(c.var.services.settings, syncService);
   try {
     c.executionCtx?.waitUntil(initialSync);
   } catch {
@@ -1371,7 +1372,7 @@ settingsRoutes.post("/github-sync/push", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildGitHubSyncSiteConfig(c),
+    buildSyncSiteConfig(c),
     { storage: c.var.storage, githubApp: getGitHubAppConfig(c.env) },
   );
 
@@ -1384,7 +1385,7 @@ settingsRoutes.post("/github-sync/push", async (c) => {
   // indicator drives the UX instead of the button's own spinner. The
   // button returns a toast immediately; the page polls for completion.
   await c.var.services.settings.set("GITHUB_SYNC_PENDING", "true");
-  const push = runBackgroundSync(c, syncService);
+  const push = runBackgroundSync(c.var.services.settings, syncService);
   try {
     c.executionCtx?.waitUntil(push);
   } catch {
@@ -1399,7 +1400,7 @@ settingsRoutes.post("/github-sync/disconnect", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildGitHubSyncSiteConfig(c),
+    buildSyncSiteConfig(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
   await syncService.teardownWebhook();
@@ -1544,39 +1545,6 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
     ),
   });
 });
-
-/**
- * Build the JSON-serialized labels bundle for the repo picker component.
- *
- * The component is light-DOM Lit and can't call Lingui at render time,
- * so all user-facing copy is translated server-side and passed in via
- * a single `labels` attribute (see jant-repo-picker-types.ts for shape).
- */
-/**
- * Run a full GitHub Sync push in the background, managing the
- * `GITHUB_SYNC_PENDING` flag and surfacing any failure via
- * `GITHUB_SYNC_LAST_ERROR` so the status page can report it.
- *
- * The CF Queue-backed trigger path would be the "right" architecture
- * for post-edit bursts, but it's not wired up on current deployments —
- * `noopQueue` silently drops jobs. Running inline via `waitUntil` works
- * uniformly in Workers and Node and is the same path as the manual
- * Sync Now button, so behavior is consistent.
- */
-async function runBackgroundSync(
-  c: Context<Env>,
-  syncService: GitHubSyncService,
-): Promise<void> {
-  try {
-    await syncService.pushFullSync();
-    await c.var.services.settings.set("GITHUB_SYNC_LAST_ERROR", "");
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    await c.var.services.settings.set("GITHUB_SYNC_LAST_ERROR", message);
-  } finally {
-    await c.var.services.settings.set("GITHUB_SYNC_PENDING", "");
-  }
-}
 
 /**
  * Derive a default repository name to prefill on github.com/new.
@@ -1926,7 +1894,7 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildGitHubSyncSiteConfig(c),
+    buildSyncSiteConfig(c),
     { githubApp: app },
   );
   const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");
@@ -1945,7 +1913,7 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
   // the background via waitUntil. The status page reads PENDING and
   // polls until it clears, so the user sees "Syncing…" right away.
   await c.var.services.settings.set("GITHUB_SYNC_PENDING", "true");
-  const initialSync = runBackgroundSync(c, syncService);
+  const initialSync = runBackgroundSync(c.var.services.settings, syncService);
   try {
     c.executionCtx?.waitUntil(initialSync);
   } catch {
@@ -2172,34 +2140,3 @@ settingsRoutes.get("/github-sync", async (c) => {
     ),
   });
 });
-
-function buildGitHubSyncSiteConfig(c: Context<Env>) {
-  const cfg = c.var.appConfig;
-  return {
-    siteName: cfg.siteName,
-    siteUrl: cfg.siteUrl,
-    siteDescription: cfg.siteDescription,
-    siteLanguage: cfg.siteLanguage,
-    showJantBrandingOnHome: cfg.showJantBrandingOnHome,
-    homeDefaultView: cfg.homeDefaultView,
-    siteFooter: cfg.siteFooter,
-    showHeaderAvatar: cfg.showHeaderAvatar,
-    siteAvatarUrl: cfg.siteAvatarUrl,
-    themeId: cfg.themeId,
-    defaultThemeId: cfg.defaultThemeId,
-    fontThemeId: cfg.fontThemeId,
-    themeMode: cfg.themeMode,
-    noindex: cfg.noindex,
-    customCss: cfg.customCSS,
-    r2PublicUrl: cfg.r2PublicUrl,
-    s3PublicUrl: cfg.s3PublicUrl,
-    localPublicUrl: cfg.localPublicUrl,
-    imageTransformUrl: cfg.imageTransformUrl,
-    sitePathPrefix: cfg.sitePathPrefix,
-    navItems: [] as Pick<
-      import("../../types.js").NavItem,
-      "type" | "systemKey" | "label" | "url" | "position" | "placement"
-    >[],
-    pageSize: cfg.pageSize,
-  };
-}
