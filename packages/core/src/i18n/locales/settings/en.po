@@ -804,6 +804,11 @@ msgstr "Language and time updated."
 msgid "Last commit"
 msgstr "Last commit"
 
+#. @context: Label for last sync error on GitHub Sync status
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Last error"
+msgstr "Last error"
+
 #. @context: Label for last sync time on GitHub Sync status
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Last synced"
@@ -1339,6 +1344,11 @@ msgstr "Soft color should still carry a clear reading rhythm."
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Sync Now"
 msgstr "Sync Now"
+
+#. @context: Shown while a GitHub Sync push is running in the background
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Syncing…"
+msgstr "Syncing…"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx

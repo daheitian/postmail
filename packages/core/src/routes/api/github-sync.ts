@@ -182,11 +182,22 @@ githubSyncAdminRoutes.delete("/", requireAuthApi(), async (c) => {
 
 // Get sync status
 githubSyncAdminRoutes.get("/status", requireAuthApi(), async (c) => {
-  const [enabled, repo, lastPushSha, webhookId] = await Promise.all([
+  const [
+    enabled,
+    repo,
+    lastPushSha,
+    webhookId,
+    lastPushAt,
+    pending,
+    lastError,
+  ] = await Promise.all([
     c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
     c.var.services.settings.get("GITHUB_SYNC_REPO"),
     c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
     c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
+    c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
+    c.var.services.settings.get("GITHUB_SYNC_PENDING"),
+    c.var.services.settings.get("GITHUB_SYNC_LAST_ERROR"),
   ]);
 
   return c.json({
@@ -194,6 +205,9 @@ githubSyncAdminRoutes.get("/status", requireAuthApi(), async (c) => {
     repo: repo ?? null,
     lastPushSha: lastPushSha ?? null,
     webhookId: webhookId ?? null,
+    lastPushAt: lastPushAt ? Number(lastPushAt) : null,
+    pending: pending === "true",
+    lastError: lastError || null,
   });
 });
 

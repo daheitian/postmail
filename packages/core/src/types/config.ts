@@ -316,6 +316,12 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  /** Last sync error message — surfaced on the status page when non-empty. */
+  GITHUB_SYNC_LAST_ERROR: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
   /** "pat" (default) or "app" — indicates which auth path to use for sync. */
   GITHUB_SYNC_AUTH_MODE: {
     defaultValue: "pat",

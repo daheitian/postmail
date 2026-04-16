@@ -22,6 +22,10 @@ export interface GitHubSyncStatus {
   authMode: "pat" | "app";
   /** Whether GITHUB_APP_* env vars are configured on this deployment. */
   appConfigured: boolean;
+  /** True while a push is running in the background. */
+  pending: boolean;
+  /** Last sync error message, if the previous push failed. */
+  lastError: string | null;
 }
 
 export function GitHubSyncContent({
@@ -32,6 +36,7 @@ export function GitHubSyncContent({
   sitePathPrefix?: string;
 }) {
   const settingsBase = toPublicPath("/settings/github-sync", sitePathPrefix);
+  const statusApiUrl = toPublicPath("/api/github-sync/status", sitePathPrefix);
 
   if (!status.enabled || !status.repo) {
     return (
@@ -42,7 +47,13 @@ export function GitHubSyncContent({
     );
   }
 
-  return <GitHubSyncConnected status={status} settingsBase={settingsBase} />;
+  return (
+    <GitHubSyncConnected
+      status={status}
+      settingsBase={settingsBase}
+      statusApiUrl={statusApiUrl}
+    />
+  );
 }
 
 function GitHubSyncSetupForm({
@@ -230,9 +241,11 @@ function Spinner({ signal }: { signal: string }) {
 function GitHubSyncConnected({
   status,
   settingsBase,
+  statusApiUrl,
 }: {
   status: GitHubSyncStatus;
   settingsBase: string;
+  statusApiUrl: string;
 }) {
   const { i18n } = useLingui();
   const repoUrl = `https://github.com/${status.repo}`;
@@ -313,23 +326,59 @@ function GitHubSyncConnected({
                   }),
                 )}
               </span>
-              <span
-                class="font-medium"
-                title={
-                  status.lastPushAt ? formatDate(status.lastPushAt) : undefined
-                }
-              >
-                {status.lastPushAt
-                  ? formatRelativeAge(status.lastPushAt)
-                  : i18n._(
-                      msg({
-                        message: "Not synced yet",
-                        comment:
-                          "@context: Shown when no sync has happened yet on GitHub Sync status",
-                      }),
-                    )}
-              </span>
+              {status.pending ? (
+                <span class="font-medium flex items-center gap-2 text-primary">
+                  <span
+                    class="inline-block w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin"
+                    aria-hidden="true"
+                  />
+                  {i18n._(
+                    msg({
+                      message: "Syncing…",
+                      comment:
+                        "@context: Shown while a GitHub Sync push is running in the background",
+                    }),
+                  )}
+                </span>
+              ) : (
+                <span
+                  class="font-medium"
+                  title={
+                    status.lastPushAt
+                      ? formatDate(status.lastPushAt)
+                      : undefined
+                  }
+                >
+                  {status.lastPushAt
+                    ? formatRelativeAge(status.lastPushAt)
+                    : i18n._(
+                        msg({
+                          message: "Not synced yet",
+                          comment:
+                            "@context: Shown when no sync has happened yet on GitHub Sync status",
+                        }),
+                      )}
+                </span>
+              )}
             </div>
+
+            {/* Last error */}
+            {!status.pending && status.lastError ? (
+              <div class="flex items-baseline gap-2">
+                <span class="text-muted-foreground">
+                  {i18n._(
+                    msg({
+                      message: "Last error",
+                      comment:
+                        "@context: Label for last sync error on GitHub Sync status",
+                    }),
+                  )}
+                </span>
+                <span class="font-medium text-destructive text-xs">
+                  {status.lastError}
+                </span>
+              </div>
+            ) : null}
 
             {/* Last commit */}
             {status.lastPushSha && (
@@ -449,6 +498,33 @@ function GitHubSyncConnected({
           </button>
         </div>
       </section>
+
+      {/* Poll for sync completion while pending. Reloads the page when
+          GITHUB_SYNC_PENDING clears so the status card reflects the
+          latest lastPushAt / lastPushSha / lastError without manual refresh.
+          Cap at ~4 min so a stuck sync doesn't poll forever. */}
+      {status.pending ? (
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+  const endpoint = ${JSON.stringify(statusApiUrl)};
+  let attempts = 0;
+  const poll = async () => {
+    if (attempts++ > 120) return;
+    try {
+      const res = await fetch(endpoint, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.pending === false) { location.reload(); return; }
+      }
+    } catch (_) { /* swallow — try again */ }
+    setTimeout(poll, 2000);
+  };
+  setTimeout(poll, 2000);
+})();`,
+          }}
+        />
+      ) : null}
     </div>
   );
 }

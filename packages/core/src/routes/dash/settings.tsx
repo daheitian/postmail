@@ -67,10 +67,7 @@ import {
   removeStoredInstallation,
   upsertStoredInstallation,
 } from "../../lib/github-sync-installations.js";
-import {
-  resolveJobQueue,
-  triggerGitHubSync,
-} from "../../lib/github-sync-trigger.js";
+import type { GitHubSyncService } from "../../services/github-sync.js";
 import {
   generateInstallNonce,
   signInstallState,
@@ -1355,12 +1352,15 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
   }
 
   // Kick off an initial background push so "Last sync" doesn't sit on
-  // "Not synced yet" until the user's next edit.
-  await triggerGitHubSync(
-    resolveJobQueue(c.env),
-    c.var.services.settings,
-    c.var.currentSite.id,
-  );
+  // "Not synced yet" until the user's next edit. See the App flow's
+  // equivalent block below for why we bypass the queue.
+  await c.var.services.settings.set("GITHUB_SYNC_PENDING", "true");
+  const initialSync = runBackgroundSync(c, syncService);
+  try {
+    c.executionCtx?.waitUntil(initialSync);
+  } catch {
+    // executionCtx unavailable (tests / Node).
+  }
 
   return dsRedirect(publicPath(c, "/settings/github-sync"));
 });
@@ -1380,13 +1380,17 @@ settingsRoutes.post("/github-sync/push", async (c) => {
     return dsToast("GitHub Sync is not configured.", "error");
   }
 
+  // Run the push in the background so the status card's live "Syncing…"
+  // indicator drives the UX instead of the button's own spinner. The
+  // button returns a toast immediately; the page polls for completion.
+  await c.var.services.settings.set("GITHUB_SYNC_PENDING", "true");
+  const push = runBackgroundSync(c, syncService);
   try {
-    const { commitSha } = await syncService.pushFullSync();
-    return dsToast(`Pushed to GitHub. Commit: ${commitSha.slice(0, 7)}`);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Push failed.";
-    return dsToast(message, "error");
+    c.executionCtx?.waitUntil(push);
+  } catch {
+    // executionCtx unavailable (tests / Node).
   }
+  return dsToast("Syncing to GitHub…");
 });
 
 settingsRoutes.post("/github-sync/disconnect", async (c) => {
@@ -1548,6 +1552,32 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
  * so all user-facing copy is translated server-side and passed in via
  * a single `labels` attribute (see jant-repo-picker-types.ts for shape).
  */
+/**
+ * Run a full GitHub Sync push in the background, managing the
+ * `GITHUB_SYNC_PENDING` flag and surfacing any failure via
+ * `GITHUB_SYNC_LAST_ERROR` so the status page can report it.
+ *
+ * The CF Queue-backed trigger path would be the "right" architecture
+ * for post-edit bursts, but it's not wired up on current deployments —
+ * `noopQueue` silently drops jobs. Running inline via `waitUntil` works
+ * uniformly in Workers and Node and is the same path as the manual
+ * Sync Now button, so behavior is consistent.
+ */
+async function runBackgroundSync(
+  c: Context<Env>,
+  syncService: GitHubSyncService,
+): Promise<void> {
+  try {
+    await syncService.pushFullSync();
+    await c.var.services.settings.set("GITHUB_SYNC_LAST_ERROR", "");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await c.var.services.settings.set("GITHUB_SYNC_LAST_ERROR", message);
+  } finally {
+    await c.var.services.settings.set("GITHUB_SYNC_PENDING", "");
+  }
+}
+
 /**
  * Derive a default repository name to prefill on github.com/new.
  *
@@ -1908,16 +1938,20 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
     return wantsJson ? c.json({ error: msg }, 500) : c.text(msg, 500);
   }
 
-  // Kick off an initial background push so the user's content lands in
-  // the repo immediately — otherwise the status page shows "Not synced
-  // yet" until the first content edit, which feels broken. Awaiting the
-  // enqueue (not the sync itself) is fast and lets us surface queue
-  // errors synchronously; the actual push runs in the queue consumer.
-  await triggerGitHubSync(
-    resolveJobQueue(c.env),
-    c.var.services.settings,
-    c.var.currentSite.id,
-  );
+  // Kick off an initial push so the user's content lands in the repo
+  // immediately. We can't use the queue path: CF Queue isn't wired up
+  // for most self-hosted deployments, and the noop fallback would
+  // silently drop the job. Instead, set PENDING and run the sync in
+  // the background via waitUntil. The status page reads PENDING and
+  // polls until it clears, so the user sees "Syncing…" right away.
+  await c.var.services.settings.set("GITHUB_SYNC_PENDING", "true");
+  const initialSync = runBackgroundSync(c, syncService);
+  try {
+    c.executionCtx?.waitUntil(initialSync);
+  } catch {
+    // executionCtx unavailable (tests / Node) — let the promise resolve
+    // on its own; response still returns immediately.
+  }
 
   const redirect = publicPath(c, "/settings/github-sync");
   return wantsJson ? c.json({ ok: true, redirect }) : c.redirect(redirect);
@@ -2086,15 +2120,25 @@ settingsRoutes.post("/github-sync/app/classify", async (c) => {
 });
 
 settingsRoutes.get("/github-sync", async (c) => {
-  const [enabled, repo, lastPushSha, webhookId, lastPushAt, authMode] =
-    await Promise.all([
-      c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
-      c.var.services.settings.get("GITHUB_SYNC_REPO"),
-      c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
-      c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
-      c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
-      c.var.services.settings.get("GITHUB_SYNC_AUTH_MODE"),
-    ]);
+  const [
+    enabled,
+    repo,
+    lastPushSha,
+    webhookId,
+    lastPushAt,
+    authMode,
+    pending,
+    lastError,
+  ] = await Promise.all([
+    c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
+    c.var.services.settings.get("GITHUB_SYNC_REPO"),
+    c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
+    c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
+    c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
+    c.var.services.settings.get("GITHUB_SYNC_AUTH_MODE"),
+    c.var.services.settings.get("GITHUB_SYNC_PENDING"),
+    c.var.services.settings.get("GITHUB_SYNC_LAST_ERROR"),
+  ]);
 
   const status: GitHubSyncStatus = {
     enabled: enabled === "true",
@@ -2104,6 +2148,8 @@ settingsRoutes.get("/github-sync", async (c) => {
     lastPushAt: lastPushAt ? Number(lastPushAt) : null,
     authMode: authMode === "app" ? "app" : "pat",
     appConfigured: getGitHubAppConfig(c.env) !== null,
+    pending: pending === "true",
+    lastError: lastError || null,
   };
 
   const navData = await getNavigationData(c);
