@@ -45,8 +45,136 @@ import type { StorageDriver } from "../lib/storage.js";
 /** Marker included in commit messages to prevent webhook loops. */
 export const SYNC_COMMIT_MARKER = "[jant-sync]";
 
+/**
+ * Path of the ownership marker file written at the repo root.
+ *
+ * Presence of this file (with a matching `site_id`) identifies the repo
+ * as actively managed by a Jant site. Used to distinguish three states
+ * during connect: empty repo, Jant-owned repo, foreign repo with existing
+ * content. Also serves as the initialization file for empty repos so we
+ * don't need a separate throwaway placeholder.
+ */
+export const JANT_SYNC_MARKER_PATH = ".jant-sync";
+
+/** Marker file schema version. Bump on incompatible format changes. */
+export const JANT_SYNC_MARKER_SCHEMA_VERSION = 1;
+
 /** Directory prefix for post files in the repo. */
 const POST_DIR = "content/posts";
+
+// ---------------------------------------------------------------------------
+// Ownership marker
+// ---------------------------------------------------------------------------
+
+export interface JantSyncMarker {
+  schema_version: number;
+  site_id: string;
+  site_host: string;
+  created_at: number;
+}
+
+export type RepoClassification =
+  | { kind: "empty" }
+  | { kind: "owned"; marker: JantSyncMarker }
+  | { kind: "owned-by-other-site"; marker: JantSyncMarker }
+  | { kind: "foreign"; defaultBranch: string };
+
+function parseMarker(text: string): JantSyncMarker | null {
+  try {
+    const parsed = JSON.parse(text) as Partial<JantSyncMarker>;
+    if (
+      typeof parsed.site_id === "string" &&
+      typeof parsed.site_host === "string" &&
+      typeof parsed.created_at === "number" &&
+      typeof parsed.schema_version === "number"
+    ) {
+      return parsed as JantSyncMarker;
+    }
+  } catch {
+    /* fall through */
+  }
+  return null;
+}
+
+function decodeMarkerContent(file: {
+  content: string;
+  encoding: string;
+}): string {
+  if (file.encoding === "base64") {
+    try {
+      // GitHub wraps base64 output at 60-char columns; strip whitespace.
+      const cleaned = file.content.replace(/\s+/g, "");
+      const binary = atob(cleaned);
+      const bytes = Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
+      return new TextDecoder("utf-8").decode(bytes);
+    } catch {
+      return "";
+    }
+  }
+  return file.content;
+}
+
+function formatMarker(marker: JantSyncMarker): string {
+  // Pretty-print + trailing newline so the file renders nicely on GitHub
+  // and behaves well with text-mode diffs.
+  return `${JSON.stringify(marker, null, 2)}\n`;
+}
+
+function safeHost(siteUrl: string): string {
+  try {
+    return new URL(siteUrl).host;
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Classify a repository to decide how to proceed with a sync connection.
+ *
+ * - `empty`: repo has no commits on the default branch (or repo is brand new).
+ * - `owned`: `.jant-sync` marker present with matching `site_id`.
+ * - `owned-by-other-site`: `.jant-sync` present but `site_id` differs —
+ *   another Jant site already backs up here, blocking the connect.
+ * - `foreign`: non-empty repo without a marker — requires explicit
+ *   user confirmation before connect.
+ */
+export async function classifyRepoForSync(
+  client: GitHubClient,
+  owner: string,
+  repo: string,
+  siteId: string,
+): Promise<RepoClassification> {
+  const repoInfo = await client.getRepo(owner, repo);
+  const defaultBranch = repoInfo.default_branch;
+
+  // Probe the default branch head. A missing ref indicates an empty repo.
+  try {
+    await client.getRef(owner, repo, `heads/${defaultBranch}`);
+  } catch {
+    return { kind: "empty" };
+  }
+
+  const markerFile = await client.getFileContent(
+    owner,
+    repo,
+    JANT_SYNC_MARKER_PATH,
+  );
+  if (!markerFile) {
+    return { kind: "foreign", defaultBranch };
+  }
+
+  const marker = parseMarker(decodeMarkerContent(markerFile));
+  if (!marker) {
+    // File exists but is malformed — treat as foreign so the user is
+    // forced to explicitly confirm the overwrite.
+    return { kind: "foreign", defaultBranch };
+  }
+
+  if (marker.site_id === siteId) {
+    return { kind: "owned", marker };
+  }
+  return { kind: "owned-by-other-site", marker };
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -97,6 +225,7 @@ export function createGitHubSyncService(
     media: MediaService;
     settings: SettingsService;
   },
+  siteId: string,
   siteConfig: SiteConfig,
   deps: {
     storage?: StorageDriver | null;
@@ -104,6 +233,25 @@ export function createGitHubSyncService(
     githubApp?: GitHubAppEnvConfig | null;
   } = {},
 ): GitHubSyncService {
+  /**
+   * Build the ownership marker for this push. Preserves `created_at`
+   * from an existing marker (when readable) so the timestamp reflects
+   * when this repo was first bound to this site, not the latest push.
+   */
+  function buildMarker(
+    existingContent: string | null,
+    now: number,
+  ): JantSyncMarker {
+    const existing = existingContent ? parseMarker(existingContent) : null;
+    const preservedCreatedAt =
+      existing && existing.site_id === siteId ? existing.created_at : now;
+    return {
+      schema_version: JANT_SYNC_MARKER_SCHEMA_VERSION,
+      site_id: siteId,
+      site_host: safeHost(siteConfig.siteUrl),
+      created_at: preservedCreatedAt,
+    };
+  }
   // -------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------
@@ -185,17 +333,18 @@ export function createGitHubSyncService(
     owner: string,
     repo: string,
     defaultBranch: string,
+    seedMarker: JantSyncMarker,
   ): Promise<{ sha: string; justInitialized: boolean }> {
     try {
       const ref = await client.getRef(owner, repo, `heads/${defaultBranch}`);
       return { sha: ref.sha, justInitialized: false };
     } catch {
       // Empty repo — seed it so the Git Trees API becomes available.
-      // Use a hidden placeholder (not README.md) so the seed README from the
-      // export service still lands on the follow-up push.
-      await client.createOrUpdateFile(owner, repo, ".jant-init", {
-        content: "",
-        message: `Initialize repository ${SYNC_COMMIT_MARKER}`,
+      // Write the ownership marker directly as the seed: it's the file
+      // we need anyway, so no throwaway placeholder is required.
+      await client.createOrUpdateFile(owner, repo, JANT_SYNC_MARKER_PATH, {
+        content: formatMarker(seedMarker),
+        message: `Initialize Jant sync ${SYNC_COMMIT_MARKER}`,
       });
       const ref = await client.getRef(owner, repo, `heads/${defaultBranch}`);
       return { sha: ref.sha, justInitialized: true };
@@ -222,11 +371,29 @@ export function createGitHubSyncService(
       // parent / base_tree and to probe for existing "seed" files below.
       const repoInfo = await client.getRepo(owner, repo);
       const defaultBranch = repoInfo.default_branch;
+
+      // Build marker up front so the seed and the tree entry use the same
+      // created_at — avoids a one-second drift between the init commit and
+      // the first sync commit.
+      const now = Math.floor(Date.now() / 1000);
+      // Read existing marker (if any) to preserve created_at across pushes.
+      // Returns null for empty/new repos; getOrInitHead handles seeding.
+      const existingMarkerBeforeInit = await client
+        .getFileContent(owner, repo, JANT_SYNC_MARKER_PATH)
+        .catch(() => null);
+      const marker = buildMarker(
+        existingMarkerBeforeInit
+          ? decodeMarkerContent(existingMarkerBeforeInit)
+          : null,
+        now,
+      );
+
       const { sha: headSha, justInitialized } = await getOrInitHead(
         client,
         owner,
         repo,
         defaultBranch,
+        marker,
       );
 
       // Seed files (e.g. .gitignore, README.md) are write-once: users are
@@ -253,8 +420,17 @@ export function createGitHubSyncService(
             ).filter((p): p is string => p !== null),
       );
 
-      // Convert to Git tree items
-      const treeItems: GitHubTreeItem[] = [];
+      // Convert to Git tree items. The ownership marker is always emitted —
+      // `marker` was built above from the pre-init read, so created_at is
+      // preserved across pushes and Git dedupes identical content via blob SHA.
+      const treeItems: GitHubTreeItem[] = [
+        {
+          path: JANT_SYNC_MARKER_PATH,
+          mode: "100644",
+          type: "blob",
+          content: formatMarker(marker),
+        },
+      ];
       for (const file of exportFiles) {
         if (existingSeedPaths.has(file.path)) continue;
         if (typeof file.content === "string") {

@@ -1329,6 +1329,7 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
     await import("../../services/github-sync.js");
   const syncService = createGitHubSyncService(
     c.var.services,
+    c.var.currentSite.id,
     buildGitHubSyncSiteConfig(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
@@ -1350,6 +1351,7 @@ settingsRoutes.post("/github-sync/push", async (c) => {
     await import("../../services/github-sync.js");
   const syncService = createGitHubSyncService(
     c.var.services,
+    c.var.currentSite.id,
     buildGitHubSyncSiteConfig(c),
     { storage: c.var.storage, githubApp: getGitHubAppConfig(c.env) },
   );
@@ -1373,6 +1375,7 @@ settingsRoutes.post("/github-sync/disconnect", async (c) => {
     await import("../../services/github-sync.js");
   const syncService = createGitHubSyncService(
     c.var.services,
+    c.var.currentSite.id,
     buildGitHubSyncSiteConfig(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
@@ -1574,6 +1577,7 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
     await import("../../services/github-sync.js");
   const syncService = createGitHubSyncService(
     c.var.services,
+    c.var.currentSite.id,
     buildGitHubSyncSiteConfig(c),
     { githubApp: app },
   );

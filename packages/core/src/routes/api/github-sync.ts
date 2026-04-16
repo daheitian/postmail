@@ -141,6 +141,7 @@ githubSyncAdminRoutes.post("/setup", requireAuthApi(), async (c) => {
   // Create webhook via the sync service
   const syncService = createGitHubSyncService(
     c.var.services,
+    c.var.currentSite.id,
     buildSiteConfigFromContext(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
@@ -153,6 +154,7 @@ githubSyncAdminRoutes.post("/setup", requireAuthApi(), async (c) => {
 githubSyncAdminRoutes.post("/push", requireAuthApi(), async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
+    c.var.currentSite.id,
     buildSiteConfigFromContext(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
@@ -170,6 +172,7 @@ githubSyncAdminRoutes.post("/push", requireAuthApi(), async (c) => {
 githubSyncAdminRoutes.delete("/", requireAuthApi(), async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
+    c.var.currentSite.id,
     buildSiteConfigFromContext(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );

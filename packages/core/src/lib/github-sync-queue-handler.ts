@@ -36,6 +36,7 @@ export async function handleQueueBatch(
       await processGitHubSyncJob(
         payload,
         runtime.services,
+        payload.siteId,
         {
           siteName: "",
           siteUrl: siteOrigin,

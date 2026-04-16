@@ -19,6 +19,7 @@ import type { JobPayload } from "./job-queue.js";
 export async function processGitHubSyncJob(
   payload: JobPayload,
   services: Services,
+  siteId: string,
   siteConfig: SiteConfig,
   storage?: StorageDriver | null,
   githubApp?: GitHubAppEnvConfig | null,
@@ -31,6 +32,7 @@ export async function processGitHubSyncJob(
       media: services.media,
       settings: services.settings,
     },
+    siteId,
     siteConfig,
     { storage, githubApp },
   );
