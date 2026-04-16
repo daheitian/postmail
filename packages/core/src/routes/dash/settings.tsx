@@ -58,8 +58,18 @@ import {
 } from "../../lib/env.js";
 import {
   buildInstallUrl,
+  buildAddInstallationUrl,
+  createRepoForInstallation,
+  getInstallation,
   listInstallationRepos,
+  listInstallationReposPage,
+  searchInstallationRepos,
 } from "../../lib/github-app.js";
+import {
+  listStoredInstallations,
+  removeStoredInstallation,
+  upsertStoredInstallation,
+} from "../../lib/github-sync-installations.js";
 import {
   generateInstallNonce,
   signInstallState,
@@ -1469,6 +1479,23 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
     maxAge: 0,
   });
 
+  // Fetch the account info for this installation and remember it. The
+  // picker's owner dropdown reads the stored list, so subsequent visits
+  // can switch between accounts without re-running the install flow.
+  // Failures are non-fatal: this callback must still render the picker
+  // so the user isn't locked out right after a successful install.
+  try {
+    const installation = await getInstallation(app, installationId);
+    await upsertStoredInstallation(c.var.services.settings, {
+      installationId,
+      account: installation.account,
+      addedAt: Math.floor(Date.now() / 1000),
+    });
+  } catch {
+    // Swallow — the legacy inline picker still works with just the
+    // installation_id from the URL, just without the owner list.
+  }
+
   let repos: Awaited<ReturnType<typeof listInstallationRepos>>;
   try {
     repos = await listInstallationRepos(app, installationId);
@@ -1541,8 +1568,12 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
 });
 
 /**
- * Finalize the App connection: validate access, persist the installation id
- * and chosen repo, then register the webhook.
+ * Finalize the App connection: validate access, classify the target repo
+ * to gate foreign/conflicting choices behind explicit user confirmation,
+ * then persist the installation id and chosen repo and register the webhook.
+ *
+ * Accepts both classic form submits (redirects on success) and JSON
+ * requests (returns JSON). Phase 3's picker component uses the JSON path.
  */
 settingsRoutes.post("/github-sync/app/connect", async (c) => {
   const app = getGitHubAppConfig(c.env);
@@ -1550,17 +1581,79 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
     return c.text("GitHub App is not configured on this deployment.", 404);
   }
 
-  const form = await c.req.parseBody();
-  const installationId = String(form.installationId ?? "").trim();
-  const repo = String(form.repo ?? "").trim();
+  const wantsJson = c.req.header("content-type")?.includes("application/json");
+  const body = wantsJson
+    ? ((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+    : await c.req.parseBody();
+
+  const installationId = String(body.installationId ?? "").trim();
+  const repo = String(body.repo ?? "").trim();
+  const confirmForeign =
+    body.confirmForeign === true || body.confirmForeign === "true";
   if (!installationId || !repo) {
-    return c.text("Missing installationId or repo.", 400);
+    return wantsJson
+      ? c.json({ error: "Missing installationId or repo." }, 400)
+      : c.text("Missing installationId or repo.", 400);
   }
 
-  const { parseRepoSlug } = await import("../../lib/github-api.js");
+  const { parseRepoSlug, createGitHubClient } =
+    await import("../../lib/github-api.js");
   const parsed = parseRepoSlug(repo);
   if (!parsed) {
-    return c.text("Invalid repository format.", 400);
+    return wantsJson
+      ? c.json({ error: "Invalid repository format." }, 400)
+      : c.text("Invalid repository format.", 400);
+  }
+
+  // Classify the repo before we commit any state: empty and already-owned
+  // targets proceed immediately; foreign or other-site targets require an
+  // explicit `confirmForeign` flag from the caller (a typed confirmation
+  // in the UI) to avoid silently pushing onto unrelated histories.
+  const { classifyRepoForSync } = await import("../../services/github-sync.js");
+  const ghClient = createGitHubClient(() =>
+    getInstallationTokenFromApp(app, installationId),
+  );
+  let classification;
+  try {
+    classification = await classifyRepoForSync(
+      ghClient,
+      parsed.owner,
+      parsed.repo,
+      c.var.currentSite.id,
+    );
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    return wantsJson
+      ? c.json({ error: `Could not read repository: ${detail}` }, 500)
+      : c.text(`Could not read repository: ${detail}`, 500);
+  }
+
+  if (classification.kind === "owned-by-other-site") {
+    const msg = `This repository is already backing up another Jant site (${classification.marker.site_host}). Pick a different repository.`;
+    return wantsJson
+      ? c.json(
+          {
+            error: msg,
+            classification: "owned-by-other-site",
+            marker: classification.marker,
+          },
+          409,
+        )
+      : c.text(msg, 409);
+  }
+
+  if (classification.kind === "foreign" && !confirmForeign) {
+    const msg = `${repo} already has commits but isn't managed by Jant. Re-submit with confirmation to push on top of its history.`;
+    return wantsJson
+      ? c.json(
+          {
+            error: msg,
+            classification: "foreign",
+            defaultBranch: classification.defaultBranch,
+          },
+          409,
+        )
+      : c.text(msg, 409);
   }
 
   // Persist config before creating webhook so the sync service can load it.
@@ -1586,13 +1679,237 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
     await syncService.setupWebhook(`${siteUrl}/api/github-sync/webhook`);
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
-    return c.text(
-      `Connected, but webhook creation failed: ${detail}. You may need to create it manually.`,
-      500,
+    const msg = `Connected, but webhook creation failed: ${detail}. You may need to create it manually.`;
+    return wantsJson ? c.json({ error: msg }, 500) : c.text(msg, 500);
+  }
+
+  const redirect = publicPath(c, "/settings/github-sync");
+  return wantsJson ? c.json({ ok: true, redirect }) : c.redirect(redirect);
+});
+
+// ---------------------------------------------------------------------------
+// GitHub App picker JSON API (consumed by the jant-repo-picker component)
+// ---------------------------------------------------------------------------
+
+/**
+ * Helper: load the GitHub App config or short-circuit with a 404 JSON error.
+ */
+type RequireAppResult =
+  | { app: import("../../lib/env.js").GitHubAppEnvConfig; response: null }
+  | { app: null; response: Response };
+
+function requireGitHubApp(c: Context<Env>): RequireAppResult {
+  const app = getGitHubAppConfig(c.env);
+  if (!app) {
+    return {
+      app: null,
+      response: c.json(
+        { error: "GitHub App is not configured on this deployment." },
+        404,
+      ),
+    };
+  }
+  return { app, response: null };
+}
+
+/**
+ * Dynamic import shim for `getInstallationToken`. Used by `/connect` to
+ * build a client for classification without adding the helper to the
+ * top-level imports (the module already lazy-imports github-api).
+ */
+async function getInstallationTokenFromApp(
+  app: import("../../lib/env.js").GitHubAppEnvConfig,
+  installationId: string,
+): Promise<string> {
+  const { getInstallationToken } = await import("../../lib/github-app.js");
+  return getInstallationToken(app, installationId);
+}
+
+/** List GitHub App installations authorized for this site. */
+settingsRoutes.get("/github-sync/app/installations", async (c) => {
+  const installations = await listStoredInstallations(c.var.services.settings);
+  const app = getGitHubAppConfig(c.env);
+  return c.json({
+    installations,
+    addInstallationUrl: app ? buildAddInstallationUrl(app.slug) : null,
+  });
+});
+
+/**
+ * List (or search) repositories accessible via an installation.
+ *
+ * Query params:
+ *   - installationId (required)
+ *   - page (default 1) — only used when `q` is empty
+ *   - q (optional) — when non-empty switches to GitHub search API
+ *
+ * 401 from GitHub indicates the installation was removed; we lazy-clean
+ * the stored entry and return a 410 so the UI can refresh its list.
+ */
+settingsRoutes.get("/github-sync/app/repos", async (c) => {
+  const { app, response } = requireGitHubApp(c);
+  if (!app) return response;
+
+  const installationId = c.req.query("installationId")?.trim();
+  if (!installationId) {
+    return c.json({ error: "Missing installationId." }, 400);
+  }
+  const q = c.req.query("q")?.trim() ?? "";
+  const pageParam = Number(c.req.query("page") ?? "1");
+  const page =
+    Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1;
+
+  try {
+    if (q) {
+      const installations = await listStoredInstallations(
+        c.var.services.settings,
+      );
+      const installation = installations.find(
+        (i) => i.installationId === installationId,
+      );
+      if (!installation) {
+        return c.json({ error: "Unknown installation." }, 404);
+      }
+      const result = await searchInstallationRepos(
+        app,
+        installationId,
+        installation.account.login,
+        q,
+      );
+      return c.json({
+        repos: result.repos,
+        totalCount: result.totalCount,
+        hasMore: false, // search API doesn't page for us here
+        nextPage: null,
+        mode: "search",
+      });
+    }
+
+    const result = await listInstallationReposPage(app, installationId, page);
+    return c.json({
+      repos: result.repos,
+      totalCount: result.totalCount,
+      hasMore: result.hasMore,
+      nextPage: result.nextPage,
+      mode: "list",
+    });
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    // GitHub returns 401 when an installation was uninstalled on their
+    // side. Clean up our cached entry so the UI stops showing a dead owner.
+    if (/\b401\b/.test(detail) || /\b404\b/.test(detail)) {
+      await removeStoredInstallation(c.var.services.settings, installationId);
+      return c.json(
+        { error: "Installation is no longer accessible.", removed: true },
+        410,
+      );
+    }
+    return c.json({ error: detail }, 500);
+  }
+});
+
+/**
+ * Classify a repo: empty / owned / owned-by-other-site / foreign.
+ *
+ * The picker calls this when the user picks a repo so it can show an
+ * appropriate confirmation UI before submitting `/connect`.
+ */
+settingsRoutes.post("/github-sync/app/classify", async (c) => {
+  const { app, response } = requireGitHubApp(c);
+  if (!app) return response;
+
+  const body = (await c.req.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  const installationId = String(body.installationId ?? "").trim();
+  const repo = String(body.repo ?? "").trim();
+  if (!installationId || !repo) {
+    return c.json({ error: "Missing installationId or repo." }, 400);
+  }
+
+  const { parseRepoSlug, createGitHubClient } =
+    await import("../../lib/github-api.js");
+  const parsed = parseRepoSlug(repo);
+  if (!parsed) {
+    return c.json({ error: "Invalid repository format." }, 400);
+  }
+
+  const { classifyRepoForSync } = await import("../../services/github-sync.js");
+  const client = createGitHubClient(() =>
+    getInstallationTokenFromApp(app, installationId),
+  );
+  try {
+    const classification = await classifyRepoForSync(
+      client,
+      parsed.owner,
+      parsed.repo,
+      c.var.currentSite.id,
+    );
+    return c.json({ classification });
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    return c.json({ error: detail }, 500);
+  }
+});
+
+/**
+ * Create a new repository under the installation's account.
+ *
+ * Limited to Organization accounts — user accounts require a user OAuth
+ * token that our install flow doesn't carry. The caller should direct
+ * users with personal accounts to create the repo on GitHub first.
+ */
+settingsRoutes.post("/github-sync/app/create-repo", async (c) => {
+  const { app, response } = requireGitHubApp(c);
+  if (!app) return response;
+
+  const body = (await c.req.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
+  const installationId = String(body.installationId ?? "").trim();
+  const name = String(body.name ?? "").trim();
+  const isPrivate = body.private !== false; // default to private
+  const description =
+    typeof body.description === "string" ? body.description : undefined;
+
+  if (!installationId || !name) {
+    return c.json({ error: "Missing installationId or name." }, 400);
+  }
+  if (!/^[A-Za-z0-9_.-]+$/.test(name)) {
+    return c.json(
+      {
+        error:
+          "Repository name can only contain letters, numbers, hyphens, underscores, and dots.",
+      },
+      400,
     );
   }
 
-  return c.redirect(publicPath(c, "/settings/github-sync"));
+  const installations = await listStoredInstallations(c.var.services.settings);
+  const installation = installations.find(
+    (i) => i.installationId === installationId,
+  );
+  if (!installation) {
+    return c.json({ error: "Unknown installation." }, 404);
+  }
+
+  try {
+    const repo = await createRepoForInstallation(app, installationId, {
+      owner: installation.account.login,
+      ownerType: installation.account.type,
+      name,
+      private: isPrivate,
+      description,
+    });
+    return c.json({ repo });
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    // Personal-account limitation is a 400, not 500 — caller can hint.
+    const status = /personal account/i.test(detail) ? 400 : 500;
+    return c.json({ error: detail }, status);
+  }
 });
 
 settingsRoutes.get("/github-sync", async (c) => {

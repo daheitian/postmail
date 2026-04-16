@@ -283,3 +283,276 @@ export function buildInstallUrl(slug: string, state: string): string {
   const params = new URLSearchParams({ state });
   return `https://github.com/apps/${encodeURIComponent(slug)}/installations/new?${params.toString()}`;
 }
+
+/**
+ * URL users visit to install the App on *another* account. Distinct from
+ * `buildInstallUrl` only in that it carries no state — this is the "+
+ * Install on another account" entry inside the picker, not a fresh OAuth
+ * dance, so no CSRF token is needed at click time. GitHub will still
+ * redirect back to the App's configured Callback URL, and the landing
+ * page there runs the usual state-signing flow.
+ */
+export function buildAddInstallationUrl(slug: string): string {
+  return `https://github.com/apps/${encodeURIComponent(slug)}/installations/new`;
+}
+
+// ---------------------------------------------------------------------------
+// Installation metadata (App JWT — not installation token)
+// ---------------------------------------------------------------------------
+
+export interface InstallationAccount {
+  login: string;
+  type: "User" | "Organization";
+  avatarUrl: string;
+}
+
+/**
+ * Fetch metadata for a given installation, including the account it's
+ * installed on. Uses an App JWT because the target endpoint is
+ * `/app/installations/{id}`, which is App-scoped, not installation-scoped.
+ */
+export async function getInstallation(
+  app: GitHubAppEnvConfig,
+  installationId: string,
+): Promise<{ account: InstallationAccount }> {
+  const jwt = await createAppJwt(app.appId, app.privateKey);
+  const res = await fetch(
+    `${GITHUB_API}/app/installations/${encodeURIComponent(installationId)}`,
+    {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${jwt}`,
+        "User-Agent": "jant-github-sync",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    },
+  );
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Fetching installation failed (${res.status}): ${body}`);
+  }
+  const data = (await res.json()) as {
+    account: { login: string; type: string; avatar_url?: string };
+  };
+  const type = data.account.type === "Organization" ? "Organization" : "User";
+  return {
+    account: {
+      login: data.account.login,
+      type,
+      avatarUrl: data.account.avatar_url ?? "",
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Paginated repo listing (single page at a time)
+// ---------------------------------------------------------------------------
+
+export interface InstallationRepo {
+  fullName: string;
+  name: string;
+  private: boolean;
+  defaultBranch: string;
+}
+
+export interface InstallationRepoPage {
+  repos: InstallationRepo[];
+  /** Server-reported total count (not always accurate but useful as a hint). */
+  totalCount: number;
+  hasMore: boolean;
+  nextPage: number | null;
+}
+
+/**
+ * Fetch a single page of installation repositories.
+ *
+ * Used by the picker for lazy-loading. Callers can either stop after the
+ * first page (UI does local filtering) or keep paging for larger accounts.
+ * For search, prefer `searchInstallationRepos` — this endpoint does not
+ * support a query parameter.
+ */
+export async function listInstallationReposPage(
+  app: GitHubAppEnvConfig,
+  installationId: string,
+  page: number,
+  perPage = 100,
+): Promise<InstallationRepoPage> {
+  const token = await getInstallationToken(app, installationId);
+  const res = await fetch(
+    `${GITHUB_API}/installation/repositories?per_page=${perPage}&page=${page}`,
+    {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "User-Agent": "jant-github-sync",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    },
+  );
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Listing installation repos failed: ${res.status} ${body}`);
+  }
+  const data = (await res.json()) as {
+    total_count: number;
+    repositories: Array<{
+      name: string;
+      full_name: string;
+      private: boolean;
+      default_branch: string;
+    }>;
+  };
+  const repos = data.repositories.map((r) => ({
+    fullName: r.full_name,
+    name: r.name,
+    private: r.private,
+    defaultBranch: r.default_branch,
+  }));
+  const hasMore = repos.length === perPage;
+  return {
+    repos,
+    totalCount: data.total_count,
+    hasMore,
+    nextPage: hasMore ? page + 1 : null,
+  };
+}
+
+/**
+ * Search the installation's repositories via `GET /search/repositories`.
+ *
+ * GitHub's Search API doesn't scope automatically to an installation, so
+ * we filter server-side by the installation's account login. This keeps
+ * results relevant while still covering repos past the first 100.
+ *
+ * The `q` string is wrapped (caller passes raw user input, we add the
+ * scope qualifier). Uses the installation token for auth.
+ */
+export async function searchInstallationRepos(
+  app: GitHubAppEnvConfig,
+  installationId: string,
+  accountLogin: string,
+  q: string,
+  perPage = 30,
+): Promise<{ repos: InstallationRepo[]; totalCount: number }> {
+  const token = await getInstallationToken(app, installationId);
+  // `in:name` restricts matching to the repo name, which is what users type.
+  // `user:{login}` scopes to the account the installation is on (works for
+  // both user and org accounts). GitHub's search syntax uses space-separated
+  // qualifiers; our caller should pre-trim `q`.
+  const fullQuery = `${q} in:name user:${accountLogin} fork:true`;
+  const params = new URLSearchParams({
+    q: fullQuery,
+    per_page: String(perPage),
+  });
+  const res = await fetch(
+    `${GITHUB_API}/search/repositories?${params.toString()}`,
+    {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "User-Agent": "jant-github-sync",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    },
+  );
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Searching repos failed: ${res.status} ${body}`);
+  }
+  const data = (await res.json()) as {
+    total_count: number;
+    items: Array<{
+      name: string;
+      full_name: string;
+      private: boolean;
+      default_branch: string;
+    }>;
+  };
+  return {
+    repos: data.items.map((r) => ({
+      fullName: r.full_name,
+      name: r.name,
+      private: r.private,
+      defaultBranch: r.default_branch,
+    })),
+    totalCount: data.total_count,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Create repository
+// ---------------------------------------------------------------------------
+
+export interface CreateRepoInput {
+  /** Owner account login (user or org). */
+  owner: string;
+  /** Account type — determines which endpoint is called. */
+  ownerType: "User" | "Organization";
+  /** Repository name (without owner prefix). */
+  name: string;
+  /** Private vs public. GitHub free plans allow unlimited private repos. */
+  private: boolean;
+  /** Optional description surfaced on the repo homepage. */
+  description?: string;
+}
+
+/**
+ * Create a new repository on the installation's account.
+ *
+ * Organization repos are created via `POST /orgs/{org}/repos` with the
+ * installation token (requires the App to have Administration: write).
+ *
+ * User repos can't be created with an installation token alone (GitHub
+ * treats `POST /user/repos` as user-scoped), so we surface a clear error
+ * asking the user to create the repo on GitHub and come back to select
+ * it. When/if we add user-OAuth to the flow we can extend this.
+ */
+export async function createRepoForInstallation(
+  app: GitHubAppEnvConfig,
+  installationId: string,
+  input: CreateRepoInput,
+): Promise<InstallationRepo> {
+  if (input.ownerType === "User") {
+    throw new Error(
+      "Creating a repository on a personal account requires creating it on GitHub first. Create the repository on github.com, then return here to select it.",
+    );
+  }
+
+  const token = await getInstallationToken(app, installationId);
+  const res = await fetch(
+    `${GITHUB_API}/orgs/${encodeURIComponent(input.owner)}/repos`,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "User-Agent": "jant-github-sync",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: input.name,
+        private: input.private,
+        description: input.description ?? "",
+        auto_init: false,
+      }),
+    },
+  );
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Creating repository failed: ${res.status} ${body}`);
+  }
+  const data = (await res.json()) as {
+    name: string;
+    full_name: string;
+    private: boolean;
+    default_branch: string;
+  };
+  return {
+    fullName: data.full_name,
+    name: data.name,
+    private: data.private,
+    // Brand-new repos may have no default branch set yet; fall back to "main".
+    defaultBranch: data.default_branch || "main",
+  };
+}
