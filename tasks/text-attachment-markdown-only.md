@@ -259,4 +259,71 @@ Three commits:
 
 ## Review
 
-_Filled in after execution._
+Landed in two commits:
+
+- `e0540796` — core storage switch + migration + test updates. Single atomic
+  change covering `media.ts` service (`createTextAttachment` /
+  `getTextAttachmentContent` / `getTextAttachmentHtml` / `delete` /
+  `deleteByIds` / migration helper), the legacy-cleanup query rewrite in
+  `migrateLegacyTextAttachments`, `/api/media/:id/content` endpoint rewrite,
+  internal admin route rename, CLI help-text update, plus every dependent
+  test file (media/compose/posts/export).
+- `4b29585d` — import round-trip: `normalizeTextAttachmentSpec` becomes
+  async and handles the reference shape (`kind: "text" + src: URL`) by
+  fetching markdown via `readImportAsset` (same code path images use).
+  Two new tests: happy path and 404 skip.
+
+What held from the plan
+
+- Markdown is the only persisted form. HTML and Tiptap AST are computed
+  on read. `text/markdown; charset=utf-8` + `inline` disposition.
+- Zero eager storage reads at export time. Export emits a card-shaped link
+  at `getMediaUrl(storageKey, …)`, which now ends in `.md`.
+- Migration handles both legacy layouts (envelope + split) in one pass via
+  `migrateLegacyTextAttachments`. Idempotent — current markdown rows are
+  skipped by the WHERE clause.
+- Editing published attachments stays supported: client fetches markdown
+  via `/api/attachments/:id/content`, hydrates with `parseMarkdownDocument`,
+  edits, re-submits — same pipeline as compose, no special casing.
+
+What changed from the plan in the doing
+
+- I kept the previous commit's migration script entry point name
+  (`/api/internal/text-attachments/migrate-envelopes` + `jant migrate-text-attachments`)
+  rather than rebranding it. Callers stay untouched; the service method
+  internally dispatches on MIME to handle either legacy shape.
+- The "converts envelope into .md" test initially asserted the legacy
+  key was deleted, but real envelope keys already end in `.md` (the
+  original `attached-text.md` filename), so migration overwrites the
+  same key instead of creating a new one. Test updated to check
+  markdown content at the same key.
+- The idempotency test originally used an empty-content envelope, which
+  produced a zero-byte markdown write and tripped the DB's
+  `chk_media_size_positive` constraint. Test updated to use non-empty
+  content. No production risk — empty attachments shouldn't exist.
+- `textAttachmentJsonKey` helper and the split-era constants are gone
+  entirely. Only the two `LEGACY_…_MIME_TYPE` constants remain, used by
+  the migration query.
+
+What's deferred
+
+- Removing the migration script entirely. Once the user confirms their
+  personal site data is fully on the markdown layout, the script can
+  be dropped in a follow-up. Keep it around for now in case any other
+  Jant deployment ever needs to migrate.
+- Updating the SSR preview route (`/{slug}/text/{id}`) for any caching
+  hints around the newly on-the-fly HTML render. Currently it produces
+  fresh HTML each visit — fine for the low-traffic personal-blog scale,
+  but an obvious `Cache-Control: public, max-age=31536000, immutable`
+  tweak if it ever matters.
+
+Verification
+
+- `mise run check-tests` — 2027 tests pass (5 migration + 2 new import
+  tests added).
+- `mise run check-lint` — clean.
+- `mise run check-types` — clean.
+- Manual smoke deferred to user: `jant migrate-text-attachments`
+  against the dev-node Postgres site to convert any split-format data
+  still sitting around from the previous refactor, then compose /
+  preview / Copy / edit to sanity-check the full UX.
