@@ -317,6 +317,17 @@ export const CONFIG_FIELDS = {
     internal: true,
   },
   /**
+   * Unix-seconds timestamp captured when PENDING flips to "true".
+   * Read alongside PENDING to detect a stuck flag from a crashed /
+   * killed worker that never got to run its `finally` clause, so the
+   * status card self-heals instead of showing "Syncing…" forever.
+   */
+  GITHUB_SYNC_PENDING_AT: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  /**
    * Set "true" when a trigger arrives while PENDING is already true.
    * The running sync consults this after its push and loops once more
    * so mid-push edits aren't lost.

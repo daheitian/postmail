@@ -169,25 +169,13 @@ Thread replies appear as HTML comment markers within the same file:
 Reply content here.
 ```
 
-## Queue and Background Processing
+## Background Processing
 
-Sync operations run asynchronously to avoid blocking your writing flow.
+Sync operations run in the background so editing and publishing never wait on GitHub. When a post changes, the sync is scheduled inline through the Worker's `waitUntil` lifecycle — the HTTP response returns immediately and the push completes right after. No queue binding or separate consumer worker is needed.
 
-- **Cloudflare Workers**: uses Cloudflare Queues when the `GITHUB_SYNC_QUEUE` binding is configured. Add the binding to your `wrangler.toml`:
+While a push is in flight the settings page shows a live "Syncing…" indicator; it switches back to "Last synced" when the push finishes. If a push fails, the error message appears on the status card so you know what went wrong without digging through logs.
 
-  ```toml
-  [[queues.producers]]
-  binding = "GITHUB_SYNC_QUEUE"
-  queue = "jant-github-sync"
-
-  [[queues.consumers]]
-  queue = "jant-github-sync"
-  max_batch_size = 1
-  ```
-
-- **Node / Docker**: uses a database-backed job queue (`sync_job` table) with automatic polling. No extra configuration needed.
-
-- **Without a queue**: if no queue is configured on Cloudflare, incremental syncs are skipped. Full syncs triggered from the dashboard still work (they run inline).
+Rapid edits coalesce: if a second change arrives during an in-flight push, it's recorded as a pending edit and picked up immediately after the current push lands, so nothing is lost without causing concurrent pushes.
 
 ## Limitations
 

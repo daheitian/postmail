@@ -40,6 +40,56 @@ export function resolveJobQueue(env: { GITHUB_SYNC_QUEUE?: Queue }): JobQueue {
 }
 
 /**
+ * Maximum time a sync is allowed to be "in flight" before we consider
+ * the PENDING flag stale. Covers worker crashes, timeouts, and any
+ * other path where `runBackgroundSync`'s `finally` didn't execute.
+ *
+ * Normal syncs are a few seconds; a very large site might take a
+ * minute or two. Ten minutes is comfortably above the worst realistic
+ * case without trapping users under a stuck indicator forever.
+ */
+export const SYNC_PENDING_STALE_SECONDS = 10 * 60;
+
+/**
+ * Returns the effective "sync in progress" state.
+ *
+ * A plain read of `GITHUB_SYNC_PENDING` can lie — the flag stays
+ * "true" if the worker died before the finally clause ran. This helper
+ * cross-checks `GITHUB_SYNC_PENDING_AT`: if the timestamp is missing
+ * or older than `SYNC_PENDING_STALE_SECONDS`, we treat PENDING as
+ * not actually pending so the UI and trigger paths self-heal.
+ */
+export async function isSyncPending(
+  settings: SettingsService,
+): Promise<boolean> {
+  const [pending, pendingAt] = await Promise.all([
+    settings.get("GITHUB_SYNC_PENDING"),
+    settings.get("GITHUB_SYNC_PENDING_AT"),
+  ]);
+  if (pending !== "true") return false;
+  const ts = Number(pendingAt);
+  if (!Number.isFinite(ts) || ts <= 0) return false;
+  const nowSec = Math.floor(Date.now() / 1000);
+  return nowSec - ts <= SYNC_PENDING_STALE_SECONDS;
+}
+
+/**
+ * Flip the sync state to "pending" with a timestamp. Call before kicking
+ * off `runBackgroundSync` so the status card shows "Syncing…" while the
+ * push runs and `isSyncPending` can tell stuck flags from live ones.
+ */
+export async function markSyncPending(
+  settings: SettingsService,
+): Promise<void> {
+  await settings.set("GITHUB_SYNC_PENDING", "true");
+  await settings.set(
+    "GITHUB_SYNC_PENDING_AT",
+    String(Math.floor(Date.now() / 1000)),
+  );
+  await settings.set("GITHUB_SYNC_DIRTY", "");
+}
+
+/**
  * Queue-based trigger. Safe to call on every post mutation. Kept for
  * compatibility with the original design but currently enqueues to a
  * noop queue on every known deployment — callers should use
@@ -94,6 +144,7 @@ export async function runBackgroundSync(
     await settings.set("GITHUB_SYNC_LAST_ERROR", message);
   } finally {
     await settings.set("GITHUB_SYNC_PENDING", "");
+    await settings.set("GITHUB_SYNC_PENDING_AT", "");
     await settings.set("GITHUB_SYNC_DIRTY", "");
   }
 }
@@ -118,17 +169,15 @@ export async function triggerGitHubSyncInline(c: Context<Env>): Promise<void> {
   const enabled = await settings.get("GITHUB_SYNC_ENABLED");
   if (enabled !== "true") return;
 
-  const pending = await settings.get("GITHUB_SYNC_PENDING");
-  if (pending === "true") {
-    // Another sync is in flight. Record this request so the running
-    // sync re-runs after it finishes. No new push is kicked off here
-    // — the `runBackgroundSync` loop handles it.
+  if (await isSyncPending(settings)) {
+    // Another (non-stale) sync is in flight. Record this request so the
+    // running sync re-runs after it finishes. No new push is kicked off
+    // here — the `runBackgroundSync` loop handles it.
     await settings.set("GITHUB_SYNC_DIRTY", "true");
     return;
   }
 
-  await settings.set("GITHUB_SYNC_PENDING", "true");
-  await settings.set("GITHUB_SYNC_DIRTY", "");
+  await markSyncPending(settings);
 
   const { createGitHubSyncService } =
     await import("../services/github-sync.js");

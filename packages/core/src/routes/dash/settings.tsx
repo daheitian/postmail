@@ -67,7 +67,11 @@ import {
   removeStoredInstallation,
   upsertStoredInstallation,
 } from "../../lib/github-sync-installations.js";
-import { runBackgroundSync } from "../../lib/github-sync-trigger.js";
+import {
+  isSyncPending,
+  markSyncPending,
+  runBackgroundSync,
+} from "../../lib/github-sync-trigger.js";
 import { buildSyncSiteConfig } from "../../lib/github-sync-site-config.js";
 import {
   generateInstallNonce,
@@ -1355,7 +1359,7 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
   // Kick off an initial background push so "Last sync" doesn't sit on
   // "Not synced yet" until the user's next edit. See the App flow's
   // equivalent block below for why we bypass the queue.
-  await c.var.services.settings.set("GITHUB_SYNC_PENDING", "true");
+  await markSyncPending(c.var.services.settings);
   const initialSync = runBackgroundSync(c.var.services.settings, syncService);
   try {
     c.executionCtx?.waitUntil(initialSync);
@@ -1384,7 +1388,7 @@ settingsRoutes.post("/github-sync/push", async (c) => {
   // Run the push in the background so the status card's live "Syncing…"
   // indicator drives the UX instead of the button's own spinner. The
   // button returns a toast immediately; the page polls for completion.
-  await c.var.services.settings.set("GITHUB_SYNC_PENDING", "true");
+  await markSyncPending(c.var.services.settings);
   const push = runBackgroundSync(c.var.services.settings, syncService);
   try {
     c.executionCtx?.waitUntil(push);
@@ -1912,7 +1916,7 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
   // silently drop the job. Instead, set PENDING and run the sync in
   // the background via waitUntil. The status page reads PENDING and
   // polls until it clears, so the user sees "Syncing…" right away.
-  await c.var.services.settings.set("GITHUB_SYNC_PENDING", "true");
+  await markSyncPending(c.var.services.settings);
   const initialSync = runBackgroundSync(c.var.services.settings, syncService);
   try {
     c.executionCtx?.waitUntil(initialSync);
@@ -2095,7 +2099,6 @@ settingsRoutes.get("/github-sync", async (c) => {
     webhookId,
     lastPushAt,
     authMode,
-    pending,
     lastError,
   ] = await Promise.all([
     c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
@@ -2104,9 +2107,11 @@ settingsRoutes.get("/github-sync", async (c) => {
     c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
     c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
     c.var.services.settings.get("GITHUB_SYNC_AUTH_MODE"),
-    c.var.services.settings.get("GITHUB_SYNC_PENDING"),
     c.var.services.settings.get("GITHUB_SYNC_LAST_ERROR"),
   ]);
+  // Use isSyncPending (not raw flag) so a worker that died mid-push
+  // doesn't leave the UI stuck on "Syncing…" forever.
+  const pending = await isSyncPending(c.var.services.settings);
 
   const status: GitHubSyncStatus = {
     enabled: enabled === "true",
@@ -2116,7 +2121,7 @@ settingsRoutes.get("/github-sync", async (c) => {
     lastPushAt: lastPushAt ? Number(lastPushAt) : null,
     authMode: authMode === "app" ? "app" : "pat",
     appConfigured: getGitHubAppConfig(c.env) !== null,
-    pending: pending === "true",
+    pending,
     lastError: lastError || null,
   };
 

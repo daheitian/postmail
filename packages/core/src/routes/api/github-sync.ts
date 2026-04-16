@@ -11,7 +11,10 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { verifyGitHubWebhookSignature } from "../../lib/webhook-signature.js";
-import { resolveJobQueue } from "../../lib/github-sync-trigger.js";
+import {
+  isSyncPending,
+  resolveJobQueue,
+} from "../../lib/github-sync-trigger.js";
 import { createGitHubClient, parseRepoSlug } from "../../lib/github-api.js";
 import {
   createGitHubSyncService,
@@ -182,23 +185,18 @@ githubSyncAdminRoutes.delete("/", requireAuthApi(), async (c) => {
 
 // Get sync status
 githubSyncAdminRoutes.get("/status", requireAuthApi(), async (c) => {
-  const [
-    enabled,
-    repo,
-    lastPushSha,
-    webhookId,
-    lastPushAt,
-    pending,
-    lastError,
-  ] = await Promise.all([
-    c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
-    c.var.services.settings.get("GITHUB_SYNC_REPO"),
-    c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
-    c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
-    c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
-    c.var.services.settings.get("GITHUB_SYNC_PENDING"),
-    c.var.services.settings.get("GITHUB_SYNC_LAST_ERROR"),
-  ]);
+  const [enabled, repo, lastPushSha, webhookId, lastPushAt, lastError] =
+    await Promise.all([
+      c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
+      c.var.services.settings.get("GITHUB_SYNC_REPO"),
+      c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
+      c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
+      c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
+      c.var.services.settings.get("GITHUB_SYNC_LAST_ERROR"),
+    ]);
+  // Use isSyncPending (not raw flag) so polling clients don't get stuck
+  // on a dead PENDING flag left by a crashed worker.
+  const pending = await isSyncPending(c.var.services.settings);
 
   return c.json({
     enabled: enabled === "true",
@@ -206,7 +204,7 @@ githubSyncAdminRoutes.get("/status", requireAuthApi(), async (c) => {
     lastPushSha: lastPushSha ?? null,
     webhookId: webhookId ?? null,
     lastPushAt: lastPushAt ? Number(lastPushAt) : null,
-    pending: pending === "true",
+    pending,
     lastError: lastError || null,
   });
 });
