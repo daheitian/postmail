@@ -4,7 +4,7 @@ import {
   createTestDatabase,
   DEFAULT_TEST_SITE_ID,
 } from "../../__tests__/helpers/db.js";
-import { createMediaService, textAttachmentJsonKey } from "../media.js";
+import { createMediaService } from "../media.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
 import { MediaQuotaExceededError } from "../../lib/errors.js";
@@ -12,6 +12,7 @@ import { MediaQuotaExceededError } from "../../lib/errors.js";
 interface MockStorageFile {
   body: Uint8Array;
   contentType?: string;
+  contentDisposition?: string;
   cacheControl?: string;
 }
 
@@ -23,7 +24,11 @@ function createMockStorage() {
     async put(
       key: string,
       body: Uint8Array | ReadableStream,
-      opts?: { contentType?: string; cacheControl?: string },
+      opts?: {
+        contentType?: string;
+        contentDisposition?: string;
+        cacheControl?: string;
+      },
     ) {
       const bytes =
         body instanceof Uint8Array
@@ -32,6 +37,7 @@ function createMockStorage() {
       files.set(key, {
         body: bytes,
         contentType: opts?.contentType,
+        contentDisposition: opts?.contentDisposition,
         cacheControl: opts?.cacheControl,
       });
     },
@@ -41,6 +47,7 @@ function createMockStorage() {
       return {
         body: new Response(file.body).body as ReadableStream,
         contentType: file.contentType,
+        contentDisposition: file.contentDisposition,
         cacheControl: file.cacheControl,
       };
     },
@@ -323,7 +330,7 @@ describe("MediaService", () => {
   });
 
   describe("createTextAttachment", () => {
-    it("writes a .html public artifact and a .json source as sibling objects", async () => {
+    it("writes a single .md file with the right mime, cache, and disposition", async () => {
       const storage = createMockStorage();
 
       const media = await mediaService.createTextAttachment(
@@ -338,40 +345,30 @@ describe("MediaService", () => {
         },
       );
 
-      expect(media.mimeType).toBe("text/html; charset=utf-8");
+      expect(media.mimeType).toBe("text/markdown; charset=utf-8");
       expect(media.mediaKind).toBe("text");
       expect(media.provider).toBe("local");
       expect(media.summary).toBe("Heading Body text");
       expect(media.chars).toBe(17);
-      expect(media.originalName).toBe("attached-text.html");
-      expect(media.storageKey.endsWith(".html")).toBe(true);
+      expect(media.originalName).toBe("attached-text.md");
+      expect(media.storageKey.endsWith(".md")).toBe(true);
 
-      const htmlKey = media.storageKey;
-      const jsonKey = textAttachmentJsonKey(htmlKey);
-      expect(jsonKey).toBe(htmlKey.replace(/\.html$/, ".json"));
+      // Exactly one storage object — no sibling, no rendered HTML copy.
+      expect(storage.files.size).toBe(1);
 
-      const htmlFile = storage.files.get(htmlKey);
-      expect(htmlFile).toBeDefined();
-      expect(htmlFile!.contentType).toBe("text/html; charset=utf-8");
-      expect(htmlFile!.cacheControl).toBe(
-        "public, max-age=31536000, immutable",
+      const file = storage.files.get(media.storageKey);
+      expect(file).toBeDefined();
+      expect(file!.contentType).toBe("text/markdown; charset=utf-8");
+      expect(file!.cacheControl).toBe("public, max-age=31536000, immutable");
+      expect(file!.contentDisposition).toBe("inline");
+
+      // Stored bytes are the raw markdown, identical to input.
+      expect(new TextDecoder().decode(file!.body)).toBe(
+        "# Heading\n\nBody text",
       );
-      const htmlText = new TextDecoder().decode(htmlFile!.body);
-      expect(htmlText).toContain("<h1");
-      expect(htmlText).toContain("Heading");
-
-      const jsonFile = storage.files.get(jsonKey);
-      expect(jsonFile).toBeDefined();
-      expect(jsonFile!.contentType).toBe("application/json");
-      expect(jsonFile!.cacheControl).toBe(
-        "public, max-age=31536000, immutable",
-      );
-      const jsonText = new TextDecoder().decode(jsonFile!.body);
-      const jsonDoc = JSON.parse(jsonText) as { type: string };
-      expect(jsonDoc.type).toBe("doc");
     });
 
-    it("sets media.size to the HTML artifact byte length", async () => {
+    it("sets media.size to the markdown byte length", async () => {
       const storage = createMockStorage();
       const media = await mediaService.createTextAttachment(
         {
@@ -384,39 +381,8 @@ describe("MediaService", () => {
           maxFileSizeMB: 1,
         },
       );
-      const htmlFile = storage.files.get(media.storageKey);
-      expect(media.size).toBe(htmlFile!.body.byteLength);
-    });
-
-    it("rolls back the .json sibling when the .html put fails", async () => {
-      const storage = createMockStorage();
-      const originalPut = storage.put.bind(storage);
-      const put = vi
-        .fn(async (key: string, body: Uint8Array, opts?: unknown) => {
-          if (key.endsWith(".html")) {
-            throw new Error("simulated HTML put failure");
-          }
-          return originalPut(key, body, opts as never);
-        })
-        .mockName("failingPut");
-      const flakyStorage = { ...storage, put };
-
-      await expect(
-        mediaService.createTextAttachment(
-          {
-            contentFormat: "markdown",
-            content: "body",
-          },
-          {
-            storage: flakyStorage,
-            storageDriver: "local",
-            maxFileSizeMB: 1,
-          },
-        ),
-      ).rejects.toThrow("simulated HTML put failure");
-
-      // JSON was written then cleaned up — no stranded source objects.
-      expect(storage.files.size).toBe(0);
+      const file = storage.files.get(media.storageKey);
+      expect(media.size).toBe(file!.body.byteLength);
     });
 
     it("rejects non-markdown input formats", async () => {
@@ -438,7 +404,7 @@ describe("MediaService", () => {
   });
 
   describe("getTextAttachmentContent", () => {
-    it("reads the .json sibling and converts Tiptap back to markdown", async () => {
+    it("returns the markdown source straight from storage", async () => {
       const storage = createMockStorage();
       const media = await mediaService.createTextAttachment(
         {
@@ -467,7 +433,7 @@ describe("MediaService", () => {
       });
     });
 
-    it("returns null when the .json sibling is missing", async () => {
+    it("returns null when the storage object is missing", async () => {
       const storage = createMockStorage();
       const media = await mediaService.createTextAttachment(
         {
@@ -481,7 +447,7 @@ describe("MediaService", () => {
         },
       );
 
-      await storage.delete(textAttachmentJsonKey(media.storageKey));
+      await storage.delete(media.storageKey);
 
       await expect(
         mediaService.getTextAttachmentContent(media.id, storage),
@@ -499,7 +465,7 @@ describe("MediaService", () => {
   });
 
   describe("getTextAttachmentHtml", () => {
-    it("reads the pre-rendered HTML directly from storageKey", async () => {
+    it("renders HTML from the stored markdown on the fly", async () => {
       const storage = createMockStorage();
       const media = await mediaService.createTextAttachment(
         {
@@ -537,7 +503,7 @@ describe("MediaService", () => {
   });
 
   describe("delete for text attachments", () => {
-    it("removes both .html and .json siblings from storage", async () => {
+    it("removes the single .md storage object", async () => {
       const storage = createMockStorage();
       const media = await mediaService.createTextAttachment(
         {
@@ -551,20 +517,17 @@ describe("MediaService", () => {
         },
       );
 
-      expect(storage.files.size).toBe(2);
+      expect(storage.files.size).toBe(1);
 
       await mediaService.delete(media.id, storage);
 
       expect(storage.files.size).toBe(0);
       expect(storage.files.has(media.storageKey)).toBe(false);
-      expect(storage.files.has(textAttachmentJsonKey(media.storageKey))).toBe(
-        false,
-      );
     });
   });
 
   describe("deleteByIds for text attachments", () => {
-    it("removes siblings for every text attachment in the batch", async () => {
+    it("removes the .md file for every text attachment in the batch", async () => {
       const storage = createMockStorage();
       const a = await mediaService.createTextAttachment(
         { contentFormat: "markdown", content: "first" },
@@ -575,7 +538,7 @@ describe("MediaService", () => {
         { storage, storageDriver: "local", maxFileSizeMB: 1 },
       );
 
-      expect(storage.files.size).toBe(4);
+      expect(storage.files.size).toBe(2);
 
       await mediaService.deleteByIds([a.id, b.id], storage);
 
@@ -583,20 +546,19 @@ describe("MediaService", () => {
     });
   });
 
-  describe("migrateEnvelopeTextAttachments", () => {
+  describe("migrateLegacyTextAttachments", () => {
     /**
-     * Seeds a legacy envelope-format text attachment directly in the DB and
-     * mock storage, bypassing `createTextAttachment` (which writes the new
-     * split layout). Used to simulate pre-refactor records.
+     * Seed a row representing the envelope-era format (single JSON blob with
+     * `{ json, html }`), bypassing the current service APIs.
      */
-    async function seedLegacyEnvelope(
+    async function seedEnvelopeRow(
+      storage: ReturnType<typeof createMockStorage>,
       key: string,
       envelope: { json: unknown; html: string },
     ) {
-      const storage = createMockStorage();
       const bytes = new TextEncoder().encode(JSON.stringify(envelope));
       await storage.put(key, bytes, { contentType: "text/x-tiptap+json" });
-      const row = await mediaService.create({
+      return mediaService.create({
         filename: key.split("/").pop() ?? "attached-text.md",
         originalName: "attached-text.md",
         mimeType: "text/x-tiptap+json",
@@ -604,14 +566,51 @@ describe("MediaService", () => {
         storageKey: key,
         provider: "local",
         mediaKind: "text",
-        summary: "Legacy note",
+        summary: "Legacy envelope",
         chars: 10,
       });
-      return { row, storage };
     }
 
-    it("converts a legacy envelope into split .html + .json siblings", async () => {
-      const legacyKey = "media/legacy-01.md";
+    /**
+     * Seed a row representing the split-era format (`.html` primary object
+     * with a `.json` sibling at the swapped suffix), bypassing current APIs.
+     */
+    async function seedSplitRow(
+      storage: ReturnType<typeof createMockStorage>,
+      htmlKey: string,
+      json: unknown,
+      html: string,
+    ) {
+      const jsonKey = htmlKey.replace(/\.html$/, ".json");
+      const htmlBytes = new TextEncoder().encode(html);
+      const jsonBytes = new TextEncoder().encode(JSON.stringify(json));
+      await storage.put(jsonKey, jsonBytes, {
+        contentType: "application/json",
+      });
+      await storage.put(htmlKey, htmlBytes, {
+        contentType: "text/html; charset=utf-8",
+      });
+      return mediaService.create({
+        filename: htmlKey.split("/").pop() ?? "attached-text.html",
+        originalName: "attached-text.html",
+        mimeType: "text/html; charset=utf-8",
+        size: htmlBytes.byteLength,
+        storageKey: htmlKey,
+        provider: "local",
+        mediaKind: "text",
+        summary: "Legacy split",
+        chars: 10,
+      });
+    }
+
+    it("converts an envelope row into a single .md file", async () => {
+      const storage = createMockStorage();
+      // Real legacy envelopes were named `attached-text.md` — so their
+      // storageKey already ends in `.md`. Migration overwrites the same
+      // key with markdown bytes rather than writing a new file; this is
+      // fine because the DB row still points at the same key and the old
+      // envelope contents are gone.
+      const legacyKey = "media/legacy-env.md";
       const envelope = {
         json: {
           type: "doc",
@@ -624,9 +623,9 @@ describe("MediaService", () => {
         },
         html: "<p>Hello</p>",
       };
-      const { row, storage } = await seedLegacyEnvelope(legacyKey, envelope);
+      const row = await seedEnvelopeRow(storage, legacyKey, envelope);
 
-      const result = await mediaService.migrateEnvelopeTextAttachments({
+      const result = await mediaService.migrateLegacyTextAttachments({
         storage,
         storageDriver: "local",
       });
@@ -638,50 +637,91 @@ describe("MediaService", () => {
         errors: [],
       });
 
-      // Old envelope gone, new siblings written.
-      expect(storage.files.has(legacyKey)).toBe(false);
-      const htmlKey = "media/legacy-01.html";
-      const jsonKey = "media/legacy-01.json";
-      expect(storage.files.get(htmlKey)?.contentType).toBe(
-        "text/html; charset=utf-8",
-      );
-      expect(storage.files.get(htmlKey)?.cacheControl).toBe(
-        "public, max-age=31536000, immutable",
-      );
-      expect(storage.files.get(jsonKey)?.contentType).toBe("application/json");
-      expect(storage.files.get(jsonKey)?.cacheControl).toBe(
-        "public, max-age=31536000, immutable",
-      );
+      // Exactly one storage object — the same key, now with markdown bytes
+      // and markdown metadata. The old envelope JSON is gone (overwritten).
+      expect(storage.files.size).toBe(1);
+      const file = storage.files.get(legacyKey)!;
+      expect(file.contentType).toBe("text/markdown; charset=utf-8");
+      expect(file.cacheControl).toBe("public, max-age=31536000, immutable");
+      expect(file.contentDisposition).toBe("inline");
+      const mdText = new TextDecoder().decode(file.body);
+      expect(mdText).toContain("Hello");
+      // Sanity check: no trace of the envelope JSON structure.
+      expect(mdText.trim().startsWith("{")).toBe(false);
 
-      const decoder = new TextDecoder();
-      expect(decoder.decode(storage.files.get(htmlKey)!.body)).toBe(
-        "<p>Hello</p>",
-      );
-      const jsonText = decoder.decode(storage.files.get(jsonKey)!.body);
-      expect(JSON.parse(jsonText)).toEqual(envelope.json);
-
-      // DB row points at the new public artifact.
       const updated = await mediaService.getById(row.id);
-      expect(updated?.storageKey).toBe(htmlKey);
-      expect(updated?.mimeType).toBe("text/html; charset=utf-8");
-      expect(updated?.originalName).toBe("attached-text.html");
-      expect(updated?.size).toBe(storage.files.get(htmlKey)!.body.byteLength);
-      expect(updated?.filename).toBe("legacy-01.html");
+      expect(updated?.storageKey).toBe(legacyKey);
+      expect(updated?.mimeType).toBe("text/markdown; charset=utf-8");
+      expect(updated?.originalName).toBe("attached-text.md");
+      expect(updated?.size).toBe(file.body.byteLength);
+      expect(updated?.filename).toBe("legacy-env.md");
     });
 
-    it("is idempotent: re-running on already-migrated data is a no-op", async () => {
-      const { storage } = await seedLegacyEnvelope("media/legacy-02.md", {
-        json: { type: "doc", content: [] },
-        html: "<p></p>",
+    it("converts a split (.html + .json) row into a single .md file", async () => {
+      const storage = createMockStorage();
+      const htmlKey = "media/legacy-split.html";
+      const jsonKey = "media/legacy-split.json";
+      const row = await seedSplitRow(
+        storage,
+        htmlKey,
+        {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "split world" }],
+            },
+          ],
+        },
+        "<p>split world</p>",
+      );
+
+      const result = await mediaService.migrateLegacyTextAttachments({
+        storage,
+        storageDriver: "local",
       });
 
-      const first = await mediaService.migrateEnvelopeTextAttachments({
+      expect(result.migrated).toBe(1);
+      expect(result.failed).toBe(0);
+      expect(result.remaining).toBe(0);
+
+      // Both old siblings gone; single .md written.
+      expect(storage.files.has(htmlKey)).toBe(false);
+      expect(storage.files.has(jsonKey)).toBe(false);
+      const mdKey = "media/legacy-split.md";
+      expect(storage.files.has(mdKey)).toBe(true);
+
+      const file = storage.files.get(mdKey)!;
+      const mdText = new TextDecoder().decode(file.body);
+      expect(mdText).toContain("split world");
+
+      const updated = await mediaService.getById(row.id);
+      expect(updated?.storageKey).toBe(mdKey);
+      expect(updated?.mimeType).toBe("text/markdown; charset=utf-8");
+    });
+
+    it("is idempotent: current markdown rows are skipped", async () => {
+      const storage = createMockStorage();
+      await seedEnvelopeRow(storage, "media/legacy-idemp.md", {
+        json: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "hello" }],
+            },
+          ],
+        },
+        html: "<p>hello</p>",
+      });
+
+      const first = await mediaService.migrateLegacyTextAttachments({
         storage,
         storageDriver: "local",
       });
       expect(first.migrated).toBe(1);
 
-      const second = await mediaService.migrateEnvelopeTextAttachments({
+      const second = await mediaService.migrateLegacyTextAttachments({
         storage,
         storageDriver: "local",
       });
@@ -695,31 +735,22 @@ describe("MediaService", () => {
 
     it("respects the batch limit and reports remaining count accurately", async () => {
       const storage = createMockStorage();
-      const seedRows: string[] = [];
       for (let i = 0; i < 3; i += 1) {
-        const key = `media/legacy-batch-${i}.md`;
-        const bytes = new TextEncoder().encode(
-          JSON.stringify({
-            json: { type: "doc", content: [] },
-            html: `<p>${i}</p>`,
-          }),
-        );
-        await storage.put(key, bytes, { contentType: "text/x-tiptap+json" });
-        const row = await mediaService.create({
-          filename: `legacy-batch-${i}.md`,
-          originalName: "attached-text.md",
-          mimeType: "text/x-tiptap+json",
-          size: bytes.byteLength,
-          storageKey: key,
-          provider: "local",
-          mediaKind: "text",
-          summary: `Legacy ${i}`,
-          chars: 1,
+        await seedEnvelopeRow(storage, `media/legacy-batch-${i}.md`, {
+          json: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: `batch ${i}` }],
+              },
+            ],
+          },
+          html: `<p>batch ${i}</p>`,
         });
-        seedRows.push(row.id);
       }
 
-      const first = await mediaService.migrateEnvelopeTextAttachments({
+      const first = await mediaService.migrateLegacyTextAttachments({
         storage,
         storageDriver: "local",
         limit: 2,
@@ -727,7 +758,7 @@ describe("MediaService", () => {
       expect(first.migrated).toBe(2);
       expect(first.remaining).toBeGreaterThan(0);
 
-      const second = await mediaService.migrateEnvelopeTextAttachments({
+      const second = await mediaService.migrateLegacyTextAttachments({
         storage,
         storageDriver: "local",
         limit: 2,
@@ -737,16 +768,25 @@ describe("MediaService", () => {
     });
 
     it("continues processing the batch when one record fails", async () => {
-      const good = await seedLegacyEnvelope("media/legacy-good.md", {
-        json: { type: "doc", content: [] },
+      const storage = createMockStorage();
+      await seedEnvelopeRow(storage, "media/legacy-good.md", {
+        json: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "good" }],
+            },
+          ],
+        },
         html: "<p>good</p>",
       });
-      // Seed a broken envelope — missing the `html` field.
+      // Broken envelope — missing json field.
       const brokenKey = "media/legacy-broken.md";
       const brokenBytes = new TextEncoder().encode(
-        JSON.stringify({ json: { type: "doc" } }),
+        JSON.stringify({ html: "<p>broken</p>" }),
       );
-      await good.storage.put(brokenKey, brokenBytes, {
+      await storage.put(brokenKey, brokenBytes, {
         contentType: "text/x-tiptap+json",
       });
       const brokenRow = await mediaService.create({
@@ -761,8 +801,8 @@ describe("MediaService", () => {
         chars: 1,
       });
 
-      const result = await mediaService.migrateEnvelopeTextAttachments({
-        storage: good.storage,
+      const result = await mediaService.migrateLegacyTextAttachments({
+        storage,
         storageDriver: "local",
       });
 
@@ -771,46 +811,9 @@ describe("MediaService", () => {
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0].mediaId).toBe(brokenRow.id);
 
-      // Good record migrated normally; broken record left alone and still
-      // identifiable as unmigrated for manual recovery.
+      // Broken record is untouched and still flagged as legacy for later retry.
       const stillBroken = await mediaService.getById(brokenRow.id);
       expect(stillBroken?.mimeType).toBe("text/x-tiptap+json");
-    });
-
-    it("rolls back the .json sibling when the HTML put fails", async () => {
-      const { row, storage } = await seedLegacyEnvelope(
-        "media/legacy-fail.md",
-        {
-          json: { type: "doc", content: [] },
-          html: "<p>fail</p>",
-        },
-      );
-      const originalPut = storage.put.bind(storage);
-      storage.put = vi.fn(
-        async (key: string, body: Uint8Array, opts?: unknown) => {
-          if (key.endsWith(".html")) {
-            throw new Error("simulated HTML write failure");
-          }
-          return originalPut(key, body, opts as never);
-        },
-      ) as typeof storage.put;
-
-      const result = await mediaService.migrateEnvelopeTextAttachments({
-        storage,
-        storageDriver: "local",
-      });
-
-      expect(result.migrated).toBe(0);
-      expect(result.failed).toBe(1);
-
-      // Neither new sibling should remain; the old envelope is still in place
-      // so a later retry can complete the migration.
-      expect(storage.files.has("media/legacy-fail.html")).toBe(false);
-      expect(storage.files.has("media/legacy-fail.json")).toBe(false);
-      expect(storage.files.has("media/legacy-fail.md")).toBe(true);
-
-      const stillLegacy = await mediaService.getById(row.id);
-      expect(stillLegacy?.mimeType).toBe("text/x-tiptap+json");
     });
   });
 

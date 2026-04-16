@@ -726,10 +726,49 @@ function buildAttachmentBlock(
   return `<div data-jant-node="attachments">\n${figures}\n</div>`;
 }
 
+// Inline file-silhouette icons used in non-media attachment cards. Kept inline
+// because the export emits a fully self-contained static site — no shared
+// component runtime to import from.
+const TEXT_CARD_ICON_SVG =
+  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="11" x2="8" y2="11"/><line x1="16" y1="14" x2="8" y2="14"/><line x1="12" y1="17" x2="8" y2="17"/></svg>';
+
+const DOCUMENT_CARD_ICON_SVG =
+  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+
+function formatAttachmentChars(count: number): string {
+  if (count < 1000) return `${count} chars`;
+  if (count < 1_000_000) {
+    return `${parseFloat((count / 1000).toFixed(1))}k chars`;
+  }
+  return `${parseFloat((count / 1_000_000).toFixed(1))}M chars`;
+}
+
+function formatAttachmentSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function buildAttachmentCardLink(args: {
+  href: string;
+  iconSvg: string;
+  summary: string;
+  meta: string | null;
+}): string {
+  const metaSpan = args.meta
+    ? `\n      <span class="jant-attachment-card-meta">${escapeHtml(args.meta)}</span>`
+    : "";
+  return `<a class="jant-attachment-card" href="${escapeHtml(args.href)}" target="_blank" rel="noopener noreferrer">
+    <span class="jant-attachment-card-icon">${args.iconSvg}</span>
+    <span class="jant-attachment-card-body">
+      <span class="jant-attachment-card-summary">${escapeHtml(args.summary)}</span>${metaSpan}
+    </span>
+  </a>`;
+}
+
 function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
   const meta = buildAttachmentMeta(media, siteConfig);
   const metaJson = safeJsonForHtml(meta);
-  const name = escapeHtml(meta.originalName);
   const caption =
     media.summary && media.summary !== media.originalName
       ? `<figcaption>${escapeHtml(media.summary)}</figcaption>`
@@ -738,17 +777,26 @@ function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
   const src = meta.src;
 
   if (meta.kind === "text") {
-    // Text attachments are exported as a link to the public `.html` artifact.
-    // The browser can render it standalone (it is a complete HTML document),
-    // so readers just click through. Clients that want richer handling
-    // (lightbox, inline render) can hydrate off the `data-jant-kind="text"`
-    // hook later without changing the export format.
-    const summaryLabel = escapeHtml(
-      media.summary?.trim() || meta.originalName || "Text attachment",
-    );
+    // Text attachments are exported as a card-shaped link to the public
+    // `.html` artifact. The browser can render that file standalone (it is a
+    // complete HTML document), so readers just click through. The card
+    // mirrors the main site's gallery affordance — file icon + summary +
+    // character count — but as a pure anchor so it works without JS.
+    const summary =
+      media.summary?.trim() || meta.originalName || "Text attachment";
+    const charsMeta =
+      typeof media.chars === "number" && media.chars > 0
+        ? formatAttachmentChars(media.chars)
+        : null;
+    const card = buildAttachmentCardLink({
+      href: src,
+      iconSvg: TEXT_CARD_ICON_SVG,
+      summary,
+      meta: charsMeta,
+    });
     return `<figure data-jant-node="attachment" data-jant-kind="text">
   <script type="application/json" data-jant-meta>${metaJson}</script>
-  <a href="${escapeHtml(src)}" target="_blank" rel="noopener noreferrer">${summaryLabel}</a>${caption ? `\n  ${caption}` : ""}
+  ${card}
 </figure>`;
   }
 
@@ -779,28 +827,23 @@ function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
 </figure>`;
   }
 
-  const description = buildAttachmentTextDescription(media);
-  const figcaption = description
-    ? `<figcaption>${escapeHtml(description)}</figcaption>`
-    : "";
+  // Documents (and any other non-media kind) get the same card affordance as
+  // text attachments: file icon + filename/summary + file size.
+  const summary = media.summary?.trim() || meta.originalName;
+  const sizeMeta =
+    typeof media.size === "number" && media.size > 0
+      ? formatAttachmentSize(media.size)
+      : null;
+  const card = buildAttachmentCardLink({
+    href: src,
+    iconSvg: DOCUMENT_CARD_ICON_SVG,
+    summary,
+    meta: sizeMeta,
+  });
   return `<figure data-jant-node="attachment" data-jant-kind="${escapeHtml(meta.kind)}">
   <script type="application/json" data-jant-meta>${metaJson}</script>
-  <a href="${escapeHtml(src)}">${name}</a>${figcaption ? `\n  ${figcaption}` : ""}
+  ${card}
 </figure>`;
-}
-
-function buildAttachmentTextDescription(media: Media): string {
-  if (media.mediaKind === "text") {
-    const summary = media.summary?.trim();
-    if (summary) return summary;
-    if (media.chars) return `${media.chars} chars`;
-  }
-
-  if (media.summary?.trim()) {
-    return media.summary.trim();
-  }
-
-  return media.mimeType;
 }
 
 function buildAttachmentMeta(
@@ -3084,31 +3127,62 @@ article[data-post-featured] .post-footer-featured {
   width: 100%;
 }
 
-[data-jant-node="attachment"] > a {
-  display: inline-flex;
-  font-weight: var(--fw-medium);
+/* Card-style attachments (text + document) — the card itself owns the visual
+   chrome, so the figure wrapper just becomes a transparent container. */
+[data-jant-node="attachment"][data-jant-kind="text"],
+[data-jant-node="attachment"][data-jant-kind="document"] {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.jant-attachment-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--site-divider) 84%, transparent);
+  background: color-mix(in srgb, var(--site-nav-hover-bg) 60%, transparent);
+  color: var(--site-text-primary);
   text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-[data-jant-node="attachment"][data-jant-kind="text"] details {
-  width: 100%;
+.jant-attachment-card:hover {
+  background: var(--site-nav-hover-bg);
+  border-color: var(--site-divider);
 }
 
-[data-jant-node="attachment"][data-jant-kind="text"] summary {
-  cursor: pointer;
+.jant-attachment-card-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--site-text-secondary) 78%, transparent);
+}
+
+.jant-attachment-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.jant-attachment-card-summary {
   font-weight: var(--fw-medium);
+  color: var(--site-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.jant-attachment-text-preview {
-  margin-top: 0.85rem;
-}
-
-.jant-attachment-text-preview > :first-child {
-  margin-top: 0;
-}
-
-.jant-attachment-text-preview > :last-child {
-  margin-bottom: 0;
+.jant-attachment-card-meta {
+  font-size: var(--type-xs);
+  color: var(--site-text-secondary);
 }
 
 .post-rating {

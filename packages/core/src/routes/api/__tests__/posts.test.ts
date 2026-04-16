@@ -640,9 +640,8 @@ describe("Posts API Routes", () => {
         }),
       ]);
       expect(body.attachments[0].contentUrl).toContain("/api/attachments/");
-      // Text attachments land as a pair of sibling objects in storage:
-      // the public `.html` artifact + the private `.json` Tiptap source.
-      expect(storage.files.size).toBe(2);
+      // Markdown-only storage: a single .md object per text attachment.
+      expect(storage.files.size).toBe(1);
     });
 
     it("creates quote posts with sourceName/sourceUrl", async () => {

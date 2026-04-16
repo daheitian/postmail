@@ -264,11 +264,11 @@ describe("createExportService", () => {
     const textAttachment: Media = {
       id: "media-1",
       postId: "post-1",
-      filename: "media-1.html",
-      originalName: "attached-text.html",
-      mimeType: "text/html; charset=utf-8",
+      filename: "media-1.md",
+      originalName: "attached-text.md",
+      mimeType: "text/markdown; charset=utf-8",
       size: 128,
-      storageKey: "media/media-1.html",
+      storageKey: "media/media-1.md",
       provider: "local",
       width: null,
       height: null,
@@ -331,16 +331,26 @@ describe("createExportService", () => {
     const postMarkdown = decodeZipEntry(files, "content/desk-note/index.md");
     const styleCss = decodeZipEntry(files, "static/style.css");
 
-    // Text attachments export as a link to the public `.html` artifact, not
-    // inline content. Readers click through to view the pre-rendered page.
+    // Text attachments export as a card-shaped link to the public `.html`
+    // artifact — file icon, summary, character count — not inline content.
+    // Readers click through to view the pre-rendered page in a new tab.
     expect(postMarkdown).toContain('data-jant-kind="text"');
     expect(postMarkdown).toContain('"kind":"text"');
     expect(postMarkdown).toContain('"src":"');
+    expect(postMarkdown).toContain('class="jant-attachment-card"');
     expect(postMarkdown).toContain('href="');
     expect(postMarkdown).toContain('target="_blank"');
     expect(postMarkdown).toContain('rel="noopener noreferrer"');
-    expect(postMarkdown).toContain("media/media-1.html");
-    expect(postMarkdown).toContain(">Attached note</a>");
+    expect(postMarkdown).toContain("media/media-1.md");
+    expect(postMarkdown).toContain(
+      '<span class="jant-attachment-card-summary">Attached note</span>',
+    );
+    expect(postMarkdown).toContain(
+      '<span class="jant-attachment-card-meta">24 chars</span>',
+    );
+    expect(postMarkdown).toMatch(
+      /<span class="jant-attachment-card-icon"><svg[^>]*>/,
+    );
 
     // The old inline-envelope format is gone — no content embedding, no
     // server-side markdown rendering into the exported HTML.
@@ -349,8 +359,10 @@ describe("createExportService", () => {
     expect(postMarkdown).not.toContain("<details>");
     expect(postMarkdown).not.toContain("<summary>Attached note</summary>");
 
-    // Styles for the old inline preview are also unnecessary.
-    expect(styleCss).not.toContain(".jant-attachment-text-preview blockquote");
+    // Styles for the old inline preview are also unnecessary; the card
+    // styling lives under `.jant-attachment-card` instead.
+    expect(styleCss).not.toContain(".jant-attachment-text-preview");
+    expect(styleCss).toContain(".jant-attachment-card");
   });
 
   it("exports rendered site footer HTML and enables bottom footnotes in Zola", async () => {

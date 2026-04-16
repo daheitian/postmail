@@ -4,7 +4,7 @@
  * Handles media upload and management with pluggable storage backends.
  */
 
-import { eq, desc, inArray, asc, sql, and } from "drizzle-orm";
+import { eq, desc, inArray, asc, sql, and, or } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
 import { type Database, supportsDrizzleTransaction } from "../db/index.js";
 import type { DatabaseDialect } from "../db/dialect.js";
@@ -46,38 +46,45 @@ import type { HostedControlPlaneClient } from "../lib/hosted-control-plane.js";
 const DEFAULT_MEDIA_POSITION = "a0";
 
 /**
- * MIME type stored on the `media` row for a text attachment. This matches the
- * public `.html` artifact's content type — the DB row describes the user-facing
- * object, not the private JSON source.
+ * MIME type stored on disk and on the `media` row for a Jant-composed text
+ * attachment. Markdown is the canonical source — HTML is rendered on read,
+ * never persisted. `charset=utf-8` is explicit so browsers that load the raw
+ * CDN URL decode correctly.
  */
-const TEXT_ATTACHMENT_HTML_MIME_TYPE = "text/html; charset=utf-8";
+const TEXT_ATTACHMENT_MARKDOWN_MIME_TYPE = "text/markdown; charset=utf-8";
 
 /**
- * MIME type applied to the JSON source object in storage. Never stored on the
- * DB row (which always tracks the public artifact).
+ * `Content-Disposition` applied to text-attachment storage objects. `inline`
+ * keeps browsers from prompting to download when the raw `.md` CDN URL is
+ * clicked (e.g. from a link in an exported Zola site).
  */
-const TEXT_ATTACHMENT_JSON_MIME_TYPE = "application/json";
+const TEXT_ATTACHMENT_CONTENT_DISPOSITION = "inline";
 
 /**
  * Original filename used when generating storage keys for text attachments.
- * The `.html` suffix flows through `generateStorageKey` and ends up as the
+ * The `.md` suffix flows through `generateStorageKey` and ends up as the
  * media row's `storageKey` extension.
  */
-const TEXT_ATTACHMENT_FILENAME = "attached-text.html";
+const TEXT_ATTACHMENT_FILENAME = "attached-text.md";
 
 /**
- * Cache-Control header used for both the HTML and JSON objects. Text
- * attachments are content-addressed (every edit produces a new storage key),
- * so the stored bytes at any given key are immutable for the lifetime of the
- * key — safe to cache forever.
+ * Cache-Control for the `.md` object. Attachments are content-addressed —
+ * every edit produces a new storage key — so the bytes at any given key are
+ * immutable for the lifetime of the key and safe to cache forever.
  */
 const TEXT_ATTACHMENT_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
 /**
- * MIME type assigned to legacy envelope-format text attachments (pre-refactor).
- * Still referenced by the migration helper to identify unmigrated records.
+ * MIME types that identify legacy text-attachment storage layouts, still used
+ * by the migration path to find rows that need converting to the current
+ * markdown-only format.
+ *
+ * - `text/x-tiptap+json` → single-envelope era (`{ json, html }` JSON blob).
+ * - `text/html; charset=utf-8` → split-sibling era (`.html` primary +
+ *   `.json` sibling at `storageKey.replace(/\.html$/, ".json")`).
  */
 const LEGACY_TEXT_ATTACHMENT_ENVELOPE_MIME_TYPE = "text/x-tiptap+json";
+const LEGACY_TEXT_ATTACHMENT_SPLIT_MIME_TYPE = "text/html; charset=utf-8";
 
 /**
  * Default maximum number of legacy records processed per migration call.
@@ -87,46 +94,20 @@ const TEXT_ATTACHMENT_MIGRATION_DEFAULT_LIMIT = 50;
 const TEXT_ATTACHMENT_MIGRATION_MAX_LIMIT = 500;
 
 /**
- * Derive the JSON sibling key for a text-attachment `.html` storage key.
- *
- * Text attachments live as a pair of sibling objects in storage:
- *
- * - `{key}.html` — primary, public CDN artifact (pre-rendered HTML).
- *   The media row's `storageKey` column always points here.
- * - `{key}.json` — Tiptap AST source of truth, used by the markdown API
- *   endpoint and any future re-rendering.
- *
- * Use this helper everywhere the JSON key is needed so the suffix convention
- * lives in one place.
- *
- * @param htmlKey - The media.storageKey value (expected to end in `.html`)
- * @returns The paired JSON key
- * @example
- * ```ts
- * textAttachmentJsonKey("sites/s/media/xyz.html");
- * // "sites/s/media/xyz.json"
- * ```
- */
-export function textAttachmentJsonKey(htmlKey: string): string {
-  return htmlKey.replace(/\.html$/, ".json");
-}
-
-/**
  * Returns true if the given media record is a Jant-composed text attachment
- * (created via `createTextAttachment`), as opposed to a plain text file that
- * happened to be uploaded via `/api/upload` (e.g. a `.md` or `.txt` file).
- *
- * Both kinds share `mediaKind === "text"` because the upload category is
- * resolved from MIME, but only Jant-composed attachments have the split
- * `.html` + `.json` sibling layout in storage. Detection uses the exact MIME
- * assigned at creation time, not a prefix match, to keep it unambiguous.
+ * stored as markdown (the current format). Plain text-file uploads (`.md`,
+ * `.txt`, `.csv`) also carry `mediaKind === "text"` but were uploaded through
+ * `/api/upload` as raw files — they share the text kind but not the content
+ * pipeline. Detection uses the exact MIME assigned at creation, so raw
+ * `text/markdown` file uploads (which use `text/markdown` without an explicit
+ * charset from the browser) do not collide.
  */
 export function isTextAttachment(
   media: Pick<Media, "mediaKind" | "mimeType">,
 ): boolean {
   return (
     media.mediaKind === "text" &&
-    media.mimeType === TEXT_ATTACHMENT_HTML_MIME_TYPE
+    media.mimeType === TEXT_ATTACHMENT_MARKDOWN_MIME_TYPE
   );
 }
 
@@ -243,17 +224,17 @@ export interface MediaService {
   detachFromPost(postId: string): Promise<void>;
   updateAlt(id: string, alt: string): Promise<void>;
   /**
-   * One-off maintenance operation that converts legacy envelope-format text
-   * attachments (`text/x-tiptap+json` MIME, single JSON object with `json`
-   * and `html` fields) into the current split-sibling layout (`.html` public
-   * artifact + `.json` source).
+   * One-off maintenance operation that converts legacy text-attachment rows
+   * to the current markdown-only format. Handles both prior storage layouts:
    *
-   * Safe to re-run: completed records are detected by MIME and skipped.
-   * Processes records in batches; pass `limit` to control batch size when
-   * running against large sites. Returns a summary so the caller can decide
-   * whether to keep invoking until the unmigrated count reaches zero.
+   * - Envelope era (`text/x-tiptap+json` MIME, single JSON with `json` + `html`).
+   * - Split era (`text/html; charset=utf-8` MIME with a `.json` sibling).
+   *
+   * Rows with `text/markdown; charset=utf-8` are already current and ignored.
+   * Safe to re-run. Processes in batches; pass `limit` to control batch size.
+   * Returns a summary so callers can loop until `remaining === 0`.
    */
-  migrateEnvelopeTextAttachments(deps: {
+  migrateLegacyTextAttachments(deps: {
     storage: StorageDriver;
     storageDriver: string;
     limit?: number;
@@ -348,92 +329,108 @@ export function createMediaService(
     };
   }
 
-  async function migrateOneEnvelopeTextAttachment(
+  /**
+   * Migrate a single legacy text-attachment row to the current markdown-only
+   * format. Handles both historical shapes in one place so callers don't
+   * have to branch:
+   *
+   * - Envelope era (`text/x-tiptap+json`): single object with
+   *   `{ json, html }`. Extract the Tiptap AST, convert to markdown.
+   * - Split era (`text/html; charset=utf-8`): two sibling objects; the
+   *   `.json` sibling holds the AST. Read it, convert to markdown, delete
+   *   both old objects.
+   */
+  async function migrateLegacyTextAttachmentRow(
     row: typeof media.$inferSelect,
     storage: StorageDriver,
     storageDriver: string,
   ): Promise<void> {
-    const envelopeKey = row.storageKey;
-    const object = await storage.get(envelopeKey);
-    if (!object) {
-      throw new Error(
-        `Legacy envelope object missing from storage at ${envelopeKey}`,
-      );
-    }
-
-    const raw = await new Response(object.body).text();
-    const envelope = JSON.parse(raw) as { json?: unknown; html?: string };
-
-    if (!envelope.json || typeof envelope.html !== "string") {
-      throw new Error(
-        `Envelope at ${envelopeKey} is missing expected json/html fields`,
-      );
-    }
-
-    // New keys share the envelope's prefix (media/site/... up to the filename)
-    // so locality is preserved. The extension swap is the only change.
-    const baseKey = envelopeKey.replace(/\.[^.]+$/, "");
-    const htmlKey = `${baseKey}.html`;
-    const jsonKey = `${baseKey}.json`;
-
-    const htmlBody = envelope.html;
-    const jsonBody = JSON.stringify(envelope.json);
-    const encoder = new TextEncoder();
-    const htmlBytes = encoder.encode(htmlBody);
-    const jsonBytes = encoder.encode(jsonBody);
-
-    // Write order mirrors createTextAttachment: JSON source first, then
-    // public HTML. If HTML fails we roll back the JSON so we don't strand
-    // orphan sibling files.
-    await storage.put(jsonKey, jsonBytes, {
-      contentType: TEXT_ATTACHMENT_JSON_MIME_TYPE,
-      cacheControl: TEXT_ATTACHMENT_CACHE_CONTROL,
-    });
-
-    try {
-      await storage.put(htmlKey, htmlBytes, {
-        contentType: TEXT_ATTACHMENT_HTML_MIME_TYPE,
-        cacheControl: TEXT_ATTACHMENT_CACHE_CONTROL,
-      });
-    } catch (error) {
-      await storage.delete(jsonKey).catch(() => undefined);
-      throw error;
-    }
-
-    // Filename tracks the storageKey's trailing segment so downstream code
-    // that inspects `media.filename` stays consistent with the object layout.
-    const newFilename = htmlKey.split("/").pop() ?? row.filename;
     const provider = ensureStorageProvider(row.provider, Error);
     const expectedProvider = ensureStorageProvider(storageDriver, Error);
     if (provider !== expectedProvider) {
-      // Guard: migrating a row whose storage lives on a different provider
-      // than the driver we were handed is a bug — bail so we don't write to
-      // the wrong backend.
       throw new Error(
         `Row ${row.id} lives on provider "${provider}" but migration was called with driver "${expectedProvider}"`,
       );
     }
 
+    const oldKeys: string[] = [row.storageKey];
+    let markdown: string;
+
+    if (row.mimeType === LEGACY_TEXT_ATTACHMENT_ENVELOPE_MIME_TYPE) {
+      const object = await storage.get(row.storageKey);
+      if (!object) {
+        throw new Error(
+          `Legacy envelope object missing from storage at ${row.storageKey}`,
+        );
+      }
+      const raw = await new Response(object.body).text();
+      const envelope = JSON.parse(raw) as { json?: unknown };
+      if (!envelope.json) {
+        throw new Error(
+          `Envelope at ${row.storageKey} is missing expected json field`,
+        );
+      }
+      markdown = tiptapJsonToMarkdown(JSON.stringify(envelope.json));
+    } else if (row.mimeType === LEGACY_TEXT_ATTACHMENT_SPLIT_MIME_TYPE) {
+      const jsonKey = row.storageKey.replace(/\.html$/, ".json");
+      if (jsonKey === row.storageKey) {
+        throw new Error(
+          `Split-format row ${row.id} storageKey "${row.storageKey}" does not end in .html; cannot derive JSON sibling`,
+        );
+      }
+      const object = await storage.get(jsonKey);
+      if (!object) {
+        throw new Error(
+          `JSON sibling missing from storage at ${jsonKey} for split-format row ${row.id}`,
+        );
+      }
+      const raw = await new Response(object.body).text();
+      markdown = tiptapJsonToMarkdown(raw);
+      oldKeys.push(jsonKey);
+    } else {
+      throw new Error(
+        `Row ${row.id} has unrecognized legacy mimeType "${row.mimeType}"`,
+      );
+    }
+
+    const mdBytes = new TextEncoder().encode(markdown);
+
+    // Compute the new storage key by swapping extension on the old one.
+    // Reusing the path prefix keeps objects grouped by site under the same
+    // prefix, which matters for storage backends that scan by prefix.
+    const baseKey = row.storageKey.replace(/\.[^.]+$/, "");
+    const mdKey = `${baseKey}.md`;
+
+    await storage.put(mdKey, mdBytes, {
+      contentType: TEXT_ATTACHMENT_MARKDOWN_MIME_TYPE,
+      contentDisposition: TEXT_ATTACHMENT_CONTENT_DISPOSITION,
+      cacheControl: TEXT_ATTACHMENT_CACHE_CONTROL,
+    });
+
+    // Filename tracks the storageKey's trailing segment so downstream code
+    // that inspects `media.filename` stays consistent with the object layout.
+    const newFilename = mdKey.split("/").pop() ?? row.filename;
+
     await db
       .update(media)
       .set({
-        storageKey: htmlKey,
+        storageKey: mdKey,
         filename: newFilename,
         originalName: TEXT_ATTACHMENT_FILENAME,
-        mimeType: TEXT_ATTACHMENT_HTML_MIME_TYPE,
-        size: htmlBytes.byteLength,
+        mimeType: TEXT_ATTACHMENT_MARKDOWN_MIME_TYPE,
+        size: mdBytes.byteLength,
         updatedAt: now(),
       })
       .where(and(eq(media.siteId, siteId), eq(media.id, row.id)));
 
-    // Remove the old envelope last — only when its key is distinct from the
-    // new pair (it always should be, because the extension changed). Any
-    // failure here is best-effort: the DB row already points to the new
-    // keys, so readers have already migrated.
-    if (envelopeKey !== htmlKey && envelopeKey !== jsonKey) {
-      await storage.delete(envelopeKey).catch((err) => {
+    // Remove the old objects after the DB row has migrated. Best-effort —
+    // if delete fails, we leak the object but readers have already moved
+    // on to the new key.
+    for (const key of oldKeys) {
+      if (key === mdKey) continue;
+      await storage.delete(key).catch((err) => {
         // eslint-disable-next-line no-console -- Visibility helps operators spot stuck garbage
-        console.error(`Failed to delete legacy envelope ${envelopeKey}:`, err);
+        console.error(`Failed to delete legacy object ${key}:`, err);
       });
     }
   }
@@ -644,25 +641,22 @@ export function createMediaService(
         throw new ValidationError("Unsupported text attachment format");
       }
 
-      // Input contract: the API accepts markdown for friendliness. Internally
-      // we normalize to Tiptap JSON (the source of truth) and render HTML
-      // (the public artifact). Markdown itself is never persisted — it is a
-      // boundary format only.
+      // Markdown in → markdown on disk. No other format is persisted.
+      // HTML and Tiptap AST are computed on read whenever a consumer needs
+      // them; keeping them off disk avoids the envelope/sibling complexity
+      // and makes markdown the single canonical form everywhere.
+      //
+      // We still parse to Tiptap once at write time, but only to extract
+      // text for summary/chars — we throw the AST away afterwards.
       const bodyJson = markdownToTiptapJson(data.content);
-      const bodyHtml = renderTiptapJson(bodyJson);
       const bodyText = extractBodyText(bodyJson) ?? "";
       const summary = data.summary?.trim() || bodyText.slice(0, 100).trim();
 
-      const encoder = new TextEncoder();
-      const htmlBytes = encoder.encode(bodyHtml);
-      const jsonBytes = encoder.encode(bodyJson);
+      const mdBytes = new TextEncoder().encode(data.content);
 
-      // Validate against the public artifact — that is the size the user
-      // effectively uploaded. The JSON source rides along and is typically
-      // comparable in size; we don't double-count.
       const uploadError = validateUploadFileMetadata(
-        TEXT_ATTACHMENT_HTML_MIME_TYPE,
-        htmlBytes.byteLength,
+        TEXT_ATTACHMENT_MARKDOWN_MIME_TYPE,
+        mdBytes.byteLength,
         {
           maxFileSizeMB: deps.maxFileSizeMB,
         },
@@ -671,40 +665,24 @@ export function createMediaService(
         throw new ValidationError(uploadError);
       }
 
-      const {
-        id,
-        filename,
-        storageKey: htmlKey,
-      } = generateStorageKey(siteId, TEXT_ATTACHMENT_FILENAME);
-      const jsonKey = textAttachmentJsonKey(htmlKey);
+      const { id, filename, storageKey } = generateStorageKey(
+        siteId,
+        TEXT_ATTACHMENT_FILENAME,
+      );
 
-      // Write order: JSON source first, then public HTML. The HTML file is
-      // the one readers (SSR, CDN visitors, exports) reach for — making it
-      // the last to land means a partial write never leaves a reachable
-      // attachment whose source is missing. On HTML failure we roll back the
-      // JSON so we don't strand a source object with no public counterpart.
-      await deps.storage.put(jsonKey, jsonBytes, {
-        contentType: TEXT_ATTACHMENT_JSON_MIME_TYPE,
+      await deps.storage.put(storageKey, mdBytes, {
+        contentType: TEXT_ATTACHMENT_MARKDOWN_MIME_TYPE,
+        contentDisposition: TEXT_ATTACHMENT_CONTENT_DISPOSITION,
         cacheControl: TEXT_ATTACHMENT_CACHE_CONTROL,
       });
-
-      try {
-        await deps.storage.put(htmlKey, htmlBytes, {
-          contentType: TEXT_ATTACHMENT_HTML_MIME_TYPE,
-          cacheControl: TEXT_ATTACHMENT_CACHE_CONTROL,
-        });
-      } catch (error) {
-        await deps.storage.delete(jsonKey).catch(() => undefined);
-        throw error;
-      }
 
       return this.create({
         id,
         filename,
         originalName: TEXT_ATTACHMENT_FILENAME,
-        mimeType: TEXT_ATTACHMENT_HTML_MIME_TYPE,
-        size: htmlBytes.byteLength,
-        storageKey: htmlKey,
+        mimeType: TEXT_ATTACHMENT_MARKDOWN_MIME_TYPE,
+        size: mdBytes.byteLength,
+        storageKey,
         provider: deps.storageDriver,
         summary: summary || undefined,
         chars: bodyText.length,
@@ -723,20 +701,17 @@ export function createMediaService(
         );
       }
 
-      // The .json sibling holds the Tiptap AST. Detection is via mediaKind
-      // rather than mimeType because the row's mimeType tracks the public
-      // HTML artifact, not the private JSON source.
-      const jsonKey = textAttachmentJsonKey(record.storageKey);
-      const object = await storage.get(jsonKey);
+      // The stored bytes are the markdown source — return them as-is.
+      const object = await storage.get(record.storageKey);
       if (!object) return null;
 
-      const json = await new Response(object.body).text();
+      const content = await new Response(object.body).text();
 
       return {
         id: record.id,
         type: "text",
         contentFormat: "markdown",
-        content: tiptapJsonToMarkdown(json),
+        content,
         summary: record.summary,
         chars: record.chars,
       };
@@ -753,12 +728,16 @@ export function createMediaService(
         );
       }
 
-      // The primary storageKey points directly to the pre-rendered HTML —
-      // no envelope unwrapping, no round-trip through markdown.
+      // Read markdown, render HTML on the fly. Rendering cost is negligible
+      // for typical attachment sizes (< 1ms on edge/Node); upstream callers
+      // that care (`/api/media/:id/content`, SSR preview) set long cache
+      // headers so CDN serves the rendered HTML for subsequent visits.
       const object = await storage.get(record.storageKey);
       if (!object) return null;
 
-      const html = await new Response(object.body).text();
+      const markdown = await new Response(object.body).text();
+      const tiptapJson = markdownToTiptapJson(markdown);
+      const html = renderTiptapJson(tiptapJson);
 
       return {
         id: record.id,
@@ -847,19 +826,27 @@ export function createMediaService(
         .where(and(eq(media.siteId, siteId), eq(media.id, id)));
     },
 
-    async migrateEnvelopeTextAttachments(deps) {
+    async migrateLegacyTextAttachments(deps) {
       const limit = Math.min(
         Math.max(deps.limit ?? TEXT_ATTACHMENT_MIGRATION_DEFAULT_LIMIT, 1),
         TEXT_ATTACHMENT_MIGRATION_MAX_LIMIT,
       );
 
+      // Select rows that carry either legacy mimeType. The current
+      // markdown-only rows (`text/markdown; charset=utf-8`) are excluded
+      // automatically because neither `eq` branch matches, making the
+      // migration idempotent by construction.
       const legacyRows = await db
         .select()
         .from(media)
         .where(
           and(
             eq(media.siteId, siteId),
-            eq(media.mimeType, LEGACY_TEXT_ATTACHMENT_ENVELOPE_MIME_TYPE),
+            eq(media.mediaKind, "text"),
+            or(
+              eq(media.mimeType, LEGACY_TEXT_ATTACHMENT_ENVELOPE_MIME_TYPE),
+              eq(media.mimeType, LEGACY_TEXT_ATTACHMENT_SPLIT_MIME_TYPE),
+            ),
           ),
         )
         .orderBy(asc(media.createdAt))
@@ -874,7 +861,7 @@ export function createMediaService(
 
       for (const row of toProcess) {
         try {
-          await migrateOneEnvelopeTextAttachment(
+          await migrateLegacyTextAttachmentRow(
             row,
             deps.storage,
             deps.storageDriver,
@@ -889,10 +876,10 @@ export function createMediaService(
         }
       }
 
-      // If we processed the entire batch and there was a peek row beyond it,
-      // there's at least one more remaining. Otherwise the remainder is
-      // exactly whatever this call couldn't migrate (plus the peek row, if
-      // any). Callers can keep invoking until remaining === 0.
+      // If the batch was full and there was a peek row beyond it, there's
+      // at least one more remaining. Otherwise remaining equals whatever
+      // this call couldn't migrate (plus the peek row if any). Callers loop
+      // until remaining === 0.
       const remaining =
         (remainingBeyondBatch ? 1 : 0) + (toProcess.length - migrated);
 
@@ -904,20 +891,13 @@ export function createMediaService(
       if (!record) return false;
 
       if (storage) {
-        // Delete the public artifact first so readers see a 404 immediately,
-        // then best-effort clean up any sibling source/poster objects.
+        // Text attachments have a single `.md` object — same shape as any
+        // other media — so no sibling cleanup is needed. Only video/image
+        // rows carry a companion poster.
         await storage.delete(record.storageKey).catch((err) => {
           // eslint-disable-next-line no-console -- Error logging is intentional
           console.error("Storage delete error:", err);
         });
-        if (isTextAttachment(record)) {
-          await storage
-            .delete(textAttachmentJsonKey(record.storageKey))
-            .catch((err) => {
-              // eslint-disable-next-line no-console -- Error logging is intentional
-              console.error("Storage delete text source error:", err);
-            });
-        }
         if (record.posterKey) {
           await storage.delete(record.posterKey).catch((err) => {
             // eslint-disable-next-line no-console -- Error logging is intentional
@@ -940,9 +920,6 @@ export function createMediaService(
         const keys: string[] = [];
         for (const record of records) {
           keys.push(record.storageKey);
-          if (isTextAttachment(record)) {
-            keys.push(textAttachmentJsonKey(record.storageKey));
-          }
           if (record.posterKey) {
             keys.push(record.posterKey);
           }

@@ -79,16 +79,15 @@ export async function run(argv) {
       "Usage: jant migrate-text-attachments [--url <url>] [options]",
     );
     console.log("");
+    console.log("Convert legacy text attachments to the current markdown-only");
+    console.log("storage format. Handles both prior layouts:");
+    console.log("  - envelope era (text/x-tiptap+json single blob)");
+    console.log("  - split era (text/html; charset=utf-8 + .json sibling)");
+    console.log("");
     console.log(
-      "Convert legacy envelope-format text attachments (text/x-tiptap+json)",
+      "Idempotent — current markdown rows are detected by MIME and skipped",
     );
-    console.log(
-      "into the current split layout: a public .html artifact plus a",
-    );
-    console.log(
-      "sibling .json Tiptap AST source. Idempotent — completed records",
-    );
-    console.log("are detected by MIME and skipped on re-run.");
+    console.log("on re-run.");
     console.log("");
     console.log("Options:");
     console.log("  --url           Target site URL");
@@ -142,7 +141,7 @@ export async function run(argv) {
   const batchSize = parseBatchSize(values.limit);
   const migrationUrl = buildMigrationUrl(siteUrl);
 
-  console.log(`Migrating envelope text attachments for ${siteUrl}`);
+  console.log(`Migrating legacy text attachments for ${siteUrl}`);
   console.log(
     `  batch size: ${batchSize}${values.once ? " (single batch)" : ""}`,
   );

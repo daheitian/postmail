@@ -235,7 +235,7 @@ describe("Compose Routes", () => {
 
       const attachments = await services.media.getByPostId(posts[0].id);
       expect(attachments).toHaveLength(1);
-      expect(attachments[0].mimeType).toBe("text/html; charset=utf-8");
+      expect(attachments[0].mimeType).toBe("text/markdown; charset=utf-8");
       expect(attachments[0].mediaKind).toBe("text");
 
       const content = await services.media.getTextAttachmentContent(
@@ -243,8 +243,8 @@ describe("Compose Routes", () => {
         storage,
       );
       expect(content?.content).toBe("Attached body");
-      // Two objects per text attachment: .html public artifact + .json source.
-      expect(storage.files.size).toBe(2);
+      // Markdown-only storage: a single .md object per text attachment.
+      expect(storage.files.size).toBe(1);
     });
 
     it("resets compose signals after publishing", async () => {

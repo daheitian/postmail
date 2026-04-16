@@ -8,20 +8,24 @@ import type { AppVariables } from "../../../types/app-context.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
-const MigrateEnvelopesSchema = z.object({
+const MigrateLegacySchema = z.object({
   limit: z.number().int().positive().max(500).optional(),
 });
 
 export const internalTextAttachmentsRoutes = new Hono<Env>();
 
 /**
- * One-off migration endpoint: converts legacy envelope-format text attachments
- * (single JSON object wrapping `{ json, html }`) into the current split-sibling
- * layout (`.html` public artifact + `.json` Tiptap AST).
+ * One-off migration endpoint: converts legacy text-attachment rows to the
+ * current markdown-only format. Handles both historical layouts (envelope
+ * and HTML/JSON sibling pairs) in a single pass — the service method
+ * dispatches on the row's stored mimeType.
  *
- * Idempotent: rows that have already been migrated are detected by MIME and
- * skipped. Drives batches small enough to keep a single request bounded;
- * callers loop until `remaining === 0`.
+ * Idempotent: rows already in markdown form are detected by mimeType and
+ * ignored. Callers loop until `remaining === 0`.
+ *
+ * Path kept as `migrate-envelopes` for backwards compatibility with the
+ * existing `jant migrate-text-attachments` CLI; the endpoint now covers a
+ * broader migration but the external contract is unchanged.
  */
 internalTextAttachmentsRoutes.post(
   "/migrate-envelopes",
@@ -39,13 +43,13 @@ internalTextAttachmentsRoutes.post(
     const rawBody = contentType.includes("application/json")
       ? await c.req.json().catch(() => ({}))
       : {};
-    const body = parseValidated(MigrateEnvelopesSchema, rawBody);
+    const body = parseValidated(MigrateLegacySchema, rawBody);
 
     // Internal admin routes are mounted before the `withConfig` middleware,
     // so `c.var.appConfig` is undefined here. Read the driver straight from
     // env — same source `createStorageDriver` uses to build `c.var.storage`,
     // so the string we pass matches the bucket the driver writes to.
-    const result = await c.var.services.media.migrateEnvelopeTextAttachments({
+    const result = await c.var.services.media.migrateLegacyTextAttachments({
       storage,
       storageDriver: getConfiguredStorageDriver(c.env),
       limit: body.limit,
