@@ -1344,7 +1344,7 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
     c.var.services,
     c.var.currentSite.id,
     buildSyncSiteConfig(c),
-    { githubApp: getGitHubAppConfig(c.env) },
+    { storage: c.var.storage, githubApp: getGitHubAppConfig(c.env) },
   );
   const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");
   try {
@@ -1899,7 +1899,7 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
     c.var.services,
     c.var.currentSite.id,
     buildSyncSiteConfig(c),
-    { githubApp: app },
+    { storage: c.var.storage, githubApp: app },
   );
   const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");
   try {
