@@ -168,6 +168,85 @@ After
     expect(uploadMedia).toHaveBeenCalledOnce();
   });
 
+  it("fetches markdown via src URL for reference-format text attachments", async () => {
+    // Current exports emit text-attachment specs that only reference the
+    // `.md` URL (no inline `content`) — importer has to fetch the source.
+    const fetchMock = vi.fn(
+      async () =>
+        new Response("# From URL\n\nFetched body", {
+          status: 200,
+          headers: { "Content-Type": "text/markdown; charset=utf-8" },
+        }),
+    );
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    try {
+      const result = await __test__.buildImportedAttachments(
+        [
+          {
+            kind: "text",
+            src: "/blog/media/note.md",
+            mimeType: "text/markdown; charset=utf-8",
+            summary: "From URL",
+            chars: 24,
+          },
+        ],
+        { uploadMedia: vi.fn() },
+        { base_url: "https://example.com/blog" },
+      );
+
+      expect(fetchMock).toHaveBeenCalledOnce();
+      expect(fetchMock.mock.calls[0][0]).toBe(
+        "https://example.com/blog/media/note.md",
+      );
+      expect(result).toEqual({
+        attachments: [
+          {
+            type: "text",
+            contentFormat: "markdown",
+            content: "# From URL\n\nFetched body",
+            summary: "From URL",
+          },
+        ],
+        uploaded: 0,
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("skips reference-format text attachments when the src is unreachable", async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response("not found", {
+          status: 404,
+        }),
+    );
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    try {
+      const result = await __test__.buildImportedAttachments(
+        [
+          {
+            kind: "text",
+            src: "/blog/media/missing.md",
+            summary: "Missing",
+          },
+        ],
+        { uploadMedia: vi.fn() },
+        { base_url: "https://example.com/blog" },
+      );
+
+      // Unreachable → attachment is silently dropped rather than imported
+      // as an empty text blob. Same graceful degradation as image fetches.
+      expect(result).toEqual({ attachments: [], uploaded: 0 });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("keeps embedded text attachments when media uploads are skipped", async () => {
     const uploadMedia = vi.fn();
 

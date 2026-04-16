@@ -460,22 +460,86 @@ async function normalizeMediaSpec(spec, siteConfig, sourceRootDir) {
   };
 }
 
-function normalizeTextAttachmentSpec(spec) {
+/**
+ * Coerce a `<figure data-jant-node="attachment" data-jant-kind="text">` meta
+ * block into the shape `createTextAttachment` wants on import.
+ *
+ * Two source shapes are supported:
+ *
+ * 1. Inline (legacy exports): the meta JSON carries the markdown itself under
+ *    `contentFormat: "markdown"` + `content: "..."`. Used before text
+ *    attachments got their own public URL.
+ * 2. Reference (current exports): the meta JSON only carries `kind: "text"`
+ *    + `src: <url>` pointing at the `.md` artifact. We fetch that URL
+ *    (falling back to `--localize-media` local disk via
+ *    `resolveImportLocalAssetPath`, same as images) and use the bytes as
+ *    the markdown body.
+ *
+ * Returns `null` when the spec isn't a text attachment or we can't get
+ * usable content (unreachable URL, empty body, etc.) — caller drops the
+ * attachment rather than creating an empty one.
+ */
+async function normalizeTextAttachmentSpec(spec, siteConfig, sourceRootDir) {
+  if (!spec || spec.kind !== "text") {
+    return null;
+  }
+
+  const summary =
+    typeof spec.summary === "string" ? spec.summary : undefined;
+
+  // Legacy inline content path — no network fetch needed.
   if (
-    !spec ||
-    spec.kind !== "text" ||
-    spec.contentFormat !== "markdown" ||
-    typeof spec.content !== "string" ||
-    spec.content.trim() === ""
+    spec.contentFormat === "markdown" &&
+    typeof spec.content === "string" &&
+    spec.content.trim() !== ""
   ) {
+    return {
+      type: "text",
+      contentFormat: "markdown",
+      content: spec.content,
+      summary,
+    };
+  }
+
+  // Reference path — fetch the markdown from the stored `src` URL.
+  if (typeof spec.src !== "string" || spec.src.trim() === "") {
+    return null;
+  }
+
+  const sourceUrl = resolveImportUrl(spec.src, siteConfig);
+  if (typeof sourceUrl !== "string" || sourceUrl.trim() === "") {
+    return null;
+  }
+
+  const asset = await readImportAsset({
+    sourceUrl,
+    sourceFilePath: await resolveImportLocalAssetPath(
+      spec.src,
+      siteConfig,
+      sourceRootDir,
+    ),
+  });
+
+  if (!asset) {
+    return null;
+  }
+
+  let markdown;
+  try {
+    markdown = new TextDecoder("utf-8", { fatal: false }).decode(asset.bytes);
+  } catch {
+    return null;
+  }
+
+  if (markdown.trim() === "") {
     return null;
   }
 
   return {
     type: "text",
     contentFormat: "markdown",
-    content: spec.content,
-    summary: typeof spec.summary === "string" ? spec.summary : undefined,
+    content: markdown,
+    summary,
   };
 }
 
@@ -501,7 +565,11 @@ async function buildImportedAttachments(
   let uploaded = 0;
 
   for (const spec of attachmentSpecs) {
-    const textAttachment = normalizeTextAttachmentSpec(spec);
+    const textAttachment = await normalizeTextAttachmentSpec(
+      spec,
+      siteConfig,
+      sourceRootDir,
+    );
     if (textAttachment) {
       attachments.push(textAttachment);
       continue;
