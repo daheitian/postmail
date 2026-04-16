@@ -1,8 +1,7 @@
+import { isTextAttachment } from "../services/media.js";
 import type { Media, Post } from "../types.js";
 import { getImageUrl, getMediaUrl, getPublicUrlForProvider } from "./image.js";
 import { toPublicPath } from "./url.js";
-
-const ATTACHED_TEXT_MIME_TYPE = "text/x-tiptap+json";
 
 export type ApiPostResponse = Omit<Post, "title" | "url"> & {
   attachments?: ReturnType<typeof toApiAttachment>[];
@@ -29,7 +28,7 @@ export function toApiAttachment(
   );
   const url = getMediaUrl(media.storageKey, publicUrl, sitePathPrefix);
 
-  if (media.mimeType === ATTACHED_TEXT_MIME_TYPE) {
+  if (isTextAttachment(media)) {
     return {
       type: "text" as const,
       id: media.id,

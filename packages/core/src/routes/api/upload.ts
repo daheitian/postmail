@@ -266,28 +266,6 @@ uploadApiRoutes.post("/", async (c) => {
       } catch {
         // Ignore — summary and chars are optional
       }
-    } else if (file.type === "text/x-tiptap+json") {
-      try {
-        const raw = await file.text();
-        textBuffer = new TextEncoder().encode(raw);
-        const envelope = JSON.parse(raw) as {
-          json?: { content?: unknown[] };
-          html?: string;
-        };
-        // Walk the TipTap JSON tree to extract plain text
-        if (envelope.json) {
-          let text = "";
-          const walk = (node: Record<string, unknown>) => {
-            if (typeof node.text === "string") text += node.text;
-            if (Array.isArray(node.content))
-              (node.content as Record<string, unknown>[]).forEach(walk);
-          };
-          walk(envelope.json as Record<string, unknown>);
-          chars = text.length;
-        }
-      } catch {
-        // Ignore — chars is optional
-      }
     }
 
     // Upload to storage — use buffered bytes for text files (stream may be consumed)

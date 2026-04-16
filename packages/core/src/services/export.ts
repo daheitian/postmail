@@ -35,13 +35,7 @@ import { toISOString, formatDate } from "../lib/time.js";
 import TOKENS_CSS from "../styles/tokens.css?raw";
 import type { StorageDriver } from "../lib/storage.js";
 import { base64ToUint8Array } from "../lib/favicon.js";
-import type {
-  Post,
-  Collection,
-  Media,
-  NavItem,
-  TextAttachmentContent,
-} from "../types.js";
+import type { Post, Collection, Media, NavItem } from "../types.js";
 
 /** A file entry in the exported Zola site. */
 export interface ExportFile {
@@ -104,8 +98,8 @@ export interface SiteConfig {
 
 interface AttachmentExportMeta {
   kind: Media["mediaKind"];
-  src?: string;
-  poster?: string | null;
+  src: string;
+  poster: string | null;
   mimeType: string;
   originalName: string;
   size: number;
@@ -117,8 +111,6 @@ interface AttachmentExportMeta {
   waveform: string | null;
   summary: string | null;
   chars: number | null;
-  contentFormat?: TextAttachmentContent["contentFormat"];
-  content?: string;
 }
 
 type IconExportMode = "default" | "custom";
@@ -224,11 +216,6 @@ export function createExportService(
         services.paths.getPostAliases(rootPostIds),
         services.paths.getCollectionSlugMap(allCollections.map((c) => c.id)),
       ]);
-      const textAttachmentContents = await buildTextAttachmentContentMap(
-        rawMediaByPost,
-        services.media,
-        deps.storage,
-      );
       const iconAssets = await buildSiteIconAssets(siteConfig, deps.storage);
       const collectionMetrics = buildExportedCollectionMetrics(
         allCollections,
@@ -300,7 +287,6 @@ export function createExportService(
           rootMedia,
           rawMediaByPost,
           siteConfig,
-          textAttachmentContents,
           pinnedCollectionSlugs,
         );
 
@@ -537,7 +523,6 @@ export function buildPostMarkdown(
   rootMedia: Media[],
   mediaByPost: Map<string, Media[]>,
   siteConfig: SiteConfig,
-  textAttachmentContents: Map<string, TextAttachmentContent>,
   pinnedCollectionSlugs: string[] = [],
 ): string {
   const parts: string[] = [];
@@ -628,7 +613,7 @@ export function buildPostMarkdown(
   // Root body
   const rootBlocks = [
     root.body ? tiptapJsonToMarkdown(root.body) : "",
-    buildAttachmentBlock(rootMedia, siteConfig, textAttachmentContents),
+    buildAttachmentBlock(rootMedia, siteConfig),
   ].filter(Boolean);
   if (rootBlocks.length > 0) {
     parts.push(rootBlocks.join("\n\n"));
@@ -679,11 +664,7 @@ export function buildPostMarkdown(
 
     const replyBlocks = [
       reply.body ? tiptapJsonToMarkdown(reply.body) : "",
-      buildAttachmentBlock(
-        mediaByPost.get(reply.id) ?? [],
-        siteConfig,
-        textAttachmentContents,
-      ),
+      buildAttachmentBlock(mediaByPost.get(reply.id) ?? [], siteConfig),
     ].filter(Boolean);
     if (replyBlocks.length > 0) {
       parts.push(replyBlocks.join("\n\n"));
@@ -735,29 +716,18 @@ function getArchiveSummaryText(post: Post): string | null {
 function buildAttachmentBlock(
   mediaList: Media[],
   siteConfig: SiteConfig,
-  textAttachmentContents: Map<string, TextAttachmentContent>,
 ): string {
   if (mediaList.length === 0) return "";
 
   const figures = mediaList
-    .map((media) =>
-      buildAttachmentFigure(media, siteConfig, textAttachmentContents),
-    )
+    .map((media) => buildAttachmentFigure(media, siteConfig))
     .join("\n");
 
   return `<div data-jant-node="attachments">\n${figures}\n</div>`;
 }
 
-function buildAttachmentFigure(
-  media: Media,
-  siteConfig: SiteConfig,
-  textAttachmentContents: Map<string, TextAttachmentContent>,
-): string {
-  const meta = buildAttachmentMeta(
-    media,
-    siteConfig,
-    textAttachmentContents.get(media.id),
-  );
+function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
+  const meta = buildAttachmentMeta(media, siteConfig);
   const metaJson = safeJsonForHtml(meta);
   const name = escapeHtml(meta.originalName);
   const caption =
@@ -765,26 +735,21 @@ function buildAttachmentFigure(
       ? `<figcaption>${escapeHtml(media.summary)}</figcaption>`
       : "";
 
-  if (
-    meta.kind === "text" &&
-    meta.contentFormat === "markdown" &&
-    typeof meta.content === "string"
-  ) {
+  const src = meta.src;
+
+  if (meta.kind === "text") {
+    // Text attachments are exported as a link to the public `.html` artifact.
+    // The browser can render it standalone (it is a complete HTML document),
+    // so readers just click through. Clients that want richer handling
+    // (lightbox, inline render) can hydrate off the `data-jant-kind="text"`
+    // hook later without changing the export format.
     const summaryLabel = escapeHtml(
       media.summary?.trim() || meta.originalName || "Text attachment",
     );
     return `<figure data-jant-node="attachment" data-jant-kind="text">
   <script type="application/json" data-jant-meta>${metaJson}</script>
-  <details>
-    <summary>${summaryLabel}</summary>
-    <div class="prose jant-attachment-text-preview">${renderMarkdown(meta.content)}</div>
-  </details>
+  <a href="${escapeHtml(src)}" target="_blank" rel="noopener noreferrer">${summaryLabel}</a>${caption ? `\n  ${caption}` : ""}
 </figure>`;
-  }
-
-  const src = meta.src;
-  if (!src) {
-    throw new Error(`Attachment ${media.id} is missing an export URL`);
   }
 
   if (meta.kind === "image") {
@@ -841,33 +806,7 @@ function buildAttachmentTextDescription(media: Media): string {
 function buildAttachmentMeta(
   media: Media,
   siteConfig: SiteConfig,
-  textAttachmentContent?: TextAttachmentContent,
 ): AttachmentExportMeta {
-  if (media.mimeType === "text/x-tiptap+json") {
-    if (!textAttachmentContent) {
-      throw new Error(
-        `Text attachment ${media.id} content is unavailable for export`,
-      );
-    }
-
-    return {
-      kind: media.mediaKind,
-      mimeType: media.mimeType,
-      originalName: media.originalName,
-      size: media.size,
-      width: media.width,
-      height: media.height,
-      alt: media.alt,
-      position: media.position,
-      blurhash: media.blurhash,
-      waveform: media.waveform,
-      summary: media.summary,
-      chars: media.chars,
-      contentFormat: textAttachmentContent.contentFormat,
-      content: textAttachmentContent.content,
-    };
-  }
-
   const publicUrl = getPublicUrlForProvider(
     media.provider,
     siteConfig.r2PublicUrl,
@@ -875,6 +814,12 @@ function buildAttachmentMeta(
     siteConfig.localPublicUrl,
   );
 
+  // Text attachments are handled via the same code path as any other media:
+  // their `storageKey` points to the public `.html` artifact, and readers can
+  // fetch it directly from CDN without server involvement. The Tiptap JSON
+  // source sits as a sibling at `{storageKey.replace(".html", ".json")}` for
+  // anyone who wants to re-render programmatically, but the exported site
+  // only ever references the HTML.
   return {
     kind: media.mediaKind,
     src: getMediaUrl(media.storageKey, publicUrl, siteConfig.sitePathPrefix),
@@ -893,37 +838,6 @@ function buildAttachmentMeta(
     summary: media.summary,
     chars: media.chars,
   };
-}
-
-async function buildTextAttachmentContentMap(
-  mediaByPost: Map<string, Media[]>,
-  mediaService: Pick<MediaService, "getTextAttachmentContent">,
-  storage?: StorageDriver | null,
-): Promise<Map<string, TextAttachmentContent>> {
-  const textAttachments = [...mediaByPost.values()]
-    .flat()
-    .filter((media) => media.mimeType === "text/x-tiptap+json");
-
-  if (textAttachments.length === 0) {
-    return new Map();
-  }
-
-  const contents = await Promise.all(
-    textAttachments.map(async (media) => {
-      const content = await mediaService.getTextAttachmentContent(
-        media.id,
-        storage,
-      );
-      if (!content) {
-        throw new Error(
-          `Text attachment ${media.id} content is unavailable for export`,
-        );
-      }
-      return [media.id, content] as const;
-    }),
-  );
-
-  return new Map(contents);
 }
 
 function escapeCommentAttribute(value: string): string {

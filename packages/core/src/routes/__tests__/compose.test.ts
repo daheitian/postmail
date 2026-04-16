@@ -235,14 +235,16 @@ describe("Compose Routes", () => {
 
       const attachments = await services.media.getByPostId(posts[0].id);
       expect(attachments).toHaveLength(1);
-      expect(attachments[0].mimeType).toBe("text/x-tiptap+json");
+      expect(attachments[0].mimeType).toBe("text/html; charset=utf-8");
+      expect(attachments[0].mediaKind).toBe("text");
 
       const content = await services.media.getTextAttachmentContent(
         attachments[0].id,
         storage,
       );
       expect(content?.content).toBe("Attached body");
-      expect(storage.files.size).toBe(1);
+      // Two objects per text attachment: .html public artifact + .json source.
+      expect(storage.files.size).toBe(2);
     });
 
     it("resets compose signals after publishing", async () => {

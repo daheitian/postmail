@@ -92,8 +92,9 @@ function guessExtensionFromContentType(contentType) {
     case "text/csv":
       return ".csv";
     case "application/json":
-    case "text/x-tiptap+json":
       return ".json";
+    case "text/html":
+      return ".html";
     default:
       return "";
   }

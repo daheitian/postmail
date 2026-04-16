@@ -264,11 +264,11 @@ describe("createExportService", () => {
     const textAttachment: Media = {
       id: "media-1",
       postId: "post-1",
-      filename: "attached-text.json",
-      originalName: "attached-text.md",
-      mimeType: "text/x-tiptap+json",
+      filename: "media-1.html",
+      originalName: "attached-text.html",
+      mimeType: "text/html; charset=utf-8",
       size: 128,
-      storageKey: "media/attached-text.json",
+      storageKey: "media/media-1.html",
       provider: "local",
       width: null,
       height: null,
@@ -300,15 +300,6 @@ describe("createExportService", () => {
       },
       media: {
         getByPostIds: async () => new Map([["post-1", [textAttachment]]]),
-        getTextAttachmentContent: async () => ({
-          id: "media-1",
-          type: "text" as const,
-          contentFormat: "markdown" as const,
-          content:
-            "# Attached note\n\nHello export[^1]\n\n[^1]: Preview *footnote*\n\n<script>alert(1)</script>",
-          summary: "Attached note",
-          chars: 24,
-        }),
       },
     } as unknown as Parameters<typeof createExportService>[0];
 
@@ -340,19 +331,25 @@ describe("createExportService", () => {
     const postMarkdown = decodeZipEntry(files, "content/desk-note/index.md");
     const styleCss = decodeZipEntry(files, "static/style.css");
 
+    // Text attachments export as a link to the public `.html` artifact, not
+    // inline content. Readers click through to view the pre-rendered page.
     expect(postMarkdown).toContain('data-jant-kind="text"');
-    expect(postMarkdown).toContain('"contentFormat":"markdown"');
-    expect(postMarkdown).toContain(
-      '"content":"# Attached note\\n\\nHello export[^1]\\n\\n[^1]: Preview *footnote*\\n\\n\\u003cscript\\u003ealert(1)\\u003c/script\\u003e"',
-    );
-    expect(postMarkdown).toContain("<details>");
-    expect(postMarkdown).toContain("<summary>Attached note</summary>");
-    expect(postMarkdown).toContain("<h1>Attached note</h1>");
-    expect(postMarkdown).toContain('<label for="sn-');
-    expect(postMarkdown).toContain('<span class="sidenote">');
-    expect(postMarkdown).toContain("<em>footnote</em>");
-    expect(postMarkdown).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
-    expect(postMarkdown).not.toContain('"src":"');
+    expect(postMarkdown).toContain('"kind":"text"');
+    expect(postMarkdown).toContain('"src":"');
+    expect(postMarkdown).toContain('href="');
+    expect(postMarkdown).toContain('target="_blank"');
+    expect(postMarkdown).toContain('rel="noopener noreferrer"');
+    expect(postMarkdown).toContain("media/media-1.html");
+    expect(postMarkdown).toContain(">Attached note</a>");
+
+    // The old inline-envelope format is gone — no content embedding, no
+    // server-side markdown rendering into the exported HTML.
+    expect(postMarkdown).not.toContain('"contentFormat":"markdown"');
+    expect(postMarkdown).not.toContain('"content":"');
+    expect(postMarkdown).not.toContain("<details>");
+    expect(postMarkdown).not.toContain("<summary>Attached note</summary>");
+
+    // Styles for the old inline preview are also unnecessary.
     expect(styleCss).not.toContain(".jant-attachment-text-preview blockquote");
   });
 

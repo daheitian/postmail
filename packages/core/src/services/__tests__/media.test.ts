@@ -4,20 +4,26 @@ import {
   createTestDatabase,
   DEFAULT_TEST_SITE_ID,
 } from "../../__tests__/helpers/db.js";
-import { createMediaService } from "../media.js";
+import { createMediaService, textAttachmentJsonKey } from "../media.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
 import { MediaQuotaExceededError } from "../../lib/errors.js";
 
+interface MockStorageFile {
+  body: Uint8Array;
+  contentType?: string;
+  cacheControl?: string;
+}
+
 function createMockStorage() {
-  const files = new Map<string, { body: Uint8Array; contentType?: string }>();
+  const files = new Map<string, MockStorageFile>();
 
   return {
     files,
     async put(
       key: string,
       body: Uint8Array | ReadableStream,
-      opts?: { contentType?: string },
+      opts?: { contentType?: string; cacheControl?: string },
     ) {
       const bytes =
         body instanceof Uint8Array
@@ -26,6 +32,7 @@ function createMockStorage() {
       files.set(key, {
         body: bytes,
         contentType: opts?.contentType,
+        cacheControl: opts?.cacheControl,
       });
     },
     async get(key: string) {
@@ -34,6 +41,7 @@ function createMockStorage() {
       return {
         body: new Response(file.body).body as ReadableStream,
         contentType: file.contentType,
+        cacheControl: file.cacheControl,
       };
     },
     async delete(key: string) {
@@ -315,7 +323,7 @@ describe("MediaService", () => {
   });
 
   describe("createTextAttachment", () => {
-    it("stores markdown text attachments as TipTap-backed text media", async () => {
+    it("writes a .html public artifact and a .json source as sibling objects", async () => {
       const storage = createMockStorage();
 
       const media = await mediaService.createTextAttachment(
@@ -330,18 +338,107 @@ describe("MediaService", () => {
         },
       );
 
-      expect(media.mimeType).toBe("text/x-tiptap+json");
+      expect(media.mimeType).toBe("text/html; charset=utf-8");
+      expect(media.mediaKind).toBe("text");
       expect(media.provider).toBe("local");
       expect(media.summary).toBe("Heading Body text");
       expect(media.chars).toBe(17);
-      expect(storage.files.get(media.storageKey)?.contentType).toBe(
-        "text/x-tiptap+json",
+      expect(media.originalName).toBe("attached-text.html");
+      expect(media.storageKey.endsWith(".html")).toBe(true);
+
+      const htmlKey = media.storageKey;
+      const jsonKey = textAttachmentJsonKey(htmlKey);
+      expect(jsonKey).toBe(htmlKey.replace(/\.html$/, ".json"));
+
+      const htmlFile = storage.files.get(htmlKey);
+      expect(htmlFile).toBeDefined();
+      expect(htmlFile!.contentType).toBe("text/html; charset=utf-8");
+      expect(htmlFile!.cacheControl).toBe(
+        "public, max-age=31536000, immutable",
       );
+      const htmlText = new TextDecoder().decode(htmlFile!.body);
+      expect(htmlText).toContain("<h1");
+      expect(htmlText).toContain("Heading");
+
+      const jsonFile = storage.files.get(jsonKey);
+      expect(jsonFile).toBeDefined();
+      expect(jsonFile!.contentType).toBe("application/json");
+      expect(jsonFile!.cacheControl).toBe(
+        "public, max-age=31536000, immutable",
+      );
+      const jsonText = new TextDecoder().decode(jsonFile!.body);
+      const jsonDoc = JSON.parse(jsonText) as { type: string };
+      expect(jsonDoc.type).toBe("doc");
+    });
+
+    it("sets media.size to the HTML artifact byte length", async () => {
+      const storage = createMockStorage();
+      const media = await mediaService.createTextAttachment(
+        {
+          contentFormat: "markdown",
+          content: "# Heading\n\nBody text",
+        },
+        {
+          storage,
+          storageDriver: "local",
+          maxFileSizeMB: 1,
+        },
+      );
+      const htmlFile = storage.files.get(media.storageKey);
+      expect(media.size).toBe(htmlFile!.body.byteLength);
+    });
+
+    it("rolls back the .json sibling when the .html put fails", async () => {
+      const storage = createMockStorage();
+      const originalPut = storage.put.bind(storage);
+      const put = vi
+        .fn(async (key: string, body: Uint8Array, opts?: unknown) => {
+          if (key.endsWith(".html")) {
+            throw new Error("simulated HTML put failure");
+          }
+          return originalPut(key, body, opts as never);
+        })
+        .mockName("failingPut");
+      const flakyStorage = { ...storage, put };
+
+      await expect(
+        mediaService.createTextAttachment(
+          {
+            contentFormat: "markdown",
+            content: "body",
+          },
+          {
+            storage: flakyStorage,
+            storageDriver: "local",
+            maxFileSizeMB: 1,
+          },
+        ),
+      ).rejects.toThrow("simulated HTML put failure");
+
+      // JSON was written then cleaned up — no stranded source objects.
+      expect(storage.files.size).toBe(0);
+    });
+
+    it("rejects non-markdown input formats", async () => {
+      const storage = createMockStorage();
+      await expect(
+        mediaService.createTextAttachment(
+          {
+            contentFormat: "html" as never,
+            content: "<p>hi</p>",
+          },
+          {
+            storage,
+            storageDriver: "local",
+            maxFileSizeMB: 1,
+          },
+        ),
+      ).rejects.toThrow("Unsupported text attachment format");
     });
   });
 
   describe("getTextAttachmentContent", () => {
-    it("returns markdown content for TipTap-backed text attachments", async () => {
+    it("reads the .json sibling and converts Tiptap back to markdown", async () => {
       const storage = createMockStorage();
       const media = await mediaService.createTextAttachment(
         {
@@ -370,6 +467,27 @@ describe("MediaService", () => {
       });
     });
 
+    it("returns null when the .json sibling is missing", async () => {
+      const storage = createMockStorage();
+      const media = await mediaService.createTextAttachment(
+        {
+          contentFormat: "markdown",
+          content: "hello",
+        },
+        {
+          storage,
+          storageDriver: "local",
+          maxFileSizeMB: 1,
+        },
+      );
+
+      await storage.delete(textAttachmentJsonKey(media.storageKey));
+
+      await expect(
+        mediaService.getTextAttachmentContent(media.id, storage),
+      ).resolves.toBeNull();
+    });
+
     it("returns null for non-text attachments", async () => {
       const media = await mediaService.create(sampleMedia);
       const storage = createMockStorage();
@@ -377,6 +495,91 @@ describe("MediaService", () => {
       await expect(
         mediaService.getTextAttachmentContent(media.id, storage),
       ).resolves.toBeNull();
+    });
+  });
+
+  describe("getTextAttachmentHtml", () => {
+    it("reads the pre-rendered HTML directly from storageKey", async () => {
+      const storage = createMockStorage();
+      const media = await mediaService.createTextAttachment(
+        {
+          contentFormat: "markdown",
+          content: "# Heading\n\nBody text",
+        },
+        {
+          storage,
+          storageDriver: "local",
+          maxFileSizeMB: 1,
+        },
+      );
+
+      const result = await mediaService.getTextAttachmentHtml(
+        media.id,
+        storage,
+      );
+
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(media.id);
+      expect(result!.html).toContain("<h1");
+      expect(result!.html).toContain("Heading");
+      expect(result!.summary).toBe("Heading Body text");
+      expect(result!.chars).toBe(17);
+    });
+
+    it("returns null for non-text attachments", async () => {
+      const storage = createMockStorage();
+      const media = await mediaService.create(sampleMedia);
+
+      await expect(
+        mediaService.getTextAttachmentHtml(media.id, storage),
+      ).resolves.toBeNull();
+    });
+  });
+
+  describe("delete for text attachments", () => {
+    it("removes both .html and .json siblings from storage", async () => {
+      const storage = createMockStorage();
+      const media = await mediaService.createTextAttachment(
+        {
+          contentFormat: "markdown",
+          content: "goodbye",
+        },
+        {
+          storage,
+          storageDriver: "local",
+          maxFileSizeMB: 1,
+        },
+      );
+
+      expect(storage.files.size).toBe(2);
+
+      await mediaService.delete(media.id, storage);
+
+      expect(storage.files.size).toBe(0);
+      expect(storage.files.has(media.storageKey)).toBe(false);
+      expect(storage.files.has(textAttachmentJsonKey(media.storageKey))).toBe(
+        false,
+      );
+    });
+  });
+
+  describe("deleteByIds for text attachments", () => {
+    it("removes siblings for every text attachment in the batch", async () => {
+      const storage = createMockStorage();
+      const a = await mediaService.createTextAttachment(
+        { contentFormat: "markdown", content: "first" },
+        { storage, storageDriver: "local", maxFileSizeMB: 1 },
+      );
+      const b = await mediaService.createTextAttachment(
+        { contentFormat: "markdown", content: "second" },
+        { storage, storageDriver: "local", maxFileSizeMB: 1 },
+      );
+
+      expect(storage.files.size).toBe(4);
+
+      await mediaService.deleteByIds([a.id, b.id], storage);
+
+      expect(storage.files.size).toBe(0);
     });
   });
 

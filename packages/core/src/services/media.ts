@@ -44,8 +44,78 @@ import {
 import type { HostedControlPlaneClient } from "../lib/hosted-control-plane.js";
 
 const DEFAULT_MEDIA_POSITION = "a0";
-const ATTACHED_TEXT_MIME_TYPE = "text/x-tiptap+json";
-const ATTACHED_TEXT_FILENAME = "attached-text.md";
+
+/**
+ * MIME type stored on the `media` row for a text attachment. This matches the
+ * public `.html` artifact's content type — the DB row describes the user-facing
+ * object, not the private JSON source.
+ */
+const TEXT_ATTACHMENT_HTML_MIME_TYPE = "text/html; charset=utf-8";
+
+/**
+ * MIME type applied to the JSON source object in storage. Never stored on the
+ * DB row (which always tracks the public artifact).
+ */
+const TEXT_ATTACHMENT_JSON_MIME_TYPE = "application/json";
+
+/**
+ * Original filename used when generating storage keys for text attachments.
+ * The `.html` suffix flows through `generateStorageKey` and ends up as the
+ * media row's `storageKey` extension.
+ */
+const TEXT_ATTACHMENT_FILENAME = "attached-text.html";
+
+/**
+ * Cache-Control header used for both the HTML and JSON objects. Text
+ * attachments are content-addressed (every edit produces a new storage key),
+ * so the stored bytes at any given key are immutable for the lifetime of the
+ * key — safe to cache forever.
+ */
+const TEXT_ATTACHMENT_CACHE_CONTROL = "public, max-age=31536000, immutable";
+
+/**
+ * Derive the JSON sibling key for a text-attachment `.html` storage key.
+ *
+ * Text attachments live as a pair of sibling objects in storage:
+ *
+ * - `{key}.html` — primary, public CDN artifact (pre-rendered HTML).
+ *   The media row's `storageKey` column always points here.
+ * - `{key}.json` — Tiptap AST source of truth, used by the markdown API
+ *   endpoint and any future re-rendering.
+ *
+ * Use this helper everywhere the JSON key is needed so the suffix convention
+ * lives in one place.
+ *
+ * @param htmlKey - The media.storageKey value (expected to end in `.html`)
+ * @returns The paired JSON key
+ * @example
+ * ```ts
+ * textAttachmentJsonKey("sites/s/media/xyz.html");
+ * // "sites/s/media/xyz.json"
+ * ```
+ */
+export function textAttachmentJsonKey(htmlKey: string): string {
+  return htmlKey.replace(/\.html$/, ".json");
+}
+
+/**
+ * Returns true if the given media record is a Jant-composed text attachment
+ * (created via `createTextAttachment`), as opposed to a plain text file that
+ * happened to be uploaded via `/api/upload` (e.g. a `.md` or `.txt` file).
+ *
+ * Both kinds share `mediaKind === "text"` because the upload category is
+ * resolved from MIME, but only Jant-composed attachments have the split
+ * `.html` + `.json` sibling layout in storage. Detection uses the exact MIME
+ * assigned at creation time, not a prefix match, to keep it unambiguous.
+ */
+export function isTextAttachment(
+  media: Pick<Media, "mediaKind" | "mimeType">,
+): boolean {
+  return (
+    media.mediaKind === "text" &&
+    media.mimeType === TEXT_ATTACHMENT_HTML_MIME_TYPE
+  );
+}
 
 function ensureAllowedMediaValue<T extends string>(
   value: string,
@@ -450,18 +520,25 @@ export function createMediaService(
         throw new ValidationError("Unsupported text attachment format");
       }
 
+      // Input contract: the API accepts markdown for friendliness. Internally
+      // we normalize to Tiptap JSON (the source of truth) and render HTML
+      // (the public artifact). Markdown itself is never persisted — it is a
+      // boundary format only.
       const bodyJson = markdownToTiptapJson(data.content);
       const bodyHtml = renderTiptapJson(bodyJson);
       const bodyText = extractBodyText(bodyJson) ?? "";
       const summary = data.summary?.trim() || bodyText.slice(0, 100).trim();
-      const envelope = JSON.stringify({
-        json: JSON.parse(bodyJson) as unknown,
-        html: bodyHtml,
-      });
-      const bytes = new TextEncoder().encode(envelope);
+
+      const encoder = new TextEncoder();
+      const htmlBytes = encoder.encode(bodyHtml);
+      const jsonBytes = encoder.encode(bodyJson);
+
+      // Validate against the public artifact — that is the size the user
+      // effectively uploaded. The JSON source rides along and is typically
+      // comparable in size; we don't double-count.
       const uploadError = validateUploadFileMetadata(
-        ATTACHED_TEXT_MIME_TYPE,
-        bytes.byteLength,
+        TEXT_ATTACHMENT_HTML_MIME_TYPE,
+        htmlBytes.byteLength,
         {
           maxFileSizeMB: deps.maxFileSizeMB,
         },
@@ -470,21 +547,40 @@ export function createMediaService(
         throw new ValidationError(uploadError);
       }
 
-      const { id, filename, storageKey } = generateStorageKey(
-        siteId,
-        ATTACHED_TEXT_FILENAME,
-      );
-      await deps.storage.put(storageKey, bytes, {
-        contentType: ATTACHED_TEXT_MIME_TYPE,
+      const {
+        id,
+        filename,
+        storageKey: htmlKey,
+      } = generateStorageKey(siteId, TEXT_ATTACHMENT_FILENAME);
+      const jsonKey = textAttachmentJsonKey(htmlKey);
+
+      // Write order: JSON source first, then public HTML. The HTML file is
+      // the one readers (SSR, CDN visitors, exports) reach for — making it
+      // the last to land means a partial write never leaves a reachable
+      // attachment whose source is missing. On HTML failure we roll back the
+      // JSON so we don't strand a source object with no public counterpart.
+      await deps.storage.put(jsonKey, jsonBytes, {
+        contentType: TEXT_ATTACHMENT_JSON_MIME_TYPE,
+        cacheControl: TEXT_ATTACHMENT_CACHE_CONTROL,
       });
+
+      try {
+        await deps.storage.put(htmlKey, htmlBytes, {
+          contentType: TEXT_ATTACHMENT_HTML_MIME_TYPE,
+          cacheControl: TEXT_ATTACHMENT_CACHE_CONTROL,
+        });
+      } catch (error) {
+        await deps.storage.delete(jsonKey).catch(() => undefined);
+        throw error;
+      }
 
       return this.create({
         id,
         filename,
-        originalName: ATTACHED_TEXT_FILENAME,
-        mimeType: ATTACHED_TEXT_MIME_TYPE,
-        size: bytes.byteLength,
-        storageKey,
+        originalName: TEXT_ATTACHMENT_FILENAME,
+        mimeType: TEXT_ATTACHMENT_HTML_MIME_TYPE,
+        size: htmlBytes.byteLength,
+        storageKey: htmlKey,
         provider: deps.storageDriver,
         summary: summary || undefined,
         chars: bodyText.length,
@@ -494,7 +590,7 @@ export function createMediaService(
 
     async getTextAttachmentContent(id, storage) {
       const record = await this.getById(id);
-      if (!record || record.mimeType !== ATTACHED_TEXT_MIME_TYPE) {
+      if (!record || !isTextAttachment(record)) {
         return null;
       }
       if (!storage) {
@@ -503,12 +599,14 @@ export function createMediaService(
         );
       }
 
-      const object = await storage.get(record.storageKey);
+      // The .json sibling holds the Tiptap AST. Detection is via mediaKind
+      // rather than mimeType because the row's mimeType tracks the public
+      // HTML artifact, not the private JSON source.
+      const jsonKey = textAttachmentJsonKey(record.storageKey);
+      const object = await storage.get(jsonKey);
       if (!object) return null;
 
-      const raw = await new Response(object.body).text();
-      const envelope = JSON.parse(raw) as { json?: unknown };
-      const json = envelope.json ? JSON.stringify(envelope.json) : "";
+      const json = await new Response(object.body).text();
 
       return {
         id: record.id,
@@ -522,7 +620,7 @@ export function createMediaService(
 
     async getTextAttachmentHtml(id, storage) {
       const record = await this.getById(id);
-      if (!record || record.mimeType !== ATTACHED_TEXT_MIME_TYPE) {
+      if (!record || !isTextAttachment(record)) {
         return null;
       }
       if (!storage) {
@@ -531,15 +629,16 @@ export function createMediaService(
         );
       }
 
+      // The primary storageKey points directly to the pre-rendered HTML —
+      // no envelope unwrapping, no round-trip through markdown.
       const object = await storage.get(record.storageKey);
       if (!object) return null;
 
-      const raw = await new Response(object.body).text();
-      const envelope = JSON.parse(raw) as { html?: string };
+      const html = await new Response(object.body).text();
 
       return {
         id: record.id,
-        html: envelope.html ?? "",
+        html,
         summary: record.summary,
         chars: record.chars,
       };
@@ -629,10 +728,20 @@ export function createMediaService(
       if (!record) return false;
 
       if (storage) {
+        // Delete the public artifact first so readers see a 404 immediately,
+        // then best-effort clean up any sibling source/poster objects.
         await storage.delete(record.storageKey).catch((err) => {
           // eslint-disable-next-line no-console -- Error logging is intentional
           console.error("Storage delete error:", err);
         });
+        if (isTextAttachment(record)) {
+          await storage
+            .delete(textAttachmentJsonKey(record.storageKey))
+            .catch((err) => {
+              // eslint-disable-next-line no-console -- Error logging is intentional
+              console.error("Storage delete text source error:", err);
+            });
+        }
         if (record.posterKey) {
           await storage.delete(record.posterKey).catch((err) => {
             // eslint-disable-next-line no-console -- Error logging is intentional
@@ -652,9 +761,16 @@ export function createMediaService(
 
       if (storage) {
         const records = await this.getByIds(ids);
-        const keys = records.flatMap((r) =>
-          r.posterKey ? [r.storageKey, r.posterKey] : [r.storageKey],
-        );
+        const keys: string[] = [];
+        for (const record of records) {
+          keys.push(record.storageKey);
+          if (isTextAttachment(record)) {
+            keys.push(textAttachmentJsonKey(record.storageKey));
+          }
+          if (record.posterKey) {
+            keys.push(record.posterKey);
+          }
+        }
         await Promise.all(
           keys.map((key) =>
             storage.delete(key).catch((err) => {

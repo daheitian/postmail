@@ -83,7 +83,6 @@ const TEXT_MIME_TYPES = [
   "text/plain",
   "text/markdown",
   "text/csv",
-  "text/x-tiptap+json",
   "text/html",
   "text/css",
   "text/javascript",

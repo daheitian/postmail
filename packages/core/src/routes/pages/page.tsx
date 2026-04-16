@@ -14,6 +14,7 @@ import { renderPublicPage } from "../../lib/render.js";
 import { buildPostMeta } from "../../lib/post-meta.js";
 import { assemblePostPageDisplay } from "../../lib/post-display.js";
 import { toPublicHref, toPublicPath } from "../../lib/url.js";
+import { isTextAttachment } from "../../services/media.js";
 import type { Post } from "../../types.js";
 import { renderArchivePage } from "./archive.js";
 import { renderCollectionFeed, renderCollectionPage } from "./collection.js";
@@ -206,13 +207,12 @@ pageRoutes.get("/*", async (c) => {
         }
       }
 
-      // Verify the media belongs to this post and is a text attachment
+      // Verify the media belongs to this post and is a Jant-composed text
+      // attachment. Plain text-file uploads (.md, .txt, .csv) also carry
+      // mediaKind === "text" but lack the split HTML/JSON sibling layout
+      // that this page route expects — `isTextAttachment` excludes them.
       const media = await c.var.services.media.getById(mediaId);
-      if (
-        !media ||
-        media.postId !== post.id ||
-        media.mimeType !== "text/x-tiptap+json"
-      ) {
+      if (!media || media.postId !== post.id || !isTextAttachment(media)) {
         return c.notFound();
       }
 

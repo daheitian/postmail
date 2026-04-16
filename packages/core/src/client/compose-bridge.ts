@@ -381,11 +381,14 @@ async function uploadFile(
       }
     }
 
-    // Text attachments keep summary/chars in the media record.
+    // Text attachments keep summary/chars in the media record. This covers
+    // plain text-file uploads (.md, .txt, .csv). Jant-composed rich text
+    // attachments do not go through this upload path — they are sent as
+    // markdown via the compose API and materialized by `createTextAttachment`.
     let summary: string | undefined;
     let chars: number | undefined;
     const category = getMediaCategory(file.type);
-    if (category === "text" && file.type !== "text/x-tiptap+json") {
+    if (category === "text") {
       try {
         const textContent = await toUpload.text();
         const trimmed = textContent.replace(/\s+/g, " ").trim();
@@ -394,12 +397,6 @@ async function uploadFile(
           trimmed.length <= 100 ? trimmed : trimmed.slice(0, 100) + "\u2026";
       } catch {
         // Ignore — summary is optional
-      }
-    } else if (file.type === "text/x-tiptap+json") {
-      try {
-        chars = extractTiptapAttachmentChars(await toUpload.text());
-      } catch {
-        // Char count is best-effort
       }
     }
 
@@ -429,32 +426,6 @@ async function uploadFile(
     showToast(message, "error");
     return null;
   }
-}
-
-function extractTiptapAttachmentChars(raw: string): number | undefined {
-  const envelope = JSON.parse(raw) as {
-    json?: { content?: unknown[] };
-  };
-  if (!envelope.json) {
-    return undefined;
-  }
-
-  let text = "";
-  const walk = (node: Record<string, unknown>) => {
-    if (typeof node.text === "string") {
-      text += node.text;
-    }
-    if (Array.isArray(node.content)) {
-      for (const child of node.content) {
-        if (child && typeof child === "object") {
-          walk(child as Record<string, unknown>);
-        }
-      }
-    }
-  };
-
-  walk(envelope.json as Record<string, unknown>);
-  return text.length;
 }
 
 // ── Attachment removal handler ───────────────────────────────────────
