@@ -29,6 +29,8 @@ interface TextPreviewAutoOpen {
   postHref: string;
   /** Attachment summary used as page title for link previews */
   attachmentTitle: string;
+  /** Media ID so the dialog can lazy-fetch the markdown source for Copy */
+  mediaId: string;
 }
 
 async function renderPostWithTextPreview(
@@ -52,11 +54,16 @@ async function renderPostWithTextPreview(
   // when the dialog closes.
   const pageTitle = autoOpen.attachmentTitle || meta.title;
   // Metadata only — the HTML content lives in the SSR dialog below.
+  // JSON lives inside a <script>, so escape `<` / `>` to defuse any
+  // attacker-controlled content that manages to land in post titles.
   const autoOpenMeta = JSON.stringify({
     shareHref: autoOpen.shareHref,
     postHref: autoOpen.postHref,
     postTitle: meta.title,
-  });
+    mediaId: autoOpen.mediaId,
+  })
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e");
 
   return renderPublicPage(c, {
     title: pageTitle,
@@ -233,6 +240,7 @@ pageRoutes.get("/*", async (c) => {
         shareHref: c.req.path,
         postHref: postPermalink,
         attachmentTitle: attachment.summary ?? "",
+        mediaId: media.id,
       });
     }
   }

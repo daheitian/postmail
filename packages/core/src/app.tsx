@@ -87,6 +87,8 @@ import { createRequestRuntime } from "./runtime/index.js";
 import { getInstanceReadiness } from "./runtime/readiness.js";
 import { type AppVariables, type App } from "./types/app-context.js";
 import { isPublicStorageKeyAllowed } from "./lib/public-storage.js";
+import { isTextAttachment, textAttachmentJsonKey } from "./services/media.js";
+import { tiptapJsonToMarkdown } from "./lib/tiptap-to-markdown.js";
 
 export type { AppVariables, App };
 
@@ -345,6 +347,36 @@ export function createApp(): App {
     const storage = c.var.storage;
     if (!storage) return c.notFound();
 
+    const etag = `"${media.updatedAt}"`;
+    if (c.req.header("If-None-Match") === etag) {
+      return new Response(null, { status: 304, headers: { ETag: etag } });
+    }
+
+    // Text attachments live as a pair of sibling objects (`.html` + `.json`).
+    // The preview dialog displays the HTML and offers a "Copy markdown"
+    // action, so return both pieces in one JSON response — one round trip,
+    // and the markdown source never has to leave the server unescaped in
+    // the rendered HTML.
+    if (isTextAttachment(media)) {
+      const [htmlObject, jsonObject] = await Promise.all([
+        storage.get(media.storageKey),
+        storage.get(textAttachmentJsonKey(media.storageKey)),
+      ]);
+      if (!htmlObject) return c.notFound();
+
+      const [htmlText, jsonText] = await Promise.all([
+        new Response(htmlObject.body).text(),
+        jsonObject ? new Response(jsonObject.body).text() : Promise.resolve(""),
+      ]);
+
+      const markdown = jsonText ? tiptapJsonToMarkdown(jsonText) : "";
+
+      return c.json({ html: htmlText, markdown }, 200, {
+        "Cache-Control": "public, no-cache",
+        ETag: etag,
+      });
+    }
+
     const object = await storage.get(media.storageKey);
     if (!object) return c.notFound();
 
@@ -353,14 +385,8 @@ export function createApp(): App {
       "Content-Type",
       object.contentType || "application/octet-stream",
     );
-    // Use updatedAt as ETag so browsers can cache but revalidate on change
-    const etag = `"${media.updatedAt}"`;
     headers.set("Cache-Control", "public, no-cache");
     headers.set("ETag", etag);
-
-    if (c.req.header("If-None-Match") === etag) {
-      return new Response(null, { status: 304, headers });
-    }
 
     return new Response(object.body, { headers });
   });
