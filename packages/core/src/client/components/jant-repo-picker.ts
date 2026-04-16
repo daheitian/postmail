@@ -69,7 +69,6 @@ export class JantRepoPicker extends LitElement {
     cancelUrl: { type: String, attribute: "cancel-url" },
 
     _installations: { state: true },
-    _addInstallationUrl: { state: true },
     _selectedOwner: { state: true },
     _ownerOpen: { state: true },
 
@@ -105,7 +104,6 @@ export class JantRepoPicker extends LitElement {
   declare cancelUrl: string;
 
   declare _installations: Installation[];
-  declare _addInstallationUrl: string | null;
   declare _selectedOwner: Installation | null;
   declare _ownerOpen: boolean;
 
@@ -150,7 +148,6 @@ export class JantRepoPicker extends LitElement {
     this.cancelUrl = "";
 
     this._installations = [];
-    this._addInstallationUrl = null;
     this._selectedOwner = null;
     this._ownerOpen = false;
 
@@ -206,10 +203,8 @@ export class JantRepoPicker extends LitElement {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as {
         installations: Installation[];
-        addInstallationUrl: string | null;
       };
       this._installations = data.installations;
-      this._addInstallationUrl = data.addInstallationUrl;
       // Auto-select when there is exactly one option — common case for
       // users who've only authorized on their primary account.
       const only =
@@ -575,11 +570,11 @@ export class JantRepoPicker extends LitElement {
               </li>
             `,
           )}
-          ${this._addInstallationUrl
+          ${this.installUrl
             ? html`
                 <li class="border-t mt-1 pt-1">
                   <a
-                    href=${this._addInstallationUrl}
+                    href=${this.installUrl}
                     class="block px-3 py-2 text-sm text-primary hover:bg-muted"
                   >
                     ${this.labels.installAnother}

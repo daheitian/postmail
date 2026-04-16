@@ -58,7 +58,6 @@ import {
 } from "../../lib/env.js";
 import {
   buildInstallUrl,
-  buildAddInstallationUrl,
   createRepoForInstallation,
   getInstallation,
   listInstallationReposPage,
@@ -1977,11 +1976,7 @@ async function getInstallationTokenFromApp(
 /** List GitHub App installations authorized for this site. */
 settingsRoutes.get("/github-sync/app/installations", async (c) => {
   const installations = await listStoredInstallations(c.var.services.settings);
-  const app = getGitHubAppConfig(c.env);
-  return c.json({
-    installations,
-    addInstallationUrl: app ? buildAddInstallationUrl(app.slug) : null,
-  });
+  return c.json({ installations });
 });
 
 /**

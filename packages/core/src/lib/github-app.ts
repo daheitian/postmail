@@ -284,18 +284,6 @@ export function buildInstallUrl(slug: string, state: string): string {
   return `https://github.com/apps/${encodeURIComponent(slug)}/installations/new?${params.toString()}`;
 }
 
-/**
- * URL users visit to install the App on *another* account. Distinct from
- * `buildInstallUrl` only in that it carries no state — this is the "+
- * Install on another account" entry inside the picker, not a fresh OAuth
- * dance, so no CSRF token is needed at click time. GitHub will still
- * redirect back to the App's configured Callback URL, and the landing
- * page there runs the usual state-signing flow.
- */
-export function buildAddInstallationUrl(slug: string): string {
-  return `https://github.com/apps/${encodeURIComponent(slug)}/installations/new`;
-}
-
 // ---------------------------------------------------------------------------
 // Installation metadata (App JWT — not installation token)
 // ---------------------------------------------------------------------------
