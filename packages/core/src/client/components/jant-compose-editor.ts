@@ -1146,7 +1146,14 @@ export class JantComposeEditor extends LitElement {
 
   closeAttachedPanel(index: number) {
     const item = this._attachedTexts[index];
-    if (item && !this._hasAttachedTextContent(item.bodyJson)) {
+    if (!item) return;
+    // Never auto-remove an attachment that's already persisted server-side:
+    // if the user wanted to delete it, they'd click the X. Silently dropping
+    // an existing attachment because its content briefly looked empty (e.g.
+    // a transient fetch failure during edit-hydration) would be data loss
+    // the user didn't ask for.
+    if (item.mediaId) return;
+    if (!this._hasAttachedTextContent(item.bodyJson)) {
       this._attachedTexts = this._attachedTexts.filter((_, i) => i !== index);
       this._attachmentOrder = this._attachmentOrder.filter(
         (id) => id !== item.clientId,

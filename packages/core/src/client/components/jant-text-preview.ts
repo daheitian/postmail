@@ -3,17 +3,15 @@
  *
  * Displays attached text content (TipTap-authored) in a modal dialog.
  * Intercepts clicks on [data-text-preview-url] buttons, fetches the
- * stored { json, html } envelope from the URL, and renders the HTML
- * in a native <dialog>.
+ * pre-rendered HTML from the storage proxy, and renders it in a native
+ * <dialog>.
  *
  * Light DOM only — BaseCoat and Tailwind classes apply directly.
  */
 
 import { LitElement, html, nothing } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import { escapeHtml } from "../../lib/html.js";
 import { showToast } from "../toast.js";
-import { jsonToMarkdown } from "../tiptap/create-editor.js";
 
 export class JantTextPreview extends LitElement {
   static properties = {
@@ -150,22 +148,18 @@ export class JantTextPreview extends LitElement {
       const res = await fetch(`/api/media/${mediaId}/content`);
       if (!res.ok) throw new Error("Fetch failed");
 
-      const raw = await res.text();
+      // Text attachments are stored as rendered HTML at `storageKey`;
+      // the proxy endpoint streams those bytes back verbatim.
+      const renderedHtml = await res.text();
+      this._html = renderedHtml;
 
-      // Try parsing as { json, html } envelope (TipTap rich text)
-      try {
-        const envelope = JSON.parse(raw) as {
-          json?: import("@tiptap/core").JSONContent;
-          html?: string;
-        };
-        this._html = envelope.html || "";
-        // Serialize JSON → markdown via headless TipTap editor
-        this.#rawText = envelope.json ? jsonToMarkdown(envelope.json) : "";
-      } catch {
-        // Not JSON — raw markdown / plain text, copy as-is
-        this.#rawText = raw;
-        this._html = `<pre>${escapeHtml(raw)}</pre>`;
-      }
+      // Plain-text form for the Copy button. Parse the HTML into a
+      // detached element and take its innerText — preserves readable
+      // line breaks for paragraphs and headings without having to fetch
+      // the markdown source over a separate (auth'd) channel.
+      const scratch = document.createElement("div");
+      scratch.innerHTML = renderedHtml;
+      this.#rawText = scratch.innerText.trim();
     } catch {
       this._html = "<p>Failed to load content.</p>";
       this.#rawText = "";

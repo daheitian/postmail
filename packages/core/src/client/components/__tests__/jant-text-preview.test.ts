@@ -92,9 +92,9 @@ describe("JantTextPreview", () => {
     expect(document.activeElement).not.toBe(closeButton);
 
     resolveFetch(
-      new Response(JSON.stringify({ html: "<p>Hello</p>" }), {
+      new Response("<p>Hello</p>", {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/html; charset=utf-8" },
       }),
     );
     await flush(el);
@@ -103,9 +103,9 @@ describe("JantTextPreview", () => {
   it("returns focus to the trigger after closing", async () => {
     const el = await createElement();
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ html: "<p>Hello</p>" }), {
+      new Response("<p>Hello</p>", {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/html; charset=utf-8" },
       }),
     );
     const trigger = createTrigger();
@@ -172,12 +172,16 @@ describe("JantTextPreview", () => {
     expect(document.getElementById("text-preview-autoopen")).toBeNull();
   });
 
-  it("escapes plain-text fallback content before rendering", async () => {
+  it("renders the pre-rendered HTML returned by the storage proxy", async () => {
+    // After the envelope refactor, `/api/media/:id/content` streams the
+    // stored HTML bytes back verbatim. Nothing client-side parses them
+    // as JSON or wraps them in an escape shell; the dialog body renders
+    // the string as-is so headings and paragraphs display correctly.
     const el = await createElement();
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response("Fish & <chips>", {
+      new Response("<h1>Heading</h1><p>Body</p>", {
         status: 200,
-        headers: { "Content-Type": "text/plain" },
+        headers: { "Content-Type": "text/html; charset=utf-8" },
       }),
     );
     const trigger = createTrigger();
@@ -191,7 +195,12 @@ describe("JantTextPreview", () => {
     await flush(el);
     await flush(el);
 
-    const pre = el.querySelector(".text-preview-body pre");
-    expect(pre?.innerHTML).toBe("Fish &amp; &lt;chips&gt;");
+    const body = el.querySelector(".text-preview-body");
+    expect(body).not.toBeNull();
+    // The HTML string is not wrapped in a <pre> or escaped — it renders
+    // as real DOM nodes the reader can see.
+    expect(body?.querySelector("h1")?.textContent).toBe("Heading");
+    expect(body?.querySelector("p")?.textContent).toBe("Body");
+    expect(body?.querySelector("pre")).toBeNull();
   });
 });

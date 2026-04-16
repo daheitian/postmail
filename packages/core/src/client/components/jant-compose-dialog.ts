@@ -29,6 +29,7 @@ import type {
 import type { CollectionSubmitDetail } from "./collection-types.js";
 import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
+import { parseMarkdownDocument } from "../../lib/markdown-manager.js";
 import {
   applyItemOrder,
   filterCollectionsBySearch,
@@ -436,26 +437,43 @@ async function resolveApiAttachments(allAttachments: ApiAttachment[]) {
 
   const textAttachments = await Promise.all(
     textItems.map(async (m) => {
+      // Editing a post hydrates existing text attachments back into the
+      // editor. Fetch the markdown source from the auth'd attachments API
+      // (compose is always admin-authenticated) and parse it into a
+      // Tiptap document on the client. The `.html` sibling is not used
+      // here — the editor owns HTML rendering from the JSON source.
       try {
-        const textRes = await fetch(`/api/media/${m.id}/content`);
-        if (textRes.ok) {
-          const raw = await textRes.text();
-          const envelope = JSON.parse(raw) as {
-            json?: unknown;
-            html?: string;
+        const res = await fetch(m.contentUrl);
+        if (res.ok) {
+          const payload = (await res.json()) as {
+            content?: string;
+            contentFormat?: string;
           };
-          return {
-            bodyJson: JSON.stringify(envelope.json ?? {}),
-            bodyHtml: envelope.html ?? "",
-            summary: m.summary ?? "",
-            mediaId: m.id,
-          };
+          const markdown =
+            payload.contentFormat === "markdown" && payload.content
+              ? payload.content
+              : "";
+          const doc = markdown ? parseMarkdownDocument(markdown) : null;
+          if (doc) {
+            return {
+              bodyJson: JSON.stringify(doc),
+              bodyHtml: "",
+              summary: m.summary ?? "",
+              mediaId: m.id,
+            };
+          }
         }
       } catch {
-        // Fetch failed — skip
+        // Fetch or parse failed — fall through to the empty-shell return
+        // below. The attachment stays visible in the composer so the user
+        // can decide whether to keep, edit, or remove it explicitly; we
+        // do not silently drop it.
       }
       return {
-        bodyJson: "{}",
+        bodyJson: JSON.stringify({
+          type: "doc",
+          content: [{ type: "paragraph" }],
+        }),
         bodyHtml: "",
         summary: m.summary ?? "",
         mediaId: m.id,
