@@ -230,4 +230,60 @@ User runs the migration locally against personal production data between commit 
 
 ## Review
 
-_Filled in after execution._
+Landed in two commits instead of the planned three:
+
+- `52d953d8` — storage split + detection switch + export simplification +
+  legacy cleanup + all test updates, as one atomic change. The original
+  Commit 1 / Commit 2 boundary collapsed because changing the MIME type
+  (`text/x-tiptap+json` → `text/html; charset=utf-8`) immediately breaks
+  every downstream detection site that matched on the old MIME. Trying to
+  land Commit 1 alone left the build passing but the runtime broken for
+  existing rows — so the detection switches came forward into the same
+  commit.
+- `5a667dde` — one-off migration (`MediaService.migrateEnvelopeTextAttachments`
+  - `POST /api/internal/text-attachments/migrate-envelopes` +
+    `jant migrate-text-attachments` CLI) with five targeted service tests.
+
+Design decisions that held from the plan:
+
+- DB-side: zero schema change. `storageKey` continues to point at the
+  primary artifact (now `.html` instead of the envelope), JSON sibling
+  derived via `textAttachmentJsonKey()`.
+- Detection unified behind `isTextAttachment(media)` to distinguish Jant
+  text attachments from incidental `.md` / `.txt` / `.csv` uploads that
+  also carry `mediaKind === "text"`. This came up late — `mediaKind ===
+"text"` alone would have swept plain-text uploads into the text-attachment
+  read paths.
+- Static export is now strictly reference-based (`<a href>` to the public
+  HTML URL); `buildTextAttachmentContentMap` and the eager storage-read
+  loop are gone. Text figures carry `data-jant-kind="text"` so a future
+  lightbox / iframe viewer can hydrate without changing the export format.
+- `createTextAttachment` now sets `Cache-Control: public, max-age=31536000,
+immutable` on both siblings — the old code path accidentally omitted this
+  even on the envelope write.
+
+Additional cleanup that fell naturally out of the refactor:
+
+- Removed `text/x-tiptap+json` from the allowed upload MIME list and the
+  server-side envelope-parsing branch in `/api/upload`. The "drag-drop a
+  pre-made `.tiptap.json` file" path was only useful when we were still
+  emitting envelopes; it has no consumer now.
+- Removed the matching client branches in `compose-bridge.ts` and the
+  unused `extractTiptapAttachmentChars` helper.
+- Icon rendering in `MediaGallery.tsx` and `jant-compose-editor.ts` was
+  updated to the new MIME so the text-attachment icon still renders.
+
+Verification:
+
+- `mise run check-tests` — 2026 tests pass (5 new for the migration).
+- `mise run check-lint` — clean.
+- `mise run check-types` — clean.
+- Manual dev smoke deferred to the user: run the migration against the
+  personal site, confirm a text attachment still renders and that the
+  exported Zola site links to the public HTML URL.
+
+Deferred (out of scope per agreement):
+
+- Client-side lightbox / iframe viewer for text attachments on the
+  rendered site. The export already emits `<a href target="_blank">` links,
+  which is a usable end-state on its own.
