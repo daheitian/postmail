@@ -18,18 +18,9 @@ export interface RepoPickerLabels {
   repoLoading: string;
   repoShowingOf: string; // "Showing {shown} of {total}"
   repoSearchHint: string;
-  createNewRepo: string;
-  createNewRepoHint: string;
-  createNewDialogTitle: string;
-  createNewNameLabel: string;
-  createNewNameHelp: string;
-  createNewDescriptionLabel: string;
-  createNewVisibilityLabel: string;
-  createNewVisibilityPrivate: string;
-  createNewVisibilityPublic: string;
-  createNewSubmit: string;
-  createNewCancel: string;
-  createNewPersonalAccountHint: string;
+  refreshRepos: string; // aria-label + tooltip for the refresh button
+  createOnGitHub: string; // primary call-to-action text
+  createOnGitHubHint: string; // "We'll prefill the name {name} for you"
   classifyLoading: string;
   classificationEmpty: string;
   classificationOwned: string;

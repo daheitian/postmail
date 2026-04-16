@@ -67,6 +67,7 @@ export class JantRepoPicker extends LitElement {
     connectUrl: { type: String, attribute: "connect-url" },
     installUrl: { type: String, attribute: "install-url" },
     cancelUrl: { type: String, attribute: "cancel-url" },
+    createRepoNameHint: { type: String, attribute: "create-repo-name-hint" },
 
     _installations: { state: true },
     _selectedOwner: { state: true },
@@ -88,13 +89,6 @@ export class JantRepoPicker extends LitElement {
 
     _connecting: { state: true },
     _error: { state: true },
-
-    _showCreate: { state: true },
-    _createName: { state: true },
-    _createDescription: { state: true },
-    _createPrivate: { state: true },
-    _creating: { state: true },
-    _createError: { state: true },
   };
 
   declare labels: RepoPickerLabels;
@@ -102,6 +96,7 @@ export class JantRepoPicker extends LitElement {
   declare connectUrl: string;
   declare installUrl: string;
   declare cancelUrl: string;
+  declare createRepoNameHint: string;
 
   declare _installations: Installation[];
   declare _selectedOwner: Installation | null;
@@ -124,15 +119,12 @@ export class JantRepoPicker extends LitElement {
   declare _connecting: boolean;
   declare _error: string | null;
 
-  declare _showCreate: boolean;
-  declare _createName: string;
-  declare _createDescription: string;
-  declare _createPrivate: boolean;
-  declare _creating: boolean;
-  declare _createError: string | null;
-
   #searchTimer: ReturnType<typeof setTimeout> | null = null;
   #searchToken = 0;
+  /** True while the user is on github.com/new — waiting for tab refocus. */
+  #awaitingReturn = false;
+  /** Repo name we prefilled on github.com/new; used to auto-select on return. */
+  #expectedNewRepoName: string | null = null;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -146,6 +138,7 @@ export class JantRepoPicker extends LitElement {
     this.connectUrl = "";
     this.installUrl = "";
     this.cancelUrl = "";
+    this.createRepoNameHint = "";
 
     this._installations = [];
     this._selectedOwner = null;
@@ -167,19 +160,13 @@ export class JantRepoPicker extends LitElement {
 
     this._connecting = false;
     this._error = null;
-
-    this._showCreate = false;
-    this._createName = "";
-    this._createDescription = "";
-    this._createPrivate = true;
-    this._creating = false;
-    this._createError = null;
   }
 
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener("click", this.#handleOutsideClick);
     document.addEventListener("keydown", this.#handleEscape);
+    window.addEventListener("focus", this.#handleWindowFocus);
     void this.#loadInstallations();
   }
 
@@ -187,6 +174,7 @@ export class JantRepoPicker extends LitElement {
     super.disconnectedCallback();
     document.removeEventListener("click", this.#handleOutsideClick);
     document.removeEventListener("keydown", this.#handleEscape);
+    window.removeEventListener("focus", this.#handleWindowFocus);
     if (this.#searchTimer) clearTimeout(this.#searchTimer);
   }
 
@@ -329,49 +317,36 @@ export class JantRepoPicker extends LitElement {
     }
   }
 
-  async #createRepo() {
+  /**
+   * Open github.com/new in a new tab with the owner and repo name
+   * prefilled. The user creates the repo on GitHub (which handles
+   * private/public, description, license, etc. far better than we
+   * could inline), then returns to this tab — the `focus` listener
+   * picks up the return and refreshes the repo list below.
+   */
+  #openCreateOnGitHub() {
+    const owner = this._selectedOwner;
+    if (!owner) return;
+    const name = this.createRepoNameHint || "";
+    const url = new URL("https://github.com/new");
+    if (name) url.searchParams.set("name", name);
+    url.searchParams.set("owner", owner.account.login);
+    url.searchParams.set("visibility", "private");
+    this.#awaitingReturn = true;
+    this.#expectedNewRepoName = name || null;
+    window.open(url.toString(), "_blank", "noopener,noreferrer");
+    this._repoOpen = false;
+  }
+
+  /**
+   * Manual refresh. Kept even when auto-refresh works, because some
+   * browsers fire `focus` unreliably (e.g. mobile PWAs) and users may
+   * have created the repo out-of-band on GitHub's site earlier.
+   */
+  #refreshRepos() {
     if (!this._selectedOwner) return;
-    const name = this._createName.trim();
-    if (!name) return;
-    this._creating = true;
-    this._createError = null;
-    try {
-      const res = await fetch(`${this.apiBase}/create-repo`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "same-origin",
-        body: JSON.stringify({
-          installationId: this._selectedOwner.installationId,
-          name,
-          private: this._createPrivate,
-          description: this._createDescription.trim() || undefined,
-        }),
-      });
-      const data = (await res.json().catch(() => ({}))) as {
-        repo?: RepoRow;
-        error?: string;
-      };
-      if (!res.ok || !data.repo) {
-        throw new Error(data.error ?? `HTTP ${res.status}`);
-      }
-      const created = data.repo;
-      // Prepend to list, select, classify.
-      this._repos = [
-        created,
-        ...this._repos.filter((r) => r.fullName !== created.fullName),
-      ];
-      this._showCreate = false;
-      this._createName = "";
-      this._createDescription = "";
-      this.#selectRepo(created);
-    } catch (err) {
-      this._createError = err instanceof Error ? err.message : String(err);
-    } finally {
-      this._creating = false;
-    }
+    const q = this._repoSearch.trim();
+    void this.#loadRepos(this._selectedOwner.installationId, q ? { q } : {});
   }
 
   // -------------------------------------------------------------------
@@ -443,14 +418,38 @@ export class JantRepoPicker extends LitElement {
 
   #handleEscape = (e: KeyboardEvent) => {
     if (e.key !== "Escape") return;
-    if (this._showCreate) {
-      this._showCreate = false;
-      return;
-    }
     if (this._ownerOpen || this._repoOpen) {
       this._ownerOpen = false;
       this._repoOpen = false;
     }
+  };
+
+  /**
+   * Detect the user's return from github.com/new. When `#awaitingReturn`
+   * is set (only true while we're actively awaiting a create-repo trip),
+   * reload the repo list and, if a repo matching the name we prefilled
+   * now exists, auto-select it so the user sees an immediate result.
+   */
+  #handleWindowFocus = () => {
+    if (!this.#awaitingReturn) return;
+    const owner = this._selectedOwner;
+    if (!owner) {
+      this.#awaitingReturn = false;
+      return;
+    }
+    const expected = this.#expectedNewRepoName;
+    this.#awaitingReturn = false;
+    this.#expectedNewRepoName = null;
+    void (async () => {
+      // Clear search so the just-created repo (which may not match the
+      // active filter) is visible in the freshly loaded list.
+      this._repoSearch = "";
+      await this.#loadRepos(owner.installationId);
+      if (expected) {
+        const match = this._repos.find((r) => r.name === expected);
+        if (match) this.#selectRepo(match);
+      }
+    })();
   };
 
   #toggleOwner() {
@@ -493,7 +492,6 @@ export class JantRepoPicker extends LitElement {
               ${this._error}
             </div>`
           : nothing}
-        ${this._showCreate ? this.#renderCreateDialog() : nothing}
       </div>
     `;
   }
@@ -629,23 +627,34 @@ export class JantRepoPicker extends LitElement {
       <div
         class="absolute z-10 mt-1 w-full rounded-md border bg-background shadow-lg"
       >
-        <div class="p-2 border-b">
+        <div class="p-2 border-b flex items-center gap-2">
           <input
             type="text"
-            class="input repo-picker-repo-search w-full"
+            class="input repo-picker-repo-search flex-1"
             placeholder=${this.labels.repoSearchPlaceholder}
             .value=${this._repoSearch}
             @input=${(e: Event) => this.#onRepoSearchInput(e)}
           />
-          ${this._hasMore && this._reposMode === "list"
-            ? html`<p class="mt-1 text-xs text-muted-foreground">
-                ${this.labels.repoShowingOf
-                  .replace("{shown}", String(this._repos.length))
-                  .replace("{total}", String(this._totalCount))}
-                — ${this.labels.repoSearchHint}
-              </p>`
-            : nothing}
+          <button
+            type="button"
+            class="btn-ghost btn-icon"
+            title=${this.labels.refreshRepos}
+            aria-label=${this.labels.refreshRepos}
+            @click=${() => this.#refreshRepos()}
+            ?disabled=${this._loadingRepos}
+          >
+            <!-- Simple refresh glyph; matches BaseCoat icon button sizing -->
+            <span aria-hidden="true">⟳</span>
+          </button>
         </div>
+        ${this._hasMore && this._reposMode === "list"
+          ? html`<p class="px-3 pt-2 text-xs text-muted-foreground">
+              ${this.labels.repoShowingOf
+                .replace("{shown}", String(this._repos.length))
+                .replace("{total}", String(this._totalCount))}
+              — ${this.labels.repoSearchHint}
+            </p>`
+          : nothing}
         <ul class="max-h-64 overflow-y-auto py-1" role="listbox">
           ${this._loadingRepos
             ? html`<li class="px-3 py-2 text-sm text-muted-foreground">
@@ -678,36 +687,27 @@ export class JantRepoPicker extends LitElement {
                   `,
                 )}
         </ul>
-        ${this.#canCreateRepo()
-          ? html`
-              <div class="border-t p-1">
-                <button
-                  type="button"
-                  class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-primary hover:bg-muted"
-                  @click=${() => {
-                    this._showCreate = true;
-                    this._repoOpen = false;
-                    this._createName = this._repoSearch.trim();
-                    queueMicrotask(() => {
-                      this.querySelector<HTMLInputElement>(
-                        ".repo-picker-create-name",
-                      )?.focus();
-                    });
-                  }}
-                >
-                  ${this.labels.createNewRepo}
-                </button>
-              </div>
-            `
-          : nothing}
+        <div class="border-t p-2">
+          <button
+            type="button"
+            class="flex w-full items-start gap-2 px-2 py-2 text-left text-sm text-primary hover:bg-muted rounded-md"
+            @click=${() => this.#openCreateOnGitHub()}
+          >
+            <span class="flex flex-col">
+              <span class="font-medium">${this.labels.createOnGitHub} →</span>
+              ${this.createRepoNameHint
+                ? html`<span class="text-xs text-muted-foreground">
+                    ${this.labels.createOnGitHubHint.replace(
+                      "{name}",
+                      this.createRepoNameHint,
+                    )}
+                  </span>`
+                : nothing}
+            </span>
+          </button>
+        </div>
       </div>
     `;
-  }
-
-  #canCreateRepo(): boolean {
-    // Create is only supported for Organization accounts (see github-app.ts
-    // comment — user accounts require user-OAuth, which we don't carry).
-    return this._selectedOwner?.account.type === "Organization";
   }
 
   #renderClassification() {
@@ -793,114 +793,6 @@ export class JantRepoPicker extends LitElement {
           ${this._connecting ? this.labels.connecting : this.labels.connect}
         </button>
         <a href=${this.cancelUrl} class="btn-ghost">${this.labels.cancel}</a>
-      </div>
-    `;
-  }
-
-  #renderCreateDialog() {
-    return html`
-      <div
-        class="fixed inset-0 z-20 flex items-center justify-center bg-black/40"
-        @click=${(e: MouseEvent) => {
-          if (e.target === e.currentTarget) this._showCreate = false;
-        }}
-      >
-        <div
-          class="w-full max-w-md rounded-lg bg-background p-6 shadow-xl flex flex-col gap-4"
-        >
-          <h3 class="text-lg font-medium">
-            ${this.labels.createNewDialogTitle}
-          </h3>
-          <div class="field">
-            <label class="label">${this.labels.createNewNameLabel}</label>
-            <input
-              type="text"
-              class="input repo-picker-create-name"
-              .value=${this._createName}
-              @input=${(e: Event) => {
-                this._createName = (e.target as HTMLInputElement).value;
-              }}
-              @keydown=${(e: KeyboardEvent) => {
-                if (e.key === "Enter" && this._createName.trim()) {
-                  void this.#createRepo();
-                }
-              }}
-              placeholder="my-site-backup"
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <p class="text-xs text-muted-foreground mt-1">
-              ${this.labels.createNewNameHelp}
-            </p>
-          </div>
-          <div class="field">
-            <label class="label"
-              >${this.labels.createNewDescriptionLabel}</label
-            >
-            <input
-              type="text"
-              class="input"
-              .value=${this._createDescription}
-              @input=${(e: Event) => {
-                this._createDescription = (e.target as HTMLInputElement).value;
-              }}
-              autocomplete="off"
-            />
-          </div>
-          <div class="field">
-            <label class="label">${this.labels.createNewVisibilityLabel}</label>
-            <div class="flex gap-4">
-              <label class="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="visibility"
-                  ?checked=${this._createPrivate}
-                  @change=${() => {
-                    this._createPrivate = true;
-                  }}
-                />
-                ${this.labels.createNewVisibilityPrivate}
-              </label>
-              <label class="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="visibility"
-                  ?checked=${!this._createPrivate}
-                  @change=${() => {
-                    this._createPrivate = false;
-                  }}
-                />
-                ${this.labels.createNewVisibilityPublic}
-              </label>
-            </div>
-          </div>
-          ${this._createError
-            ? html`<div class="alert alert-destructive text-sm">
-                ${this._createError}
-              </div>`
-            : nothing}
-          <div class="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              class="btn-ghost"
-              @click=${() => {
-                this._showCreate = false;
-              }}
-            >
-              ${this.labels.createNewCancel}
-            </button>
-            <button
-              type="button"
-              class="btn"
-              ?disabled=${this._creating || !this._createName.trim()}
-              @click=${() => this.#createRepo()}
-            >
-              ${this._creating
-                ? this.labels.connecting
-                : this.labels.createNewSubmit}
-            </button>
-          </div>
-        </div>
       </div>
     `;
   }

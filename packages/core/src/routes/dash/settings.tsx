@@ -58,7 +58,6 @@ import {
 } from "../../lib/env.js";
 import {
   buildInstallUrl,
-  createRepoForInstallation,
   getInstallation,
   listInstallationReposPage,
   searchInstallationRepos,
@@ -1497,6 +1496,7 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
   const navData = await getNavigationData(c);
   const base = publicPath(c, "/settings/github-sync");
   const labels = buildRepoPickerLabels(c);
+  const suggestedRepoName = buildSuggestedRepoName(c);
 
   return renderPublicPage(c, {
     title: buildPageTitle("GitHub Sync — Pick Repository", navData.siteName),
@@ -1514,6 +1514,7 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
           connect-url={`${base}/app/connect`}
           install-url={`${base}/app/install`}
           cancel-url={publicPath(c, "/settings")}
+          create-repo-name-hint={suggestedRepoName}
         >
           {/* SSR fallback while the Lit component upgrades. */}
           <div class="flex flex-col gap-6 max-w-form">
@@ -1535,6 +1536,28 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
  * so all user-facing copy is translated server-side and passed in via
  * a single `labels` attribute (see jant-repo-picker-types.ts for shape).
  */
+/**
+ * Derive a default repository name to prefill on github.com/new.
+ *
+ * Uses the site's host — the first DNS label is a stable, URL-safe
+ * identifier tied to this specific Jant instance. Fallback to "jant-site"
+ * when the host parse fails so we never hand GitHub an empty `name=`.
+ * Appending `-backup` makes the repo's purpose clear at a glance.
+ */
+function buildSuggestedRepoName(c: Context<Env>): string {
+  let firstLabel = "";
+  try {
+    firstLabel = new URL(c.var.appConfig.siteUrl).host.split(".")[0] ?? "";
+  } catch {
+    /* fall through */
+  }
+  const slug = firstLabel
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug ? `${slug}-backup` : "jant-site-backup";
+}
+
 function buildRepoPickerLabels(c: Context<Env>): string {
   const i18n = getI18n(c);
   return JSON.stringify({
@@ -1630,83 +1653,25 @@ function buildRepoPickerLabels(c: Context<Env>): string {
           "@context: GitHub sync picker — hint telling the user typing will search the full list",
       }),
     ),
-    createNewRepo: i18n._(
+    refreshRepos: i18n._(
       msg({
-        message: "+ Create new repository",
+        message: "Refresh repository list",
         comment:
-          "@context: GitHub sync picker — entry that opens the create-repo dialog",
+          "@context: GitHub sync picker — tooltip for the refresh button next to the search input",
       }),
     ),
-    createNewRepoHint: i18n._(
+    createOnGitHub: i18n._(
       msg({
-        message: "Creates a new repository on this account.",
+        message: "Create a new repository on GitHub",
         comment:
-          "@context: GitHub sync picker — explanatory hint for the create-repo entry",
+          "@context: GitHub sync picker — entry that opens github.com/new in a new tab",
       }),
     ),
-    createNewDialogTitle: i18n._(
+    createOnGitHubHint: i18n._(
       msg({
-        message: "Create a new repository",
-        comment: "@context: GitHub sync picker — create dialog title",
-      }),
-    ),
-    createNewNameLabel: i18n._(
-      msg({
-        message: "Name",
-        comment: "@context: GitHub sync picker — create dialog name field",
-      }),
-    ),
-    createNewNameHelp: i18n._(
-      msg({
-        message: "Letters, numbers, hyphens, underscores, and dots only.",
+        message: "We'll prefill the name {name}. The list refreshes on return.",
         comment:
-          "@context: GitHub sync picker — help text under the repo name input",
-      }),
-    ),
-    createNewDescriptionLabel: i18n._(
-      msg({
-        message: "Description (optional)",
-        comment:
-          "@context: GitHub sync picker — create dialog description field",
-      }),
-    ),
-    createNewVisibilityLabel: i18n._(
-      msg({
-        message: "Visibility",
-        comment:
-          "@context: GitHub sync picker — create dialog visibility field",
-      }),
-    ),
-    createNewVisibilityPrivate: i18n._(
-      msg({
-        message: "Private",
-        comment: "@context: GitHub sync picker — visibility option",
-      }),
-    ),
-    createNewVisibilityPublic: i18n._(
-      msg({
-        message: "Public",
-        comment: "@context: GitHub sync picker — visibility option",
-      }),
-    ),
-    createNewSubmit: i18n._(
-      msg({
-        message: "Create",
-        comment: "@context: GitHub sync picker — create dialog submit button",
-      }),
-    ),
-    createNewCancel: i18n._(
-      msg({
-        message: "Cancel",
-        comment: "@context: GitHub sync picker — create dialog cancel button",
-      }),
-    ),
-    createNewPersonalAccountHint: i18n._(
-      msg({
-        message:
-          "Personal accounts can't be created here. Create the repository on GitHub, then come back to select it.",
-        comment:
-          "@context: GitHub sync picker — shown when the selected owner is a personal account and create isn't supported",
+          "@context: GitHub sync picker — hint under the create-on-github entry. Placeholder {name} is the suggested repo name.",
       }),
     ),
     classifyLoading: i18n._(
@@ -2094,65 +2059,6 @@ settingsRoutes.post("/github-sync/app/classify", async (c) => {
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
     return c.json({ error: detail }, 500);
-  }
-});
-
-/**
- * Create a new repository under the installation's account.
- *
- * Limited to Organization accounts — user accounts require a user OAuth
- * token that our install flow doesn't carry. The caller should direct
- * users with personal accounts to create the repo on GitHub first.
- */
-settingsRoutes.post("/github-sync/app/create-repo", async (c) => {
-  const { app, response } = requireGitHubApp(c);
-  if (!app) return response;
-
-  const body = (await c.req.json().catch(() => ({}))) as Record<
-    string,
-    unknown
-  >;
-  const installationId = String(body.installationId ?? "").trim();
-  const name = String(body.name ?? "").trim();
-  const isPrivate = body.private !== false; // default to private
-  const description =
-    typeof body.description === "string" ? body.description : undefined;
-
-  if (!installationId || !name) {
-    return c.json({ error: "Missing installationId or name." }, 400);
-  }
-  if (!/^[A-Za-z0-9_.-]+$/.test(name)) {
-    return c.json(
-      {
-        error:
-          "Repository name can only contain letters, numbers, hyphens, underscores, and dots.",
-      },
-      400,
-    );
-  }
-
-  const installations = await listStoredInstallations(c.var.services.settings);
-  const installation = installations.find(
-    (i) => i.installationId === installationId,
-  );
-  if (!installation) {
-    return c.json({ error: "Unknown installation." }, 404);
-  }
-
-  try {
-    const repo = await createRepoForInstallation(app, installationId, {
-      owner: installation.account.login,
-      ownerType: installation.account.type,
-      name,
-      private: isPrivate,
-      description,
-    });
-    return c.json({ repo });
-  } catch (err) {
-    const detail = err instanceof Error ? err.message : String(err);
-    // Personal-account limitation is a 400, not 500 — caller can hint.
-    const status = /personal account/i.test(detail) ? 400 : 500;
-    return c.json({ error: detail }, status);
   }
 });
 

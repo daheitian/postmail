@@ -18,11 +18,6 @@ msgstr ""
 msgid "/* Your custom CSS here */"
 msgstr "/* 在此放入您的自訂 CSS */"
 
-#. @context: GitHub sync picker — entry that opens the create-repo dialog
-#: src/routes/dash/settings.tsx
-msgid "+ Create new repository"
-msgstr ""
-
 #. @context: GitHub sync picker — entry at the bottom of the owner dropdown that starts a new install flow
 #: src/routes/dash/settings.tsx
 msgid "+ Install on another account"
@@ -233,10 +228,8 @@ msgstr "內建連結"
 #. @context: Button to cancel settings changes
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: GitHub sync picker — cancel action
-#. @context: GitHub sync picker — create dialog cancel button
 #: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
-#: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -400,14 +393,9 @@ msgstr "無法刪除。請稍後再試。"
 msgid "Couldn't save. Try again in a moment."
 msgstr "無法儲存。請稍後再試。"
 
-#. @context: GitHub sync picker — create dialog submit button
+#. @context: GitHub sync picker — entry that opens github.com/new in a new tab
 #: src/routes/dash/settings.tsx
-msgid "Create"
-msgstr ""
-
-#. @context: GitHub sync picker — create dialog title
-#: src/routes/dash/settings.tsx
-msgid "Create a new repository"
+msgid "Create a new repository on GitHub"
 msgstr ""
 
 #. @context: Label for curl example
@@ -429,11 +417,6 @@ msgstr "在 GitHub 上建立一個"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Created {date}"
 msgstr "建立於 {date}"
-
-#. @context: GitHub sync picker — explanatory hint for the create-repo entry
-#: src/routes/dash/settings.tsx
-msgid "Creates a new repository on this account."
-msgstr ""
 
 #. @context: Badge indicating the current active session
 #: src/ui/dash/settings/SessionsContent.tsx
@@ -549,11 +532,6 @@ msgstr "示範模式會隱藏會話、密碼更改與帳號刪除。匯出功能
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Demo sites always stay hidden from search engines."
 msgstr "示範網站會始終對搜尋引擎保持隱藏。"
-
-#. @context: GitHub sync picker — create dialog description field
-#: src/routes/dash/settings.tsx
-msgid "Description (optional)"
-msgstr ""
 
 #. @context: Color theme preview collection label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -853,11 +831,6 @@ msgstr "最新 RSS 來源"
 msgid "lets you override any theme variable."
 msgstr "讓您覆寫任何主題變數。"
 
-#. @context: GitHub sync picker — help text under the repo name input
-#: src/routes/dash/settings.tsx
-msgid "Letters, numbers, hyphens, underscores, and dots only."
-msgstr ""
-
 #. @context: Theme mode option label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Light"
@@ -942,11 +915,6 @@ msgstr "更多"
 #: src/routes/dash/custom-urls.tsx
 msgid "More actions"
 msgstr "更多操作"
-
-#. @context: GitHub sync picker — create dialog name field
-#: src/routes/dash/settings.tsx
-msgid "Name"
-msgstr ""
 
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1098,11 +1066,6 @@ msgstr "永久刪除所有資料並重設部落格"
 msgid "Personal Access Token"
 msgstr "個人存取權杖"
 
-#. @context: GitHub sync picker — shown when the selected owner is a personal account and create isn't supported
-#: src/routes/dash/settings.tsx
-msgid "Personal accounts can't be created here. Create the repository on GitHub, then come back to select it."
-msgstr ""
-
 #. @context: GitHub sync picker — page heading
 #: src/routes/dash/settings.tsx
 msgid "Pick a repository"
@@ -1131,8 +1094,6 @@ msgid "Post"
 msgstr "文章"
 
 #. @context: GitHub sync picker — badge next to private repos
-#. @context: GitHub sync picker — visibility option
-#: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
 msgid "Private"
 msgstr ""
@@ -1141,11 +1102,6 @@ msgstr ""
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "處理中..."
-
-#. @context: GitHub sync picker — visibility option
-#: src/routes/dash/settings.tsx
-msgid "Public"
-msgstr ""
 
 #. @context: Post status badge - published
 #: src/ui/dash/StatusBadge.tsx
@@ -1193,6 +1149,11 @@ msgstr "重新導向類型"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Redirects, vanity paths, and URL control"
 msgstr "重新導向、自訂路徑與網址控制"
+
+#. @context: GitHub sync picker — tooltip for the refresh button next to the search input
+#: src/routes/dash/settings.tsx
+msgid "Refresh repository list"
+msgstr ""
 
 #. @context: Button to remove the blog avatar
 #. @context: Remove system item from navigation
@@ -1579,15 +1540,15 @@ msgstr "使用最新的公開貼文作為 /feed。"
 msgid "View"
 msgstr "檢視"
 
-#. @context: GitHub sync picker — create dialog visibility field
-#: src/routes/dash/settings.tsx
-msgid "Visibility"
-msgstr ""
-
 #. @context: Prefix before Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
 msgstr "想要更細緻的控制？"
+
+#. @context: GitHub sync picker — hint under the create-on-github entry. Placeholder {name} is the suggested repo name.
+#: src/routes/dash/settings.tsx
+msgid "We'll prefill the name {name}. The list refreshes on return."
+msgstr ""
 
 #. @context: Description for backup and restore documentation link in account settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
