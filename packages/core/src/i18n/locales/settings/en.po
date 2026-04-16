@@ -18,6 +18,16 @@ msgstr ""
 msgid "/* Your custom CSS here */"
 msgstr "/* Your custom CSS here */"
 
+#. @context: GitHub sync picker — entry that opens the create-repo dialog
+#: src/routes/dash/settings.tsx
+msgid "+ Create new repository"
+msgstr "+ Create new repository"
+
+#. @context: GitHub sync picker — entry at the bottom of the owner dropdown that starts a new install flow
+#: src/routes/dash/settings.tsx
+msgid "+ Install on another account"
+msgstr "+ Install on another account"
+
 #. @context: Redirect type option
 #: src/routes/dash/custom-urls.tsx
 msgid "301 (Permanent)"
@@ -39,9 +49,11 @@ msgid "About this blog"
 msgstr "About this blog"
 
 #. @context: Breadcrumb label
+#. @context: GitHub sync picker — owner dropdown label
 #. @context: Page title for the account settings menu
 #. @context: Settings group label for account settings
 #. @context: Settings item — account settings
+#: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
 #: src/ui/dash/settings/AccountMenuContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -220,8 +232,12 @@ msgstr "Built-in links"
 #. @context: Button to cancel form
 #. @context: Button to cancel settings changes
 #. @context: Button to cancel unsaved changes and revert to original values
+#. @context: GitHub sync picker — cancel action
+#. @context: GitHub sync picker — create dialog cancel button
 #: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/DangerZone.tsx
@@ -246,10 +262,20 @@ msgstr "Change Password"
 msgid "Changing this updates what subscribers get from /feed."
 msgstr "Changing this updates what subscribers get from /feed."
 
+#. @context: GitHub sync picker — status text while classifying the picked repo
+#: src/routes/dash/settings.tsx
+msgid "Checking repository…"
+msgstr "Checking repository…"
+
 #. @context: Font theme settings description
 #: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 msgstr "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
+
+#. @context: GitHub sync picker — page subtitle
+#: src/routes/dash/settings.tsx
+msgid "Choose the GitHub account and repository that should back up this site."
+msgstr "Choose the GitHub account and repository that should back up this site."
 
 #. @context: Settings form field for CJK serif font selection
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -291,6 +317,8 @@ msgid "Confirm New Password"
 msgstr "Confirm New Password"
 
 #. @context: Button label to connect GitHub repository on GitHub Sync settings
+#. @context: GitHub sync picker — primary action button
+#: src/routes/dash/settings.tsx
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Connect"
 msgstr "Connect"
@@ -314,6 +342,16 @@ msgstr "Connected via GitHub App"
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Connected via Personal Access Token"
 msgstr "Connected via Personal Access Token"
+
+#. @context: GitHub sync picker — explanatory body for foreign-repo confirmation. Placeholder {repo} is the owner/repo slug.
+#: src/routes/dash/settings.tsx
+msgid "Connecting will sync your site onto {repo}'s default branch on top of its existing history. Existing files outside Jant's managed paths are kept. This can't be undone."
+msgstr "Connecting will sync your site onto {repo}'s default branch on top of its existing history. Existing files outside Jant's managed paths are kept. This can't be undone."
+
+#. @context: GitHub sync picker — primary action button while a request is in flight
+#: src/routes/dash/settings.tsx
+msgid "Connecting…"
+msgstr "Connecting…"
 
 #. @context: Help text under the site language select
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -347,6 +385,11 @@ msgstr "Copy your token now — it won't be shown again."
 msgid "Could not copy. Try again."
 msgstr "Could not copy. Try again."
 
+#. @context: GitHub sync picker — generic failure message for Connect
+#: src/routes/dash/settings.tsx
+msgid "Couldn't connect. Check the error and try again."
+msgstr "Couldn't connect. Check the error and try again."
+
 #. @context: Error toast when nav delete fails
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Couldn't delete. Try again in a moment."
@@ -356,6 +399,16 @@ msgstr "Couldn't delete. Try again in a moment."
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Couldn't save. Try again in a moment."
 msgstr "Couldn't save. Try again in a moment."
+
+#. @context: GitHub sync picker — create dialog submit button
+#: src/routes/dash/settings.tsx
+msgid "Create"
+msgstr "Create"
+
+#. @context: GitHub sync picker — create dialog title
+#: src/routes/dash/settings.tsx
+msgid "Create a new repository"
+msgstr "Create a new repository"
 
 #. @context: Label for curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -376,6 +429,11 @@ msgstr "Create one on GitHub"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Created {date}"
 msgstr "Created {date}"
+
+#. @context: GitHub sync picker — explanatory hint for the create-repo entry
+#: src/routes/dash/settings.tsx
+msgid "Creates a new repository on this account."
+msgstr "Creates a new repository on this account."
 
 #. @context: Badge indicating the current active session
 #: src/ui/dash/settings/SessionsContent.tsx
@@ -492,6 +550,11 @@ msgstr "Demo mode hides sessions, password changes, and account deletion. Export
 msgid "Demo sites always stay hidden from search engines."
 msgstr "Demo sites always stay hidden from search engines."
 
+#. @context: GitHub sync picker — create dialog description field
+#: src/routes/dash/settings.tsx
+msgid "Description (optional)"
+msgstr "Description (optional)"
+
 #. @context: Color theme preview collection label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Design"
@@ -563,6 +626,11 @@ msgstr "e.g. iOS Shortcuts"
 #: src/ui/dash/ActionButtons.tsx
 msgid "Edit"
 msgstr "Edit"
+
+#. @context: GitHub sync picker — shown when the selected repo has no commits
+#: src/routes/dash/settings.tsx
+msgid "Empty repository. Ready to connect."
+msgstr "Empty repository. Ready to connect."
 
 #. @context: Confirmation text after downloading the site export in delete flow
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -785,6 +853,11 @@ msgstr "Latest feed"
 msgid "lets you override any theme variable."
 msgstr "lets you override any theme variable."
 
+#. @context: GitHub sync picker — help text under the repo name input
+#: src/routes/dash/settings.tsx
+msgid "Letters, numbers, hyphens, underscores, and dots only."
+msgstr "Letters, numbers, hyphens, underscores, and dots only."
+
 #. @context: Theme mode option label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Light"
@@ -809,6 +882,11 @@ msgstr "List posts:"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Load a serif font optimized for Chinese, Japanese, or Korean content."
 msgstr "Load a serif font optimized for Chinese, Japanese, or Korean content."
+
+#. @context: GitHub sync picker — loading state
+#: src/routes/dash/settings.tsx
+msgid "Loading…"
+msgstr "Loading…"
 
 #. @context: Label for the canonical /feed URL
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -865,6 +943,11 @@ msgstr "More"
 msgid "More actions"
 msgstr "More actions"
 
+#. @context: GitHub sync picker — create dialog name field
+#: src/routes/dash/settings.tsx
+msgid "Name"
+msgstr "Name"
+
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Name, metadata, language, and search defaults"
@@ -916,6 +999,11 @@ msgstr "New Custom URL"
 msgid "New Password"
 msgstr "New Password"
 
+#. @context: GitHub sync picker — shown when the owner list is empty
+#: src/routes/dash/settings.tsx
+msgid "No accounts authorized yet"
+msgstr "No accounts authorized yet"
+
 #. @context: Empty state when no sessions exist (shouldn't normally appear)
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "No active sessions right now. Signed-in devices show up here."
@@ -941,6 +1029,11 @@ msgstr "No file selected. Choose a file to upload."
 msgid "No navigation items yet. Add links or enable system items below."
 msgstr "No navigation items yet. Add links or enable system items below."
 
+#. @context: GitHub sync picker — empty state when search returns nothing
+#: src/routes/dash/settings.tsx
+msgid "No repositories match."
+msgstr "No repositories match."
+
 #. @context: Shown when no sync has happened yet on GitHub Sync status
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Not synced yet"
@@ -957,6 +1050,11 @@ msgstr "Note"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
 msgstr "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
+
+#. @context: GitHub sync picker — placeholder text showing the expected input shape
+#: src/routes/dash/settings.tsx
+msgid "owner/repo"
+msgstr "owner/repo"
 
 #. @context: Settings item description for color theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1000,6 +1098,21 @@ msgstr "Permanently delete all data and reset the blog"
 msgid "Personal Access Token"
 msgstr "Personal Access Token"
 
+#. @context: GitHub sync picker — shown when the selected owner is a personal account and create isn't supported
+#: src/routes/dash/settings.tsx
+msgid "Personal accounts can't be created here. Create the repository on GitHub, then come back to select it."
+msgstr "Personal accounts can't be created here. Create the repository on GitHub, then come back to select it."
+
+#. @context: GitHub sync picker — page heading
+#: src/routes/dash/settings.tsx
+msgid "Pick a repository"
+msgstr "Pick a repository"
+
+#. @context: GitHub sync picker — repo dropdown placeholder before an owner is chosen
+#: src/routes/dash/settings.tsx
+msgid "Pick an account first"
+msgstr "Pick an account first"
+
 #. @context: Description in collection picker section
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours."
@@ -1017,10 +1130,22 @@ msgstr "Pinned"
 msgid "Post"
 msgstr "Post"
 
+#. @context: GitHub sync picker — badge next to private repos
+#. @context: GitHub sync picker — visibility option
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Private"
+msgstr "Private"
+
 #. @context: Avatar upload button text while generating favicon variants
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "Processing..."
+
+#. @context: GitHub sync picker — visibility option
+#: src/routes/dash/settings.tsx
+msgid "Public"
+msgstr "Public"
 
 #. @context: Post status badge - published
 #: src/ui/dash/StatusBadge.tsx
@@ -1091,8 +1216,10 @@ msgstr "Remove this avatar? Your favicon and header icon will go back to the def
 msgid "Remove this collection from navigation? The collection itself won't be deleted."
 msgstr "Remove this collection from navigation? The collection itself won't be deleted."
 
+#. @context: GitHub sync picker — repo dropdown label
 #. @context: Label for GitHub repository input on GitHub Sync settings
 #. @context: Label for connected repository on GitHub Sync status
+#: src/routes/dash/settings.tsx
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Repository"
@@ -1134,6 +1261,11 @@ msgstr "Save CSS"
 msgid "Search"
 msgstr "Search"
 
+#. @context: GitHub sync picker — search input placeholder
+#: src/routes/dash/settings.tsx
+msgid "Search repositories"
+msgstr "Search repositories"
+
 #. @context: Toast after saving search settings
 #. @context: Toast after saving search settings
 #: src/routes/dash/settings.tsx
@@ -1160,6 +1292,16 @@ msgstr "Security token missing. Refresh the page and try again."
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "See where you're signed in and revoke old sessions"
 msgstr "See where you're signed in and revoke old sessions"
+
+#. @context: GitHub sync picker — repo dropdown placeholder
+#: src/routes/dash/settings.tsx
+msgid "Select a repository"
+msgstr "Select a repository"
+
+#. @context: GitHub sync picker — owner dropdown placeholder when nothing is selected
+#: src/routes/dash/settings.tsx
+msgid "Select an account"
+msgstr "Select an account"
 
 #. @context: Error shown when session management is blocked in demo mode
 #: src/routes/dash/settings.tsx
@@ -1189,6 +1331,11 @@ msgstr "Settings"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Show \"Build with Jant\" at the bottom of the home page"
 msgstr "Show \"Build with Jant\" at the bottom of the home page"
+
+#. @context: GitHub sync picker — paginated repo count hint. Placeholders {shown} and {total} are integers.
+#: src/routes/dash/settings.tsx
+msgid "Showing {shown} of {total}"
+msgstr "Showing {shown} of {total}"
 
 #. @context: Settings link — sign out action
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1287,6 +1434,26 @@ msgstr "This hosted site signs in through {providerLabel}. Manage password and h
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
 msgstr "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
 
+#. @context: GitHub sync picker — confirmation card heading for foreign repos
+#: src/routes/dash/settings.tsx
+msgid "This repository already has commits"
+msgstr "This repository already has commits"
+
+#. @context: GitHub sync picker — heading above the foreign-repo confirmation
+#: src/routes/dash/settings.tsx
+msgid "This repository has existing content."
+msgstr "This repository has existing content."
+
+#. @context: GitHub sync picker — blocking message when marker belongs to another site. Placeholder {host} is the other site's host.
+#: src/routes/dash/settings.tsx
+msgid "This repository is already backing up another Jant site ({host}). Pick a different repository."
+msgstr "This repository is already backing up another Jant site ({host}). Pick a different repository."
+
+#. @context: GitHub sync picker — shown when the selected repo's marker matches this site
+#: src/routes/dash/settings.tsx
+msgid "This repository is already backing up this site."
+msgstr "This repository is already backing up this site."
+
 #. @context: Warning text on account deletion page
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "This will permanently delete all your data — posts, media, collections, settings, and your account. Your blog will be reset to its initial setup state. This cannot be undone."
@@ -1317,6 +1484,11 @@ msgstr "Token name"
 msgid "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
 msgstr "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
 
+#. @context: GitHub sync picker — retry button
+#: src/routes/dash/settings.tsx
+msgid "Try again"
+msgstr "Try again"
+
 #. @context: Intro text on the settings home page below the title
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Tune how your site looks, reads, and runs."
@@ -1327,10 +1499,20 @@ msgstr "Tune how your site looks, reads, and runs."
 msgid "Type"
 msgstr "Type"
 
+#. @context: GitHub sync picker — label above the typed-confirmation input
+#: src/routes/dash/settings.tsx
+msgid "Type {repo} to confirm"
+msgstr "Type {repo} to confirm"
+
 #. @context: Instruction to type confirmation phrase before deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Type the following phrase to confirm:"
 msgstr "Type the following phrase to confirm:"
+
+#. @context: GitHub sync picker — hint telling the user typing will search the full list
+#: src/routes/dash/settings.tsx
+msgid "type to search all"
+msgstr "type to search all"
 
 #. @context: Settings item description for font theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1396,6 +1578,11 @@ msgstr "Uses the latest public posts for /feed."
 #: src/ui/dash/ActionButtons.tsx
 msgid "View"
 msgstr "View"
+
+#. @context: GitHub sync picker — create dialog visibility field
+#: src/routes/dash/settings.tsx
+msgid "Visibility"
+msgstr "Visibility"
 
 #. @context: Prefix before Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx

@@ -61,7 +61,6 @@ import {
   buildAddInstallationUrl,
   createRepoForInstallation,
   getInstallation,
-  listInstallationRepos,
   listInstallationReposPage,
   searchInstallationRepos,
 } from "../../lib/github-app.js";
@@ -1496,16 +1495,9 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
     // installation_id from the URL, just without the owner list.
   }
 
-  let repos: Awaited<ReturnType<typeof listInstallationRepos>>;
-  try {
-    repos = await listInstallationRepos(app, installationId);
-  } catch (err) {
-    const detail = err instanceof Error ? err.message : String(err);
-    return c.text(`Could not list installation repositories: ${detail}`, 500);
-  }
-
   const navData = await getNavigationData(c);
   const base = publicPath(c, "/settings/github-sync");
+  const labels = buildRepoPickerLabels(c);
 
   return renderPublicPage(c, {
     title: buildPageTitle("GitHub Sync — Pick Repository", navData.siteName),
@@ -1517,55 +1509,312 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
           parentHref={publicPath(c, "/settings")}
           current={breadcrumbLabel(c, "githubSync")}
         />
-        <div class="flex flex-col gap-6 max-w-form">
-          <div>
-            <h2 class="text-lg font-medium mb-1">Pick a repository</h2>
-            <p class="text-sm text-muted-foreground">
-              The GitHub App is installed. Choose which repository should back
-              up this site.
-            </p>
+        <jant-repo-picker
+          labels={labels}
+          api-base={`${base}/app`}
+          connect-url={`${base}/app/connect`}
+          install-url={`${base}/app/install`}
+          cancel-url={publicPath(c, "/settings")}
+        >
+          {/* SSR fallback while the Lit component upgrades. */}
+          <div class="flex flex-col gap-6 max-w-form">
+            <div>
+              <h2 class="text-lg font-medium mb-1">Pick a repository</h2>
+              <p class="text-sm text-muted-foreground">Loading repositories…</p>
+            </div>
           </div>
-          {repos.length === 0 ? (
-            <p class="text-sm text-muted-foreground">
-              No repositories are accessible to this installation. Grant the App
-              access to a repository on GitHub, then reload this page.
-            </p>
-          ) : (
-            <form
-              class="flex flex-col gap-3"
-              method="post"
-              action={`${base}/app/connect`}
-            >
-              <input
-                type="hidden"
-                name="installationId"
-                value={installationId}
-              />
-              <div class="field">
-                <label class="label" for="app-repo">
-                  Repository
-                </label>
-                <select id="app-repo" name="repo" class="input" required>
-                  {repos.map((r) => (
-                    <option value={r.fullName}>
-                      {r.fullName}
-                      {r.private ? " (private)" : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div class="flex mt-2">
-                <button type="submit" class="btn">
-                  Connect
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
+        </jant-repo-picker>
       </>
     ),
   });
 });
+
+/**
+ * Build the JSON-serialized labels bundle for the repo picker component.
+ *
+ * The component is light-DOM Lit and can't call Lingui at render time,
+ * so all user-facing copy is translated server-side and passed in via
+ * a single `labels` attribute (see jant-repo-picker-types.ts for shape).
+ */
+function buildRepoPickerLabels(c: Context<Env>): string {
+  const i18n = getI18n(c);
+  return JSON.stringify({
+    pageTitle: i18n._(
+      msg({
+        message: "Pick a repository",
+        comment: "@context: GitHub sync picker — page heading",
+      }),
+    ),
+    pageSubtitle: i18n._(
+      msg({
+        message:
+          "Choose the GitHub account and repository that should back up this site.",
+        comment: "@context: GitHub sync picker — page subtitle",
+      }),
+    ),
+    ownerLabel: i18n._(
+      msg({
+        message: "Account",
+        comment: "@context: GitHub sync picker — owner dropdown label",
+      }),
+    ),
+    ownerPlaceholder: i18n._(
+      msg({
+        message: "Select an account",
+        comment:
+          "@context: GitHub sync picker — owner dropdown placeholder when nothing is selected",
+      }),
+    ),
+    ownerEmpty: i18n._(
+      msg({
+        message: "No accounts authorized yet",
+        comment:
+          "@context: GitHub sync picker — shown when the owner list is empty",
+      }),
+    ),
+    installAnother: i18n._(
+      msg({
+        message: "+ Install on another account",
+        comment:
+          "@context: GitHub sync picker — entry at the bottom of the owner dropdown that starts a new install flow",
+      }),
+    ),
+    repositoryLabel: i18n._(
+      msg({
+        message: "Repository",
+        comment: "@context: GitHub sync picker — repo dropdown label",
+      }),
+    ),
+    repoPlaceholderNoOwner: i18n._(
+      msg({
+        message: "Pick an account first",
+        comment:
+          "@context: GitHub sync picker — repo dropdown placeholder before an owner is chosen",
+      }),
+    ),
+    repoPlaceholder: i18n._(
+      msg({
+        message: "Select a repository",
+        comment: "@context: GitHub sync picker — repo dropdown placeholder",
+      }),
+    ),
+    repoSearchPlaceholder: i18n._(
+      msg({
+        message: "Search repositories",
+        comment: "@context: GitHub sync picker — search input placeholder",
+      }),
+    ),
+    repoEmpty: i18n._(
+      msg({
+        message: "No repositories match.",
+        comment:
+          "@context: GitHub sync picker — empty state when search returns nothing",
+      }),
+    ),
+    repoLoading: i18n._(
+      msg({
+        message: "Loading…",
+        comment: "@context: GitHub sync picker — loading state",
+      }),
+    ),
+    repoShowingOf: i18n._(
+      msg({
+        message: "Showing {shown} of {total}",
+        comment:
+          "@context: GitHub sync picker — paginated repo count hint. Placeholders {shown} and {total} are integers.",
+      }),
+    ),
+    repoSearchHint: i18n._(
+      msg({
+        message: "type to search all",
+        comment:
+          "@context: GitHub sync picker — hint telling the user typing will search the full list",
+      }),
+    ),
+    createNewRepo: i18n._(
+      msg({
+        message: "+ Create new repository",
+        comment:
+          "@context: GitHub sync picker — entry that opens the create-repo dialog",
+      }),
+    ),
+    createNewRepoHint: i18n._(
+      msg({
+        message: "Creates a new repository on this account.",
+        comment:
+          "@context: GitHub sync picker — explanatory hint for the create-repo entry",
+      }),
+    ),
+    createNewDialogTitle: i18n._(
+      msg({
+        message: "Create a new repository",
+        comment: "@context: GitHub sync picker — create dialog title",
+      }),
+    ),
+    createNewNameLabel: i18n._(
+      msg({
+        message: "Name",
+        comment: "@context: GitHub sync picker — create dialog name field",
+      }),
+    ),
+    createNewNameHelp: i18n._(
+      msg({
+        message: "Letters, numbers, hyphens, underscores, and dots only.",
+        comment:
+          "@context: GitHub sync picker — help text under the repo name input",
+      }),
+    ),
+    createNewDescriptionLabel: i18n._(
+      msg({
+        message: "Description (optional)",
+        comment:
+          "@context: GitHub sync picker — create dialog description field",
+      }),
+    ),
+    createNewVisibilityLabel: i18n._(
+      msg({
+        message: "Visibility",
+        comment:
+          "@context: GitHub sync picker — create dialog visibility field",
+      }),
+    ),
+    createNewVisibilityPrivate: i18n._(
+      msg({
+        message: "Private",
+        comment: "@context: GitHub sync picker — visibility option",
+      }),
+    ),
+    createNewVisibilityPublic: i18n._(
+      msg({
+        message: "Public",
+        comment: "@context: GitHub sync picker — visibility option",
+      }),
+    ),
+    createNewSubmit: i18n._(
+      msg({
+        message: "Create",
+        comment: "@context: GitHub sync picker — create dialog submit button",
+      }),
+    ),
+    createNewCancel: i18n._(
+      msg({
+        message: "Cancel",
+        comment: "@context: GitHub sync picker — create dialog cancel button",
+      }),
+    ),
+    createNewPersonalAccountHint: i18n._(
+      msg({
+        message:
+          "Personal accounts can't be created here. Create the repository on GitHub, then come back to select it.",
+        comment:
+          "@context: GitHub sync picker — shown when the selected owner is a personal account and create isn't supported",
+      }),
+    ),
+    classifyLoading: i18n._(
+      msg({
+        message: "Checking repository…",
+        comment:
+          "@context: GitHub sync picker — status text while classifying the picked repo",
+      }),
+    ),
+    classificationEmpty: i18n._(
+      msg({
+        message: "Empty repository. Ready to connect.",
+        comment:
+          "@context: GitHub sync picker — shown when the selected repo has no commits",
+      }),
+    ),
+    classificationOwned: i18n._(
+      msg({
+        message: "This repository is already backing up this site.",
+        comment:
+          "@context: GitHub sync picker — shown when the selected repo's marker matches this site",
+      }),
+    ),
+    classificationOwnedByOther: i18n._(
+      msg({
+        message:
+          "This repository is already backing up another Jant site ({host}). Pick a different repository.",
+        comment:
+          "@context: GitHub sync picker — blocking message when marker belongs to another site. Placeholder {host} is the other site's host.",
+      }),
+    ),
+    classificationForeign: i18n._(
+      msg({
+        message: "This repository has existing content.",
+        comment:
+          "@context: GitHub sync picker — heading above the foreign-repo confirmation",
+      }),
+    ),
+    confirmHeading: i18n._(
+      msg({
+        message: "This repository already has commits",
+        comment:
+          "@context: GitHub sync picker — confirmation card heading for foreign repos",
+      }),
+    ),
+    confirmBody: i18n._(
+      msg({
+        message:
+          "Connecting will sync your site onto {repo}'s default branch on top of its existing history. Existing files outside Jant's managed paths are kept. This can't be undone.",
+        comment:
+          "@context: GitHub sync picker — explanatory body for foreign-repo confirmation. Placeholder {repo} is the owner/repo slug.",
+      }),
+    ),
+    confirmInputLabel: i18n._(
+      msg({
+        message: "Type {repo} to confirm",
+        comment:
+          "@context: GitHub sync picker — label above the typed-confirmation input",
+      }),
+    ),
+    confirmInputPlaceholder: i18n._(
+      msg({
+        message: "owner/repo",
+        comment:
+          "@context: GitHub sync picker — placeholder text showing the expected input shape",
+      }),
+    ),
+    cancel: i18n._(
+      msg({
+        message: "Cancel",
+        comment: "@context: GitHub sync picker — cancel action",
+      }),
+    ),
+    connect: i18n._(
+      msg({
+        message: "Connect",
+        comment: "@context: GitHub sync picker — primary action button",
+      }),
+    ),
+    connecting: i18n._(
+      msg({
+        message: "Connecting…",
+        comment:
+          "@context: GitHub sync picker — primary action button while a request is in flight",
+      }),
+    ),
+    privateBadge: i18n._(
+      msg({
+        message: "Private",
+        comment: "@context: GitHub sync picker — badge next to private repos",
+      }),
+    ),
+    connectionFailed: i18n._(
+      msg({
+        message: "Couldn't connect. Check the error and try again.",
+        comment:
+          "@context: GitHub sync picker — generic failure message for Connect",
+      }),
+    ),
+    retry: i18n._(
+      msg({
+        message: "Try again",
+        comment: "@context: GitHub sync picker — retry button",
+      }),
+    ),
+  }).replace(/</g, "\\u003c");
+}
 
 /**
  * Finalize the App connection: validate access, classify the target repo

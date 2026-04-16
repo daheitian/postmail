@@ -18,6 +18,7 @@ import "./client/compose-shortcuts.js";
 import "./client/components/jant-settings-general.js";
 import "./client/components/jant-settings-avatar.js";
 import "./client/settings-bridge.js";
+import "./client/components/jant-repo-picker.js";
 import "./client/components/jant-collection-form.js";
 import "./client/components/jant-collection-directory.js";
 import "./client/collection-form-bridge.js";
