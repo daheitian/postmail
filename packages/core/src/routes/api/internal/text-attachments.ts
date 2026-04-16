@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { requireInternalAdminApi } from "../../../middleware/auth.js";
+import { getConfiguredStorageDriver } from "../../../lib/env.js";
 import { parseValidated } from "../../../lib/schemas.js";
 import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
@@ -40,9 +41,13 @@ internalTextAttachmentsRoutes.post(
       : {};
     const body = parseValidated(MigrateEnvelopesSchema, rawBody);
 
+    // Internal admin routes are mounted before the `withConfig` middleware,
+    // so `c.var.appConfig` is undefined here. Read the driver straight from
+    // env — same source `createStorageDriver` uses to build `c.var.storage`,
+    // so the string we pass matches the bucket the driver writes to.
     const result = await c.var.services.media.migrateEnvelopeTextAttachments({
       storage,
-      storageDriver: c.var.appConfig.storageDriver,
+      storageDriver: getConfiguredStorageDriver(c.env),
       limit: body.limit,
     });
 
