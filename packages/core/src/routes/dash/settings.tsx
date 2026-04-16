@@ -68,6 +68,10 @@ import {
   upsertStoredInstallation,
 } from "../../lib/github-sync-installations.js";
 import {
+  resolveJobQueue,
+  triggerGitHubSync,
+} from "../../lib/github-sync-trigger.js";
+import {
   generateInstallNonce,
   signInstallState,
   verifyInstallState,
@@ -1350,6 +1354,14 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
     );
   }
 
+  // Kick off an initial background push so "Last sync" doesn't sit on
+  // "Not synced yet" until the user's next edit.
+  await triggerGitHubSync(
+    resolveJobQueue(c.env),
+    c.var.services.settings,
+    c.var.currentSite.id,
+  );
+
   return dsRedirect(publicPath(c, "/settings/github-sync"));
 });
 
@@ -1895,6 +1907,17 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
     const msg = `Connected, but webhook creation failed: ${detail}. You may need to create it manually.`;
     return wantsJson ? c.json({ error: msg }, 500) : c.text(msg, 500);
   }
+
+  // Kick off an initial background push so the user's content lands in
+  // the repo immediately — otherwise the status page shows "Not synced
+  // yet" until the first content edit, which feels broken. Awaiting the
+  // enqueue (not the sync itself) is fast and lets us surface queue
+  // errors synchronously; the actual push runs in the queue consumer.
+  await triggerGitHubSync(
+    resolveJobQueue(c.env),
+    c.var.services.settings,
+    c.var.currentSite.id,
+  );
 
   const redirect = publicPath(c, "/settings/github-sync");
   return wantsJson ? c.json({ ok: true, redirect }) : c.redirect(redirect);
