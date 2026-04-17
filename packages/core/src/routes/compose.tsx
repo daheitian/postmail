@@ -15,6 +15,7 @@ import { CreatePostApiSchema, CreateThreadApiSchema } from "../lib/schemas.js";
 import { sse, dsToast } from "../lib/sse.js";
 import { getI18n } from "../i18n/index.js";
 import { toPublicPath } from "../lib/url.js";
+import { triggerGitHubSyncInline } from "../lib/github-sync-trigger.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -104,6 +105,9 @@ composeRoutes.post("/", async (c) => {
   );
 
   const isDraft = (data.status ?? "published") === "draft";
+
+  // Trigger GitHub Sync in background (no-op when sync isn't enabled).
+  await triggerGitHubSyncInline(c);
 
   // ── JSON response mode (used by Lit compose bridge) ──────────────
   if (wantsJson) {
@@ -239,6 +243,9 @@ composeRoutes.post("/thread", async (c) => {
       500,
     );
   }
+
+  // Trigger GitHub Sync in background (no-op when sync isn't enabled).
+  await triggerGitHubSyncInline(c);
 
   if (isDraft) {
     return c.json({
