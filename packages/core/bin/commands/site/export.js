@@ -23,7 +23,7 @@ function describeLocalExportSource(input) {
 }
 
 async function exportRemoteSite(url, token) {
-  const response = await fetch(`${url.replace(/\/$/, "")}/api/export/zola`, {
+  const response = await fetch(`${url.replace(/\/$/, "")}/api/export/hugo`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -247,7 +247,7 @@ async function exportLocalSite(env = process.env) {
     );
 
     return {
-      zip: await exportService.generateZolaSite(),
+      zip: await exportService.generateHugoSite(),
       assetLoader: createLocalAssetLoader(runtime.storage, appConfig),
       source: describeLocalExportSource({
         site: runtime.currentSite,
@@ -284,7 +284,7 @@ export async function run(argv) {
   if (values.help) {
     console.log("Usage: jant site export [--url <url>] [options]");
     console.log("");
-    console.log("Export a Jant site as a Zola ZIP archive or directory.");
+    console.log("Export a Jant site as a Hugo ZIP archive or directory.");
     console.log("");
     console.log("Modes:");
     console.log(
@@ -300,7 +300,7 @@ export async function run(argv) {
       "  --output, -o    Output ZIP path (default: jant-site-export.zip)",
     );
     console.log(
-      "  --directory, -d Export directly to a directory for zola serve/debugging",
+      "  --directory, -d Export directly to a directory for hugo serve/debugging",
     );
     console.log(
       "  --localize-media    Download referenced media into static/media/ (default: on)",
@@ -316,7 +316,7 @@ export async function run(argv) {
     console.log("");
     console.log("Examples:");
     console.log("  jant site export --directory ./jant-site");
-    console.log("  cd ./jant-site && zola serve");
+    console.log("  cd ./jant-site && hugo serve");
     process.exit(0);
   }
 
@@ -392,7 +392,7 @@ export async function run(argv) {
       writeFileSync(fullPath, Buffer.from(bytes));
     }
     console.log(`Exported site from ${source} to ${values.directory}`);
-    console.log(`Preview with: cd ${values.directory} && zola serve`);
+    console.log(`Preview with: cd ${values.directory} && hugo serve`);
   } else {
     console.log(`Writing ${values.output}...`);
     writeFileSync(output, Buffer.from(zip));

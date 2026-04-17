@@ -13,7 +13,7 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const exportApiRoutes = new Hono<Env>();
 
-exportApiRoutes.post("/zola", requireAuthApi(), async (c) => {
+exportApiRoutes.post("/hugo", requireAuthApi(), async (c) => {
   const { services, appConfig, allSettings, themeStyle } = c.var;
   const navItems = await services.navItems.list();
   const appleTouchKey = allSettings["SITE_FAVICON_APPLE_TOUCH"] ?? "";
@@ -52,7 +52,7 @@ exportApiRoutes.post("/zola", requireAuthApi(), async (c) => {
       storage: c.var.storage,
     },
   );
-  const zip = await exportService.generateZolaSite();
+  const zip = await exportService.generateHugoSite();
   return new Response(zip, {
     headers: {
       "Content-Type": "application/zip",

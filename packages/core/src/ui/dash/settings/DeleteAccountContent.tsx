@@ -119,7 +119,7 @@ export function DeleteAccountContent({
             data-attr:disabled="$_downloadLoading"
             data-on:click__prevent={`
               $_downloadLoading = true;
-              fetch('${toPublicPath("/api/export/zola", sitePathPrefix)}', {method: 'POST', credentials: 'same-origin'})
+              fetch('${toPublicPath("/api/export/hugo", sitePathPrefix)}', {method: 'POST', credentials: 'same-origin'})
                 .then(function(r) { if (!r.ok) throw new Error(); return r.blob() })
                 .then(function(b) {
                   var a = document.createElement('a');

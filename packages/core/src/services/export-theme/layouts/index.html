@@ -1,0 +1,9 @@
+{{/* TODO(Commit 5): real template */}}
+{{ define "main" }}
+  <h1>{{ .Site.Title }}</h1>
+  <ul>
+    {{ range where .Site.RegularPages "Section" "" }}
+      <li><a href="{{ .RelPermalink }}">{{ .Title | default .Params.slug }}</a></li>
+    {{ end }}
+  </ul>
+{{ end }}

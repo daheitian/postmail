@@ -1,0 +1,4 @@
+{{/* TODO(Commit 5): real partial */}}
+<footer>
+  {{ with .Site.Data.jant }}{{ with .site_footer_html }}{{ . | safeHTML }}{{ end }}{{ end }}
+</footer>

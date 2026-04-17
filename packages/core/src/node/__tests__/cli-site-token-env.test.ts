@@ -73,7 +73,7 @@ describe("site CLI token env", () => {
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://example.com/api/export/zola",
+      "https://example.com/api/export/hugo",
       expect.objectContaining({
         headers: { Authorization: "Bearer jnt_prefixed_token" },
         method: "POST",

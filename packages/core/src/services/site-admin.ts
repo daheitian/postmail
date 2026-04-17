@@ -653,7 +653,7 @@ export function createSiteAdminService(
 
       return {
         filename: `${siteRow.key}-site-export.zip`,
-        zip: await exportService.generateZolaSite(),
+        zip: await exportService.generateHugoSite(),
       };
     },
     async suspendManagedSite(siteId) {

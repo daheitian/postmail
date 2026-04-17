@@ -1,0 +1,7 @@
+{{/* TODO(Commit 5): real partial */}}
+{{ with .Paginator }}
+  <nav aria-label="Pagination">
+    {{ if .HasPrev }}<a href="{{ .Prev.URL }}">Previous</a>{{ end }}
+    {{ if .HasNext }}<a href="{{ .Next.URL }}">Next</a>{{ end }}
+  </nav>
+{{ end }}

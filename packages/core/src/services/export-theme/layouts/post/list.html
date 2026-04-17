@@ -1,0 +1,12 @@
+{{/* TODO(Commit 5): real template */}}
+{{ define "main" }}
+  <article>
+    <h1>{{ .Title | default .Params.slug }}</h1>
+    {{ .Content }}
+    {{ range .Pages.ByDate }}
+      <section id="{{ .Params.slug }}">
+        {{ .Content }}
+      </section>
+    {{ end }}
+  </article>
+{{ end }}

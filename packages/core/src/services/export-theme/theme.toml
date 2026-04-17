@@ -1,0 +1,12 @@
+name = "jant"
+license = "MIT"
+licenselink = "https://github.com/jant-me/jant/blob/main/LICENSE"
+description = "Default theme packaged with Jant exports."
+homepage = "https://jant.so"
+tags = ["blog", "microblog", "minimal"]
+features = ["pagination", "aliases"]
+min_version = "0.160.1"
+
+[author]
+  name = "Jant"
+  homepage = "https://jant.so"

@@ -422,9 +422,9 @@ export function createGitHubSyncService(
       if (!config) throw new Error("GitHub Sync is not configured");
       const { client, owner, repo } = createClient(config);
 
-      // Generate full Zola site via the shared export service
+      // Generate full Hugo site via the shared export service
       const exportService = createExportService(services, siteConfig, deps);
-      const exportFiles = await exportService.generateZolaFiles();
+      const exportFiles = await exportService.generateHugoFiles();
 
       // Resolve HEAD before building the tree — needed both as the commit
       // parent / base_tree and to detect marker schema migrations.

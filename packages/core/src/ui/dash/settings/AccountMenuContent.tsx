@@ -214,7 +214,7 @@ export function AccountMenuContent({
       >
         <form
           method="post"
-          action={toPublicPath("/api/export/zola", sitePathPrefix)}
+          action={toPublicPath("/api/export/hugo", sitePathPrefix)}
           class="settings-export-form"
         >
           <button
@@ -228,13 +228,13 @@ export function AccountMenuContent({
                 msg({
                   message: "Export Site",
                   comment:
-                    "@context: Settings item — export the site as a Zola archive",
+                    "@context: Settings item — export the site as a Hugo archive",
                 }),
               )}
               description={i18n._(
                 msg({
                   message:
-                    "Download a Zola-compatible archive — host it statically or move to another Jant.",
+                    "Download a Hugo-compatible archive — host it statically or move to another Jant.",
                   comment:
                     "@context: Settings item description for static site export",
                 }),

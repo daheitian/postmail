@@ -1,0 +1,6 @@
+{{/* TODO(Commit 5): real partial */}}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ with .Title }}{{ . }} — {{ end }}{{ .Site.Title }}</title>
+{{ with .Site.Data.jant }}{{ with .site_description }}<meta name="description" content="{{ . }}">{{ end }}{{ end }}
+<link rel="stylesheet" href="{{ "main.css" | relURL }}">
