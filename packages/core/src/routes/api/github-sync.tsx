@@ -5,7 +5,7 @@
  * (session/token auth) for managing GitHub Sync configuration.
  */
 
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { z } from "zod";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
@@ -24,6 +24,13 @@ import type { GitHubPushEvent } from "../../lib/github-api.js";
 import { parseValidated } from "../../lib/schemas.js";
 import { getGitHubAppConfig } from "../../lib/env.js";
 import { buildSyncSiteConfig } from "../../lib/github-sync-site-config.js";
+import { sse } from "../../lib/sse.js";
+import { toPublicPath } from "../../lib/url.js";
+import { I18nProvider } from "../../i18n/context.js";
+import {
+  GitHubSyncStatusCard,
+  type GitHubSyncStatus,
+} from "../../ui/dash/settings/GitHubSyncContent.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -185,26 +192,122 @@ githubSyncAdminRoutes.delete("/", requireAuthApi(), async (c) => {
 
 // Get sync status
 githubSyncAdminRoutes.get("/status", requireAuthApi(), async (c) => {
-  const [enabled, repo, lastPushSha, webhookId, lastPushAt, lastError] =
-    await Promise.all([
-      c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
-      c.var.services.settings.get("GITHUB_SYNC_REPO"),
-      c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
-      c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
-      c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
-      c.var.services.settings.get("GITHUB_SYNC_LAST_ERROR"),
-    ]);
-  // Use isSyncPending (not raw flag) so polling clients don't get stuck
-  // on a dead PENDING flag left by a crashed worker.
+  const status = await readGitHubSyncStatus(c);
+  return c.json(status);
+});
+
+/**
+ * Live status stream — drives the settings page's status card while a push
+ * is running. Subscribed to via Datastar's `data-init="@get(...)"` on the
+ * card element; each frame is a `patchElements` with `mode: outer` on the
+ * stable id `#github-sync-status`.
+ *
+ * Loop ends as soon as `pending` is false (we still send one final frame
+ * so the card flips from "Syncing…" to "N ago"), or after the hard budget
+ * below if a sync is genuinely stuck — `isSyncPending` already self-heals
+ * after the 10-minute stale window in `github-sync-trigger.ts`, which is
+ * the upper bound callers rely on.
+ */
+githubSyncAdminRoutes.get("/status/stream", requireAuthApi(), async (c) => {
+  const sitePathPrefix = c.var.appConfig.sitePathPrefix;
+  const streamUrl = toPublicPath(
+    "/api/github-sync/status/stream",
+    sitePathPrefix,
+  );
+
+  // 5 minutes is comfortably above the realistic worst-case sync for a
+  // normal site, and well under the 10-minute stale-flag timeout. If a
+  // sync runs longer, the stream just closes; the user can reload and
+  // resubscribe.
+  const MAX_DURATION_MS = 5 * 60 * 1000;
+  // 1.5s keeps the UI responsive without hammering the settings table.
+  const POLL_INTERVAL_MS = 1500;
+
+  return sse(c, async (stream) => {
+    const startedAt = Date.now();
+    let lastHtml: string | null = null;
+
+    while (true) {
+      const status = await readGitHubSyncStatus(c);
+      const html = renderStatusCardHtml(c, status, streamUrl);
+
+      if (html !== lastHtml) {
+        stream.patchElements(html, {
+          mode: "outer",
+          selector: "#github-sync-status",
+        });
+        lastHtml = html;
+      }
+
+      // Sync completed: we've just sent the final "not pending" frame
+      // (which renders the fresh lastPushAt and drops `data-init`, so
+      // Datastar won't reopen). A brief beat lets the browser apply the
+      // patch before the stream closes.
+      if (!status.pending) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        break;
+      }
+
+      if (Date.now() - startedAt >= MAX_DURATION_MS) break;
+
+      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Shared helpers for status read + status-card rendering
+// ---------------------------------------------------------------------------
+
+async function readGitHubSyncStatus(
+  c: Context<Env>,
+): Promise<GitHubSyncStatus> {
+  const [
+    enabled,
+    repo,
+    lastPushSha,
+    webhookId,
+    lastPushAt,
+    authMode,
+    lastError,
+  ] = await Promise.all([
+    c.var.services.settings.get("GITHUB_SYNC_ENABLED"),
+    c.var.services.settings.get("GITHUB_SYNC_REPO"),
+    c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_SHA"),
+    c.var.services.settings.get("GITHUB_SYNC_WEBHOOK_ID"),
+    c.var.services.settings.get("GITHUB_SYNC_LAST_PUSH_AT"),
+    c.var.services.settings.get("GITHUB_SYNC_AUTH_MODE"),
+    c.var.services.settings.get("GITHUB_SYNC_LAST_ERROR"),
+  ]);
+  // Use isSyncPending (not raw flag) so clients don't get stuck on a dead
+  // PENDING flag left by a crashed worker.
   const pending = await isSyncPending(c.var.services.settings);
 
-  return c.json({
+  return {
     enabled: enabled === "true",
     repo: repo ?? null,
     lastPushSha: lastPushSha ?? null,
     webhookId: webhookId ?? null,
     lastPushAt: lastPushAt ? Number(lastPushAt) : null,
+    authMode: authMode === "app" ? "app" : "pat",
+    appConfigured: getGitHubAppConfig(c.env) !== null,
     pending,
     lastError: lastError || null,
-  });
-});
+  };
+}
+
+function renderStatusCardHtml(
+  c: Context<Env>,
+  status: GitHubSyncStatus,
+  streamUrl: string,
+): string {
+  // Hono JSX elements stringify synchronously when the tree is sync. Our
+  // status card has no async children, so `String(...)` returns a plain
+  // HTML string. The I18nProvider binds the per-request i18n instance that
+  // `useLingui()` inside the card relies on.
+  return String(
+    <I18nProvider c={c}>
+      <GitHubSyncStatusCard status={status} streamUrl={streamUrl} />
+    </I18nProvider>,
+  );
+}

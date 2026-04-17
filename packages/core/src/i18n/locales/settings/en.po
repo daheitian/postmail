@@ -1208,6 +1208,11 @@ msgstr "Revoke this session? That device will need to sign in again."
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "Revoke this token? Any scripts using it will stop working."
 
+#. @context: Hint shown while a GitHub Sync push is running, reassuring the user they don't have to stay on the page
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Safe to leave this page — syncing continues in the background."
+msgstr "Safe to leave this page — syncing continues in the background."
+
 #. @context: Button to save settings
 #. @context: Button to save settings changes
 #. @context: Save nav item changes

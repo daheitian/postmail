@@ -36,7 +36,10 @@ export function GitHubSyncContent({
   sitePathPrefix?: string;
 }) {
   const settingsBase = toPublicPath("/settings/github-sync", sitePathPrefix);
-  const statusApiUrl = toPublicPath("/api/github-sync/status", sitePathPrefix);
+  const streamUrl = toPublicPath(
+    "/api/github-sync/status/stream",
+    sitePathPrefix,
+  );
 
   if (!status.enabled || !status.repo) {
     return (
@@ -51,7 +54,7 @@ export function GitHubSyncContent({
     <GitHubSyncConnected
       status={status}
       settingsBase={settingsBase}
-      statusApiUrl={statusApiUrl}
+      streamUrl={streamUrl}
     />
   );
 }
@@ -238,17 +241,199 @@ function Spinner({ signal }: { signal: string }) {
   );
 }
 
-function GitHubSyncConnected({
+/**
+ * Connected-state status card.
+ *
+ * Rendered both inline on the settings page and as an SSE patch frame from
+ * `/api/github-sync/status/stream`. The outer `id` must stay stable so
+ * Datastar's `patchElements` (mode: outer) can swap this element in place
+ * while the user watches a sync run.
+ *
+ * While `status.pending` is true the card mounts a Datastar `data-init`
+ * subscription to the SSE endpoint; when the sync ends and we send the
+ * "not pending" frame, the replacement element no longer has `data-init`
+ * and the stream closes naturally.
+ */
+export function GitHubSyncStatusCard({
   status,
-  settingsBase,
-  statusApiUrl,
+  streamUrl,
 }: {
   status: GitHubSyncStatus;
-  settingsBase: string;
-  statusApiUrl: string;
+  streamUrl: string;
 }) {
   const { i18n } = useLingui();
   const repoUrl = `https://github.com/${status.repo}`;
+
+  return (
+    <div
+      id="github-sync-status"
+      class="rounded-xl border border-border/70 bg-muted/30 p-5"
+      data-init={status.pending ? `@get('${streamUrl}')` : undefined}
+    >
+      <div class="flex flex-col gap-3">
+        {/* Connected status header */}
+        <div class="flex items-center gap-2 text-sm font-medium">
+          <span
+            class="text-green-600 dark:text-green-500"
+            dangerouslySetInnerHTML={{ __html: STATUS_DOT }}
+          />
+          {status.authMode === "app"
+            ? i18n._(
+                msg({
+                  message: "Connected via GitHub App",
+                  comment:
+                    "@context: Status label when GitHub Sync is active using the GitHub App",
+                }),
+              )
+            : i18n._(
+                msg({
+                  message: "Connected via Personal Access Token",
+                  comment:
+                    "@context: Status label when GitHub Sync is active using a PAT",
+                }),
+              )}
+        </div>
+
+        {/* Details */}
+        <div class="flex flex-col gap-1.5 text-sm">
+          {/* Repository */}
+          <div class="flex items-baseline gap-2">
+            <span class="text-muted-foreground">
+              {i18n._(
+                msg({
+                  message: "Repository",
+                  comment:
+                    "@context: Label for connected repository on GitHub Sync status",
+                }),
+              )}
+            </span>
+            <a
+              href={repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium hover:underline"
+            >
+              {status.repo}
+            </a>
+          </div>
+
+          {/* Last synced */}
+          <div class="flex items-baseline gap-2">
+            <span class="text-muted-foreground">
+              {i18n._(
+                msg({
+                  message: "Last synced",
+                  comment:
+                    "@context: Label for last sync time on GitHub Sync status",
+                }),
+              )}
+            </span>
+            {status.pending ? (
+              <span class="font-medium flex items-center gap-2 text-primary">
+                <span
+                  class="inline-block w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin"
+                  aria-hidden="true"
+                />
+                {i18n._(
+                  msg({
+                    message: "Syncing…",
+                    comment:
+                      "@context: Shown while a GitHub Sync push is running in the background",
+                  }),
+                )}
+              </span>
+            ) : (
+              <span
+                class="font-medium"
+                title={
+                  status.lastPushAt ? formatDate(status.lastPushAt) : undefined
+                }
+              >
+                {status.lastPushAt
+                  ? formatRelativeAge(status.lastPushAt)
+                  : i18n._(
+                      msg({
+                        message: "Not synced yet",
+                        comment:
+                          "@context: Shown when no sync has happened yet on GitHub Sync status",
+                      }),
+                    )}
+              </span>
+            )}
+          </div>
+
+          {/* Reassurance that the sync is not tied to this page */}
+          {status.pending ? (
+            <div class="text-xs text-muted-foreground">
+              {i18n._(
+                msg({
+                  message:
+                    "Safe to leave this page — syncing continues in the background.",
+                  comment:
+                    "@context: Hint shown while a GitHub Sync push is running, reassuring the user they don't have to stay on the page",
+                }),
+              )}
+            </div>
+          ) : null}
+
+          {/* Last error */}
+          {!status.pending && status.lastError ? (
+            <div class="flex items-baseline gap-2">
+              <span class="text-muted-foreground">
+                {i18n._(
+                  msg({
+                    message: "Last error",
+                    comment:
+                      "@context: Label for last sync error on GitHub Sync status",
+                  }),
+                )}
+              </span>
+              <span class="font-medium text-destructive text-xs">
+                {status.lastError}
+              </span>
+            </div>
+          ) : null}
+
+          {/* Last commit */}
+          {status.lastPushSha && (
+            <div class="flex items-baseline gap-2">
+              <span class="text-muted-foreground">
+                {i18n._(
+                  msg({
+                    message: "Last commit",
+                    comment:
+                      "@context: Label for last push commit SHA on GitHub Sync status",
+                  }),
+                )}
+              </span>
+              <a
+                href={`${repoUrl}/commit/${status.lastPushSha}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-medium hover:underline"
+              >
+                <code class="text-xs bg-muted px-1.5 py-0.5 rounded">
+                  {status.lastPushSha.slice(0, 7)}
+                </code>
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GitHubSyncConnected({
+  status,
+  settingsBase,
+  streamUrl,
+}: {
+  status: GitHubSyncStatus;
+  settingsBase: string;
+  streamUrl: string;
+}) {
+  const { i18n } = useLingui();
 
   const disconnectLabel = i18n._(
     msg({
@@ -266,147 +451,7 @@ function GitHubSyncConnected({
 
   return (
     <div class="flex flex-col gap-8 max-w-form">
-      {/* Status card */}
-      <div class="rounded-xl border border-border/70 bg-muted/30 p-5">
-        <div class="flex flex-col gap-3">
-          {/* Connected status header */}
-          <div class="flex items-center gap-2 text-sm font-medium">
-            <span
-              class="text-green-600 dark:text-green-500"
-              dangerouslySetInnerHTML={{ __html: STATUS_DOT }}
-            />
-            {status.authMode === "app"
-              ? i18n._(
-                  msg({
-                    message: "Connected via GitHub App",
-                    comment:
-                      "@context: Status label when GitHub Sync is active using the GitHub App",
-                  }),
-                )
-              : i18n._(
-                  msg({
-                    message: "Connected via Personal Access Token",
-                    comment:
-                      "@context: Status label when GitHub Sync is active using a PAT",
-                  }),
-                )}
-          </div>
-
-          {/* Details */}
-          <div class="flex flex-col gap-1.5 text-sm">
-            {/* Repository */}
-            <div class="flex items-baseline gap-2">
-              <span class="text-muted-foreground">
-                {i18n._(
-                  msg({
-                    message: "Repository",
-                    comment:
-                      "@context: Label for connected repository on GitHub Sync status",
-                  }),
-                )}
-              </span>
-              <a
-                href={repoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="font-medium hover:underline"
-              >
-                {status.repo}
-              </a>
-            </div>
-
-            {/* Last synced */}
-            <div class="flex items-baseline gap-2">
-              <span class="text-muted-foreground">
-                {i18n._(
-                  msg({
-                    message: "Last synced",
-                    comment:
-                      "@context: Label for last sync time on GitHub Sync status",
-                  }),
-                )}
-              </span>
-              {status.pending ? (
-                <span class="font-medium flex items-center gap-2 text-primary">
-                  <span
-                    class="inline-block w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin"
-                    aria-hidden="true"
-                  />
-                  {i18n._(
-                    msg({
-                      message: "Syncing…",
-                      comment:
-                        "@context: Shown while a GitHub Sync push is running in the background",
-                    }),
-                  )}
-                </span>
-              ) : (
-                <span
-                  class="font-medium"
-                  title={
-                    status.lastPushAt
-                      ? formatDate(status.lastPushAt)
-                      : undefined
-                  }
-                >
-                  {status.lastPushAt
-                    ? formatRelativeAge(status.lastPushAt)
-                    : i18n._(
-                        msg({
-                          message: "Not synced yet",
-                          comment:
-                            "@context: Shown when no sync has happened yet on GitHub Sync status",
-                        }),
-                      )}
-                </span>
-              )}
-            </div>
-
-            {/* Last error */}
-            {!status.pending && status.lastError ? (
-              <div class="flex items-baseline gap-2">
-                <span class="text-muted-foreground">
-                  {i18n._(
-                    msg({
-                      message: "Last error",
-                      comment:
-                        "@context: Label for last sync error on GitHub Sync status",
-                    }),
-                  )}
-                </span>
-                <span class="font-medium text-destructive text-xs">
-                  {status.lastError}
-                </span>
-              </div>
-            ) : null}
-
-            {/* Last commit */}
-            {status.lastPushSha && (
-              <div class="flex items-baseline gap-2">
-                <span class="text-muted-foreground">
-                  {i18n._(
-                    msg({
-                      message: "Last commit",
-                      comment:
-                        "@context: Label for last push commit SHA on GitHub Sync status",
-                    }),
-                  )}
-                </span>
-                <a
-                  href={`${repoUrl}/commit/${status.lastPushSha}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="font-medium hover:underline"
-                >
-                  <code class="text-xs bg-muted px-1.5 py-0.5 rounded">
-                    {status.lastPushSha.slice(0, 7)}
-                  </code>
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <GitHubSyncStatusCard status={status} streamUrl={streamUrl} />
 
       {/* Manual Push section */}
       <section class="flex flex-col gap-3 border-t pt-8">
@@ -499,32 +544,15 @@ function GitHubSyncConnected({
         </div>
       </section>
 
-      {/* Poll for sync completion while pending. Reloads the page when
-          GITHUB_SYNC_PENDING clears so the status card reflects the
-          latest lastPushAt / lastPushSha / lastError without manual refresh.
-          Cap at ~4 min so a stuck sync doesn't poll forever. */}
-      {status.pending ? (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(() => {
-  const endpoint = ${JSON.stringify(statusApiUrl)};
-  let attempts = 0;
-  const poll = async () => {
-    if (attempts++ > 120) return;
-    try {
-      const res = await fetch(endpoint, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.pending === false) { location.reload(); return; }
-      }
-    } catch (_) { /* swallow — try again */ }
-    setTimeout(poll, 2000);
-  };
-  setTimeout(poll, 2000);
-})();`,
-          }}
-        />
-      ) : null}
+      {/* Live status updates while a sync is running are driven by Datastar:
+          the status card above mounts `data-init="@get('.../status/stream')"`
+          when `pending` is true. The SSE endpoint streams `patchElements`
+          frames that replace the card in place — no page reload, and the
+          subscription ends as soon as the "not pending" frame ships.
+
+          Inline <script> polling is not an option here: the site CSP blocks
+          inline script execution (docs/datastar.md), which is why the old
+          full-page-reload poller silently never fired. */}
     </div>
   );
 }

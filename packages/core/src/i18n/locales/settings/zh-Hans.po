@@ -1208,6 +1208,11 @@ msgstr "撤销此会话? 该设备需要重新登录."
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "撤销此令牌？任何使用它的脚本将停止工作。"
 
+#. @context: Hint shown while a GitHub Sync push is running, reassuring the user they don't have to stay on the page
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Safe to leave this page — syncing continues in the background."
+msgstr ""
+
 #. @context: Button to save settings
 #. @context: Button to save settings changes
 #. @context: Save nav item changes

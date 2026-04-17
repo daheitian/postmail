@@ -1208,6 +1208,11 @@ msgstr "撤銷此工作階段？該裝置將需要重新登入。"
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "要撤銷這個權杖嗎？任何使用它的腳本都會停止運作。"
 
+#. @context: Hint shown while a GitHub Sync push is running, reassuring the user they don't have to stay on the page
+#: src/ui/dash/settings/GitHubSyncContent.tsx
+msgid "Safe to leave this page — syncing continues in the background."
+msgstr ""
+
 #. @context: Button to save settings
 #. @context: Button to save settings changes
 #. @context: Save nav item changes
