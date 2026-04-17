@@ -1,4 +1,32 @@
-{{/* TODO(Commit 5): real partial */}}
-<header>
-  <a href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
+{{- $jant := .Site.Data.jant -}}
+{{- $showAvatar := false -}}
+{{- with $jant -}}{{- if eq .show_header_avatar true -}}{{- $showAvatar = true -}}{{- end -}}{{- end -}}
+{{- $avatarUrl := "" -}}
+{{- with $jant -}}{{- with .site_avatar_url -}}{{- $avatarUrl = . -}}{{- end -}}{{- end -}}
+<header class="site-header" role="banner">
+  <div class="site-header-inner">
+    <a class="site-title" href="{{ "/" | relURL }}">
+      {{- if and $showAvatar $avatarUrl -}}
+        <img class="site-avatar" src="{{ $avatarUrl }}" alt="" width="40" height="40" loading="eager">
+      {{- end -}}
+      <span class="site-title-text">{{ .Site.Title }}</span>
+    </a>
+    {{- with $jant -}}
+      {{- $navItems := .nav -}}
+      {{- if $navItems -}}
+        <nav class="site-nav" aria-label="Site">
+          <ul class="site-nav-list">
+            {{- range $navItems -}}
+              {{- if or (not .placement) (eq .placement "header") -}}
+                {{- $isExternal := or (hasPrefix .url "http://") (hasPrefix .url "https://") -}}
+                <li class="site-nav-item">
+                  <a class="site-nav-link" href="{{ .url }}"{{ if $isExternal }} rel="noopener noreferrer" target="_blank"{{ end }}>{{ .label }}</a>
+                </li>
+              {{- end -}}
+            {{- end -}}
+          </ul>
+        </nav>
+      {{- end -}}
+    {{- end -}}
+  </div>
 </header>

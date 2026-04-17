@@ -1,4 +1,29 @@
-{{/* TODO(Commit 5): real partial */}}
-<footer>
-  {{ with .Site.Data.jant }}{{ with .site_footer_html }}{{ . | safeHTML }}{{ end }}{{ end }}
+{{- $jant := .Site.Data.jant -}}
+{{- $footerHtml := "" -}}
+{{- with $jant -}}{{- with .site_footer_html -}}{{- $footerHtml = . -}}{{- end -}}{{- end -}}
+{{- $showBranding := false -}}
+{{- with $jant -}}{{- if eq .show_jant_branding_on_home true -}}{{- $showBranding = true -}}{{- end -}}{{- end -}}
+{{- $navFooterItems := slice -}}
+{{- with $jant -}}{{- range .nav -}}{{- if eq .placement "footer" -}}{{- $navFooterItems = $navFooterItems | append . -}}{{- end -}}{{- end -}}{{- end -}}
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer-inner">
+    {{- if $navFooterItems -}}
+      <nav class="site-footer-nav" aria-label="Footer">
+        <ul class="site-footer-nav-list">
+          {{- range $navFooterItems -}}
+            {{- $isExternal := or (hasPrefix .url "http://") (hasPrefix .url "https://") -}}
+            <li><a href="{{ .url }}"{{ if $isExternal }} rel="noopener noreferrer" target="_blank"{{ end }}>{{ .label }}</a></li>
+          {{- end -}}
+        </ul>
+      </nav>
+    {{- end -}}
+    {{- with $footerHtml -}}
+      <div class="site-footer-content">{{ . | safeHTML }}</div>
+    {{- end -}}
+    {{- if and $showBranding $.IsHome -}}
+      <p class="site-footer-branding">
+        Powered by <a href="https://github.com/jant-me/jant" rel="noopener noreferrer" target="_blank">Jant</a>.
+      </p>
+    {{- end -}}
+  </div>
 </footer>

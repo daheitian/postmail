@@ -1,9 +1,39 @@
-{{/* TODO(Commit 5): real template */}}
 {{ define "main" }}
-  <h1>{{ .Site.Title }}</h1>
-  <ul>
-    {{ range where .Site.RegularPages "Section" "" }}
-      <li><a href="{{ .RelPermalink }}">{{ .Title | default .Params.slug }}</a></li>
-    {{ end }}
-  </ul>
+  {{- $homeDefaultView := .Site.Params.home_default_view | default "latest" -}}
+  {{- $pageSize := .Site.Params.page_size | default 10 -}}
+  {{- /* Root posts are branch bundles (kind=section), so we iterate .Site.Pages, not .Site.RegularPages. */ -}}
+  {{- $allPosts := where .Site.Pages "Type" "post" -}}
+  {{- $pinned := where $allPosts "Params.pinned_at" "ne" nil -}}
+  {{- $pinned = $pinned.ByDate.Reverse -}}
+  {{- $main := slice -}}
+  {{- if eq $homeDefaultView "featured" -}}
+    {{- $featured := where $allPosts "Params.featured_at" "ne" nil -}}
+    {{- $main = sort $featured "Params.featured_at" "desc" -}}
+  {{- else -}}
+    {{- $public := where $allPosts "Params.visibility" "public" -}}
+    {{- $public = where $public "Params.pinned_at" nil -}}
+    {{- $main = $public.ByDate.Reverse -}}
+  {{- end -}}
+  {{- $paginator := .Paginate $main $pageSize -}}
+
+  <section class="home">
+    {{- if and (eq $paginator.PageNumber 1) $pinned -}}
+      <div class="post-list post-list-pinned" aria-label="Pinned posts">
+        {{- range $pinned -}}
+          {{ partial "post-card.html" . }}
+        {{- end -}}
+      </div>
+    {{- end -}}
+
+    {{- if $paginator.Pages -}}
+      <div class="post-list post-list-main">
+        {{- range $paginator.Pages -}}
+          {{ partial "post-card.html" . }}
+        {{- end -}}
+      </div>
+      {{ partial "pagination.html" $paginator }}
+    {{- else if not $pinned -}}
+      <p class="empty-state">Nothing published yet. Write your first post to get started.</p>
+    {{- end -}}
+  </section>
 {{ end }}

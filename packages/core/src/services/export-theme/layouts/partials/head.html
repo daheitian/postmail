@@ -1,6 +1,50 @@
-{{/* TODO(Commit 5): real partial */}}
+{{- $jant := .Site.Data.jant -}}
+{{- $siteTitle := .Site.Title -}}
+{{- $pageTitle := "" -}}
+{{- if .IsHome -}}
+  {{- $pageTitle = $siteTitle -}}
+{{- else if .Title -}}
+  {{- $pageTitle = printf "%s | %s" .Title $siteTitle -}}
+{{- else -}}
+  {{- $pageTitle = $siteTitle -}}
+{{- end -}}
+{{- $description := "" -}}
+{{- with .Params.summary_text -}}{{- $description = . -}}{{- end -}}
+{{- if not $description -}}{{- with $jant -}}{{- with .site_description -}}{{- $description = . -}}{{- end -}}{{- end -}}{{- end -}}
+{{- $faviconVersion := "" -}}
+{{- with $jant -}}{{- with .favicon_version -}}{{- $faviconVersion = . -}}{{- end -}}{{- end -}}
+{{- $faviconPath := "/favicon.ico" -}}
+{{- with $jant -}}{{- with .favicon_path -}}{{- $faviconPath = . -}}{{- end -}}{{- end -}}
+{{- $appleTouchPath := "/apple-touch-icon.png" -}}
+{{- with $jant -}}{{- with .apple_touch_icon_path -}}{{- $appleTouchPath = . -}}{{- end -}}{{- end -}}
+{{- $faviconHref := $faviconPath | relURL -}}
+{{- $appleTouchHref := $appleTouchPath | relURL -}}
+{{- if $faviconVersion -}}
+  {{- $faviconHref = printf "%s?v=%s" $faviconHref $faviconVersion -}}
+  {{- $appleTouchHref = printf "%s?v=%s" $appleTouchHref $faviconVersion -}}
+{{- end -}}
+{{- $noindex := false -}}
+{{- with $jant -}}{{- if eq .noindex true -}}{{- $noindex = true -}}{{- end -}}{{- end -}}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ with .Title }}{{ . }} — {{ end }}{{ .Site.Title }}</title>
-{{ with .Site.Data.jant }}{{ with .site_description }}<meta name="description" content="{{ . }}">{{ end }}{{ end }}
+<title>{{ $pageTitle }}</title>
+{{- with $description }}
+<meta name="description" content="{{ . }}">
+{{- end }}
+{{- if $noindex }}
+<meta name="robots" content="noindex,nofollow">
+{{- end }}
+<link rel="canonical" href="{{ .Permalink }}">
+<meta property="og:site_name" content="{{ $siteTitle }}">
+<meta property="og:title" content="{{ if .Title }}{{ .Title }}{{ else }}{{ $siteTitle }}{{ end }}">
+{{- with $description }}
+<meta property="og:description" content="{{ . }}">
+{{- end }}
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+<link rel="icon" type="image/x-icon" href="{{ $faviconHref }}">
+<link rel="apple-touch-icon" href="{{ $appleTouchHref }}">
+<link rel="stylesheet" href="{{ "tokens.css" | relURL }}">
 <link rel="stylesheet" href="{{ "main.css" | relURL }}">
+<link rel="stylesheet" href="{{ "theme.css" | relURL }}">
+<link rel="stylesheet" href="{{ "custom.css" | relURL }}">

@@ -1,7 +1,24 @@
-{{/* TODO(Commit 5): real partial */}}
-{{ with .Paginator }}
-  <nav aria-label="Pagination">
-    {{ if .HasPrev }}<a href="{{ .Prev.URL }}">Previous</a>{{ end }}
-    {{ if .HasNext }}<a href="{{ .Next.URL }}">Next</a>{{ end }}
+{{- $paginator := . -}}
+{{- if gt $paginator.TotalPages 1 -}}
+  <nav class="pagination" aria-label="Pagination">
+    <ul class="pagination-list">
+      <li class="pagination-item pagination-prev">
+        {{- if $paginator.HasPrev -}}
+          <a class="pagination-link" href="{{ $paginator.Prev.URL }}" rel="prev">&larr; Newer</a>
+        {{- else -}}
+          <span class="pagination-link is-disabled" aria-disabled="true">&larr; Newer</span>
+        {{- end -}}
+      </li>
+      <li class="pagination-item pagination-current" aria-current="page">
+        Page {{ $paginator.PageNumber }} of {{ $paginator.TotalPages }}
+      </li>
+      <li class="pagination-item pagination-next">
+        {{- if $paginator.HasNext -}}
+          <a class="pagination-link" href="{{ $paginator.Next.URL }}" rel="next">Older &rarr;</a>
+        {{- else -}}
+          <span class="pagination-link is-disabled" aria-disabled="true">Older &rarr;</span>
+        {{- end -}}
+      </li>
+    </ul>
   </nav>
-{{ end }}
+{{- end -}}
