@@ -334,8 +334,24 @@
   }
 }
 
+/*
+ * Dark-mode reading color overrides.
+ *
+ * These rules must beat the active color theme's light-mode block, which
+ * uses `:root:root { ... }` (specificity 0,0,2,0) with no media query and
+ * therefore applies in both light and dark modes. Most themes do not
+ * redefine `--site-reading-*` in their dark block, so without higher
+ * specificity here the light reading-body color would leak into dark mode
+ * (resulting in near-invisible body text on a dark background).
+ *
+ * We repeat `:root:root` to reach specificity 0,0,3,0, which outranks the
+ * theme's light `:root:root` (0,0,2,0). The theme's dark blocks use
+ * `:root:root[data-theme-mode="dark"]` or `:root:root:not([data-theme-mode="light"])`
+ * (also 0,0,3,0), so a theme that explicitly defines dark reading colors
+ * still wins via source order.
+ */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme-mode="light"]) {
+  :root:root:not([data-theme-mode="light"]) {
     --site-reading-title: var(--site-text-primary);
     --site-reading-heading: color-mix(
       in oklch,
@@ -369,7 +385,7 @@
   }
 }
 
-:root[data-theme-mode="dark"] {
+:root:root[data-theme-mode="dark"] {
   --site-reading-title: var(--site-text-primary);
   --site-reading-heading: color-mix(
     in oklch,
