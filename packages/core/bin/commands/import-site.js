@@ -7,7 +7,7 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
-import { resolve, join, relative, extname, dirname, basename } from "node:path";
+import { resolve, join, extname, dirname, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { parseArgs } from "node:util";
 import { typeidUnboxed } from "typeid-js";
@@ -34,10 +34,9 @@ async function parseToml(content) {
 }
 
 /**
- * Read custom.css from a Jant export. Prefers the root `static/custom.css`
- * (user override) and falls back to `themes/jant/static/custom.css` (the
- * default location Jant writes). Legacy flat-layout exports only had the
- * root copy, so the fallback keeps old exports importable.
+ * Read custom.css from a Jant Hugo export. Prefers the root
+ * `static/custom.css` (user override) and falls back to
+ * `themes/jant/static/custom.css` (the default location Jant writes).
  */
 async function readImportCustomCss(rootDir) {
   const rootCss = await readFile(
@@ -218,18 +217,6 @@ async function readMediaSpecAsset(media, field = "src") {
   });
 }
 
-/**
- * TODO(hugo-migration, Commit 4): the import walker is being rewritten to
- * traverse Hugo branch bundles (root `_index.md` + nested reply leaves)
- * rather than splitting a flattened body. Until that rewrite lands, this
- * stub degrades to "no replies": the body is treated as a single root
- * segment. Legacy Zola exports with `<!--jant:reply-->` markers will not
- * round-trip through this transitional window.
- */
-function splitReplies(body) {
-  return [{ attrs: null, body: String(body ?? "").trim() }];
-}
-
 function normalizeImportPathKey(value) {
   if (typeof value !== "string") {
     return null;
@@ -251,30 +238,35 @@ function normalizeImportAliasPath(value) {
   return pathKey ? `/${pathKey}` : null;
 }
 
-function collectReplySlugPaths(replySegments) {
-  const replySlugPaths = new Set();
-
-  for (const replySegment of replySegments) {
-    const replySlugPath = normalizeImportAliasPath(replySegment?.attrs?.slug);
-    if (replySlugPath) {
-      replySlugPaths.add(replySlugPath);
-    }
-  }
-
-  return replySlugPaths;
-}
-
-function getExportedRootAliases(frontMatter) {
-  const aliases = frontMatter?.extra?.jant?.root_aliases;
-  return Array.isArray(aliases) ? aliases : [];
-}
-
-function getRootAliasPathsForImport(aliases, postSlug, replySlugPaths) {
+/**
+ * Resolve the historical root slugs that should become custom-URL aliases
+ * pointing at the current root post. Hugo's `aliases:` on a root also
+ * contains every reply slug; we strip those (reply slugs are claimed by
+ * their own bundles) and keep only entries that aren't the root itself.
+ *
+ * `root_aliases:` is the authoritative record of the root's own historical
+ * slugs (the exporter writes it for round-trip), so when present we prefer
+ * it. Otherwise we fall back to `aliases:` minus reply slugs.
+ */
+function getRootAliasPathsForImport(
+  aliases,
+  rootAliases,
+  postSlug,
+  replySlugPaths,
+) {
   const rootSlugPath = normalizeImportAliasPath(postSlug);
   const aliasPaths = [];
   const seen = new Set();
 
-  for (const alias of Array.isArray(aliases) ? aliases : []) {
+  // Prefer the explicit `root_aliases:` list when the exporter wrote it.
+  const source =
+    Array.isArray(rootAliases) && rootAliases.length > 0
+      ? rootAliases
+      : Array.isArray(aliases)
+        ? aliases
+        : [];
+
+  for (const alias of source) {
     const aliasPath = normalizeImportAliasPath(alias);
     if (!aliasPath) {
       continue;
@@ -283,9 +275,9 @@ function getRootAliasPathsForImport(aliases, postSlug, replySlugPaths) {
       continue;
     }
     if (replySlugPaths.has(aliasPath)) {
-      throw new Error(
-        `Exported root alias "${aliasPath}" conflicts with a reply slug`,
-      );
+      // Reply slugs live in their own bundles — never route their URL back
+      // to the root as a custom alias.
+      continue;
     }
     if (seen.has(aliasPath)) {
       continue;
@@ -441,6 +433,66 @@ function normalizeImportedBodySegment(markdown) {
   };
 }
 
+/**
+ * Build a media spec for upload from a Hugo `resources:` front-matter entry.
+ * Hugo stores the bytes as a sibling page-resource file referenced by
+ * `src` (relative to the bundle directory); Jant's media metadata lives
+ * inside `params`. Returns `null` if the entry does not describe a
+ * fetchable resource.
+ */
+async function mediaSpecFromResource(resource, bundleDir) {
+  if (!resource || typeof resource.src !== "string" || !resource.src.trim()) {
+    return null;
+  }
+
+  const params = resource.params ?? {};
+  const kind = typeof params.kind === "string" ? params.kind : undefined;
+  const localPath = join(bundleDir, resource.src);
+  const fileStat = await stat(localPath).catch(() => null);
+  if (!fileStat?.isFile()) {
+    return null;
+  }
+
+  const originalName =
+    typeof params.original_name === "string" && params.original_name.trim()
+      ? params.original_name
+      : basename(resource.src);
+
+  const posterRel =
+    typeof params.poster_key === "string" && params.poster_key.trim()
+      ? params.poster_key
+      : null;
+  let posterFilePath = null;
+  if (posterRel) {
+    const posterFull = join(bundleDir, posterRel);
+    const posterStat = await stat(posterFull).catch(() => null);
+    if (posterStat?.isFile()) {
+      posterFilePath = posterFull;
+    }
+  }
+
+  return {
+    kind,
+    src: resource.src,
+    srcFilePath: localPath,
+    poster: posterRel,
+    posterFilePath,
+    mimeType: typeof params.mime_type === "string" ? params.mime_type : undefined,
+    originalName,
+    size: typeof params.size === "number" ? params.size : undefined,
+    width: typeof params.width === "number" ? params.width : undefined,
+    height: typeof params.height === "number" ? params.height : undefined,
+    alt: typeof params.alt === "string" ? params.alt : undefined,
+    position: typeof params.position === "string" ? params.position : undefined,
+    blurhash:
+      typeof params.blurhash === "string" ? params.blurhash : undefined,
+    waveform:
+      typeof params.waveform === "string" ? params.waveform : undefined,
+    summary: typeof params.summary === "string" ? params.summary : undefined,
+    chars: typeof params.chars === "number" ? params.chars : undefined,
+  };
+}
+
 async function normalizeMediaSpec(spec, siteConfig, sourceRootDir) {
   if (!spec || typeof spec.src !== "string" || spec.src.trim() === "") {
     return null;
@@ -455,20 +507,19 @@ async function normalizeMediaSpec(spec, siteConfig, sourceRootDir) {
   return {
     kind: spec.kind,
     src,
-    srcFilePath: await resolveImportLocalAssetPath(
-      spec.src,
-      siteConfig,
-      sourceRootDir,
-    ),
+    srcFilePath:
+      spec.srcFilePath ??
+      (await resolveImportLocalAssetPath(spec.src, siteConfig, sourceRootDir)),
     poster,
     posterFilePath:
-      typeof spec.poster === "string"
+      spec.posterFilePath ??
+      (typeof spec.poster === "string"
         ? await resolveImportLocalAssetPath(
             spec.poster,
             siteConfig,
             sourceRootDir,
           )
-        : null,
+        : null),
     mimeType: spec.mimeType || undefined,
     originalName: spec.originalName || undefined,
     size: typeof spec.size === "number" ? spec.size : undefined,
@@ -641,6 +692,187 @@ async function uploadMediaList(mediaSpecs, target, siteConfig, sourceRootDir) {
   }
 
   return { urlMap, mediaIds, uploaded };
+}
+
+/**
+ * Upload each Hugo page-resource spec referenced by a bundle's front matter.
+ * Returns both a `urlMap` (for rewriting in-body references) and an ordered
+ * `mediaIds` list suitable for attaching to the created post.
+ */
+async function uploadBundleResources(resourceSpecs, target) {
+  const urlMap = new Map();
+  const mediaIds = [];
+  let uploaded = 0;
+
+  for (const spec of resourceSpecs) {
+    if (!spec || !spec.srcFilePath) continue;
+    const result = await target.uploadMedia(spec);
+    if (!result) continue;
+    urlMap.set(spec.src, result.url);
+    mediaIds.push(result.id);
+    uploaded += 1;
+  }
+
+  return { urlMap, mediaIds, uploaded };
+}
+
+function coerceBoolean(value) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    return normalized === "true" || normalized === "1" || normalized === "yes";
+  }
+  return false;
+}
+
+/**
+ * Build a unified "site config" object from Hugo's split config files.
+ *
+ * Hugo writes three sources of truth:
+ *   - `hugo.toml`: baseURL, title, languageCode, theme params
+ *   - `data/jant.toml`: nav items, branding modes, home_default_view,
+ *     site_footer, avatar urls, display preferences
+ *   - `data/collection_directory.toml`: ordered directory items
+ *
+ * This merger normalizes them into a single shape that downstream helpers
+ * (`buildSettingsUpdatesFromConfig`, `normalizeImportedNavItems`,
+ * `normalizeImportedCollectionDirectory`, `buildSiteAvatarImport`) already
+ * know how to read. The shape is intentionally a superset — nothing
+ * depends on `hugo.toml`-only vs `data/jant.toml`-only fields, so extra
+ * keys are harmless if they leak through.
+ */
+async function loadSiteConfig(rootDir) {
+  const hugoTomlText = await readFile(
+    join(rootDir, "hugo.toml"),
+    "utf-8",
+  ).catch(() => null);
+  const jantDataText = await readFile(
+    join(rootDir, "data", "jant.toml"),
+    "utf-8",
+  ).catch(() => null);
+  const collectionDirText = await readFile(
+    join(rootDir, "data", "collection_directory.toml"),
+    "utf-8",
+  ).catch(() => null);
+
+  if (!hugoTomlText && !jantDataText) {
+    return null;
+  }
+
+  const hugoToml = hugoTomlText ? await parseToml(hugoTomlText) : {};
+  const jantData = jantDataText ? await parseToml(jantDataText) : {};
+  const collectionDir = collectionDirText
+    ? await parseToml(collectionDirText)
+    : {};
+
+  const params = hugoToml.params ?? {};
+
+  const title =
+    (typeof hugoToml.title === "string" && hugoToml.title) ||
+    (typeof jantData.site_name === "string" ? jantData.site_name : "");
+  const description =
+    (typeof params.description === "string" && params.description) ||
+    (typeof jantData.site_description === "string"
+      ? jantData.site_description
+      : "");
+  const baseUrl =
+    typeof hugoToml.baseURL === "string"
+      ? hugoToml.baseURL
+      : typeof hugoToml.baseurl === "string"
+        ? hugoToml.baseurl
+        : "";
+  const language =
+    (typeof hugoToml.languageCode === "string" && hugoToml.languageCode) ||
+    (typeof hugoToml.defaultContentLanguage === "string" &&
+      hugoToml.defaultContentLanguage) ||
+    (typeof jantData.site_language === "string"
+      ? jantData.site_language
+      : "en");
+
+  const directoryItems = Array.isArray(collectionDir.items)
+    ? collectionDir.items
+    : [];
+
+  return {
+    // Public base URL (used for resolving relative media URLs).
+    base_url: baseUrl,
+    title,
+    description,
+    default_language: language,
+    extra: {
+      jant: {
+        theme_id:
+          (typeof params.theme_id === "string" && params.theme_id) ||
+          (typeof jantData.theme_id === "string" ? jantData.theme_id : ""),
+        default_theme_id:
+          (typeof params.default_theme_id === "string" &&
+            params.default_theme_id) ||
+          (typeof jantData.default_theme_id === "string"
+            ? jantData.default_theme_id
+            : ""),
+        font_theme_id:
+          (typeof params.font_theme_id === "string" && params.font_theme_id) ||
+          (typeof jantData.font_theme_id === "string"
+            ? jantData.font_theme_id
+            : ""),
+        theme_mode:
+          (typeof params.theme_mode === "string" && params.theme_mode) ||
+          (typeof jantData.theme_mode === "string" ? jantData.theme_mode : ""),
+        home_default_view:
+          (typeof params.home_default_view === "string" &&
+            params.home_default_view) ||
+          (typeof jantData.home_default_view === "string"
+            ? jantData.home_default_view
+            : ""),
+        show_jant_branding_on_home: coerceBoolean(
+          params.show_jant_branding_on_home ??
+            jantData.show_jant_branding_on_home,
+        ),
+        show_header_avatar: coerceBoolean(
+          params.show_header_avatar ?? jantData.show_header_avatar,
+        ),
+        noindex: coerceBoolean(params.noindex ?? jantData.noindex),
+        site_footer_markdown:
+          typeof jantData.site_footer_markdown === "string"
+            ? jantData.site_footer_markdown
+            : "",
+        site_avatar_mode:
+          typeof jantData.site_avatar_mode === "string"
+            ? jantData.site_avatar_mode
+            : "none",
+        site_avatar_url:
+          typeof jantData.site_avatar_url === "string"
+            ? jantData.site_avatar_url
+            : typeof params.site_avatar_url === "string"
+              ? params.site_avatar_url
+              : "",
+        favicon_mode:
+          typeof jantData.favicon_mode === "string"
+            ? jantData.favicon_mode
+            : "default",
+        favicon_url:
+          typeof jantData.favicon_path === "string"
+            ? jantData.favicon_path
+            : "/favicon.ico",
+        apple_touch_mode:
+          typeof jantData.apple_touch_mode === "string"
+            ? jantData.apple_touch_mode
+            : "default",
+        apple_touch_icon_url:
+          typeof jantData.apple_touch_icon_path === "string"
+            ? jantData.apple_touch_icon_path
+            : "/apple-touch-icon.png",
+        nav: Array.isArray(jantData.nav) ? jantData.nav : [],
+        nav_exported: Array.isArray(jantData.nav),
+        collections_directory: directoryItems,
+        collections_directory_exported: collectionDirText !== null,
+      },
+      jant_export: {
+        format:
+          typeof jantData.format === "string" ? jantData.format : "jant-site",
+      },
+    },
+  };
 }
 
 function buildSettingsUpdatesFromConfig(siteConfig, customCss = "") {
@@ -1415,9 +1647,24 @@ async function createLocalTarget(env = process.env) {
 }
 
 /**
- * Recursively walk a directory's content/ folder and collect post/collection files.
+ * Walk `content/` and classify each `_index.md` / `index.md` bundle by its
+ * front-matter `type`. Returns ordered root-post bundles (with child reply
+ * bundles attached) and stand-alone collection landing pages.
+ *
+ * Algorithm:
+ *   1. Recurse into `content/` collecting every directory that has either
+ *      `_index.md` (branch bundle / section) or `index.md` (leaf bundle).
+ *   2. For each `_index.md`, read front matter. `type: "post"` (or a
+ *      missing `type` with post-shaped keys) → root bundle. `type:
+ *      "collection"` → collection landing page. Other known section types
+ *      (`home`, `featured`, `archive`, `collections`) are recorded and
+ *      skipped for post import.
+ *   3. For each root bundle, enumerate immediate child directories; any
+ *      child dir containing `index.md` becomes a reply leaf bundle.
+ *   4. Reply bundles are sorted by `frontMatter.date` ascending (fallback:
+ *      directory name) so thread order is deterministic.
  */
-async function walkContent(rootDir, postFiles, collectionFiles) {
+async function walkHugoContent(rootDir) {
   const contentDir = join(rootDir, "content");
   const contentStat = await stat(contentDir).catch(() => null);
   if (!contentStat?.isDirectory()) {
@@ -1425,33 +1672,245 @@ async function walkContent(rootDir, postFiles, collectionFiles) {
     process.exit(1);
   }
 
+  // Map of absolute dir → { frontMatter, body, kind, slug, dir, children[] }
+  const dirs = new Map();
+
+  async function readBundle(dir, fileName) {
+    const filePath = join(dir, fileName);
+    const content = await readFile(filePath, "utf-8").catch(() => null);
+    if (content === null) return null;
+    const { frontMatter, body } = await parseFrontMatter(content);
+    return { frontMatter, body };
+  }
+
   async function walk(dir) {
-    const entries = await readdir(dir, { withFileTypes: true });
+    const entries = await readdir(dir, { withFileTypes: true }).catch(
+      () => null,
+    );
+    if (!entries) return;
+
+    const hasIndex = entries.some(
+      (entry) => entry.isFile() && entry.name === "_index.md",
+    );
+    const hasLeaf = entries.some(
+      (entry) => entry.isFile() && entry.name === "index.md",
+    );
+
+    if (hasIndex) {
+      const parsed = await readBundle(dir, "_index.md");
+      if (parsed) {
+        const type =
+          typeof parsed.frontMatter.type === "string"
+            ? parsed.frontMatter.type
+            : null;
+        const slug =
+          typeof parsed.frontMatter.slug === "string"
+            ? parsed.frontMatter.slug
+            : basename(dir);
+        dirs.set(dir, {
+          kind: type || "post",
+          slug,
+          dir,
+          frontMatter: parsed.frontMatter,
+          body: parsed.body,
+          file: "_index.md",
+          children: [],
+        });
+      }
+    } else if (hasLeaf) {
+      const parsed = await readBundle(dir, "index.md");
+      if (parsed) {
+        const slug =
+          typeof parsed.frontMatter.slug === "string"
+            ? parsed.frontMatter.slug
+            : basename(dir);
+        dirs.set(dir, {
+          kind: "leaf",
+          slug,
+          dir,
+          frontMatter: parsed.frontMatter,
+          body: parsed.body,
+          file: "index.md",
+          children: [],
+        });
+      }
+    }
+
     for (const entry of entries) {
-      const fullPath = join(dir, entry.name);
       if (entry.isDirectory()) {
-        await walk(fullPath);
-      } else if (entry.name === "index.md" || entry.name === "_index.md") {
-        const relPath = relative(rootDir, fullPath).replace(/\\/g, "/");
-        const content = await readFile(fullPath, "utf-8");
-        if (
-          (relPath.startsWith("content/jant-collections/") ||
-            relPath.startsWith("content/c/")) &&
-          relPath.endsWith("/_index.md")
-        ) {
-          collectionFiles.push({ path: relPath, content });
-        } else if (
-          relPath.startsWith("content/") &&
-          relPath.endsWith("/index.md") &&
-          relPath !== "content/_index.md"
-        ) {
-          postFiles.push({ path: relPath, content });
-        }
+        await walk(join(dir, entry.name));
       }
     }
   }
 
   await walk(contentDir);
+
+  // Attach leaf children to their parent root bundles.
+  const rootBundles = [];
+  const collectionBundles = [];
+
+  for (const record of dirs.values()) {
+    if (record.kind === "leaf") {
+      const parentDir = dirname(record.dir);
+      const parent = dirs.get(parentDir);
+      if (parent && (parent.kind === "post" || parent.kind === null)) {
+        parent.children.push(record);
+      }
+      continue;
+    }
+    if (record.kind === "collection") {
+      collectionBundles.push(record);
+      continue;
+    }
+    if (record.kind === "post") {
+      rootBundles.push(record);
+      continue;
+    }
+    // home / featured / archive / collections / anything else — skip.
+  }
+
+  // Sort replies within each root by `date` asc (fallback: directory name).
+  for (const root of rootBundles) {
+    root.children.sort((a, b) => {
+      const aDate =
+        typeof a.frontMatter.date === "string"
+          ? Date.parse(a.frontMatter.date)
+          : NaN;
+      const bDate =
+        typeof b.frontMatter.date === "string"
+          ? Date.parse(b.frontMatter.date)
+          : NaN;
+      if (Number.isFinite(aDate) && Number.isFinite(bDate) && aDate !== bDate) {
+        return aDate - bDate;
+      }
+      if (Number.isFinite(aDate) && !Number.isFinite(bDate)) return -1;
+      if (!Number.isFinite(aDate) && Number.isFinite(bDate)) return 1;
+      return basename(a.dir).localeCompare(basename(b.dir));
+    });
+  }
+
+  return { rootBundles, collectionBundles };
+}
+
+/**
+ * Resolve the collection memberships listed in a bundle's top-level
+ * `collections:` front-matter array into `{collectionId, createdAt,
+ * position, pinnedAt}` records the post-create APIs expect.
+ *
+ * Drops entries whose slug doesn't map to a known collection — the
+ * importer prints no warning (collections without slugs are already
+ * filtered by the exporter).
+ */
+function resolveCollectionMemberships(frontMatter, collectionSlugToId) {
+  const collections = Array.isArray(frontMatter.collections)
+    ? frontMatter.collections
+    : [];
+  const entries = [];
+  const ids = [];
+  for (const raw of collections) {
+    if (!raw || typeof raw.slug !== "string") continue;
+    const id = collectionSlugToId.get(raw.slug);
+    if (!id) continue;
+    const entry = { collectionId: id };
+    if (typeof raw.collected_at === "string" && raw.collected_at) {
+      entry.createdAt = Math.floor(
+        new Date(raw.collected_at).getTime() / 1000,
+      );
+    }
+    if (typeof raw.position === "number") {
+      entry.position = raw.position;
+    }
+    if (typeof raw.pinned_at === "string" && raw.pinned_at) {
+      entry.pinnedAt = Math.floor(new Date(raw.pinned_at).getTime() / 1000);
+    }
+    entries.push(entry);
+    ids.push(id);
+  }
+  return { entries, ids };
+}
+
+/**
+ * Build the payload for `target.createPost()` from a parsed bundle. Works
+ * for both root bundles (`forReply: false`) and reply leaf bundles — the
+ * front-matter shape is identical aside from `build:` and the parent link.
+ */
+function buildPostPayloadFromBundle(bundle, options) {
+  const { frontMatter } = bundle;
+  const format =
+    typeof frontMatter.format === "string" ? frontMatter.format : "note";
+  const slug =
+    typeof frontMatter.slug === "string" ? frontMatter.slug : undefined;
+  const status =
+    frontMatter.status === "draft" || frontMatter.status === "published"
+      ? frontMatter.status
+      : frontMatter.draft
+        ? "draft"
+        : "published";
+  const visibility =
+    frontMatter.visibility === "unlisted" ||
+    frontMatter.visibility === "private"
+      ? frontMatter.visibility
+      : undefined;
+  const { entries: collectionEntries, ids: collectionIds } = options.memberships;
+
+  const data = {
+    format,
+    title:
+      format === "quote"
+        ? typeof frontMatter.source_name === "string"
+          ? frontMatter.source_name
+          : undefined
+        : typeof frontMatter.title === "string"
+          ? frontMatter.title
+          : undefined,
+    bodyMarkdown: options.bodyMarkdown || undefined,
+    slug,
+    status,
+    visibility,
+    collectionIds:
+      collectionEntries.length === 0 && collectionIds.length > 0
+        ? collectionIds
+        : undefined,
+    collectionEntries:
+      collectionEntries.length > 0 ? collectionEntries : undefined,
+    attachments:
+      options.attachments.length > 0 ? options.attachments : undefined,
+    publishedAt:
+      status === "published" && typeof frontMatter.date === "string"
+        ? Math.floor(new Date(frontMatter.date).getTime() / 1000)
+        : undefined,
+    featuredAt:
+      typeof frontMatter.featured_at === "string" && frontMatter.featured_at
+        ? Math.floor(new Date(frontMatter.featured_at).getTime() / 1000)
+        : undefined,
+    pinnedAt:
+      typeof frontMatter.pinned_at === "string" && frontMatter.pinned_at
+        ? Math.floor(new Date(frontMatter.pinned_at).getTime() / 1000)
+        : undefined,
+    rating:
+      typeof frontMatter.rating === "number" ? frontMatter.rating : undefined,
+  };
+
+  if (options.replyToId) {
+    data.replyToId = options.replyToId;
+  }
+
+  if (format === "link" && typeof frontMatter.link_url === "string") {
+    data.url = frontMatter.link_url;
+  }
+  if (format === "quote") {
+    if (typeof frontMatter.quote_text === "string") {
+      data.quoteText = frontMatter.quote_text;
+    }
+    if (
+      typeof frontMatter.source_url === "string" &&
+      frontMatter.source_url.trim()
+    ) {
+      data.url = frontMatter.source_url;
+    }
+  }
+
+  return data;
 }
 
 export const __test__ = {
@@ -1467,13 +1926,16 @@ export const __test__ = {
   buildSiteAvatarImport,
   reorderCollectionDirectoryItems,
   syncImportedCollectionDirectory,
-  collectReplySlugPaths,
-  getExportedRootAliases,
   getRootAliasPathsForImport,
   toRemotePostPayload,
   buildIncompleteSetupError,
   detectRemoteSetupStatus,
   getIncompleteSetupError,
+  loadSiteConfig,
+  walkHugoContent,
+  mediaSpecFromResource,
+  resolveCollectionMemberships,
+  buildPostPayloadFromBundle,
 };
 
 export async function run(argv) {
@@ -1492,7 +1954,7 @@ export async function run(argv) {
   if (values.help) {
     console.log("Usage: jant site import [--url <url>] [options]");
     console.log("");
-    console.log("Import a Zola export directory or ZIP into a Jant instance.");
+    console.log("Import a Hugo export directory or ZIP into a Jant instance.");
     console.log("");
     console.log("Modes:");
     console.log(
@@ -1557,23 +2019,10 @@ export async function run(argv) {
     process.exit(1);
   }
 
-  const postFiles = [];
-  const collectionFiles = [];
-  let siteConfig = null;
-  let customCss = "";
   let sourceRootDir = inputPath;
   let tempSourceRootDir = null;
 
-  if (inputStat.isDirectory()) {
-    console.log(`Reading directory ${inputPath}...`);
-    await walkContent(sourceRootDir, postFiles, collectionFiles);
-    const configPath = join(sourceRootDir, "config.toml");
-    const configContent = await readFile(configPath, "utf-8").catch(() => null);
-    if (configContent) {
-      siteConfig = await parseToml(configContent);
-    }
-    customCss = await readImportCustomCss(sourceRootDir);
-  } else {
+  if (inputStat.isFile()) {
     console.log(`Reading ZIP ${inputPath}...`);
     const zipData = await readFile(inputPath);
     const { unzipSync } = await import("fflate");
@@ -1585,19 +2034,22 @@ export async function run(argv) {
       await mkdir(dirname(fullPath), { recursive: true });
       await writeFile(fullPath, data);
     }
-
-    await walkContent(sourceRootDir, postFiles, collectionFiles);
-    const configPath = join(sourceRootDir, "config.toml");
-    const configContent = await readFile(configPath, "utf-8").catch(() => null);
-    if (configContent) {
-      siteConfig = await parseToml(configContent);
-    }
-    customCss = await readImportCustomCss(sourceRootDir);
+  } else {
+    console.log(`Reading directory ${inputPath}...`);
   }
 
+  const { rootBundles, collectionBundles } =
+    await walkHugoContent(sourceRootDir);
+  const siteConfig = await loadSiteConfig(sourceRootDir);
+  const customCss = await readImportCustomCss(sourceRootDir);
+
   try {
+    const replyCount = rootBundles.reduce(
+      (sum, root) => sum + root.children.length,
+      0,
+    );
     console.log(
-      `Found ${postFiles.length} posts and ${collectionFiles.length} collections`,
+      `Found ${rootBundles.length} posts (+${replyCount} replies) and ${collectionBundles.length} collections`,
     );
     const importedCollectionDirectory = siteConfig
       ? normalizeImportedCollectionDirectory(siteConfig)
@@ -1699,12 +2151,8 @@ export async function run(argv) {
       }
     }
 
-    for (const { path, content } of collectionFiles) {
-      const { frontMatter } = await parseFrontMatter(content);
-      const slug = path
-        .replace("content/jant-collections/", "")
-        .replace("content/c/", "")
-        .replace("/_index.md", "");
+    for (const bundle of collectionBundles) {
+      const slug = bundle.slug;
 
       if (collectionSlugToId.has(slug)) {
         console.error(
@@ -1715,25 +2163,27 @@ export async function run(argv) {
 
       if (dryRun) {
         console.log(
-          `[dry-run] Would create collection: ${frontMatter.title || slug}`,
+          `[dry-run] Would create collection: ${bundle.frontMatter.title || slug}`,
         );
         collectionSlugToId.set(slug, `dry-run-${slug}`);
         continue;
       }
 
       try {
-        const collectionExtra = frontMatter.extra || {};
         const result = await target.createCollection({
-          title: frontMatter.title || slug,
+          title: bundle.frontMatter.title || slug,
           slug,
-          description: frontMatter.description || undefined,
+          description:
+            typeof bundle.frontMatter.summary_text === "string"
+              ? bundle.frontMatter.summary_text
+              : undefined,
           sortOrder:
-            collectionExtra.sort_order ||
-            collectionExtra.sortOrder ||
-            undefined,
+            typeof bundle.frontMatter.sort_order === "string"
+              ? bundle.frontMatter.sort_order
+              : undefined,
         });
         collectionSlugToId.set(slug, result.id);
-        console.log(`Created collection: ${frontMatter.title || slug}`);
+        console.log(`Created collection: ${bundle.frontMatter.title || slug}`);
       } catch (err) {
         console.error(`Error creating collection "${slug}": ${err.message}`);
         process.exit(1);
@@ -1761,93 +2211,58 @@ export async function run(argv) {
       }
     }
 
-    // 4. Process posts
+    // 4. Process posts — root bundle first, then each reply leaf, then aliases.
     let postsCreated = 0;
     let repliesCreated = 0;
     let mediaUploaded = 0;
     let aliasesCreated = 0;
 
-    for (const { path, content } of postFiles) {
-      const { frontMatter, body } = await parseFrontMatter(content);
-
-      const segments = splitReplies(body);
-      const rootSegment = segments[0];
-      const replySegments = segments.slice(1);
-      const replySlugPaths = collectReplySlugPaths(replySegments);
-
-      // Resolve collection memberships. When `extra.jant.collections[]` is
-      // present (Jant's own export), use the structured entries so
-      // `collected_at` / `position` / `pinned_at` round-trip losslessly.
-      // Otherwise fall back to the bare `taxonomies.collections` slug
-      // list — this tolerates hand-authored Zola sites.
-      const extra = frontMatter.extra || {};
-      const jantMeta = extra.jant || {};
-      const collectionIds = [];
-      const collectionEntries = [];
-      const structuredCollections = Array.isArray(jantMeta.collections)
-        ? jantMeta.collections
-        : [];
-      if (structuredCollections.length > 0) {
-        for (const raw of structuredCollections) {
-          if (!raw || typeof raw.slug !== "string") continue;
-          const id = collectionSlugToId.get(raw.slug);
-          if (!id) continue;
-          const entry = { collectionId: id };
-          if (typeof raw.collected_at === "string" && raw.collected_at) {
-            entry.createdAt = Math.floor(
-              new Date(raw.collected_at).getTime() / 1000,
-            );
-          }
-          if (typeof raw.position === "number") {
-            entry.position = raw.position;
-          }
-          if (typeof raw.pinned_at === "string" && raw.pinned_at) {
-            entry.pinnedAt = Math.floor(
-              new Date(raw.pinned_at).getTime() / 1000,
-            );
-          }
-          collectionEntries.push(entry);
-          collectionIds.push(id);
-        }
-      } else {
-        const taxonomyCollections =
-          frontMatter.taxonomies?.c ||
-          frontMatter.taxonomies?.collections ||
-          [];
-        for (const colSlug of taxonomyCollections) {
-          const id = collectionSlugToId.get(colSlug);
-          if (id) collectionIds.push(id);
-        }
-      }
-
-      const format = extra.format || "note";
-      const postSlug =
-        frontMatter.slug != null ? String(frontMatter.slug) : undefined;
-      const postStatus =
-        extra.status === "draft" || extra.status === "published"
-          ? extra.status
-          : frontMatter.draft
-            ? "draft"
-            : "published";
-      const postVisibility =
-        extra.visibility === "unlisted" || extra.visibility === "private"
-          ? extra.visibility
-          : undefined;
+    for (const rootBundle of rootBundles) {
+      const { frontMatter: rootFm } = rootBundle;
+      const postSlug = rootBundle.slug;
+      const format =
+        typeof rootFm.format === "string" ? rootFm.format : "note";
       const postLabel =
-        (format === "quote" ? extra.source_name : frontMatter.title) ||
+        (format === "quote"
+          ? typeof rootFm.source_name === "string"
+            ? rootFm.source_name
+            : null
+          : typeof rootFm.title === "string"
+            ? rootFm.title
+            : null) ||
         postSlug ||
         "(untitled)";
 
-      if (!dryRun && postSlug) {
+      if (!dryRun) {
         await assertImportSlugAvailable(target, postSlug, postLabel, "post");
       }
 
-      // Process images in root body
-      let rootBody = rootSegment?.body || "";
-      const normalizedRootBody = normalizeImportedBodySegment(rootBody);
-      rootBody = normalizedRootBody.markdown;
+      // Normalize body + extract embedded attachment blocks.
+      const normalizedRoot = normalizeImportedBodySegment(rootBundle.body);
+      let rootBody = normalizedRoot.markdown;
       let importedAttachments = [];
 
+      // Upload page-resource media declared in `resources:` front matter.
+      const rootResourceSpecs = [];
+      if (Array.isArray(rootFm.resources)) {
+        for (const resource of rootFm.resources) {
+          const spec = await mediaSpecFromResource(resource, rootBundle.dir);
+          if (spec) rootResourceSpecs.push(spec);
+        }
+      }
+
+      const rootResourceIds = [];
+      if (!skipMedia && !dryRun && rootResourceSpecs.length > 0) {
+        const result = await uploadBundleResources(rootResourceSpecs, target);
+        mediaUploaded += result.uploaded;
+        if (result.urlMap.size > 0) {
+          rootBody = rewriteMediaReferences(rootBody, result.urlMap);
+        }
+        rootResourceIds.push(...result.mediaIds);
+      }
+
+      // Fallback: rewrite any leftover in-body image URLs (covers hand-
+      // authored Hugo content where the exporter didn't declare resources).
       if (!skipMedia && !dryRun) {
         const imageMedia = findImageUrls(rootBody).map((src) => ({ src }));
         const uploadResult = await uploadMediaList(
@@ -1857,14 +2272,14 @@ export async function run(argv) {
           sourceRootDir,
         );
         mediaUploaded += uploadResult.uploaded;
-
         if (uploadResult.urlMap.size > 0) {
           rootBody = rewriteMediaReferences(rootBody, uploadResult.urlMap);
         }
       }
+
       if (!dryRun) {
         const attachmentResult = await buildImportedAttachments(
-          normalizedRootBody.attachments,
+          normalizedRoot.attachments,
           target,
           siteConfig,
           sourceRootDir,
@@ -1874,132 +2289,108 @@ export async function run(argv) {
         mediaUploaded += attachmentResult.uploaded;
       }
 
-      const postData = {
-        format,
-        title:
-          format === "quote"
-            ? typeof extra.source_name === "string"
-              ? extra.source_name
-              : undefined
-            : frontMatter.title != null
-              ? String(frontMatter.title)
-              : undefined,
-        bodyMarkdown: rootBody || undefined,
-        slug: postSlug,
-        path: frontMatter.path != null ? String(frontMatter.path) : undefined,
-        status: postStatus,
-        visibility: postVisibility,
-        collectionIds:
-          collectionEntries.length === 0 && collectionIds.length > 0
-            ? collectionIds
-            : undefined,
-        collectionEntries:
-          collectionEntries.length > 0 ? collectionEntries : undefined,
-        attachments:
-          importedAttachments.length > 0 ? importedAttachments : undefined,
-        publishedAt:
-          postStatus === "published" && frontMatter.date
-            ? Math.floor(new Date(frontMatter.date).getTime() / 1000)
-            : undefined,
-        featuredAt:
-          typeof jantMeta.featured_at === "string" && jantMeta.featured_at
-            ? Math.floor(new Date(jantMeta.featured_at).getTime() / 1000)
-            : undefined,
-        pinnedAt:
-          typeof jantMeta.pinned_at === "string" && jantMeta.pinned_at
-            ? Math.floor(new Date(jantMeta.pinned_at).getTime() / 1000)
-            : undefined,
-        rating: extra.rating || undefined,
-      };
+      // Also attach every uploaded root page-resource as a media attachment
+      // so the post record carries them even when none appear in body text.
+      for (const mediaId of rootResourceIds) {
+        importedAttachments.push({ type: "media", mediaId });
+      }
 
-      if (format === "link" && extra.link_url) {
-        postData.url = extra.link_url;
-      }
-      if (format === "quote" && extra.quote_text) {
-        postData.quoteText = extra.quote_text;
-        if (typeof extra.source_url === "string" && extra.source_url.trim()) {
-          postData.url = extra.source_url;
-        }
-      }
+      const memberships = resolveCollectionMemberships(
+        rootFm,
+        collectionSlugToId,
+      );
+      const postData = buildPostPayloadFromBundle(rootBundle, {
+        bodyMarkdown: rootBody,
+        attachments: importedAttachments,
+        memberships,
+        replyToId: null,
+      });
 
       if (dryRun) {
         console.log(`[dry-run] Would create post: ${postLabel} (${format})`);
-        if (replySegments.length > 0) {
-          console.log(`  [dry-run] With ${replySegments.length} replies`);
+        if (rootBundle.children.length > 0) {
+          console.log(
+            `  [dry-run] With ${rootBundle.children.length} replies`,
+          );
         }
         postsCreated++;
-        repliesCreated += replySegments.length;
+        repliesCreated += rootBundle.children.length;
         continue;
       }
 
-      const progress = `[${postsCreated + 1}/${postFiles.length}]`;
-
+      const progress = `[${postsCreated + 1}/${rootBundles.length}]`;
       let post;
       try {
         post = await target.createPost(postData);
         postsCreated++;
         const replyInfo =
-          replySegments.length > 0 ? ` (+${replySegments.length} replies)` : "";
+          rootBundle.children.length > 0
+            ? ` (+${rootBundle.children.length} replies)`
+            : "";
         console.log(`${progress} Created: ${postLabel}${replyInfo}`);
       } catch (err) {
         console.error(`Error creating post "${postLabel}": ${err.message}`);
         process.exit(1);
       }
 
-      // Create replies before aliases so reply slugs can claim their own paths.
+      // Create replies before aliases so reply slugs can claim their paths.
       if (!post) continue;
-      for (const replySegment of replySegments) {
-        const replyAttrs = replySegment.attrs || {};
-        const replySlug = replyAttrs.slug || undefined;
+      const replySlugPaths = new Set();
+      for (const replyBundle of rootBundle.children) {
+        const replyFm = replyBundle.frontMatter;
+        const replySlug = replyBundle.slug;
+        const replyFormat =
+          typeof replyFm.format === "string" ? replyFm.format : "note";
         const replyLabel =
-          replyAttrs.source_name ||
-          replyAttrs.title ||
+          (replyFormat === "quote"
+            ? typeof replyFm.source_name === "string"
+              ? replyFm.source_name
+              : null
+            : typeof replyFm.title === "string"
+              ? replyFm.title
+              : null) ||
           replySlug ||
           "(untitled reply)";
 
-        // Resolve reply-level collection memberships from the marker JSON.
-        const replyCollectionIds = [];
-        const replyCollectionEntries = [];
-        const replyStructuredCollections = Array.isArray(
-          replyAttrs.collections,
-        )
-          ? replyAttrs.collections
-          : [];
-        for (const raw of replyStructuredCollections) {
-          if (!raw || typeof raw.slug !== "string") continue;
-          const id = collectionSlugToId.get(raw.slug);
-          if (!id) continue;
-          const entry = { collectionId: id };
-          if (typeof raw.collected_at === "string" && raw.collected_at) {
-            entry.createdAt = Math.floor(
-              new Date(raw.collected_at).getTime() / 1000,
-            );
-          }
-          if (typeof raw.position === "number") {
-            entry.position = raw.position;
-          }
-          if (typeof raw.pinned_at === "string" && raw.pinned_at) {
-            entry.pinnedAt = Math.floor(
-              new Date(raw.pinned_at).getTime() / 1000,
-            );
-          }
-          replyCollectionEntries.push(entry);
-          replyCollectionIds.push(id);
-        }
-        if (!dryRun && replySlug) {
-          await assertImportSlugAvailable(
-            target,
-            replySlug,
-            `${replyLabel} in ${postLabel}`,
-            "reply",
-          );
-        }
-        let replyBody = replySegment.body || "";
-        const normalizedReplyBody = normalizeImportedBodySegment(replyBody);
-        replyBody = normalizedReplyBody.markdown;
+        const replySlugPath = normalizeImportAliasPath(replySlug);
+        if (replySlugPath) replySlugPaths.add(replySlugPath);
+
+        await assertImportSlugAvailable(
+          target,
+          replySlug,
+          `${replyLabel} in ${postLabel}`,
+          "reply",
+        );
+
+        const normalizedReply = normalizeImportedBodySegment(replyBundle.body);
+        let replyBody = normalizedReply.markdown;
         let replyAttachments = [];
 
-        if (!skipMedia && !dryRun) {
+        const replyResourceSpecs = [];
+        if (Array.isArray(replyFm.resources)) {
+          for (const resource of replyFm.resources) {
+            const spec = await mediaSpecFromResource(
+              resource,
+              replyBundle.dir,
+            );
+            if (spec) replyResourceSpecs.push(spec);
+          }
+        }
+
+        const replyResourceIds = [];
+        if (!skipMedia && replyResourceSpecs.length > 0) {
+          const result = await uploadBundleResources(
+            replyResourceSpecs,
+            target,
+          );
+          mediaUploaded += result.uploaded;
+          if (result.urlMap.size > 0) {
+            replyBody = rewriteMediaReferences(replyBody, result.urlMap);
+          }
+          replyResourceIds.push(...result.mediaIds);
+        }
+
+        if (!skipMedia) {
           const imageMedia = findImageUrls(replyBody).map((src) => ({ src }));
           const uploadResult = await uploadMediaList(
             imageMedia,
@@ -2008,86 +2399,34 @@ export async function run(argv) {
             sourceRootDir,
           );
           mediaUploaded += uploadResult.uploaded;
-
           if (uploadResult.urlMap.size > 0) {
             replyBody = rewriteMediaReferences(replyBody, uploadResult.urlMap);
           }
         }
-        if (!dryRun) {
-          const attachmentResult = await buildImportedAttachments(
-            normalizedReplyBody.attachments,
-            target,
-            siteConfig,
-            sourceRootDir,
-            { skipUploads: skipMedia },
-          );
-          replyAttachments = attachmentResult.attachments;
-          mediaUploaded += attachmentResult.uploaded;
+
+        const attachmentResult = await buildImportedAttachments(
+          normalizedReply.attachments,
+          target,
+          siteConfig,
+          sourceRootDir,
+          { skipUploads: skipMedia },
+        );
+        replyAttachments = attachmentResult.attachments;
+        mediaUploaded += attachmentResult.uploaded;
+        for (const mediaId of replyResourceIds) {
+          replyAttachments.push({ type: "media", mediaId });
         }
 
-        const replyFormat = replyAttrs.format || "note";
-        const replyStatus =
-          replyAttrs.status === "draft" || replyAttrs.status === "published"
-            ? replyAttrs.status
-            : "published";
-        const replyVisibility =
-          replyAttrs.visibility === "unlisted" ||
-          replyAttrs.visibility === "private"
-            ? replyAttrs.visibility
-            : undefined;
-        const replyData = {
-          format: replyFormat,
-          status: replyStatus,
-          title:
-            replyFormat === "quote"
-              ? replyAttrs.source_name || undefined
-              : replyAttrs.title || undefined,
-          bodyMarkdown: replyBody || undefined,
+        const replyMemberships = resolveCollectionMemberships(
+          replyFm,
+          collectionSlugToId,
+        );
+        const replyData = buildPostPayloadFromBundle(replyBundle, {
+          bodyMarkdown: replyBody,
+          attachments: replyAttachments,
+          memberships: replyMemberships,
           replyToId: post.id,
-          slug: replySlug,
-          visibility: replyVisibility,
-          attachments:
-            replyAttachments.length > 0 ? replyAttachments : undefined,
-          publishedAt: replyAttrs.date
-            ? Math.floor(new Date(replyAttrs.date).getTime() / 1000)
-            : undefined,
-          featuredAt:
-            typeof replyAttrs.featured_at === "string" &&
-            replyAttrs.featured_at
-              ? Math.floor(
-                  new Date(replyAttrs.featured_at).getTime() / 1000,
-                )
-              : undefined,
-          pinnedAt:
-            typeof replyAttrs.pinned_at === "string" && replyAttrs.pinned_at
-              ? Math.floor(new Date(replyAttrs.pinned_at).getTime() / 1000)
-              : undefined,
-          rating:
-            typeof replyAttrs.rating === "number"
-              ? replyAttrs.rating
-              : replyAttrs.rating
-                ? Number(replyAttrs.rating)
-                : undefined,
-          collectionIds:
-            replyCollectionEntries.length === 0 &&
-            replyCollectionIds.length > 0
-              ? replyCollectionIds
-              : undefined,
-          collectionEntries:
-            replyCollectionEntries.length > 0
-              ? replyCollectionEntries
-              : undefined,
-        };
-
-        if (replyFormat === "link" && replyAttrs.url) {
-          replyData.url = replyAttrs.url;
-        }
-        if (replyFormat === "quote" && replyAttrs.quote_text) {
-          replyData.quoteText = replyAttrs.quote_text;
-          if (replyAttrs.source_url) {
-            replyData.url = replyAttrs.source_url;
-          }
-        }
+        });
 
         try {
           await target.createPost(replyData);
@@ -2098,22 +2437,20 @@ export async function run(argv) {
         }
       }
 
-      // Create exported root aliases after replies. Reply slugs are handled by
-      // the thread markers; only true root aliases round-trip back into Jant.
+      // Create exported root aliases after replies. Historical root slugs
+      // round-trip via `root_aliases:`; reply slugs are handled by their
+      // own bundles so we strip them from the alias list.
       const rootTargetSlug = postSlug || post.slug;
-      let aliasPaths;
-      try {
-        aliasPaths = getRootAliasPathsForImport(
-          getExportedRootAliases(frontMatter),
-          rootTargetSlug,
-          replySlugPaths,
-        );
-      } catch (err) {
-        console.error(
-          `Error importing aliases for "${postLabel}": ${err.message}`,
-        );
-        process.exit(1);
-      }
+      const aliases = Array.isArray(rootFm.aliases) ? rootFm.aliases : [];
+      const rootAliases = Array.isArray(rootFm.root_aliases)
+        ? rootFm.root_aliases
+        : [];
+      const aliasPaths = getRootAliasPathsForImport(
+        aliases,
+        rootAliases,
+        rootTargetSlug,
+        replySlugPaths,
+      );
       for (const aliasPath of aliasPaths) {
         try {
           await target.createAlias(aliasPath, rootTargetSlug);
@@ -2147,3 +2484,4 @@ export async function run(argv) {
     }
   }
 }
+

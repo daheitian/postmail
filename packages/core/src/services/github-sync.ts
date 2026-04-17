@@ -2,7 +2,9 @@
  * GitHub Sync Service
  *
  * Handles bidirectional content synchronization between Jant and a GitHub repo.
- * Posts are serialized as Zola-format Markdown files (reusing the export format).
+ * Posts are serialized as Hugo-format Markdown bundles (reusing the export
+ * format): each post is a branch bundle at `content/{slug}/_index.md` with
+ * reply leaves at `content/{root-slug}/{reply-slug}/index.md`.
  *
  * Push (Jant → GitHub):
  *   - Always full sync: regenerate Jant-managed files in a single atomic commit
@@ -57,15 +59,16 @@ export const SYNC_COMMIT_MARKER = "[jant-sync]";
 export const JANT_SYNC_MARKER_PATH = ".jant-sync";
 
 /** Marker file schema version. Bump on incompatible format changes. */
-export const JANT_SYNC_MARKER_SCHEMA_VERSION = 2;
+export const JANT_SYNC_MARKER_SCHEMA_VERSION = 3;
 
 /**
  * Hard list of paths Jant fully owns and always overwrites on push.
  * Anything outside this set is user territory and preserved via base_tree.
  *
- * - `content/**` — posts, collections, sections (rendered by Zola)
- * - `themes/jant/**` — the packaged Jant theme (templates + static assets)
- * - `config.toml` — site config, including `theme = "jant"`
+ * - `content/**` — posts, collections, sections (rendered by Hugo)
+ * - `data/**` — Hugo data files (`data/jant.toml`, `data/collection_directory.toml`)
+ * - `themes/jant/**` — the packaged Jant theme (layouts + static assets)
+ * - `hugo.toml` — site config, including `theme = "jant"`
  * - `.gitignore`, `README.md` — scaffolded once, then kept in sync
  * - `.jant-sync` — ownership marker; written by this service, not by export
  *
@@ -74,22 +77,28 @@ export const JANT_SYNC_MARKER_SCHEMA_VERSION = 2;
  */
 export const JANT_MANAGED_GLOBS = [
   "content/**",
+  "data/**",
   "themes/jant/**",
-  "config.toml",
+  "hugo.toml",
   ".gitignore",
   "README.md",
   ".jant-sync",
 ] as const;
 
 /**
- * Paths that schema v1 used to own under the flat layout but schema v2
- * no longer writes. On the first v2 push against a v1-marked repo, these
- * are explicitly deleted so stale root templates can't shadow the new
- * `themes/jant/` theme (Zola's override rule puts root templates first).
+ * Paths that earlier schema versions (v1 flat layout, v2 Zola theme) used
+ * to own but schema v3 (Hugo) no longer writes. On the first v3 push
+ * against a pre-v3 marked repo, these are explicitly deleted so stale
+ * Zola artifacts don't confuse the Hugo build or shadow theme assets.
  *
  * `static/custom.css` is included: v1 wrote Jant-admin custom CSS here, and
- * v2 writes it under `themes/jant/static/custom.css`. Leaving the legacy
- * copy around would cause it to win over the current admin value.
+ * later versions write it under `themes/jant/static/custom.css`. Leaving
+ * the legacy copy around would cause it to win over the current admin value.
+ *
+ * `config.toml` is the Zola-era config filename; v3 uses `hugo.toml`.
+ *
+ * `content/feed/_index.md` and `content/404.md` were Zola-era section
+ * files; Hugo handles feeds and 404s through theme layouts instead.
  */
 const V1_LEGACY_PATHS = [
   "templates/base.html",
@@ -109,10 +118,10 @@ const V1_LEGACY_PATHS = [
   "static/custom.css",
   "static/favicon.ico",
   "static/apple-touch-icon.png",
+  "config.toml",
+  "content/feed/_index.md",
+  "content/404.md",
 ] as const;
-
-/** Directory prefix for post files in the repo. */
-const POST_DIR = "content/posts";
 
 // ---------------------------------------------------------------------------
 // Ownership marker
@@ -468,15 +477,16 @@ export function createGitHubSyncService(
         },
       ];
 
-      // On the first push against a v1-marked repo, null out the legacy
-      // flat-layout paths. Without this, root `templates/**` files would
-      // shadow the new `themes/jant/` theme because Zola's override rule
-      // picks root over theme. The cleanup runs exactly once: subsequent
-      // pushes see schema_version === 2 and skip this branch.
+      // On the first push against a pre-v3 marked repo, null out legacy
+      // paths from earlier schema versions (flat Zola v1, theme-packaged
+      // Zola v2). Without this, leftover Zola `templates/**` or root
+      // `config.toml` would either confuse Hugo's build or (pre-v2)
+      // shadow the packaged theme. The cleanup runs exactly once:
+      // subsequent pushes see schema_version === 3 and skip this branch.
       if (
         existingMarker &&
         existingMarker.site_id === siteId &&
-        (existingMarker.schema_version ?? 1) < 2
+        (existingMarker.schema_version ?? 1) < 3
       ) {
         for (const legacyPath of V1_LEGACY_PATHS) {
           treeItems.push({
@@ -550,7 +560,7 @@ export function createGitHubSyncService(
       );
       if (hasOwnCommits && payload.commits.length === 1) return;
 
-      // Collect modified/added post files from non-Jant commits.
+      // Collect modified/added bundle files from non-Jant commits.
       // Deletions are intentionally ignored — removing a file in Git must not
       // delete posts, so users can't wipe the site by deleting the repo.
       const modified = new Set<string>();
@@ -559,18 +569,23 @@ export function createGitHubSyncService(
         if (commit.message.includes(SYNC_COMMIT_MARKER)) continue;
 
         for (const file of [...commit.modified, ...commit.added]) {
-          if (file.startsWith(`${POST_DIR}/`) && file.endsWith(".md")) {
+          if (classifyBundlePath(file)) {
             modified.add(file);
           }
         }
       }
 
+      if (modified.size === 0) return;
+
       const config = await loadConfig();
       if (!config) return;
       const { client, owner, repo } = createClient(config);
 
-      // Process modified files
+      // Process modified bundle files
       for (const filePath of modified) {
+        const classification = classifyBundlePath(filePath);
+        if (!classification) continue;
+
         const fileContent = await client.getFileContent(
           owner,
           repo,
@@ -583,23 +598,38 @@ export function createGitHubSyncService(
         const raw = decodeBase64Content(fileContent.content);
         const { frontMatter, body } = await parseFrontMatter(raw);
 
-        const slug = frontMatter.slug;
+        // Prefer the explicit front-matter slug when present; fall back
+        // to the slug encoded in the bundle directory path.
+        const slug =
+          typeof frontMatter.slug === "string" && frontMatter.slug.trim()
+            ? frontMatter.slug.trim()
+            : classification.slug;
         if (!slug) continue;
 
-        // Find existing post by slug
+        // Find existing post by slug. GitHub sync only updates posts
+        // already in Jant — creation must happen through the UI or
+        // the import CLI.
         const pathRecord = await services.paths.getByPath(slug);
         if (!pathRecord?.postId) continue;
 
         const existingPost = await services.posts.getById(pathRecord.postId);
         if (!existingPost) continue;
 
-        // TODO(hugo-migration, Commit 4): rewrite this block to walk the
-        // Hugo branch bundle (root `_index.md` + nested reply `index.md`
-        // leaves) instead of parsing a single flattened body. For now
-        // handle the body as a single root post — threaded posts will be
-        // handled end-to-end by the import pipeline rewrite.
-        const rootBody = body.trim();
-        const tiptapBody = rootBody ? markdownToTiptapJson(rootBody) : null;
+        // For reply bundles, verify the resolved post is actually a reply
+        // under the expected root. This prevents a stray `content/foo/bar/index.md`
+        // from editing an unrelated root post that happens to share a slug.
+        if (classification.kind === "reply") {
+          const rootPath = await services.paths.getByPath(
+            classification.rootSlug,
+          );
+          if (!rootPath?.postId) continue;
+          if (existingPost.threadId !== rootPath.postId) continue;
+        }
+
+        const trimmedBody = body.trim();
+        const tiptapBody = trimmedBody
+          ? markdownToTiptapJson(trimmedBody)
+          : null;
 
         const updateData: Record<string, unknown> = {};
         if (tiptapBody !== null) updateData.body = tiptapBody;
@@ -677,6 +707,44 @@ function decodeBase64Content(content: string): string {
   // GitHub API returns base64 with newlines for readability
   const cleaned = content.replace(/\n/g, "");
   return decodeURIComponent(escape(atob(cleaned)));
+}
+
+/**
+ * Classify a repository path as a Hugo post bundle, either a branch
+ * bundle (`content/{slug}/_index.md` — root post) or a leaf bundle
+ * (`content/{root-slug}/{reply-slug}/index.md` — reply). Returns
+ * `null` for anything outside the content tree or more deeply nested
+ * than Jant's two-level layout.
+ *
+ * The exporter never writes nested directories deeper than one level
+ * under a root post, so any path with more path segments is treated as
+ * foreign and ignored by the pull handler.
+ */
+type BundleClassification =
+  | { kind: "root"; slug: string }
+  | { kind: "reply"; rootSlug: string; slug: string };
+
+function classifyBundlePath(path: string): BundleClassification | null {
+  if (!path.startsWith("content/")) return null;
+  const rest = path.slice("content/".length);
+  const segments = rest.split("/");
+
+  // content/{slug}/_index.md — root branch bundle
+  if (segments.length === 2 && segments[1] === "_index.md") {
+    const slug = segments[0];
+    if (!slug) return null;
+    return { kind: "root", slug };
+  }
+
+  // content/{root-slug}/{reply-slug}/index.md — reply leaf bundle
+  if (segments.length === 3 && segments[2] === "index.md") {
+    const rootSlug = segments[0];
+    const slug = segments[1];
+    if (!rootSlug || !slug) return null;
+    return { kind: "reply", rootSlug, slug };
+  }
+
+  return null;
 }
 
 function uint8ArrayToBase64(bytes: Uint8Array): string {
