@@ -78,7 +78,7 @@ function logLocalizationProgress(event) {
 
   if (event.type === "rewrite-complete") {
     console.log(
-      `Rewriting export files... updated ${event.filesUpdated} content files${event.configUpdated ? " and config.toml" : ""}`,
+      `Rewriting export files... updated ${event.filesUpdated} content files${event.configUpdated ? " and hugo.toml" : ""}`,
     );
   }
 }

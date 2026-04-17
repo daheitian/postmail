@@ -1,10 +1,8 @@
-+++
-title = "Weekend Notes"
-template = "collection.html"
-description = "Small updates from slow Saturdays and Sundays."
-[extra]
-sort_order = "newest"
-jant_collection = true
-collection_term = "weekend-notes"
-entry_count = 14
-+++
+---
+title: "Weekend Notes"
+slug: "weekend-notes"
+type: "collection"
+summary_text: "Small updates from slow Saturdays and Sundays."
+sort_order: "newest"
+entry_count: 14
+---

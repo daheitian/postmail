@@ -323,38 +323,32 @@ export function collectMediaReferences(content) {
 }
 
 function getConfigMediaUrls(siteConfig) {
-  const jant = siteConfig?.extra?.jant || {};
+  // Hugo config: media URLs live under [params] (flat), not under
+  // [extra.jant] like Zola. Favicon and apple-touch are written as
+  // theme-relative paths by the exporter, so only the avatar URL is
+  // a remote reference worth localizing.
+  const params = siteConfig?.params || {};
   const refs = [];
 
-  if (typeof jant.site_avatar_url === "string") {
-    refs.push(jant.site_avatar_url);
-  }
-  if (typeof jant.apple_touch_icon_url === "string") {
-    refs.push(jant.apple_touch_icon_url);
-  }
-  if (typeof jant.favicon_url === "string") {
-    refs.push(jant.favicon_url);
+  if (typeof params.site_avatar_url === "string") {
+    refs.push(params.site_avatar_url);
   }
 
   return refs.filter((ref) => !isSkippableUrl(ref));
 }
 
 export function updateConfigMediaUrls(siteConfig, replacements) {
-  const jant = siteConfig?.extra?.jant;
-  if (!jant || typeof jant !== "object") {
+  const params = siteConfig?.params;
+  if (!params || typeof params !== "object") {
     return false;
   }
 
   let changed = false;
-  for (const key of [
-    "site_avatar_url",
-    "apple_touch_icon_url",
-    "favicon_url",
-  ]) {
-    if (typeof jant[key] !== "string") continue;
-    const nextValue = replacements.get(jant[key]);
-    if (!nextValue || nextValue === jant[key]) continue;
-    jant[key] = nextValue;
+  for (const key of ["site_avatar_url"]) {
+    if (typeof params[key] !== "string") continue;
+    const nextValue = replacements.get(params[key]);
+    if (!nextValue || nextValue === params[key]) continue;
+    params[key] = nextValue;
     changed = true;
   }
 
@@ -424,11 +418,11 @@ async function unpackZipToDirectory(zipBytes, rootDir) {
 export async function localizeSiteExportDirectory(rootDir, options = {}) {
   const logger =
     typeof options.logger === "function" ? options.logger : () => {};
-  const configPath = join(rootDir, "config.toml");
+  const configPath = join(rootDir, "hugo.toml");
   const configText = await readFile(configPath, "utf-8");
   const siteConfig = parse(configText);
   const baseUrl =
-    typeof siteConfig.base_url === "string" ? siteConfig.base_url : "";
+    typeof siteConfig.baseURL === "string" ? siteConfig.baseURL : "";
   const sitePathPrefix = getSitePathPrefix(baseUrl);
   const markdownFiles = await readMarkdownFiles(rootDir);
   const usedLocalizedPaths = new Set();

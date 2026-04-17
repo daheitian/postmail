@@ -1,0 +1,102 @@
+{{ define "main" }}
+  {{- /*
+    _default/list.html is the section/list template fallback. It branches on
+    page type so section pages with `type: collection` (branch bundles under
+    content/{collection-slug}/_index.md) render a filtered, per-collection
+    timeline. Other section types (archive, featured, etc.) have dedicated
+    templates; this block only fires for collection sections and as a final
+    fallback for unknown section types.
+  */ -}}
+  {{- if eq .Type "collection" -}}
+    {{- $collectionSlug := .Params.slug | default .Slug -}}
+    {{- $allPosts := where .Site.Pages "Type" "post" -}}
+    {{- $members := slice -}}
+    {{- range $allPosts -}}
+      {{- $post := . -}}
+      {{- with $post.Params.collections -}}
+        {{- range . -}}
+          {{- if eq .slug $collectionSlug -}}
+            {{- $members = $members | append (dict "post" $post "entry" .) -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+
+    {{- /* Split into pinned + unpinned, sort each, then concat. */ -}}
+    {{- $pinned := slice -}}
+    {{- $unpinned := slice -}}
+    {{- range $members -}}
+      {{- if .entry.pinned_at -}}
+        {{- $pinned = $pinned | append . -}}
+      {{- else -}}
+        {{- $unpinned = $unpinned | append . -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if $pinned -}}
+      {{- $pinned = sort $pinned "entry.pinned_at" "desc" -}}
+    {{- end -}}
+    {{- $sortOrder := .Params.sort_order | default "position" -}}
+    {{- if $unpinned -}}
+      {{- if eq $sortOrder "collected_at_desc" -}}
+        {{- $unpinned = sort $unpinned "entry.collected_at" "desc" -}}
+      {{- else -}}
+        {{- $unpinned = sort $unpinned "entry.position" "asc" -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $ordered := $pinned | append $unpinned -}}
+    {{- $posts := slice -}}
+    {{- range $ordered -}}{{- $posts = $posts | append .post -}}{{- end -}}
+
+    {{- $pageSize := .Site.Params.page_size | default 10 -}}
+    {{- $paginator := .Paginate $posts $pageSize -}}
+
+    <section class="section section-collection">
+      <header class="section-header">
+        <h1 class="section-title">{{ .Title }}</h1>
+        {{- with .Params.summary_text -}}
+          <p class="section-summary">{{ . }}</p>
+        {{- end -}}
+        {{- with .Params.entry_count -}}
+          <p class="section-meta">{{ . }} {{ if eq (int .) 1 }}post{{ else }}posts{{ end }}</p>
+        {{- end -}}
+        {{ .Content }}
+      </header>
+      {{- if $paginator.Pages -}}
+        <div class="post-list">
+          {{- range $paginator.Pages -}}
+            {{ partial "post-card.html" . }}
+          {{- end -}}
+        </div>
+        {{ partial "pagination.html" $paginator }}
+      {{- else -}}
+        <p class="empty-state">No posts in this collection yet.</p>
+      {{- end -}}
+    </section>
+  {{- else -}}
+    <section class="section">
+      <header class="section-header">
+        <h1 class="section-title">{{ .Title }}</h1>
+        {{- with .Params.summary_text -}}
+          <p class="section-summary">{{ . }}</p>
+        {{- end -}}
+      </header>
+      <div class="section-body">
+        {{ .Content }}
+      </div>
+      {{- $posts := where .Site.Pages "Type" "post" -}}
+      {{- $posts = $posts.ByDate.Reverse -}}
+      {{- $pageSize := .Site.Params.page_size | default 10 -}}
+      {{- $paginator := .Paginate $posts $pageSize -}}
+      {{- if $paginator.Pages -}}
+        <div class="post-list">
+          {{- range $paginator.Pages -}}
+            {{ partial "post-card.html" . }}
+          {{- end -}}
+        </div>
+        {{ partial "pagination.html" $paginator }}
+      {{- else -}}
+        <p class="empty-state">Nothing here yet.</p>
+      {{- end -}}
+    </section>
+  {{- end -}}
+{{ end }}

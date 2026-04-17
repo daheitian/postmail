@@ -1,0 +1,27 @@
+{{ define "main" }}
+  {{- /* Root posts are branch bundles (kind=section), so we iterate .Site.Pages. */ -}}
+  {{- $posts := where .Site.Pages "Type" "post" -}}
+  {{- $featured := where $posts "Params.featured_at" "ne" nil -}}
+  {{- $featured = sort $featured "Params.featured_at" "desc" -}}
+  {{- $pageSize := .Site.Params.page_size | default 10 -}}
+  {{- $paginator := .Paginate $featured $pageSize -}}
+
+  <section class="section section-featured">
+    <header class="section-header">
+      <h1 class="section-title">{{ .Title | default "Featured" }}</h1>
+      {{- with .Params.summary_text -}}
+        <p class="section-summary">{{ . }}</p>
+      {{- end -}}
+    </header>
+    {{- if $paginator.Pages -}}
+      <div class="post-list">
+        {{- range $paginator.Pages -}}
+          {{ partial "post-card.html" . }}
+        {{- end -}}
+      </div>
+      {{ partial "pagination.html" $paginator }}
+    {{- else -}}
+      <p class="empty-state">Nothing featured yet. Star a post to highlight it here.</p>
+    {{- end -}}
+  </section>
+{{ end }}

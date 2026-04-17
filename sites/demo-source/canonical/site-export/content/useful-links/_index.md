@@ -1,10 +1,8 @@
-+++
-title = "Useful Links"
-template = "collection.html"
-description = "Articles, tools, recipes, and pages I want to find again."
-[extra]
-sort_order = "newest"
-jant_collection = true
-collection_term = "useful-links"
-entry_count = 7
-+++
+---
+title: "Useful Links"
+slug: "useful-links"
+type: "collection"
+summary_text: "Articles, tools, recipes, and pages I want to find again."
+sort_order: "newest"
+entry_count: 7
+---

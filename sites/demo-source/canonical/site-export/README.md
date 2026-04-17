@@ -1,45 +1,43 @@
-# Jant — Zola Export
+# Jant — Hugo Export
 
-This is a static site exported from [Jant](https://github.com/jant-me/jant), ready to build with [Zola](https://www.getzola.org/).
+This is a static site exported from [Jant](https://github.com/jant-me/jant), ready to build with [Hugo](https://gohugo.io/).
 
-## Install Zola
+## Install Hugo
+
+This export targets Hugo **extended 0.160.1+**.
 
 **macOS (Homebrew):**
 
 ```sh
-brew install zola
+brew install hugo
 ```
 
 **Windows (Scoop):**
 
 ```sh
-scoop install zola
+scoop install hugo-extended
 ```
 
-**Linux (Snap):**
+**Linux:**
 
-```sh
-snap install zola --edge
-```
+Download the extended build from <https://github.com/gohugoio/hugo/releases>.
 
-Or download a binary from <https://github.com/getzola/zola/releases>.
-
-See the [Zola installation docs](https://www.getzola.org/documentation/getting-started/installation/) for more options.
+See the [Hugo installation docs](https://gohugo.io/installation/) for more options.
 
 ## Quick start
 
 Preview locally:
 
 ```sh
-zola serve
+hugo serve
 ```
 
-Then open <http://127.0.0.1:1111> in your browser.
+Then open <http://localhost:1313> in your browser.
 
 Build the site for deployment:
 
 ```sh
-zola build
+hugo --minify
 ```
 
 The output goes to the `public/` directory. Upload it to any static host (Netlify, Vercel, Cloudflare Pages, GitHub Pages, etc.).
@@ -47,33 +45,34 @@ The output goes to the `public/` directory. Upload it to any static host (Netlif
 ## Project structure
 
 ```
-config.toml          — Site configuration (title, URL, language)
+hugo.toml                 — Site configuration (baseURL, title, theme, params)
 content/
-  _index.md          — Root section (homepage settings)
-  {slug}/index.md    — Individual posts (threads are merged into one page)
-  {slug}/_index.md   — Collection display metadata for taxonomy pages and round-trip import
-templates/           — Tera templates (Zola's template engine)
-static/
-  style.css          — Base exported stylesheet
-  theme.css          — Resolved Jant theme variables
-  custom.css         — Exported custom CSS overrides
-  favicon.ico        — Exported site favicon (custom or default fallback)
-  apple-touch-icon.png — Exported Apple touch icon (custom or default fallback)
+  _index.md               — Home section
+  archive/_index.md       — Archive section
+  collections/_index.md   — Collections directory section
+  featured/_index.md      — Featured section
+  {slug}/
+    _index.md             — Thread root (branch bundle)
+    {reply-slug}/
+      index.md            — Reply (leaf bundle, not rendered as its own URL)
+data/
+  jant.toml               — Nav items, branding, display preferences
+  collection_directory.toml — Ordered directory with dividers and links
+themes/jant/              — Bundled Hugo theme (overrideable via layouts/ at the site root)
+static/                   — Copy files here to add them to the published site
 ```
 
 ## Customizing
 
-- **Site settings** — edit `config.toml` to change the title, URL, or language.
-- **Jant metadata** — `config.toml` stores `[extra.jant_export]`, `[extra.jant]`, and `[[extra.jant.collections_directory]]` for round-trip import.
-- **Styles** — edit `static/style.css`. The theme supports light and dark modes via `prefers-color-scheme`.
-- **Templates** — edit files in `templates/`. Zola uses the [Tera](https://keats.github.io/tera/) template engine.
-- **Debugging** — export to a directory with `jant site export --directory ./my-site`, then run `cd my-site && zola serve`.
-- **Collections** — posts are tagged with collections via the `collections` taxonomy. Browse them at `/collections/`.
+- **Site settings** — edit `hugo.toml` to change the baseURL, title, or pagination.
+- **Jant metadata** — `data/jant.toml` and `data/collection_directory.toml` drive nav and the collections directory, and are preserved across round-trip import.
+- **Styles** — edit `themes/jant/static/main.css`, or drop a `static/main.css` at the site root to override.
+- **Templates** — add files under `layouts/` at the site root to override the bundled theme.
+- **Debugging** — export to a directory with `jant site export --directory ./my-site`, then run `cd my-site && hugo serve`.
 
 ## Notes
 
-- The raw export API only writes content files. The CLI localizes media by default unless you pass `--no-localize-media`.
-- Thread replies are merged into the root post as a single page. Reply metadata is preserved in HTML comments (`<!--jant:reply ... -->`) with a JSON body.
-- The collections directory structure is exported in `config.toml`, including collection order, dividers, and custom links for round-trip imports.
-- Attachments are preserved as Jant HTML blocks (`data-jant-node="attachments"`). Text attachments embed canonical Markdown in the block metadata, while the rendered preview is display-only and ignored by `jant site import`.
-- Posts with `draft: true` in front matter are only built when you pass the `--drafts` flag to `zola build` or `zola serve`.
+- Each thread is a Hugo branch bundle. Replies live as nested leaf bundles with `build.render = "never"` so they do not produce standalone URLs; they render inside the thread page.
+- `/{reply-slug}/` URLs are preserved via `aliases:` on the root post, so old links still land on the right thread anchor.
+- Media is exported as Hugo page resources (`resources:` front matter); their bytes are localized by the Jant CLI when you pass the default `--localize-media` flag.
+- Posts with `draft: true` in front matter are only built when you pass `--buildDrafts` to `hugo` / `hugo serve`.

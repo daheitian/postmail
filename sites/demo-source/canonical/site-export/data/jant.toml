@@ -1,0 +1,65 @@
+format = "jant-site"
+version = 1
+generated_at = "2026-04-17T17:11:15.000Z"
+site_name = "Jant"
+site_description = "Thoughts, links, and quotes — one post at a time"
+site_language = "en"
+home_default_view = "latest"
+show_jant_branding_on_home = true
+show_header_avatar = false
+noindex = false
+site_avatar_mode = "custom"
+favicon_mode = "custom"
+apple_touch_mode = "custom"
+theme_id = "tufte"
+default_theme_id = "tufte"
+font_theme_id = "tufte"
+theme_mode = "auto"
+page_size = 50
+archive_page_size = 50
+favicon_path = "/favicon.ico"
+apple_touch_icon_path = "/apple-touch-icon.png"
+site_avatar_url = "/media/sit_01kn8jq3t4famtyg9hjd074ckr/assets/avatar/med_01kn8jtq3penf98tfq4gzmh9g9.png"
+favicon_version = "202604030230"
+
+[[nav]]
+type = "system"
+label = "Latest"
+url = "/"
+system_key = "latest"
+placement = "header"
+
+[[nav]]
+type = "system"
+label = "Featured"
+url = "/featured/"
+system_key = "featured"
+placement = "header"
+
+[[nav]]
+type = "system"
+label = "Collections"
+url = "/collections/"
+system_key = "collections"
+placement = "header"
+
+[[nav]]
+type = "system"
+label = "Archive"
+url = "/archive/"
+system_key = "archive"
+placement = "header"
+
+[[nav]]
+type = "system"
+label = "RSS"
+url = "/index.xml"
+system_key = "rss"
+placement = "more"
+
+[[nav]]
+type = "system"
+label = "Settings"
+url = "/settings"
+system_key = "settings"
+placement = "more"

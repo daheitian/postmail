@@ -1,4 +1,4 @@
-+++
-title = "Archive"
-template = "archive.html"
-+++
+---
+title: "Archive"
+type: "archive"
+---

@@ -1,0 +1,49 @@
+{{ define "main" }}
+  {{- $directory := .Site.Data.collection_directory -}}
+  {{- $items := slice -}}
+  {{- with $directory -}}{{- with .items -}}{{- $items = . -}}{{- end -}}{{- end -}}
+
+  <section class="section section-collections">
+    <header class="section-header">
+      <h1 class="section-title">{{ .Title | default "Collections" }}</h1>
+      {{- with .Params.summary_text -}}
+        <p class="section-summary">{{ . }}</p>
+      {{- end -}}
+      {{ .Content }}
+    </header>
+
+    {{- if $items -}}
+      <ul class="collection-directory">
+        {{- range $items -}}
+          {{- if eq .type "divider" -}}
+            <li class="collection-directory-divider">
+              {{- with .label -}}
+                <span class="collection-directory-divider-label">{{ . }}</span>
+              {{- end -}}
+              <hr>
+            </li>
+          {{- else if eq .type "link" -}}
+            {{- $isExternal := or (hasPrefix .url "http://") (hasPrefix .url "https://") -}}
+            <li class="collection-directory-link">
+              <a href="{{ .url }}"{{ if $isExternal }} rel="noopener noreferrer" target="_blank"{{ end }}>{{ .label }}</a>
+            </li>
+          {{- else if eq .type "collection" -}}
+            <li class="collection-directory-item">
+              <a class="collection-directory-entry" href="{{ printf "/%s/" .slug | relURL }}">
+                <span class="collection-directory-title">{{ .title }}</span>
+                {{- if .entry_count -}}
+                  <span class="collection-directory-count">{{ .entry_count }} {{ if eq .entry_count 1 }}post{{ else }}posts{{ end }}</span>
+                {{- end -}}
+                {{- with .recent_activity_label -}}
+                  <span class="collection-directory-activity">Updated {{ . }}</span>
+                {{- end -}}
+              </a>
+            </li>
+          {{- end -}}
+        {{- end -}}
+      </ul>
+    {{- else -}}
+      <p class="empty-state">No collections yet. Group related posts to organize them here.</p>
+    {{- end -}}
+  </section>
+{{ end }}

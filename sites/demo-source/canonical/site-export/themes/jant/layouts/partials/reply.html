@@ -1,0 +1,67 @@
+{{- $reply := . -}}
+{{- $format := $reply.Params.format | default "note" -}}
+{{- $slug := $reply.Params.slug | default $reply.Slug -}}
+{{- $images := where $reply.Resources ".Params.kind" "image" -}}
+<article class="reply reply-{{ $format }}" id="{{ $slug }}" data-format="{{ $format }}" data-slug="{{ $slug }}">
+  <header class="reply-meta">
+    <a class="reply-anchor" href="#{{ $slug }}">
+      <time datetime="{{ $reply.Date.Format "2006-01-02T15:04:05Z07:00" }}">
+        {{ $reply.Date.Format "Jan 2, 2006 · 15:04" }}
+      </time>
+    </a>
+  </header>
+
+  {{- if eq $format "link" -}}
+    {{- $linkUrl := $reply.Params.link_url -}}
+    {{- if $reply.Title -}}
+      <h3 class="reply-title">
+        {{- if $linkUrl -}}
+          <a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $reply.Title }}</a>
+        {{- else -}}
+          {{ $reply.Title }}
+        {{- end -}}
+      </h3>
+    {{- end -}}
+    {{- if $linkUrl -}}
+      <p class="reply-link-host"><a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $linkUrl | urlize }}</a></p>
+    {{- end -}}
+  {{- else if eq $format "quote" -}}
+    <blockquote class="reply-quote">
+      {{- with $reply.Params.quote_text -}}<p>{{ . }}</p>{{- end -}}
+      {{- if or $reply.Params.source_name $reply.Params.source_url -}}
+        <footer class="reply-quote-attribution">
+          &mdash;
+          {{- if and $reply.Params.source_name $reply.Params.source_url -}}
+            <cite><a href="{{ $reply.Params.source_url }}" rel="noopener noreferrer" target="_blank">{{ $reply.Params.source_name }}</a></cite>
+          {{- else if $reply.Params.source_name -}}
+            <cite>{{ $reply.Params.source_name }}</cite>
+          {{- else -}}
+            <cite><a href="{{ $reply.Params.source_url }}" rel="noopener noreferrer" target="_blank">{{ $reply.Params.source_url }}</a></cite>
+          {{- end -}}
+        </footer>
+      {{- end -}}
+    </blockquote>
+  {{- else -}}
+    {{- with $reply.Title -}}
+      <h3 class="reply-title">{{ . }}</h3>
+    {{- end -}}
+  {{- end -}}
+
+  <div class="reply-body">
+    {{ $reply.Content }}
+  </div>
+
+  {{- with $images -}}
+    <div class="reply-media">
+      {{- range . -}}
+        {{- $alt := .Params.alt | default "" -}}
+        <figure class="reply-figure">
+          <img src="{{ .RelPermalink }}" alt="{{ $alt }}"
+            {{- with .Params.width }} width="{{ . }}"{{- end -}}
+            {{- with .Params.height }} height="{{ . }}"{{- end -}}
+            loading="lazy">
+        </figure>
+      {{- end -}}
+    </div>
+  {{- end -}}
+</article>

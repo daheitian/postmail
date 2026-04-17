@@ -1,4 +1,4 @@
-+++
-title = "Featured"
-template = "featured.html"
-+++
+---
+title: "Featured"
+type: "featured"
+---

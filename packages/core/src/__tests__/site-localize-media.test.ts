@@ -64,12 +64,8 @@ describe("site-localize-media helpers", () => {
 
   it("updates config media URLs when replacements exist", () => {
     const config = {
-      extra: {
-        jant: {
-          site_avatar_url: "https://origin.example/media/avatar.webp",
-          apple_touch_icon_url: "https://origin.example/media/apple-touch.png",
-          favicon_url: "https://origin.example/media/avatar.webp",
-        },
+      params: {
+        site_avatar_url: "https://origin.example/media/avatar.webp",
       },
     };
     const replacements = new Map([
@@ -77,20 +73,10 @@ describe("site-localize-media helpers", () => {
         "https://origin.example/media/avatar.webp",
         "/blog/media/local-avatar.webp",
       ],
-      [
-        "https://origin.example/media/apple-touch.png",
-        "/blog/media/local-apple-touch.png",
-      ],
     ]);
 
     expect(updateConfigMediaUrls(config, replacements)).toBe(true);
-    expect(config.extra.jant.site_avatar_url).toBe(
-      "/blog/media/local-avatar.webp",
-    );
-    expect(config.extra.jant.apple_touch_icon_url).toBe(
-      "/blog/media/local-apple-touch.png",
-    );
-    expect(config.extra.jant.favicon_url).toBe("/blog/media/local-avatar.webp");
+    expect(config.params.site_avatar_url).toBe("/blog/media/local-avatar.webp");
   });
 
   it("localizes media files into static/media and rewrites content/config", async () => {
@@ -99,13 +85,11 @@ describe("site-localize-media helpers", () => {
     try {
       await mkdir(join(rootDir, "content", "hello"), { recursive: true });
       await writeFile(
-        join(rootDir, "config.toml"),
-        `base_url = "https://example.com/blog"
+        join(rootDir, "hugo.toml"),
+        `baseURL = "https://example.com/blog"
 
-[extra.jant]
+[params]
 site_avatar_url = "/media/avatar.webp"
-apple_touch_icon_url = "/media/apple-touch.png"
-favicon_url = "/media/avatar.webp"
 `,
       );
       await writeFile(
@@ -134,7 +118,7 @@ title: "Hello"
         }),
       });
 
-      expect(stats.downloaded).toBe(4);
+      expect(stats.downloaded).toBe(3);
       expect(stats.filesUpdated).toBe(1);
       expect(stats.configUpdated).toBe(true);
 
@@ -146,12 +130,11 @@ title: "Hello"
       expect(content).not.toContain('"/media/hero.webp"');
       expect(content).not.toContain('"/media/report.pdf"');
 
-      const config = await readFile(join(rootDir, "config.toml"), "utf-8");
+      const config = await readFile(join(rootDir, "hugo.toml"), "utf-8");
       expect(config).toContain('site_avatar_url = "/blog/media/');
-      expect(config).toContain('apple_touch_icon_url = "/blog/media/');
 
       const localizedFiles = await readdir(join(rootDir, "static", "media"));
-      expect(localizedFiles).toHaveLength(4);
+      expect(localizedFiles).toHaveLength(3);
     } finally {
       await rm(rootDir, { recursive: true, force: true });
     }
@@ -163,8 +146,8 @@ title: "Hello"
     try {
       await mkdir(join(rootDir, "content", "hello"), { recursive: true });
       await writeFile(
-        join(rootDir, "config.toml"),
-        `base_url = "http://localhost:3000"
+        join(rootDir, "hugo.toml"),
+        `baseURL = "http://localhost:3000"
 `,
       );
       await writeFile(

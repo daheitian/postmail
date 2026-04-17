@@ -1,0 +1,19 @@
+{{/*
+  Fallback single-page template for type=collection leaf bundles. Jant's
+  exporter writes collection pages as branch bundles (kind=section), which
+  are rendered by `_default/list.html`'s `type=collection` branch. This
+  template only fires if a user hand-authors a collection as a leaf bundle.
+*/}}
+{{ define "main" }}
+  <article class="page page-collection">
+    <header class="page-header">
+      <h1 class="page-title">{{ .Title }}</h1>
+      {{- with .Params.summary_text -}}
+        <p class="page-summary">{{ . }}</p>
+      {{- end -}}
+    </header>
+    <div class="page-body">
+      {{ .Content }}
+    </div>
+  </article>
+{{ end }}

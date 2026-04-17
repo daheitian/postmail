@@ -1,0 +1,76 @@
+{{- $post := . -}}
+{{- $format := $post.Params.format | default "note" -}}
+{{- $summary := $post.Params.summary_text -}}
+{{- $images := where $post.Resources ".Params.kind" "image" -}}
+<article class="post-card post-card-{{ $format }}" data-format="{{ $format }}" data-slug="{{ $post.Params.slug | default $post.Slug }}">
+  <header class="post-card-meta">
+    <a class="post-card-permalink" href="{{ $post.RelPermalink }}">
+      <time datetime="{{ $post.Date.Format "2006-01-02T15:04:05Z07:00" }}">
+        {{ $post.Date.Format "Jan 2, 2006" }}
+      </time>
+    </a>
+    {{- if $post.Params.pinned_at -}}
+      <span class="post-card-pin" aria-label="Pinned">Pinned</span>
+    {{- end -}}
+  </header>
+
+  {{- if eq $format "link" -}}
+    {{- $linkUrl := $post.Params.link_url -}}
+    {{- if and $post.Title $linkUrl -}}
+      <h2 class="post-card-title">
+        <a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $post.Title }}</a>
+      </h2>
+    {{- else if $post.Title -}}
+      <h2 class="post-card-title"><a href="{{ $post.RelPermalink }}">{{ $post.Title }}</a></h2>
+    {{- end -}}
+    {{- if $linkUrl -}}
+      <p class="post-card-link-host">
+        <a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $linkUrl | urlize }}</a>
+      </p>
+    {{- end -}}
+    {{- with $summary -}}<p class="post-card-summary">{{ . }}</p>{{- end -}}
+  {{- else if eq $format "quote" -}}
+    <blockquote class="post-card-quote">
+      {{- with $post.Params.quote_text -}}<p>{{ . }}</p>{{- end -}}
+      {{- if or $post.Params.source_name $post.Params.source_url -}}
+        <footer class="post-card-quote-attribution">
+          &mdash;
+          {{- if and $post.Params.source_name $post.Params.source_url -}}
+            <cite><a href="{{ $post.Params.source_url }}" rel="noopener noreferrer" target="_blank">{{ $post.Params.source_name }}</a></cite>
+          {{- else if $post.Params.source_name -}}
+            <cite>{{ $post.Params.source_name }}</cite>
+          {{- else -}}
+            <cite><a href="{{ $post.Params.source_url }}" rel="noopener noreferrer" target="_blank">{{ $post.Params.source_url }}</a></cite>
+          {{- end -}}
+        </footer>
+      {{- end -}}
+    </blockquote>
+  {{- else -}}
+    {{- with $post.Title -}}
+      <h2 class="post-card-title"><a href="{{ $post.RelPermalink }}">{{ . }}</a></h2>
+    {{- end -}}
+    {{- if $summary -}}
+      <p class="post-card-summary">{{ $summary }}</p>
+    {{- else if $post.Summary -}}
+      <div class="post-card-summary">{{ $post.Summary }}</div>
+    {{- end -}}
+  {{- end -}}
+
+  {{- with $images -}}
+    <div class="post-card-media">
+      {{- range . -}}
+        {{- $alt := .Params.alt | default "" -}}
+        <figure class="post-card-figure">
+          <img src="{{ .RelPermalink }}" alt="{{ $alt }}"
+            {{- with .Params.width }} width="{{ . }}"{{- end -}}
+            {{- with .Params.height }} height="{{ . }}"{{- end -}}
+            loading="lazy">
+        </figure>
+      {{- end -}}
+    </div>
+  {{- end -}}
+
+  <footer class="post-card-footer">
+    <a class="post-card-readmore" href="{{ $post.RelPermalink }}">Read more &rarr;</a>
+  </footer>
+</article>

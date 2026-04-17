@@ -1,4 +1,4 @@
-+++
-title = "Collections"
-render = false
-+++
+---
+title: "Collections"
+type: "collections"
+---

@@ -1,10 +1,8 @@
-+++
-title = "City Walks"
-template = "collection.html"
-description = "Routes, corners, and small things I notice outside."
-[extra]
-sort_order = "newest"
-jant_collection = true
-collection_term = "city-walks"
-entry_count = 3
-+++
+---
+title: "City Walks"
+slug: "city-walks"
+type: "collection"
+summary_text: "Routes, corners, and small things I notice outside."
+sort_order: "newest"
+entry_count: 3
+---
