@@ -588,7 +588,7 @@ function collectionEntriesToRefs(
  * relative filename the bytes will live at on disk.
  */
 function mediaToResource(media: Media, resourceName: string): HugoResource {
-  const params: HugoResource["params"] = {
+  const params: NonNullable<HugoResource["params"]> = {
     kind: media.mediaKind === "text" ? "file" : media.mediaKind,
     position: parsePositionForSort(media.position),
   };

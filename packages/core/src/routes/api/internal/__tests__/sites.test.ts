@@ -308,10 +308,10 @@ describe("Internal site admin routes", () => {
     );
 
     const files = unzipSync(new Uint8Array(await exportRes.arrayBuffer()));
-    const configToml = new TextDecoder().decode(files["config.toml"]);
+    const configToml = new TextDecoder().decode(files["hugo.toml"]);
 
     expect(configToml).toContain(
-      'base_url = "https://export-demo.example.com"',
+      'baseURL = "https://export-demo.example.com/"',
     );
     expect(configToml).toContain('title = "Export Demo"');
   });

@@ -166,7 +166,7 @@ describe("classifyRepoForSync", () => {
     }
   });
 
-  it("preserves managed_globs from a v2 marker when owned", async () => {
+  it("preserves managed_globs from a current-version marker when owned", async () => {
     const client = stubClient({
       refExists: true,
       markerFile: {
@@ -177,7 +177,9 @@ describe("classifyRepoForSync", () => {
     const result = await classifyRepoForSync(client, "acme", "site", siteId);
     expect(result.kind).toBe("owned");
     if (result.kind === "owned") {
-      expect(result.marker.schema_version).toBe(2);
+      expect(result.marker.schema_version).toBe(
+        JANT_SYNC_MARKER_SCHEMA_VERSION,
+      );
       expect(result.marker.managed_globs).toEqual([...JANT_MANAGED_GLOBS]);
       // The hard list should include themes/jant/** — the load-bearing
       // path for the theme-packaging model.

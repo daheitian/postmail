@@ -37,7 +37,7 @@ export interface HugoResource {
   name?: string;
   title?: string;
   params?: {
-    kind?: "image" | "video" | "audio" | "file";
+    kind?: "image" | "video" | "audio" | "document" | "file";
     alt?: string;
     width?: number;
     height?: number;
