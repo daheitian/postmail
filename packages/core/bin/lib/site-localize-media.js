@@ -323,10 +323,9 @@ export function collectMediaReferences(content) {
 }
 
 function getConfigMediaUrls(siteConfig) {
-  // Hugo config: media URLs live under [params] (flat), not under
-  // [extra.jant] like Zola. Favicon and apple-touch are written as
-  // theme-relative paths by the exporter, so only the avatar URL is
-  // a remote reference worth localizing.
+  // Hugo config: media URLs live under [params] (flat). Favicon and
+  // apple-touch are written as theme-relative paths by the exporter, so
+  // only the avatar URL is a remote reference worth localizing.
   const params = siteConfig?.params || {};
   const refs = [];
 

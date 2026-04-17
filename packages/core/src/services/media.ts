@@ -56,7 +56,7 @@ const TEXT_ATTACHMENT_MARKDOWN_MIME_TYPE = "text/markdown; charset=utf-8";
 /**
  * `Content-Disposition` applied to text-attachment storage objects. `inline`
  * keeps browsers from prompting to download when the raw `.md` CDN URL is
- * clicked (e.g. from a link in an exported Zola site).
+ * clicked (e.g. from a link in an exported Hugo site).
  */
 const TEXT_ATTACHMENT_CONTENT_DISPOSITION = "inline";
 

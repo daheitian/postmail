@@ -227,7 +227,7 @@ const PostFieldsSchema = z.object({
   bodyMarkdown: z.string().optional(),
   status: StatusSchema.optional(),
   visibility: z.enum(VISIBILITIES).optional(),
-  // Admin UI sends boolean flags; the Zola importer and API clients can
+  // Admin UI sends boolean flags; the Hugo importer and API clients can
   // instead send explicit ISO-8601 or Unix-second timestamps via
   // `pinnedAt` / `featuredAt`. The refine below at the API-body level
   // collapses whichever form is present into a single internal field.

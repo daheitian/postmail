@@ -33,7 +33,7 @@ And I have always liked Tumblr's core instinct: note, link, and quote should be 
 - Search, archive pages, and RSS feeds
 - Theme customization with built-in themes, fonts, and custom CSS
 - GitHub Sync for automatic content backup, bidirectional editing, and a file-based interface for AI tools
-- Full API, import tools, and Zola export for portability
+- Full API, import tools, and Hugo export for portability
 
 ## How It Runs
 

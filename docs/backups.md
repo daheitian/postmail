@@ -84,7 +84,7 @@ Use `site export` when you want to:
 
 - move content into another Jant site
 - keep a portable archive
-- inspect or serve the exported Zola structure
+- inspect or serve the exported Hugo structure
 
 Use the remote site URL and export to a normal directory:
 

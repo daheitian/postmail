@@ -36,7 +36,7 @@ export interface TextAttachmentContent {
 
 /**
  * A single collection membership entry, with all the per-row metadata the
- * `post_collection` junction table carries. Used by the Zola importer to
+ * `post_collection` junction table carries. Used by the Hugo importer to
  * restore per-entry `createdAt` / `position` / `pinnedAt` losslessly.
  */
 export interface PostCollectionEntry {

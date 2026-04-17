@@ -2179,9 +2179,9 @@ Notes:
 
 Base path: `/api/export`
 
-### Export the site as a Zola archive
+### Export the site as a Hugo archive
 
-`POST /api/export/zola`
+`POST /api/export/hugo`
 
 Auth: `Session or token`
 
@@ -2194,31 +2194,33 @@ Response:
 
 Archive contents:
 
-- `config.toml`
-- `content/<post-slug>/index.md` for each root post or merged thread
-- `content/collections/<collection-slug>/_index.md` for each collection
-- `content/_index.md` and `content/archive/_index.md`
-- `templates/*` and `static/*`
+- `hugo.toml`
+- `content/{root-slug}/_index.md` for each thread root (branch bundle)
+- `content/{root-slug}/{reply-slug}/index.md` for each reply (leaf bundle, `build.render = "never"`)
+- `content/{collection-slug}/_index.md` for each collection
+- `content/_index.md`, `content/archive/_index.md`, `content/featured/_index.md`, `content/collections/_index.md`
+- `data/jant.toml` and `data/collection_directory.toml`
+- `themes/jant/layouts/*` and `themes/jant/static/*`
 - `README.md`
 
 Notes:
 
-- Thread replies are merged into their thread root page in the exported Zola content.
-- Collection membership is exported as the `c` taxonomy.
+- Each thread root is a Hugo branch bundle; its replies live as nested leaf bundles rendered inline by the thread template.
+- Collection membership is exported as a top-level `collections` front-matter array on each post, with per-entry `collected_at` / `position` / `pinned_at`.
 - Navigation items, theme CSS, custom CSS, favicon, and Apple touch icon are included in the scaffold when available.
 - Exported post bodies become Markdown. Media references point back to the original Jant media URLs; the ZIP does not bundle original media binaries.
 
 Example:
 
 ```bash
-curl -X POST https://your-site.com/api/export/zola \
+curl -X POST https://your-site.com/api/export/hugo \
   -H "Authorization: Bearer jnt_YOUR_TOKEN" \
   -o jant-export.zip
 ```
 
 This export is suitable for:
 
-- static publishing with Zola
+- static publishing with Hugo
 - archival
 - round-trip import into another Jant instance
 
@@ -2393,7 +2395,7 @@ Response:
 
 - Content type: `application/zip`
 - Filename resembles `<site-key>-site-export.zip`
-- Export shape matches `POST /api/export/zola`, but for the specified managed site
+- Export shape matches `POST /api/export/hugo`, but for the specified managed site
 
 #### Suspend a managed site
 
@@ -2694,7 +2696,7 @@ Migration tips:
 ### Export a site
 
 ```bash
-curl -X POST https://your-site.com/api/export/zola \
+curl -X POST https://your-site.com/api/export/hugo \
   -H "Authorization: Bearer jnt_YOUR_TOKEN" \
   -o jant-export.zip
 ```

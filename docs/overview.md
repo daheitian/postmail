@@ -47,7 +47,7 @@ That said, Jant isn't locked to any one runtime. If you'd rather run it on your 
 - **Themes and fonts**: change how the site looks without turning it into a template marketplace
 - **RSS feeds, archive pages, search**: so the site is actually browsable
 - **Full API**: automate publishing, run imports, maintain your content without touching a UI
-- **Export to Zola**: leave with your content anytime
+- **Export to Hugo**: leave with your content anytime
 
 ## Hosted Option
 

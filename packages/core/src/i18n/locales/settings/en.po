@@ -565,15 +565,15 @@ msgstr "Display avatar in my site header"
 msgid "Displayed at the bottom of all posts and pages."
 msgstr "Displayed at the bottom of all posts and pages."
 
+#. @context: Settings item description for static site export
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Download a Hugo-compatible archive — host it statically or move to another Jant."
+msgstr "Download a Hugo-compatible archive — host it statically or move to another Jant."
+
 #. @context: Step 1 heading — user must download a site export before deleting
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Download a site export"
 msgstr "Download a site export"
-
-#. @context: Settings item description for static site export
-#: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Download a Zola-compatible archive — host it statically or move to another Jant."
-msgstr "Download a Zola-compatible archive — host it statically or move to another Jant."
 
 #. @context: Button to download the site export ZIP before deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -615,7 +615,7 @@ msgstr "Empty repository. Ready to connect."
 msgid "Export downloaded."
 msgstr "Export downloaded."
 
-#. @context: Settings item — export the site as a Zola archive
+#. @context: Settings item — export the site as a Hugo archive
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Export Site"
 msgstr "Export Site"

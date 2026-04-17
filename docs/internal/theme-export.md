@@ -8,38 +8,48 @@ or `packages/core/src/services/github-sync.ts`.
 
 ## Layout
 
-Every Jant export is a Zola site with a packaged theme at `themes/jant/`:
+Every Jant export is a Hugo site with a packaged theme at `themes/jant/`:
 
 ```
-config.toml
+hugo.toml
 content/
   _index.md
   archive/_index.md
   collections/_index.md
-  featured/_index.md          # only when "featured" slug is free
-  posts/{slug}.md
+  featured/_index.md
+  {root-slug}/
+    _index.md                # thread root (branch bundle)
+    {reply-slug}/
+      index.md               # reply (leaf bundle, build.render = "never")
   {collection-slug}/_index.md
+data/
+  jant.toml                  # nav, branding, display preferences
+  collection_directory.toml  # directory order, dividers, custom links
 themes/
   jant/
     theme.toml
-    templates/
-      base.html
-      index.html              # /          (manual render + pinned)
-      archive.html             # /archive/
-      feed/
-        list.html             # /feed/
-        single.html           # /feed/{term}/ and /feed/{term}/page/N/
-      taxonomy_list.html
-      taxonomy_single.html
-      section.html
-      page.html
-      collection.html
-      featured.html
-      macros.html
-      atom.xml
+    layouts/
+      _default/
+        baseof.html
+        single.html
+        list.html
+        alias.html            # /{reply-slug}/ → /{root-slug}/#{reply-slug}
+      index.html              # /
+      post/list.html          # thread (branch bundle list layout)
+      featured/list.html
+      archive/list.html
+      collections/list.html
+      collection/single.html
+      partials/
+        head.html
+        header.html
+        footer.html
+        pagination.html
+        post-card.html
+        reply.html
     static/
       tokens.css
-      style.css
+      main.css
       theme.css                # color theme
       custom.css               # user's Custom CSS from Settings
       favicon.ico
@@ -48,81 +58,117 @@ README.md
 .gitignore
 ```
 
-Root `templates/` and root `static/` are not emitted by the export
-service. They are user territory: Zola's override rule picks any file
-under root `templates/<name>.html` over
-`themes/jant/templates/<name>.html`, so users get per-template overrides
+Root `layouts/` and root `static/` are not emitted by the export
+service. They are user territory: Hugo's override rule picks any file
+under root `layouts/<name>.html` over
+`themes/jant/layouts/<name>.html`, so users get per-layout overrides
 without forking the theme. The CLI may populate `static/media/` when
 `--localize-media` is on, but that is a CLI-level concern — the core
 export service produces nothing at the repo root outside the
 `JANT_MANAGED_GLOBS` list.
 
-## config.toml
+## hugo.toml
 
-Two pieces are load-bearing for the theme model:
+Three pieces are load-bearing for the theme model:
 
-- `theme = "jant"` — tells Zola to load `themes/jant/`.
-- `[[taxonomies]] name = "feed"`, `paginate_by = pageSize`, `feed = true`
-  — drives the home and archive pagination.
+- `theme = "jant"` — tells Hugo to load `themes/jant/`.
+- `paginate = pageSize` — drives home, archive, and featured pagination.
+- `[permalinks] post = "/:slug/"` — keeps thread roots at root-level
+  URLs independent of their on-disk location.
 
-The `feed` taxonomy replaces the old `latest_hidden` template-time
-filter. Every non-draft, non-private post is assigned one or two feed
-terms via `feedTermsForPost()` in `export.ts`:
+All per-post, per-collection, per-reply state lives in flat YAML front
+matter. No custom taxonomies are emitted — instead, the home, featured,
+and archive layouts use `where` + `.Paginate` over `.Site.RegularPages`
+to filter at render time. This means pinned-vs-public, featured, and
+unlisted distinctions are encoded as front-matter fields (`pinned_at`,
+`featured_at`, `visibility`), not as taxonomy membership.
 
-| Jant `visibility` / flag | Feed terms emitted  |
-| ------------------------ | ------------------- |
-| `public`, not pinned     | `public`, `archive` |
-| `public`, `pinnedAt` set | `pinned`, `archive` |
-| `latest_hidden`          | `unlisted`          |
-| `private`                | none (drafted)      |
+## Front matter shape
 
-So each `feed` term maps to a specific URL:
+Root post at `content/{slug}/_index.md`:
 
-| Term       | URL                     | Contains                                      |
-| ---------- | ----------------------- | --------------------------------------------- |
-| `public`   | `/feed/public/page/N/`  | Non-pinned public posts                       |
-| `pinned`   | `/feed/pinned/`         | Pinned public posts (rarely browsed directly) |
-| `archive`  | `/feed/archive/page/N/` | All published posts (pinned + non-pinned)     |
-| `unlisted` | `/feed/unlisted/`       | `latest_hidden` posts; listing is `noindex`   |
+```yaml
+id: pst_...
+title: Hello
+date: 2025-01-15T12:00:00Z
+slug: hello
+type: post
+draft: false
+aliases:
+  - /old-slug/
+  - /reply-abc/ # reply slugs go here so /{reply-slug}/ aliases work
+format: note
+status: published
+visibility: public
+featured_at: 2025-01-20T00:00:00Z
+pinned_at: null
+collections:
+  - slug: favorites
+    collected_at: 2025-01-16T00:00:00Z
+    position: 3
+    pinned_at: null
+resources:
+  - src: hero.webp
+    params:
+      kind: image
+      alt: ""
+      width: 1200
+      height: 800
+```
 
-`archive` is a secondary tag on every public post — it is what drives
-the chronological `/archive/` page. Pinned posts go to `feed=pinned`,
-**not** `feed=public`, so Zola's paginator for `/feed/public/page/N/`
-cannot double-count them against the pinned prefix on home page 1.
+Reply at `content/{root-slug}/{reply-slug}/index.md`:
+
+```yaml
+id: pst_...
+title: ""
+date: 2025-01-15T13:00:00Z
+slug: reply-abc
+type: post
+build:
+  render: never
+  list: local
+format: note
+status: published
+visibility: public
+```
+
+No `aliases` on replies. The reply's URL is redirected by the root's
+`aliases:` list + the custom `_default/alias.html` template.
 
 ## URL scheme
 
-| URL                           | Rendered by                                                          |
-| ----------------------------- | -------------------------------------------------------------------- |
-| `/`                           | `index.html` — manual render of pinned + first page of `feed=public` |
-| `/feed/public/page/N/`        | Zola's native paginator on the feed taxonomy (N ≥ 2)                 |
-| `/archive/`                   | `archive.html` — manual render of first page of `feed=archive`       |
-| `/feed/archive/page/N/`       | Zola's native paginator on the feed taxonomy (N ≥ 2)                 |
-| `/feed/unlisted/`             | `taxonomy_single.html`; rendered with `<meta name="robots" ...>`     |
-| `/{post-slug}/`               | `page.html`                                                          |
-| `/{collection-slug}/`         | collection taxonomy term page                                        |
-| `/collections/`               | collections directory section                                        |
-| `/collections/{slug}/page/N/` | collection paginator                                                 |
+| URL                   | Rendered by                                                       |
+| --------------------- | ----------------------------------------------------------------- |
+| `/`                   | `index.html` — pinned prefix + paginated `visibility=public` tail |
+| `/page/N/`            | Hugo's native paginator on home (N ≥ 2)                           |
+| `/archive/`           | `archive/list.html` — every published post chronologically        |
+| `/archive/page/N/`    | Hugo's native paginator on archive (N ≥ 2)                        |
+| `/featured/`          | `featured/list.html` — posts with `featured_at` set, newest first |
+| `/{root-slug}/`       | `post/list.html` — thread root + inline replies                   |
+| `/{reply-slug}/`      | `_default/alias.html` — redirects to `/{root-slug}/#{reply-slug}` |
+| `/{collection-slug}/` | `collection/single.html`                                          |
+| `/collections/`       | `collections/list.html` — reads `data/collection_directory.toml`  |
 
-The home page is rendered manually (not via Zola's paginator) because it
-has to combine two sources: pinned posts on top, then the first
-`pageSize` entries from `feed=public`. Page 2+ hands off to Zola's
-native paginator at `/feed/public/page/N/`. The manual slice for page 1
-must match the paginator's boundary exactly — see
-`buildIndexTemplate()` in `export.ts`.
+The home template handles the pinned prepend in-layout: it iterates
+`where .Site.RegularPages "Params.pinned_at" "ne" nil` first, then
+paginates `where (where .Site.RegularPages "Params.visibility" "eq"
+"public") "Params.pinned_at" "eq" nil`. Hugo's `where` + `.Paginate`
+composition makes this a one-template solution — no manual boundary
+stitching between page 1 and page 2+.
 
 ## pageSize vs archivePageSize
 
-Both come from the Jant site config (`SITE_CONFIG` via `packages/core/bin/commands/site/export.js`).
+Both come from the Jant site config (`SITE_CONFIG` via
+`packages/core/bin/commands/site/export.js`).
 
-- `pageSize` is Zola's `paginate_by` for the `feed` taxonomy. It controls
-  `/feed/public/page/N/` and `/feed/archive/page/N/` page size.
+- `pageSize` is Hugo's `paginate` value in `hugo.toml`. It controls
+  `/page/N/`, `/archive/page/N/`, and `/featured/page/N/` page size.
 - `archivePageSize` is threaded through `SiteConfig` for Node-side
-  rendering on the live site and is not used by the exported Zola
+  rendering on the live site and is not used by the exported Hugo
   templates directly.
 
 Keeping both in `SiteConfig` avoids a drift where the Node-rendered
-archive and the exported Zola archive disagree on page size.
+archive and the exported Hugo archive disagree on page size.
 
 ## Managed paths (hard list)
 
@@ -133,7 +179,8 @@ GitHub Sync keeps a single source of truth for which paths Jant owns:
 export const JANT_MANAGED_GLOBS = [
   "content/**",
   "themes/jant/**",
-  "config.toml",
+  "data/**",
+  "hugo.toml",
   ".gitignore",
   "README.md",
   ".jant-sync",
@@ -146,9 +193,9 @@ on the push commit. There are no tiers (no "init-only" files, no
 "seed-on-first-push" exceptions) — the rule is binary.
 
 Corollary: a user who wants to edit Jant output must fork into root
-(`templates/{name}.html` shadowing `themes/jant/templates/{name}.html`)
-or override via `static/custom.css`. Editing anything under
-`themes/jant/**` is pointless because the next push will revert it.
+(`layouts/{name}.html` shadowing `themes/jant/layouts/{name}.html`) or
+override via `static/custom.css`. Editing anything under `themes/jant/**`
+is pointless because the next push will revert it.
 
 ## .jant-sync marker
 
@@ -157,14 +204,15 @@ site and carries the schema version plus the site ID:
 
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "site_id": "sit_...",
   "site_host": "blog.example.com",
   "created_at": 1713225600,
   "managed_globs": [
     "content/**",
     "themes/jant/**",
-    "config.toml",
+    "data/**",
+    "hugo.toml",
     ".gitignore",
     "README.md",
     ".jant-sync"
@@ -173,37 +221,34 @@ site and carries the schema version plus the site ID:
 ```
 
 `managed_globs` is duplicated into the marker so future schema bumps can
-diff the old set against the new set and decide what to clean up. On v1
-markers this field is absent; the classifier still accepts them as
-`"owned"` so existing connections don't break, and the next full push
-migrates the repo to v2.
+diff the old set against the new set and decide what to clean up. On
+older markers this field may be absent; the classifier still accepts
+them as `"owned"` so existing connections don't break, and the next full
+push migrates the repo to the current schema.
 
 The export service does **not** emit `.jant-sync`. Only `github-sync.ts`
 writes it — it is the one component that knows the site ID.
 
-## v1 → v2 layout migration
+## Legacy schema migration (v1/v2 → v3)
 
-v1 exports wrote templates and static assets at the repo root. Under v2,
-the root versions must disappear or they will shadow the new
-`themes/jant/` theme (Zola's override rule: root wins). On the first v2
-push against a v1-marked repo, `pushFullSync` appends a fixed list of
-null-sha tree entries to delete the legacy root files:
+Earlier schema versions wrote a Zola site (v1 had root-level
+`templates/` + `static/`; v2 moved those under `themes/jant/` but still
+produced `config.toml` + `feed` taxonomy). Schema v3 switches the
+exporter to Hugo, so legacy paths must disappear on the first v3 push
+against a pre-v3 marked repo, or they will confuse Hugo's build or
+shadow theme assets.
 
-```
-templates/base.html, templates/archive.html, templates/index.html,
-templates/page.html, templates/section.html, templates/taxonomy_list.html,
-templates/taxonomy_single.html, templates/collection.html,
-templates/featured.html, templates/atom.xml, templates/macros.html,
-static/tokens.css, static/style.css, static/theme.css,
-static/custom.css, static/favicon.ico, static/apple-touch-icon.png
-```
+`pushFullSync` appends a fixed list of null-sha tree entries to delete
+legacy files — see `V1_LEGACY_PATHS` in `github-sync.ts`. The list
+covers:
 
-`static/custom.css` is on the deletion list because v1 wrote the
-Settings → Custom CSS value there; v2 writes it to
-`themes/jant/static/custom.css`. Leaving the legacy file would cause
-stale custom CSS to win over the current value.
+- every `templates/*.html` file from v1/v2
+- Zola-era CSS and asset files at the repo root (v1 only)
+- `config.toml` (v1/v2 used this; v3 uses `hugo.toml`)
+- `content/feed/_index.md` and `content/404.md` (v1/v2 section files
+  Hugo does not need)
 
-The migration is one-shot: once the marker reads `schema_version: 2`,
+The migration is one-shot: once the marker reads `schema_version: 3`,
 subsequent pushes skip the legacy-deletion step.
 
 ## Customization paths for users
@@ -211,25 +256,26 @@ subsequent pushes skip the legacy-deletion step.
 Documented in `docs/export-and-import.md` for site owners. The
 implementation contract:
 
-- Anything under root `templates/<name>.html` replaces the matching theme
-  template. Partial overrides work — users can override
-  `templates/page.html` without touching anything else.
-- Anything under root `static/<name>` is served at `/<name>` exactly like
-  Zola's regular static output; root `static/` wins against
+- Anything under root `layouts/<name>.html` replaces the matching theme
+  layout. Partial overrides work — users can override
+  `layouts/_default/single.html` without touching anything else.
+- Anything under root `static/<name>` is served at `/<name>` exactly
+  like Hugo's regular static output; root `static/` wins against
   `themes/jant/static/` when filenames collide.
 - Users editing `themes/jant/**` will lose their changes on the next
   push. The recommended path is always root-level override.
-- `config.toml` is managed: user edits will be overwritten. Site-wide
+- `hugo.toml` is managed: user edits will be overwritten. Site-wide
   config belongs in Jant's **Settings**, which is the source the export
   reads from.
 
 ## Testing
 
 - `packages/core/src/__tests__/export-service.test.ts` asserts every
-  theme path lives under `themes/jant/` and root `templates/` is empty.
-- `packages/core/src/services/__tests__/github-sync-classify.test.ts`
-  asserts v1 markers still classify as `"owned"` and v2 markers carry
-  `managed_globs`.
+  theme path lives under `themes/jant/` and root `layouts/` is empty.
+- `packages/core/src/__tests__/export-hugo-build.test.ts` spawns a real
+  `hugo --minify` against the generated export and asserts that the
+  expected URLs (home, archive, featured, collections, each thread,
+  each reply alias) all render.
 - The canonical fixture at `sites/demo-source/canonical/site-export/`
   must be regenerated any time the export layout changes — run
   `mise run demo-source-export-canonical-site-export` and commit the

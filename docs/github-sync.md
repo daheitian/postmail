@@ -110,7 +110,7 @@ Jant uses the installation to issue short-lived tokens on demand — no token is
 
 ## Push a Full Sync
 
-After connecting, click **Push Full Sync** to populate the repository with all your posts. This creates a single commit containing every post as a Markdown file under `content/posts/`, plus the theme and config needed to build the site with [Zola](https://www.getzola.org).
+After connecting, click **Push Full Sync** to populate the repository with all your posts. This creates a single commit containing every thread as a Hugo branch bundle under `content/`, plus the theme and config needed to build the site with [Hugo](https://gohugo.io).
 
 You can re-run a full sync at any time. It replaces the repository content in one atomic commit. Git treats unchanged files as no-ops, so your blame history is preserved for files that did not change.
 
@@ -119,26 +119,27 @@ You can re-run a full sync at any time. It replaces the repository content in on
 Jant fully manages these paths and overwrites them on every push:
 
 - `content/**` — posts, collections, sections
-- `themes/jant/**` — the packaged Jant theme (templates and static assets)
-- `config.toml` — site configuration, including the `theme = "jant"` line
+- `themes/jant/**` — the packaged Jant theme (layouts and static assets)
+- `data/**` — `jant.toml` and `collection_directory.toml` (nav, branding, directory)
+- `hugo.toml` — site configuration, including the `theme = "jant"` line
 - `.gitignore`, `README.md` — scaffolded by Jant
 - `.jant-sync` — ownership marker
 
-Everything else is yours. Jant preserves it across pushes. If you want to customize the site, edit root-level `templates/<name>.html` or `static/<name>` — Zola picks those over the theme's versions. Do not edit under `themes/jant/**` directly; the next push will revert your changes. See [Customizing an Export](export-and-import.md#customizing-an-export) for details.
+Everything else is yours. Jant preserves it across pushes. If you want to customize the site, edit root-level `layouts/<name>.html` or `static/<name>` — Hugo picks those over the theme's versions. Do not edit under `themes/jant/**` directly; the next push will revert your changes. See [Customizing an Export](export-and-import.md#customizing-an-export) for details.
 
 ## Incremental Sync
 
 Once connected, every post create, edit, or delete in Jant automatically pushes the change to GitHub. Each mutation produces its own commit.
 
-- **Create or update**: writes `content/posts/{slug}.md`
-- **Delete**: removes the file from the repository
-- **Thread reply changes**: re-sync the root post file (replies are embedded)
+- **Create or update root**: writes `content/{slug}/_index.md`
+- **Create or update reply**: writes `content/{root-slug}/{reply-slug}/index.md`
+- **Delete**: removes the matching bundle from the repository
 
 Incremental syncs run in the background and do not block the Jant UI.
 
 ## Editing on GitHub
 
-You can edit any `content/posts/*.md` file directly on GitHub (or locally and push). When the push reaches GitHub, the webhook fires and Jant updates the matching post.
+You can edit any managed Markdown file directly on GitHub (or locally and push). When the push reaches GitHub, the webhook fires and Jant updates the matching post.
 
 Matching works by slug: Jant reads the `slug` field from the YAML front matter and looks up the corresponding post. If no match is found, the file is skipped.
 
@@ -146,8 +147,8 @@ Only the following fields are updated from GitHub edits:
 
 - `body` (the Markdown content below the front matter)
 - `title`
-- `extra.link_url` (for link posts)
-- `extra.quote_text` (for quote posts)
+- `link_url` (for link posts)
+- `quote_text` (for quote posts)
 
 Deleting a file on GitHub soft-deletes the post in Jant.
 
@@ -157,26 +158,39 @@ Open **Settings > Data > GitHub Sync** and click **Disconnect**. Jant removes th
 
 ## File Format
 
-Posts are stored as Zola-compatible Markdown with YAML front matter, the same format used by [Site Export](export-and-import.md).
+Posts are stored as Hugo-compatible Markdown with flat YAML front matter, the same format used by [Site Export](export-and-import.md).
+
+Root post at `content/{slug}/_index.md`:
 
 ```markdown
 ---
 title: "Hello World"
 date: 2025-01-15T12:00:00Z
-slug: "hello-world"
-extra:
-  format: note
-  status: published
-  visibility: public
+slug: hello-world
+type: post
+format: note
+status: published
+visibility: public
 ---
 
 Post content here.
 ```
 
-Thread replies appear as HTML comment markers within the same file:
+Thread replies live as nested leaf bundles at `content/{root-slug}/{reply-slug}/index.md`:
 
 ```markdown
-<!-- jant:reply date="2025-01-15T13:00:00Z" slug="reply-abc" format="note" status="published" visibility="public" -->
+---
+title: ""
+date: 2025-01-15T13:00:00Z
+slug: reply-abc
+type: post
+build:
+  render: never
+  list: local
+format: note
+status: published
+visibility: public
+---
 
 Reply content here.
 ```

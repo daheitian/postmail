@@ -19,7 +19,7 @@
 
 ## Site Export
 
-`site export` 会生成一个兼容 Zola 的导出，格式可以是 ZIP 文件，也可以是目录。
+`site export` 会生成一个兼容 Hugo 的导出，格式可以是 ZIP 文件，也可以是目录。
 
 适合用在这些场景：
 
@@ -29,7 +29,7 @@
 
 默认情况下，Jant 会把导出中引用到的媒体本地化进去，让归档尽量更自包含。
 
-如果这个导出来自 Jant，`config.toml` 还会保留供 round-trip import 使用的 Jant 元数据，包括 header navigation 和 collections directory 结构（collection 顺序、divider、自定义 link）。
+如果这个导出来自 Jant，`data/jant.toml` 和 `data/collection_directory.toml` 还会保留供 round-trip import 使用的 Jant 元数据，包括 header navigation 和 collections directory 结构（collection 顺序、divider、自定义 link）。
 
 ### 导出本地站点
 
@@ -41,7 +41,7 @@ npx jant site export --output ./jant-site-export.zip
 
 ```bash
 npx jant site export --directory ./jant-site
-cd ./jant-site && zola serve
+cd ./jant-site && hugo serve
 ```
 
 ### 导出远端站点

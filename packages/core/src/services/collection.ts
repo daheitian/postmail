@@ -134,7 +134,7 @@ export interface CollectionService {
   /**
    * Replace all collection memberships of a post in one transaction,
    * preserving each entry's `createdAt` / `position` / `pinnedAt`.
-   * Used by the Zola import path so round-tripping through
+   * Used by the Hugo import path so round-tripping through
    * `jant site export | jant site import` is lossless.
    */
   syncPostCollectionsWithMeta(
@@ -163,7 +163,7 @@ export interface CollectionService {
   /**
    * Batch get the set of collection IDs each post is pinned in.
    *
-   * Used by the Zola export to surface per-collection pins so the static
+   * Used by the Hugo export to surface per-collection pins so the static
    * collection page can sort pinned posts to the top, mirroring the live
    * site behavior.
    */
@@ -174,7 +174,7 @@ export interface CollectionService {
    * Batch fetch the full per-entry collection metadata for each post: the
    * `createdAt` timestamp, `position`, and per-collection `pinnedAt`.
    *
-   * Used by the Zola export to emit lossless `[[extra.jant.collections]]`
+   * Used by the Hugo export to emit lossless `collections` front-matter
    * entries so round-tripping through `jant site export | jant site import`
    * preserves per-entry state.
    */

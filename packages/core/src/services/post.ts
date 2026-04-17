@@ -1479,7 +1479,7 @@ export function createPostService(
         });
       }
 
-      // When structured `collectionEntries` are provided (Zola import path),
+      // When structured `collectionEntries` are provided (Hugo import path),
       // they win over the bare `collectionIds` slug list and carry
       // `createdAt` / `position` / `pinnedAt` per row. Otherwise fall back to
       // the simple list and derive those fields from sensible defaults.

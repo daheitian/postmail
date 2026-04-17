@@ -565,15 +565,15 @@ msgstr "在我的網站頁首顯示大頭貼"
 msgid "Displayed at the bottom of all posts and pages."
 msgstr "顯示於所有文章與頁面的底部。"
 
+#. @context: Settings item description for static site export
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Download a Hugo-compatible archive — host it statically or move to another Jant."
+msgstr ""
+
 #. @context: Step 1 heading — user must download a site export before deleting
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Download a site export"
 msgstr "下載網站匯出檔案"
-
-#. @context: Settings item description for static site export
-#: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Download a Zola-compatible archive — host it statically or move to another Jant."
-msgstr "下載相容於 Zola 的封存 — 靜態託管或移轉到另一個 Jant."
 
 #. @context: Button to download the site export ZIP before deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -615,7 +615,7 @@ msgstr ""
 msgid "Export downloaded."
 msgstr "已下載匯出檔案。"
 
-#. @context: Settings item — export the site as a Zola archive
+#. @context: Settings item — export the site as a Hugo archive
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Export Site"
 msgstr "匯出網站"

@@ -19,7 +19,7 @@ They are not the same thing.
 
 ## Site Export
 
-`site export` produces a Zola-compatible export as a ZIP file or directory.
+`site export` produces a Hugo-compatible export as a ZIP file or directory.
 
 Use it when you want to:
 
@@ -29,40 +29,46 @@ Use it when you want to:
 
 By default, Jant localizes referenced media into the export so the archive is more self-contained.
 
-When the export comes from Jant, `config.toml` also keeps Jant-specific metadata for round-trip imports, including header navigation and the collections directory structure (collection order, dividers, and custom links).
+When the export comes from Jant, `data/jant.toml` and `data/collection_directory.toml` also keep Jant-specific metadata for round-trip imports, including header navigation and the collections directory structure (collection order, dividers, and custom links).
 
 ### Export Layout
 
-A Jant export is a standard Zola site. Templates and static assets are packaged as a theme at `themes/jant/`, and `config.toml` sets `theme = "jant"`:
+A Jant export is a standard Hugo site. Templates and static assets are packaged as a theme at `themes/jant/`, and `hugo.toml` sets `theme = "jant"`:
 
 ```
-config.toml
+hugo.toml
 content/                  your posts, collections, sections
-themes/jant/              the packaged Jant theme (templates + static)
+  {slug}/
+    _index.md             thread root (branch bundle)
+    {reply-slug}/
+      index.md            reply (leaf bundle, build.render = "never")
+data/
+  jant.toml               nav items, branding, display preferences
+  collection_directory.toml   collections directory with dividers + links
+themes/jant/              the packaged Jant theme (layouts + static)
 README.md
 .gitignore
-templates/                your overrides (optional)
+layouts/                  your overrides (optional)
 static/                   your static files + downloaded media
 ```
 
-Root `templates/` and root `static/` are your territory. Zola picks any file under root `templates/<name>.html` over `themes/jant/templates/<name>.html`, so you can override a single page without forking the theme. With `--localize-media` (the default), referenced media is downloaded into `static/media/` so the export is self-contained.
+Root `layouts/` and root `static/` are your territory. Hugo picks any file under root `layouts/<name>.html` over `themes/jant/layouts/<name>.html`, so you can override a single template without forking the theme. With `--localize-media` (the default), referenced media is downloaded into `static/media/` so the export is self-contained.
 
 ### URL Scheme
 
-The exported site uses a Zola `feed` taxonomy for pagination instead of filtering posts at template time. The main paths are:
+Hugo renders the content tree directly. The main paths are:
 
-| URL                      | What it renders                                               |
-| ------------------------ | ------------------------------------------------------------- |
-| `/`                      | Home — pinned posts, then the first page of non-pinned public |
-| `/feed/public/page/N/`   | Older non-pinned public posts, paginated (N ≥ 2)              |
-| `/archive/`              | Archive — every published post in one chronological list      |
-| `/feed/archive/page/N/`  | Older published posts, paginated (N ≥ 2)                      |
-| `/featured/`             | Featured — first page of posts marked as featured             |
-| `/feed/featured/page/N/` | Older featured posts, paginated (N ≥ 2)                       |
-| `/{slug}/`               | A single post                                                 |
-| `/{collection-slug}/`    | A single collection                                           |
-| `/collections/`          | The collections directory                                     |
-| `/feed/unlisted/`        | Posts hidden from the home feed; listing page is `noindex`    |
+| URL                   | What it renders                                               |
+| --------------------- | ------------------------------------------------------------- |
+| `/`                   | Home — pinned posts, then the first page of non-pinned public |
+| `/page/N/`            | Older non-pinned public posts, paginated (N ≥ 2)              |
+| `/archive/`           | Archive — every published post in one chronological list      |
+| `/archive/page/N/`    | Older published posts, paginated (N ≥ 2)                      |
+| `/featured/`          | Featured — posts marked as featured, newest first             |
+| `/{slug}/`            | A single thread (root post + inline replies)                  |
+| `/{reply-slug}/`      | Alias that redirects to `/{root-slug}/#{reply-slug}`          |
+| `/{collection-slug}/` | A single collection                                           |
+| `/collections/`       | The collections directory                                     |
 
 Page size is controlled by your Jant site's **Posts per page** setting.
 
@@ -70,8 +76,8 @@ Page size is controlled by your Jant site's **Posts per page** setting.
 
 A `site export` → `site import` round-trip preserves every post's featured, pinned, and collection-membership state exactly. Specifically:
 
-- `featured_at` and `pinned_at` are written to front matter as ISO timestamps under `[extra.jant]` (not as booleans), so re-importing restores the original moment a post was featured or pinned.
-- `[[extra.jant.collections]]` carries per-entry `collected_at`, `position`, and per-collection `pinned_at` for every collection the post belongs to. The same metadata is preserved for thread replies inside the reply marker's JSON payload.
+- `featured_at` and `pinned_at` are written to front matter as ISO timestamps (not as booleans), so re-importing restores the original moment a post was featured or pinned.
+- The top-level `collections` array in front matter carries per-entry `collected_at`, `position`, and per-collection `pinned_at` for every collection the post belongs to. Each reply leaf bundle carries the same metadata in its own front matter.
 
 Any field you don't see documented here is Jant-internal and should not be hand-edited — changing a timestamp in front matter and re-importing will replace the stored value.
 
@@ -85,7 +91,7 @@ Export directly to a directory when you want to inspect the generated site:
 
 ```bash
 npx jant site export --directory ./jant-site
-cd ./jant-site && zola serve
+cd ./jant-site && hugo serve
 ```
 
 ### Export a Remote Site
@@ -101,15 +107,15 @@ You can also pass `--token`, but `JANT_API_TOKEN` is easier to reuse.
 
 ### Customizing an Export
 
-The `themes/jant/` directory is the packaged Jant theme. If you sync the export to GitHub, Jant will overwrite everything under `themes/jant/**`, `content/**`, `config.toml`, `.gitignore`, and `README.md` on every push. Everything else in the repo is yours and is preserved.
+The `themes/jant/` directory is the packaged Jant theme. If you sync the export to GitHub, Jant will overwrite everything under `themes/jant/**`, `content/**`, `data/**`, `hugo.toml`, `.gitignore`, and `README.md` on every push. Everything else in the repo is yours and is preserved.
 
 The supported ways to customize an exported site:
 
-- **Override a single template.** Copy the file you want to change from `themes/jant/templates/<name>.html` to `templates/<name>.html` at the project root, then edit the root copy. Zola loads root templates before theme templates, so your version wins without forking the whole theme.
+- **Override a single template.** Copy the file you want to change from `themes/jant/layouts/<name>.html` to `layouts/<name>.html` at the project root, then edit the root copy. Hugo loads root layouts before theme layouts, so your version wins without forking the whole theme.
 - **Add static files.** Drop files into the root `static/` directory. They are served at the matching URL and take precedence over anything of the same name in `themes/jant/static/`.
 - **Change colors, fonts, or layout tweaks.** Use **Settings > Custom CSS** in Jant. The value is written to `themes/jant/static/custom.css` on every export, so it is safe to edit from the Jant dashboard but not from the repo.
 
-Editing `themes/jant/**` directly in the repo is not supported — the next sync or export replaces it. For site-wide configuration, use Jant's **Settings** rather than editing `config.toml` by hand.
+Editing `themes/jant/**` directly in the repo is not supported — the next sync or export replaces it. For site-wide configuration, use Jant's **Settings** rather than editing `hugo.toml` by hand.
 
 ## Site Import
 
