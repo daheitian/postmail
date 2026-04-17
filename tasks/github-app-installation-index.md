@@ -86,22 +86,15 @@ known installations"):
 - `GITHUB_SYNC_AUTH_MODE` / `REPO` / `WEBHOOK_ID` / `WEBHOOK_SECRET` /
   `LAST_PUSH_SHA` / `ENABLED`
 
-### 4. New route: App-level webhook
+### 4. New internal route: App-level webhook
 
 ```
-POST /api/github-sync/app-webhook
+POST /api/_internal/github-app-webhook
 ```
 
-- Sibling to the existing `/api/github-sync/webhook` (which handles push
-  events via per-repo secret). Same namespace, clearly a GitHub webhook
-  endpoint — not an "internal" admin endpoint
-- Not host-bound in hosted mode (mounted before `resolveRequestSite`
-  middleware, since the request host is jant-cloud / some fixed core
-  host, not a tenant host)
-- Authentication: `X-Hub-Signature-256` verified with
-  `GITHUB_APP_WEBHOOK_SECRET`. That's it — HMAC is the auth. No bearer
-  token, no INTERNAL_ADMIN_TOKEN. Symmetric across self-hosted and
-  hosted deployments.
+- Not host-bound (mounted on the app root before any `resolveRequestSite`
+  middleware that might 404 on unknown hosts)
+- Verifies `X-Hub-Signature-256` with `GITHUB_APP_WEBHOOK_SECRET`
 - Event dispatch:
   - `installation.created` → `upsertInstallation` for the site that
     initiated (see §6)
@@ -148,7 +141,7 @@ existing OAuth callback passthrough pattern.
 
 **GitHub App webhook URL (in GitHub App settings):**
 
-- Self-hosted: `https://{site}/api/github-sync/app-webhook`
+- Self-hosted: `https://{site}/api/_internal/github-app-webhook`
 - Hosted: `https://{jant-cloud}/api/github/app-webhook`
 
 **jant-cloud route** (new, in `apps/app/app/routes/api/`):
@@ -157,22 +150,22 @@ existing OAuth callback passthrough pattern.
 POST /api/github/app-webhook
 ```
 
-- Reads body as raw bytes (HMAC is signature-of-raw-bytes; parsing to
-  JSON first breaks it)
-- Preserves `Content-Type`, `X-Hub-Signature-256`, `X-GitHub-Event`,
-  `X-GitHub-Delivery` on the forward
-- Forwards to `${JANT_CORE_INTERNAL_ADMIN_URL}/api/github-sync/app-webhook`
+- Reads body as raw bytes (HMAC verification is signature-of-raw-bytes;
+  parsing to JSON first breaks it)
+- Reads `X-Hub-Signature-256`, `X-GitHub-Event`, `X-GitHub-Delivery`
+- Forwards to `${JANT_CORE_INTERNAL_ADMIN_URL}/api/_internal/github-app-webhook`
+  with those headers preserved + `Authorization: Bearer ${INTERNAL_ADMIN_TOKEN}`
 - Returns core's status + body verbatim
-- Logs `X-GitHub-Delivery` for traceability
-- **No authentication on the jant-cloud side.** HMAC on the body is
-  sufficient; core verifies it. jant-cloud is a pure byte forwarder —
-  no new secret to share, no token to rotate, symmetric with how
-  self-hosted users point GitHub at core directly.
+- **Does NOT verify the GitHub signature itself** — core does. jant-cloud
+  stays a dumb proxy. No new secret-sharing surface (jant-cloud doesn't
+  need `GITHUB_APP_WEBHOOK_SECRET`).
 
-**Core endpoint acceptance** (identical in both modes):
+**Core endpoint acceptance:**
 
-- Verifies `X-Hub-Signature-256` against `GITHUB_APP_WEBHOOK_SECRET`.
-  Rejects on mismatch. That is the entire auth model.
+- Always verifies `X-Hub-Signature-256` against `GITHUB_APP_WEBHOOK_SECRET`
+- If `INTERNAL_ADMIN_TOKEN` is configured in env, also requires
+  `Authorization: Bearer ...` match (defense in depth for hosted).
+  Self-hosted users won't set this; signature alone is enough there.
 
 ## Implementation Plan
 
@@ -215,14 +208,12 @@ Ordered so each step leaves the tree in a working state.
      the real redirect
 
 6. **App-level webhook endpoint**
-   - Add to the existing `routes/api/github-sync.tsx` as a second
-     handler, or split into a sibling file — whichever keeps the file
-     under ~400 lines
-   - Route: `POST /api/github-sync/app-webhook`, mounted before any
-     host-resolution middleware (the request host is jant-cloud or a
-     fixed core host, not a tenant)
-   - Verify `X-Hub-Signature-256` with `GITHUB_APP_WEBHOOK_SECRET`.
-     Reject on mismatch. No other auth.
+   - New file `routes/api/github-app-webhook.ts` (internal; separate
+     from the existing push-webhook file)
+   - Route: `POST /api/_internal/github-app-webhook`, mounted at app
+     root without host resolution
+   - Verify `X-Hub-Signature-256` with `GITHUB_APP_WEBHOOK_SECRET`
+   - If `INTERNAL_ADMIN_TOKEN` env present, also check bearer
    - Event dispatch per §4
    - Integration test: fixture payloads for each event type
 
@@ -237,12 +228,12 @@ Ordered so each step leaves the tree in a working state.
    - New file `apps/app/app/routes/api/github-app-webhook.ts`
    - Register in `routes.ts` alongside existing
      `api/github/install-callback`
-   - Reads raw body bytes (not `.json()`) — HMAC is over raw bytes
+   - Reads raw body bytes (not `.json()`)
    - Forwards to `env.JANT_CORE_INTERNAL_ADMIN_URL +
-'/api/github-sync/app-webhook'`
-   - Headers to preserve verbatim: `Content-Type`,
-     `X-Hub-Signature-256`, `X-GitHub-Event`, `X-GitHub-Delivery`
-   - No `Authorization` header added. No secrets on jant-cloud.
+'/api/_internal/github-app-webhook'`
+   - Headers to preserve: `Content-Type`, `X-Hub-Signature-256`,
+     `X-GitHub-Event`, `X-GitHub-Delivery`
+   - Adds `Authorization: Bearer ${env.INTERNAL_ADMIN_TOKEN}`
    - Returns upstream status + body verbatim
    - Logs `X-GitHub-Delivery` for traceability
 
@@ -268,19 +259,27 @@ Ordered so each step leaves the tree in a working state.
   5. Same GitHub account bound to two sites → modifying the installation
      fans out to both
 
-## Resolved Questions
+## Open Questions Before Starting
 
-1. **jant-cloud auth on the forward:** none. GitHub's HMAC over the
-   body is sufficient authentication; adding a bearer token doesn't
-   strengthen the cryptographic proof and would only create a new
-   secret to manage. Symmetric between self-hosted and hosted modes.
-2. **installation.deleted cleanup of orphan push webhooks:** do
-   nothing. Access is gone with the installation; GitHub will
-   garbage-collect its own side.
-3. **Install-predicate behaviour:** unconditionally skip the GitHub
-   round-trip when the current site already has ≥1 installation
-   registered. The picker's "Install on another account" action
-   covers the case where the user wants a fresh install.
+1. Does `jant-cloud` already expose `INTERNAL_ADMIN_TOKEN` verification
+   on its outbound forwards, or does it only use `JANT_CORE_INTERNAL_ADMIN_TOKEN`
+   inbound to core? (Pick whichever pattern matches existing flows so
+   we don't fork conventions.)
+
+2. When `installation.deleted` fires, do we also want to delete the
+   GitHub-side **push webhook** (now orphaned) proactively, or leave it
+   as gone-with-the-repo? Proposal: do nothing — when the installation
+   is gone, access is gone; GitHub will garbage-collect its own side.
+
+ok, 按照你的建议。
+
+3. Should the install-predicate in §5 skip the GitHub round-trip even
+   when the user is actively clicking "Install"? Or should it be opt-in
+   (e.g., a "Reconnect existing installation" button)? Proposal: skip
+   unconditionally when installations exist — simpler flow, user can
+   still reach GitHub via "Install on another account".
+
+   ok, 按照你的建议。
 
 ## Review
 

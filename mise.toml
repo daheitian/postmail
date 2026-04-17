@@ -638,7 +638,7 @@ echo ""
 # =============================================================================
 # Workspace (git worktree workflow)
 # =============================================================================
-[tasks.worktree-create]
+[tasks.draft]
 description = "Create a new feature worktree: mise run worktree-create feat/login [base-branch]"
 usage = """
 arg "<name>"
