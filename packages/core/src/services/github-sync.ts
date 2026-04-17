@@ -28,7 +28,7 @@ import {
 } from "../lib/github-api.js";
 import { getInstallationToken } from "../lib/github-app.js";
 import type { GitHubAppEnvConfig } from "../lib/env.js";
-import { parseFrontMatter, splitReplies } from "../lib/zola-markdown.js";
+import { parseFrontMatter } from "../lib/hugo-markdown.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { createExportService, type SiteConfig } from "./export.js";
 import type { PostService } from "./post.js";
@@ -593,23 +593,23 @@ export function createGitHubSyncService(
         const existingPost = await services.posts.getById(pathRecord.postId);
         if (!existingPost) continue;
 
-        // Parse body (handle thread replies)
-        const segments = splitReplies(body);
-        const rootBody = segments[0]?.body ?? "";
-
-        // Convert markdown to Tiptap JSON
+        // TODO(hugo-migration, Commit 4): rewrite this block to walk the
+        // Hugo branch bundle (root `_index.md` + nested reply `index.md`
+        // leaves) instead of parsing a single flattened body. For now
+        // handle the body as a single root post — threaded posts will be
+        // handled end-to-end by the import pipeline rewrite.
+        const rootBody = body.trim();
         const tiptapBody = rootBody ? markdownToTiptapJson(rootBody) : null;
 
-        // Build update data from front matter
         const updateData: Record<string, unknown> = {};
         if (tiptapBody !== null) updateData.body = tiptapBody;
         if (frontMatter.title !== undefined)
           updateData.title = frontMatter.title;
-        if (frontMatter.extra?.link_url !== undefined) {
-          updateData.url = frontMatter.extra.link_url;
+        if (frontMatter.link_url !== undefined) {
+          updateData.url = frontMatter.link_url;
         }
-        if (frontMatter.extra?.quote_text !== undefined) {
-          updateData.quoteText = frontMatter.extra.quote_text;
+        if (frontMatter.quote_text !== undefined) {
+          updateData.quoteText = frontMatter.quote_text;
         }
 
         if (Object.keys(updateData).length > 0) {

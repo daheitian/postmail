@@ -20,14 +20,11 @@ import {
 } from "../lib/site-media-parser.js";
 import { openNodeDatabase } from "../lib/node-database.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
-import {
-  parseFrontMatter as parseFrontMatterShared,
-  splitReplies as splitRepliesShared,
-} from "../../src/lib/zola-markdown.js";
+import { parseFrontMatter as parseFrontMatterShared } from "../../src/lib/hugo-markdown.js";
 
 /**
  * Parse front matter from a Markdown file.
- * Delegates to the shared zola-markdown module.
+ * Delegates to the shared hugo-markdown module.
  */
 const parseFrontMatter = parseFrontMatterShared;
 
@@ -222,10 +219,16 @@ async function readMediaSpecAsset(media, field = "src") {
 }
 
 /**
- * Parse reply markers from post body.
- * Delegates to the shared zola-markdown module.
+ * TODO(hugo-migration, Commit 4): the import walker is being rewritten to
+ * traverse Hugo branch bundles (root `_index.md` + nested reply leaves)
+ * rather than splitting a flattened body. Until that rewrite lands, this
+ * stub degrades to "no replies": the body is treated as a single root
+ * segment. Legacy Zola exports with `<!--jant:reply-->` markers will not
+ * round-trip through this transitional window.
  */
-const splitReplies = splitRepliesShared;
+function splitReplies(body) {
+  return [{ attrs: null, body: String(body ?? "").trim() }];
+}
 
 function normalizeImportPathKey(value) {
   if (typeof value !== "string") {
