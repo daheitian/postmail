@@ -1,20 +1,24 @@
----
-title: "Bought Too Many Lemons Again"
-date: 2025-11-09T09:20:00.000Z
-updated: 2026-04-03T02:30:34.000Z
-slug: "bought-too-many-lemons-again"
-taxonomies:
-  collections:
-    - "home-cooking"
-  feed:
-    - "public"
-    - "archive"
-extra:
-  format: note
-  status: published
-  visibility: public
-  summary_text: "Came home from the market with a bag of lemons, parsley, eggs, and zero idea what dinner was going to be. This keeps happening. I think part of me believes citrus counts as a plan."
----
++++
+title = "Bought Too Many Lemons Again"
+date = "2025-11-09T09:20:00.000Z"
+updated = "2026-04-03T02:30:34.000Z"
+slug = "bought-too-many-lemons-again"
+
+[taxonomies]
+collections = ["home-cooking"]
+feed = ["public", "archive"]
+
+[extra]
+format = "note"
+status = "published"
+visibility = "public"
+summary_text = "Came home from the market with a bag of lemons, parsley, eggs, and zero idea what dinner was going to be. This keeps happening. I think part of me believes citrus counts as a plan."
+
+[[extra.jant.collections]]
+slug = "home-cooking"
+collected_at = "2026-04-03T02:30:34.000Z"
+position = 0
++++
 
 Came home from the market with a bag of lemons, parsley, eggs, and zero idea what dinner was going to be.
 

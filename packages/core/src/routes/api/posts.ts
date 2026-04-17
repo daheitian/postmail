@@ -180,6 +180,8 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
       visibility: body.visibility,
       pinned: body.pinned,
       featured: body.featured,
+      pinnedAt: body.pinnedAt,
+      featuredAt: body.featuredAt,
       url:
         body.format === "quote"
           ? body.sourceUrl || undefined
@@ -187,6 +189,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
       quoteText: body.quoteText,
       rating: body.rating || undefined,
       collectionIds: body.collectionIds,
+      collectionEntries: body.collectionEntries,
       replyToId: body.replyToId,
       quietReply: body.quietReply,
       publishedAt: body.publishedAt,
@@ -254,10 +257,13 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
         visibility: body.visibility,
         pinned: body.pinned,
         featured: body.featured,
+        pinnedAt: body.pinnedAt,
+        featuredAt: body.featuredAt,
         url,
         quoteText: body.quoteText,
         rating: body.rating,
         collectionIds: body.collectionIds,
+        collectionEntries: body.collectionEntries,
         publishedAt: body.publishedAt,
       },
       body.attachments,

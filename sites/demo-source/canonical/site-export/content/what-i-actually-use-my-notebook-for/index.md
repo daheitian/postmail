@@ -1,22 +1,32 @@
----
-title: "What I Actually Use My Notebook For"
-date: 2025-10-02T11:00:00.000Z
-updated: 2026-04-03T02:31:05.000Z
-slug: "what-i-actually-use-my-notebook-for"
-taxonomies:
-  collections:
-    - "tiny-projects"
-    - "weekend-notes"
-  feed:
-    - "public"
-    - "archive"
-extra:
-  format: note
-  status: published
-  visibility: public
-  summary_text: "I always imagine I will use a fresh notebook for my best thoughts. In reality, it becomes useful much sooner and in messier ways. Mostly three things Shopping listsFragments I do not trust my phone withThe first ugly version of an idea That turns out to be enough. A notebook does not need to become an archive. It only needs to catch the thought before it slips away."
-  featured: true
----
++++
+title = "What I Actually Use My Notebook For"
+date = "2025-10-02T11:00:00.000Z"
+updated = "2026-04-03T02:31:05.000Z"
+slug = "what-i-actually-use-my-notebook-for"
+
+[taxonomies]
+collections = ["tiny-projects", "weekend-notes"]
+feed = ["public", "archive", "featured"]
+
+[extra]
+format = "note"
+status = "published"
+visibility = "public"
+summary_text = "I always imagine I will use a fresh notebook for my best thoughts. In reality, it becomes useful much sooner and in messier ways. Mostly three things Shopping listsFragments I do not trust my phone withThe first ugly version of an idea That turns out to be enough. A notebook does not need to become an archive. It only needs to catch the thought before it slips away."
+
+[extra.jant]
+featured_at = "2026-04-03T02:31:05.000Z"
+
+[[extra.jant.collections]]
+slug = "tiny-projects"
+collected_at = "2026-04-03T02:31:05.000Z"
+position = 0
+
+[[extra.jant.collections]]
+slug = "weekend-notes"
+collected_at = "2026-04-03T02:31:05.000Z"
+position = 1
++++
 
 I always imagine I will use a fresh notebook for my best thoughts. In reality, it becomes useful much sooner and in messier ways.
 

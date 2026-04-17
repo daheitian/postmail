@@ -1772,16 +1772,51 @@ export async function run(argv) {
       const replySegments = segments.slice(1);
       const replySlugPaths = collectReplySlugPaths(replySegments);
 
-      // Resolve collection IDs from taxonomy slugs
+      // Resolve collection memberships. When `extra.jant.collections[]` is
+      // present (Jant's own export), use the structured entries so
+      // `collected_at` / `position` / `pinned_at` round-trip losslessly.
+      // Otherwise fall back to the bare `taxonomies.collections` slug
+      // list — this tolerates hand-authored Zola sites.
+      const extra = frontMatter.extra || {};
+      const jantMeta = extra.jant || {};
       const collectionIds = [];
-      const taxonomyCollections =
-        frontMatter.taxonomies?.c || frontMatter.taxonomies?.collections || [];
-      for (const colSlug of taxonomyCollections) {
-        const id = collectionSlugToId.get(colSlug);
-        if (id) collectionIds.push(id);
+      const collectionEntries = [];
+      const structuredCollections = Array.isArray(jantMeta.collections)
+        ? jantMeta.collections
+        : [];
+      if (structuredCollections.length > 0) {
+        for (const raw of structuredCollections) {
+          if (!raw || typeof raw.slug !== "string") continue;
+          const id = collectionSlugToId.get(raw.slug);
+          if (!id) continue;
+          const entry = { collectionId: id };
+          if (typeof raw.collected_at === "string" && raw.collected_at) {
+            entry.createdAt = Math.floor(
+              new Date(raw.collected_at).getTime() / 1000,
+            );
+          }
+          if (typeof raw.position === "number") {
+            entry.position = raw.position;
+          }
+          if (typeof raw.pinned_at === "string" && raw.pinned_at) {
+            entry.pinnedAt = Math.floor(
+              new Date(raw.pinned_at).getTime() / 1000,
+            );
+          }
+          collectionEntries.push(entry);
+          collectionIds.push(id);
+        }
+      } else {
+        const taxonomyCollections =
+          frontMatter.taxonomies?.c ||
+          frontMatter.taxonomies?.collections ||
+          [];
+        for (const colSlug of taxonomyCollections) {
+          const id = collectionSlugToId.get(colSlug);
+          if (id) collectionIds.push(id);
+        }
       }
 
-      const extra = frontMatter.extra || {};
       const format = extra.format || "note";
       const postSlug =
         frontMatter.slug != null ? String(frontMatter.slug) : undefined;
@@ -1851,15 +1886,26 @@ export async function run(argv) {
         path: frontMatter.path != null ? String(frontMatter.path) : undefined,
         status: postStatus,
         visibility: postVisibility,
-        collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
+        collectionIds:
+          collectionEntries.length === 0 && collectionIds.length > 0
+            ? collectionIds
+            : undefined,
+        collectionEntries:
+          collectionEntries.length > 0 ? collectionEntries : undefined,
         attachments:
           importedAttachments.length > 0 ? importedAttachments : undefined,
         publishedAt:
           postStatus === "published" && frontMatter.date
             ? Math.floor(new Date(frontMatter.date).getTime() / 1000)
             : undefined,
-        pinned: extra.pinned || undefined,
-        featured: extra.featured || undefined,
+        featuredAt:
+          typeof jantMeta.featured_at === "string" && jantMeta.featured_at
+            ? Math.floor(new Date(jantMeta.featured_at).getTime() / 1000)
+            : undefined,
+        pinnedAt:
+          typeof jantMeta.pinned_at === "string" && jantMeta.pinned_at
+            ? Math.floor(new Date(jantMeta.pinned_at).getTime() / 1000)
+            : undefined,
         rating: extra.rating || undefined,
       };
 
@@ -1907,6 +1953,36 @@ export async function run(argv) {
           replyAttrs.title ||
           replySlug ||
           "(untitled reply)";
+
+        // Resolve reply-level collection memberships from the marker JSON.
+        const replyCollectionIds = [];
+        const replyCollectionEntries = [];
+        const replyStructuredCollections = Array.isArray(
+          replyAttrs.collections,
+        )
+          ? replyAttrs.collections
+          : [];
+        for (const raw of replyStructuredCollections) {
+          if (!raw || typeof raw.slug !== "string") continue;
+          const id = collectionSlugToId.get(raw.slug);
+          if (!id) continue;
+          const entry = { collectionId: id };
+          if (typeof raw.collected_at === "string" && raw.collected_at) {
+            entry.createdAt = Math.floor(
+              new Date(raw.collected_at).getTime() / 1000,
+            );
+          }
+          if (typeof raw.position === "number") {
+            entry.position = raw.position;
+          }
+          if (typeof raw.pinned_at === "string" && raw.pinned_at) {
+            entry.pinnedAt = Math.floor(
+              new Date(raw.pinned_at).getTime() / 1000,
+            );
+          }
+          replyCollectionEntries.push(entry);
+          replyCollectionIds.push(id);
+        }
         if (!dryRun && replySlug) {
           await assertImportSlugAvailable(
             target,
@@ -1972,14 +2048,39 @@ export async function run(argv) {
           publishedAt: replyAttrs.date
             ? Math.floor(new Date(replyAttrs.date).getTime() / 1000)
             : undefined,
-          rating: replyAttrs.rating ? Number(replyAttrs.rating) : undefined,
+          featuredAt:
+            typeof replyAttrs.featured_at === "string" &&
+            replyAttrs.featured_at
+              ? Math.floor(
+                  new Date(replyAttrs.featured_at).getTime() / 1000,
+                )
+              : undefined,
+          pinnedAt:
+            typeof replyAttrs.pinned_at === "string" && replyAttrs.pinned_at
+              ? Math.floor(new Date(replyAttrs.pinned_at).getTime() / 1000)
+              : undefined,
+          rating:
+            typeof replyAttrs.rating === "number"
+              ? replyAttrs.rating
+              : replyAttrs.rating
+                ? Number(replyAttrs.rating)
+                : undefined,
+          collectionIds:
+            replyCollectionEntries.length === 0 &&
+            replyCollectionIds.length > 0
+              ? replyCollectionIds
+              : undefined,
+          collectionEntries:
+            replyCollectionEntries.length > 0
+              ? replyCollectionEntries
+              : undefined,
         };
 
         if (replyFormat === "link" && replyAttrs.url) {
           replyData.url = replyAttrs.url;
         }
         if (replyFormat === "quote" && replyAttrs.quote_text) {
-          replyData.quoteText = decodeURIComponent(replyAttrs.quote_text);
+          replyData.quoteText = replyAttrs.quote_text;
           if (replyAttrs.source_url) {
             replyData.url = replyAttrs.source_url;
           }

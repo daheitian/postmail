@@ -9,18 +9,30 @@
 <div data-page="home">
   {# Home page 1 is a manual render of the feed taxonomy. Pinned posts
      live in feed=pinned (NOT feed=public) so Zola's native paginator at
-     /feed/public/page/N/ cannot double-count them. #}
+     /feed/public/page/N/ cannot double-count them. When
+     home_default_view == "featured", the main list is the featured feed
+     instead of the public feed; pinned still prepends. #}
+  {% set home_view = config.extra.jant.home_default_view | default(value="latest") %}
   {% set_global pinned_pages = [] %}
   {% set_global public_pages = [] %}
+  {% set_global featured_pages = [] %}
   {% set feed_tax = get_taxonomy(kind="feed") %}
   {% for t in feed_tax.items %}
     {% if t.name == "pinned" %}{% set_global pinned_pages = t.pages %}{% endif %}
     {% if t.name == "public" %}{% set_global public_pages = t.pages %}{% endif %}
+    {% if t.name == "featured" %}{% set_global featured_pages = t.pages %}{% endif %}
   {% endfor %}
 
   {% set page_size = config.extra.jant.page_size %}
-  {% set home_public = public_pages | slice(end=page_size) %}
-  {% set home_pages = pinned_pages | concat(with=home_public) %}
+  {% if home_view == "featured" %}
+    {% set_global main_pages = featured_pages %}
+    {% set next_page_url = "/feed/featured/page/2/" %}
+  {% else %}
+    {% set_global main_pages = public_pages %}
+    {% set next_page_url = "/feed/public/page/2/" %}
+  {% endif %}
+  {% set home_main = main_pages | slice(end=page_size) %}
+  {% set home_pages = pinned_pages | concat(with=home_main) %}
 
   <div data-feed>
     <div id="timeline-feed">
@@ -35,11 +47,11 @@
     </div>
   </div>
 
-  {% if public_pages | length > page_size %}
+  {% if main_pages | length > page_size %}
   <nav class="pagination" aria-label="Pagination">
     <span class="pagination-disabled">Previous</span>
     <span aria-current="page" class="pagination-current">1</span>
-    <a href="/feed/public/page/2/" class="pagination-link">Next</a>
+    <a href="{{ next_page_url }}" class="pagination-link">Next</a>
   </nav>
   {% endif %}
 

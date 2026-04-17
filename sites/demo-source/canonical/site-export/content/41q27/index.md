@@ -1,24 +1,29 @@
----
-date: 2025-09-27T08:15:00.000Z
-updated: 2026-04-03T02:30:27.000Z
-slug: "41q27"
-aliases:
-  - "/the-potting-mix-guide-i-keep-rereading"
-  - "/0x4nv"
-  - "/faqyt"
-taxonomies:
-  collections:
-    - "tiny-projects"
-    - "weekend-notes"
-  feed:
-    - "public"
-    - "archive"
-extra:
-  format: note
-  status: published
-  visibility: public
-  summary_text: "Repotted the balcony herbs before breakfast. Basil was dramatic. Mint did not care at all."
----
++++
+date = "2025-09-27T08:15:00.000Z"
+updated = "2026-04-03T02:30:27.000Z"
+slug = "41q27"
+aliases = ["/the-potting-mix-guide-i-keep-rereading", "/0x4nv", "/faqyt"]
+
+[taxonomies]
+collections = ["tiny-projects", "weekend-notes"]
+feed = ["public", "archive"]
+
+[extra]
+format = "note"
+status = "published"
+visibility = "public"
+summary_text = "Repotted the balcony herbs before breakfast. Basil was dramatic. Mint did not care at all."
+
+[[extra.jant.collections]]
+slug = "tiny-projects"
+collected_at = "2026-04-03T02:30:27.000Z"
+position = 0
+
+[[extra.jant.collections]]
+slug = "weekend-notes"
+collected_at = "2026-04-03T02:30:27.000Z"
+position = 1
++++
 
 Repotted the balcony herbs before breakfast. Basil was dramatic. Mint did not care at all.
 
@@ -33,7 +38,24 @@ Repotted the balcony herbs before breakfast. Basil was dramatic. Mint did not ca
 
 <time datetime="2025-09-27T09:40:00.000Z">Sep 27, 2025</time>
 
-<!-- jant:reply date="2025-09-27T09:40:00.000Z" slug="the-potting-mix-guide-i-keep-rereading" format="link" status="published" visibility="public" url="https://www.rhs.org.uk/plants/types/houseplants/repotting" title="The potting mix guide I keep rereading" -->
+<!--jant:reply
+{
+  "date": "2025-09-27T09:40:00.000Z",
+  "slug": "the-potting-mix-guide-i-keep-rereading",
+  "format": "link",
+  "status": "published",
+  "visibility": "public",
+  "featured_at": null,
+  "pinned_at": null,
+  "rating": null,
+  "title": "The potting mix guide I keep rereading",
+  "url": "https://www.rhs.org.uk/plants/types/houseplants/repotting",
+  "quote_text": null,
+  "source_name": null,
+  "source_url": null,
+  "collections": []
+}
+-->
 
 Basic, clear, and good for confidence when I start overthinking dirt.
 
@@ -41,7 +63,24 @@ Basic, clear, and good for confidence when I start overthinking dirt.
 
 <time datetime="2025-09-27T09:00:00.000Z">Sep 27, 2025</time>
 
-<!-- jant:reply date="2025-09-27T09:00:00.000Z" slug="0x4nv" format="note" status="published" visibility="public" -->
+<!--jant:reply
+{
+  "date": "2025-09-27T09:00:00.000Z",
+  "slug": "0x4nv",
+  "format": "note",
+  "status": "published",
+  "visibility": "public",
+  "featured_at": null,
+  "pinned_at": null,
+  "rating": null,
+  "title": null,
+  "url": null,
+  "quote_text": null,
+  "source_name": null,
+  "source_url": null,
+  "collections": []
+}
+-->
 
 I keep forgetting that plants mostly want consistency, not inspiration. Fair enough.
 
@@ -49,7 +88,24 @@ I keep forgetting that plants mostly want consistency, not inspiration. Fair eno
 
 <time datetime="2025-09-27T16:50:00.000Z">Sep 27, 2025</time>
 
-<!-- jant:reply date="2025-09-27T16:50:00.000Z" slug="faqyt" format="note" status="published" visibility="public" -->
+<!--jant:reply
+{
+  "date": "2025-09-27T16:50:00.000Z",
+  "slug": "faqyt",
+  "format": "note",
+  "status": "published",
+  "visibility": "public",
+  "featured_at": null,
+  "pinned_at": null,
+  "rating": null,
+  "title": null,
+  "url": null,
+  "quote_text": null,
+  "source_name": null,
+  "source_url": null,
+  "collections": []
+}
+-->
 
 By late afternoon the basil was standing up again. I respect a fast recovery.
 

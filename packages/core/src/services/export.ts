@@ -192,14 +192,14 @@ export function createExportService(
 
       const [
         collectionsByPost,
-        collectionPinsByPost,
+        collectionEntriesByPost,
         rawMediaByPost,
         slugMap,
         aliasMap,
         collectionSlugMap,
       ] = await Promise.all([
         services.collections.getCollectionsByPostIds(allPostIds),
-        services.collections.getCollectionPinsByPostIds(allPostIds),
+        services.collections.getCollectionEntriesByPostIds(allPostIds),
         services.media.getByPostIds(allPostIds),
         services.paths.getPostSlugMap(allPostIds),
         services.paths.getPostAliases(rootPostIds),
@@ -242,21 +242,32 @@ export function createExportService(
       for (const root of roots) {
         const slug = slugMap.get(root.id) ?? root.slug;
         const threadReplies = repliesByThread.get(root.id) ?? [];
-        const postCollections = collectionsByPost.get(root.id) ?? [];
         const rootAliases = [...(aliasMap.get(root.id) ?? [])];
         const zolaAliases = [...rootAliases];
         const rootMedia = rawMediaByPost.get(root.id) ?? [];
 
-        // Resolve which collection slugs this post is pinned in. The Zola
-        // collection template reads this list to sort pinned posts to the
-        // top of each collection page (mirrors the live site behavior).
-        const pinnedCollectionIds = collectionPinsByPost.get(root.id);
-        const pinnedCollectionSlugs: string[] = [];
-        if (pinnedCollectionIds) {
-          for (const collectionId of pinnedCollectionIds) {
-            const colSlug = collectionSlugMap.get(collectionId);
-            if (colSlug) pinnedCollectionSlugs.push(colSlug);
-          }
+        // Resolve per-entry collection metadata for both the root post
+        // and each reply. Collections carry `collected_at` / `position` /
+        // `pinned_at` per row, serialized into
+        // `[[extra.jant.collections]]` (root) or the reply marker JSON.
+        const rootCollectionEntries = buildExportedCollectionEntriesForPost(
+          root.id,
+          collectionEntriesByPost,
+          collectionSlugMap,
+        );
+        const replyCollectionEntriesByPost = new Map<
+          string,
+          ExportedCollectionEntry[]
+        >();
+        for (const reply of threadReplies) {
+          replyCollectionEntriesByPost.set(
+            reply.id,
+            buildExportedCollectionEntriesForPost(
+              reply.id,
+              collectionEntriesByPost,
+              collectionSlugMap,
+            ),
+          );
         }
 
         // Reply URLs must resolve back to the merged thread page in Zola, but
@@ -269,14 +280,14 @@ export function createExportService(
         const markdown = buildPostMarkdown(
           root,
           threadReplies,
-          postCollections,
+          rootCollectionEntries,
           { rootAliases, zolaAliases },
           slugMap,
           collectionSlugMap,
           rootMedia,
           rawMediaByPost,
           siteConfig,
-          pinnedCollectionSlugs,
+          replyCollectionEntriesByPost,
         );
 
         exportFiles.push({
@@ -316,10 +327,11 @@ export function createExportService(
         path: "content/archive/_index.md",
         content: buildArchiveSection(),
       });
-      // /featured section — root-URL listing of posts with extra.featured == true.
-      // Skipped if "featured" is already taken by a post or collection slug
-      // (path_registry on the main site should prevent this, but we belt-and-
-      // braces: Zola would otherwise fail to build with a directory clash).
+      // /featured section — root-URL listing of posts in the feed=featured
+      // taxonomy. Skipped if "featured" is already taken by a post or
+      // collection slug (path_registry on the main site should prevent this,
+      // but we belt-and-braces: Zola would otherwise fail to build with a
+      // directory clash).
       const usedSlugs = new Set<string>();
       for (const s of slugMap.values()) usedSlugs.add(s);
       for (const s of collectionSlugMap.values()) usedSlugs.add(s);
@@ -519,11 +531,6 @@ function escapeToml(value: string): string {
     .replace(/\n/g, "\\n");
 }
 
-/** Escape a string for use in YAML (wrap in quotes if needed) */
-function yamlString(value: string): string {
-  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n")}"`;
-}
-
 /**
  * Map a post onto `feed` taxonomy terms. Private posts are emitted with
  * `draft: true` and never reach Zola, so they get no terms.
@@ -535,18 +542,62 @@ function yamlString(value: string): string {
  * tasks/zola-theme-and-feed-taxonomy.md).
  */
 function feedTermsForPost(
-  post: Pick<Post, "visibility" | "pinnedAt">,
+  post: Pick<Post, "visibility" | "pinnedAt" | "featuredAt">,
 ): string[] {
   if (post.visibility === "private") return [];
   if (post.visibility === "latest_hidden") return ["unlisted"];
   const public_or_pinned = post.pinnedAt !== null ? "pinned" : "public";
-  return [public_or_pinned, "archive"];
+  const terms = [public_or_pinned, "archive"];
+  if (post.featuredAt !== null) terms.push("featured");
+  return terms;
+}
+
+/**
+ * A single `[[extra.jant.collections]]` entry, already resolved to its
+ * Zola-visible slug. The export assembles these from
+ * `collectionService.getCollectionEntriesByPostIds` + `collectionSlugMap`.
+ */
+interface ExportedCollectionEntry {
+  slug: string;
+  /** Unix seconds. */
+  collectedAt: number;
+  position: number;
+  /** Unix seconds, or null when not pinned in this collection. */
+  pinnedAt: number | null;
+}
+
+function buildExportedCollectionEntriesForPost(
+  postId: string,
+  collectionEntriesByPost: Map<
+    string,
+    {
+      collectionId: string;
+      createdAt: number;
+      position: number;
+      pinnedAt: number | null;
+    }[]
+  >,
+  collectionSlugMap: Map<string, string>,
+): ExportedCollectionEntry[] {
+  const entries = collectionEntriesByPost.get(postId) ?? [];
+  const resolved: ExportedCollectionEntry[] = [];
+  for (const entry of entries) {
+    const slug = collectionSlugMap.get(entry.collectionId);
+    if (!slug) continue;
+    resolved.push({
+      slug,
+      collectedAt: entry.createdAt,
+      position: entry.position,
+      pinnedAt: entry.pinnedAt,
+    });
+  }
+  return resolved;
 }
 
 export function buildPostMarkdown(
   root: Post,
   threadReplies: Post[],
-  postCollections: Collection[],
+  rootCollectionEntries: ExportedCollectionEntry[],
   aliasData: {
     rootAliases: string[];
     zolaAliases: string[];
@@ -556,105 +607,126 @@ export function buildPostMarkdown(
   rootMedia: Media[],
   mediaByPost: Map<string, Media[]>,
   siteConfig: SiteConfig,
-  pinnedCollectionSlugs: string[] = [],
+  replyCollectionEntriesByPost: Map<string, ExportedCollectionEntry[]>,
 ): string {
   const parts: string[] = [];
 
-  // Front matter (YAML)
-  parts.push("---");
+  // Front matter (TOML). Jant-private structured data lives under
+  // `[extra.jant]`; everything Zola reads directly stays at the root of
+  // `[extra]`. See tasks/featured-roundtrip-refactor.md for the full
+  // schema.
+  parts.push("+++");
   if (root.title && root.format !== "quote") {
-    parts.push(`title: ${yamlString(root.title)}`);
+    parts.push(`title = "${escapeToml(root.title)}"`);
   }
   const date = root.publishedAt ?? root.createdAt;
   if (date) {
-    parts.push(`date: ${toISOString(date)}`);
+    parts.push(`date = "${toISOString(date)}"`);
   }
   if (root.updatedAt && root.updatedAt !== root.publishedAt) {
-    parts.push(`updated: ${toISOString(root.updatedAt)}`);
+    parts.push(`updated = "${toISOString(root.updatedAt)}"`);
   }
   if (root.status === "draft" || root.visibility === "private") {
-    parts.push("draft: true");
+    parts.push("draft = true");
   }
 
   const slug = slugMap.get(root.id) ?? root.slug;
-  parts.push(`slug: ${yamlString(slug)}`);
+  parts.push(`slug = "${escapeToml(slug)}"`);
 
   if (aliasData.zolaAliases.length > 0) {
-    parts.push("aliases:");
-    for (const a of aliasData.zolaAliases) {
-      parts.push(`  - ${yamlString(a)}`);
-    }
+    parts.push(
+      `aliases = [${aliasData.zolaAliases.map((a) => `"${escapeToml(a)}"`).join(", ")}]`,
+    );
   }
 
-  // Taxonomies. Every non-draft post gets a `feed` term so home and
-  // archive can be rendered as Zola taxonomy pages (no template-time
+  // Taxonomies. Every non-draft post gets a `feed` term so home, archive,
+  // and featured can be rendered as Zola taxonomy pages (no template-time
   // visibility filtering). Private/draft posts don't reach Zola —
-  // `draft: true` above skips them on build.
+  // `draft = true` above skips them on build.
   const feedTerms = feedTermsForPost(root);
-  const hasCollections = postCollections.length > 0;
+  const hasCollections = rootCollectionEntries.length > 0;
   const hasFeed = feedTerms.length > 0;
   if (hasCollections || hasFeed) {
-    parts.push("taxonomies:");
+    parts.push("");
+    parts.push("[taxonomies]");
     if (hasCollections) {
-      parts.push("  collections:");
-      for (const c of postCollections) {
-        const colSlug = collectionSlugMap.get(c.id) ?? c.slug;
-        parts.push(`    - ${yamlString(colSlug)}`);
-      }
+      parts.push(
+        `collections = [${rootCollectionEntries.map((e) => `"${escapeToml(e.slug)}"`).join(", ")}]`,
+      );
     }
     if (hasFeed) {
-      parts.push("  feed:");
-      for (const term of feedTerms) {
-        parts.push(`    - ${yamlString(term)}`);
-      }
+      parts.push(
+        `feed = [${feedTerms.map((t) => `"${escapeToml(t)}"`).join(", ")}]`,
+      );
     }
   }
 
-  // Extra metadata
-  parts.push("extra:");
-  parts.push(`  format: ${root.format}`);
-  parts.push(`  status: ${root.status}`);
-  parts.push(`  visibility: ${root.visibility}`);
+  // Extra metadata read directly by the Zola theme.
+  parts.push("");
+  parts.push("[extra]");
+  parts.push(`format = "${escapeToml(root.format)}"`);
+  parts.push(`status = "${escapeToml(root.status)}"`);
+  parts.push(`visibility = "${escapeToml(root.visibility)}"`);
   const summaryText = getArchiveSummaryText(root);
   if (summaryText) {
-    parts.push(`  summary_text: ${yamlString(summaryText)}`);
+    parts.push(`summary_text = "${escapeToml(summaryText)}"`);
   }
   if (root.format === "link" && root.url) {
-    parts.push(`  link_url: ${yamlString(root.url)}`);
+    parts.push(`link_url = "${escapeToml(root.url)}"`);
   }
   if (root.format === "quote" && root.title) {
-    parts.push(`  source_name: ${yamlString(root.title)}`);
+    parts.push(`source_name = "${escapeToml(root.title)}"`);
   }
   if (root.format === "quote" && root.url) {
-    parts.push(`  source_url: ${yamlString(root.url)}`);
+    parts.push(`source_url = "${escapeToml(root.url)}"`);
   }
   if (root.quoteText) {
-    parts.push(`  quote_text: ${yamlString(root.quoteText)}`);
+    parts.push(`quote_text = "${escapeToml(root.quoteText)}"`);
   }
   if (root.rating !== null) {
-    parts.push(`  rating: ${root.rating}`);
+    parts.push(`rating = ${root.rating}`);
   }
-  if (root.pinnedAt !== null) {
-    parts.push("  pinned: true");
-  }
-  if (pinnedCollectionSlugs.length > 0) {
-    parts.push("  collection_pins:");
-    for (const colSlug of pinnedCollectionSlugs) {
-      parts.push(`    - ${yamlString(colSlug)}`);
+
+  // Jant-private metadata. Lives under `extra.jant` so it doesn't collide
+  // with Zola-consumed fields at the root of `extra`. The header is only
+  // emitted when at least one scalar field is set — an empty `[extra.jant]`
+  // before a `[[extra.jant.collections]]` array-of-tables is legal TOML but
+  // just noise in the fixture.
+  const hasJantScalars =
+    root.featuredAt !== null ||
+    root.pinnedAt !== null ||
+    aliasData.rootAliases.length > 0;
+  if (hasJantScalars) {
+    parts.push("");
+    parts.push("[extra.jant]");
+    if (root.featuredAt !== null) {
+      parts.push(`featured_at = "${toISOString(root.featuredAt)}"`);
     }
-  }
-  if (root.featuredAt !== null) {
-    parts.push("  featured: true");
-  }
-  if (aliasData.rootAliases.length > 0) {
-    parts.push("  jant:");
-    parts.push("    root_aliases:");
-    for (const alias of aliasData.rootAliases) {
-      parts.push(`      - ${yamlString(alias)}`);
+    if (root.pinnedAt !== null) {
+      parts.push(`pinned_at = "${toISOString(root.pinnedAt)}"`);
+    }
+    if (aliasData.rootAliases.length > 0) {
+      parts.push(
+        `root_aliases = [${aliasData.rootAliases.map((a) => `"${escapeToml(a)}"`).join(", ")}]`,
+      );
     }
   }
 
-  parts.push("---");
+  // Per-entry collection membership metadata. Emitted as TOML
+  // array-of-tables so each collection membership keeps its own
+  // `collected_at` / `position` / `pinned_at`.
+  for (const entry of rootCollectionEntries) {
+    parts.push("");
+    parts.push("[[extra.jant.collections]]");
+    parts.push(`slug = "${escapeToml(entry.slug)}"`);
+    parts.push(`collected_at = "${toISOString(entry.collectedAt)}"`);
+    parts.push(`position = ${entry.position}`);
+    if (entry.pinnedAt !== null) {
+      parts.push(`pinned_at = "${toISOString(entry.pinnedAt)}"`);
+    }
+  }
+
+  parts.push("+++");
   parts.push("");
 
   // Root body
@@ -681,32 +753,11 @@ export function buildPostMarkdown(
       parts.push("");
     }
 
-    // Reply marker comment
+    // Reply marker — JSON body inside an HTML comment. See
+    // tasks/featured-roundtrip-refactor.md for the rationale.
     const replySlug = slugMap.get(reply.id) ?? reply.slug;
-    const esc = escapeCommentAttribute;
-    let marker = `<!-- jant:reply date="${reply.publishedAt ? toISOString(reply.publishedAt) : ""}" slug="${esc(replySlug)}" format="${reply.format}" status="${reply.status}" visibility="${reply.visibility}"`;
-
-    if (reply.format === "link" && reply.url) {
-      marker += ` url="${esc(reply.url)}"`;
-    }
-    if (reply.format === "quote" && reply.quoteText) {
-      marker += ` quote_text="${encodeURIComponent(reply.quoteText)}"`;
-    }
-    if (reply.format === "quote" && reply.title) {
-      marker += ` source_name="${esc(reply.title)}"`;
-    }
-    if (reply.format === "quote" && reply.url) {
-      marker += ` source_url="${esc(reply.url)}"`;
-    }
-    if (reply.rating !== null) {
-      marker += ` rating="${reply.rating}"`;
-    }
-    if (reply.title && reply.format !== "quote") {
-      marker += ` title="${esc(reply.title)}"`;
-    }
-    marker += " -->";
-
-    parts.push(marker);
+    const replyEntries = replyCollectionEntriesByPost.get(reply.id) ?? [];
+    parts.push(buildReplyMarker(reply, replySlug, replyEntries));
     parts.push("");
 
     const replyBlocks = [
@@ -719,6 +770,72 @@ export function buildPostMarkdown(
   }
 
   return parts.join("\n");
+}
+
+/**
+ * Shape of the JSON payload embedded in a reply marker. Kept as a
+ * self-contained object so every field's nullable/optional semantics are
+ * explicit on the wire. Shared with the parser in `lib/zola-markdown.ts`.
+ */
+export interface ReplyMeta {
+  date: string | null;
+  slug: string;
+  format: string;
+  status: string;
+  visibility: string;
+  featured_at: string | null;
+  pinned_at: string | null;
+  rating: number | null;
+  title: string | null;
+  url: string | null;
+  quote_text: string | null;
+  source_name: string | null;
+  source_url: string | null;
+  collections: {
+    slug: string;
+    collected_at: string;
+    position: number;
+    pinned_at: string | null;
+  }[];
+}
+
+/**
+ * Serialize a reply's metadata as a multi-line HTML comment with a JSON
+ * body. Round-trips cleanly through the importer via `splitReplies`.
+ */
+export function buildReplyMarker(
+  reply: Post,
+  replySlug: string,
+  collectionEntries: ExportedCollectionEntry[],
+): string {
+  const meta: ReplyMeta = {
+    date: reply.publishedAt ? toISOString(reply.publishedAt) : null,
+    slug: replySlug,
+    format: reply.format,
+    status: reply.status,
+    visibility: reply.visibility,
+    featured_at:
+      reply.featuredAt !== null ? toISOString(reply.featuredAt) : null,
+    pinned_at: reply.pinnedAt !== null ? toISOString(reply.pinnedAt) : null,
+    rating: reply.rating,
+    title: reply.title && reply.format !== "quote" ? reply.title : null,
+    url: reply.format === "link" ? (reply.url ?? null) : null,
+    quote_text: reply.format === "quote" ? (reply.quoteText ?? null) : null,
+    source_name: reply.format === "quote" ? (reply.title ?? null) : null,
+    source_url: reply.format === "quote" ? (reply.url ?? null) : null,
+    collections: collectionEntries.map((e) => ({
+      slug: e.slug,
+      collected_at: toISOString(e.collectedAt),
+      position: e.position,
+      pinned_at: e.pinnedAt !== null ? toISOString(e.pinnedAt) : null,
+    })),
+  };
+
+  // Defensive: a literal "-->" inside any string field would prematurely
+  // close the HTML comment. Escape every ">" as \u003e before wrapping;
+  // JSON parses \u003e back to ">" on read, so the payload is lossless.
+  const payload = JSON.stringify(meta, null, 2).replaceAll("-->", "--\\u003e");
+  return `<!--jant:reply\n${payload}\n-->`;
 }
 
 export function buildCollectionSection(
@@ -928,13 +1045,6 @@ function buildAttachmentMeta(
     summary: media.summary,
     chars: media.chars,
   };
-}
-
-function escapeCommentAttribute(value: string): string {
-  return value
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, "\\n");
 }
 
 function safeJsonForHtml(value: unknown): string {
@@ -1255,7 +1365,7 @@ static/
 ## Notes
 
 - The raw export API only writes content files. The CLI localizes media by default unless you pass \`--no-localize-media\`.
-- Thread replies are merged into the root post as a single page. Reply metadata is preserved in HTML comments (\`<!-- jant:reply ... -->\`).
+- Thread replies are merged into the root post as a single page. Reply metadata is preserved in HTML comments (\`<!--jant:reply ... -->\`) with a JSON body.
 - The collections directory structure is exported in \`config.toml\`, including collection order, dividers, and custom links for round-trip imports.
 - Attachments are preserved as Jant HTML blocks (\`data-jant-node="attachments"\`). Text attachments embed canonical Markdown in the block metadata, while the rendered preview is display-only and ignored by \`jant site import\`.
 - Posts with \`draft: true\` in front matter are only built when you pass the \`--drafts\` flag to \`zola build\` or \`zola serve\`.
@@ -1504,18 +1614,30 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
 <div data-page="home">
   {# Home page 1 is a manual render of the feed taxonomy. Pinned posts
      live in feed=pinned (NOT feed=public) so Zola's native paginator at
-     /feed/public/page/N/ cannot double-count them. #}
+     /feed/public/page/N/ cannot double-count them. When
+     home_default_view == "featured", the main list is the featured feed
+     instead of the public feed; pinned still prepends. #}
+  {% set home_view = config.extra.jant.home_default_view | default(value="latest") %}
   {% set_global pinned_pages = [] %}
   {% set_global public_pages = [] %}
+  {% set_global featured_pages = [] %}
   {% set feed_tax = get_taxonomy(kind="feed") %}
   {% for t in feed_tax.items %}
     {% if t.name == "pinned" %}{% set_global pinned_pages = t.pages %}{% endif %}
     {% if t.name == "public" %}{% set_global public_pages = t.pages %}{% endif %}
+    {% if t.name == "featured" %}{% set_global featured_pages = t.pages %}{% endif %}
   {% endfor %}
 
   {% set page_size = config.extra.jant.page_size %}
-  {% set home_public = public_pages | slice(end=page_size) %}
-  {% set home_pages = pinned_pages | concat(with=home_public) %}
+  {% if home_view == "featured" %}
+    {% set_global main_pages = featured_pages %}
+    {% set next_page_url = "/feed/featured/page/2/" %}
+  {% else %}
+    {% set_global main_pages = public_pages %}
+    {% set next_page_url = "/feed/public/page/2/" %}
+  {% endif %}
+  {% set home_main = main_pages | slice(end=page_size) %}
+  {% set home_pages = pinned_pages | concat(with=home_main) %}
 
   <div data-feed>
     <div id="timeline-feed">
@@ -1530,11 +1652,11 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
     </div>
   </div>
 
-  {% if public_pages | length > page_size %}
+  {% if main_pages | length > page_size %}
   <nav class="pagination" aria-label="Pagination">
     <span class="pagination-disabled">Previous</span>
     <span aria-current="page" class="pagination-current">1</span>
-    <a href="/feed/public/page/2/" class="pagination-link">Next</a>
+    <a href="{{ next_page_url }}" class="pagination-link">Next</a>
   </nav>
   {% endif %}
 
@@ -1648,27 +1770,46 @@ const TEMPLATE_FEATURED = `{% extends "base.html" %}
 {% block title %}Featured &mdash; {{ config.title }}{% endblock %}
 
 {% block content %}
-{% set root = get_section(path="_index.md") %}
-{% set featured = root.pages | filter(attribute="extra.featured", value=true) %}
-<div class="section-shell">
+<div data-page="featured">
   <header class="section-header">
     <h1 class="section-title">Featured</h1>
   </header>
-  {% if featured | length > 0 %}
+
+  {# /featured/ is page 1 of the feed=featured taxonomy term. Page 2+ is
+     handed off to Zola's paginator at /feed/featured/page/N/. The slice
+     boundary matches paginator page 1 exactly, so the Next link below
+     jumps to page 2 without duplicates or gaps. Mirrors archive.html. #}
+  {% set_global featured_pages = [] %}
+  {% set feed_tax = get_taxonomy(kind="feed") %}
+  {% for t in feed_tax.items %}
+    {% if t.name == "featured" %}{% set_global featured_pages = t.pages %}{% endif %}
+  {% endfor %}
+  {% set page_size = config.extra.jant.page_size %}
+  {% set slice_pages = featured_pages | slice(end=page_size) %}
+
+  {% if slice_pages | length > 0 %}
   <div data-feed>
     <div id="timeline-feed">
       <div id="timeline-items">
-        {% for page in featured %}
-          <div class="feed-item" data-timeline-item data-timeline-item-content>
-            {% if not loop.first %}<hr class="feed-divider">{% endif %}
-            {{ macros::post_card(page=page) }}
-          </div>
+        {% for page in slice_pages %}
+        <div class="feed-item" data-timeline-item data-timeline-item-content>
+          {% if not loop.first %}<hr class="feed-divider">{% endif %}
+          {{ macros::post_card(page=page) }}
+        </div>
         {% endfor %}
       </div>
     </div>
   </div>
   {% else %}
   <p class="section-empty">Nothing featured yet. Pin a post as featured from the admin to see it here.</p>
+  {% endif %}
+
+  {% if featured_pages | length > page_size %}
+  <nav class="pagination" aria-label="Pagination">
+    <span class="pagination-disabled">Previous</span>
+    <span aria-current="page" class="pagination-current">1</span>
+    <a href="/feed/featured/page/2/" class="pagination-link">Next</a>
+  </nav>
   {% endif %}
 </div>
 {% endblock %}
@@ -1830,7 +1971,7 @@ const TEMPLATE_FEED_SINGLE = `{% extends "base.html" %}
    template uses {% extends %}. A shared macro would also work, but
    inlining is simpler for a four-term map. #}
 
-{% block title %}{% if term.name == "public" %}Latest{% elif term.name == "archive" %}Archive{% elif term.name == "pinned" %}Pinned{% elif term.name == "unlisted" %}Unlisted{% else %}{{ term.name }}{% endif %} &mdash; {{ config.title }}{% endblock %}
+{% block title %}{% if term.name == "public" %}Latest{% elif term.name == "archive" %}Archive{% elif term.name == "pinned" %}Pinned{% elif term.name == "featured" %}Featured{% elif term.name == "unlisted" %}Unlisted{% else %}{{ term.name }}{% endif %} &mdash; {{ config.title }}{% endblock %}
 
 {% block head_extra %}
   {% if term.name == "unlisted" %}
@@ -1841,7 +1982,7 @@ const TEMPLATE_FEED_SINGLE = `{% extends "base.html" %}
 {% block content %}
 <div data-page="feed-{{ term.name }}">
   <header class="section-header">
-    <h1 class="section-title">{% if term.name == "public" %}Latest{% elif term.name == "archive" %}Archive{% elif term.name == "pinned" %}Pinned{% elif term.name == "unlisted" %}Unlisted{% else %}{{ term.name }}{% endif %}</h1>
+    <h1 class="section-title">{% if term.name == "public" %}Latest{% elif term.name == "archive" %}Archive{% elif term.name == "pinned" %}Pinned{% elif term.name == "featured" %}Featured{% elif term.name == "unlisted" %}Unlisted{% else %}{{ term.name }}{% endif %}</h1>
     {% if paginator.current_index > 1 %}
     <p class="page-context-label">Page {{ paginator.current_index }}</p>
     {% endif %}
@@ -1940,16 +2081,16 @@ const TEMPLATE_COLLECTION = `{% extends "base.html" %}
   {% set term = get_taxonomy_term(kind="collections", term=section.extra.collection_term) %}
   {# Partition posts: collection-pinned ones first (matching the live site's
      per-collection pin sort), then everything else in date-desc order.
-     A post is collection-pinned when its extra.collection_pins array
-     contains this collection's slug. #}
+     A post is collection-pinned when its extra.jant.collections entry
+     for this slug has a non-null pinned_at. #}
   {% set this_slug = section.extra.collection_term %}
   {% set_global pinned_pages = [] %}
   {% set_global rest_pages = [] %}
   {% for page in term.pages %}
-    {% set pins = page.extra.collection_pins | default(value=[]) %}
+    {% set entries = page.extra.jant.collections | default(value=[]) %}
     {% set_global is_pinned_here = false %}
-    {% for p in pins %}
-      {% if p == this_slug %}{% set_global is_pinned_here = true %}{% endif %}
+    {% for entry in entries %}
+      {% if entry.slug == this_slug and entry.pinned_at %}{% set_global is_pinned_here = true %}{% endif %}
     {% endfor %}
     {% if is_pinned_here %}
       {% set_global pinned_pages = pinned_pages | concat(with=page) %}
@@ -2120,7 +2261,7 @@ const TEMPLATE_MACROS = `{# Strip the site's base_url prefix from current_url to
     {% set first_collection_meta = get_section(path= first_collection ~ '/_index.md') %}
     {% set collection_count = collections | length %}
     {% set hidden_collection_count = collection_count - 2 %}
-    {% set show_collection_separator = show_date or (page.extra.format == "link" and page.extra.link_url) or page.extra.featured %}
+    {% set show_collection_separator = show_date or (page.extra.format == "link" and page.extra.link_url) or page.extra.jant.featured_at %}
     <span class="post-collection-tags">
       {% if show_collection_separator %}
       <span class="post-collection-sep" aria-hidden="true">&middot;</span>
@@ -2175,8 +2316,8 @@ const TEMPLATE_MACROS = `{# Strip the site's base_url prefix from current_url to
   {# Pin icon is intentionally restricted to the home/latest feed.
      Featured, collection, and detail contexts deliberately don't emit
      this attribute, so the CSS-driven badge stays hidden there. #}
-  {% if context == "home" and page.extra.pinned %}data-post-pinned{% endif %}
-  {% if page.extra.featured %}data-post-featured{% endif %}
+  {% if context == "home" and page.extra.jant.pinned_at %}data-post-pinned{% endif %}
+  {% if page.extra.jant.featured_at %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
   {{ self::post_status_badges() }}
@@ -2222,8 +2363,8 @@ const TEMPLATE_MACROS = `{# Strip the site's base_url prefix from current_url to
   {# Pin icon is intentionally restricted to the home/latest feed.
      Featured, collection, and detail contexts deliberately don't emit
      this attribute, so the CSS-driven badge stays hidden there. #}
-  {% if context == "home" and page.extra.pinned %}data-post-pinned{% endif %}
-  {% if page.extra.featured %}data-post-featured{% endif %}
+  {% if context == "home" and page.extra.jant.pinned_at %}data-post-pinned{% endif %}
+  {% if page.extra.jant.featured_at %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
   {{ self::post_status_badges() }}
@@ -2273,8 +2414,8 @@ const TEMPLATE_MACROS = `{# Strip the site's base_url prefix from current_url to
   {# Pin icon is intentionally restricted to the home/latest feed.
      Featured, collection, and detail contexts deliberately don't emit
      this attribute, so the CSS-driven badge stays hidden there. #}
-  {% if context == "home" and page.extra.pinned %}data-post-pinned{% endif %}
-  {% if page.extra.featured %}data-post-featured{% endif %}
+  {% if context == "home" and page.extra.jant.pinned_at %}data-post-pinned{% endif %}
+  {% if page.extra.jant.featured_at %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
   {{ self::post_status_badges() }}

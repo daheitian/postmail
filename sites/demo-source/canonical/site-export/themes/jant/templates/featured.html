@@ -4,27 +4,46 @@
 {% block title %}Featured &mdash; {{ config.title }}{% endblock %}
 
 {% block content %}
-{% set root = get_section(path="_index.md") %}
-{% set featured = root.pages | filter(attribute="extra.featured", value=true) %}
-<div class="section-shell">
+<div data-page="featured">
   <header class="section-header">
     <h1 class="section-title">Featured</h1>
   </header>
-  {% if featured | length > 0 %}
+
+  {# /featured/ is page 1 of the feed=featured taxonomy term. Page 2+ is
+     handed off to Zola's paginator at /feed/featured/page/N/. The slice
+     boundary matches paginator page 1 exactly, so the Next link below
+     jumps to page 2 without duplicates or gaps. Mirrors archive.html. #}
+  {% set_global featured_pages = [] %}
+  {% set feed_tax = get_taxonomy(kind="feed") %}
+  {% for t in feed_tax.items %}
+    {% if t.name == "featured" %}{% set_global featured_pages = t.pages %}{% endif %}
+  {% endfor %}
+  {% set page_size = config.extra.jant.page_size %}
+  {% set slice_pages = featured_pages | slice(end=page_size) %}
+
+  {% if slice_pages | length > 0 %}
   <div data-feed>
     <div id="timeline-feed">
       <div id="timeline-items">
-        {% for page in featured %}
-          <div class="feed-item" data-timeline-item data-timeline-item-content>
-            {% if not loop.first %}<hr class="feed-divider">{% endif %}
-            {{ macros::post_card(page=page) }}
-          </div>
+        {% for page in slice_pages %}
+        <div class="feed-item" data-timeline-item data-timeline-item-content>
+          {% if not loop.first %}<hr class="feed-divider">{% endif %}
+          {{ macros::post_card(page=page) }}
+        </div>
         {% endfor %}
       </div>
     </div>
   </div>
   {% else %}
   <p class="section-empty">Nothing featured yet. Pin a post as featured from the admin to see it here.</p>
+  {% endif %}
+
+  {% if featured_pages | length > page_size %}
+  <nav class="pagination" aria-label="Pagination">
+    <span class="pagination-disabled">Previous</span>
+    <span aria-current="page" class="pagination-current">1</span>
+    <a href="/feed/featured/page/2/" class="pagination-link">Next</a>
+  </nav>
   {% endif %}
 </div>
 {% endblock %}

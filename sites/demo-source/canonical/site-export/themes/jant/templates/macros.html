@@ -95,7 +95,7 @@
     {% set first_collection_meta = get_section(path= first_collection ~ '/_index.md') %}
     {% set collection_count = collections | length %}
     {% set hidden_collection_count = collection_count - 2 %}
-    {% set show_collection_separator = show_date or (page.extra.format == "link" and page.extra.link_url) or page.extra.featured %}
+    {% set show_collection_separator = show_date or (page.extra.format == "link" and page.extra.link_url) or page.extra.jant.featured_at %}
     <span class="post-collection-tags">
       {% if show_collection_separator %}
       <span class="post-collection-sep" aria-hidden="true">&middot;</span>
@@ -150,8 +150,8 @@
   {# Pin icon is intentionally restricted to the home/latest feed.
      Featured, collection, and detail contexts deliberately don't emit
      this attribute, so the CSS-driven badge stays hidden there. #}
-  {% if context == "home" and page.extra.pinned %}data-post-pinned{% endif %}
-  {% if page.extra.featured %}data-post-featured{% endif %}
+  {% if context == "home" and page.extra.jant.pinned_at %}data-post-pinned{% endif %}
+  {% if page.extra.jant.featured_at %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
   {{ self::post_status_badges() }}
@@ -197,8 +197,8 @@
   {# Pin icon is intentionally restricted to the home/latest feed.
      Featured, collection, and detail contexts deliberately don't emit
      this attribute, so the CSS-driven badge stays hidden there. #}
-  {% if context == "home" and page.extra.pinned %}data-post-pinned{% endif %}
-  {% if page.extra.featured %}data-post-featured{% endif %}
+  {% if context == "home" and page.extra.jant.pinned_at %}data-post-pinned{% endif %}
+  {% if page.extra.jant.featured_at %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
   {{ self::post_status_badges() }}
@@ -248,8 +248,8 @@
   {# Pin icon is intentionally restricted to the home/latest feed.
      Featured, collection, and detail contexts deliberately don't emit
      this attribute, so the CSS-driven badge stays hidden there. #}
-  {% if context == "home" and page.extra.pinned %}data-post-pinned{% endif %}
-  {% if page.extra.featured %}data-post-featured{% endif %}
+  {% if context == "home" and page.extra.jant.pinned_at %}data-post-pinned{% endif %}
+  {% if page.extra.jant.featured_at %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
   {{ self::post_status_badges() }}

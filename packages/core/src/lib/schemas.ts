@@ -227,10 +227,32 @@ const PostFieldsSchema = z.object({
   bodyMarkdown: z.string().optional(),
   status: StatusSchema.optional(),
   visibility: z.enum(VISIBILITIES).optional(),
+  // Admin UI sends boolean flags; the Zola importer and API clients can
+  // instead send explicit ISO-8601 or Unix-second timestamps via
+  // `pinnedAt` / `featuredAt`. The refine below at the API-body level
+  // collapses whichever form is present into a single internal field.
   pinned: z
     .union([z.boolean(), z.literal("on").transform(() => true)])
     .optional(),
   featured: z.boolean().optional(),
+  pinnedAt: z
+    .union([
+      z.iso
+        .datetime()
+        .transform((iso) => Math.floor(new Date(iso).getTime() / 1000)),
+      z.number().int().positive(),
+      z.null(),
+    ])
+    .optional(),
+  featuredAt: z
+    .union([
+      z.iso
+        .datetime()
+        .transform((iso) => Math.floor(new Date(iso).getTime() / 1000)),
+      z.number().int().positive(),
+      z.null(),
+    ])
+    .optional(),
   url: z
     .url()
     .refine((val) => sanitizeUrl(val) !== "", {
@@ -251,6 +273,16 @@ const PostFieldsSchema = z.object({
     .array(CollectionIdSchema)
     .optional()
     .or(z.literal("").transform(() => undefined)),
+  collectionEntries: z
+    .array(
+      z.object({
+        collectionId: CollectionIdSchema,
+        createdAt: z.number().int().positive().optional(),
+        position: z.number().int().nonnegative().optional(),
+        pinnedAt: z.union([z.number().int().positive(), z.null()]).optional(),
+      }),
+    )
+    .optional(),
   replyToId: PostIdSchema.optional(),
   quietReply: z.boolean().optional(),
   publishedAt: z.number().int().positive().optional(),

@@ -1,23 +1,24 @@
----
-date: 2026-01-07T18:40:00.000Z
-updated: 2026-04-03T02:30:41.000Z
-slug: "gkbvv"
-aliases:
-  - "/5oxsv"
-  - "/2cl6d"
-  - "/3zqv7"
-taxonomies:
-  collections:
-    - "tiny-projects"
-  feed:
-    - "public"
-    - "archive"
-extra:
-  format: note
-  status: published
-  visibility: public
-  summary_text: "Tonight's tiny project: make the desk usable again without buying a single organizer."
----
++++
+date = "2026-01-07T18:40:00.000Z"
+updated = "2026-04-03T02:30:41.000Z"
+slug = "gkbvv"
+aliases = ["/5oxsv", "/2cl6d", "/3zqv7"]
+
+[taxonomies]
+collections = ["tiny-projects"]
+feed = ["public", "archive"]
+
+[extra]
+format = "note"
+status = "published"
+visibility = "public"
+summary_text = "Tonight's tiny project: make the desk usable again without buying a single organizer."
+
+[[extra.jant.collections]]
+slug = "tiny-projects"
+collected_at = "2026-04-03T02:30:41.000Z"
+position = 0
++++
 
 Tonight's tiny project: make the desk usable again without buying a single organizer.
 
@@ -32,7 +33,24 @@ Tonight's tiny project: make the desk usable again without buying a single organ
 
 <time datetime="2026-01-07T19:00:00.000Z">Jan 7, 2026</time>
 
-<!-- jant:reply date="2026-01-07T19:00:00.000Z" slug="5oxsv" format="note" status="published" visibility="public" -->
+<!--jant:reply
+{
+  "date": "2026-01-07T19:00:00.000Z",
+  "slug": "5oxsv",
+  "format": "note",
+  "status": "published",
+  "visibility": "public",
+  "featured_at": null,
+  "pinned_at": null,
+  "rating": null,
+  "title": null,
+  "url": null,
+  "quote_text": null,
+  "source_name": null,
+  "source_url": null,
+  "collections": []
+}
+-->
 
 The real problem was not cables. It was receipts, pens, and three mugs pretending not to be clutter.
 
@@ -40,7 +58,24 @@ The real problem was not cables. It was receipts, pens, and three mugs pretendin
 
 <time datetime="2026-01-07T20:10:00.000Z">Jan 7, 2026</time>
 
-<!-- jant:reply date="2026-01-07T20:10:00.000Z" slug="2cl6d" format="note" status="published" visibility="public" -->
+<!--jant:reply
+{
+  "date": "2026-01-07T20:10:00.000Z",
+  "slug": "2cl6d",
+  "format": "note",
+  "status": "published",
+  "visibility": "public",
+  "featured_at": null,
+  "pinned_at": null,
+  "rating": null,
+  "title": null,
+  "url": null,
+  "quote_text": null,
+  "source_name": null,
+  "source_url": null,
+  "collections": []
+}
+-->
 
 I keep relearning that most home fixes are just decisions I delayed.
 
@@ -48,7 +83,24 @@ I keep relearning that most home fixes are just decisions I delayed.
 
 <time datetime="2026-01-07T19:25:00.000Z">Jan 7, 2026</time>
 
-<!-- jant:reply date="2026-01-07T19:25:00.000Z" slug="3zqv7" format="note" status="published" visibility="public" -->
+<!--jant:reply
+{
+  "date": "2026-01-07T19:25:00.000Z",
+  "slug": "3zqv7",
+  "format": "note",
+  "status": "published",
+  "visibility": "public",
+  "featured_at": null,
+  "pinned_at": null,
+  "rating": null,
+  "title": null,
+  "url": null,
+  "quote_text": null,
+  "source_name": null,
+  "source_url": null,
+  "collections": []
+}
+-->
 
 Thirty minutes later: laptop, lamp, notebook, one glass of water. That is apparently my ideal system.
 

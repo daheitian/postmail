@@ -117,8 +117,35 @@ export interface CollectionService {
   ): Promise<CollectionDirectoryEntry | null>;
   /** Get post count per collection */
   getPostCounts(): Promise<Map<string, number>>;
-  /** Add a post to a collection */
-  addPost(collectionId: string, postId: string): Promise<void>;
+  /**
+   * Add a post to a collection. Optional metadata lets the caller set the
+   * per-row `createdAt` / `position` / `pinnedAt` explicitly; omitted
+   * fields default to `now()` / append-at-end / `null`.
+   */
+  addPost(
+    collectionId: string,
+    postId: string,
+    opts?: {
+      createdAt?: number;
+      position?: number;
+      pinnedAt?: number | null;
+    },
+  ): Promise<void>;
+  /**
+   * Replace all collection memberships of a post in one transaction,
+   * preserving each entry's `createdAt` / `position` / `pinnedAt`.
+   * Used by the Zola import path so round-tripping through
+   * `jant site export | jant site import` is lossless.
+   */
+  syncPostCollectionsWithMeta(
+    postId: string,
+    entries: {
+      collectionId: string;
+      createdAt?: number;
+      position?: number;
+      pinnedAt?: number | null;
+    }[],
+  ): Promise<void>;
   /** Remove a post from a collection */
   removePost(collectionId: string, postId: string): Promise<void>;
   /** Pin a post within a collection */
@@ -143,6 +170,25 @@ export interface CollectionService {
   getCollectionPinsByPostIds(
     postIds: string[],
   ): Promise<Map<string, Set<string>>>;
+  /**
+   * Batch fetch the full per-entry collection metadata for each post: the
+   * `createdAt` timestamp, `position`, and per-collection `pinnedAt`.
+   *
+   * Used by the Zola export to emit lossless `[[extra.jant.collections]]`
+   * entries so round-tripping through `jant site export | jant site import`
+   * preserves per-entry state.
+   */
+  getCollectionEntriesByPostIds(postIds: string[]): Promise<
+    Map<
+      string,
+      {
+        collectionId: string;
+        createdAt: number;
+        position: number;
+        pinnedAt: number | null;
+      }[]
+    >
+  >;
   /** Get all post IDs in a collection */
   getPostIds(collectionId: string): Promise<string[]>;
   /** Sync a post's collection memberships (replace all with given IDs) */
@@ -1016,7 +1062,7 @@ export function createCollectionService(
       return counts;
     },
 
-    async addPost(collectionId, postId) {
+    async addPost(collectionId, postId, opts) {
       const [maxRow] = await db
         .select({
           maxPos: sql<number>`COALESCE(MAX(${postCollections.position}), -1)`,
@@ -1035,10 +1081,76 @@ export function createCollectionService(
           siteId,
           postId,
           collectionId,
-          createdAt: now(),
-          position: nextPosition,
+          createdAt: opts?.createdAt ?? now(),
+          position: opts?.position ?? nextPosition,
+          pinnedAt: opts?.pinnedAt ?? null,
         })
         .onConflictDoNothing();
+    },
+
+    async syncPostCollectionsWithMeta(postId, entries) {
+      const seen = new Set<string>();
+      const timestamp = now();
+      const insertValues: {
+        siteId: string;
+        postId: string;
+        collectionId: string;
+        createdAt: number;
+        position: number;
+        pinnedAt: number | null;
+      }[] = [];
+      let fallbackPosition = 0;
+      for (const entry of entries) {
+        if (seen.has(entry.collectionId)) continue;
+        seen.add(entry.collectionId);
+        insertValues.push({
+          siteId,
+          postId,
+          collectionId: entry.collectionId,
+          createdAt: entry.createdAt ?? timestamp,
+          position: entry.position ?? fallbackPosition,
+          pinnedAt: entry.pinnedAt ?? null,
+        });
+        fallbackPosition++;
+      }
+
+      const deleteQuery = db
+        .delete(postCollections)
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.postId, postId),
+          ),
+        );
+
+      if (usesBatchWrites) {
+        const writeQueries = [];
+        writeQueries.push(deleteQuery);
+        if (insertValues.length > 0) {
+          writeQueries.push(db.insert(postCollections).values(insertValues));
+        }
+        await db.batch(
+          writeQueries as [
+            (typeof writeQueries)[number],
+            ...(typeof writeQueries)[number][],
+          ],
+        );
+        return;
+      }
+
+      await db.transaction(async (tx) => {
+        await tx
+          .delete(postCollections)
+          .where(
+            and(
+              eq(postCollections.siteId, siteId),
+              eq(postCollections.postId, postId),
+            ),
+          );
+        if (insertValues.length > 0) {
+          await tx.insert(postCollections).values(insertValues);
+        }
+      });
     },
 
     async removePost(collectionId, postId) {
@@ -1199,6 +1311,54 @@ export function createCollectionService(
         );
 
       return rows.map((row) => row.postId);
+    },
+
+    async getCollectionEntriesByPostIds(postIds) {
+      const result = new Map<
+        string,
+        {
+          collectionId: string;
+          createdAt: number;
+          position: number;
+          pinnedAt: number | null;
+        }[]
+      >();
+      if (postIds.length === 0) return result;
+
+      const rows = await batchQueryRows(postIds, (chunk) =>
+        db
+          .select({
+            postId: postCollections.postId,
+            collectionId: postCollections.collectionId,
+            createdAt: postCollections.createdAt,
+            position: postCollections.position,
+            pinnedAt: postCollections.pinnedAt,
+          })
+          .from(postCollections)
+          .where(
+            and(
+              eq(postCollections.siteId, siteId),
+              inArray(postCollections.postId, chunk),
+            ),
+          )
+          .orderBy(
+            asc(postCollections.position),
+            asc(postCollections.createdAt),
+          ),
+      );
+
+      for (const row of rows) {
+        const existing = result.get(row.postId) ?? [];
+        existing.push({
+          collectionId: row.collectionId,
+          createdAt: row.createdAt,
+          position: row.position,
+          pinnedAt: row.pinnedAt,
+        });
+        result.set(row.postId, existing);
+      }
+
+      return result;
     },
 
     async syncPostCollections(postId, collectionIds) {

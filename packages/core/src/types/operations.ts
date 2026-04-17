@@ -34,12 +34,42 @@ export interface TextAttachmentContent {
   chars: number | null;
 }
 
+/**
+ * A single collection membership entry, with all the per-row metadata the
+ * `post_collection` junction table carries. Used by the Zola importer to
+ * restore per-entry `createdAt` / `position` / `pinnedAt` losslessly.
+ */
+export interface PostCollectionEntry {
+  collectionId: string;
+  /** Unix seconds — when the post was added to the collection. Defaults to now() when omitted. */
+  createdAt?: number;
+  /** Sort position within the collection. Defaults to append-at-end when omitted. */
+  position?: number;
+  /** Unix seconds when the post was pinned in this specific collection; null means unpinned. */
+  pinnedAt?: number | null;
+}
+
 export interface CreatePost {
   format: Format;
   status?: Status;
   visibility?: Visibility;
+  /**
+   * Admin-UI shorthand. `true` = pinned at `now()`, `false` = not pinned.
+   * Mutually exclusive with `pinnedAt`; if both are set, `pinnedAt` wins.
+   */
   pinned?: boolean;
+  /** See `pinned`. */
   featured?: boolean;
+  /**
+   * Explicit featured timestamp (Unix seconds). `null` = not featured.
+   * Preferred for lossless import; wins over `featured` when both are set.
+   */
+  featuredAt?: number | null;
+  /**
+   * Explicit pinned timestamp (Unix seconds). `null` = not pinned.
+   * Preferred for lossless import; wins over `pinned` when both are set.
+   */
+  pinnedAt?: number | null;
   slug?: string;
   path?: string;
   title?: string;
@@ -48,7 +78,18 @@ export interface CreatePost {
   bodyMarkdown?: string;
   quoteText?: string;
   rating?: number;
+  /**
+   * Simple slug/ID list of collections to add the post to. Uses `now()` for
+   * `createdAt` and append-at-end for `position`. For lossless import that
+   * preserves those fields, use `collectionEntries` instead.
+   */
   collectionIds?: string[];
+  /**
+   * Structured per-collection entries. When provided, replaces any
+   * `collectionIds` and restores per-entry `createdAt` / `position` /
+   * `pinnedAt` losslessly.
+   */
+  collectionEntries?: PostCollectionEntry[];
   replyToId?: string;
   quietReply?: boolean;
   publishedAt?: number;
@@ -59,8 +100,14 @@ export interface UpdatePost {
   format?: Format;
   status?: Status;
   visibility?: Visibility;
+  /** See `CreatePost.pinned`. */
   pinned?: boolean;
+  /** See `CreatePost.featured`. */
   featured?: boolean;
+  /** Explicit featured timestamp. `undefined` leaves the field unchanged. */
+  featuredAt?: number | null;
+  /** Explicit pinned timestamp. `undefined` leaves the field unchanged. */
+  pinnedAt?: number | null;
   slug?: string;
   title?: string | null;
   url?: string | null;
@@ -69,6 +116,7 @@ export interface UpdatePost {
   quoteText?: string | null;
   rating?: number | null;
   collectionIds?: string[];
+  collectionEntries?: PostCollectionEntry[];
   publishedAt?: number;
   attachments?: PostAttachmentInput[];
 }

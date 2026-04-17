@@ -73,7 +73,7 @@ static/
 ## Notes
 
 - The raw export API only writes content files. The CLI localizes media by default unless you pass `--no-localize-media`.
-- Thread replies are merged into the root post as a single page. Reply metadata is preserved in HTML comments (`<!-- jant:reply ... -->`).
+- Thread replies are merged into the root post as a single page. Reply metadata is preserved in HTML comments (`<!--jant:reply ... -->`) with a JSON body.
 - The collections directory structure is exported in `config.toml`, including collection order, dividers, and custom links for round-trip imports.
 - Attachments are preserved as Jant HTML blocks (`data-jant-node="attachments"`). Text attachments embed canonical Markdown in the block metadata, while the rendered preview is display-only and ignored by `jant site import`.
 - Posts with `draft: true` in front matter are only built when you pass the `--drafts` flag to `zola build` or `zola serve`.

@@ -94,6 +94,20 @@ describe("createExportService", () => {
         }),
         getCollectionsByPostIds: async () =>
           new Map([["post-1", [collection]]]),
+        getCollectionEntriesByPostIds: async () =>
+          new Map([
+            [
+              "post-1",
+              [
+                {
+                  collectionId: "collection-1",
+                  createdAt: 1773014400,
+                  position: 0,
+                  pinnedAt: null,
+                },
+              ],
+            ],
+          ]),
         getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
@@ -174,12 +188,11 @@ describe("createExportService", () => {
     expect(collectionMetadata).toContain(
       'description = "Posts about building and shipping software."',
     );
-    expect(postMarkdown).toContain("summary_text:");
-    expect(postMarkdown).not.toContain("archive_month:");
-    expect(postMarkdown).not.toContain("archive_month_label:");
-    expect(postMarkdown).toContain("  feed:");
-    expect(postMarkdown).toContain('    - "public"');
-    expect(postMarkdown).toContain('    - "archive"');
+    expect(postMarkdown).toContain("summary_text =");
+    expect(postMarkdown).not.toContain("archive_month =");
+    expect(postMarkdown).not.toContain("archive_month_label =");
+    expect(postMarkdown).toContain('feed = ["public", "archive"]');
+    expect(postMarkdown).toContain('collections = ["programming"]');
     expect(configToml).toContain('name = "feed"');
     expect(configToml).toContain("paginate_by = 50");
     expect(archiveTemplate).toContain('get_taxonomy(kind="feed")');
@@ -322,6 +335,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionEntriesByPostIds: async () => new Map(),
         getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
@@ -433,6 +447,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionEntriesByPostIds: async () => new Map(),
         getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
@@ -524,6 +539,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionEntriesByPostIds: async () => new Map(),
         getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
@@ -619,6 +635,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionEntriesByPostIds: async () => new Map(),
         getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
@@ -706,6 +723,7 @@ describe("createExportService", () => {
         list: async () => [],
         getCollectionsByPostIds: async () =>
           new Map([["post-numeric-title", []]]),
+        getCollectionEntriesByPostIds: async () => new Map(),
         getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
@@ -742,7 +760,7 @@ describe("createExportService", () => {
     const files = unzipSync(zip);
     const postMarkdown = decodeZipEntry(files, "content/numbers-only/index.md");
 
-    expect(postMarkdown).toContain('title: "22222"');
+    expect(postMarkdown).toContain('title = "22222"');
   });
 
   it("exports quote posts with source_name and source_url instead of title", async () => {
@@ -787,6 +805,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-quote-1", []]]),
+        getCollectionEntriesByPostIds: async () => new Map(),
         getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
@@ -830,11 +849,11 @@ describe("createExportService", () => {
       "themes/jant/templates/macros.html",
     );
 
-    expect(postMarkdown).not.toContain("\ntitle:");
-    expect(postMarkdown).toContain("source_name:");
-    expect(postMarkdown).toContain("source_url:");
-    expect(postMarkdown).toContain("quote_text:");
-    expect(postMarkdown).not.toContain("link_url:");
+    expect(postMarkdown).not.toContain("\ntitle =");
+    expect(postMarkdown).toContain("source_name =");
+    expect(postMarkdown).toContain("source_url =");
+    expect(postMarkdown).toContain("quote_text =");
+    expect(postMarkdown).not.toContain("link_url =");
     expect(macrosTemplate).toContain("page.extra.source_name");
     expect(macrosTemplate).toContain("page.extra.source_url");
   });
@@ -897,6 +916,7 @@ describe("createExportService", () => {
       collections: {
         list: async () => [],
         getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+        getCollectionEntriesByPostIds: async () => new Map(),
         getCollectionPinsByPostIds: async () => new Map(),
       },
       media: {
@@ -933,13 +953,14 @@ describe("createExportService", () => {
     const files = unzipSync(zip);
     const postMarkdown = decodeZipEntry(files, "content/thread-root/index.md");
 
-    expect(postMarkdown).toContain("aliases:");
-    expect(postMarkdown).toContain('  - "/older-root"');
-    expect(postMarkdown).toContain('  - "/thread-reply"');
-    expect(postMarkdown).toContain("  jant:");
-    expect(postMarkdown).toContain("    root_aliases:");
-    expect(postMarkdown).toContain('      - "/older-root"');
-    expect(postMarkdown).not.toContain('      - "/thread-reply"');
+    expect(postMarkdown).toContain(
+      'aliases = ["/older-root", "/thread-reply"]',
+    );
+    expect(postMarkdown).toContain("[extra.jant]");
+    expect(postMarkdown).toContain('root_aliases = ["/older-root"]');
+    expect(postMarkdown).not.toContain(
+      'root_aliases = ["/older-root", "/thread-reply"]',
+    );
   });
 
   it("emits feed taxonomy values per visibility", () => {
@@ -1001,33 +1022,29 @@ describe("createExportService", () => {
         [],
         new Map(),
         siteConfig,
+        new Map(),
       );
 
     const publicMd = callBuild(basePost);
-    expect(publicMd).toContain("taxonomies:");
-    expect(publicMd).toContain("  feed:");
-    expect(publicMd).toContain('    - "public"');
-    expect(publicMd).toContain('    - "archive"');
-    expect(publicMd).not.toContain('    - "pinned"');
-    expect(publicMd).not.toContain('    - "unlisted"');
+    expect(publicMd).toContain("[taxonomies]");
+    expect(publicMd).toContain('feed = ["public", "archive"]');
 
     const pinnedMd = callBuild({ ...basePost, pinnedAt: 1773014400 });
-    expect(pinnedMd).toContain("  feed:");
-    expect(pinnedMd).toContain('    - "pinned"');
-    expect(pinnedMd).toContain('    - "archive"');
-    expect(pinnedMd).not.toContain('    - "public"');
+    expect(pinnedMd).toContain('feed = ["pinned", "archive"]');
+
+    const featuredMd = callBuild({ ...basePost, featuredAt: 1773014400 });
+    expect(featuredMd).toContain('feed = ["public", "archive", "featured"]');
 
     const latestHiddenMd = callBuild({
       ...basePost,
       visibility: "latest_hidden",
     });
-    expect(latestHiddenMd).toContain("  feed:");
-    expect(latestHiddenMd).toContain('    - "unlisted"');
-    expect(latestHiddenMd).not.toContain('    - "public"');
-    expect(latestHiddenMd).not.toContain('    - "archive"');
+    expect(latestHiddenMd).toContain('feed = ["unlisted"]');
+    expect(latestHiddenMd).not.toContain('"public"');
+    expect(latestHiddenMd).not.toContain('"archive"');
 
     const privateMd = callBuild({ ...basePost, visibility: "private" });
-    expect(privateMd).not.toContain("  feed:");
-    expect(privateMd).toContain("draft: true");
+    expect(privateMd).not.toContain("feed =");
+    expect(privateMd).toContain("draft = true");
   });
 });

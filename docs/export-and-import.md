@@ -51,18 +51,29 @@ Root `templates/` and root `static/` are your territory. Zola picks any file und
 
 The exported site uses a Zola `feed` taxonomy for pagination instead of filtering posts at template time. The main paths are:
 
-| URL                     | What it renders                                               |
-| ----------------------- | ------------------------------------------------------------- |
-| `/`                     | Home — pinned posts, then the first page of non-pinned public |
-| `/feed/public/page/N/`  | Older non-pinned public posts, paginated (N ≥ 2)              |
-| `/archive/`             | Archive — every published post in one chronological list      |
-| `/feed/archive/page/N/` | Older published posts, paginated (N ≥ 2)                      |
-| `/{slug}/`              | A single post                                                 |
-| `/{collection-slug}/`   | A single collection                                           |
-| `/collections/`         | The collections directory                                     |
-| `/feed/unlisted/`       | Posts hidden from the home feed; listing page is `noindex`    |
+| URL                      | What it renders                                               |
+| ------------------------ | ------------------------------------------------------------- |
+| `/`                      | Home — pinned posts, then the first page of non-pinned public |
+| `/feed/public/page/N/`   | Older non-pinned public posts, paginated (N ≥ 2)              |
+| `/archive/`              | Archive — every published post in one chronological list      |
+| `/feed/archive/page/N/`  | Older published posts, paginated (N ≥ 2)                      |
+| `/featured/`             | Featured — first page of posts marked as featured             |
+| `/feed/featured/page/N/` | Older featured posts, paginated (N ≥ 2)                       |
+| `/{slug}/`               | A single post                                                 |
+| `/{collection-slug}/`    | A single collection                                           |
+| `/collections/`          | The collections directory                                     |
+| `/feed/unlisted/`        | Posts hidden from the home feed; listing page is `noindex`    |
 
 Page size is controlled by your Jant site's **Posts per page** setting.
+
+### Round-trip Fidelity
+
+A `site export` → `site import` round-trip preserves every post's featured, pinned, and collection-membership state exactly. Specifically:
+
+- `featured_at` and `pinned_at` are written to front matter as ISO timestamps under `[extra.jant]` (not as booleans), so re-importing restores the original moment a post was featured or pinned.
+- `[[extra.jant.collections]]` carries per-entry `collected_at`, `position`, and per-collection `pinned_at` for every collection the post belongs to. The same metadata is preserved for thread replies inside the reply marker's JSON payload.
+
+Any field you don't see documented here is Jant-internal and should not be hand-edited — changing a timestamp in front matter and re-importing will replace the stored value.
 
 ### Export the Local Site
 

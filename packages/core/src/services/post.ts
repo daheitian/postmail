@@ -1384,13 +1384,33 @@ export function createPostService(
       let status: Status = requestedStatus ?? "published";
       let visibility: Visibility | null = requestedVisibility ?? "public";
 
+      // Collapse the two-input (`flag` + `flagAt`) pair the DTO exposes
+      // into the single timestamp form the DB column stores. Explicit
+      // `*At` wins over the boolean shorthand when both are set.
+      const resolvedPinnedAt =
+        data.pinnedAt !== undefined
+          ? data.pinnedAt
+          : data.pinned !== undefined
+            ? data.pinned
+              ? timestamp
+              : null
+            : null;
+      const resolvedFeaturedAt =
+        data.featuredAt !== undefined
+          ? data.featuredAt
+          : data.featured !== undefined
+            ? data.featured
+              ? timestamp
+              : null
+            : null;
+
       if (data.replyToId) {
         const parent = await this.getById(data.replyToId);
         if (!parent) {
           throw new NotFoundError("Parent post");
         }
 
-        if (data.pinned) {
+        if (resolvedPinnedAt !== null) {
           throw new ConflictError(
             "Cannot pin a thread reply. Pin the root post instead.",
           );
@@ -1459,7 +1479,55 @@ export function createPostService(
         });
       }
 
-      const collectionIds = [...new Set(data.collectionIds ?? [])];
+      // When structured `collectionEntries` are provided (Zola import path),
+      // they win over the bare `collectionIds` slug list and carry
+      // `createdAt` / `position` / `pinnedAt` per row. Otherwise fall back to
+      // the simple list and derive those fields from sensible defaults.
+      const hasCollectionEntries =
+        data.collectionEntries !== undefined &&
+        data.collectionEntries.length > 0;
+      const collectionInsertRows: {
+        siteId: string;
+        postId: string;
+        collectionId: string;
+        createdAt: number;
+        position: number;
+        pinnedAt: number | null;
+      }[] = hasCollectionEntries
+        ? (() => {
+            const seen = new Set<string>();
+            const rows: {
+              siteId: string;
+              postId: string;
+              collectionId: string;
+              createdAt: number;
+              position: number;
+              pinnedAt: number | null;
+            }[] = [];
+            let fallbackPosition = 0;
+            for (const entry of data.collectionEntries ?? []) {
+              if (seen.has(entry.collectionId)) continue;
+              seen.add(entry.collectionId);
+              rows.push({
+                siteId,
+                postId: id,
+                collectionId: entry.collectionId,
+                createdAt: entry.createdAt ?? timestamp,
+                position: entry.position ?? fallbackPosition,
+                pinnedAt: entry.pinnedAt ?? null,
+              });
+              fallbackPosition++;
+            }
+            return rows;
+          })()
+        : [...new Set(data.collectionIds ?? [])].map((collectionId, index) => ({
+            siteId,
+            postId: id,
+            collectionId,
+            createdAt: timestamp,
+            position: index,
+            pinnedAt: null,
+          }));
 
       try {
         if (usesBatchWrites) {
@@ -1472,8 +1540,8 @@ export function createPostService(
               format,
               status,
               visibility,
-              pinnedAt: data.pinned ? timestamp : null,
-              featuredAt: data.featured ? timestamp : null,
+              pinnedAt: resolvedPinnedAt,
+              featuredAt: resolvedFeaturedAt,
               title,
               url,
               body,
@@ -1523,17 +1591,9 @@ export function createPostService(
             );
           }
 
-          if (collectionIds.length > 0) {
+          if (collectionInsertRows.length > 0) {
             writeQueries.push(
-              db.insert(postCollections).values(
-                collectionIds.map((collectionId, index) => ({
-                  siteId,
-                  postId: id,
-                  collectionId,
-                  createdAt: timestamp,
-                  position: index,
-                })),
-              ),
+              db.insert(postCollections).values(collectionInsertRows),
             );
           }
 
@@ -1551,8 +1611,8 @@ export function createPostService(
               format,
               status,
               visibility,
-              pinnedAt: data.pinned ? timestamp : null,
-              featuredAt: data.featured ? timestamp : null,
+              pinnedAt: resolvedPinnedAt,
+              featuredAt: resolvedFeaturedAt,
               title,
               url,
               body,
@@ -1597,16 +1657,8 @@ export function createPostService(
               });
             }
 
-            if (collectionIds.length > 0) {
-              await tx.insert(postCollections).values(
-                collectionIds.map((collectionId, index) => ({
-                  siteId,
-                  postId: id,
-                  collectionId,
-                  createdAt: timestamp,
-                  position: index,
-                })),
-              );
+            if (collectionInsertRows.length > 0) {
+              await tx.insert(postCollections).values(collectionInsertRows);
             }
           });
         }
@@ -1787,10 +1839,17 @@ export function createPostService(
       if (data.url !== undefined) updates.url = nextUrl;
       if (data.quoteText !== undefined) updates.quoteText = nextQuoteText;
       if (data.rating !== undefined) updates.rating = nextRating;
-      if (data.pinned !== undefined)
-        updates.pinnedAt = data.pinned ? now() : null;
-      if (data.featured !== undefined)
-        updates.featuredAt = data.featured ? now() : null;
+      // Prefer explicit timestamp when provided; fall back to boolean shorthand.
+      if (data.pinnedAt !== undefined) {
+        updates.pinnedAt = data.pinnedAt;
+      } else if (data.pinned !== undefined) {
+        updates.pinnedAt = data.pinned ? timestamp : null;
+      }
+      if (data.featuredAt !== undefined) {
+        updates.featuredAt = data.featuredAt;
+      } else if (data.featured !== undefined) {
+        updates.featuredAt = data.featured ? timestamp : null;
+      }
 
       if (data.body !== undefined || data.bodyMarkdown !== undefined) {
         const rawBody = data.bodyMarkdown
@@ -1836,7 +1895,10 @@ export function createPostService(
             "Cannot change visibility of a thread reply. Update the root post instead.",
           );
         }
-        if (data.pinned !== undefined) {
+        if (
+          (data.pinnedAt !== undefined && data.pinnedAt !== null) ||
+          data.pinned === true
+        ) {
           throw new ConflictError(
             "Cannot pin a thread reply. Pin the root post instead.",
           );

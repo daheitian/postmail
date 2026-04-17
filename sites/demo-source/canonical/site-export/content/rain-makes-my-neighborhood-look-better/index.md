@@ -1,22 +1,32 @@
----
-title: "Rain Makes My Neighborhood Look Better"
-date: 2026-02-20T17:40:00.000Z
-updated: 2026-04-03T02:30:54.000Z
-slug: "rain-makes-my-neighborhood-look-better"
-taxonomies:
-  collections:
-    - "city-walks"
-    - "weekend-notes"
-  feed:
-    - "public"
-    - "archive"
-extra:
-  format: note
-  status: published
-  visibility: public
-  summary_text: "Everything sharpens after a light shower: the crosswalk paint, the leaves stuck to the curb, the bakery sign that usually disappears into the block. I took the long way home for no reason other than the street looked newly washed. That was reason enough."
-  featured: true
----
++++
+title = "Rain Makes My Neighborhood Look Better"
+date = "2026-02-20T17:40:00.000Z"
+updated = "2026-04-03T02:30:54.000Z"
+slug = "rain-makes-my-neighborhood-look-better"
+
+[taxonomies]
+collections = ["city-walks", "weekend-notes"]
+feed = ["public", "archive", "featured"]
+
+[extra]
+format = "note"
+status = "published"
+visibility = "public"
+summary_text = "Everything sharpens after a light shower: the crosswalk paint, the leaves stuck to the curb, the bakery sign that usually disappears into the block. I took the long way home for no reason other than the street looked newly washed. That was reason enough."
+
+[extra.jant]
+featured_at = "2026-04-03T02:30:54.000Z"
+
+[[extra.jant.collections]]
+slug = "city-walks"
+collected_at = "2026-04-03T02:30:54.000Z"
+position = 0
+
+[[extra.jant.collections]]
+slug = "weekend-notes"
+collected_at = "2026-04-03T02:30:54.000Z"
+position = 1
++++
 
 Everything sharpens after a light shower: the crosswalk paint, the leaves stuck to the curb, the bakery sign that usually disappears into the block.
 

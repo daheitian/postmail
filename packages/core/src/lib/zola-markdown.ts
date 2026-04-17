@@ -27,14 +27,50 @@ export interface ParsedFrontMatter {
     source_url?: string;
     quote_text?: string;
     rating?: number;
-    pinned?: boolean;
-    featured?: boolean;
-    jant?: { root_aliases?: string[] };
+    jant?: {
+      featured_at?: string | null;
+      pinned_at?: string | null;
+      root_aliases?: string[];
+      collections?: {
+        slug: string;
+        collected_at?: string;
+        position?: number;
+        pinned_at?: string | null;
+      }[];
+    };
   };
 }
 
+/**
+ * Structured reply metadata parsed from the JSON body of a
+ * `<!--jant:reply ... -->` marker. Mirrors the `ReplyMeta` interface on
+ * the export side. Every field is explicit about null vs undefined so
+ * importers can distinguish "omitted" from "cleared".
+ */
+export interface ReplyMeta {
+  date: string | null;
+  slug: string;
+  format: string;
+  status: string;
+  visibility: string;
+  featured_at: string | null;
+  pinned_at: string | null;
+  rating: number | null;
+  title: string | null;
+  url: string | null;
+  quote_text: string | null;
+  source_name: string | null;
+  source_url: string | null;
+  collections: {
+    slug: string;
+    collected_at: string;
+    position: number;
+    pinned_at: string | null;
+  }[];
+}
+
 export interface ReplySegment {
-  attrs: Record<string, string> | null;
+  attrs: ReplyMeta | null;
   body: string;
 }
 
@@ -84,11 +120,20 @@ export async function parseFrontMatter(
 /**
  * Split a post body into root and reply segments.
  *
- * Reply markers are HTML comments of the form:
- * `<!-- jant:reply date="..." slug="..." format="..." ... -->`
+ * Reply markers are multi-line HTML comments wrapping a JSON payload:
+ *
+ * ```
+ * <!--jant:reply
+ * { "date": "...", "slug": "...", "format": "...", ... }
+ * -->
+ * ```
+ *
+ * The exporter defensively escapes any `-->` inside the JSON as
+ * `--\u003e` before writing, so we reverse that on read (JSON's
+ * `\u003e` escape parses back to `>` natively).
  *
  * The first segment has `attrs: null` and represents the root post body.
- * Subsequent segments carry the parsed marker attributes.
+ * Subsequent segments carry the parsed `ReplyMeta`.
  *
  * @param body - Markdown body content (after front matter)
  * @returns Array of segments, root first
@@ -97,7 +142,7 @@ export async function parseFrontMatter(
  * ```ts
  * const segments = splitReplies(body);
  * const root = segments[0]; // { attrs: null, body: "..." }
- * const replies = segments.slice(1); // [{ attrs: { slug: "...", ... }, body: "..." }]
+ * const replies = segments.slice(1); // [{ attrs: ReplyMeta, body: "..." }]
  * ```
  */
 /**
@@ -113,26 +158,31 @@ function stripTrailingReplyDecoration(segment: string): string {
 }
 
 export function splitReplies(body: string): ReplySegment[] {
-  const markerRegex = /<!-- jant:reply (.*?) -->/g;
+  const markerRegex = /<!--jant:reply\r?\n([\s\S]*?)\r?\n-->/g;
 
   const markers: Array<{
     index: number;
     endIndex: number;
-    attrs: Record<string, string>;
+    attrs: ReplyMeta;
   }> = [];
   let match: RegExpExecArray | null;
   while ((match = markerRegex.exec(body)) !== null) {
-    const attrs: Record<string, string> = {};
-    const attrRegex = /(\w+)="([^"]*)"/g;
-    let attrMatch: RegExpExecArray | null;
-    while ((attrMatch = attrRegex.exec(match[1] ?? "")) !== null) {
-      const key = attrMatch[1];
-      if (key) attrs[key] = attrMatch[2] ?? "";
+    const payload = match[1] ?? "";
+    let parsed: ReplyMeta;
+    try {
+      parsed = JSON.parse(payload) as ReplyMeta;
+    } catch (err) {
+      throw new Error(
+        `Failed to parse jant:reply marker JSON: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+        { cause: err },
+      );
     }
     markers.push({
       index: match.index,
       endIndex: match.index + match[0].length,
-      attrs,
+      attrs: parsed,
     });
   }
 
