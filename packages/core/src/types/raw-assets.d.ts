@@ -20,3 +20,15 @@ declare module "*.toml?raw" {
   const content: string;
   export default content;
 }
+
+declare module "*.js?raw" {
+  const content: string;
+  export default content;
+}
+
+/**
+ * Ambient declaration for bare `.css` side-effect imports. Vite injects the
+ * stylesheet into the bundle output; at the type level, these imports have
+ * no runtime value.
+ */
+declare module "*.css";

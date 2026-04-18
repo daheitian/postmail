@@ -26,8 +26,9 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm build:client && pnpm build:lib",
+    "build": "pnpm build:client && pnpm build:site && pnpm build:lib",
     "build:client": "vite build --config vite.config.client.ts",
+    "build:site": "vite build --config vite.config.site.ts",
     "build:lib": "node -e \"const{rmSync,readdirSync,existsSync}=require('fs');if(existsSync('dist'))readdirSync('dist').filter(f=>f!=='client').forEach(f=>rmSync('dist/'+f,{recursive:true,force:true}))\" && vite build --config vite.config.worker.ts",
     "brand:generate": "tsx dev/scripts/generate-brand-assets.ts",
     "typecheck": "tsc -b --noEmit",

@@ -49,6 +49,14 @@ import TOKENS_CSS from "../styles/tokens.css?raw";
 // filesystem dependency.
 import THEME_TOML from "./export-theme/theme.toml?raw";
 import THEME_STYLE_MAIN_CSS from "./export-theme/styles/main.css?raw";
+// Static-site client bundle — Lit-based lightbox, feed video autoplay, audio
+// waveform, and gallery scroll hints. Built by `vite.config.site.ts` into
+// `export-theme/assets/client-site.{js,css}` and shipped under the theme's
+// reserved `_jant/` static directory so the theme stays version-aligned with
+// `@jant/core`. The assets folder is regenerated on every build, so the
+// checked-in files are source-of-truth for the most recent release.
+import CLIENT_SITE_JS from "./export-theme/assets/client-site.js?raw";
+import CLIENT_SITE_CSS from "./export-theme/assets/client-site.css?raw";
 import LAYOUT_BASEOF from "./export-theme/layouts/_default/baseof.html?raw";
 import LAYOUT_SINGLE from "./export-theme/layouts/_default/single.html?raw";
 import LAYOUT_LIST from "./export-theme/layouts/_default/list.html?raw";
@@ -64,6 +72,7 @@ import PARTIAL_HEADER from "./export-theme/layouts/partials/header.html?raw";
 import PARTIAL_FOOTER from "./export-theme/layouts/partials/footer.html?raw";
 import PARTIAL_PAGINATION from "./export-theme/layouts/partials/pagination.html?raw";
 import PARTIAL_POST_CARD from "./export-theme/layouts/partials/post-card.html?raw";
+import PARTIAL_MEDIA_GALLERY from "./export-theme/layouts/partials/media-gallery.html?raw";
 import PARTIAL_REPLY from "./export-theme/layouts/partials/reply.html?raw";
 import PARTIAL_THREAD_PREVIEW from "./export-theme/layouts/partials/thread-preview.html?raw";
 import PARTIAL_THREAD_PREVIEW_CONTEXT from "./export-theme/layouts/partials/thread-preview-context.html?raw";
@@ -414,6 +423,10 @@ export function createExportService(
         content: PARTIAL_POST_CARD,
       });
       exportFiles.push({
+        path: "themes/jant/layouts/partials/media-gallery.html",
+        content: PARTIAL_MEDIA_GALLERY,
+      });
+      exportFiles.push({
         path: "themes/jant/layouts/partials/reply.html",
         content: PARTIAL_REPLY,
       });
@@ -443,6 +456,17 @@ export function createExportService(
       exportFiles.push({
         path: "themes/jant/static/custom.css",
         content: siteConfig.customCss ?? "",
+      });
+      // Client-side interactions: media lightbox, feed video autoplay,
+      // audio waveform, gallery scroll hints. Reserved namespace keeps these
+      // from colliding with user-authored static files.
+      exportFiles.push({
+        path: "themes/jant/static/_jant/client-site.js",
+        content: CLIENT_SITE_JS,
+      });
+      exportFiles.push({
+        path: "themes/jant/static/_jant/client-site.css",
+        content: CLIENT_SITE_CSS,
       });
       exportFiles.push({
         path: "themes/jant/static/favicon.ico",
@@ -641,7 +665,7 @@ function buildMediaEmission(
 
   const entry: JantMedia = {
     id: media.id,
-    kind: media.mediaKind === "text" ? "file" : media.mediaKind,
+    kind: media.mediaKind,
     src,
     position: parsePositionForSort(media.position),
   };

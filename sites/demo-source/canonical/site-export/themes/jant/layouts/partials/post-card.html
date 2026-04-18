@@ -1,10 +1,7 @@
 {{- $post := . -}}
 {{- $format := $post.Params.format | default "note" -}}
-{{- $summary := $post.Params.summary_text -}}
+{{- $summaryText := $post.Params.summary_text -}}
 {{- $media := $post.Params.media | default slice -}}
-{{- $images := where $media "kind" "image" -}}
-{{- $videos := where $media "kind" "video" -}}
-{{- $audio := where $media "kind" "audio" -}}
 <article class="post-card post-card-{{ $format }}" data-format="{{ $format }}" data-slug="{{ $post.Params.slug | default $post.Slug }}">
   <header class="post-card-meta">
     <a class="post-card-permalink" href="{{ $post.RelPermalink }}">
@@ -31,7 +28,7 @@
         <a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $linkUrl | urlize }}</a>
       </p>
     {{- end -}}
-    {{- with $summary -}}<p class="post-card-summary">{{ . }}</p>{{- end -}}
+    {{- with $summaryText -}}<p class="post-card-summary">{{ . }}</p>{{- end -}}
   {{- else if eq $format "quote" -}}
     <blockquote class="post-card-quote">
       {{- with $post.Params.quote_text -}}<p>{{ . }}</p>{{- end -}}
@@ -52,49 +49,17 @@
     {{- with $post.Title -}}
       <h2 class="post-card-title"><a href="{{ $post.RelPermalink }}">{{ . }}</a></h2>
     {{- end -}}
-    {{- if $summary -}}
-      <p class="post-card-summary">{{ $summary }}</p>
-    {{- else if $post.Summary -}}
-      <div class="post-card-summary">{{ $post.Summary }}</div>
+    {{- /* Prefer Hugo's rendered HTML summary — preserves paragraphs, links,
+         emphasis, lists. Falls back to the plain-text `summary_text` stored
+         in front matter (used for quote bodies, OG meta, etc.). */ -}}
+    {{- if $post.Summary -}}
+      <div class="post-card-summary prose">{{ $post.Summary }}</div>
+    {{- else if $summaryText -}}
+      <p class="post-card-summary">{{ $summaryText }}</p>
     {{- end -}}
   {{- end -}}
 
-  {{- if or $images $videos $audio -}}
-    <div class="post-card-media">
-      {{- range $images -}}
-        {{- $alt := .alt | default "" -}}
-        <figure class="post-card-figure">
-          <img src="{{ .src }}" alt="{{ $alt }}"
-            {{- with .width }} width="{{ . }}"{{- end -}}
-            {{- with .height }} height="{{ . }}"{{- end -}}
-            loading="lazy">
-        </figure>
-      {{- end -}}
-      {{- range $videos -}}
-        <figure class="post-card-figure post-card-figure-video">
-          {{- if .poster -}}
-            <a href="{{ $post.RelPermalink }}" aria-label="Play video">
-              <img src="{{ .poster }}" alt=""
-                {{- with .width }} width="{{ . }}"{{- end -}}
-                {{- with .height }} height="{{ . }}"{{- end -}}
-                loading="lazy">
-              <span class="post-card-video-badge" aria-hidden="true">Video</span>
-            </a>
-          {{- else -}}
-            <video src="{{ .src }}" controls preload="metadata"
-              {{- with .width }} width="{{ . }}"{{- end -}}
-              {{- with .height }} height="{{ . }}"{{- end -}}
-              playsinline></video>
-          {{- end -}}
-        </figure>
-      {{- end -}}
-      {{- range $audio -}}
-        <figure class="post-card-figure post-card-figure-audio">
-          <audio src="{{ .src }}" controls preload="metadata"></audio>
-        </figure>
-      {{- end -}}
-    </div>
-  {{- end -}}
+  {{ partial "media-gallery.html" (dict "media" $media "permalink" $post.RelPermalink) }}
 
   <footer class="post-card-footer">
     <a class="post-card-readmore" href="{{ $post.RelPermalink }}">Read more &rarr;</a>

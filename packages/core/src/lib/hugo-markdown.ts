@@ -41,7 +41,7 @@ export interface HugoCollectionRef {
  */
 export interface JantMedia {
   id: string;
-  kind: "image" | "video" | "audio" | "document" | "file";
+  kind: "image" | "video" | "audio" | "document" | "file" | "text";
   src: string;
   alt?: string;
   width?: number;

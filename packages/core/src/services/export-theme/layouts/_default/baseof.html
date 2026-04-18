@@ -11,5 +11,9 @@
       {{ block "main" . }}{{ end }}
     </main>
     {{ partial "footer.html" . }}
+    {{/* Mount the shared media lightbox web component once per page.
+         The component installs a document-level click listener on connect
+         and intercepts clicks on [data-post-media] a[data-lightbox-index]. */}}
+    <jant-media-lightbox></jant-media-lightbox>
   </body>
 </html>

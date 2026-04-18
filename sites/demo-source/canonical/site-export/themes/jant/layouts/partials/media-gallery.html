@@ -1,0 +1,246 @@
+{{- /*
+  Media gallery — unified scroll-snap row mirroring main-site MediaGallery.tsx.
+  Emits images, videos, audio cards, documents, and text attachments in the
+  post's stored `media` order (already sorted by position in the exporter).
+
+  Lightbox: images and videos get `[data-lightbox-index]` pointers into a
+  JSON blob on `[data-post-media]`. The client-site bundle's
+  `<jant-media-lightbox>` delegates clicks on those anchors.
+
+  Layout: mirrors MediaGallery.tsx — one horizontal row with a computed
+  `rowHeight` (driven by the first visual's aspect ratio) so mixed sizes
+  align into a clean strip. Single-visual posts expand to their natural
+  aspect ratio (capped at 24rem / 85% width). Non-visual attachments
+  (audio/doc/text) use a 3:4 portrait card sized to the row height.
+
+  Inline styles (not Tailwind utilities) because the exported theme ships
+  no utility CSS — only tokens.css + main.css + theme.css + site-media.css.
+
+  Context: expects `.` to be a dict with `media` (the slice) and optional
+  `permalink` for future use. Caller should pass
+  `(dict "media" .Params.media "permalink" .RelPermalink)`.
+*/ -}}
+
+{{- $media := .media | default slice -}}
+{{- if $media -}}
+  {{- /* Collect items + build lightbox group from images/videos */ -}}
+  {{- $items := slice -}}
+  {{- $lightbox := slice -}}
+  {{- $lbIdx := 0 -}}
+  {{- $hasNonVisual := false -}}
+  {{- $firstRatio := 0.0 -}}
+  {{- range $media -}}
+    {{- $kind := .kind | default "file" -}}
+    {{- $item := . -}}
+    {{- if or (eq $kind "image") (eq $kind "video") -}}
+      {{- $lbEntry := dict "url" .src "alt" (.alt | default "") -}}
+      {{- with .width }}{{- $lbEntry = merge $lbEntry (dict "width" .) -}}{{- end -}}
+      {{- with .height }}{{- $lbEntry = merge $lbEntry (dict "height" .) -}}{{- end -}}
+      {{- if eq $kind "video" -}}
+        {{- with $item.mime_type }}{{- $lbEntry = merge $lbEntry (dict "mimeType" .) -}}{{- end -}}
+        {{- with $item.poster }}{{- $lbEntry = merge $lbEntry (dict "posterUrl" .) -}}{{- end -}}
+        {{- with $item.duration_seconds }}{{- $lbEntry = merge $lbEntry (dict "durationSeconds" .) -}}{{- end -}}
+        {{- with $item.size }}{{- $lbEntry = merge $lbEntry (dict "size" .) -}}{{- end -}}
+      {{- end -}}
+      {{- $lightbox = $lightbox | append $lbEntry -}}
+      {{- $items = $items | append (merge $item (dict "_kind" $kind "_lbIdx" $lbIdx)) -}}
+      {{- $lbIdx = add $lbIdx 1 -}}
+      {{- /* Capture first visual's aspect ratio */ -}}
+      {{- if and (eq $firstRatio 0.0) $item.width $item.height (gt (float $item.width) 0.0) (gt (float $item.height) 0.0) -}}
+        {{- $firstRatio = div (float $item.width) (float $item.height) -}}
+      {{- end -}}
+    {{- else -}}
+      {{- $items = $items | append (merge $item (dict "_kind" $kind)) -}}
+      {{- $hasNonVisual = true -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{- $count := len $items -}}
+  {{- $single := eq $count 1 -}}
+  {{- $first := index $items 0 -}}
+  {{- $firstKind := $first._kind -}}
+  {{- $singleVisual := and $single (or (eq $firstKind "image") (eq $firstKind "video")) -}}
+
+  {{- /* rowHeight — mirrors MediaGallery.tsx. 4/3 fallback when no visuals. */ -}}
+  {{- $rowMin := cond $hasNonVisual 220 280 -}}
+  {{- $rowMax := cond $hasNonVisual 300 440 -}}
+  {{- $rowHeight := cond $hasNonVisual 220 360 -}}
+  {{- if and (not $singleVisual) (gt $count 1) (gt $firstRatio 0.0) -}}
+    {{- $ratio := cond (lt $firstRatio 0.5) 0.5 $firstRatio -}}
+    {{- $computed := math.Round (div 320.0 $ratio) -}}
+    {{- $rowHeight = cond (gt $computed $rowMax) $rowMax (cond (lt $computed $rowMin) $rowMin (int $computed)) -}}
+  {{- end -}}
+  {{- $docCardWidth := int (math.Round (mul (float $rowHeight) 0.75)) -}}
+
+  {{- /* Outer wrapper — keeps the media-gallery-scroll-wrap hooks for the
+         fade-mask client script in the non-single case. */ -}}
+  {{- $wrapClass := cond $singleVisual "" "media-gallery-scroll-wrap" -}}
+  <div class="{{ $wrapClass }}" style="margin-top: 0.75rem;">
+    <div data-post-media
+      {{- if $lightbox }} data-lightbox-group="{{ $lightbox | jsonify }}"{{- end -}}
+      style="display: flex; gap: 0.5rem;
+        {{- if not $singleVisual }} overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none;{{- end }}">
+      {{- range $items -}}
+        {{- $k := ._kind -}}
+        {{- /* Per-item width for non-single visuals */ -}}
+        {{- $itemRatio := 1.3333 -}}
+        {{- if and .width .height (gt (float .width) 0.0) (gt (float .height) 0.0) -}}
+          {{- $itemRatio = div (float .width) (float .height) -}}
+        {{- end -}}
+        {{- $itemWidth := int (math.Round (mul (float $rowHeight) $itemRatio)) -}}
+        {{- if lt $itemWidth 160 -}}{{- $itemWidth = 160 -}}{{- end -}}
+
+        {{- if eq $k "image" -}}
+          {{- if $singleVisual -}}
+            <a href="{{ .src }}" data-lightbox-index="{{ ._lbIdx }}"
+              class="media-visual-frame"
+              style="display: block; width: min(100%, calc(24rem * {{ printf "%.4f" $itemRatio }})); max-width: 100%;">
+              <img src="{{ .src }}" alt="{{ .alt | default "" }}"
+                {{- with .width }} width="{{ . }}"{{- end -}}
+                {{- with .height }} height="{{ . }}"{{- end }}
+                loading="lazy" decoding="async"
+                class="media-visual"
+                style="display: block; width: 100%; height: auto; border-radius: 0.5rem;
+                  {{- if and .width .height }} aspect-ratio: {{ .width }}/{{ .height }};{{- end }}">
+            </a>
+          {{- else -}}
+            <a href="{{ .src }}" data-lightbox-index="{{ ._lbIdx }}"
+              class="media-visual-frame"
+              style="display: block; flex-shrink: 0; scroll-snap-align: start; width: {{ $itemWidth }}px; max-width: 85%;">
+              <img src="{{ .src }}" alt="{{ .alt | default "" }}"
+                {{- with .width }} width="{{ . }}"{{- end -}}
+                {{- with .height }} height="{{ . }}"{{- end }}
+                loading="lazy" decoding="async"
+                class="media-visual"
+                style="display: block; width: 100%; height: {{ $rowHeight }}px; object-fit: cover;">
+            </a>
+          {{- end -}}
+        {{- else if eq $k "video" -}}
+          {{- $isShort := false -}}
+          {{- if and .mime_type (hasPrefix .mime_type "video/") .duration_seconds -}}
+            {{- if and (le (int .duration_seconds) 15) (or (not .size) (le (int .size) 12582912)) -}}
+              {{- $isShort = true -}}
+            {{- end -}}
+          {{- end -}}
+          {{- $videoWrapStyle := "position: relative;" -}}
+          {{- if $singleVisual -}}
+            {{- $videoWrapStyle = printf "%s display: block; width: min(100%%, calc(24rem * %s)); max-width: 100%%;" $videoWrapStyle (printf "%.4f" $itemRatio) -}}
+          {{- else -}}
+            {{- $videoWrapStyle = printf "%s display: block; flex-shrink: 0; scroll-snap-align: start; width: %dpx; max-width: 85%%;" $videoWrapStyle $itemWidth -}}
+          {{- end -}}
+          {{- $videoStyle := cond $singleVisual
+              (cond (and (gt (int (default 0 .width)) 0) (gt (int (default 0 .height)) 0))
+                (printf "display: block; width: 100%%; height: auto; aspect-ratio: %d/%d;" (int .width) (int .height))
+                "display: block; width: 100%; height: auto;")
+              (printf "display: block; width: 100%%; height: %dpx; object-fit: cover;" $rowHeight) -}}
+          {{- if $isShort -}}
+            <div class="media-video-wrap media-video-wrap-short" style="{{ $videoWrapStyle }}">
+              <a href="{{ .src }}" data-lightbox-index="{{ ._lbIdx }}" class="media-visual-frame media-video-link" style="display: block; cursor: pointer;">
+                <video preload="none" muted playsinline loop
+                  {{- with .poster }} poster="{{ . }}"{{- end -}}
+                  {{- with .width }} width="{{ . }}"{{- end -}}
+                  {{- with .height }} height="{{ . }}"{{- end }}
+                  data-feed-short-video=""
+                  data-video-src="{{ .src }}"
+                  data-feed-video-id="{{ .id }}"
+                  class="media-visual"
+                  style="{{ $videoStyle }}"></video>
+              </a>
+              <button type="button" class="media-feed-video-mute" data-feed-video-mute-toggle data-muted="true" aria-label="Play with sound">
+                <svg class="media-feed-video-icon media-feed-video-icon-muted" width="12" height="12" viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+                  <path d="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0 .8.7 1.5 1.5 1.5h8.7l12.9 12.9c.9.9 2.5.3 2.5-1v-9.8c0-.4-.2-.8-.4-1.1l-22-22c-.3-.3-.7-.4-1.1-.4h-.6zm46.8 31.4-5.5-5.5C44.9 36.6 48 31.4 48 24c0-11.4-7.2-17.4-7.2-17.4-.6-.6-1.6-.6-2.2 0L37.2 8c-.6.6-.6 1.6 0 2.2 0 0 5.7 5 5.7 13.8 0 5.4-2.1 9.3-3.8 11.6L35.5 32c1.1-1.7 2.3-4.4 2.3-8 0-6.8-4.1-10.3-4.1-10.3-.6-.6-1.6-.6-2.2 0l-1.4 1.4c-.6.6-.6 1.6 0 2.2 0 0 2.6 2 2.6 6.7 0 1.8-.4 3.2-.9 4.3L25.5 22V1.4c0-1.3-1.6-1.9-2.5-1L13.5 10 3.3-.3c-.6-.6-1.5-.6-2.1 0L-.2 1.1c-.6.6-.6 1.5 0 2.1L4 7.6l26.8 26.8 13.9 13.9c.6.6 1.5.6 2.1 0l1.4-1.4c.7-.6.7-1.6.1-2.2z"/>
+                </svg>
+                <svg class="media-feed-video-icon media-feed-video-icon-unmuted" width="12" height="12" viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+                  <path d="M1.5 13.3c-.8 0-1.5.7-1.5 1.5v18.4c0 .8.7 1.5 1.5 1.5h8.7l12.9 12.9c.9.9 2.5.3 2.5-1V1.4c0-1.3-1.6-1.9-2.5-1L10.2 13.3H1.5z"/>
+                  <path d="M30.1 15.9c-.6-.6-.6-1.6 0-2.2l1.4-1.4c.6-.6 1.6-.6 2.2 0 0 0 4.1 3.5 4.1 11.7s-4.1 11.7-4.1 11.7c-.6.6-1.6.6-2.2 0l-1.4-1.4c-.6-.6-.6-1.6 0-2.2 0 0 2.6-2 2.6-8.1s-2.6-8.1-2.6-8.1z"/>
+                  <path d="M37.2 8c-.6-.6-.6-1.6 0-2.2l1.4-1.4c.6-.6 1.6-.6 2.2 0 0 0 5.7 5.1 5.7 19.6s-5.7 19.6-5.7 19.6c-.6.6-1.6.6-2.2 0L37.2 42c-.6-.6-.6-1.6 0-2.2 0 0 4.3-4.4 4.3-15.8S37.2 8 37.2 8z"/>
+                </svg>
+              </button>
+            </div>
+          {{- else -}}
+            <a href="{{ .src }}" data-lightbox-index="{{ ._lbIdx }}"
+              class="media-video-wrap media-visual-frame"
+              style="{{ $videoWrapStyle }}">
+              <video preload="none" muted playsinline
+                {{- with .poster }} poster="{{ . }}"{{- end -}}
+                {{- with .width }} width="{{ . }}"{{- end -}}
+                {{- with .height }} height="{{ . }}"{{- end }}
+                class="media-visual"
+                style="{{ $videoStyle }}"></video>
+              <div class="media-video-play-overlay">
+                <svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </a>
+          {{- end -}}
+        {{- else if eq $k "audio" -}}
+          {{- $audioName := .original_name | default (.alt | default "Audio") -}}
+          <div class="media-gallery-card media-audio-card{{ if .waveform }} has-waveform{{ end }}"
+            style="flex-shrink: 0; scroll-snap-align: start; width: {{ $docCardWidth }}px; height: {{ $rowHeight }}px;">
+            <audio preload="none" class="media-audio-el">
+              <source src="{{ .src }}"{{ with .mime_type }} type="{{ . }}"{{ end }}>
+            </audio>
+            <div class="media-audio-artwork">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18V5l12-2v13"/>
+                <circle cx="6" cy="18" r="3"/>
+                <circle cx="18" cy="16" r="3"/>
+              </svg>
+            </div>
+            <div class="media-audio-controls">
+              <input type="range" min="0" max="1000" value="0" class="media-audio-range" data-audio-range aria-label="Seek">
+              <canvas class="media-audio-waveform" data-audio-waveform{{ with .waveform }} data-audio-peaks="{{ . }}"{{ end }}></canvas>
+              <div class="media-audio-row">
+                <div class="media-audio-info">
+                  <div class="media-audio-title" title="{{ $audioName }}">{{ $audioName }}</div>
+                  <div class="media-audio-time" data-audio-time>0:00</div>
+                </div>
+                <button type="button" class="media-audio-play-btn" data-audio-play aria-label="Play">
+                  <svg class="media-audio-icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                  <svg class="media-audio-icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        {{- else if eq $k "text" -}}
+          {{- /* Static site has no text-preview modal — link direct to file. */ -}}
+          {{- $label := .summary | default (.original_name | default "Attached text") -}}
+          <a href="{{ .src }}" target="_blank" rel="noopener noreferrer" class="media-gallery-card"
+            style="flex-shrink: 0; scroll-snap-align: start; width: {{ $docCardWidth }}px; height: {{ $rowHeight }}px;">
+            <div class="media-gallery-card-inner">
+              <div class="media-gallery-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="8" y1="13" x2="16" y2="13"/>
+                  <line x1="8" y1="17" x2="16" y2="17"/>
+                </svg>
+              </div>
+              <span class="media-gallery-card-summary">{{ $label }}</span>
+              {{- with .chars -}}
+                <span class="media-gallery-card-meta">{{ . }} chars</span>
+              {{- end -}}
+            </div>
+          </a>
+        {{- else -}}
+          {{- /* document / file */ -}}
+          {{- $label := .original_name | default (path.Base .src) -}}
+          <a href="{{ .src }}" target="_blank" rel="noopener noreferrer" class="media-gallery-card"
+            style="flex-shrink: 0; scroll-snap-align: start; width: {{ $docCardWidth }}px; height: {{ $rowHeight }}px;">
+            <div class="media-gallery-card-inner">
+              <div class="media-gallery-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <span class="media-gallery-card-summary">{{ $label }}</span>
+              {{- with .size -}}
+                <span class="media-gallery-card-meta">{{ . }} B</span>
+              {{- end -}}
+            </div>
+          </a>
+        {{- end -}}
+      {{- end -}}
+    </div>
+  </div>
+{{- end -}}
