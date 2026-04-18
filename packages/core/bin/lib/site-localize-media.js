@@ -354,6 +354,37 @@ export function updateConfigMediaUrls(siteConfig, replacements) {
   return changed;
 }
 
+function getJantDataMediaUrls(jantData) {
+  // data/jant.toml mirrors the avatar URL for the import pipeline. Keep
+  // it in sync with hugo.toml so the import CLI can locate the localized
+  // bytes on disk.
+  if (!jantData || typeof jantData !== "object") {
+    return [];
+  }
+  const refs = [];
+  if (typeof jantData.site_avatar_url === "string") {
+    refs.push(jantData.site_avatar_url);
+  }
+  return refs.filter((ref) => !isSkippableUrl(ref));
+}
+
+export function updateJantDataMediaUrls(jantData, replacements) {
+  if (!jantData || typeof jantData !== "object") {
+    return false;
+  }
+
+  let changed = false;
+  for (const key of ["site_avatar_url"]) {
+    if (typeof jantData[key] !== "string") continue;
+    const nextValue = replacements.get(jantData[key]);
+    if (!nextValue || nextValue === jantData[key]) continue;
+    jantData[key] = nextValue;
+    changed = true;
+  }
+
+  return changed;
+}
+
 async function resolveExistingLocalizedPath(
   rawUrl,
   baseUrl,
@@ -423,6 +454,9 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
   const baseUrl =
     typeof siteConfig.baseURL === "string" ? siteConfig.baseURL : "";
   const sitePathPrefix = getSitePathPrefix(baseUrl);
+  const jantDataPath = join(rootDir, "data", "jant.toml");
+  const jantDataText = await readFile(jantDataPath, "utf-8").catch(() => null);
+  const jantData = jantDataText ? parse(jantDataText) : null;
   const markdownFiles = await readMarkdownFiles(rootDir);
   const usedLocalizedPaths = new Set();
   const rewrites = new Map();
@@ -441,6 +475,7 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
     allReferences.push(...collectMediaReferences(content));
   }
   allReferences.push(...getConfigMediaUrls(siteConfig));
+  allReferences.push(...getJantDataMediaUrls(jantData));
   const uniqueReferences = [...new Set(allReferences)];
 
   logger({
@@ -551,6 +586,11 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
 
   if (updateConfigMediaUrls(siteConfig, rewrites)) {
     await writeFile(configPath, stringify(siteConfig));
+    stats.configUpdated = true;
+  }
+
+  if (jantData && updateJantDataMediaUrls(jantData, rewrites)) {
+    await writeFile(jantDataPath, stringify(jantData));
     stats.configUpdated = true;
   }
 
