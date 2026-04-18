@@ -1895,8 +1895,12 @@ function buildPostPayloadFromBundle(bundle, options) {
       : frontMatter.draft
         ? "draft"
         : "published";
+  // Accept every canonical visibility value (see `VISIBILITIES` in
+  // `src/types/constants.ts`). Anything else — or missing — falls back to
+  // the service default (`public`).
   const visibility =
-    frontMatter.visibility === "unlisted" ||
+    frontMatter.visibility === "public" ||
+    frontMatter.visibility === "latest_hidden" ||
     frontMatter.visibility === "private"
       ? frontMatter.visibility
       : undefined;

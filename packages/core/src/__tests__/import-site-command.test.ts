@@ -292,6 +292,44 @@ describe("Hugo import CLI helpers", () => {
     });
   });
 
+  it("buildPostPayloadFromBundle preserves every canonical visibility value", () => {
+    const base = {
+      slug: "hello",
+      frontMatter: {
+        id: "pst_x",
+        title: "Hello",
+        date: "2026-04-01T00:00:00Z",
+        slug: "hello",
+        type: "post",
+        format: "note",
+        status: "published",
+      },
+      body: "Body",
+    };
+    const payloadOptions = {
+      bodyMarkdown: "Body",
+      attachments: [],
+      memberships: { entries: [], ids: [] },
+      replyToId: null,
+    };
+
+    for (const visibility of ["public", "latest_hidden", "private"] as const) {
+      const bundle = {
+        ...base,
+        frontMatter: { ...base.frontMatter, visibility },
+      };
+      const data = buildPostPayloadFromBundle(bundle, payloadOptions);
+      expect(data.visibility).toBe(visibility);
+    }
+
+    // Unknown values fall through to undefined (service applies default).
+    const fallback = buildPostPayloadFromBundle(
+      { ...base, frontMatter: { ...base.frontMatter, visibility: "bogus" } },
+      payloadOptions,
+    );
+    expect(fallback.visibility).toBeUndefined();
+  });
+
   it("getRootAliasPathsForImport prefers root_aliases and strips reply slugs", () => {
     // Reply slug paths are normalized (no trailing slash) to match the
     // return format of normalizeImportAliasPath.
