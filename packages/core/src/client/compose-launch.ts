@@ -67,9 +67,16 @@ export function getReplyRefreshTarget(
     return { kind: "post-view", id: postViewId };
   }
 
-  const page = article.closest<HTMLElement>("[data-page]")?.dataset.page;
-  const threadRootId = article.dataset.threadRootId ?? article.dataset.postId;
-  if (page === "home" && threadRootId) {
+  // Any page that renders posts inside a [data-timeline-item] wrapper
+  // (home feed, archive list view, etc.) uses the timeline-item refresh
+  // path so the full TimelineFeedItemContent — including thread previews —
+  // re-renders with the new reply folded in.
+  const timelineItem = article.closest<HTMLElement>("[data-timeline-item]");
+  const threadRootId =
+    timelineItem?.dataset.threadRootId ??
+    article.dataset.threadRootId ??
+    article.dataset.postId;
+  if (timelineItem && threadRootId) {
     return { kind: "timeline-item", id: threadRootId };
   }
 
