@@ -920,6 +920,32 @@ function buildSettingsUpdatesFromConfig(siteConfig, customCss = "") {
   };
 }
 
+/**
+ * Internal config keys that the site importer restores via the dedicated
+ * `/api/settings/import` route. Must stay in sync with
+ * `importableInternalSettingKeys` in `src/lib/api-settings.ts`.
+ */
+const IMPORTABLE_INTERNAL_SETTING_KEYS = new Set([
+  "THEME",
+  "FONT_THEME",
+  "THEME_MODE",
+  "CUSTOM_CSS",
+  "SHOW_HEADER_AVATAR",
+]);
+
+function splitSettingsUpdatesForImport(updates) {
+  const editable = {};
+  const internal = {};
+  for (const [key, value] of Object.entries(updates)) {
+    if (IMPORTABLE_INTERNAL_SETTING_KEYS.has(key)) {
+      internal[key] = value;
+    } else {
+      editable[key] = value;
+    }
+  }
+  return { editable, internal };
+}
+
 function normalizeImportedNavItems(siteConfig) {
   const jant = siteConfig?.extra?.jant || {};
   const navItems = jant.nav;
@@ -1305,6 +1331,9 @@ function createRemoteTarget(apiUrl, token) {
     async updateSettings(updates) {
       return apiCall("PUT", "/api/settings", apiUrl, token, updates);
     },
+    async updateImportSettings(updates) {
+      return apiCall("PUT", "/api/settings/import", apiUrl, token, updates);
+    },
     async listNavItems() {
       const result = await apiCall("GET", "/api/nav-items", apiUrl, token);
       return result.navItems || [];
@@ -1477,6 +1506,10 @@ async function createLocalTarget(env = process.env) {
     async updateSettings(updates) {
       await runtime.services.settings.setMany(updates);
       return { settings: updates };
+    },
+    async updateImportSettings(updates) {
+      await runtime.services.settings.setMany(updates);
+      return { success: true };
     },
     async listNavItems() {
       return runtime.services.navItems.list();
@@ -2116,8 +2149,10 @@ export async function run(argv) {
           }
         }
       } else {
+        const { editable, internal } =
+          splitSettingsUpdatesForImport(settingsUpdates);
         try {
-          const result = await target.updateSettings(settingsUpdates);
+          const result = await target.updateSettings(editable);
           if (result?.rejectedKeys?.length) {
             console.warn(
               `Warning: Some site settings were rejected: ${result.rejectedKeys.join(", ")}`,
@@ -2128,6 +2163,22 @@ export async function run(argv) {
             `Error applying exported site settings: ${err.message}`,
           );
           process.exit(1);
+        }
+
+        if (Object.keys(internal).length > 0) {
+          try {
+            const result = await target.updateImportSettings(internal);
+            if (result?.rejectedKeys?.length) {
+              console.warn(
+                `Warning: Some internal site settings were rejected: ${result.rejectedKeys.join(", ")}`,
+              );
+            }
+          } catch (err) {
+            console.error(
+              `Error applying exported internal site settings: ${err.message}`,
+            );
+            process.exit(1);
+          }
         }
 
         if (importedNav.exported) {
@@ -2151,8 +2202,13 @@ export async function run(argv) {
               avatarImport.mode === "set" ? avatarImport : null,
             );
           } catch (err) {
-            console.error(`Error importing site avatar: ${err.message}`);
-            process.exit(1);
+            // Non-fatal: continue the rest of the import even if the avatar
+            // source asset is unreachable (e.g. unreadable file, stale URL).
+            // The rest of the site data is far more valuable than losing the
+            // entire import over a single image.
+            console.warn(
+              `Warning: Could not import site avatar — continuing without it. (${err.message})`,
+            );
           }
         }
       }

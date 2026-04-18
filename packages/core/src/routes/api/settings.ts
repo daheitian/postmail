@@ -15,6 +15,7 @@ import { syncHostedControlPlaneSiteAvatar } from "../../lib/hosted-control-plane
 import {
   buildEditableSettingsResponse,
   partitionEditableSettingUpdates,
+  partitionImportableSettingUpdates,
 } from "../../lib/api-settings.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -61,6 +62,33 @@ settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
       allSettings,
       c.var.appConfig.demoMode,
     ),
+    ...(rejectedKeys.length > 0 && { rejectedKeys }),
+  });
+});
+
+// Import internal-config settings (requires auth). Used by the site importer
+// to restore config-like internal keys (theme, font, mode, custom CSS, header
+// avatar toggle) that are not writable through the regular settings route.
+settingsApiRoutes.put("/import", requireAuthApi(), async (c) => {
+  const updates = parseValidated(UpdateSettingsSchema, await c.req.json());
+  const { filteredUpdates, rejectedKeys } = partitionImportableSettingUpdates(
+    updates,
+    c.var.appConfig.demoMode,
+  );
+
+  if (rejectedKeys.length > 0 && Object.keys(filteredUpdates).length === 0) {
+    const message = c.var.appConfig.demoMode
+      ? "Demo mode locks these settings"
+      : "None of the provided keys are importable";
+    throw new ValidationError(message, { rejectedKeys });
+  }
+
+  if (Object.keys(filteredUpdates).length > 0) {
+    await c.var.services.settings.setMany(filteredUpdates as never);
+  }
+
+  return c.json({
+    success: true,
     ...(rejectedKeys.length > 0 && { rejectedKeys }),
   });
 });

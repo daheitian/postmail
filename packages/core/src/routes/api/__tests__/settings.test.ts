@@ -282,6 +282,104 @@ describe("Settings API Routes", () => {
     });
   });
 
+  describe("PUT /api/settings/import", () => {
+    it("returns 401 when not authenticated", async () => {
+      const { app } = createTestApp({ authenticated: false });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings/import", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ THEME: "paper" }),
+      });
+
+      expect(res.status).toBe(401);
+    });
+
+    it("stores whitelisted internal settings", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings/import", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          THEME: "paper",
+          FONT_THEME: "serif",
+          THEME_MODE: "dark",
+          CUSTOM_CSS: "body { color: red; }",
+          SHOW_HEADER_AVATAR: "true",
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+
+      expect(await services.settings.get("THEME")).toBe("paper");
+      expect(await services.settings.get("FONT_THEME")).toBe("serif");
+      expect(await services.settings.get("THEME_MODE")).toBe("dark");
+      expect(await services.settings.get("CUSTOM_CSS")).toBe(
+        "body { color: red; }",
+      );
+      expect(await services.settings.get("SHOW_HEADER_AVATAR")).toBe("true");
+    });
+
+    it("rejects non-whitelisted internal keys", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings/import", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          SITE_AVATAR: "media/sit/assets/avatar/avatar.png",
+          SITE_FAVICON_ICO: "ZmFrZQ==",
+        }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.details.rejectedKeys).toContain("SITE_AVATAR");
+      expect(body.details.rejectedKeys).toContain("SITE_FAVICON_ICO");
+    });
+
+    it("rejects regular editable keys (caller should use PUT /api/settings)", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings/import", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ SITE_NAME: "Blog" }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.details.rejectedKeys).toContain("SITE_NAME");
+    });
+
+    it("partially applies when mixing whitelisted and unknown keys", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings/import", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          THEME: "paper",
+          SITE_NAME: "ignored",
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.rejectedKeys).toContain("SITE_NAME");
+      expect(await services.settings.get("THEME")).toBe("paper");
+    });
+  });
+
   describe("POST /api/settings/discovery/compose-open-shortcut", () => {
     it("returns 401 when not authenticated", async () => {
       const { app } = createTestApp({ authenticated: false });

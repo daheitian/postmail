@@ -68,3 +68,55 @@ export function partitionEditableSettingUpdates(
     rejectedKeys,
   };
 }
+
+/**
+ * Internal config keys that the site importer is allowed to write. These are
+ * keys that the UI manages through dedicated flows (theme picker, custom CSS
+ * editor, header toggle) but that the site export emits as plain values and
+ * the importer needs to restore verbatim. Bytes-and-storage-keyed internal
+ * settings (favicon/avatar blobs, storage paths) are excluded — those round
+ * trip through `/api/settings/avatar`, not this route.
+ */
+export const importableInternalSettingKeys = [
+  "THEME",
+  "FONT_THEME",
+  "THEME_MODE",
+  "CUSTOM_CSS",
+  "SHOW_HEADER_AVATAR",
+] as const satisfies readonly ConfigKey[];
+
+export function partitionImportableSettingUpdates(
+  updates: Record<string, string>,
+  demoMode: boolean,
+): {
+  filteredUpdates: Partial<Record<ConfigKey, string>>;
+  rejectedKeys: string[];
+} {
+  const filteredUpdates: Partial<Record<ConfigKey, string>> = {};
+  const rejectedKeys: string[] = [];
+  const whitelist = new Set<ConfigKey>(importableInternalSettingKeys);
+
+  for (const [key, value] of Object.entries(updates)) {
+    const configKey = key as ConfigKey;
+
+    if (
+      demoMode &&
+      whitelist.has(configKey) &&
+      demoLockedSettingKeys.has(configKey)
+    ) {
+      rejectedKeys.push(key);
+      continue;
+    }
+
+    if (whitelist.has(configKey)) {
+      filteredUpdates[configKey] = value;
+    } else {
+      rejectedKeys.push(key);
+    }
+  }
+
+  return {
+    filteredUpdates,
+    rejectedKeys,
+  };
+}
