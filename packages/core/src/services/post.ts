@@ -1456,6 +1456,14 @@ export function createPostService(
       let slug: string;
       let aliasPath: string | null = null;
 
+      // Quote `title` stores source attribution (e.g. author name), not a real
+      // title — deriving the slug from it would produce URLs like `/basho`
+      // that read as "a page about Basho" and collide across every quote from
+      // the same source. Fall through to random IDs instead; users who want a
+      // readable slug can still set one explicitly.
+      const titleForSlug =
+        format === "quote" ? undefined : (title ?? undefined);
+
       if (data.path) {
         const normalized = normalizePath(data.path);
         if (isValidSlug(normalized)) {
@@ -1470,7 +1478,7 @@ export function createPostService(
           const slugified = slugify(normalized);
           slug = await generatePostSlug({
             slug: slugified || undefined,
-            title: title ?? undefined,
+            title: titleForSlug,
             idLength: config.slugIdLength,
             isAvailable: isSlugAvailable,
           });
@@ -1483,7 +1491,7 @@ export function createPostService(
       } else {
         slug = await generatePostSlug({
           slug: data.slug,
-          title: title ?? undefined,
+          title: titleForSlug,
           idLength: config.slugIdLength,
           isAvailable: isSlugAvailable,
         });

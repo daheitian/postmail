@@ -13,6 +13,7 @@ import Suggestion, {
 } from "@tiptap/suggestion";
 import type { Editor, Range } from "@tiptap/core";
 import { escapeHtml } from "../../lib/html.js";
+import { getBestFieldSearchRank, normalizeSearch } from "../search-rank.js";
 import {
   getFixedFloatingContainerRect,
   getFloatingPosition,
@@ -473,13 +474,29 @@ export const SlashCommands = Extension.create({
         char: "/",
         startOfLine: false,
         items: ({ query, editor }: { query: string; editor: Editor }) => {
-          const q = query.toLowerCase();
-          return getSlashCommands(editor).filter((item) =>
-            [item.label, item.description, ...item.keywords]
-              .join(" ")
-              .toLowerCase()
-              .includes(q),
-          );
+          const commands = getSlashCommands(editor);
+          const search = normalizeSearch(query);
+          if (!search) return commands;
+          return commands
+            .map((item, index) => ({
+              item,
+              index,
+              rank: getBestFieldSearchRank(
+                [item.label, item.description, ...item.keywords],
+                search,
+              ),
+            }))
+            .filter(
+              (
+                entry,
+              ): entry is {
+                item: SlashCommandItem;
+                index: number;
+                rank: number;
+              } => entry.rank !== null,
+            )
+            .sort((a, b) => a.rank - b.rank || a.index - b.index)
+            .map((entry) => entry.item);
         },
         render: () => {
           function getEditorElement(editor: Editor): globalThis.Element | null {

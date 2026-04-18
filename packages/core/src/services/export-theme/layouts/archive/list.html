@@ -1,42 +1,31 @@
 {{ define "main" }}
-  {{- /* Root posts are branch bundles (kind=section), so we iterate .Site.Pages. */ -}}
+  {{- /* Root posts are branch bundles (kind=section), so we iterate .Site.Pages.
+       Hugo already excludes draft pages, so `private` posts (emitted with
+       `draft: true`) are filtered out automatically. This leaves `public`
+       and `latest_hidden` posts — both visible in the archive timeline. */ -}}
   {{- $posts := where .Site.Pages "Type" "post" -}}
   {{- $posts = $posts.ByDate.Reverse -}}
   {{- $pageSize := .Site.Params.archive_page_size | default (.Site.Params.page_size | default 10) -}}
   {{- $paginator := .Paginate $posts $pageSize -}}
 
-  <section class="section section-archive">
+  <section class="section section-archive home">
     <header class="section-header">
       <h1 class="section-title">{{ .Title | default "Archive" }}</h1>
       {{- with .Params.summary_text -}}
         <p class="section-summary">{{ . }}</p>
       {{- end -}}
     </header>
+
     {{- if $paginator.Pages -}}
-      <ol class="archive-list">
-        {{- range $paginator.Pages -}}
-          {{- $format := .Params.format | default "note" -}}
-          <li class="archive-item archive-item-{{ $format }}" data-format="{{ $format }}">
-            <a class="archive-link" href="{{ .RelPermalink }}">
-              <time class="archive-date" datetime="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
-                {{ .Date.Format "2006-01-02" }}
-              </time>
-              <span class="archive-title">
-                {{- if .Title -}}
-                  {{ .Title }}
-                {{- else if .Params.summary_text -}}
-                  {{ .Params.summary_text | truncate 140 }}
-                {{- else -}}
-                  {{ .Params.slug | default .Slug }}
-                {{- end -}}
-              </span>
-            </a>
-          </li>
+      <div class="post-list post-list-main">
+        {{- range $i, $p := $paginator.Pages -}}
+          {{- if gt $i 0 -}}<hr class="feed-divider" aria-hidden="true" />{{- end -}}
+          {{ partial "thread-preview.html" $p }}
         {{- end -}}
-      </ol>
+      </div>
       {{ partial "pagination.html" $paginator }}
     {{- else -}}
-      <p class="empty-state">Nothing published yet.</p>
+      <p class="empty-state">Nothing published yet. Write your first post to get started.</p>
     {{- end -}}
   </section>
 {{ end }}

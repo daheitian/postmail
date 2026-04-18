@@ -459,7 +459,6 @@ time {
 .thread-body,
 .thread-link-domain,
 .thread-footer,
-.archive-list,
 .collection-directory,
 .pagination,
 .empty-state,
@@ -486,7 +485,6 @@ time {
   .thread-body,
   .thread-link-domain,
   .thread-footer,
-  .archive-list,
   .collection-directory,
   .pagination,
   .empty-state,
@@ -1329,52 +1327,6 @@ hr.feed-divider {
 
 .reply-body > :last-child {
   margin-bottom: 0;
-}
-
-/* -------------------------------------------------------------------------
- * Archive list
- * ------------------------------------------------------------------------- */
-
-.archive-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.archive-item {
-  border-bottom: 1px solid var(--site-border-light);
-}
-
-.archive-item:last-child {
-  border-bottom: 0;
-}
-
-.archive-link {
-  display: grid;
-  grid-template-columns: 8ch 1fr;
-  gap: 1rem;
-  align-items: baseline;
-  padding: 0.6rem 0;
-  color: var(--site-reading-body);
-  text-decoration: none;
-}
-
-.archive-link:hover,
-.archive-link:focus {
-  background-color: var(--site-nav-hover-bg);
-  color: var(--site-text-primary);
-}
-
-.archive-date {
-  font-variant-numeric: tabular-nums;
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
-}
-
-.archive-title {
-  font-size: var(--type-secondary);
 }
 
 /* -------------------------------------------------------------------------

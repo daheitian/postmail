@@ -202,6 +202,27 @@ describe("PostService", () => {
       expect(post.url).toBe("https://example.com/hamlet");
     });
 
+    it("does not derive quote slugs from the source attribution title", async () => {
+      // Quote `title` stores the source/author name, not a real title. Two
+      // quotes from the same source must not fight over the same slug.
+      const first = await postService.create({
+        format: "quote",
+        title: "Basho",
+        quoteText: "An old silent pond...",
+      });
+      const second = await postService.create({
+        format: "quote",
+        title: "Basho",
+        quoteText: "The light of a candle...",
+      });
+
+      expect(first.title).toBe("Basho");
+      expect(second.title).toBe("Basho");
+      expect(first.slug).not.toBe("basho");
+      expect(second.slug).not.toBe("basho");
+      expect(first.slug).not.toBe(second.slug);
+    });
+
     it("creates a draft post", async () => {
       const post = await postService.create({
         format: "note",
