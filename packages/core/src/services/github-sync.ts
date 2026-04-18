@@ -66,7 +66,7 @@ export const JANT_SYNC_MARKER_SCHEMA_VERSION = 3;
  * Anything outside this set is user territory and preserved via base_tree.
  *
  * - `content/**` — posts, collections, sections (rendered by Hugo)
- * - `data/**` — Hugo data files (`data/jant.toml`, `data/collection_directory.toml`)
+ * - `data/**` — Hugo data files (`data/jant.toml`)
  * - `themes/jant/**` — the packaged Jant theme (layouts + static assets)
  * - `hugo.toml` — site config, including `theme = "jant"`
  * - `.gitignore`, `README.md` — scaffolded once, then kept in sync

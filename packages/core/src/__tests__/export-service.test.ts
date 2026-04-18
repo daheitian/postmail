@@ -310,7 +310,7 @@ describe("createExportService (Hugo)", () => {
     expect(toml).not.toContain("zh-Hant");
   });
 
-  it("emits data/jant.toml and data/collection_directory.toml that parse", async () => {
+  it("emits data/jant.toml with nav and collections directory inline", async () => {
     const collection = makeCollection({ id: "col-1", slug: "ideas" });
     const service = createExportService(
       buildServices({
@@ -350,18 +350,16 @@ describe("createExportService (Hugo)", () => {
     );
     const files = filesToMap(await service.generateHugoFiles());
     const jantData = files.get("data/jant.toml") as string;
-    const colDir = files.get("data/collection_directory.toml") as string;
     expect(jantData).toBeDefined();
-    expect(colDir).toBeDefined();
+    expect(files.has("data/collection_directory.toml")).toBe(false);
 
     const { parse } = await import("smol-toml");
     const jant = parse(jantData);
-    const col = parse(colDir);
     expect(jant.format).toBe("jant-site");
     expect(jant.site_name).toBe("Jant Test");
     expect(Array.isArray(jant.nav)).toBe(true);
-    expect(Array.isArray(col.items)).toBe(true);
-    expect((col.items as unknown[]).length).toBe(3);
+    expect(Array.isArray(jant.directory)).toBe(true);
+    expect((jant.directory as unknown[]).length).toBe(3);
   });
 
   it("bundles the Jant theme with layouts and CSS files", async () => {

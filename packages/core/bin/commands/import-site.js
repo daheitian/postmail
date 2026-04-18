@@ -750,11 +750,11 @@ function coerceBoolean(value) {
 /**
  * Build a unified "site config" object from Hugo's split config files.
  *
- * Hugo writes three sources of truth:
+ * Hugo writes two sources of truth:
  *   - `hugo.toml`: baseURL, title, languageCode, theme params
- *   - `data/jant.toml`: nav items, branding modes, home_default_view,
- *     site_footer, avatar urls, display preferences
- *   - `data/collection_directory.toml`: ordered directory items
+ *   - `data/jant.toml`: everything Jant owns — nav items, branding modes,
+ *     home_default_view, site_footer, avatar urls, display preferences,
+ *     and the ordered collections directory under `[[directory]]`.
  *
  * This merger normalizes them into a single shape that downstream helpers
  * (`buildSettingsUpdatesFromConfig`, `normalizeImportedNavItems`,
@@ -772,10 +772,6 @@ async function loadSiteConfig(rootDir) {
     join(rootDir, "data", "jant.toml"),
     "utf-8",
   ).catch(() => null);
-  const collectionDirText = await readFile(
-    join(rootDir, "data", "collection_directory.toml"),
-    "utf-8",
-  ).catch(() => null);
 
   if (!hugoTomlText && !jantDataText) {
     return null;
@@ -783,9 +779,6 @@ async function loadSiteConfig(rootDir) {
 
   const hugoToml = hugoTomlText ? await parseToml(hugoTomlText) : {};
   const jantData = jantDataText ? await parseToml(jantDataText) : {};
-  const collectionDir = collectionDirText
-    ? await parseToml(collectionDirText)
-    : {};
 
   const params = hugoToml.params ?? {};
 
@@ -811,9 +804,10 @@ async function loadSiteConfig(rootDir) {
       ? jantData.site_language
       : "en");
 
-  const directoryItems = Array.isArray(collectionDir.items)
-    ? collectionDir.items
+  const directoryItems = Array.isArray(jantData.directory)
+    ? jantData.directory
     : [];
+  const directoryExported = Array.isArray(jantData.directory);
 
   return {
     // Public base URL (used for resolving relative media URLs).
@@ -887,7 +881,7 @@ async function loadSiteConfig(rootDir) {
         nav: Array.isArray(jantData.nav) ? jantData.nav : [],
         nav_exported: Array.isArray(jantData.nav),
         collections_directory: directoryItems,
-        collections_directory_exported: collectionDirText !== null,
+        collections_directory_exported: directoryExported,
       },
       jant_export: {
         format:

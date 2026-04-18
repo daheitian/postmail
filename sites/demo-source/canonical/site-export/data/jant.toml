@@ -1,6 +1,6 @@
 format = "jant-site"
 version = 1
-generated_at = "2026-04-18T09:07:46.000Z"
+generated_at = "2026-04-18T09:31:36.000Z"
 site_name = "Jant"
 site_description = "Thoughts, links, and quotes — one post at a time"
 site_language = "en"
@@ -63,3 +63,45 @@ label = "Settings"
 url = "/settings"
 system_key = "settings"
 placement = "more"
+
+[[directory]]
+type = "collection"
+slug = "city-walks"
+title = "City Walks"
+entry_count = 3
+recent_activity_label = "2026-03-09"
+
+[[directory]]
+type = "collection"
+slug = "home-cooking"
+title = "Home Cooking"
+entry_count = 5
+recent_activity_label = "2026-02-01"
+
+[[directory]]
+type = "collection"
+slug = "reading-notes"
+title = "Reading Notes"
+entry_count = 7
+recent_activity_label = "2026-02-05"
+
+[[directory]]
+type = "collection"
+slug = "tiny-projects"
+title = "Tiny Projects"
+entry_count = 8
+recent_activity_label = "2026-03-01"
+
+[[directory]]
+type = "collection"
+slug = "useful-links"
+title = "Useful Links"
+entry_count = 7
+recent_activity_label = "2026-03-05"
+
+[[directory]]
+type = "collection"
+slug = "weekend-notes"
+title = "Weekend Notes"
+entry_count = 14
+recent_activity_label = "2026-03-09"

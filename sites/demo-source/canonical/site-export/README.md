@@ -56,8 +56,7 @@ content/
     {reply-slug}/
       index.md            — Reply (leaf bundle, not rendered as its own URL)
 data/
-  jant.toml               — Nav items, branding, display preferences
-  collection_directory.toml — Ordered directory with dividers and links
+  jant.toml               — Nav items, branding, display preferences, ordered collections directory
 themes/jant/              — Bundled Hugo theme (overrideable via layouts/ at the site root)
 static/                   — Copy files here to add them to the published site
 ```
@@ -65,7 +64,7 @@ static/                   — Copy files here to add them to the published site
 ## Customizing
 
 - **Site settings** — edit `hugo.toml` to change the baseURL, title, or pagination.
-- **Jant metadata** — `data/jant.toml` and `data/collection_directory.toml` drive nav and the collections directory, and are preserved across round-trip import.
+- **Jant metadata** — `data/jant.toml` drives nav and the collections directory, and is preserved across round-trip import.
 - **Styles** — edit `themes/jant/static/main.css`, or drop a `static/main.css` at the site root to override.
 - **Templates** — add files under `layouts/` at the site root to override the bundled theme.
 - **Debugging** — export to a directory with `jant site export --directory ./my-site`, then run `cd my-site && hugo serve`.

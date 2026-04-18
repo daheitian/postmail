@@ -120,7 +120,7 @@ Jant fully manages these paths and overwrites them on every push:
 
 - `content/**` — posts, collections, sections
 - `themes/jant/**` — the packaged Jant theme (layouts and static assets)
-- `data/**` — `jant.toml` and `collection_directory.toml` (nav, branding, directory)
+- `data/**` — `jant.toml` (nav, branding, collections directory)
 - `hugo.toml` — site configuration, including the `theme = "jant"` line
 - `.gitignore`, `README.md` — scaffolded by Jant
 - `.jant-sync` — ownership marker

@@ -2199,7 +2199,7 @@ Archive contents:
 - `content/{root-slug}/{reply-slug}/index.md` for each reply (leaf bundle, `build.render = "never"`)
 - `content/{collection-slug}/_index.md` for each collection
 - `content/_index.md`, `content/archive/_index.md`, `content/featured/_index.md`, `content/collections/_index.md`
-- `data/jant.toml` and `data/collection_directory.toml`
+- `data/jant.toml` (nav, branding, collections directory)
 - `themes/jant/layouts/*` and `themes/jant/static/*`
 - `README.md`
 

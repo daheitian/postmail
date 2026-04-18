@@ -336,15 +336,14 @@ export function createExportService(
         });
       }
 
-      // Data files consumed by templates via `.Site.Data.jant` /
-      // `.Site.Data.collection_directory`.
+      // Single data file consumed by templates via `.Site.Data.jant`. The
+      // collection directory lives on the same object as `directory` so
+      // everything Jant owns round-trips in one place.
       exportFiles.push({
         path: "data/jant.toml",
-        content: buildJantDataToml(siteConfig, iconAssets),
-      });
-      exportFiles.push({
-        path: "data/collection_directory.toml",
-        content: buildCollectionDirectoryDataToml(
+        content: buildJantDataToml(
+          siteConfig,
+          iconAssets,
           exportedCollectionDirectoryItems,
         ),
       });
@@ -1242,6 +1241,7 @@ function buildHugoToml(config: SiteConfig): string {
 function buildJantDataToml(
   config: SiteConfig,
   iconAssets: SiteIconAssets,
+  directoryItems: readonly ExportedCollectionDirectoryItem[],
 ): string {
   const footerHtml = config.siteFooter ? renderMarkdown(config.siteFooter) : "";
   const parts: string[] = [
@@ -1296,18 +1296,9 @@ function buildJantDataToml(
     parts.push(`placement = "${escapeTomlString(item.placement ?? "header")}"`);
   }
 
-  return `${parts.join("\n")}\n`;
-}
-
-function buildCollectionDirectoryDataToml(
-  items: readonly ExportedCollectionDirectoryItem[],
-): string {
-  if (items.length === 0) {
-    return "# Collection directory (empty)\n";
-  }
-  const parts: string[] = [];
-  for (const item of items) {
-    parts.push("[[items]]");
+  for (const item of directoryItems) {
+    parts.push("");
+    parts.push("[[directory]]");
     parts.push(`type = "${escapeTomlString(item.type)}"`);
     if (item.type === "collection") {
       parts.push(`slug = "${escapeTomlString(item.slug)}"`);
@@ -1328,9 +1319,9 @@ function buildCollectionDirectoryDataToml(
       parts.push(`label = "${escapeTomlString(item.label)}"`);
       parts.push(`url = "${escapeTomlString(item.url)}"`);
     }
-    parts.push("");
   }
-  return `${parts.join("\n").trimEnd()}\n`;
+
+  return `${parts.join("\n")}\n`;
 }
 
 // ---------------------------------------------------------------------------
@@ -1413,8 +1404,7 @@ content/
     {reply-slug}/
       index.md            — Reply (leaf bundle, not rendered as its own URL)
 data/
-  jant.toml               — Nav items, branding, display preferences
-  collection_directory.toml — Ordered directory with dividers and links
+  jant.toml               — Nav items, branding, display preferences, ordered collections directory
 themes/jant/              — Bundled Hugo theme (overrideable via layouts/ at the site root)
 static/                   — Copy files here to add them to the published site
 \`\`\`
@@ -1422,7 +1412,7 @@ static/                   — Copy files here to add them to the published site
 ## Customizing
 
 - **Site settings** — edit \`hugo.toml\` to change the baseURL, title, or pagination.
-- **Jant metadata** — \`data/jant.toml\` and \`data/collection_directory.toml\` drive nav and the collections directory, and are preserved across round-trip import.
+- **Jant metadata** — \`data/jant.toml\` drives nav and the collections directory, and is preserved across round-trip import.
 - **Styles** — edit \`themes/jant/static/main.css\`, or drop a \`static/main.css\` at the site root to override.
 - **Templates** — add files under \`layouts/\` at the site root to override the bundled theme.
 - **Debugging** — export to a directory with \`jant site export --directory ./my-site\`, then run \`cd my-site && hugo serve\`.

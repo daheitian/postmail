@@ -29,7 +29,7 @@ Use it when you want to:
 
 By default, Jant localizes referenced media into the export so the archive is more self-contained.
 
-When the export comes from Jant, `data/jant.toml` and `data/collection_directory.toml` also keep Jant-specific metadata for round-trip imports, including header navigation and the collections directory structure (collection order, dividers, and custom links).
+When the export comes from Jant, `data/jant.toml` also keeps Jant-specific metadata for round-trip imports, including header navigation and the collections directory structure (collection order, dividers, and custom links).
 
 ### Export Layout
 
@@ -43,8 +43,7 @@ content/                  your posts, collections, sections
     {reply-slug}/
       index.md            reply (leaf bundle, build.render = "never")
 data/
-  jant.toml               nav items, branding, display preferences
-  collection_directory.toml   collections directory with dividers + links
+  jant.toml               nav items, branding, display preferences, collections directory
 themes/jant/              the packaged Jant theme (layouts + static)
 README.md
 .gitignore

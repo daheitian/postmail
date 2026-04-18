@@ -1,7 +1,6 @@
 {{ define "main" }}
-  {{- $directory := .Site.Data.collection_directory -}}
   {{- $items := slice -}}
-  {{- with $directory -}}{{- with .items -}}{{- $items = . -}}{{- end -}}{{- end -}}
+  {{- with .Site.Data.jant -}}{{- with .directory -}}{{- $items = . -}}{{- end -}}{{- end -}}
 
   <section class="section section-collections">
     <header class="section-header">

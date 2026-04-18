@@ -75,7 +75,7 @@ describe("Hugo import CLI helpers", () => {
     ]);
   });
 
-  it("loadSiteConfig merges hugo.toml + data/jant.toml + data/collection_directory.toml", async () => {
+  it("loadSiteConfig merges hugo.toml + data/jant.toml (with inline directory)", async () => {
     await writeFileTree(tempDir, {
       "hugo.toml": [
         'baseURL = "https://example.com/"',
@@ -115,13 +115,11 @@ describe("Hugo import CLI helpers", () => {
         'system_key = "latest"',
         'placement = "header"',
         "",
-      ].join("\n"),
-      "data/collection_directory.toml": [
-        "[[items]]",
+        "[[directory]]",
         'type = "divider"',
         'label = "Writing"',
         "",
-        "[[items]]",
+        "[[directory]]",
         'type = "collection"',
         'slug = "ideas"',
         'title = "Ideas"',

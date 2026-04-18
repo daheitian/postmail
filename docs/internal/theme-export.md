@@ -23,8 +23,7 @@ content/
       index.md               # reply (leaf bundle, build.render = "never")
   {collection-slug}/_index.md
 data/
-  jant.toml                  # nav, branding, display preferences
-  collection_directory.toml  # directory order, dividers, custom links
+  jant.toml                  # nav, branding, display preferences, ordered collections directory
 themes/
   jant/
     theme.toml
@@ -147,7 +146,7 @@ No `aliases` on replies. The reply's URL is redirected by the root's
 | `/{root-slug}/`       | `post/list.html` — thread root + inline replies                   |
 | `/{reply-slug}/`      | `_default/alias.html` — redirects to `/{root-slug}/#{reply-slug}` |
 | `/{collection-slug}/` | `collection/single.html`                                          |
-| `/collections/`       | `collections/list.html` — reads `data/collection_directory.toml`  |
+| `/collections/`       | `collections/list.html` — reads `.Site.Data.jant.directory`       |
 
 The home template handles the pinned prepend in-layout: it iterates
 `where .Site.RegularPages "Params.pinned_at" "ne" nil` first, then
