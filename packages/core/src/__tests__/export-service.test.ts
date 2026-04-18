@@ -561,6 +561,59 @@ describe("createExportService (Hugo)", () => {
     expect(files.get(replyPath)).toEqual(new Uint8Array([9, 9, 9, 9]));
   });
 
+  it("emits poster bytes and poster_src param for video media with posterKey", async () => {
+    const root = makePost({
+      id: "post-root",
+      slug: "with-video",
+      threadId: "post-root",
+    });
+    const videoMedia = makeMedia({
+      id: "med-video",
+      filename: "clip.mp4",
+      mimeType: "video/mp4",
+      storageKey: "media/med-video.mp4",
+      mediaKind: "video",
+      posterKey: "media/posters/med-video.webp",
+    });
+    const storedBytes = new Map<string, Uint8Array>([
+      ["media/med-video.mp4", new Uint8Array([10, 20, 30])],
+      ["media/posters/med-video.webp", new Uint8Array([40, 50, 60, 70])],
+    ]);
+    const storage = {
+      get: async (key: string) => {
+        const bytes = storedBytes.get(key);
+        if (!bytes) return null;
+        return {
+          body: new Blob([new Uint8Array(bytes)]).stream(),
+        };
+      },
+    };
+    const service = createExportService(
+      buildServices({
+        posts: [root],
+        mediaByPost: new Map([["post-root", [videoMedia]]]),
+      }),
+      makeSiteConfig(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      { storage: storage as any },
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    const videoPath = "content/with-video/med-video.mp4";
+    const posterPath = "content/with-video/med-video-poster.webp";
+    expect(files.has(videoPath)).toBe(true);
+    expect(files.has(posterPath)).toBe(true);
+    expect(files.get(videoPath)).toEqual(new Uint8Array([10, 20, 30]));
+    expect(files.get(posterPath)).toEqual(new Uint8Array([40, 50, 60, 70]));
+
+    const { frontMatter } = await parseFrontMatter(
+      files.get("content/with-video/_index.md") as string,
+    );
+    const resource = frontMatter.resources![0];
+    expect(resource.params?.kind).toBe("video");
+    expect(resource.params?.poster_src).toBe("med-video-poster.webp");
+    expect(resource.params?.poster_key).toBe("media/posters/med-video.webp");
+  });
+
   it("skips media byte emission when no storage driver is available", async () => {
     const root = makePost({ id: "post-root", slug: "with-media" });
     const media = makeMedia({

@@ -611,6 +611,8 @@ function mediaToResource(media: Media, resourceName: string): HugoResource {
   if (media.originalName) params["original_name"] = media.originalName;
   if (media.mimeType) params["mime_type"] = media.mimeType;
   if (media.posterKey) params["poster_key"] = media.posterKey;
+  const posterSrc = posterResourceNameForMedia(media);
+  if (posterSrc) params["poster_src"] = posterSrc;
   if (typeof media.size === "number") params.size = media.size;
   if (media.waveform) params.waveform = media.waveform;
   if (media.summary) params.summary = media.summary;
@@ -646,6 +648,19 @@ function resourceFileNameForMedia(media: Media): string {
   const dot = media.filename.lastIndexOf(".");
   const ext = dot >= 0 ? media.filename.slice(dot) : "";
   return `${media.id}${ext}`;
+}
+
+/**
+ * Derive a stable bundle-relative filename for a video/audio media's
+ * poster frame. Returns null when the media has no poster. The ext is
+ * derived from the stored `posterKey` so PNG posters stay PNG and WebP
+ * posters stay WebP round-trip.
+ */
+function posterResourceNameForMedia(media: Media): string | null {
+  if (!media.posterKey) return null;
+  const dot = media.posterKey.lastIndexOf(".");
+  const ext = dot >= 0 ? media.posterKey.slice(dot + 1) : "webp";
+  return `${media.id}-poster.${ext}`;
 }
 
 /**
@@ -690,6 +705,7 @@ async function buildThreadBundle(
   const rootMediaFiles = rootMedia.map((m) => ({
     media: m,
     resourceName: resourceFileNameForMedia(m),
+    posterResourceName: posterResourceNameForMedia(m),
   }));
   const rootResources = rootMediaFiles.map(({ media, resourceName }) =>
     mediaToResource(media, resourceName),
@@ -745,13 +761,21 @@ async function buildThreadBundle(
   // in the post body (via `<img>` / markdown image syntax) by rewriting
   // them into `static/media/`.
   void siteConfig;
-  for (const { media, resourceName } of rootMediaFiles) {
+  for (const { media, resourceName, posterResourceName } of rootMediaFiles) {
     const mediaFile = await readMediaResourceFile(
       storage,
-      media,
+      media.storageKey,
       `content/${rootSlug}/${resourceName}`,
     );
     if (mediaFile) files.push(mediaFile);
+    if (media.posterKey && posterResourceName) {
+      const posterFile = await readMediaResourceFile(
+        storage,
+        media.posterKey,
+        `content/${rootSlug}/${posterResourceName}`,
+      );
+      if (posterFile) files.push(posterFile);
+    }
   }
 
   // Replies as nested leaf bundles.
@@ -761,6 +785,7 @@ async function buildThreadBundle(
     const replyMediaFiles = replyMedia.map((m) => ({
       media: m,
       resourceName: resourceFileNameForMedia(m),
+      posterResourceName: posterResourceNameForMedia(m),
     }));
     const replyResources = replyMediaFiles.map(({ media, resourceName }) =>
       mediaToResource(media, resourceName),
@@ -816,13 +841,21 @@ async function buildThreadBundle(
       content: `${await formatFrontMatter(replyFrontMatter)}\n${replyBody}${replyBody.endsWith("\n") ? "" : "\n"}`,
     });
 
-    for (const { media, resourceName } of replyMediaFiles) {
+    for (const { media, resourceName, posterResourceName } of replyMediaFiles) {
       const mediaFile = await readMediaResourceFile(
         storage,
-        media,
+        media.storageKey,
         `content/${rootSlug}/${replySlug}/${resourceName}`,
       );
       if (mediaFile) files.push(mediaFile);
+      if (media.posterKey && posterResourceName) {
+        const posterFile = await readMediaResourceFile(
+          storage,
+          media.posterKey,
+          `content/${rootSlug}/${replySlug}/${posterResourceName}`,
+        );
+        if (posterFile) files.push(posterFile);
+      }
     }
   }
 
@@ -838,12 +871,12 @@ async function buildThreadBundle(
  */
 async function readMediaResourceFile(
   storage: StorageDriver | null,
-  media: Media,
+  storageKey: string,
   bundlePath: string,
 ): Promise<ExportFile | null> {
   if (!storage) return null;
   try {
-    const bytes = await readStorageObjectBytes(storage, media.storageKey);
+    const bytes = await readStorageObjectBytes(storage, storageKey);
     if (!bytes) return null;
     return { path: bundlePath, content: bytes };
   } catch {

@@ -467,6 +467,47 @@ time {
   border: 1px solid var(--site-media-outline);
 }
 
+.post-card-figure video,
+.reply-figure video,
+.thread-figure video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--media-radius);
+  border: 1px solid var(--site-media-outline);
+  background: #000;
+}
+
+.post-card-figure audio,
+.reply-figure audio,
+.thread-figure audio {
+  display: block;
+  width: 100%;
+}
+
+.post-card-figure-video a {
+  position: relative;
+  display: block;
+}
+
+.post-card-video-badge {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  font-size: var(--type-xs);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.thread-file a,
+.reply-file a {
+  color: var(--site-link);
+  text-decoration: underline;
+}
+
 .post-card-footer {
   font-size: var(--type-sm);
 }

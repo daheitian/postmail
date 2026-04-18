@@ -2,6 +2,8 @@
 {{- $format := $post.Params.format | default "note" -}}
 {{- $summary := $post.Params.summary_text -}}
 {{- $images := where $post.Resources ".Params.kind" "image" -}}
+{{- $videos := where $post.Resources ".Params.kind" "video" -}}
+{{- $audio := where $post.Resources ".Params.kind" "audio" -}}
 <article class="post-card post-card-{{ $format }}" data-format="{{ $format }}" data-slug="{{ $post.Params.slug | default $post.Slug }}">
   <header class="post-card-meta">
     <a class="post-card-permalink" href="{{ $post.RelPermalink }}">
@@ -56,15 +58,44 @@
     {{- end -}}
   {{- end -}}
 
-  {{- with $images -}}
+  {{- if or $images $videos $audio -}}
     <div class="post-card-media">
-      {{- range . -}}
+      {{- range $images -}}
         {{- $alt := .Params.alt | default "" -}}
         <figure class="post-card-figure">
           <img src="{{ .RelPermalink }}" alt="{{ $alt }}"
             {{- with .Params.width }} width="{{ . }}"{{- end -}}
             {{- with .Params.height }} height="{{ . }}"{{- end -}}
             loading="lazy">
+        </figure>
+      {{- end -}}
+      {{- range $videos -}}
+        {{- $poster := "" -}}
+        {{- with .Params.poster_src -}}
+          {{- with $post.Resources.GetMatch . -}}
+            {{- $poster = .RelPermalink -}}
+          {{- end -}}
+        {{- end -}}
+        <figure class="post-card-figure post-card-figure-video">
+          {{- if $poster -}}
+            <a href="{{ $post.RelPermalink }}" aria-label="Play video">
+              <img src="{{ $poster }}" alt=""
+                {{- with .Params.width }} width="{{ . }}"{{- end -}}
+                {{- with .Params.height }} height="{{ . }}"{{- end -}}
+                loading="lazy">
+              <span class="post-card-video-badge" aria-hidden="true">Video</span>
+            </a>
+          {{- else -}}
+            <video src="{{ .RelPermalink }}" controls preload="metadata"
+              {{- with .Params.width }} width="{{ . }}"{{- end -}}
+              {{- with .Params.height }} height="{{ . }}"{{- end -}}
+              playsinline></video>
+          {{- end -}}
+        </figure>
+      {{- end -}}
+      {{- range $audio -}}
+        <figure class="post-card-figure post-card-figure-audio">
+          <audio src="{{ .RelPermalink }}" controls preload="metadata"></audio>
         </figure>
       {{- end -}}
     </div>

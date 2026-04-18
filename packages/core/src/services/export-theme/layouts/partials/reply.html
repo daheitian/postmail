@@ -2,6 +2,9 @@
 {{- $format := $reply.Params.format | default "note" -}}
 {{- $slug := $reply.Params.slug | default $reply.Slug -}}
 {{- $images := where $reply.Resources ".Params.kind" "image" -}}
+{{- $videos := where $reply.Resources ".Params.kind" "video" -}}
+{{- $audio := where $reply.Resources ".Params.kind" "audio" -}}
+{{- $files := where $reply.Resources ".Params.kind" "file" -}}
 <article class="reply reply-{{ $format }}" id="{{ $slug }}" data-format="{{ $format }}" data-slug="{{ $slug }}">
   <header class="reply-meta">
     <a class="reply-anchor" href="#{{ $slug }}">
@@ -51,9 +54,9 @@
     {{ $reply.Content }}
   </div>
 
-  {{- with $images -}}
+  {{- if or $images $videos $audio $files -}}
     <div class="reply-media">
-      {{- range . -}}
+      {{- range $images -}}
         {{- $alt := .Params.alt | default "" -}}
         <figure class="reply-figure">
           <img src="{{ .RelPermalink }}" alt="{{ $alt }}"
@@ -61,6 +64,32 @@
             {{- with .Params.height }} height="{{ . }}"{{- end -}}
             loading="lazy">
         </figure>
+      {{- end -}}
+      {{- range $videos -}}
+        {{- $poster := "" -}}
+        {{- with .Params.poster_src -}}
+          {{- with $reply.Resources.GetMatch . -}}
+            {{- $poster = .RelPermalink -}}
+          {{- end -}}
+        {{- end -}}
+        <figure class="reply-figure reply-figure-video">
+          <video src="{{ .RelPermalink }}" controls preload="metadata"
+            {{- with $poster }} poster="{{ . }}"{{- end -}}
+            {{- with .Params.width }} width="{{ . }}"{{- end -}}
+            {{- with .Params.height }} height="{{ . }}"{{- end -}}
+            playsinline></video>
+        </figure>
+      {{- end -}}
+      {{- range $audio -}}
+        <figure class="reply-figure reply-figure-audio">
+          <audio src="{{ .RelPermalink }}" controls preload="metadata"></audio>
+        </figure>
+      {{- end -}}
+      {{- range $files -}}
+        {{- $label := .Params.original_name | default (path.Base .RelPermalink) -}}
+        <p class="reply-file">
+          <a href="{{ .RelPermalink }}" download>{{ $label }}</a>
+        </p>
       {{- end -}}
     </div>
   {{- end -}}

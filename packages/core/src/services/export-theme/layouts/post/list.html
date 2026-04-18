@@ -3,6 +3,9 @@
   {{- $format := $root.Params.format | default "note" -}}
   {{- $slug := $root.Params.slug | default $root.Slug -}}
   {{- $images := where $root.Resources ".Params.kind" "image" -}}
+  {{- $videos := where $root.Resources ".Params.kind" "video" -}}
+  {{- $audio := where $root.Resources ".Params.kind" "audio" -}}
+  {{- $files := where $root.Resources ".Params.kind" "file" -}}
   <article class="thread thread-{{ $format }}" id="{{ $slug }}" data-format="{{ $format }}" data-slug="{{ $slug }}">
     <header class="thread-header">
       <div class="thread-meta">
@@ -52,9 +55,9 @@
       {{ $root.Content }}
     </div>
 
-    {{- with $images -}}
+    {{- if or $images $videos $audio $files -}}
       <div class="thread-media">
-        {{- range . -}}
+        {{- range $images -}}
           {{- $alt := .Params.alt | default "" -}}
           <figure class="thread-figure">
             <img src="{{ .RelPermalink }}" alt="{{ $alt }}"
@@ -62,6 +65,32 @@
               {{- with .Params.height }} height="{{ . }}"{{- end -}}
               loading="lazy">
           </figure>
+        {{- end -}}
+        {{- range $videos -}}
+          {{- $poster := "" -}}
+          {{- with .Params.poster_src -}}
+            {{- with $root.Resources.GetMatch . -}}
+              {{- $poster = .RelPermalink -}}
+            {{- end -}}
+          {{- end -}}
+          <figure class="thread-figure thread-figure-video">
+            <video src="{{ .RelPermalink }}" controls preload="metadata"
+              {{- with $poster }} poster="{{ . }}"{{- end -}}
+              {{- with .Params.width }} width="{{ . }}"{{- end -}}
+              {{- with .Params.height }} height="{{ . }}"{{- end -}}
+              playsinline></video>
+          </figure>
+        {{- end -}}
+        {{- range $audio -}}
+          <figure class="thread-figure thread-figure-audio">
+            <audio src="{{ .RelPermalink }}" controls preload="metadata"></audio>
+          </figure>
+        {{- end -}}
+        {{- range $files -}}
+          {{- $label := .Params.original_name | default (path.Base .RelPermalink) -}}
+          <p class="thread-file">
+            <a href="{{ .RelPermalink }}" download>{{ $label }}</a>
+          </p>
         {{- end -}}
       </div>
     {{- end -}}
