@@ -19,20 +19,18 @@ collections:
     collected_at: "2026-04-03T02:30:54.000Z"
     position: 1
     pinned_at: null
-resources:
-  - src: "med_01kn8jvq58enf98v538w5vsqp4.webp"
-    name: "med_01kn8jvq58enf98v538w5vsqp4"
-    params:
-      kind: "image"
-      position: 3055
-      width: 1200
-      height: 900
-      original_name: "rainy-crosswalk.webp"
-      mime_type: "image/webp"
-      size: 14094
-      media_id: "med_01kn8jvq58enf98v538w5vsqp4"
-      storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jvq58enf98v538w5vsqp4.webp"
-      provider: "r2"
+media:
+  - id: "med_01kn8jvq58enf98v538w5vsqp4"
+    kind: "image"
+    src: "/media/med_01kn8jvq58enf98v538w5vsqp4.webp"
+    position: 3055
+    width: 1200
+    height: 900
+    original_name: "rainy-crosswalk.webp"
+    mime_type: "image/webp"
+    size: 14094
+    provider: "r2"
+    storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jvq58enf98v538w5vsqp4.webp"
 ---
 
 Everything sharpens after a light shower: the crosswalk paint, the leaves stuck to the curb, the bakery sign that usually disappears into the block.

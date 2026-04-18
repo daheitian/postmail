@@ -27,24 +27,39 @@ export interface HugoCollectionRef {
 }
 
 /**
- * Hugo page-resource descriptor. Mirrors `resources:` front matter: a
- * relative `src` plus optional `title`, `name`, and `params` block. Jant
- * carries media metadata (alt / width / height / blurhash / position /
- * kind) inside `params` so it survives round-trip.
+ * Jant media attachment descriptor. Stored flat inside the `media:` front-
+ * matter array. `src` is either:
+ *   - a site-relative path (e.g. `/media/{id}.webp`) when the bytes are
+ *     bundled under `static/media/` in the exported site, or
+ *   - an absolute URL (e.g. `https://cdn.example.com/...`) when the media
+ *     provider has a reachable public URL and we link rather than re-
+ *     bundle the bytes.
+ *
+ * `poster` follows the same rule for video poster frames. Round-trip
+ * fields (`provider`, `storage_key`, `poster_key`) preserve the original
+ * provider coordinates so re-imports can rebuild the media record.
  */
-export interface HugoResource {
+export interface JantMedia {
+  id: string;
+  kind: "image" | "video" | "audio" | "document" | "file";
   src: string;
-  name?: string;
-  title?: string;
-  params?: {
-    kind?: "image" | "video" | "audio" | "document" | "file";
-    alt?: string;
-    width?: number;
-    height?: number;
-    blurhash?: string;
-    position?: number;
-    [key: string]: unknown;
-  };
+  alt?: string;
+  width?: number;
+  height?: number;
+  blurhash?: string;
+  position?: number;
+  poster?: string;
+  original_name?: string;
+  mime_type?: string;
+  size?: number;
+  duration_seconds?: number;
+  waveform?: string;
+  summary?: string;
+  chars?: number;
+  provider?: string;
+  storage_key?: string;
+  poster_key?: string;
+  [key: string]: unknown;
 }
 
 /**
@@ -94,7 +109,7 @@ export interface HugoFrontMatter {
 
   // Memberships + attachments
   collections?: HugoCollectionRef[];
-  resources?: HugoResource[];
+  media?: JantMedia[];
 
   // Escape hatch for page-type-specific keys (home default view, etc.)
   [key: string]: unknown;
@@ -184,7 +199,7 @@ const FRONT_MATTER_KEY_ORDER: readonly string[] = [
   // Bookkeeping / attachments
   "root_aliases",
   "collections",
-  "resources",
+  "media",
 ];
 
 /**

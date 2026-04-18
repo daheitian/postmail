@@ -2,7 +2,7 @@
  * Round-trip test for the Hugo export + import pipeline.
  *
  * Builds a small fixture (multi-post thread with reply, featured + pinned,
- * collection membership with explicit position, resources on both root and
+ * collection membership with explicit position, media on both root and
  * reply), runs the export service, walks the emitted tree with the import
  * CLI's `walkHugoContent` helper, and asserts that every front-matter value
  * survives intact. Then re-exports on the same fixture and verifies the
@@ -106,7 +106,7 @@ describe("export → import round-trip", () => {
     await rm(tempDir, { recursive: true, force: true });
   });
 
-  it("preserves every front-matter value on a thread with resources, collection membership, and pinned/featured flags", async () => {
+  it("preserves every front-matter value on a thread with media, collection membership, and pinned/featured flags", async () => {
     const collection = makeCollection({
       id: "col-1",
       slug: "ideas",
@@ -177,13 +177,11 @@ describe("export → import round-trip", () => {
     const files = await exportService.generateHugoFiles();
     await writeExportToDir(files, tempDir);
 
-    // Fabricate the resource files so walkHugoContent's resource path checks
-    // match real file presence (mediaSpecFromResource stats the path).
-    await writeFile(join(tempDir, "content/walk-notes/med-root.webp"), "root");
-    await writeFile(
-      join(tempDir, "content/walk-notes/walk-notes-reply/med-reply.webp"),
-      "reply",
-    );
+    // Fabricate the media files under static/ so the import walker's disk
+    // lookups (mediaSpecFromJantMedia) find real bytes.
+    await mkdir(join(tempDir, "static", "media"), { recursive: true });
+    await writeFile(join(tempDir, "static/media/med-root.webp"), "root");
+    await writeFile(join(tempDir, "static/media/med-reply.webp"), "reply");
 
     // Walk with the import helper.
     const walked = await importTestHelpers.walkHugoContent(tempDir);
@@ -210,19 +208,20 @@ describe("export → import round-trip", () => {
       pinned_at: new Date(1773050000 * 1000).toISOString(),
     });
 
-    // Resources with full params.
-    const rootResource = rootFm.resources?.[0];
-    expect(rootResource?.src).toBe("med-root.webp");
-    expect(rootResource?.params?.alt).toBe("Hero image");
-    expect(rootResource?.params?.width).toBe(1600);
-    expect(rootResource?.params?.height).toBe(900);
-    expect(rootResource?.params?.blurhash).toBe("LEHV6nWB2yk8pyo0adR*.7kCMdnj");
+    // Flat media: entries with full metadata.
+    const rootMediaEntry = rootFm.media?.[0];
+    expect(rootMediaEntry?.id).toBe("med-root");
+    expect(rootMediaEntry?.src).toBe("/media/med-root.webp");
+    expect(rootMediaEntry?.alt).toBe("Hero image");
+    expect(rootMediaEntry?.width).toBe(1600);
+    expect(rootMediaEntry?.height).toBe(900);
+    expect(rootMediaEntry?.blurhash).toBe("LEHV6nWB2yk8pyo0adR*.7kCMdnj");
 
-    // Reply bundle carries build.render: never and its own resources.
+    // Reply bundle carries build.render: never and its own media entries.
     const replyFm = rootBundle.children[0].frontMatter;
     expect(replyFm.build).toEqual({ render: "never", list: "local" });
-    expect(replyFm.resources?.[0].src).toBe("med-reply.webp");
-    expect(replyFm.resources?.[0].params?.alt).toBe("Detail");
+    expect(replyFm.media?.[0].src).toBe("/media/med-reply.webp");
+    expect(replyFm.media?.[0].alt).toBe("Detail");
 
     // The import CLI's memberships resolver maps the slug back to the id.
     const slugToId = new Map([["ideas", "col-1"]]);

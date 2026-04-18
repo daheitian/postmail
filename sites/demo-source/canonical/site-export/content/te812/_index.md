@@ -21,20 +21,18 @@ collections:
     collected_at: "2026-04-03T02:30:56.000Z"
     position: 1
     pinned_at: null
-resources:
-  - src: "med_01kn8jvsaeenf98v6ct4gjzppc.webp"
-    name: "med_01kn8jvsaeenf98v6ct4gjzppc"
-    params:
-      kind: "image"
-      position: 3055
-      width: 1200
-      height: 900
-      original_name: "tomato-soup.webp"
-      mime_type: "image/webp"
-      size: 17382
-      media_id: "med_01kn8jvsaeenf98v6ct4gjzppc"
-      storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jvsaeenf98v6ct4gjzppc.webp"
-      provider: "r2"
+media:
+  - id: "med_01kn8jvsaeenf98v6ct4gjzppc"
+    kind: "image"
+    src: "/media/med_01kn8jvsaeenf98v6ct4gjzppc.webp"
+    position: 3055
+    width: 1200
+    height: 900
+    original_name: "tomato-soup.webp"
+    mime_type: "image/webp"
+    size: 17382
+    provider: "r2"
+    storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jvsaeenf98v6ct4gjzppc.webp"
 ---
 
 Made tomato soup because the weather could not decide what month it wanted to be.

@@ -2,7 +2,7 @@
  * Tests for the Hugo import CLI helpers.
  *
  * Covers the walker (`walkHugoContent`), site-config merger
- * (`loadSiteConfig`), media resolver (`mediaSpecFromResource`), collection
+ * (`loadSiteConfig`), media resolver (`mediaSpecFromJantMedia`), collection
  * membership decoder, and the post-payload builder. A hand-authored Hugo
  * export tree is written to a temp dir per test so we exercise real fs
  * paths the CLI uses at runtime.
@@ -17,7 +17,7 @@ import { __test__ } from "../../bin/commands/import-site.js";
 const {
   walkHugoContent,
   loadSiteConfig,
-  mediaSpecFromResource,
+  mediaSpecFromJantMedia,
   resolveCollectionMemberships,
   buildPostPayloadFromBundle,
   getRootAliasPathsForImport,
@@ -141,31 +141,28 @@ describe("Hugo import CLI helpers", () => {
     expect(siteConfig.extra.jant.collections_directory).toHaveLength(2);
   });
 
-  it("mediaSpecFromResource builds a spec pointing at the bundle-relative bytes", async () => {
-    const bundleDir = join(tempDir, "content/hello");
-    await mkdir(bundleDir, { recursive: true });
-    await writeFile(join(bundleDir, "med-1.webp"), "PHOTO");
+  it("mediaSpecFromJantMedia resolves site-relative src under static/", async () => {
+    await mkdir(join(tempDir, "static", "media"), { recursive: true });
+    await writeFile(join(tempDir, "static/media/med-1.webp"), "PHOTO");
 
-    const spec = await mediaSpecFromResource(
+    const spec = await mediaSpecFromJantMedia(
       {
-        src: "med-1.webp",
-        name: "med-1",
-        params: {
-          kind: "image",
-          alt: "Alt text",
-          width: 800,
-          height: 600,
-          blurhash: "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
-          original_name: "photo.webp",
-          mime_type: "image/webp",
-        },
+        id: "med-1",
+        src: "/media/med-1.webp",
+        kind: "image",
+        alt: "Alt text",
+        width: 800,
+        height: 600,
+        blurhash: "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+        original_name: "photo.webp",
+        mime_type: "image/webp",
       },
-      bundleDir,
+      tempDir,
     );
     expect(spec).toMatchObject({
       kind: "image",
-      src: "med-1.webp",
-      srcFilePath: join(bundleDir, "med-1.webp"),
+      src: "/media/med-1.webp",
+      srcFilePath: join(tempDir, "static/media/med-1.webp"),
       originalName: "photo.webp",
       mimeType: "image/webp",
       alt: "Alt text",
@@ -175,13 +172,26 @@ describe("Hugo import CLI helpers", () => {
     });
   });
 
-  it("mediaSpecFromResource returns null when the referenced file is missing", async () => {
-    const bundleDir = join(tempDir, "content/missing");
-    await mkdir(bundleDir, { recursive: true });
+  it("mediaSpecFromJantMedia passes through absolute URLs without a disk lookup", async () => {
+    const spec = await mediaSpecFromJantMedia(
+      {
+        id: "med-cdn",
+        src: "https://cdn.example.com/media/med-cdn.webp",
+        kind: "image",
+      },
+      tempDir,
+    );
+    expect(spec).toMatchObject({
+      kind: "image",
+      src: "https://cdn.example.com/media/med-cdn.webp",
+      srcFilePath: null,
+    });
+  });
 
-    const spec = await mediaSpecFromResource(
-      { src: "nope.webp", params: { kind: "image" } },
-      bundleDir,
+  it("mediaSpecFromJantMedia returns null when a relative src has no file on disk", async () => {
+    const spec = await mediaSpecFromJantMedia(
+      { id: "med-missing", src: "/media/nope.webp", kind: "image" },
+      tempDir,
     );
     expect(spec).toBeNull();
   });

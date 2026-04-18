@@ -1,7 +1,10 @@
 {{- $post := . -}}
 {{- $format := $post.Params.format | default "note" -}}
 {{- $summary := $post.Params.summary_text -}}
-{{- $images := where $post.Resources ".Params.kind" "image" -}}
+{{- $media := $post.Params.media | default slice -}}
+{{- $images := where $media "kind" "image" -}}
+{{- $videos := where $media "kind" "video" -}}
+{{- $audio := where $media "kind" "audio" -}}
 <article class="post-card post-card-{{ $format }}" data-format="{{ $format }}" data-slug="{{ $post.Params.slug | default $post.Slug }}">
   <header class="post-card-meta">
     <a class="post-card-permalink" href="{{ $post.RelPermalink }}">
@@ -56,15 +59,38 @@
     {{- end -}}
   {{- end -}}
 
-  {{- with $images -}}
+  {{- if or $images $videos $audio -}}
     <div class="post-card-media">
-      {{- range . -}}
-        {{- $alt := .Params.alt | default "" -}}
+      {{- range $images -}}
+        {{- $alt := .alt | default "" -}}
         <figure class="post-card-figure">
-          <img src="{{ .RelPermalink }}" alt="{{ $alt }}"
-            {{- with .Params.width }} width="{{ . }}"{{- end -}}
-            {{- with .Params.height }} height="{{ . }}"{{- end -}}
+          <img src="{{ .src }}" alt="{{ $alt }}"
+            {{- with .width }} width="{{ . }}"{{- end -}}
+            {{- with .height }} height="{{ . }}"{{- end -}}
             loading="lazy">
+        </figure>
+      {{- end -}}
+      {{- range $videos -}}
+        <figure class="post-card-figure post-card-figure-video">
+          {{- if .poster -}}
+            <a href="{{ $post.RelPermalink }}" aria-label="Play video">
+              <img src="{{ .poster }}" alt=""
+                {{- with .width }} width="{{ . }}"{{- end -}}
+                {{- with .height }} height="{{ . }}"{{- end -}}
+                loading="lazy">
+              <span class="post-card-video-badge" aria-hidden="true">Video</span>
+            </a>
+          {{- else -}}
+            <video src="{{ .src }}" controls preload="metadata"
+              {{- with .width }} width="{{ . }}"{{- end -}}
+              {{- with .height }} height="{{ . }}"{{- end -}}
+              playsinline></video>
+          {{- end -}}
+        </figure>
+      {{- end -}}
+      {{- range $audio -}}
+        <figure class="post-card-figure post-card-figure-audio">
+          <audio src="{{ .src }}" controls preload="metadata"></audio>
         </figure>
       {{- end -}}
     </div>

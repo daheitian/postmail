@@ -470,7 +470,7 @@ describe("createExportService (Hugo)", () => {
     ]);
   });
 
-  it("emits resources[] for each media attached to a post", async () => {
+  it("emits media[] front matter for each attachment on a post", async () => {
     const root = makePost({ id: "post-root", slug: "with-media" });
     const media = makeMedia({
       id: "med-1",
@@ -491,18 +491,20 @@ describe("createExportService (Hugo)", () => {
     const { frontMatter } = await parseFrontMatter(
       files.get("content/with-media/_index.md") as string,
     );
-    expect(Array.isArray(frontMatter.resources)).toBe(true);
-    const resource = frontMatter.resources![0];
-    expect(resource.src).toBe("med-1.webp");
-    expect(resource.name).toBe("med-1");
-    expect(resource.params?.kind).toBe("image");
-    expect(resource.params?.alt).toBe("A red lantern");
-    expect(resource.params?.width).toBe(1024);
-    expect(resource.params?.height).toBe(768);
-    expect(resource.params?.blurhash).toBe("L6PZfSi_.AyE_3t7t7R**0o#DgR4");
+    expect(Array.isArray(frontMatter.media)).toBe(true);
+    const entry = frontMatter.media![0];
+    expect(entry.id).toBe("med-1");
+    expect(entry.kind).toBe("image");
+    expect(entry.src).toBe("/media/med-1.webp");
+    expect(entry.alt).toBe("A red lantern");
+    expect(entry.width).toBe(1024);
+    expect(entry.height).toBe(768);
+    expect(entry.blurhash).toBe("L6PZfSi_.AyE_3t7t7R**0o#DgR4");
+    expect(entry.provider).toBe("r2");
+    expect(entry.storage_key).toBe("media/med-1.webp");
   });
 
-  it("bundles media bytes into root and reply bundle dirs when a storage driver is provided", async () => {
+  it("bundles media bytes under static/media/ for root and reply media", async () => {
     const root = makePost({
       id: "post-root",
       slug: "with-media",
@@ -553,15 +555,20 @@ describe("createExportService (Hugo)", () => {
       { storage: storage as any },
     );
     const files = filesToMap(await service.generateHugoFiles());
-    const rootPath = "content/with-media/med-root.webp";
-    const replyPath = "content/with-media/reply-one/med-reply.png";
-    expect(files.has(rootPath)).toBe(true);
-    expect(files.has(replyPath)).toBe(true);
-    expect(files.get(rootPath)).toEqual(new Uint8Array([1, 2, 3]));
-    expect(files.get(replyPath)).toEqual(new Uint8Array([9, 9, 9, 9]));
+    expect(files.has("static/media/med-root.webp")).toBe(true);
+    expect(files.has("static/media/med-reply.png")).toBe(true);
+    expect(files.get("static/media/med-root.webp")).toEqual(
+      new Uint8Array([1, 2, 3]),
+    );
+    expect(files.get("static/media/med-reply.png")).toEqual(
+      new Uint8Array([9, 9, 9, 9]),
+    );
+    // Sanity: the old per-bundle paths are gone.
+    expect(files.has("content/with-media/med-root.webp")).toBe(false);
+    expect(files.has("content/with-media/reply-one/med-reply.png")).toBe(false);
   });
 
-  it("emits poster bytes and poster_src param for video media with posterKey", async () => {
+  it("emits poster bytes and poster field for video media with posterKey", async () => {
     const root = makePost({
       id: "post-root",
       slug: "with-video",
@@ -598,20 +605,56 @@ describe("createExportService (Hugo)", () => {
       { storage: storage as any },
     );
     const files = filesToMap(await service.generateHugoFiles());
-    const videoPath = "content/with-video/med-video.mp4";
-    const posterPath = "content/with-video/med-video-poster.webp";
-    expect(files.has(videoPath)).toBe(true);
-    expect(files.has(posterPath)).toBe(true);
-    expect(files.get(videoPath)).toEqual(new Uint8Array([10, 20, 30]));
-    expect(files.get(posterPath)).toEqual(new Uint8Array([40, 50, 60, 70]));
+    expect(files.has("static/media/med-video.mp4")).toBe(true);
+    expect(files.has("static/media/med-video-poster.webp")).toBe(true);
+    expect(files.get("static/media/med-video.mp4")).toEqual(
+      new Uint8Array([10, 20, 30]),
+    );
+    expect(files.get("static/media/med-video-poster.webp")).toEqual(
+      new Uint8Array([40, 50, 60, 70]),
+    );
 
     const { frontMatter } = await parseFrontMatter(
       files.get("content/with-video/_index.md") as string,
     );
-    const resource = frontMatter.resources![0];
-    expect(resource.params?.kind).toBe("video");
-    expect(resource.params?.poster_src).toBe("med-video-poster.webp");
-    expect(resource.params?.poster_key).toBe("media/posters/med-video.webp");
+    const entry = frontMatter.media![0];
+    expect(entry.kind).toBe("video");
+    expect(entry.src).toBe("/media/med-video.mp4");
+    expect(entry.poster).toBe("/media/med-video-poster.webp");
+    expect(entry.poster_key).toBe("media/posters/med-video.webp");
+  });
+
+  it("links to provider public URL instead of inlining bytes when configured", async () => {
+    const root = makePost({ id: "post-root", slug: "with-cdn" });
+    const media = makeMedia({
+      id: "med-cdn",
+      filename: "cdn.webp",
+      storageKey: "media/med-cdn.webp",
+    });
+    const storage = {
+      // Should NOT be called — public URL is present, no inlining needed.
+      get: async () => {
+        throw new Error("storage.get should not be called when linking");
+      },
+    };
+    const service = createExportService(
+      buildServices({
+        posts: [root],
+        mediaByPost: new Map([["post-root", [media]]]),
+      }),
+      makeSiteConfig({ r2PublicUrl: "https://cdn.example.com" }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      { storage: storage as any },
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    expect(files.has("static/media/med-cdn.webp")).toBe(false);
+    const { frontMatter } = await parseFrontMatter(
+      files.get("content/with-cdn/_index.md") as string,
+    );
+    const entry = frontMatter.media![0];
+    expect(entry.src).toBe("https://cdn.example.com/media/med-cdn.webp");
+    expect(entry.storage_key).toBe("media/med-cdn.webp");
+    expect(entry.provider).toBe("r2");
   });
 
   it("skips media byte emission when no storage driver is available", async () => {
@@ -627,10 +670,10 @@ describe("createExportService (Hugo)", () => {
         mediaByPost: new Map([["post-root", [media]]]),
       }),
       makeSiteConfig(),
-      // No storage passed — front matter still lists the resource but no
+      // No storage passed — front matter still lists the media but no
       // bytes are emitted.
     );
     const files = filesToMap(await service.generateHugoFiles());
-    expect(files.has("content/with-media/med-x.webp")).toBe(false);
+    expect(files.has("static/media/med-x.webp")).toBe(false);
   });
 });

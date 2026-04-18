@@ -433,63 +433,82 @@ function normalizeImportedBodySegment(markdown) {
   };
 }
 
+function isAbsoluteUrl(value) {
+  return typeof value === "string" && /^https?:\/\//i.test(value);
+}
+
 /**
- * Build a media spec for upload from a Hugo `resources:` front-matter entry.
- * Hugo stores the bytes as a sibling page-resource file referenced by
- * `src` (relative to the bundle directory); Jant's media metadata lives
- * inside `params`. Returns `null` if the entry does not describe a
- * fetchable resource.
+ * Resolve a `media:` entry's `src` or `poster` reference to a local disk
+ * path when the export bundled the bytes under `static/`. Absolute URLs
+ * (remote-linked media) skip the disk lookup — the uploader fetches them
+ * directly.
  */
-async function mediaSpecFromResource(resource, bundleDir) {
-  if (!resource || typeof resource.src !== "string" || !resource.src.trim()) {
+async function resolveJantMediaDiskPath(ref, sourceRootDir) {
+  if (typeof ref !== "string" || !ref.trim()) return null;
+  if (isAbsoluteUrl(ref)) return null;
+  const normalized = ref.startsWith("/") ? ref.slice(1) : ref;
+  const fullPath = join(sourceRootDir, "static", normalized);
+  const fileStat = await stat(fullPath).catch(() => null);
+  return fileStat?.isFile() ? fullPath : null;
+}
+
+/**
+ * Build a media spec for upload from a flat `media:` front-matter entry.
+ *
+ * The entry's `src` is either a site-relative path
+ * (`/media/{id}.webp` — bytes live under `static/` in the exported site)
+ * or an absolute public URL (the exporter linked to an existing
+ * R2/S3/local-proxy host rather than re-bundling the bytes). Poster
+ * frames follow the same rule. The import uploader already knows how
+ * to handle both forms via `readImportAsset`.
+ */
+async function mediaSpecFromJantMedia(entry, sourceRootDir) {
+  if (!entry || typeof entry.src !== "string" || !entry.src.trim()) {
     return null;
   }
 
-  const params = resource.params ?? {};
-  const kind = typeof params.kind === "string" ? params.kind : undefined;
-  const localPath = join(bundleDir, resource.src);
-  const fileStat = await stat(localPath).catch(() => null);
-  if (!fileStat?.isFile()) {
+  const srcFilePath = await resolveJantMediaDiskPath(entry.src, sourceRootDir);
+  if (!srcFilePath && !isAbsoluteUrl(entry.src)) {
+    // Relative src but file not on disk — can't upload.
     return null;
   }
+
+  const poster =
+    typeof entry.poster === "string" && entry.poster.trim()
+      ? entry.poster
+      : null;
+  const posterFilePath = poster
+    ? await resolveJantMediaDiskPath(poster, sourceRootDir)
+    : null;
 
   const originalName =
-    typeof params.original_name === "string" && params.original_name.trim()
-      ? params.original_name
-      : basename(resource.src);
-
-  const posterRel =
-    typeof params.poster_key === "string" && params.poster_key.trim()
-      ? params.poster_key
-      : null;
-  let posterFilePath = null;
-  if (posterRel) {
-    const posterFull = join(bundleDir, posterRel);
-    const posterStat = await stat(posterFull).catch(() => null);
-    if (posterStat?.isFile()) {
-      posterFilePath = posterFull;
-    }
-  }
+    typeof entry.original_name === "string" && entry.original_name.trim()
+      ? entry.original_name
+      : srcFilePath
+        ? basename(srcFilePath)
+        : undefined;
 
   return {
-    kind,
-    src: resource.src,
-    srcFilePath: localPath,
-    poster: posterRel,
+    kind: typeof entry.kind === "string" ? entry.kind : undefined,
+    src: entry.src,
+    srcFilePath,
+    poster,
     posterFilePath,
-    mimeType: typeof params.mime_type === "string" ? params.mime_type : undefined,
+    mimeType:
+      typeof entry.mime_type === "string" ? entry.mime_type : undefined,
     originalName,
-    size: typeof params.size === "number" ? params.size : undefined,
-    width: typeof params.width === "number" ? params.width : undefined,
-    height: typeof params.height === "number" ? params.height : undefined,
-    alt: typeof params.alt === "string" ? params.alt : undefined,
-    position: typeof params.position === "string" ? params.position : undefined,
+    size: typeof entry.size === "number" ? entry.size : undefined,
+    width: typeof entry.width === "number" ? entry.width : undefined,
+    height: typeof entry.height === "number" ? entry.height : undefined,
+    alt: typeof entry.alt === "string" ? entry.alt : undefined,
+    position:
+      typeof entry.position === "string" ? entry.position : undefined,
     blurhash:
-      typeof params.blurhash === "string" ? params.blurhash : undefined,
+      typeof entry.blurhash === "string" ? entry.blurhash : undefined,
     waveform:
-      typeof params.waveform === "string" ? params.waveform : undefined,
-    summary: typeof params.summary === "string" ? params.summary : undefined,
-    chars: typeof params.chars === "number" ? params.chars : undefined,
+      typeof entry.waveform === "string" ? entry.waveform : undefined,
+    summary: typeof entry.summary === "string" ? entry.summary : undefined,
+    chars: typeof entry.chars === "number" ? entry.chars : undefined,
   };
 }
 
@@ -695,9 +714,11 @@ async function uploadMediaList(mediaSpecs, target, siteConfig, sourceRootDir) {
 }
 
 /**
- * Upload each Hugo page-resource spec referenced by a bundle's front matter.
- * Returns both a `urlMap` (for rewriting in-body references) and an ordered
- * `mediaIds` list suitable for attaching to the created post.
+ * Upload each media spec referenced by a bundle's front matter. Accepts
+ * both site-relative entries (bytes on disk under `static/`, via
+ * `srcFilePath`) and absolute-URL entries (remote-linked media — the
+ * uploader fetches the URL). Returns a `urlMap` (for rewriting in-body
+ * references) and an ordered `mediaIds` list for post attachment.
  */
 async function uploadBundleResources(resourceSpecs, target) {
   const urlMap = new Map();
@@ -705,7 +726,8 @@ async function uploadBundleResources(resourceSpecs, target) {
   let uploaded = 0;
 
   for (const spec of resourceSpecs) {
-    if (!spec || !spec.srcFilePath) continue;
+    if (!spec) continue;
+    if (!spec.srcFilePath && !isAbsoluteUrl(spec.src)) continue;
     const result = await target.uploadMedia(spec);
     if (!result) continue;
     urlMap.set(spec.src, result.url);
@@ -1933,7 +1955,7 @@ export const __test__ = {
   getIncompleteSetupError,
   loadSiteConfig,
   walkHugoContent,
-  mediaSpecFromResource,
+  mediaSpecFromJantMedia,
   resolveCollectionMemberships,
   buildPostPayloadFromBundle,
 };
@@ -2242,11 +2264,13 @@ export async function run(argv) {
       let rootBody = normalizedRoot.markdown;
       let importedAttachments = [];
 
-      // Upload page-resource media declared in `resources:` front matter.
+      // Upload media declared in flat `media:` front matter. Each entry's
+      // `src` is either a site-relative path (bytes under `static/`) or an
+      // absolute URL (media still served by the original provider).
       const rootResourceSpecs = [];
-      if (Array.isArray(rootFm.resources)) {
-        for (const resource of rootFm.resources) {
-          const spec = await mediaSpecFromResource(resource, rootBundle.dir);
+      if (Array.isArray(rootFm.media)) {
+        for (const entry of rootFm.media) {
+          const spec = await mediaSpecFromJantMedia(entry, sourceRootDir);
           if (spec) rootResourceSpecs.push(spec);
         }
       }
@@ -2367,12 +2391,9 @@ export async function run(argv) {
         let replyAttachments = [];
 
         const replyResourceSpecs = [];
-        if (Array.isArray(replyFm.resources)) {
-          for (const resource of replyFm.resources) {
-            const spec = await mediaSpecFromResource(
-              resource,
-              replyBundle.dir,
-            );
+        if (Array.isArray(replyFm.media)) {
+          for (const entry of replyFm.media) {
+            const spec = await mediaSpecFromJantMedia(entry, sourceRootDir);
             if (spec) replyResourceSpecs.push(spec);
           }
         }

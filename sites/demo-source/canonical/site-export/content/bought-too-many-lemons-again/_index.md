@@ -14,20 +14,18 @@ collections:
     collected_at: "2026-04-03T02:30:34.000Z"
     position: 0
     pinned_at: null
-resources:
-  - src: "med_01kn8jv452enf98trbkwrvhvgd.webp"
-    name: "med_01kn8jv452enf98trbkwrvhvgd"
-    params:
-      kind: "image"
-      position: 3055
-      width: 1200
-      height: 900
-      original_name: "market-lemons.webp"
-      mime_type: "image/webp"
-      size: 16484
-      media_id: "med_01kn8jv452enf98trbkwrvhvgd"
-      storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jv452enf98trbkwrvhvgd.webp"
-      provider: "r2"
+media:
+  - id: "med_01kn8jv452enf98trbkwrvhvgd"
+    kind: "image"
+    src: "/media/med_01kn8jv452enf98trbkwrvhvgd.webp"
+    position: 3055
+    width: 1200
+    height: 900
+    original_name: "market-lemons.webp"
+    mime_type: "image/webp"
+    size: 16484
+    provider: "r2"
+    storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jv452enf98trbkwrvhvgd.webp"
 ---
 
 Came home from the market with a bag of lemons, parsley, eggs, and zero idea what dinner was going to be.

@@ -74,5 +74,5 @@ static/                   — Copy files here to add them to the published site
 
 - Each thread is a Hugo branch bundle. Replies live as nested leaf bundles with `build.render = "never"` so they do not produce standalone URLs; they render inside the thread page.
 - `/{reply-slug}/` URLs are preserved via `aliases:` on the root post, so old links still land on the right thread anchor.
-- Media is exported as Hugo page resources (`resources:` front matter); their bytes are localized by the Jant CLI when you pass the default `--localize-media` flag.
+- Media is emitted under `static/media/{id}.ext` and referenced from a flat `media:` array on each post. When a storage provider has a configured public URL (R2/S3/local proxy), the exporter links to the provider URL instead of re-bundling the bytes.
 - Posts with `draft: true` in front matter are only built when you pass `--buildDrafts` to `hugo` / `hugo serve`.

@@ -20,7 +20,7 @@
     {{- if and (eq $paginator.PageNumber 1) $pinned -}}
       <div class="post-list post-list-pinned" aria-label="Pinned posts">
         {{- range $pinned -}}
-          {{ partial "post-card.html" . }}
+          {{ partial "thread-preview.html" . }}
         {{- end -}}
       </div>
     {{- end -}}
@@ -28,7 +28,7 @@
     {{- if $paginator.Pages -}}
       <div class="post-list post-list-main">
         {{- range $paginator.Pages -}}
-          {{ partial "post-card.html" . }}
+          {{ partial "thread-preview.html" . }}
         {{- end -}}
       </div>
       {{ partial "pagination.html" $paginator }}

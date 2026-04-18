@@ -11,20 +11,18 @@ format: "note"
 status: "published"
 visibility: "public"
 summary_text: "Thirty minutes later: laptop, lamp, notebook, one glass of water. That is apparently my ideal system."
-resources:
-  - src: "med_01kn8jve5nenf98tzap11gpxzr.webp"
-    name: "med_01kn8jve5nenf98tzap11gpxzr"
-    params:
-      kind: "image"
-      position: 3055
-      width: 1200
-      height: 900
-      original_name: "desk-after.webp"
-      mime_type: "image/webp"
-      size: 14120
-      media_id: "med_01kn8jve5nenf98tzap11gpxzr"
-      storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jve5nenf98tzap11gpxzr.webp"
-      provider: "r2"
+media:
+  - id: "med_01kn8jve5nenf98tzap11gpxzr"
+    kind: "image"
+    src: "/media/med_01kn8jve5nenf98tzap11gpxzr.webp"
+    position: 3055
+    width: 1200
+    height: 900
+    original_name: "desk-after.webp"
+    mime_type: "image/webp"
+    size: 14120
+    provider: "r2"
+    storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jve5nenf98tzap11gpxzr.webp"
 ---
 
 Thirty minutes later: laptop, lamp, notebook, one glass of water. That is apparently my ideal system.

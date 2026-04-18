@@ -2,7 +2,11 @@
   {{- $root := . -}}
   {{- $format := $root.Params.format | default "note" -}}
   {{- $slug := $root.Params.slug | default $root.Slug -}}
-  {{- $images := where $root.Resources ".Params.kind" "image" -}}
+  {{- $media := $root.Params.media | default slice -}}
+  {{- $images := where $media "kind" "image" -}}
+  {{- $videos := where $media "kind" "video" -}}
+  {{- $audio := where $media "kind" "audio" -}}
+  {{- $files := where $media "kind" "file" -}}
   <article class="thread thread-{{ $format }}" id="{{ $slug }}" data-format="{{ $format }}" data-slug="{{ $slug }}">
     <header class="thread-header">
       <div class="thread-meta">
@@ -52,16 +56,36 @@
       {{ $root.Content }}
     </div>
 
-    {{- with $images -}}
+    {{- if or $images $videos $audio $files -}}
       <div class="thread-media">
-        {{- range . -}}
-          {{- $alt := .Params.alt | default "" -}}
+        {{- range $images -}}
+          {{- $alt := .alt | default "" -}}
           <figure class="thread-figure">
-            <img src="{{ .RelPermalink }}" alt="{{ $alt }}"
-              {{- with .Params.width }} width="{{ . }}"{{- end -}}
-              {{- with .Params.height }} height="{{ . }}"{{- end -}}
+            <img src="{{ .src }}" alt="{{ $alt }}"
+              {{- with .width }} width="{{ . }}"{{- end -}}
+              {{- with .height }} height="{{ . }}"{{- end -}}
               loading="lazy">
           </figure>
+        {{- end -}}
+        {{- range $videos -}}
+          <figure class="thread-figure thread-figure-video">
+            <video src="{{ .src }}" controls preload="metadata"
+              {{- with .poster }} poster="{{ . }}"{{- end -}}
+              {{- with .width }} width="{{ . }}"{{- end -}}
+              {{- with .height }} height="{{ . }}"{{- end -}}
+              playsinline></video>
+          </figure>
+        {{- end -}}
+        {{- range $audio -}}
+          <figure class="thread-figure thread-figure-audio">
+            <audio src="{{ .src }}" controls preload="metadata"></audio>
+          </figure>
+        {{- end -}}
+        {{- range $files -}}
+          {{- $label := .original_name | default (path.Base .src) -}}
+          <p class="thread-file">
+            <a href="{{ .src }}" download>{{ $label }}</a>
+          </p>
         {{- end -}}
       </div>
     {{- end -}}

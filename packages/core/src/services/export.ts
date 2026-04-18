@@ -35,7 +35,7 @@ import {
   formatFrontMatter,
   type HugoCollectionRef,
   type HugoFrontMatter,
-  type HugoResource,
+  type JantMedia,
 } from "../lib/hugo-markdown.js";
 // Shared design tokens — single source of truth for colors, typography,
 // and layout variables. Consumed verbatim by both the main site (via
@@ -594,40 +594,92 @@ function collectionEntriesToRefs(
   }));
 }
 
+interface MediaEmission {
+  /** Flat `media:` front-matter entry. */
+  entry: JantMedia;
+  /**
+   * Site-relative path under `static/` where the primary bytes should
+   * land, or null when the media links to a remote public URL and no
+   * bytes need to be emitted.
+   */
+  inlinePath: string | null;
+  /**
+   * Site-relative path under `static/` where the poster bytes should
+   * land, or null when there's no poster or the poster is linked via
+   * a public URL.
+   */
+  inlinePosterPath: string | null;
+}
+
 /**
- * Derive a Hugo `resources:` entry from a Media record plus the bundle-
- * relative filename the bytes will live at on disk.
+ * Build a flat `media:` entry for a Media record plus a decision about
+ * whether the primary bytes (and poster) should be bundled into the
+ * export's `static/media/` directory.
+ *
+ * When the media's provider has a reachable public URL (R2/S3/local
+ * proxy configured with a `*_public_url`), `src` points at that absolute
+ * URL and no bytes are emitted — the exported site stays small and the
+ * media keeps being served from wherever it already lives. Without a
+ * public URL the bytes are written to `static/media/{id}.ext` and `src`
+ * is the site-relative path.
  */
-function mediaToResource(media: Media, resourceName: string): HugoResource {
-  const params: NonNullable<HugoResource["params"]> = {
+function buildMediaEmission(
+  media: Media,
+  siteConfig: SiteConfig,
+): MediaEmission {
+  const publicUrl = getPublicUrlForProvider(
+    media.provider,
+    siteConfig.r2PublicUrl,
+    siteConfig.s3PublicUrl,
+    siteConfig.localPublicUrl,
+  );
+  const hasPublic = Boolean(publicUrl);
+
+  const ext = extOfFilename(media.filename);
+  const localName = `${media.id}${ext}`;
+  const localPath = `/media/${localName}`;
+  const src = hasPublic ? getMediaUrl(media.storageKey, publicUrl) : localPath;
+
+  const entry: JantMedia = {
+    id: media.id,
     kind: media.mediaKind === "text" ? "file" : media.mediaKind,
+    src,
     position: parsePositionForSort(media.position),
   };
-  if (media.alt !== null && media.alt !== "") params.alt = media.alt;
-  if (media.width !== null) params.width = media.width;
-  if (media.height !== null) params.height = media.height;
+  if (media.alt !== null && media.alt !== "") entry.alt = media.alt;
+  if (media.width !== null) entry.width = media.width;
+  if (media.height !== null) entry.height = media.height;
   if (media.blurhash !== null && media.blurhash !== "")
-    params.blurhash = media.blurhash;
-  if (media.originalName) params["original_name"] = media.originalName;
-  if (media.mimeType) params["mime_type"] = media.mimeType;
-  if (media.posterKey) params["poster_key"] = media.posterKey;
-  const posterSrc = posterResourceNameForMedia(media);
-  if (posterSrc) params["poster_src"] = posterSrc;
-  if (typeof media.size === "number") params.size = media.size;
-  if (media.waveform) params.waveform = media.waveform;
-  if (media.summary) params.summary = media.summary;
-  if (typeof media.chars === "number") params.chars = media.chars;
+    entry.blurhash = media.blurhash;
+  if (media.originalName) entry.original_name = media.originalName;
+  if (media.mimeType) entry.mime_type = media.mimeType;
+  if (typeof media.size === "number") entry.size = media.size;
+  if (media.waveform) entry.waveform = media.waveform;
+  if (media.summary) entry.summary = media.summary;
+  if (typeof media.chars === "number") entry.chars = media.chars;
   if (media.durationSeconds !== null && media.durationSeconds !== undefined) {
-    params["duration_seconds"] = media.durationSeconds;
+    entry.duration_seconds = media.durationSeconds;
   }
-  params["media_id"] = media.id;
-  params["storage_key"] = media.storageKey;
-  params["provider"] = media.provider;
+  entry.provider = media.provider;
+  entry.storage_key = media.storageKey;
+
+  let inlinePosterPath: string | null = null;
+  if (media.posterKey) {
+    const posterExt = extOfStorageKey(media.posterKey);
+    const posterLocalName = `${media.id}-poster.${posterExt}`;
+    entry.poster = hasPublic
+      ? getMediaUrl(media.posterKey, publicUrl)
+      : `/media/${posterLocalName}`;
+    entry.poster_key = media.posterKey;
+    if (!hasPublic) {
+      inlinePosterPath = `static/media/${posterLocalName}`;
+    }
+  }
 
   return {
-    src: resourceName,
-    name: media.id,
-    params,
+    entry,
+    inlinePath: hasPublic ? null : `static/media/${localName}`,
+    inlinePosterPath,
   };
 }
 
@@ -642,25 +694,14 @@ function parsePositionForSort(position: string): number {
   return hash;
 }
 
-function resourceFileNameForMedia(media: Media): string {
-  // Hugo looks up resources by `src`, so keep the filename stable per
-  // media id. The original filename is preserved in params.original_name.
-  const dot = media.filename.lastIndexOf(".");
-  const ext = dot >= 0 ? media.filename.slice(dot) : "";
-  return `${media.id}${ext}`;
+function extOfFilename(filename: string): string {
+  const dot = filename.lastIndexOf(".");
+  return dot >= 0 ? filename.slice(dot) : "";
 }
 
-/**
- * Derive a stable bundle-relative filename for a video/audio media's
- * poster frame. Returns null when the media has no poster. The ext is
- * derived from the stored `posterKey` so PNG posters stay PNG and WebP
- * posters stay WebP round-trip.
- */
-function posterResourceNameForMedia(media: Media): string | null {
-  if (!media.posterKey) return null;
-  const dot = media.posterKey.lastIndexOf(".");
-  const ext = dot >= 0 ? media.posterKey.slice(dot + 1) : "webp";
-  return `${media.id}-poster.${ext}`;
+function extOfStorageKey(key: string): string {
+  const dot = key.lastIndexOf(".");
+  return dot >= 0 ? key.slice(dot + 1) : "webp";
 }
 
 /**
@@ -702,14 +743,8 @@ async function buildThreadBundle(
 
   // Root front matter.
   const rootMedia = mediaByPost.get(root.id) ?? [];
-  const rootMediaFiles = rootMedia.map((m) => ({
-    media: m,
-    resourceName: resourceFileNameForMedia(m),
-    posterResourceName: posterResourceNameForMedia(m),
-  }));
-  const rootResources = rootMediaFiles.map(({ media, resourceName }) =>
-    mediaToResource(media, resourceName),
-  );
+  const rootEmissions = rootMedia.map((m) => buildMediaEmission(m, siteConfig));
+  const rootMediaList = rootEmissions.map((e) => e.entry);
   const rootFrontMatter: HugoFrontMatter = {
     id: root.id,
     title: root.format !== "quote" ? (root.title ?? undefined) : undefined,
@@ -745,7 +780,7 @@ async function buildThreadBundle(
       rootCollectionEntries.length > 0
         ? collectionEntriesToRefs(rootCollectionEntries)
         : undefined,
-    resources: rootResources.length > 0 ? rootResources : undefined,
+    media: rootMediaList.length > 0 ? rootMediaList : undefined,
   };
 
   const rootBody = root.body ? tiptapJsonToMarkdown(root.body) : "";
@@ -754,25 +789,28 @@ async function buildThreadBundle(
     content: `${await formatFrontMatter(rootFrontMatter)}\n${rootBody}${rootBody.endsWith("\n") ? "" : "\n"}`,
   });
 
-  // Root media as sibling page-resource files. When storage is reachable
-  // we emit the bytes directly into the bundle dir so Hugo's page-resource
-  // lookup (`.Resources.GetMatch`) works without any extra localization
-  // step. The CLI's site-localize step still handles media URLs embedded
-  // in the post body (via `<img>` / markdown image syntax) by rewriting
-  // them into `static/media/`.
-  void siteConfig;
-  for (const { media, resourceName, posterResourceName } of rootMediaFiles) {
-    const mediaFile = await readMediaResourceFile(
-      storage,
-      media.storageKey,
-      `content/${rootSlug}/${resourceName}`,
-    );
-    if (mediaFile) files.push(mediaFile);
-    if (media.posterKey && posterResourceName) {
+  // Emit media bytes under static/media/ for any media without a
+  // reachable public URL. Media whose provider has a configured public
+  // URL keeps `src` pointing at that absolute URL and skips inlining —
+  // this avoids re-downloading every attachment when the site is going
+  // to keep serving media from the existing CDN/proxy anyway.
+  for (const { emission, media } of rootEmissions.map((e, i) => ({
+    emission: e,
+    media: rootMedia[i] as Media,
+  }))) {
+    if (emission.inlinePath) {
+      const file = await readMediaResourceFile(
+        storage,
+        media.storageKey,
+        emission.inlinePath,
+      );
+      if (file) files.push(file);
+    }
+    if (emission.inlinePosterPath && media.posterKey) {
       const posterFile = await readMediaResourceFile(
         storage,
         media.posterKey,
-        `content/${rootSlug}/${posterResourceName}`,
+        emission.inlinePosterPath,
       );
       if (posterFile) files.push(posterFile);
     }
@@ -782,14 +820,10 @@ async function buildThreadBundle(
   for (const reply of threadReplies) {
     const replySlug = slugMap.get(reply.id) ?? reply.slug;
     const replyMedia = mediaByPost.get(reply.id) ?? [];
-    const replyMediaFiles = replyMedia.map((m) => ({
-      media: m,
-      resourceName: resourceFileNameForMedia(m),
-      posterResourceName: posterResourceNameForMedia(m),
-    }));
-    const replyResources = replyMediaFiles.map(({ media, resourceName }) =>
-      mediaToResource(media, resourceName),
+    const replyEmissions = replyMedia.map((m) =>
+      buildMediaEmission(m, siteConfig),
     );
+    const replyMediaList = replyEmissions.map((e) => e.entry);
     const replyCollectionEntries = buildExportedCollectionEntriesForPost(
       reply.id,
       collectionEntriesByPost,
@@ -832,7 +866,7 @@ async function buildThreadBundle(
         replyCollectionEntries.length > 0
           ? collectionEntriesToRefs(replyCollectionEntries)
           : undefined,
-      resources: replyResources.length > 0 ? replyResources : undefined,
+      media: replyMediaList.length > 0 ? replyMediaList : undefined,
     };
 
     const replyBody = reply.body ? tiptapJsonToMarkdown(reply.body) : "";
@@ -841,18 +875,23 @@ async function buildThreadBundle(
       content: `${await formatFrontMatter(replyFrontMatter)}\n${replyBody}${replyBody.endsWith("\n") ? "" : "\n"}`,
     });
 
-    for (const { media, resourceName, posterResourceName } of replyMediaFiles) {
-      const mediaFile = await readMediaResourceFile(
-        storage,
-        media.storageKey,
-        `content/${rootSlug}/${replySlug}/${resourceName}`,
-      );
-      if (mediaFile) files.push(mediaFile);
-      if (media.posterKey && posterResourceName) {
+    for (const { emission, media } of replyEmissions.map((e, i) => ({
+      emission: e,
+      media: replyMedia[i] as Media,
+    }))) {
+      if (emission.inlinePath) {
+        const file = await readMediaResourceFile(
+          storage,
+          media.storageKey,
+          emission.inlinePath,
+        );
+        if (file) files.push(file);
+      }
+      if (emission.inlinePosterPath && media.posterKey) {
         const posterFile = await readMediaResourceFile(
           storage,
           media.posterKey,
-          `content/${rootSlug}/${replySlug}/${posterResourceName}`,
+          emission.inlinePosterPath,
         );
         if (posterFile) files.push(posterFile);
       }
@@ -1392,7 +1431,7 @@ static/                   — Copy files here to add them to the published site
 
 - Each thread is a Hugo branch bundle. Replies live as nested leaf bundles with \`build.render = "never"\` so they do not produce standalone URLs; they render inside the thread page.
 - \`/{reply-slug}/\` URLs are preserved via \`aliases:\` on the root post, so old links still land on the right thread anchor.
-- Media is exported as Hugo page resources (\`resources:\` front matter); their bytes are localized by the Jant CLI when you pass the default \`--localize-media\` flag.
+- Media is emitted under \`static/media/{id}.ext\` and referenced from a flat \`media:\` array on each post. When a storage provider has a configured public URL (R2/S3/local proxy), the exporter links to the provider URL instead of re-bundling the bytes.
 - Posts with \`draft: true\` in front matter are only built when you pass \`--buildDrafts\` to \`hugo\` / \`hugo serve\`.
 `;
 }

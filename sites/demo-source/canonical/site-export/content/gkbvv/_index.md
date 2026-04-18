@@ -17,20 +17,18 @@ collections:
     collected_at: "2026-04-03T02:30:41.000Z"
     position: 0
     pinned_at: null
-resources:
-  - src: "med_01kn8jvb16enf98txp7p0pf5ge.webp"
-    name: "med_01kn8jvb16enf98txp7p0pf5ge"
-    params:
-      kind: "image"
-      position: 3055
-      width: 1200
-      height: 900
-      original_name: "desk-before.webp"
-      mime_type: "image/webp"
-      size: 15464
-      media_id: "med_01kn8jvb16enf98txp7p0pf5ge"
-      storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jvb16enf98txp7p0pf5ge.webp"
-      provider: "r2"
+media:
+  - id: "med_01kn8jvb16enf98txp7p0pf5ge"
+    kind: "image"
+    src: "/media/med_01kn8jvb16enf98txp7p0pf5ge.webp"
+    position: 3055
+    width: 1200
+    height: 900
+    original_name: "desk-before.webp"
+    mime_type: "image/webp"
+    size: 15464
+    provider: "r2"
+    storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jvb16enf98txp7p0pf5ge.webp"
 ---
 
 Tonight's tiny project: make the desk usable again without buying a single organizer.

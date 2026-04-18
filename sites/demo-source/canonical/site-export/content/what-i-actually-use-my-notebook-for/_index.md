@@ -19,20 +19,18 @@ collections:
     collected_at: "2026-04-03T02:31:05.000Z"
     position: 1
     pinned_at: null
-resources:
-  - src: "med_01kn8jw26cenf98vc7k0ppz5k8.webp"
-    name: "med_01kn8jw26cenf98vc7k0ppz5k8"
-    params:
-      kind: "image"
-      position: 3055
-      width: 1200
-      height: 900
-      original_name: "notebook-pages.webp"
-      mime_type: "image/webp"
-      size: 15810
-      media_id: "med_01kn8jw26cenf98vc7k0ppz5k8"
-      storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jw26cenf98vc7k0ppz5k8.webp"
-      provider: "r2"
+media:
+  - id: "med_01kn8jw26cenf98vc7k0ppz5k8"
+    kind: "image"
+    src: "/media/med_01kn8jw26cenf98vc7k0ppz5k8.webp"
+    position: 3055
+    width: 1200
+    height: 900
+    original_name: "notebook-pages.webp"
+    mime_type: "image/webp"
+    size: 15810
+    provider: "r2"
+    storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jw26cenf98vc7k0ppz5k8.webp"
 ---
 
 I always imagine I will use a fresh notebook for my best thoughts. In reality, it becomes useful much sooner and in messier ways.
