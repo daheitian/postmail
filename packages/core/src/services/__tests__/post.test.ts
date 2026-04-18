@@ -735,6 +735,37 @@ describe("PostService", () => {
       expect(notPinned[0]?.bodyText).toBe("normal post");
     });
 
+    // Regression: the list orderBy relies on NULL-handling that differs
+    // between SQLite (NULLs last for DESC) and Postgres (NULLs first for
+    // DESC). Pin must rise to the top under both engines. See
+    // coding-standards.md "Nullable sort keys".
+    it("sorts pinned posts ahead of unpinned (portable NULL order)", async () => {
+      // Newest first — an older pinned post must still beat a newer unpinned.
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "older pinned",
+        pinned: true,
+        status: "published",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "newer unpinned",
+        status: "published",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "newest unpinned",
+        status: "published",
+      });
+
+      const results = await postService.list({ status: "published" });
+      expect(results.map((p) => p.bodyText)).toEqual([
+        "older pinned",
+        "newest unpinned",
+        "newer unpinned",
+      ]);
+    });
+
     it("excludes deleted posts by default", async () => {
       const post = await postService.create({
         format: "note",

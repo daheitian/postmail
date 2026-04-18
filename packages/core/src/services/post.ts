@@ -1247,6 +1247,14 @@ export function createPostService(
           ELSE 1
         END`;
 
+      // NULL-sort order differs between dialects: SQLite puts NULLs last for
+      // DESC, Postgres puts them first. Wrap nullable sort keys in COALESCE
+      // so pinned/featured posts land on top under both engines. Mirrors the
+      // expressions used by `buildListCursorCondition` above.
+      const pinnedSortExpr = sql<number>`coalesce(${posts.pinnedAt}, -1)`;
+      const featuredSortExpr = sql<number>`coalesce(${posts.featuredAt}, -1)`;
+      const sortTimestampSortExpr = sql<number>`coalesce(${sortTimestamp}, -1)`;
+
       const baseQuery = db
         .select()
         .from(posts)
@@ -1256,29 +1264,31 @@ export function createPostService(
       let query =
         filters.featured || filters.sortOrder === undefined
           ? baseQuery.orderBy(
-              desc(posts.pinnedAt),
-              filters.featured ? desc(posts.featuredAt) : desc(sortTimestamp),
+              desc(pinnedSortExpr),
+              filters.featured
+                ? desc(featuredSortExpr)
+                : desc(sortTimestampSortExpr),
               desc(posts.id),
             )
           : filters.sortOrder === "oldest"
             ? baseQuery.orderBy(
-                desc(posts.pinnedAt),
-                asc(sortTimestamp),
+                desc(pinnedSortExpr),
+                asc(sortTimestampSortExpr),
                 asc(posts.id),
               )
             : filters.sortOrder === "rating_desc"
               ? baseQuery.orderBy(
-                  desc(posts.pinnedAt),
+                  desc(pinnedSortExpr),
                   desc(ratingPresence),
                   desc(posts.rating),
-                  desc(sortTimestamp),
+                  desc(sortTimestampSortExpr),
                   desc(posts.id),
                 )
               : baseQuery.orderBy(
-                  desc(posts.pinnedAt),
+                  desc(pinnedSortExpr),
                   desc(ratingPresence),
                   asc(posts.rating),
-                  desc(sortTimestamp),
+                  desc(sortTimestampSortExpr),
                   desc(posts.id),
                 );
 
