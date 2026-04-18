@@ -20,7 +20,7 @@ import {
 } from "../lib/site-media-parser.js";
 import { openNodeDatabase } from "../lib/node-database.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
-import { parseFrontMatter as parseFrontMatterShared } from "../../src/lib/hugo-markdown.js";
+import { parseFrontMatter as parseFrontMatterShared } from "../../src/lib/hugo-markdown.ts";
 
 /**
  * Parse front matter from a Markdown file.
