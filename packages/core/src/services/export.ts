@@ -65,6 +65,8 @@ import PARTIAL_FOOTER from "./export-theme/layouts/partials/footer.html?raw";
 import PARTIAL_PAGINATION from "./export-theme/layouts/partials/pagination.html?raw";
 import PARTIAL_POST_CARD from "./export-theme/layouts/partials/post-card.html?raw";
 import PARTIAL_REPLY from "./export-theme/layouts/partials/reply.html?raw";
+import PARTIAL_THREAD_PREVIEW from "./export-theme/layouts/partials/thread-preview.html?raw";
+import PARTIAL_THREAD_PREVIEW_CONTEXT from "./export-theme/layouts/partials/thread-preview-context.html?raw";
 
 import type { StorageDriver } from "../lib/storage.js";
 import { base64ToUint8Array } from "../lib/favicon.js";
@@ -415,6 +417,14 @@ export function createExportService(
       exportFiles.push({
         path: "themes/jant/layouts/partials/reply.html",
         content: PARTIAL_REPLY,
+      });
+      exportFiles.push({
+        path: "themes/jant/layouts/partials/thread-preview.html",
+        content: PARTIAL_THREAD_PREVIEW,
+      });
+      exportFiles.push({
+        path: "themes/jant/layouts/partials/thread-preview-context.html",
+        content: PARTIAL_THREAD_PREVIEW_CONTEXT,
       });
 
       // Static assets. Load order in the template's <head> is

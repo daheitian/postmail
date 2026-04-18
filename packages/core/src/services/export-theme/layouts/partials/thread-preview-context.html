@@ -1,0 +1,24 @@
+{{- /*
+  Compact faded "context" item inside a thread preview. Shows date +
+  title-or-summary snippet linking to the post within the thread.
+  Expects: { post, variant } where variant is "root" or "reply".
+*/ -}}
+{{- $post := .post -}}
+{{- $variant := .variant -}}
+{{- $format := $post.Params.format | default "note" -}}
+{{- $slug := $post.Params.slug | default $post.Slug -}}
+{{- $href := cond (eq $variant "root") $post.RelPermalink (printf "%s#%s" $post.Parent.RelPermalink $slug) -}}
+<a class="thread-preview-context-item thread-preview-context-{{ $variant }}" href="{{ $href }}" data-format="{{ $format }}">
+  <time datetime="{{ $post.Date.Format "2006-01-02T15:04:05Z07:00" }}">
+    {{ $post.Date.Format "Jan 2, 2006" }}
+  </time>
+  <span class="thread-preview-context-text">
+    {{- if eq $format "quote" -}}
+      {{- with $post.Params.quote_text -}}{{ . | truncate 120 }}{{- end -}}
+    {{- else if $post.Title -}}
+      {{ $post.Title }}
+    {{- else if $post.Params.summary_text -}}
+      {{ $post.Params.summary_text | truncate 120 }}
+    {{- end -}}
+  </span>
+</a>

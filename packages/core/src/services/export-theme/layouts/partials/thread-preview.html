@@ -1,0 +1,43 @@
+{{- /*
+  Thread preview partial.
+
+  Renders a root post that has replies as a compact thread card on list
+  pages (home, featured). Shows the root as faded context at the top,
+  an optional hidden-count link for threads with many replies, and the
+  latest reply as the main "hero" card. Falls through to a plain
+  post-card when the root has no replies.
+*/ -}}
+{{- $root := . -}}
+{{- $replies := where $root.Pages "Params.visibility" "public" -}}
+{{- $replies = $replies.ByDate -}}
+{{- $replyCount := len $replies -}}
+{{- if eq $replyCount 0 -}}
+  {{ partial "post-card.html" $root }}
+{{- else -}}
+  {{- $latest := index $replies (sub $replyCount 1) -}}
+  {{- $penultimate := cond (gt $replyCount 2) (index $replies (sub $replyCount 2)) false -}}
+  {{- $hiddenCount := sub $replyCount (cond (gt $replyCount 2) 2 1) -}}
+  {{- $slug := $root.Params.slug | default $root.Slug -}}
+  <article class="thread-preview" data-slug="{{ $slug }}" data-reply-count="{{ $replyCount }}">
+    <div class="thread-preview-context">
+      {{ partial "thread-preview-context.html" (dict "post" $root "variant" "root") }}
+
+      {{- if gt $hiddenCount 0 -}}
+        <a class="thread-preview-gap" href="{{ $root.RelPermalink }}">
+          {{ $hiddenCount }} more {{ if eq $hiddenCount 1 }}post{{ else }}posts{{ end }}
+        </a>
+      {{- end -}}
+
+      {{- if $penultimate -}}
+        {{ partial "thread-preview-context.html" (dict "post" $penultimate "variant" "reply") }}
+      {{- end -}}
+    </div>
+
+    <div class="thread-preview-hero">
+      {{ partial "post-card.html" $latest }}
+      <a class="thread-preview-thread-link" href="{{ $root.RelPermalink }}">
+        View full thread &rarr;
+      </a>
+    </div>
+  </article>
+{{- end -}}
