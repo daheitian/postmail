@@ -5,6 +5,8 @@
 {{- with $jant -}}{{- if eq .show_jant_branding_on_home true -}}{{- $showBranding = true -}}{{- end -}}{{- end -}}
 {{- $navFooterItems := slice -}}
 {{- with $jant -}}{{- range .nav -}}{{- if eq .placement "footer" -}}{{- $navFooterItems = $navFooterItems | append . -}}{{- end -}}{{- end -}}{{- end -}}
+{{- $hasFooter := or $navFooterItems $footerHtml -}}
+{{- if $hasFooter -}}
 <footer class="site-footer" role="contentinfo">
   <div class="site-footer-inner">
     {{- if $navFooterItems -}}
@@ -20,10 +22,11 @@
     {{- with $footerHtml -}}
       <div class="site-footer-content">{{ . | safeHTML }}</div>
     {{- end -}}
-    {{- if and $showBranding $.IsHome -}}
-      <p class="site-footer-branding">
-        Powered by <a href="https://github.com/jant-me/jant" rel="noopener noreferrer" target="_blank">Jant</a>.
-      </p>
-    {{- end -}}
   </div>
 </footer>
+{{- end -}}
+{{- if and $showBranding $.IsHome -}}
+<footer class="home-branding-credit">
+  Build with <a href="https://github.com/jant-me/jant" rel="noopener noreferrer" target="_blank">Jant</a>
+</footer>
+{{- end -}}

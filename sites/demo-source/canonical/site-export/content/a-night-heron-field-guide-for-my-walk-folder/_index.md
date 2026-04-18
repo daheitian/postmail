@@ -13,10 +13,12 @@ link_url: "https://www.audubon.org/field-guide/bird/black-crowned-night-heron"
 rating: 4
 collections:
   - slug: "city-walks"
+    title: "City Walks"
     collected_at: "2026-04-03T02:30:32.000Z"
     position: 0
     pinned_at: null
   - slug: "useful-links"
+    title: "Useful Links"
     collected_at: "2026-04-03T02:30:32.000Z"
     position: 1
     pinned_at: null

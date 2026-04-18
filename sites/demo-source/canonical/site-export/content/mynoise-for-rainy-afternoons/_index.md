@@ -13,10 +13,12 @@ link_url: "https://mynoise.net/"
 rating: 4
 collections:
   - slug: "useful-links"
+    title: "Useful Links"
     collected_at: "2026-04-03T02:30:49.000Z"
     position: 0
     pinned_at: null
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:30:49.000Z"
     position: 1
     pinned_at: null

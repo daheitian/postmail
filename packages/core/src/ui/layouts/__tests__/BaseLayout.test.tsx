@@ -225,8 +225,13 @@ describe("BaseLayout", () => {
     expect(html).toContain(".site-header-search-link");
     expect(html).toContain("@media(max-width:1200px)");
     expect(html).toContain(".site-header-search-form{display:none!important}");
-    expect(html).toContain("@media(max-width:860px)");
-    expect(html).toContain(".site-header-link-overflow");
+    // Tiered nav collapse: 4 inline ≤960px, 3 inline ≤780px, 2 inline ≤580px
+    expect(html).toContain("@media(max-width:960px)");
+    expect(html).toContain(".site-header-link-collapse-lg");
+    expect(html).toContain("@media(max-width:780px)");
+    expect(html).toContain(".site-header-link-collapse-md");
+    expect(html).toContain("@media(max-width:580px)");
+    expect(html).toContain(".site-header-link-collapse-sm");
     expect(html).toContain(
       "@media(max-width:480px){.site-header-nav,.site-header-more{display:none!important}.site-header-search-slot{display:flex!important}",
     );

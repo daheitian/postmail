@@ -12,10 +12,12 @@ summary_text: "Everything sharpens after a light shower: the crosswalk paint, th
 featured_at: "2026-04-03T02:30:54.000Z"
 collections:
   - slug: "city-walks"
+    title: "City Walks"
     collected_at: "2026-04-03T02:30:54.000Z"
     position: 0
     pinned_at: null
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:30:54.000Z"
     position: 1
     pinned_at: null

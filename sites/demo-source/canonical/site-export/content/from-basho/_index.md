@@ -13,6 +13,7 @@ source_url: "https://en.wikiquote.org/wiki/Matsuo_Basho"
 quote_text: "Every day is a journey, and the journey itself is home."
 collections:
   - slug: "reading-notes"
+    title: "Reading Notes"
     collected_at: "2026-04-03T02:30:37.000Z"
     position: 0
     pinned_at: null

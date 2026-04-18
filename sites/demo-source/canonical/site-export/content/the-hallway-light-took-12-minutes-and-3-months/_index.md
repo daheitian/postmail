@@ -11,10 +11,12 @@ visibility: "public"
 summary_text: "The bulb burned out in June. I meant to replace it the same day. Instead I spent three months walking through the hallway like somebody in a low-budget mystery movie. Today I bought the new bulb, climbed the stool, changed it, and laughed at how small the actual job was. This is the kind of tiny project I avoid for no good reason. The dread is usually larger than the task."
 collections:
   - slug: "tiny-projects"
+    title: "Tiny Projects"
     collected_at: "2026-04-03T02:31:03.000Z"
     position: 0
     pinned_at: null
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:31:03.000Z"
     position: 1
     pinned_at: null

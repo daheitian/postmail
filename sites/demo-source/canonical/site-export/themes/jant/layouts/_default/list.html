@@ -63,8 +63,9 @@
       </header>
       {{- if $paginator.Pages -}}
         <div class="post-list">
-          {{- range $paginator.Pages -}}
-            {{ partial "post-card.html" . }}
+          {{- range $i, $p := $paginator.Pages -}}
+            {{- if gt $i 0 -}}<hr class="feed-divider" aria-hidden="true" />{{- end -}}
+            {{ partial "post-card.html" $p }}
           {{- end -}}
         </div>
         {{ partial "pagination.html" $paginator }}
@@ -89,8 +90,9 @@
       {{- $paginator := .Paginate $posts $pageSize -}}
       {{- if $paginator.Pages -}}
         <div class="post-list">
-          {{- range $paginator.Pages -}}
-            {{ partial "post-card.html" . }}
+          {{- range $i, $p := $paginator.Pages -}}
+            {{- if gt $i 0 -}}<hr class="feed-divider" aria-hidden="true" />{{- end -}}
+            {{ partial "post-card.html" $p }}
           {{- end -}}
         </div>
         {{ partial "pagination.html" $paginator }}

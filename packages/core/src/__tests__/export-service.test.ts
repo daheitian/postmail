@@ -461,6 +461,7 @@ describe("createExportService (Hugo)", () => {
     expect(frontMatter.collections).toEqual([
       {
         slug: "ideas",
+        title: "Ideas",
         collected_at: new Date(1773000000 * 1000).toISOString(),
         position: 3,
         pinned_at: new Date(1773050000 * 1000).toISOString(),

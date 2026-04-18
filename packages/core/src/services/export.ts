@@ -75,7 +75,6 @@ import PARTIAL_POST_CARD from "./export-theme/layouts/partials/post-card.html?ra
 import PARTIAL_MEDIA_GALLERY from "./export-theme/layouts/partials/media-gallery.html?raw";
 import PARTIAL_REPLY from "./export-theme/layouts/partials/reply.html?raw";
 import PARTIAL_THREAD_PREVIEW from "./export-theme/layouts/partials/thread-preview.html?raw";
-import PARTIAL_THREAD_PREVIEW_CONTEXT from "./export-theme/layouts/partials/thread-preview-context.html?raw";
 
 import type { StorageDriver } from "../lib/storage.js";
 import { base64ToUint8Array } from "../lib/favicon.js";
@@ -181,6 +180,12 @@ interface ExportedCollectionMetrics {
  */
 interface ExportedCollectionEntry {
   slug: string;
+  /**
+   * Denormalized collection title. Kept alongside the slug so the exported
+   * front matter can render a tag label without templates having to resolve
+   * another page. Optional because legacy call sites may not supply it.
+   */
+  title?: string;
   /** Unix seconds. */
   collectedAt: number;
   position: number;
@@ -246,6 +251,15 @@ export function createExportService(
         services.paths.getPostAliases(rootPostIds),
         services.paths.getCollectionSlugMap(allCollections.map((c) => c.id)),
       ]);
+      // Denormalized title lookup so front-matter collection refs can
+      // include a title label without templates having to resolve another
+      // page. Source of truth is still `slug` on round-trip; `title` is
+      // refreshed from DB on every export.
+      const collectionTitleMap = new Map<string, string>();
+      for (const collection of allCollections) {
+        collectionTitleMap.set(collection.id, collection.title);
+      }
+
       const iconAssets = await buildSiteIconAssets(siteConfig, deps.storage);
       const collectionMetrics = buildExportedCollectionMetrics(
         allCollections,
@@ -289,6 +303,7 @@ export function createExportService(
           root.id,
           collectionEntriesByPost,
           collectionSlugMap,
+          collectionTitleMap,
         );
 
         const bundleFiles = await buildThreadBundle(
@@ -300,6 +315,7 @@ export function createExportService(
           slugMap,
           collectionEntriesByPost,
           collectionSlugMap,
+          collectionTitleMap,
           rawMediaByPost,
           siteConfig,
           deps.storage ?? null,
@@ -433,10 +449,6 @@ export function createExportService(
       exportFiles.push({
         path: "themes/jant/layouts/partials/thread-preview.html",
         content: PARTIAL_THREAD_PREVIEW,
-      });
-      exportFiles.push({
-        path: "themes/jant/layouts/partials/thread-preview-context.html",
-        content: PARTIAL_THREAD_PREVIEW_CONTEXT,
       });
 
       // Static assets. Load order in the template's <head> is
@@ -590,14 +602,17 @@ function buildExportedCollectionEntriesForPost(
     }[]
   >,
   collectionSlugMap: Map<string, string>,
+  collectionTitleMap: Map<string, string>,
 ): ExportedCollectionEntry[] {
   const entries = collectionEntriesByPost.get(postId) ?? [];
   const resolved: ExportedCollectionEntry[] = [];
   for (const entry of entries) {
     const slug = collectionSlugMap.get(entry.collectionId);
     if (!slug) continue;
+    const title = collectionTitleMap.get(entry.collectionId);
     resolved.push({
       slug,
+      title,
       collectedAt: entry.createdAt,
       position: entry.position,
       pinnedAt: entry.pinnedAt,
@@ -611,6 +626,7 @@ function collectionEntriesToRefs(
 ): HugoCollectionRef[] {
   return entries.map((entry) => ({
     slug: entry.slug,
+    title: entry.title,
     collected_at: toISOString(entry.collectedAt),
     position: entry.position,
     pinned_at: entry.pinnedAt !== null ? toISOString(entry.pinnedAt) : null,
@@ -749,6 +765,7 @@ async function buildThreadBundle(
     }[]
   >,
   collectionSlugMap: Map<string, string>,
+  collectionTitleMap: Map<string, string>,
   mediaByPost: Map<string, Media[]>,
   siteConfig: SiteConfig,
   storage: StorageDriver | null,
@@ -851,6 +868,7 @@ async function buildThreadBundle(
       reply.id,
       collectionEntriesByPost,
       collectionSlugMap,
+      collectionTitleMap,
     );
 
     const replyFrontMatter: HugoFrontMatter = {

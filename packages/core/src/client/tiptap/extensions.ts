@@ -15,6 +15,7 @@ import { LinkToolbar } from "./link-toolbar.js";
 import { ExitableMarks } from "./exitable-marks.js";
 import { TabIndent } from "./tab-indent.js";
 import { LinkInputRules } from "./link-input-rules.js";
+import { WrappingInputRules } from "./wrapping-input-rules.js";
 import { Footnotes } from "./footnotes.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
 import { ImageNode } from "./image-node.js";
@@ -73,6 +74,7 @@ export function createSettingsEditorExtensions(
     }),
     ReclaimModEnter,
     LinkInputRules,
+    WrappingInputRules,
     MarkdownClipboard,
     ExitableMarks,
     BubbleMenu.configure({
@@ -101,6 +103,7 @@ export function createEditorExtensions(
     }),
     Footnotes,
     LinkInputRules,
+    WrappingInputRules,
     MarkdownClipboard,
     SlashCommands,
     PasteMedia.configure(options.pasteMedia ?? {}),

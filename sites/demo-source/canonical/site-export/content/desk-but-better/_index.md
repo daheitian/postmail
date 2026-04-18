@@ -12,6 +12,7 @@ summary_text: "I finally made the desk simple enough that I want to sit down the
 pinned_at: "2026-04-03T02:30:36.000Z"
 collections:
   - slug: "tiny-projects"
+    title: "Tiny Projects"
     collected_at: "2026-04-03T02:30:36.000Z"
     position: 0
     pinned_at: null

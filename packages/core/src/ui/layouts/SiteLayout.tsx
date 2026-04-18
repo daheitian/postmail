@@ -167,16 +167,48 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     (l) => l.placement === "header" || !l.placement,
   );
   const moreLinks = linksWithLabels.filter((l) => l.placement === "more");
-  const primaryHeaderLinks = headerLinks.slice(0, 2);
-  const overflowHeaderLinks = headerLinks.slice(2);
-  const hasResponsiveOverflow = overflowHeaderLinks.length > 0;
+  // Responsive collapse tiers — first two links always stay inline; the
+  // remaining links collapse into the "More" popover in stages so wider
+  // windows (tablets, narrow laptops) can show 3 or 4 links before falling
+  // back to the minimum of 2.
+  //
+  //   idx 2   → collapse-sm  (hidden ≤580px, shown in popover)
+  //   idx 3   → collapse-md  (hidden ≤780px)
+  //   idx ≥ 4 → collapse-lg  (hidden ≤960px)
+  function linkCollapseTier(idx: number): string {
+    if (idx < 2) return "";
+    if (idx === 2) return "site-header-link-collapse-sm";
+    if (idx === 3) return "site-header-link-collapse-md";
+    return "site-header-link-collapse-lg";
+  }
+  function moreLinkRevealTier(idx: number): string {
+    if (idx === 2) return "site-header-more-link-show-sm";
+    if (idx === 3) return "site-header-more-link-show-md";
+    return "site-header-more-link-show-lg";
+  }
+  const hasResponsiveOverflow = headerLinks.length > 2;
   const hasSupplementalMoreLinks = moreLinks.length > 0;
   const showMoreMenu = hasResponsiveOverflow || hasSupplementalMoreLinks;
+  // Decide the widest breakpoint at which the "More" button must appear
+  // when there are no supplemental links. With 3 total links only idx 2 ever
+  // collapses (≤780); with 4 links idx 3 starts collapsing at ≤920; with 5+
+  // idx 4 starts collapsing at ≤1100.
+  let responsiveTierClass = "";
+  if (hasResponsiveOverflow && !hasSupplementalMoreLinks) {
+    if (headerLinks.length >= 5) {
+      responsiveTierClass = "site-header-more-tier-lg";
+    } else if (headerLinks.length === 4) {
+      responsiveTierClass = "site-header-more-tier-md";
+    } else {
+      responsiveTierClass = "site-header-more-tier-sm";
+    }
+  }
   const moreMenuClass = [
     "site-header-more",
     hasResponsiveOverflow && !hasSupplementalMoreLinks
       ? "site-header-more-responsive-only"
       : "",
+    responsiveTierClass,
   ]
     .filter(Boolean)
     .join(" ");
@@ -216,20 +248,19 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                 {siteName}
               </a>
               <nav class="site-header-nav" aria-label="Primary">
-                {primaryHeaderLinks.map((link) => (
+                {headerLinks.map((link, idx) => (
                   <HeaderLink
                     key={link.id}
                     link={link}
                     label={link.displayLabel}
-                    className="site-header-link-primary"
-                  />
-                ))}
-                {overflowHeaderLinks.map((link) => (
-                  <HeaderLink
-                    key={link.id}
-                    link={link}
-                    label={link.displayLabel}
-                    className="site-header-link-overflow"
+                    className={[
+                      idx < 2
+                        ? "site-header-link-primary"
+                        : "site-header-link-overflow",
+                      linkCollapseTier(idx),
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                   />
                 ))}
                 {showMoreMenu && (
@@ -264,25 +295,36 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                       data-align="start"
                       aria-hidden="true"
                     >
-                      {overflowHeaderLinks.map((link) => (
-                        <a
-                          key={link.id}
-                          href={link.url}
-                          class={`site-header-more-link site-header-more-link-responsive ${link.isActive ? "site-header-more-link-active" : ""}`}
-                          {...(link.isExternal
-                            ? {
-                                target: "_blank",
-                                rel: "noopener noreferrer",
-                              }
-                            : {})}
-                          {...(link.freshAt
-                            ? { "data-fresh-at": link.freshAt }
-                            : {})}
-                        >
-                          {link.displayLabel}
-                          {link.isExternal && <ExternalLinkIcon />}
-                        </a>
-                      ))}
+                      {headerLinks.slice(2).map((link, i) => {
+                        const idx = i + 2;
+                        const classes = [
+                          "site-header-more-link",
+                          "site-header-more-link-responsive",
+                          moreLinkRevealTier(idx),
+                          link.isActive ? "site-header-more-link-active" : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ");
+                        return (
+                          <a
+                            key={link.id}
+                            href={link.url}
+                            class={classes}
+                            {...(link.isExternal
+                              ? {
+                                  target: "_blank",
+                                  rel: "noopener noreferrer",
+                                }
+                              : {})}
+                            {...(link.freshAt
+                              ? { "data-fresh-at": link.freshAt }
+                              : {})}
+                          >
+                            {link.displayLabel}
+                            {link.isExternal && <ExternalLinkIcon />}
+                          </a>
+                        );
+                      })}
                       {hasResponsiveOverflow && hasSupplementalMoreLinks && (
                         <div class="site-header-more-divider site-header-more-divider-responsive" />
                       )}

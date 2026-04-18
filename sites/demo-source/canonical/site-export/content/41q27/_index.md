@@ -14,10 +14,12 @@ visibility: "public"
 summary_text: "Repotted the balcony herbs before breakfast. Basil was dramatic. Mint did not care at all."
 collections:
   - slug: "tiny-projects"
+    title: "Tiny Projects"
     collected_at: "2026-04-03T02:30:27.000Z"
     position: 0
     pinned_at: null
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:30:27.000Z"
     position: 1
     pinned_at: null

@@ -13,10 +13,12 @@ link_url: "https://www.seriouseats.com/tomato-egg-drop-soup-recipe-8705599"
 rating: 5
 collections:
   - slug: "home-cooking"
+    title: "Home Cooking"
     collected_at: "2026-04-03T02:30:54.000Z"
     position: 0
     pinned_at: null
   - slug: "useful-links"
+    title: "Useful Links"
     collected_at: "2026-04-03T02:30:54.000Z"
     position: 1
     pinned_at: null

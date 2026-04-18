@@ -12,6 +12,7 @@ summary_text: "Last week felt like six weeks compressed into five days. I spent 
 featured_at: "2026-04-03T02:30:32.000Z"
 collections:
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:30:32.000Z"
     position: 0
     pinned_at: null

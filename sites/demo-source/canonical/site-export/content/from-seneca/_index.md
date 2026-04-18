@@ -13,6 +13,7 @@ source_url: "https://en.wikiquote.org/wiki/Seneca_the_Younger"
 quote_text: "While we wait for life, life passes."
 collections:
   - slug: "reading-notes"
+    title: "Reading Notes"
     collected_at: "2026-04-03T02:30:39.000Z"
     position: 0
     pinned_at: null

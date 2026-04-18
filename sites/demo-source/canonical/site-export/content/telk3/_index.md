@@ -14,10 +14,12 @@ visibility: "public"
 summary_text: "Took the long way home because the light was good and the air finally felt like spring."
 collections:
   - slug: "city-walks"
+    title: "City Walks"
     collected_at: "2026-04-03T02:30:59.000Z"
     position: 0
     pinned_at: null
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:30:59.000Z"
     position: 1
     pinned_at: null

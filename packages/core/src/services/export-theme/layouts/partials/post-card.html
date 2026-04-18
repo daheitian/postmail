@@ -2,49 +2,71 @@
 {{- $format := $post.Params.format | default "note" -}}
 {{- $summaryText := $post.Params.summary_text -}}
 {{- $media := $post.Params.media | default slice -}}
-<article class="post-card post-card-{{ $format }}" data-format="{{ $format }}" data-slug="{{ $post.Params.slug | default $post.Slug }}">
-  <header class="post-card-meta">
-    <a class="post-card-permalink" href="{{ $post.RelPermalink }}">
-      <time datetime="{{ $post.Date.Format "2006-01-02T15:04:05Z07:00" }}">
-        {{ $post.Date.Format "Jan 2, 2006" }}
-      </time>
-    </a>
-    {{- if $post.Params.pinned_at -}}
-      <span class="post-card-pin" aria-label="Pinned">Pinned</span>
-    {{- end -}}
-  </header>
-
+{{- $collections := $post.Params.collections | default slice -}}
+{{- $slug := $post.Params.slug | default $post.Slug -}}
+{{- $linkUrl := $post.Params.link_url -}}
+<article class="post-card post-card-{{ $format }}" data-format="{{ $format }}" data-slug="{{ $slug }}"
+  {{- if $post.Params.pinned_at }} data-post-pinned{{ end -}}
+  {{- if $post.Params.featured_at }} data-post-featured{{ end -}}
+>
   {{- if eq $format "link" -}}
-    {{- $linkUrl := $post.Params.link_url -}}
+    {{- if $linkUrl -}}
+      {{- $domain := "" -}}
+      {{- with urls.Parse $linkUrl -}}{{- $domain = .Host -}}{{- end -}}
+      {{- if $domain -}}
+        <a href="{{ $linkUrl }}" class="post-card-link-domain" rel="noopener noreferrer" target="_blank">
+          <svg class="post-card-link-domain-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+          <span>{{ $domain }}</span>
+        </a>
+      {{- end -}}
+    {{- end -}}
     {{- if and $post.Title $linkUrl -}}
-      <h2 class="post-card-title">
+      <h2 class="post-card-title post-card-link-title">
         <a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $post.Title }}</a>
       </h2>
     {{- else if $post.Title -}}
-      <h2 class="post-card-title"><a href="{{ $post.RelPermalink }}">{{ $post.Title }}</a></h2>
+      <h2 class="post-card-title post-card-link-title"><a href="{{ $post.RelPermalink }}">{{ $post.Title }}</a></h2>
     {{- end -}}
-    {{- if $linkUrl -}}
-      <p class="post-card-link-host">
-        <a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $linkUrl | urlize }}</a>
-      </p>
+    {{- /* Prefer Hugo's rendered HTML body — preserves paragraphs, links,
+         emphasis, lists. Falls back to the plain-text `summary_text` stored
+         in front matter. */ -}}
+    {{- if $post.Summary -}}
+      <div class="post-card-summary prose">{{ $post.Summary }}</div>
+    {{- else if $summaryText -}}
+      <p class="post-card-summary">{{ $summaryText }}</p>
     {{- end -}}
-    {{- with $summaryText -}}<p class="post-card-summary">{{ . }}</p>{{- end -}}
   {{- else if eq $format "quote" -}}
     <blockquote class="post-card-quote">
-      {{- with $post.Params.quote_text -}}<p>{{ . }}</p>{{- end -}}
+      {{- with $post.Params.quote_text -}}
+        <span class="post-card-quote-mark" aria-hidden="true">
+          <svg viewBox="0 0 96 96" role="presentation" focusable="false">
+            <path fill="currentColor" d="M24.4 10.5C16.9 17.7 11.5 26.8 8.2 37.7C4.9 48.7 4.8 58.9 7.8 68.2C10.3 75.7 15.4 79.5 22.9 79.5C28 79.5 32.2 77.8 35.4 74.2C38.6 70.7 40.2 66.5 40.2 61.4C40.2 56.5 38.8 52.6 36 49.6C33.3 46.6 29.7 45.1 25.2 45.1C23.4 45.1 21.8 45.3 20.2 45.8C22.2 37.3 26.7 29.2 33.6 21.4L24.4 10.5Z" />
+            <path fill="currentColor" d="M60.8 10.5C53.3 17.7 47.9 26.8 44.6 37.7C41.3 48.7 41.2 58.9 44.2 68.2C46.7 75.7 51.8 79.5 59.3 79.5C64.4 79.5 68.6 77.8 71.8 74.2C75 70.7 76.6 66.5 76.6 61.4C76.6 56.5 75.2 52.6 72.4 49.6C69.7 46.6 66.1 45.1 61.6 45.1C59.8 45.1 58.2 45.3 56.6 45.8C58.6 37.3 63.1 29.2 70 21.4L60.8 10.5Z" />
+          </svg>
+        </span>
+        <div class="post-card-quote-content">{{ . }}</div>
+      {{- end -}}
       {{- if or $post.Params.source_name $post.Params.source_url -}}
-        <footer class="post-card-quote-attribution">
-          &mdash;
+        <div class="post-card-quote-attribution">
           {{- if and $post.Params.source_name $post.Params.source_url -}}
-            <cite><a href="{{ $post.Params.source_url }}" rel="noopener noreferrer" target="_blank">{{ $post.Params.source_name }}</a></cite>
+            <a href="{{ $post.Params.source_url }}" class="post-card-quote-source" rel="noopener noreferrer" target="_blank">{{ $post.Params.source_name }}</a>
           {{- else if $post.Params.source_name -}}
-            <cite>{{ $post.Params.source_name }}</cite>
+            <span class="post-card-quote-source">{{ $post.Params.source_name }}</span>
           {{- else -}}
-            <cite><a href="{{ $post.Params.source_url }}" rel="noopener noreferrer" target="_blank">{{ $post.Params.source_url }}</a></cite>
+            <a href="{{ $post.Params.source_url }}" class="post-card-quote-source" rel="noopener noreferrer" target="_blank">{{ $post.Params.source_url }}</a>
           {{- end -}}
-        </footer>
+        </div>
       {{- end -}}
     </blockquote>
+    {{- /* Quote commentary comes ONLY from the post body (rendered via
+         `.Summary`). Do NOT fall back to `summary_text` — for quote posts,
+         `summary_text` in front matter is the quote text itself (see
+         `getArchiveSummaryText`), which would duplicate the quote body. */ -}}
+    {{- with $post.Summary -}}
+      <div class="post-card-quote-commentary prose">{{ . }}</div>
+    {{- end -}}
   {{- else -}}
     {{- with $post.Title -}}
       <h2 class="post-card-title"><a href="{{ $post.RelPermalink }}">{{ . }}</a></h2>
@@ -61,7 +83,41 @@
 
   {{ partial "media-gallery.html" (dict "media" $media "permalink" $post.RelPermalink) }}
 
-  <footer class="post-card-footer">
-    <a class="post-card-readmore" href="{{ $post.RelPermalink }}">Read more &rarr;</a>
+  <footer class="post-card-footer post-menu-footer" data-post-meta>
+    <div class="post-footer-meta">
+      {{- if $post.Params.featured_at -}}
+        <span class="post-footer-featured" aria-label="Featured">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3 10.1 10.1 3 12l7.1 1.9L12 21l1.9-7.1L21 12l-7.1-1.9Z" />
+          </svg>
+        </span>
+      {{- end -}}
+      <a class="post-footer-link post-card-permalink" href="{{ $post.RelPermalink }}">
+        <time datetime="{{ $post.Date.Format "2006-01-02T15:04:05Z07:00" }}">
+          {{ $post.Date.Format "Jan 2, 2006" }}
+        </time>
+      </a>
+      {{- if and (eq $format "link") $linkUrl -}}
+        <a href="{{ $linkUrl }}" class="post-footer-external-link" target="_blank" rel="noopener noreferrer" aria-label="Open external link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17 17 7" />
+            <path d="M9 7h8v8" />
+          </svg>
+        </a>
+      {{- end -}}
+      {{- if $collections -}}
+        <span class="post-collection-tags">
+          {{- range $i, $c := $collections -}}
+            {{- if gt $i 0 -}}<span class="post-collection-sep" aria-hidden="true">, </span>{{- end -}}
+            <a class="post-collection-tag" href="{{ printf "/%s/" .slug | relURL }}">
+              <span class="post-collection-tag-text">{{ .title }}</span>
+            </a>
+          {{- end -}}
+        </span>
+      {{- end -}}
+      {{- if $post.Params.pinned_at -}}
+        <span class="post-card-pin" aria-label="Pinned">Pinned</span>
+      {{- end -}}
+    </div>
   </footer>
 </article>

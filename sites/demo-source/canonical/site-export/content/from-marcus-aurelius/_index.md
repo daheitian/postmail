@@ -13,6 +13,7 @@ source_url: "https://en.wikiquote.org/wiki/Marcus_Aurelius"
 quote_text: "The art of life is more like wrestling than dancing."
 collections:
   - slug: "reading-notes"
+    title: "Reading Notes"
     collected_at: "2026-04-03T02:30:39.000Z"
     position: 0
     pinned_at: null

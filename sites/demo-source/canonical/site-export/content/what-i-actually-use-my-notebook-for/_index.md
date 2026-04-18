@@ -12,10 +12,12 @@ summary_text: "I always imagine I will use a fresh notebook for my best thoughts
 featured_at: "2026-04-03T02:31:05.000Z"
 collections:
   - slug: "tiny-projects"
+    title: "Tiny Projects"
     collected_at: "2026-04-03T02:31:05.000Z"
     position: 0
     pinned_at: null
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:31:05.000Z"
     position: 1
     pinned_at: null

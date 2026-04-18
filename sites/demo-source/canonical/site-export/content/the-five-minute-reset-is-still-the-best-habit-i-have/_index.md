@@ -11,10 +11,12 @@ visibility: "public"
 summary_text: "When the apartment starts feeling loud, I set a five-minute timer and do the same small loop: dishes into the sinkclothes off the chairpapers into one stackwindow cracked open It does not fix everything, but it changes the room enough that I stop feeling stuck in it."
 collections:
   - slug: "tiny-projects"
+    title: "Tiny Projects"
     collected_at: "2026-04-03T02:31:02.000Z"
     position: 0
     pinned_at: null
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:31:02.000Z"
     position: 1
     pinned_at: null

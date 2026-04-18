@@ -199,13 +199,48 @@ time {
 }
 
 /* -------------------------------------------------------------------------
- * Page layout
+ * Page layout — Tufte horizontal frame
+ *
+ * Mirrors the main site's `.site-page > header/main/footer` rule. Every
+ * top-level section gets the same asymmetric padding so the reading column
+ * aligns with the rest of the site.
+ *
+ * 12.5% left + 4% right = 16.5% padding → content = 83.5% of the box.
+ * max-width = body-max-width / 0.835 so the inner content area exactly
+ * equals `--layout-body-max-width` on wide viewports. min() caps keep
+ * padding from growing beyond 210px / 67px. Mobile widens to 5% / 5%
+ * and the 55% content column collapses to 100% (via tokens.css).
  * ------------------------------------------------------------------------- */
 
+.site-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--site-page-bg);
+}
+
+.site-page > header,
+.site-page > main,
+.site-page > footer {
+  width: 100%;
+  max-width: calc(var(--layout-body-max-width) / 0.835);
+  padding-left: min(12.5%, 210px);
+  padding-right: min(4%, 67px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 760px) {
+  .site-page > header,
+  .site-page > main,
+  .site-page > footer {
+    padding-left: max(5%, 28px);
+    padding-right: 5%;
+  }
+}
+
 .site-main {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-  padding: var(--space-xl) var(--site-padding);
+  padding-top: var(--space-xl);
+  padding-bottom: var(--space-xl);
 }
 
 /* -------------------------------------------------------------------------
@@ -213,66 +248,121 @@ time {
  * ------------------------------------------------------------------------- */
 
 .site-header {
-  border-bottom: 1px solid var(--site-border-light);
+  padding-top: 24px;
   background-color: var(--site-page-bg);
 }
 
-.site-header-inner {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-  padding: 1.25rem var(--site-padding);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+@media (min-width: 700px) {
+  .site-header {
+    padding-top: 30px;
+  }
 }
 
-.site-title {
-  display: inline-flex;
+.site-header-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.site-header-top {
+  display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: space-between;
+  gap: clamp(0.6rem, 2.2vw, 1rem);
+  flex-wrap: nowrap;
+  min-height: 2.75rem;
+  width: 100%;
+}
+
+.site-header-top-bordered {
+  padding-bottom: 15px;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--site-divider) 74%, transparent);
+}
+
+@media (min-width: 700px) {
+  .site-header-top-bordered {
+    padding-bottom: 18px;
+  }
+}
+
+.site-logo {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0.15rem 0;
   font-family: var(--font-site-title);
   font-size: var(--type-subtitle);
   font-weight: var(--fw-regular);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--site-text-primary);
   text-decoration: none;
 }
 
-.site-title:hover,
-.site-title:focus {
+.site-logo:hover,
+.site-logo:focus {
   color: var(--site-text-primary);
   text-decoration: none;
 }
 
-.site-avatar {
-  width: 36px;
-  height: 36px;
+.site-logo-avatar {
+  width: calc(var(--avatar-size) + 2px);
+  height: calc(var(--avatar-size) + 2px);
   border-radius: var(--avatar-radius);
   object-fit: cover;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--site-divider) 82%, transparent);
+  flex: none;
 }
 
-.site-nav-list {
+.site-logo-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-header-nav {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 1.25rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.site-nav-link {
+  justify-content: flex-end;
+  gap: clamp(0.6rem, 2.2vw, 1rem);
+  margin-left: auto;
+  min-width: 0;
   font-family: var(--font-ui);
-  font-size: var(--type-secondary);
-  color: var(--site-text-secondary);
-  text-decoration: none;
 }
 
-.site-nav-link:hover,
-.site-nav-link:focus {
-  color: var(--site-text-primary);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+.site-header-link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  position: relative;
+  min-height: 2rem;
+  padding: 0.15rem 0;
+  font-size: var(--type-ui-meta);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--site-text-secondary) 62%, transparent);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.site-header-link:hover,
+.site-header-link:focus {
+  color: color-mix(
+    in srgb,
+    var(--site-text-primary) 84%,
+    var(--site-text-secondary)
+  );
+  text-decoration: none;
 }
 
 /* -------------------------------------------------------------------------
@@ -280,15 +370,14 @@ time {
  * ------------------------------------------------------------------------- */
 
 .site-footer {
-  border-top: 1px solid var(--site-border-light);
   margin-top: calc(var(--space-xl) * 2);
+  padding-top: var(--space-xl);
+  padding-bottom: var(--space-xl);
+  border-top: 1px solid var(--site-border-light);
   background-color: var(--site-page-bg);
 }
 
 .site-footer-inner {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-  padding: var(--space-xl) var(--site-padding);
   font-size: var(--type-sm);
   color: var(--site-reading-meta);
   display: flex;
@@ -316,6 +405,70 @@ time {
 .site-footer-branding {
   margin: 0;
   font-size: var(--type-xs);
+}
+
+/* -------------------------------------------------------------------------
+ * Tufte content-width constraint
+ *
+ * Mirrors the main site's 55% rule: reading text occupies a narrow
+ * column inside the Tufte frame, leaving a wide right margin that
+ * would host sidenotes on the main site. Media (images, video, audio)
+ * is NOT included — galleries intentionally span the full frame so
+ * they can breathe.
+ *
+ * Mobile (<=760px): `--layout-content-width` collapses to 100% via
+ * tokens.css. Tablet: cap at 35rem for readability.
+ * ------------------------------------------------------------------------- */
+
+.section-header,
+.section-body,
+.post-card-title,
+.post-card-summary,
+.post-card-link-host,
+.post-card-quote,
+.post-card-quote-commentary,
+.post-card-footer,
+.reply-title,
+.reply-body,
+.reply-link-host,
+.reply-footer,
+.thread-title,
+.thread-body,
+.thread-link-host,
+.thread-footer,
+.archive-list,
+.collection-directory,
+.pagination,
+.empty-state,
+.page-summary {
+  width: var(--layout-content-width);
+  max-width: 100%;
+}
+
+@media (min-width: 761px) and (max-width: 1024px) {
+  .section-header,
+  .section-body,
+  .post-card-title,
+  .post-card-summary,
+  .post-card-link-host,
+  .post-card-quote,
+  .post-card-quote-commentary,
+  .post-card-footer,
+  .reply-title,
+  .reply-body,
+  .reply-link-host,
+  .reply-footer,
+  .thread-title,
+  .thread-body,
+  .thread-link-host,
+  .thread-footer,
+  .archive-list,
+  .collection-directory,
+  .pagination,
+  .empty-state,
+  .page-summary {
+    width: min(100%, 35rem);
+  }
 }
 
 /* -------------------------------------------------------------------------
@@ -360,38 +513,34 @@ time {
   border-bottom: 1px solid var(--site-border-light);
 }
 
+/* Decorative divider between posts in a timeline feed. Mirrors the main
+   site's `hr.feed-divider`: a trio of small chevron marks masked from the
+   current text color, so it picks up the theme automatically.
+   `margin-left` centers the divider within the 55% reading column so it
+   visually sits at the middle of the post-card text stack. */
+hr.feed-divider {
+  border: none;
+  width: 30px;
+  height: 9px;
+  margin: 0;
+  margin-left: calc(var(--layout-content-width) / 2 - 15px);
+  color: var(--site-feed-divider-color);
+  background-color: currentColor;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='black' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='black' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
 .post-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-}
-
-.post-card-meta {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
-}
-
-.post-card-permalink {
-  color: inherit;
-  text-decoration: none;
-}
-
-.post-card-permalink:hover time,
-.post-card-permalink:focus time {
-  color: var(--site-text-primary);
-}
-
-.post-card-pin {
-  font-size: var(--type-2xs);
-  text-transform: uppercase;
-  letter-spacing: var(--type-label-tracking);
-  color: var(--site-accent);
-  border: 1px solid var(--site-accent);
-  padding: 0.1em 0.5em;
-  border-radius: 999px;
 }
 
 .post-card-title {
@@ -428,26 +577,6 @@ time {
 
 .post-card-link-host a {
   color: inherit;
-}
-
-.post-card-quote {
-  margin: 0;
-}
-
-.post-card-quote-attribution,
-.reply-quote-attribution,
-.thread-quote-attribution {
-  margin-top: 0.5em;
-  font-style: normal;
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
-}
-
-.post-card-link {
-  padding: 1rem;
-  border: 1px solid var(--site-feed-card-border);
-  background-color: var(--site-feed-link-tint);
-  border-radius: 0.375rem;
 }
 
 .post-card-media,
@@ -508,86 +637,440 @@ time {
   text-decoration: underline;
 }
 
-.post-card-footer {
-  font-size: var(--type-sm);
+/* -------------------------------------------------------------------------
+ * Quote format — decorative mark, serif body, attribution line
+ * ------------------------------------------------------------------------- */
+
+.post-card-quote {
+  margin: 0;
+  padding: 0;
+  border-left: 0;
+  background: transparent;
+  color: var(--site-reading-quote);
+  font-style: normal;
 }
 
-.post-card-readmore {
-  color: var(--site-reading-meta);
+.post-card-quote-mark {
+  display: block;
+  position: relative;
+  width: 1.7rem;
+  margin-bottom: -0.1rem;
+  margin-left: -0.04rem;
+  line-height: 0;
+  pointer-events: none;
+  color: color-mix(in srgb, var(--site-accent) 14%, var(--site-divider));
+  opacity: 0.66;
+}
+
+.post-card-quote-mark svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.post-card-quote-content {
+  font-family: var(--font-serif);
+  color: var(--site-text-primary);
+  font-size: var(--type-content-subtitle);
+  line-height: var(--type-heading-leading);
+  white-space: pre-line;
+  text-wrap: pretty;
+  margin: 0;
+}
+
+.post-card-quote-attribution {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 0.95rem;
+  color: var(--site-text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--type-ui-meta);
+  font-style: normal;
+  line-height: 1.3;
+}
+
+.post-card-quote-attribution::before {
+  content: "";
+  width: 0.9rem;
+  height: 1px;
+  background: color-mix(
+    in srgb,
+    var(--site-text-secondary) 38%,
+    var(--site-divider)
+  );
+}
+
+.post-card-quote-source {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--site-text-secondary) 55%,
+    transparent
+  );
+  text-underline-offset: 3px;
+}
+
+.post-card-quote-source:hover,
+.post-card-quote-source:focus {
+  color: var(--site-text-primary);
+  text-decoration-color: currentColor;
+}
+
+.post-card-quote-commentary {
+  position: relative;
+  margin-top: 1.1rem;
+  padding-top: 0.95rem;
+  color: color-mix(
+    in srgb,
+    var(--site-text-secondary) 84%,
+    var(--site-text-primary)
+  );
+  text-wrap: pretty;
+}
+
+.post-card-quote-commentary::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--site-divider) 48%, transparent) 16%,
+    color-mix(in srgb, var(--site-divider) 78%, transparent) 50%,
+    color-mix(in srgb, var(--site-divider) 48%, transparent) 84%,
+    transparent 100%
+  );
+}
+
+.post-card-quote-commentary.prose > :first-child {
+  margin-top: 0;
+}
+
+.post-card-quote-commentary.prose > :last-child {
+  margin-bottom: 0;
+}
+
+.post-card-quote-commentary p {
+  margin: 0;
+}
+
+.post-card-quote-commentary p + p,
+.post-card-quote-commentary ul,
+.post-card-quote-commentary ol,
+.post-card-quote-commentary blockquote,
+.post-card-quote-commentary pre {
+  margin-top: 0.55rem;
+}
+
+/* Fade the post meta on quote cards so the quote body stays visually primary. */
+.post-card-quote ~ .post-card-footer,
+.post-card-quote-commentary + .post-card-footer {
+  opacity: 0.72;
+}
+
+/* -------------------------------------------------------------------------
+ * Post footer — meta (featured, time, external link, collections, pinned)
+ * ------------------------------------------------------------------------- */
+
+.post-card-footer,
+.reply-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  min-height: 2rem;
+  font-size: var(--type-ui-hint);
+}
+
+.post-footer-detail {
+  margin-top: 24px;
+  font-size: var(--type-ui-meta);
+  color: var(--site-text-secondary);
+}
+
+.post-footer-meta {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+  font-family: var(--font-ui);
+  line-height: 1.35;
+  color: var(--site-text-secondary);
+}
+
+.post-footer-meta time {
+  font-size: inherit;
+  color: inherit;
+}
+
+.post-footer-featured {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(
+    in srgb,
+    var(--search-mark-color) 72%,
+    var(--site-text-secondary)
+  );
+  flex-shrink: 0;
+}
+
+.post-footer-featured svg {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.9;
+}
+
+.post-footer-link {
+  color: var(--site-text-secondary);
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.post-card-readmore:hover,
-.post-card-readmore:focus {
+.post-footer-link:hover,
+.post-footer-link:focus {
   color: var(--site-text-primary);
   text-decoration: underline;
 }
 
-/* -------------------------------------------------------------------------
- * Thread preview (list pages: root context + hero latest reply)
- * ------------------------------------------------------------------------- */
-
-.thread-preview {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.thread-preview-context {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding-left: 0.75rem;
-  border-left: 2px solid var(--site-border-light);
-  color: var(--site-reading-meta);
-}
-
-.thread-preview-context-item {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  font-size: var(--type-sm);
-  color: inherit;
+.post-footer-external-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.6rem;
+  color: var(--site-text-secondary);
   text-decoration: none;
+  transition:
+    color 0.18s ease,
+    background-color 0.16s ease;
+  flex-shrink: 0;
 }
 
-.thread-preview-context-item:hover,
-.thread-preview-context-item:focus {
+.post-footer-external-link:hover,
+.post-footer-external-link:focus {
   color: var(--site-text-primary);
 }
 
-.thread-preview-context-item time {
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
-  color: var(--site-reading-meta);
+.post-footer-external-link svg {
+  width: 1rem;
+  height: 1rem;
 }
 
-.thread-preview-context-text {
+.post-collection-tags {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--site-text-secondary);
+}
+
+.post-collection-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+  max-width: min(100%, 22ch);
+}
+
+.post-collection-tag:hover,
+.post-collection-tag:focus {
+  color: var(--site-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.post-collection-tag-text {
+  display: block;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.post-card-pin {
+  font-size: var(--type-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--site-accent);
+  border: 1px solid var(--site-accent);
+  padding: 0.1em 0.5em;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* -------------------------------------------------------------------------
+ * Thread preview (list pages: root context + hero latest reply)
+ *
+ * Mirrors the main site's `.thread-group.thread-group-preview` layout:
+ * content sits flush-left inside the preview, and the vertical rail +
+ * dot markers are positioned OUTSIDE the content (overflowing into the
+ * container's left gutter) via a negative `left` on the rail/dots.
+ * ------------------------------------------------------------------------- */
+
+.thread-preview {
+  /* Rail position: negative = overflow outside content. Mirrors
+     `--site-thread-rail-line-left` on the main site. */
+  --thread-rail-left: -27px;
+  --thread-rail-width: 1px;
+  --thread-rail-indent: 0px;
+  --thread-dot-size: 10px;
+  --thread-dot-ring-width: 2px;
+  --thread-dot-border-width: 2px;
+  --thread-hero-dot-size: 14px;
+  --thread-hero-dot-border-width: 3px;
+  --thread-item-spacing: 0.35rem;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-left: var(--thread-rail-indent);
+}
+
+@media (max-width: 760px) {
+  .thread-preview {
+    --thread-rail-left: -11px;
+    --thread-rail-indent: 8px;
+  }
+}
+
+/* Continuous vertical rail — subtle gradient so the line fades into
+   whitespace at the top and tail. Sits outside the content via negative
+   `left`. */
+.thread-preview::before {
+  content: "";
+  position: absolute;
+  left: var(--thread-rail-left);
+  top: 0;
+  bottom: 0;
+  width: var(--thread-rail-width);
+  background: linear-gradient(
+    180deg,
+    transparent 0,
+    color-mix(in srgb, var(--site-threadline) 85%, transparent) 8%,
+    color-mix(in srgb, var(--site-threadline) 55%, transparent) 100%
+  );
+  pointer-events: none;
+}
+
+.thread-preview-context {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-xl) * 1.1);
+  margin: 0;
+  padding: 0;
+  border-left: 0;
+}
+
+/* Individual entry in a thread preview — wraps a full `.post-card` so
+   the root, second, and penultimate replies render with their own
+   title/body/footer. Dot marker sits on the rail at the card's
+   vertical midpoint. */
+.thread-preview .thread-item {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.thread-preview .thread-item::before {
+  content: "";
+  position: absolute;
+  left: calc(
+    var(--thread-rail-left) + var(--thread-rail-width) / 2 -
+      var(--thread-dot-size) / 2 - var(--thread-rail-indent)
+  );
+  top: 1.4rem;
+  width: var(--thread-dot-size);
+  height: var(--thread-dot-size);
+  border-radius: 50%;
+  background-color: var(--site-threadline);
+  border: var(--thread-dot-border-width) solid var(--site-page-bg);
+  box-shadow: 0 0 0 var(--thread-dot-ring-width) var(--site-thread-dot-ring);
+  z-index: 1;
+}
+
+/* Gap "N more posts" row has no card so we place the dot at its
+   vertical midpoint instead of the card's top area. */
+.thread-preview .thread-item-gap {
+  display: flex;
+  align-items: center;
+  padding: 0.15rem 0 0.35rem;
+}
+
+.thread-preview .thread-item-gap::before {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Hidden-posts count — rendered as a rounded dashed pill matching
+   the main site's `.thread-gap-link`. */
 .thread-preview-gap {
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  margin: 0.15rem 0;
+  padding: 0.3rem 0.72rem;
+  border: 1px dashed var(--site-thread-context-border);
+  border-radius: 999px;
+  background: var(--site-thread-gap-bg);
+  color: var(--site-text-secondary);
+  font-size: var(--type-thread-context-meta);
+  line-height: 1.3;
   text-decoration: none;
-  padding-left: 0;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease;
 }
 
 .thread-preview-gap:hover,
 .thread-preview-gap:focus {
+  border-color: color-mix(in srgb, var(--site-accent) 22%, var(--site-divider));
   color: var(--site-text-primary);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
+/* Hero (latest reply) row: spacing above and below matches the main
+   site's `.thread-item-hero`, and the dot is larger + accent-colored. */
 .thread-preview-hero {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding-top: calc(var(--space-xl) * 1.1);
+  margin-top: 0;
+}
+
+.thread-preview .thread-item-hero::before {
+  left: calc(
+    var(--thread-rail-left) + var(--thread-rail-width) / 2 -
+      var(--thread-hero-dot-size) / 2 - var(--thread-rail-indent)
+  );
+  top: calc(var(--space-xl) * 1.1 + 1.4rem);
+  width: var(--thread-hero-dot-size);
+  height: var(--thread-hero-dot-size);
+  background-color: var(--site-accent);
+  border-width: var(--thread-hero-dot-border-width);
 }
 
 .thread-preview-thread-link {
+  align-self: flex-start;
   font-size: var(--type-sm);
   color: var(--site-reading-meta);
   text-decoration: none;
@@ -613,24 +1096,6 @@ time {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.thread-meta {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
-}
-
-.thread-pin {
-  font-size: var(--type-2xs);
-  text-transform: uppercase;
-  letter-spacing: var(--type-label-tracking);
-  color: var(--site-accent);
-  border: 1px solid var(--site-accent);
-  padding: 0.1em 0.5em;
-  border-radius: 999px;
 }
 
 .thread-title {
@@ -670,17 +1135,51 @@ time {
   margin-top: 0;
 }
 
-.thread-quote {
-  font-size: var(--type-content-subtitle);
+.thread-body > :last-child {
+  margin-bottom: 0;
 }
 
 .thread-replies {
+  /* Keep the rail position/size variables consistent with thread-preview so
+     the detail page shares the same visual rail. */
+  --thread-rail-left: -27px;
+  --thread-rail-width: 1px;
+  --thread-rail-indent: 0px;
+  --thread-dot-size: 10px;
+  --thread-dot-ring-width: 2px;
+  --thread-dot-border-width: 2px;
+
+  position: relative;
   margin-top: var(--space-xl);
   padding-top: var(--space-xl);
+  padding-left: var(--thread-rail-indent);
   border-top: 1px solid var(--site-border-light);
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
+}
+
+@media (max-width: 760px) {
+  .thread-replies {
+    --thread-rail-left: -11px;
+    --thread-rail-indent: 8px;
+  }
+}
+
+/* Vertical rail through the replies — aligns with the thread-preview style. */
+.thread-replies::before {
+  content: "";
+  position: absolute;
+  left: var(--thread-rail-left);
+  top: var(--space-xl);
+  bottom: 0;
+  width: var(--thread-rail-width);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--site-threadline) 85%, transparent) 0,
+    color-mix(in srgb, var(--site-threadline) 40%, transparent) 100%
+  );
+  pointer-events: none;
 }
 
 /* -------------------------------------------------------------------------
@@ -688,35 +1187,42 @@ time {
  * ------------------------------------------------------------------------- */
 
 .reply {
+  position: relative;
   scroll-margin-top: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding-left: 1rem;
-  border-left: 2px solid var(--site-threadline);
+}
+
+/* Dot marker on the thread-replies rail. The reply sits inside the
+   replies content area (at indent=0), so we subtract the indent from
+   the absolute rail position. */
+.reply::before {
+  content: "";
+  position: absolute;
+  left: calc(
+    var(--thread-rail-left) + var(--thread-rail-width) / 2 -
+      var(--thread-dot-size) / 2 - var(--thread-rail-indent)
+  );
+  top: 0.65rem;
+  width: var(--thread-dot-size);
+  height: var(--thread-dot-size);
+  border-radius: 50%;
+  background-color: var(--site-threadline);
+  border: var(--thread-dot-border-width) solid var(--site-page-bg);
+  box-shadow: 0 0 0 var(--thread-dot-ring-width) var(--site-thread-dot-ring);
 }
 
 .reply:target {
   background-color: var(--search-mark-bg);
-  border-left-color: var(--site-accent);
-  border-radius: 0 0.25rem 0.25rem 0;
+  border-radius: 0.25rem;
   padding: 0.75rem 1rem;
   margin-left: -1rem;
+  margin-right: -1rem;
 }
 
-.reply-meta {
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
-}
-
-.reply-anchor {
-  color: inherit;
-  text-decoration: none;
-}
-
-.reply-anchor:hover time,
-.reply-anchor:focus time {
-  color: var(--site-text-primary);
+.reply:target::before {
+  background-color: var(--site-accent);
 }
 
 .reply-title {
@@ -930,7 +1436,8 @@ time {
 
 @media (min-width: 768px) {
   .site-main {
-    padding: calc(var(--space-xl) * 1.5) var(--site-padding);
+    padding-top: calc(var(--space-xl) * 1.5);
+    padding-bottom: calc(var(--space-xl) * 1.5);
   }
 
   .post-card-media,

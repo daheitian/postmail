@@ -827,21 +827,57 @@
     }
   }
 
-  @media (max-width: 860px) {
-    .site-header-link-overflow {
+  /*
+   * Tiered nav collapse:
+   *   ≤960px — hide the 5th+ inline link, reveal it in More (tier-lg)
+   *   ≤780px — also hide the 4th inline link (tier-md)
+   *   ≤580px — also hide the 3rd inline link (tier-sm)
+   * The first two links always stay inline until the hamburger takes over
+   * at ≤480px (handled below).
+   */
+  @media (max-width: 960px) {
+    .site-header-link-collapse-lg {
       display: none;
     }
 
-    .site-header-more-responsive-only {
+    .site-header-more-responsive-only.site-header-more-tier-lg {
       display: inline-flex;
     }
 
-    .site-header-more-link-responsive {
+    .site-header-more-link-show-lg {
       display: flex;
     }
 
     .site-header-more-divider-responsive {
       display: block;
+    }
+  }
+
+  @media (max-width: 780px) {
+    .site-header-link-collapse-md {
+      display: none;
+    }
+
+    .site-header-more-responsive-only.site-header-more-tier-md {
+      display: inline-flex;
+    }
+
+    .site-header-more-link-show-md {
+      display: flex;
+    }
+  }
+
+  @media (max-width: 580px) {
+    .site-header-link-collapse-sm {
+      display: none;
+    }
+
+    .site-header-more-responsive-only.site-header-more-tier-sm {
+      display: inline-flex;
+    }
+
+    .site-header-more-link-show-sm {
+      display: flex;
     }
   }
 

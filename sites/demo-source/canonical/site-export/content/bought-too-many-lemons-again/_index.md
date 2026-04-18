@@ -11,6 +11,7 @@ visibility: "public"
 summary_text: "Came home from the market with a bag of lemons, parsley, eggs, and zero idea what dinner was going to be. This keeps happening. I think part of me believes citrus counts as a plan."
 collections:
   - slug: "home-cooking"
+    title: "Home Cooking"
     collected_at: "2026-04-03T02:30:34.000Z"
     position: 0
     pinned_at: null

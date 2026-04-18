@@ -6,11 +6,13 @@
     {{ partial "head.html" . }}
   </head>
   <body>
-    {{ partial "header.html" . }}
-    <main class="site-main" id="main">
-      {{ block "main" . }}{{ end }}
-    </main>
-    {{ partial "footer.html" . }}
+    <div class="site-page">
+      {{ partial "header.html" . }}
+      <main class="site-main" id="main">
+        {{ block "main" . }}{{ end }}
+      </main>
+      {{ partial "footer.html" . }}
+    </div>
     {{/* Mount the shared media lightbox web component once per page.
          The component installs a document-level click listener on connect
          and intercepts clicks on [data-post-media] a[data-lightbox-index]. */}}

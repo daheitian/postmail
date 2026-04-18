@@ -14,6 +14,7 @@ visibility: "public"
 summary_text: "Tonight's tiny project: make the desk usable again without buying a single organizer."
 collections:
   - slug: "tiny-projects"
+    title: "Tiny Projects"
     collected_at: "2026-04-03T02:30:41.000Z"
     position: 0
     pinned_at: null

@@ -14,10 +14,12 @@ visibility: "public"
 summary_text: "Went into the bookshop for one notebook and left with a novel, essays, and a coffee I did not need. Classic behavior."
 collections:
   - slug: "reading-notes"
+    title: "Reading Notes"
     collected_at: "2026-04-03T02:30:45.000Z"
     position: 0
     pinned_at: null
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:30:45.000Z"
     position: 1
     pinned_at: null

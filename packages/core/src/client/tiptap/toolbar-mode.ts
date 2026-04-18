@@ -2,7 +2,11 @@ import type { EditorView } from "@tiptap/pm/view";
 
 export type FormattingToolbarMode = "default" | "compose";
 
-const MOBILE_FORMATTING_QUERY = "(max-width: 700px), (pointer: coarse)";
+// Dock the formatting toolbar to the bottom of the compose surface only on
+// touch-first devices. `(pointer: coarse)` targets the primary input, so real
+// mobile/tablets match but a narrow desktop window (e.g. browser used as a
+// sidebar) keeps the floating bubble menu near the selection.
+const MOBILE_FORMATTING_QUERY = "(pointer: coarse)";
 
 export function isComposeDockedToolbar(mode: FormattingToolbarMode): boolean {
   return (

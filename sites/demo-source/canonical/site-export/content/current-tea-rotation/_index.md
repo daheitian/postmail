@@ -11,10 +11,12 @@ visibility: "public"
 summary_text: "The kitchen shelf is doing a lot of work right now. Jasmine for late afternoonsBlack tea when I need to become a person quicklyMint tea after dinner when I want the day to stop talking Nothing profound here. I just like having a small system for ordinary comfort."
 collections:
   - slug: "home-cooking"
+    title: "Home Cooking"
     collected_at: "2026-04-03T02:30:35.000Z"
     position: 0
     pinned_at: null
   - slug: "weekend-notes"
+    title: "Weekend Notes"
     collected_at: "2026-04-03T02:30:35.000Z"
     position: 1
     pinned_at: null

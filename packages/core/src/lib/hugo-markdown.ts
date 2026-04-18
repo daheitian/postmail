@@ -21,6 +21,13 @@
  */
 export interface HugoCollectionRef {
   slug: string;
+  /**
+   * Denormalized collection title. Emitted so Hugo templates can render
+   * the collection name directly from front matter without a site-wide
+   * lookup. Import is authoritative via `slug`; `title` is refreshed on
+   * every export and ignored on round-trip.
+   */
+  title?: string;
   collected_at?: string;
   position?: number;
   pinned_at?: string | null;

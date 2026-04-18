@@ -13,10 +13,12 @@ link_url: "https://sive.rs/"
 rating: 4
 collections:
   - slug: "reading-notes"
+    title: "Reading Notes"
     collected_at: "2026-04-03T02:30:36.000Z"
     position: 0
     pinned_at: null
   - slug: "useful-links"
+    title: "Useful Links"
     collected_at: "2026-04-03T02:30:36.000Z"
     position: 1
     pinned_at: null

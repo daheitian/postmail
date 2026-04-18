@@ -13,10 +13,12 @@ link_url: "https://www.recurse.com/manual"
 rating: 5
 collections:
   - slug: "tiny-projects"
+    title: "Tiny Projects"
     collected_at: "2026-04-03T02:31:04.000Z"
     position: 0
     pinned_at: null
   - slug: "useful-links"
+    title: "Useful Links"
     collected_at: "2026-04-03T02:31:04.000Z"
     position: 1
     pinned_at: null
