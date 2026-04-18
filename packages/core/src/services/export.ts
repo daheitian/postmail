@@ -291,6 +291,7 @@ export function createExportService(
           collectionSlugMap,
           rawMediaByPost,
           siteConfig,
+          deps.storage ?? null,
         );
         exportFiles.push(...bundleFiles);
       }
@@ -661,6 +662,7 @@ async function buildThreadBundle(
   collectionSlugMap: Map<string, string>,
   mediaByPost: Map<string, Media[]>,
   siteConfig: SiteConfig,
+  storage: StorageDriver | null,
 ): Promise<ExportFile[]> {
   const files: ExportFile[] = [];
 
@@ -675,8 +677,12 @@ async function buildThreadBundle(
 
   // Root front matter.
   const rootMedia = mediaByPost.get(root.id) ?? [];
-  const rootResources = rootMedia.map((m) =>
-    mediaToResource(m, resourceFileNameForMedia(m)),
+  const rootMediaFiles = rootMedia.map((m) => ({
+    media: m,
+    resourceName: resourceFileNameForMedia(m),
+  }));
+  const rootResources = rootMediaFiles.map(({ media, resourceName }) =>
+    mediaToResource(media, resourceName),
   );
   const rootFrontMatter: HugoFrontMatter = {
     id: root.id,
@@ -722,22 +728,32 @@ async function buildThreadBundle(
     content: `${await formatFrontMatter(rootFrontMatter)}\n${rootBody}${rootBody.endsWith("\n") ? "" : "\n"}`,
   });
 
-  // Root media as sibling page-resource files. Media bytes are written
-  // when the raw storage bytes are reachable from here; the CLI's
-  // site-localize step also downloads CDN-hosted bytes as a fallback.
-  // `siteConfig` is only consulted for URL building — actual bytes
-  // depend on the storage driver, which we don't have inside this
-  // helper. Downstream code handles both cases (URL rewrite only vs.
-  // localized file), so we just emit the front matter entries and let
-  // the CLI localize media.
+  // Root media as sibling page-resource files. When storage is reachable
+  // we emit the bytes directly into the bundle dir so Hugo's page-resource
+  // lookup (`.Resources.GetMatch`) works without any extra localization
+  // step. The CLI's site-localize step still handles media URLs embedded
+  // in the post body (via `<img>` / markdown image syntax) by rewriting
+  // them into `static/media/`.
   void siteConfig;
+  for (const { media, resourceName } of rootMediaFiles) {
+    const mediaFile = await readMediaResourceFile(
+      storage,
+      media,
+      `content/${rootSlug}/${resourceName}`,
+    );
+    if (mediaFile) files.push(mediaFile);
+  }
 
   // Replies as nested leaf bundles.
   for (const reply of threadReplies) {
     const replySlug = slugMap.get(reply.id) ?? reply.slug;
     const replyMedia = mediaByPost.get(reply.id) ?? [];
-    const replyResources = replyMedia.map((m) =>
-      mediaToResource(m, resourceFileNameForMedia(m)),
+    const replyMediaFiles = replyMedia.map((m) => ({
+      media: m,
+      resourceName: resourceFileNameForMedia(m),
+    }));
+    const replyResources = replyMediaFiles.map(({ media, resourceName }) =>
+      mediaToResource(media, resourceName),
     );
     const replyCollectionEntries = buildExportedCollectionEntriesForPost(
       reply.id,
@@ -789,9 +805,40 @@ async function buildThreadBundle(
       path: `content/${rootSlug}/${replySlug}/index.md`,
       content: `${await formatFrontMatter(replyFrontMatter)}\n${replyBody}${replyBody.endsWith("\n") ? "" : "\n"}`,
     });
+
+    for (const { media, resourceName } of replyMediaFiles) {
+      const mediaFile = await readMediaResourceFile(
+        storage,
+        media,
+        `content/${rootSlug}/${replySlug}/${resourceName}`,
+      );
+      if (mediaFile) files.push(mediaFile);
+    }
   }
 
   return files;
+}
+
+/**
+ * Read a media record's bytes from storage and return an ExportFile so
+ * they can be bundled next to the post as a Hugo page resource. Returns
+ * null when storage is unavailable or the object cannot be read, in
+ * which case the front matter entry still points at the resource name
+ * and the CLI's localize step (or a later sync) can fill it in.
+ */
+async function readMediaResourceFile(
+  storage: StorageDriver | null,
+  media: Media,
+  bundlePath: string,
+): Promise<ExportFile | null> {
+  if (!storage) return null;
+  try {
+    const bytes = await readStorageObjectBytes(storage, media.storageKey);
+    if (!bytes) return null;
+    return { path: bundlePath, content: bytes };
+  } catch {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------

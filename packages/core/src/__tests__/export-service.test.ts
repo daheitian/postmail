@@ -501,4 +501,83 @@ describe("createExportService (Hugo)", () => {
     expect(resource.params?.height).toBe(768);
     expect(resource.params?.blurhash).toBe("L6PZfSi_.AyE_3t7t7R**0o#DgR4");
   });
+
+  it("bundles media bytes into root and reply bundle dirs when a storage driver is provided", async () => {
+    const root = makePost({
+      id: "post-root",
+      slug: "with-media",
+      threadId: "post-root",
+    });
+    const reply = makePost({
+      id: "post-reply",
+      slug: "reply-one",
+      replyToId: "post-root",
+      threadId: "post-root",
+      createdAt: 1773018000,
+      publishedAt: 1773018000,
+    });
+    const rootMedia = makeMedia({
+      id: "med-root",
+      filename: "root.webp",
+      storageKey: "media/med-root.webp",
+    });
+    const replyMedia = makeMedia({
+      id: "med-reply",
+      filename: "reply.png",
+      mimeType: "image/png",
+      storageKey: "media/med-reply.png",
+    });
+    const storedBytes = new Map<string, Uint8Array>([
+      ["media/med-root.webp", new Uint8Array([1, 2, 3])],
+      ["media/med-reply.png", new Uint8Array([9, 9, 9, 9])],
+    ]);
+    const storage = {
+      get: async (key: string) => {
+        const bytes = storedBytes.get(key);
+        if (!bytes) return null;
+        return {
+          body: new Blob([new Uint8Array(bytes)]).stream(),
+        };
+      },
+    };
+    const service = createExportService(
+      buildServices({
+        posts: [root, reply],
+        mediaByPost: new Map([
+          ["post-root", [rootMedia]],
+          ["post-reply", [replyMedia]],
+        ]),
+      }),
+      makeSiteConfig(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      { storage: storage as any },
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    const rootPath = "content/with-media/med-root.webp";
+    const replyPath = "content/with-media/reply-one/med-reply.png";
+    expect(files.has(rootPath)).toBe(true);
+    expect(files.has(replyPath)).toBe(true);
+    expect(files.get(rootPath)).toEqual(new Uint8Array([1, 2, 3]));
+    expect(files.get(replyPath)).toEqual(new Uint8Array([9, 9, 9, 9]));
+  });
+
+  it("skips media byte emission when no storage driver is available", async () => {
+    const root = makePost({ id: "post-root", slug: "with-media" });
+    const media = makeMedia({
+      id: "med-x",
+      filename: "x.webp",
+      storageKey: "media/med-x.webp",
+    });
+    const service = createExportService(
+      buildServices({
+        posts: [root],
+        mediaByPost: new Map([["post-root", [media]]]),
+      }),
+      makeSiteConfig(),
+      // No storage passed — front matter still lists the resource but no
+      // bytes are emitted.
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    expect(files.has("content/with-media/med-x.webp")).toBe(false);
+  });
 });
