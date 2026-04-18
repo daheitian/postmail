@@ -26,6 +26,7 @@ exportApiRoutes.post("/hugo", requireAuthApi(), async (c) => {
       siteLanguage: appConfig.siteLanguage,
       showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
       homeDefaultView: getHomeDefaultViewFromNavItems(navItems),
+      mainRssFeed: appConfig.mainRssFeed,
       siteFooter: appConfig.siteFooter,
       showHeaderAvatar: appConfig.showHeaderAvatar,
       siteAvatarUrl: appConfig.siteAvatarUrl,
@@ -47,6 +48,7 @@ exportApiRoutes.post("/hugo", requireAuthApi(), async (c) => {
       navItems,
       pageSize: appConfig.pageSize,
       archivePageSize: appConfig.archivePageSize,
+      rssFeedLimit: appConfig.rssFeedLimit,
     },
     {
       storage: c.var.storage,

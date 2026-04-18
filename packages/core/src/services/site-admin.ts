@@ -624,6 +624,7 @@ export function createSiteAdminService(
           siteLanguage: appConfig.siteLanguage,
           showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
           homeDefaultView: getHomeDefaultViewFromNavItems(navItemList),
+          mainRssFeed: appConfig.mainRssFeed,
           siteFooter: appConfig.siteFooter,
           showHeaderAvatar: appConfig.showHeaderAvatar,
           siteAvatarUrl: appConfig.siteAvatarUrl,
@@ -645,6 +646,7 @@ export function createSiteAdminService(
           navItems: navItemList,
           pageSize: appConfig.pageSize,
           archivePageSize: appConfig.archivePageSize,
+          rssFeedLimit: appConfig.rssFeedLimit,
         },
         {
           storage: deps.storage ?? null,

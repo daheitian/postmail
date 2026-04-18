@@ -220,7 +220,8 @@ time {
 
 .site-page > header,
 .site-page > main,
-.site-page > footer {
+.site-page > footer,
+.site-page > .home-branding-credit {
   width: 100%;
   max-width: calc(var(--layout-body-max-width) / 0.835);
   padding-left: min(12.5%, 210px);
@@ -232,7 +233,8 @@ time {
 @media (max-width: 760px) {
   .site-page > header,
   .site-page > main,
-  .site-page > footer {
+  .site-page > footer,
+  .site-page > .home-branding-credit {
     padding-left: max(5%, 28px);
     padding-right: 5%;
   }
@@ -277,8 +279,6 @@ time {
 
 .site-header-top-bordered {
   padding-bottom: 15px;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--site-divider) 74%, transparent);
 }
 
 @media (min-width: 700px) {
@@ -330,7 +330,7 @@ time {
 .site-header-nav {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
   gap: clamp(0.6rem, 2.2vw, 1rem);
   margin-left: auto;
@@ -365,28 +365,221 @@ time {
   text-decoration: none;
 }
 
+.site-header-link-active {
+  color: color-mix(
+    in srgb,
+    var(--site-text-primary) 84%,
+    var(--site-text-secondary)
+  );
+}
+
+/* --- "More" dropdown ---------------------------------------------------- */
+
+.site-header-more {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-header-more-responsive-only {
+  display: none;
+}
+
+.site-header-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2rem;
+  padding: 0.15rem 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--type-ui-meta);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: color-mix(in srgb, var(--site-text-secondary) 62%, transparent);
+  transition: color 0.15s;
+}
+
+.site-header-more-btn svg {
+  width: 0.82rem;
+  height: 0.82rem;
+  transition: transform 0.18s ease;
+}
+
+.site-header-more-btn:hover,
+.site-header-more-btn[aria-expanded="true"] {
+  color: color-mix(
+    in srgb,
+    var(--site-text-primary) 84%,
+    var(--site-text-secondary)
+  );
+}
+
+.site-header-more-btn[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.site-header-more-popover {
+  display: block;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.6rem;
+  min-width: 12.25rem;
+  padding: 0.3rem 0;
+  background: var(--site-page-bg);
+  border: 0.5px solid color-mix(in srgb, var(--site-divider) 80%, transparent);
+  border-radius: 0.4rem;
+  box-shadow:
+    0 4px 20px -8px rgba(0, 0, 0, 0.12),
+    0 2px 6px -2px rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transform-origin: top right;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0s linear 0.18s;
+  z-index: 50;
+}
+
+.site-header-more-popover[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+.site-header-more-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  font-family: var(--font-ui);
+  font-size: var(--type-ui-meta);
+  color: var(--site-text-secondary);
+  text-decoration: none;
+  transition:
+    color 0.15s,
+    background-color 0.15s;
+}
+
+.site-header-more-link:hover,
+.site-header-more-link:focus {
+  color: color-mix(
+    in srgb,
+    var(--site-text-primary) 84%,
+    var(--site-text-secondary)
+  );
+  background: color-mix(in srgb, var(--site-nav-hover-bg) 58%, transparent);
+  text-decoration: none;
+}
+
+.site-header-more-link-active {
+  color: color-mix(
+    in srgb,
+    var(--site-text-primary) 84%,
+    var(--site-text-secondary)
+  );
+}
+
+.site-header-more-link-responsive,
+.site-header-more-divider-responsive {
+  display: none;
+}
+
+.site-header-more-divider {
+  height: 0;
+  margin: 0.35rem 0.75rem;
+  border-top: 0.5px solid
+    color-mix(in srgb, var(--site-divider) 60%, transparent);
+}
+
+/* --- Tiered responsive collapse ---------------------------------------- *
+ *
+ *   ≤960px — 5th+ inline link collapses into More (tier-lg)
+ *   ≤780px — also 4th collapses (tier-md)
+ *   ≤580px — also 3rd collapses (tier-sm)
+ * The first two links always stay inline. No hamburger on static export —
+ * at very narrow widths 2 inline links + More button is the floor.
+ */
+
+@media (max-width: 960px) {
+  .site-header-link-collapse-lg {
+    display: none;
+  }
+
+  .site-header-more-responsive-only.site-header-more-tier-lg {
+    display: inline-flex;
+  }
+
+  .site-header-more-link-show-lg {
+    display: flex;
+  }
+
+  .site-header-more-divider-responsive {
+    display: block;
+  }
+}
+
+@media (max-width: 780px) {
+  .site-header-link-collapse-md {
+    display: none;
+  }
+
+  .site-header-more-responsive-only.site-header-more-tier-md {
+    display: inline-flex;
+  }
+
+  .site-header-more-link-show-md {
+    display: flex;
+  }
+}
+
+@media (max-width: 580px) {
+  .site-header-link-collapse-sm {
+    display: none;
+  }
+
+  .site-header-more-responsive-only.site-header-more-tier-sm {
+    display: inline-flex;
+  }
+
+  .site-header-more-link-show-sm {
+    display: flex;
+  }
+}
+
 /* -------------------------------------------------------------------------
  * Footer
  * ------------------------------------------------------------------------- */
 
 .site-footer {
-  margin-top: calc(var(--space-xl) * 2);
-  padding-top: var(--space-xl);
+  margin-top: var(--space-xl);
   padding-bottom: var(--space-xl);
-  border-top: 1px solid var(--site-border-light);
+  color: var(--site-text-secondary);
+  font-size: var(--type-xs);
   background-color: var(--site-page-bg);
 }
 
 .site-footer-inner {
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
+  border-top: 0.5px solid var(--site-divider);
+  padding-top: var(--space-xl);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
 .site-footer-content {
-  color: var(--site-reading-meta);
+  color: var(--site-text-secondary);
 }
 
 .site-footer-content p {
@@ -402,9 +595,31 @@ time {
   padding: 0;
 }
 
-.site-footer-branding {
-  margin: 0;
-  font-size: var(--type-xs);
+.home-branding-credit {
+  margin-top: var(--space-xl);
+  padding-bottom: var(--space-xl);
+  text-align: center;
+  color: var(--site-text-secondary);
+  font-size: var(--type-base);
+}
+
+.home-branding-credit a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 0.5px solid
+    color-mix(in srgb, var(--site-text-secondary) 45%, transparent);
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.home-branding-credit a:hover,
+.home-branding-credit a:focus-visible {
+  color: var(--site-text-primary);
+  border-color: currentColor;
 }
 
 /* -------------------------------------------------------------------------
@@ -424,19 +639,19 @@ time {
 .section-body,
 .post-card-title,
 .post-card-summary,
-.post-card-link-host,
-.post-card-quote,
+.post-card-link-domain,
+.post-card-quote-content,
+.post-card-quote-attribution,
 .post-card-quote-commentary,
 .post-card-footer,
 .reply-title,
 .reply-body,
-.reply-link-host,
+.reply-link-domain,
 .reply-footer,
 .thread-title,
 .thread-body,
-.thread-link-host,
+.thread-link-domain,
 .thread-footer,
-.archive-list,
 .collection-directory,
 .pagination,
 .empty-state,
@@ -450,19 +665,19 @@ time {
   .section-body,
   .post-card-title,
   .post-card-summary,
-  .post-card-link-host,
-  .post-card-quote,
+  .post-card-link-domain,
+  .post-card-quote-content,
+  .post-card-quote-attribution,
   .post-card-quote-commentary,
   .post-card-footer,
   .reply-title,
   .reply-body,
-  .reply-link-host,
+  .reply-link-domain,
   .reply-footer,
   .thread-title,
   .thread-body,
-  .thread-link-host,
+  .thread-link-domain,
   .thread-footer,
-  .archive-list,
   .collection-directory,
   .pagination,
   .empty-state,
@@ -568,15 +783,62 @@ hr.feed-divider {
   color: var(--site-reading-body);
 }
 
-.post-card-link-host {
-  margin: 0;
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
+/* Link card domain row — shown ABOVE the title (matches main site's
+   `.feed-link-domain` pattern). Inline flex with icon + host text. */
+.post-card-link-domain,
+.thread-link-domain,
+.reply-link-domain {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 100%;
+  margin: 0 0 0.4rem 0;
+  font-family: var(--font-ui);
+  font-size: var(--type-ui-meta);
+  font-weight: var(--fw-regular);
+  line-height: 1.3;
+  color: var(--site-text-secondary);
+  text-decoration: none;
   word-break: break-all;
+  transition: color 0.18s ease;
 }
 
-.post-card-link-host a {
-  color: inherit;
+.post-card-link-domain:hover,
+.post-card-link-domain:focus,
+.thread-link-domain:hover,
+.thread-link-domain:focus,
+.reply-link-domain:hover,
+.reply-link-domain:focus {
+  color: var(--site-text-primary);
+}
+
+.post-card-link-domain-icon {
+  width: 0.72rem;
+  height: 0.72rem;
+  flex-shrink: 0;
+}
+
+/* Slight extra breathing room below link-card titles to match main site. */
+.post-card-link-title,
+.thread-link-title,
+.reply-link-title {
+  text-wrap: pretty;
+}
+
+.post-card-link-title a,
+.thread-link-title a,
+.reply-link-title a {
+  text-decoration: none;
+}
+
+.post-card-link-title a:hover,
+.post-card-link-title a:focus,
+.thread-link-title a:hover,
+.thread-link-title a:focus,
+.reply-link-title a:hover,
+.reply-link-title a:focus {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .post-card-media,
@@ -790,7 +1052,12 @@ hr.feed-divider {
 
 .post-footer-detail {
   margin-top: 24px;
-  font-size: var(--type-ui-meta);
+  /* Match the feed/reply footer size so the root post's footer doesn't
+     visually dominate. Main site uses a larger size because every post
+     on the detail page is rendered at detail size; here only the root
+     post gets this class, which otherwise creates a mismatch with the
+     replies below. */
+  font-size: var(--type-ui-hint);
   color: var(--site-text-secondary);
 }
 
@@ -1087,9 +1354,79 @@ hr.feed-divider {
  * ------------------------------------------------------------------------- */
 
 .thread {
+  /* Rail variables match `.thread-preview` so the detail-page rail
+     shares the same visual position. */
+  --thread-rail-left: -27px;
+  --thread-rail-width: 1px;
+  --thread-rail-indent: 0px;
+  --thread-dot-size: 10px;
+  --thread-dot-ring-width: 2px;
+  --thread-dot-border-width: 2px;
+  --thread-hero-dot-size: 14px;
+  --thread-hero-dot-border-width: 3px;
+
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  padding-left: var(--thread-rail-indent);
+}
+
+@media (max-width: 760px) {
+  .thread {
+    --thread-rail-left: -11px;
+    --thread-rail-indent: 8px;
+  }
+}
+
+/* Continuous vertical rail spanning the entire thread (root post + replies).
+   Only shown when the root post actually has replies — a lone post should
+   not have a rail or dot. Matches `.thread-preview`. */
+.thread-has-replies::before {
+  content: "";
+  position: absolute;
+  left: var(--thread-rail-left);
+  top: 0;
+  bottom: 0;
+  width: var(--thread-rail-width);
+  background: linear-gradient(
+    180deg,
+    transparent 0,
+    color-mix(in srgb, var(--site-threadline) 85%, transparent) 8%,
+    color-mix(in srgb, var(--site-threadline) 55%, transparent) 100%
+  );
+  pointer-events: none;
+}
+
+/* Dot marker for each post in the thread (root + replies). Shown only when
+   there are replies so a solo post doesn't get an orphaned dot. */
+.thread .thread-item {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.thread-has-replies .thread-item::before {
+  content: "";
+  position: absolute;
+  left: calc(
+    var(--thread-rail-left) + var(--thread-rail-width) / 2 -
+      var(--thread-dot-size) / 2 - var(--thread-rail-indent)
+  );
+  top: 1.4rem;
+  width: var(--thread-dot-size);
+  height: var(--thread-dot-size);
+  border-radius: 50%;
+  background-color: var(--site-threadline);
+  border: var(--thread-dot-border-width) solid var(--site-page-bg);
+  box-shadow: 0 0 0 var(--thread-dot-ring-width) var(--site-thread-dot-ring);
+  z-index: 1;
+}
+
+.thread-item-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .thread-header {
@@ -1118,13 +1455,6 @@ hr.feed-divider {
   text-underline-offset: 0.18em;
 }
 
-.thread-link-host {
-  margin: 0;
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
-  word-break: break-all;
-}
-
 .thread-body {
   font-size: var(--type-content-body);
   line-height: var(--type-body-leading);
@@ -1140,46 +1470,12 @@ hr.feed-divider {
 }
 
 .thread-replies {
-  /* Keep the rail position/size variables consistent with thread-preview so
-     the detail page shares the same visual rail. */
-  --thread-rail-left: -27px;
-  --thread-rail-width: 1px;
-  --thread-rail-indent: 0px;
-  --thread-dot-size: 10px;
-  --thread-dot-ring-width: 2px;
-  --thread-dot-border-width: 2px;
-
-  position: relative;
-  margin-top: var(--space-xl);
-  padding-top: var(--space-xl);
-  padding-left: var(--thread-rail-indent);
-  border-top: 1px solid var(--site-border-light);
+  /* Flex container for replies. The rail and dots are provided by
+     `.thread::before` and `.thread-item::before` so replies stay visually
+     connected to the root post. */
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
-}
-
-@media (max-width: 760px) {
-  .thread-replies {
-    --thread-rail-left: -11px;
-    --thread-rail-indent: 8px;
-  }
-}
-
-/* Vertical rail through the replies — aligns with the thread-preview style. */
-.thread-replies::before {
-  content: "";
-  position: absolute;
-  left: var(--thread-rail-left);
-  top: var(--space-xl);
-  bottom: 0;
-  width: var(--thread-rail-width);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--site-threadline) 85%, transparent) 0,
-    color-mix(in srgb, var(--site-threadline) 40%, transparent) 100%
-  );
-  pointer-events: none;
 }
 
 /* -------------------------------------------------------------------------
@@ -1187,30 +1483,10 @@ hr.feed-divider {
  * ------------------------------------------------------------------------- */
 
 .reply {
-  position: relative;
   scroll-margin-top: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-}
-
-/* Dot marker on the thread-replies rail. The reply sits inside the
-   replies content area (at indent=0), so we subtract the indent from
-   the absolute rail position. */
-.reply::before {
-  content: "";
-  position: absolute;
-  left: calc(
-    var(--thread-rail-left) + var(--thread-rail-width) / 2 -
-      var(--thread-dot-size) / 2 - var(--thread-rail-indent)
-  );
-  top: 0.65rem;
-  width: var(--thread-dot-size);
-  height: var(--thread-dot-size);
-  border-radius: 50%;
-  background-color: var(--site-threadline);
-  border: var(--thread-dot-border-width) solid var(--site-page-bg);
-  box-shadow: 0 0 0 var(--thread-dot-ring-width) var(--site-thread-dot-ring);
 }
 
 .reply:target {
@@ -1244,59 +1520,6 @@ hr.feed-divider {
 
 .reply-body > :last-child {
   margin-bottom: 0;
-}
-
-.reply-link-host {
-  margin: 0;
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
-  word-break: break-all;
-}
-
-/* -------------------------------------------------------------------------
- * Archive list
- * ------------------------------------------------------------------------- */
-
-.archive-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.archive-item {
-  border-bottom: 1px solid var(--site-border-light);
-}
-
-.archive-item:last-child {
-  border-bottom: 0;
-}
-
-.archive-link {
-  display: grid;
-  grid-template-columns: 8ch 1fr;
-  gap: 1rem;
-  align-items: baseline;
-  padding: 0.6rem 0;
-  color: var(--site-reading-body);
-  text-decoration: none;
-}
-
-.archive-link:hover,
-.archive-link:focus {
-  background-color: var(--site-nav-hover-bg);
-  color: var(--site-text-primary);
-}
-
-.archive-date {
-  font-variant-numeric: tabular-nums;
-  font-size: var(--type-sm);
-  color: var(--site-reading-meta);
-}
-
-.archive-title {
-  font-size: var(--type-secondary);
 }
 
 /* -------------------------------------------------------------------------
@@ -1368,44 +1591,41 @@ hr.feed-divider {
  * ------------------------------------------------------------------------- */
 
 .pagination {
-  margin-top: calc(var(--space-xl) * 1.5);
-  padding-top: 1rem;
-  border-top: 1px solid var(--site-border-light);
-}
-
-.pagination-list {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 1rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  padding: 1.5rem 0;
   font-size: var(--type-sm);
-}
-
-.pagination-current {
-  color: var(--site-reading-meta);
   font-variant-numeric: tabular-nums;
 }
 
 .pagination-link {
-  color: var(--site-reading-body);
-  text-decoration: none;
-  padding: 0.3rem 0.5rem;
+  color: var(--site-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
 }
 
 .pagination-link:hover,
 .pagination-link:focus {
   color: var(--site-text-primary);
-  text-decoration: underline;
 }
 
 .pagination-link.is-disabled {
-  color: var(--site-reading-meta);
-  opacity: 0.5;
+  color: color-mix(in srgb, var(--site-text-secondary) 50%, transparent);
   cursor: default;
   text-decoration: none;
+}
+
+.pagination-current {
+  color: var(--site-text-primary);
+  font-weight: var(--fw-medium);
+}
+
+.pagination-ellipsis {
+  color: var(--site-text-secondary);
 }
 
 /* -------------------------------------------------------------------------

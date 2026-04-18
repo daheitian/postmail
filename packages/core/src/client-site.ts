@@ -10,5 +10,6 @@
 import "./client/audio-player.js";
 import "./client/feed-video-player.js";
 import "./client/media-scroll-hint.js";
+import "./client/site-header-nav.js";
 import "./client/components/jant-media-lightbox.js";
 import "./styles/site-media.css";

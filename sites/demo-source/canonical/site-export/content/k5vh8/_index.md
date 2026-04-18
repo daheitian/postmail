@@ -23,6 +23,7 @@ collections:
     collected_at: "2026-04-03T02:30:45.000Z"
     position: 1
     pinned_at: null
+last_activity_at: "2025-11-02T14:00:00.000Z"
 ---
 
 Went into the bookshop for one notebook and left with a novel, essays, and a coffee I did not need. Classic behavior.

@@ -295,6 +295,129 @@ describe("createExportService (Hugo)", () => {
     expect(toml).toContain('home_default_view = "featured"');
   });
 
+  it("configures hugo.toml for Atom RSS output with per-section opt-in", async () => {
+    // The root feed lives at /index.xml, featured/archive/collections feeds
+    // are opted in via per-section `outputs = ["html", "rss"]` front matter.
+    // Sections default to ["html"] so root-post branch bundles don't each
+    // emit their own /{slug}/index.xml. Taxonomy/term kinds are disabled to
+    // avoid empty /tags/ and /categories/ pages.
+    const service = createExportService(
+      buildServices({ posts: [] }),
+      makeSiteConfig({ mainRssFeed: "featured", rssFeedLimit: 25 }),
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    const toml = files.get("hugo.toml") as string;
+    expect(toml).toBeDefined();
+
+    // `disableKinds` must be at the root — not nested under a `[table]` —
+    // or TOML scoping will silently put it inside the previous table.
+    expect(toml).toMatch(/^disableKinds = \[[^\]]*taxonomy[^\]]*term/m);
+
+    expect(toml).toMatch(/\[outputs\][\s\S]*home = \[\s*"html",\s*"rss"\s*\]/);
+    expect(toml).toMatch(/\[outputs\][\s\S]*section = \[\s*"html"\s*\]/);
+
+    // Atom 2005, served as application/atom+xml at /index.xml. Text-template
+    // mode (isPlainText = true) so the template isn't HTML-escaped.
+    expect(toml).toMatch(
+      /\[outputFormats\.RSS\][\s\S]*mediaType = "application\/atom\+xml"/,
+    );
+    expect(toml).toMatch(/\[outputFormats\.RSS\][\s\S]*baseName = "index"/);
+    expect(toml).toMatch(/\[outputFormats\.RSS\][\s\S]*isPlainText = true/);
+    expect(toml).toMatch(
+      /\[mediaTypes\."application\/atom\+xml"\][\s\S]*suffixes = \[\s*"xml"\s*\]/,
+    );
+
+    // Params used by the Atom template + nav RSS link resolution.
+    expect(toml).toContain('main_rss_feed = "featured"');
+    expect(toml).toContain("rss_feed_limit = 25");
+  });
+
+  it("enables RSS output on featured, archive, and collection sections", async () => {
+    const collection = makeCollection({ id: "col-1", slug: "ideas" });
+    const service = createExportService(
+      buildServices({ posts: [], collections: [collection] }),
+      makeSiteConfig(),
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+
+    for (const path of [
+      "content/featured/_index.md",
+      "content/archive/_index.md",
+      "content/ideas/_index.md",
+    ]) {
+      const raw = files.get(path) as string;
+      expect(raw, `missing ${path}`).toBeDefined();
+      const { frontMatter } = await parseFrontMatter(raw);
+      expect(frontMatter.outputs, `outputs missing on ${path}`).toEqual([
+        "html",
+        "rss",
+      ]);
+    }
+  });
+
+  it("resolves the nav RSS link to /featured/index.xml when mainRssFeed=featured", async () => {
+    const service = createExportService(
+      buildServices({ posts: [] }),
+      makeSiteConfig({
+        mainRssFeed: "featured",
+        navItems: [
+          {
+            type: "system",
+            systemKey: "rss",
+            label: "RSS",
+            url: "/index.xml",
+            position: 0,
+            placement: "header",
+          },
+        ],
+      }),
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    const data = files.get("data/jant.toml") as string;
+    expect(data).toBeDefined();
+    expect(data).toContain('url = "/featured/index.xml"');
+  });
+
+  it("resolves the nav RSS link to /index.xml when mainRssFeed=latest", async () => {
+    const service = createExportService(
+      buildServices({ posts: [] }),
+      makeSiteConfig({
+        mainRssFeed: "latest",
+        navItems: [
+          {
+            type: "system",
+            systemKey: "rss",
+            label: "RSS",
+            url: "/index.xml",
+            position: 0,
+            placement: "header",
+          },
+        ],
+      }),
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    const data = files.get("data/jant.toml") as string;
+    expect(data).toContain('url = "/index.xml"');
+  });
+
+  it("emits last_activity_at on root post front matter so feed <updated> tracks thread bumps", async () => {
+    const post = makePost({
+      id: "post-1",
+      slug: "root",
+      lastActivityAt: 1773100000,
+      updatedAt: 1773014400,
+    });
+    const service = createExportService(
+      buildServices({ posts: [post] }),
+      makeSiteConfig(),
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    const raw = files.get("content/root/_index.md") as string;
+    expect(raw).toBeDefined();
+    const { frontMatter } = await parseFrontMatter(raw);
+    expect(frontMatter.last_activity_at).toBe("2026-03-09T23:46:40.000Z");
+  });
+
   it("lowercases BCP-47 language codes in hugo.toml so Hugo accepts them", async () => {
     // Hugo rejects mixed-case language codes like `zh-Hant` with
     // "must be all lower case and no spaces" — so the exporter has to
@@ -375,6 +498,7 @@ describe("createExportService (Hugo)", () => {
       "themes/jant/layouts/_default/single.html",
       "themes/jant/layouts/_default/list.html",
       "themes/jant/layouts/_default/alias.html",
+      "themes/jant/layouts/_default/rss.xml",
       "themes/jant/layouts/index.html",
       "themes/jant/layouts/post/list.html",
       "themes/jant/layouts/featured/list.html",
@@ -387,6 +511,7 @@ describe("createExportService (Hugo)", () => {
       "themes/jant/layouts/partials/pagination.html",
       "themes/jant/layouts/partials/post-card.html",
       "themes/jant/layouts/partials/reply.html",
+      "themes/jant/layouts/partials/feed-post-content.xml",
     ];
     for (const path of expectedLayouts) {
       expect(files.has(path), `missing ${path}`).toBe(true);

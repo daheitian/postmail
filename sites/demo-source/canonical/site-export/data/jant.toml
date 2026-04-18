@@ -1,10 +1,11 @@
 format = "jant-site"
 version = 1
-generated_at = "2026-04-18T15:18:13.000Z"
+generated_at = "2026-04-18T18:33:21.000Z"
 site_name = "Jant"
 site_description = "Thoughts, links, and quotes — one post at a time"
 site_language = "en"
 home_default_view = "latest"
+main_rss_feed = "featured"
 show_jant_branding_on_home = true
 show_header_avatar = false
 noindex = false
@@ -17,6 +18,7 @@ font_theme_id = "tufte"
 theme_mode = "auto"
 page_size = 50
 archive_page_size = 50
+rss_feed_limit = 50
 favicon_path = "/favicon.ico"
 apple_touch_icon_path = "/apple-touch-icon.png"
 site_avatar_url = "/media/7d1da94fd970-med_01kn8jtq3penf98tfq4gzmh9g9.png"
@@ -53,15 +55,8 @@ placement = "header"
 [[nav]]
 type = "system"
 label = "RSS"
-url = "/index.xml"
+url = "/featured/index.xml"
 system_key = "rss"
-placement = "more"
-
-[[nav]]
-type = "system"
-label = "Settings"
-url = "/settings"
-system_key = "settings"
 placement = "more"
 
 [[directory]]

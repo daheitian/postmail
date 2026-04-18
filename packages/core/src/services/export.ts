@@ -75,6 +75,8 @@ import PARTIAL_POST_CARD from "./export-theme/layouts/partials/post-card.html?ra
 import PARTIAL_MEDIA_GALLERY from "./export-theme/layouts/partials/media-gallery.html?raw";
 import PARTIAL_REPLY from "./export-theme/layouts/partials/reply.html?raw";
 import PARTIAL_THREAD_PREVIEW from "./export-theme/layouts/partials/thread-preview.html?raw";
+import LAYOUT_RSS from "./export-theme/layouts/_default/rss.xml?raw";
+import PARTIAL_FEED_POST_CONTENT from "./export-theme/layouts/partials/feed-post-content.xml?raw";
 
 import type { StorageDriver } from "../lib/storage.js";
 import { base64ToUint8Array } from "../lib/favicon.js";
@@ -100,6 +102,8 @@ export interface SiteConfig {
   siteLanguage: string;
   showJantBrandingOnHome: boolean;
   homeDefaultView: string;
+  /** "latest" or "featured" — drives the default RSS nav link in the exported site. */
+  mainRssFeed: string;
   siteFooter: string;
   showHeaderAvatar: boolean;
   siteAvatarUrl: string;
@@ -126,6 +130,8 @@ export interface SiteConfig {
   pageSize: number;
   /** Items per archive page — kept in sync with the main site's ARCHIVE_PAGE_SIZE. */
   archivePageSize: number;
+  /** Max items per Atom feed — kept in sync with the main site's rssFeedLimit. */
+  rssFeedLimit: number;
 }
 
 type IconExportMode = "default" | "custom";
@@ -449,6 +455,14 @@ export function createExportService(
       exportFiles.push({
         path: "themes/jant/layouts/partials/thread-preview.html",
         content: PARTIAL_THREAD_PREVIEW,
+      });
+      exportFiles.push({
+        path: "themes/jant/layouts/_default/rss.xml",
+        content: LAYOUT_RSS,
+      });
+      exportFiles.push({
+        path: "themes/jant/layouts/partials/feed-post-content.xml",
+        content: PARTIAL_FEED_POST_CONTENT,
       });
 
       // Static assets. Load order in the template's <head> is
@@ -796,6 +810,15 @@ async function buildThreadBundle(
       root.updatedAt && root.updatedAt !== root.publishedAt
         ? toISOString(root.updatedAt)
         : undefined,
+    // `updated` only reflects edits to the root post itself; when a reply
+    // lands, it does NOT bump. For RSS we want the thread's last activity
+    // (max of all published reply timestamps) so readers re-surface a
+    // thread when a new reply appears. Kept alongside `updated` so the
+    // importer round-trips cleanly.
+    last_activity_at:
+      root.lastActivityAt !== null && root.lastActivityAt !== root.publishedAt
+        ? toISOString(root.lastActivityAt)
+        : undefined,
     slug: rootSlug,
     type: "post",
     draft:
@@ -988,6 +1011,8 @@ async function buildArchiveSection(): Promise<string> {
   const frontMatter: HugoFrontMatter = {
     title: "Archive",
     type: "archive",
+    // Opt into Atom output at /archive/index.xml.
+    outputs: ["html", "rss"],
   };
   return `${await formatFrontMatter(frontMatter)}\n`;
 }
@@ -996,6 +1021,8 @@ async function buildFeaturedSection(): Promise<string> {
   const frontMatter: HugoFrontMatter = {
     title: "Featured",
     type: "featured",
+    // Opt into Atom output at /featured/index.xml.
+    outputs: ["html", "rss"],
   };
   return `${await formatFrontMatter(frontMatter)}\n`;
 }
@@ -1012,6 +1039,8 @@ async function buildCollectionSection(
     summary_text: collection.description ?? undefined,
     sort_order: collection.sortOrder,
     entry_count: entryCount,
+    // Opt into Atom output at /{slug}/index.xml.
+    outputs: ["html", "rss"],
   };
   return `${await formatFrontMatter(frontMatter)}\n`;
 }
@@ -1211,10 +1240,16 @@ function resolveNavItemLabel(item: SiteConfig["navItems"][number]): string {
  * stored in the DB ("/latest", "/featured") are not real routes — they get
  * rewritten to "/" when they match `homeDefaultView`, otherwise they
  * resolve to the dedicated path.
+ *
+ * The "rss" system nav item points at whichever Atom feed the site has
+ * configured as its main feed: `mainRssFeed === "featured"` → the featured
+ * section feed at `/featured/index.xml`, otherwise the home feed at
+ * `/index.xml` (which mirrors the homepage's "latest" timeline).
  */
 function resolveNavItemUrl(
   item: SiteConfig["navItems"][number],
   homeDefaultView: string,
+  mainRssFeed: string,
 ): string {
   if (item.systemKey === "latest") {
     return homeDefaultView === "latest" ? "/" : "/latest/";
@@ -1224,7 +1259,9 @@ function resolveNavItemUrl(
   }
   if (item.systemKey === "collections") return "/collections/";
   if (item.systemKey === "archive") return "/archive/";
-  if (item.systemKey === "rss") return "/index.xml";
+  if (item.systemKey === "rss") {
+    return mainRssFeed === "featured" ? "/featured/index.xml" : "/index.xml";
+  }
   return item.url;
 }
 
@@ -1254,6 +1291,11 @@ function buildHugoToml(config: SiteConfig): string {
     'theme = "jant"',
     `paginate = ${config.pageSize}`,
     "enableRobotsTXT = true",
+    // Disable Hugo's built-in taxonomies — jant has no tags or categories
+    // and the default empty /tags/ and /categories/ pages are noise. This
+    // must stay at the root (before any `[table]` header) so TOML doesn't
+    // nest it under the previous table.
+    "disableKinds = ['taxonomy', 'term']",
     "",
     "[permalinks]",
     '  post = "/:slug/"',
@@ -1263,9 +1305,40 @@ function buildHugoToml(config: SiteConfig): string {
     "    [markup.goldmark.renderer]",
     "      unsafe = true",
     "",
+    // Emit an Atom 2005 feed at the site root (/index.xml). Per-section
+    // feeds (featured, archive, each collection) are opted in via each
+    // section's front matter `outputs: ["html", "rss"]` — enabling RSS on
+    // `section` globally here would also create a feed at every root post's
+    // URL, since root posts are themselves branch bundles / sections.
+    // Override the built-in RSS output format to emit Atom instead of
+    // RSS 2.0 so the wire format mirrors the main site's `lib/feed.ts`.
+    "[outputs]",
+    '  home = ["html", "rss"]',
+    // Hugo's default for sections is ["html", "rss"] — without overriding
+    // it here every root post (which is a section) would get its own
+    // /{slug}/index.xml. Turn sections off by default and re-enable RSS
+    // on just featured, archive, and each collection via per-section
+    // front matter `outputs: ["html", "rss"]`.
+    '  section = ["html"]',
+    "",
+    "[outputFormats]",
+    "  [outputFormats.RSS]",
+    '    mediaType = "application/atom+xml"',
+    '    baseName = "index"',
+    // Use text/template (not html/template) so Hugo doesn't HTML-escape
+    // the XML prologue, CDATA markers, or tag literals. Every dynamic
+    // value inside the template passes through `transform.XMLEscape`.
+    "    isPlainText = true",
+    '    rel = "alternate"',
+    "",
+    "[mediaTypes]",
+    '  [mediaTypes."application/atom+xml"]',
+    '    suffixes = ["xml"]',
+    "",
     "[params]",
     `  description = "${escapeTomlString(config.siteDescription)}"`,
     `  home_default_view = "${escapeTomlString(config.homeDefaultView)}"`,
+    `  main_rss_feed = "${escapeTomlString(config.mainRssFeed)}"`,
     `  show_jant_branding_on_home = ${config.showJantBrandingOnHome}`,
     `  show_header_avatar = ${config.showHeaderAvatar}`,
     `  noindex = ${config.noindex}`,
@@ -1275,6 +1348,7 @@ function buildHugoToml(config: SiteConfig): string {
     `  theme_mode = "${escapeTomlString(config.themeMode)}"`,
     `  page_size = ${config.pageSize}`,
     `  archive_page_size = ${config.archivePageSize}`,
+    `  rss_feed_limit = ${config.rssFeedLimit}`,
   ];
   if (config.siteAvatarUrl) {
     parts.push(
@@ -1304,6 +1378,7 @@ function buildJantDataToml(
     `site_description = "${escapeTomlString(config.siteDescription)}"`,
     `site_language = "${escapeTomlString(config.siteLanguage)}"`,
     `home_default_view = "${escapeTomlString(config.homeDefaultView)}"`,
+    `main_rss_feed = "${escapeTomlString(config.mainRssFeed)}"`,
     `show_jant_branding_on_home = ${config.showJantBrandingOnHome}`,
     `show_header_avatar = ${config.showHeaderAvatar}`,
     `noindex = ${config.noindex}`,
@@ -1316,6 +1391,7 @@ function buildJantDataToml(
     `theme_mode = "${escapeTomlString(config.themeMode)}"`,
     `page_size = ${config.pageSize}`,
     `archive_page_size = ${config.archivePageSize}`,
+    `rss_feed_limit = ${config.rssFeedLimit}`,
     'favicon_path = "/favicon.ico"',
     'apple_touch_icon_path = "/apple-touch-icon.png"',
   ];
@@ -1337,12 +1413,15 @@ function buildJantDataToml(
   }
 
   for (const item of config.navItems) {
+    // `settings` is authenticated-only and has no corresponding page in the
+    // static Hugo site — drop it at export time so it never shows up in nav.
+    if (item.systemKey === "settings") continue;
     parts.push("");
     parts.push("[[nav]]");
     parts.push(`type = "${escapeTomlString(item.type)}"`);
     parts.push(`label = "${escapeTomlString(resolveNavItemLabel(item))}"`);
     parts.push(
-      `url = "${escapeTomlString(resolveNavItemUrl(item, config.homeDefaultView))}"`,
+      `url = "${escapeTomlString(resolveNavItemUrl(item, config.homeDefaultView, config.mainRssFeed))}"`,
     );
     parts.push(`system_key = "${escapeTomlString(item.systemKey ?? "")}"`);
     parts.push(`placement = "${escapeTomlString(item.placement ?? "header")}"`);

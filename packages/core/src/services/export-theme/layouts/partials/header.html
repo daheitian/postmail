@@ -3,8 +3,35 @@
 {{- with $jant -}}{{- if eq .show_header_avatar true -}}{{- $showAvatar = true -}}{{- end -}}{{- end -}}
 {{- $avatarUrl := "" -}}
 {{- with $jant -}}{{- with .site_avatar_url -}}{{- $avatarUrl = . -}}{{- end -}}{{- end -}}
-{{- $navItems := slice -}}
-{{- with $jant -}}{{- range .nav -}}{{- if or (not .placement) (eq .placement "header") -}}{{- $navItems = $navItems | append . -}}{{- end -}}{{- end -}}{{- end -}}
+
+{{- /* Split nav items by placement: "header" (inline) vs "more" (supplemental dropdown). */ -}}
+{{- $headerItems := slice -}}
+{{- $moreItems := slice -}}
+{{- with $jant -}}{{- range .nav -}}
+  {{- if eq .placement "more" -}}
+    {{- $moreItems = $moreItems | append . -}}
+  {{- else -}}
+    {{- $headerItems = $headerItems | append . -}}
+  {{- end -}}
+{{- end -}}{{- end -}}
+
+{{- $homeURL := "/" | relURL -}}
+{{- $currentURL := .RelPermalink -}}
+{{- $headerCount := len $headerItems -}}
+{{- $hasResponsiveOverflow := gt $headerCount 2 -}}
+{{- $hasSupplementalMore := gt (len $moreItems) 0 -}}
+{{- $showMoreMenu := or $hasResponsiveOverflow $hasSupplementalMore -}}
+
+{{- /* When only responsive overflow triggers the More button (no supplemental
+       items), hide it until the narrowest tier where overflow actually kicks in. */ -}}
+{{- $moreWrapClass := "site-header-more" -}}
+{{- if and $hasResponsiveOverflow (not $hasSupplementalMore) -}}
+  {{- $tier := "site-header-more-tier-sm" -}}
+  {{- if ge $headerCount 5 -}}{{- $tier = "site-header-more-tier-lg" -}}
+  {{- else if eq $headerCount 4 -}}{{- $tier = "site-header-more-tier-md" -}}{{- end -}}
+  {{- $moreWrapClass = printf "%s site-header-more-responsive-only %s" $moreWrapClass $tier -}}
+{{- end -}}
+
 <header class="site-header" role="banner">
   <div class="site-header-inner">
     <div class="site-header-top site-header-top-bordered">
@@ -14,11 +41,72 @@
         {{- end -}}
         <span class="site-logo-text">{{ .Site.Title }}</span>
       </a>
-      {{- if $navItems -}}
+      {{- if or $headerItems $showMoreMenu -}}
         <nav class="site-header-nav" aria-label="Primary">
-          {{- range $navItems -}}
-            {{- $isExternal := or (hasPrefix .url "http://") (hasPrefix .url "https://") -}}
-            <a class="site-header-link" href="{{ .url }}"{{ if $isExternal }} rel="noopener noreferrer" target="_blank"{{ end }}>{{ .label }}</a>
+          {{- range $i, $item := $headerItems -}}
+            {{- $isExternal := or (hasPrefix $item.url "http://") (hasPrefix $item.url "https://") -}}
+            {{- $navURL := $item.url -}}
+            {{- if not $isExternal -}}{{- $navURL = $item.url | relURL -}}{{- end -}}
+            {{- $isActive := false -}}
+            {{- if not $isExternal -}}
+              {{- if eq $navURL $homeURL -}}
+                {{- if eq $currentURL $homeURL -}}{{- $isActive = true -}}{{- end -}}
+              {{- else if or (eq $currentURL $navURL) (hasPrefix $currentURL $navURL) -}}
+                {{- $isActive = true -}}
+              {{- end -}}
+            {{- end -}}
+            {{- $tierClass := "" -}}
+            {{- if eq $i 2 -}}{{- $tierClass = "site-header-link-overflow site-header-link-collapse-sm" -}}
+            {{- else if eq $i 3 -}}{{- $tierClass = "site-header-link-overflow site-header-link-collapse-md" -}}
+            {{- else if gt $i 3 -}}{{- $tierClass = "site-header-link-overflow site-header-link-collapse-lg" -}}
+            {{- else -}}{{- $tierClass = "site-header-link-primary" -}}{{- end -}}
+            <a class="site-header-link {{ $tierClass }}{{ if $isActive }} site-header-link-active{{ end }}" href="{{ $navURL }}"{{ if $isExternal }} rel="noopener noreferrer" target="_blank"{{ end }}>{{ $item.label }}</a>
+          {{- end -}}
+          {{- if $showMoreMenu -}}
+            <div class="{{ $moreWrapClass }}">
+              <button type="button" class="site-header-more-btn" aria-haspopup="menu" aria-expanded="false">
+                More
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="site-header-more-popover" aria-hidden="true">
+                {{- range $i, $item := $headerItems -}}
+                  {{- if ge $i 2 -}}
+                    {{- $isExternal := or (hasPrefix $item.url "http://") (hasPrefix $item.url "https://") -}}
+                    {{- $navURL := $item.url -}}
+                    {{- if not $isExternal -}}{{- $navURL = $item.url | relURL -}}{{- end -}}
+                    {{- $isActive := false -}}
+                    {{- if not $isExternal -}}
+                      {{- if eq $navURL $homeURL -}}
+                        {{- if eq $currentURL $homeURL -}}{{- $isActive = true -}}{{- end -}}
+                      {{- else if or (eq $currentURL $navURL) (hasPrefix $currentURL $navURL) -}}
+                        {{- $isActive = true -}}
+                      {{- end -}}
+                    {{- end -}}
+                    {{- $show := "site-header-more-link-show-lg" -}}
+                    {{- if eq $i 2 -}}{{- $show = "site-header-more-link-show-sm" -}}
+                    {{- else if eq $i 3 -}}{{- $show = "site-header-more-link-show-md" -}}{{- end -}}
+                    <a class="site-header-more-link site-header-more-link-responsive {{ $show }}{{ if $isActive }} site-header-more-link-active{{ end }}" href="{{ $navURL }}"{{ if $isExternal }} rel="noopener noreferrer" target="_blank"{{ end }}>{{ $item.label }}</a>
+                  {{- end -}}
+                {{- end -}}
+                {{- if and $hasResponsiveOverflow $hasSupplementalMore -}}
+                  <div class="site-header-more-divider site-header-more-divider-responsive"></div>
+                {{- end -}}
+                {{- range $moreItems -}}
+                  {{- $isExternal := or (hasPrefix .url "http://") (hasPrefix .url "https://") -}}
+                  {{- $navURL := .url -}}
+                  {{- if not $isExternal -}}{{- $navURL = .url | relURL -}}{{- end -}}
+                  {{- $isActive := false -}}
+                  {{- if not $isExternal -}}
+                    {{- if eq $navURL $homeURL -}}
+                      {{- if eq $currentURL $homeURL -}}{{- $isActive = true -}}{{- end -}}
+                    {{- else if or (eq $currentURL $navURL) (hasPrefix $currentURL $navURL) -}}
+                      {{- $isActive = true -}}
+                    {{- end -}}
+                  {{- end -}}
+                  <a class="site-header-more-link site-header-more-link-supplemental{{ if $isActive }} site-header-more-link-active{{ end }}" href="{{ $navURL }}"{{ if $isExternal }} rel="noopener noreferrer" target="_blank"{{ end }}>{{ .label }}</a>
+                {{- end -}}
+              </div>
+            </div>
           {{- end -}}
         </nav>
       {{- end -}}

@@ -10,7 +10,7 @@ build:
 format: "quote"
 status: "published"
 visibility: "public"
-summary_text: "The price of anything is the amount of life you exchange for it."
+summary_text: "Thought about this while deciding not to call a car for the last mile."
 source_name: "From Thoreau"
 source_url: "https://en.wikiquote.org/wiki/Henry_David_Thoreau"
 quote_text: "The price of anything is the amount of life you exchange for it."

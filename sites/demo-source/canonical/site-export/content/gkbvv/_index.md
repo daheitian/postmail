@@ -30,6 +30,7 @@ media:
     size: 15464
     provider: "r2"
     storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jvb16enf98txp7p0pf5ge.webp"
+last_activity_at: "2026-01-07T20:10:00.000Z"
 ---
 
 Tonight's tiny project: make the desk usable again without buying a single organizer.

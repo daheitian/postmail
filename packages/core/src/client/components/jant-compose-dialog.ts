@@ -1586,7 +1586,20 @@ export class JantComposeDialog extends LitElement {
   private _finishDraftSaveAndOpenDrafts() {
     if (!this._dispatchSubmit("draft")) return;
     this.reset();
-    void this._openDraftsPanel();
+    // The bridge writes the draft asynchronously via fetch after we dispatch
+    // the submit event, so fetching the drafts list immediately would miss
+    // the new draft. Wait for the bridge's completion event before loading.
+    const onComplete = () => {
+      clearTimeout(fallbackTimer);
+      if (!this.isConnected) return;
+      void this._openDraftsPanel();
+    };
+    const fallbackTimer = globalThis.setTimeout(() => {
+      document.removeEventListener("jant:compose-submit-complete", onComplete);
+    }, 10_000);
+    document.addEventListener("jant:compose-submit-complete", onComplete, {
+      once: true,
+    });
   }
 
   private _finishSubmit(status: "published" | "draft") {

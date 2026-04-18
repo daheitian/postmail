@@ -35,6 +35,7 @@ media:
     size: 13352
     provider: "r2"
     storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jtx8qenf98tm9ahxr48sw.webp"
+last_activity_at: "2025-09-27T16:50:00.000Z"
 ---
 
 Repotted the balcony herbs before breakfast. Basil was dramatic. Mint did not care at all.

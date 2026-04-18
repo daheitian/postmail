@@ -12,6 +12,7 @@ import Suggestion, {
   type SuggestionKeyDownProps,
 } from "@tiptap/suggestion";
 import type { Editor, Range } from "@tiptap/core";
+import { Plugin, PluginKey, type EditorState } from "@tiptap/pm/state";
 import { escapeHtml } from "../../lib/html.js";
 import { getBestFieldSearchRank, normalizeSearch } from "../search-rank.js";
 import {
@@ -463,6 +464,79 @@ function installClickOutside() {
 }
 
 /**
+ * Tracks whether the most recent transaction changed the document. Used by
+ * the slash `allow` callback to distinguish "user just typed a character"
+ * from "user moved the caret into an existing `/word`".
+ *
+ * This plugin must be registered BEFORE the Suggestion plugin so that by the
+ * time Suggestion's apply runs, this plugin's state already reflects the
+ * current transaction.
+ */
+const slashTypingKey = new PluginKey<{ docChanged: boolean }>(
+  "jantSlashTyping",
+);
+
+function createSlashTypingPlugin(): Plugin<{ docChanged: boolean }> {
+  return new Plugin<{ docChanged: boolean }>({
+    key: slashTypingKey,
+    state: {
+      init: () => ({ docChanged: false }),
+      apply: (tr) => ({ docChanged: tr.docChanged }),
+    },
+  });
+}
+
+/**
+ * Decide whether the slash menu should activate for this range.
+ *
+ * Two conditions must hold:
+ *
+ * 1. Context check: the match (`/` + query) must be followed by whitespace,
+ *    a block boundary, or a non-text node — so `/now` in the middle of
+ *    existing prose (`/now,` or `/now rest`) does not trigger.
+ *
+ * 2. Intent check: the menu only activates when the user is actively
+ *    *typing* — either the plugin was already active (continuing to type a
+ *    command) or the latest transaction changed the document. Moving the
+ *    caret back into a previously typed `/word` does not re-open the menu.
+ */
+function isSlashInCommandContext({
+  state,
+  range,
+}: {
+  state: EditorState;
+  range: Range;
+}): boolean {
+  const $pos = state.doc.resolve(range.to);
+  const parent = $pos.parent;
+  const offset = range.to - $pos.start();
+  if (offset >= parent.content.size) return true;
+  // Treat non-text children and block separators as whitespace-equivalent.
+  const nextChar = parent.textBetween(offset, offset + 1, " ", " ");
+  if (!nextChar) return true;
+  return /\s/.test(nextChar);
+}
+
+function shouldAllowSlash({
+  state,
+  range,
+  isActive,
+}: {
+  state: EditorState;
+  range: Range;
+  isActive?: boolean;
+}): boolean {
+  if (!isSlashInCommandContext({ state, range })) return false;
+  // Already active: user is continuing to type within the command — keep it.
+  if (isActive) return true;
+  // Becoming active: only allow if this transaction changed the document
+  // (i.e. the user just typed something). A selection-only change means the
+  // caret moved into an existing `/word`, which shouldn't open the menu.
+  const tracker = slashTypingKey.getState(state);
+  return tracker?.docChanged ?? false;
+}
+
+/**
  * Slash commands Tiptap extension.
  */
 export const SlashCommands = Extension.create({
@@ -473,6 +547,7 @@ export const SlashCommands = Extension.create({
       suggestion: {
         char: "/",
         startOfLine: false,
+        allow: shouldAllowSlash,
         items: ({ query, editor }: { query: string; editor: Editor }) => {
           const commands = getSlashCommands(editor);
           const search = normalizeSearch(query);
@@ -604,7 +679,10 @@ export const SlashCommands = Extension.create({
   },
 
   addProseMirrorPlugins() {
+    // Tracker runs first so `shouldAllowSlash` can read its fresh state
+    // when Suggestion's apply calls the `allow` callback for this transaction.
     return [
+      createSlashTypingPlugin(),
       Suggestion({
         editor: this.editor,
         ...this.options.suggestion,

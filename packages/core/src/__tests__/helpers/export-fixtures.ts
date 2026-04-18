@@ -90,6 +90,7 @@ export function makeSiteConfig(over: Partial<SiteConfig> = {}): SiteConfig {
     siteLanguage: "en",
     showJantBrandingOnHome: true,
     homeDefaultView: "latest",
+    mainRssFeed: "latest",
     siteFooter: "",
     showHeaderAvatar: false,
     siteAvatarUrl: "",
@@ -101,6 +102,7 @@ export function makeSiteConfig(over: Partial<SiteConfig> = {}): SiteConfig {
     navItems: [],
     pageSize: 10,
     archivePageSize: 50,
+    rssFeedLimit: 50,
   };
   return { ...base, ...over };
 }

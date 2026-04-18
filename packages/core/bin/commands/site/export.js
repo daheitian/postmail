@@ -219,6 +219,7 @@ async function exportLocalSite(env = process.env) {
         siteLanguage: appConfig.siteLanguage,
         showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
         homeDefaultView: appConfig.homeDefaultView,
+        mainRssFeed: appConfig.mainRssFeed,
         siteFooter: appConfig.siteFooter,
         showHeaderAvatar: appConfig.showHeaderAvatar,
         siteAvatarUrl: appConfig.siteAvatarUrl,
@@ -240,6 +241,7 @@ async function exportLocalSite(env = process.env) {
         navItems,
         pageSize: appConfig.pageSize,
         archivePageSize: appConfig.archivePageSize,
+        rssFeedLimit: appConfig.rssFeedLimit,
       },
       {
         storage: runtime.storage,

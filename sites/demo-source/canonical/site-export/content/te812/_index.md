@@ -35,6 +35,7 @@ media:
     size: 17382
     provider: "r2"
     storage_key: "media/sit_01kn8jq3t4famtyg9hjd074ckr/files/med_01kn8jvsaeenf98v6ct4gjzppc.webp"
+last_activity_at: "2026-02-01T18:05:00.000Z"
 ---
 
 Made tomato soup because the weather could not decide what month it wanted to be.

@@ -1,0 +1,107 @@
+{{- /*
+  Feed entry content builder — mirrors `buildSinglePostContent` +
+  `buildFeedContent` from `packages/core/src/lib/feed.ts`.
+
+  Arguments (dict):
+    post           — the Hugo Page for this post
+    permalink      — absolute permalink to the blog post (used for the
+                     link-format "★" suffix)
+    includeReplies — when true, appends each public reply separated by
+                     <hr/> + <small><time></time></small>
+
+  Output is raw HTML suitable for embedding inside Atom
+  <content type="html"><![CDATA[...]]></content>. Since CDATA ends at the
+  first `]]>`, any such sequence in rendered bodies is split using
+  `replace ... "]]>" "]]]]><![CDATA[>"` — the same trick the main site uses
+  in `escapeCdata`.
+*/ -}}
+{{- $post := .post -}}
+{{- $permalink := .permalink -}}
+{{- $includeReplies := .includeReplies -}}
+{{- $format := $post.Params.format | default "note" -}}
+{{- $parts := slice -}}
+
+{{- /* --- Quote block (format=quote) --- */ -}}
+{{- if eq $format "quote" -}}
+  {{- $quoteText := string ($post.Params.quote_text | default "") -}}
+  {{- if ne $quoteText "" -}}
+    {{- $sourceName := string ($post.Params.source_name | default "") -}}
+    {{- $sourceUrl := string ($post.Params.source_url | default "") -}}
+    {{- $cite := "" -}}
+    {{- if ne $sourceUrl "" -}}{{- $cite = printf ` cite=%q` $sourceUrl -}}{{- end -}}
+    {{- $block := printf "<blockquote%s><p>%s</p></blockquote>" $cite (transform.XMLEscape $quoteText) -}}
+    {{- $parts = $parts | append $block -}}
+    {{- /* Attribution line — prefer name, fall back to URL host or the
+         raw URL itself (mirrors main site's extractDisplayDomain fallback
+         chain in `lib/url.ts`). */ -}}
+    {{- $attribution := "" -}}
+    {{- if and (ne $sourceName "") (ne $sourceUrl "") -}}
+      {{- $attribution = printf `<a href=%q>%s</a>` $sourceUrl (transform.XMLEscape $sourceName) -}}
+    {{- else if ne $sourceName "" -}}
+      {{- $attribution = transform.XMLEscape $sourceName -}}
+    {{- else if ne $sourceUrl "" -}}
+      {{- $host := $sourceUrl -}}
+      {{- with urls.Parse $sourceUrl -}}{{- if .Host -}}{{- $host = .Host -}}{{- end -}}{{- end -}}
+      {{- $attribution = printf `<a href=%q>%s</a>` $sourceUrl (transform.XMLEscape $host) -}}
+    {{- end -}}
+    {{- if ne $attribution "" -}}
+      {{- $parts = $parts | append (printf "<p>— %s</p>" $attribution) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* --- Rendered body HTML (with <script>/<style> stripped) --- */ -}}
+{{- $body := $post.Content -}}
+{{- if ne (string $body) "" -}}
+  {{- $bodyStr := string $body -}}
+  {{- $bodyStr = replaceRE `(?is)<script\b[^>]*>.*?</script>` "" $bodyStr -}}
+  {{- $bodyStr = replaceRE `(?is)<style\b[^>]*>.*?</style>` "" $bodyStr -}}
+  {{- /* Split any CDATA-terminator sequences so the content can be safely
+       wrapped in <![CDATA[...]]> by the caller. */ -}}
+  {{- $bodyStr = replace $bodyStr "]]>" "]]]]><![CDATA[>" -}}
+  {{- if ne (trim $bodyStr " \t\n\r") "" -}}
+    {{- $parts = $parts | append $bodyStr -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* --- Star rating --- */ -}}
+{{- with $post.Params.rating -}}
+  {{- $r := int . -}}
+  {{- if gt $r 0 -}}
+    {{- $filled := strings.Repeat $r "★" -}}
+    {{- $empty := strings.Repeat (sub 5 $r) "☆" -}}
+    {{- $parts = $parts | append (printf "<p>%s%s %d/5</p>" $filled $empty $r) -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* --- Empty-body fallback (plain-text summary) --- */ -}}
+{{- if eq (len $parts) 0 -}}
+  {{- $fallback := string ($post.Params.summary_text | default "") -}}
+  {{- if eq $fallback "" -}}{{- $fallback = $post.Title | default (printf "Post %s" (string ($post.Params.id | default ""))) -}}{{- end -}}
+  {{- $parts = $parts | append (printf "<p>%s</p>" (transform.XMLEscape $fallback)) -}}
+{{- end -}}
+
+{{- /* --- link-format permalink suffix (Daring Fireball ★) --- */ -}}
+{{- if and (eq $format "link") (ne $permalink "") -}}
+  {{- $parts = $parts | append (printf `<p><a href=%q title="Permalink">&nbsp;★&nbsp;</a></p>` $permalink) -}}
+{{- end -}}
+
+{{- /* --- Thread replies --- */ -}}
+{{- if $includeReplies -}}
+  {{- $replies := where $post.Pages "Params.visibility" "public" -}}
+  {{- $replies = $replies.ByDate -}}
+  {{- range $replies -}}
+    {{- $replyPermalink := .Permalink -}}
+    {{- $replyDatetime := .Date.UTC.Format "2006-01-02T15:04:05Z" -}}
+    {{- /* Human-readable timestamp; mirrors the main site's
+         `publishedAtFormatted` in the feed — there it's locale-formatted
+         by `lib/format-timestamp.ts`, but Hugo doesn't have that at
+         export time, so use a simple ISO-style fallback. */ -}}
+    {{- $replyLabel := .Date.Format "Jan 2, 2006 15:04" -}}
+    {{- $parts = $parts | append "<hr/>" -}}
+    {{- $parts = $parts | append (printf `<p><small><time datetime=%q>%s</time></small></p>` $replyDatetime (transform.XMLEscape $replyLabel)) -}}
+    {{- $parts = $parts | append (partial "feed-post-content.xml" (dict "post" . "permalink" $replyPermalink "includeReplies" false)) -}}
+  {{- end -}}
+{{- end -}}
+
+{{- delimit $parts "\n" | safeHTML -}}

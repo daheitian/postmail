@@ -1,0 +1,160 @@
+{{- /*
+  Atom 2005 feed template — mirrors the main site's `lib/feed.ts`.
+
+  One template covers every page that opts into the custom `RSS` output
+  format (home, featured, archive, and each collection section). Root-post
+  sections do NOT opt in, so no `/{slug}/index.xml` gets emitted.
+
+  Feed filter parity with the corresponding HTML list view:
+    - home   (`.Kind == "home"`): visibility == "public" (drops latest_hidden)
+    - featured (`.Type == "featured"`): featured_at != nil
+    - archive  (`.Type == "archive"`): all published (includes latest_hidden)
+    - collection (`.Type == "collection"`): Params.collections.slug match,
+        pinned first then per `sort_order`
+
+  Per-entry payload mirrors `buildSinglePostContent` + `buildFeedContent`:
+    - Title: empty for quote posts, else .Title
+    - Link rel=alternate: external URL for `link` format, else permalink;
+      link-format posts also get a <link rel="related"> back to the
+      permalink
+    - Content (CDATA):
+        quote   → <blockquote cite><p>{quote}</p></blockquote>
+                  + <p>— <a href=url>{source}</a></p>
+        body    → Hugo-rendered .Content (stripped of <script>/<style>)
+        rating  → <p>★★★★☆ 4/5</p>
+        link    → trailing <p><a href=permalink> ★ </a></p>
+        replies → <hr/> + <p><small><time>{dt}</time></small></p> + content
+
+  Hugo's default RSS media-type override (`[outputFormats.RSS]`) makes this
+  template produce application/atom+xml at /{section}/index.xml.
+*/ -}}
+{{- $page := . -}}
+{{- $limit := int (.Site.Params.rss_feed_limit | default 50) -}}
+{{- $allPosts := where .Site.Pages "Type" "post" -}}
+
+{{- /* ------------------------------------------------------------------
+     Post selection per feed kind
+     ------------------------------------------------------------------ */ -}}
+{{- $posts := slice -}}
+{{- $isFeatured := eq $page.Type "featured" -}}
+
+{{- if eq $page.Kind "home" -}}
+  {{- $public := where $allPosts "Params.visibility" "public" -}}
+  {{- $posts = $public.ByDate.Reverse -}}
+{{- else if $isFeatured -}}
+  {{- $featured := where $allPosts "Params.featured_at" "ne" nil -}}
+  {{- $posts = sort $featured "Params.featured_at" "desc" -}}
+{{- else if eq $page.Type "archive" -}}
+  {{- $posts = $allPosts.ByDate.Reverse -}}
+{{- else if eq $page.Type "collection" -}}
+  {{- $collectionSlug := $page.Params.slug | default $page.Slug -}}
+  {{- $members := slice -}}
+  {{- range $allPosts -}}
+    {{- $post := . -}}
+    {{- with $post.Params.collections -}}
+      {{- range . -}}
+        {{- if eq .slug $collectionSlug -}}
+          {{- $members = $members | append (dict "post" $post "entry" .) -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $pinned := slice -}}
+  {{- $unpinned := slice -}}
+  {{- range $members -}}
+    {{- if .entry.pinned_at -}}
+      {{- $pinned = $pinned | append . -}}
+    {{- else -}}
+      {{- $unpinned = $unpinned | append . -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if $pinned -}}{{- $pinned = sort $pinned "entry.pinned_at" "desc" -}}{{- end -}}
+  {{- $sortOrder := $page.Params.sort_order | default "position" -}}
+  {{- if $unpinned -}}
+    {{- if eq $sortOrder "collected_at_desc" -}}
+      {{- $unpinned = sort $unpinned "entry.collected_at" "desc" -}}
+    {{- else -}}
+      {{- $unpinned = sort $unpinned "entry.position" "asc" -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $ordered := $pinned | append $unpinned -}}
+  {{- range $ordered -}}{{- $posts = $posts | append .post -}}{{- end -}}
+{{- end -}}
+
+{{- if gt (len $posts) $limit -}}
+  {{- $posts = first $limit $posts -}}
+{{- end -}}
+
+{{- /* ------------------------------------------------------------------
+     Feed title (mirrors the main site's Atom feed titles)
+     ------------------------------------------------------------------ */ -}}
+{{- $feedTitle := .Site.Title -}}
+{{- if eq $page.Kind "home" -}}
+  {{- $feedTitle = printf "%s - Latest posts" .Site.Title -}}
+{{- else if $isFeatured -}}
+  {{- $feedTitle = printf "%s - Featured posts" .Site.Title -}}
+{{- else if eq $page.Type "archive" -}}
+  {{- $feedTitle = printf "%s - Archive" .Site.Title -}}
+{{- else if eq $page.Type "collection" -}}
+  {{- $feedTitle = printf "%s - %s" .Site.Title $page.Title -}}
+{{- end -}}
+
+{{- $siteDescription := .Site.Params.description | default "" -}}
+{{- $siteBase := .Site.BaseURL -}}
+{{- $selfUrl := .Permalink -}}
+{{- $now := now.UTC.Format "2006-01-02T15:04:05Z" -}}
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{{ $feedTitle | transform.XMLEscape }}</title>
+  <subtitle>{{ $siteDescription | transform.XMLEscape }}</subtitle>
+  <link href="{{ $siteBase | transform.XMLEscape }}" rel="alternate"/>
+  <link href="{{ $selfUrl | transform.XMLEscape }}" rel="self"/>
+  <id>{{ $selfUrl | transform.XMLEscape }}</id>
+  <updated>{{ $now }}</updated>
+  {{- range $posts }}
+  {{- $post := . -}}
+  {{- $format := .Params.format | default "note" -}}
+  {{- $permalink := .Permalink -}}
+  {{- $isLink := and (eq $format "link") .Params.link_url -}}
+  {{- $alternate := cond $isLink (string .Params.link_url) $permalink -}}
+  {{- /* Atom <title>: empty for quotes (matches main site's getAtomTitle). */ -}}
+  {{- $entryTitle := cond (eq $format "quote") "" (.Title | default "") -}}
+  {{- /* <published>: from `date` frontmatter (= publishedAt).
+       <updated>: prefer `last_activity_at` (thread-bumped), then `updated`
+       (root edit time), else `date`. For featured, take max with
+       `featured_at` so featuring alone surfaces a post. */ -}}
+  {{- $published := .Date.UTC.Format "2006-01-02T15:04:05Z" -}}
+  {{- $updatedSrc := .Date -}}
+  {{- with .Params.last_activity_at -}}{{- $updatedSrc = time . -}}
+  {{- else -}}{{- with .Params.updated -}}{{- $updatedSrc = time . -}}{{- end -}}{{- end -}}
+  {{- if $isFeatured -}}
+    {{- with .Params.featured_at -}}
+      {{- $featuredAt := time . -}}
+      {{- if $featuredAt.After $updatedSrc -}}{{- $updatedSrc = $featuredAt -}}{{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $updated := $updatedSrc.UTC.Format "2006-01-02T15:04:05Z" -}}
+  {{- /* Plain-text summary fallback chain (mirrors getFeedSummaryText). */ -}}
+  {{- $summaryText := "" -}}
+  {{- if eq $format "quote" -}}
+    {{- $summaryText = or (string (.Params.summary_text | default "")) (string (.Params.quote_text | default "")) (.Title | default "") (string (.Params.link_url | default "")) (string (.Params.source_url | default "")) -}}
+  {{- else -}}
+    {{- $summaryText = or (string (.Params.summary_text | default "")) (.Title | default "") (string (.Params.link_url | default "")) -}}
+  {{- end -}}
+  {{- if eq $summaryText "" -}}{{- $summaryText = printf "Post %s" (string (.Params.id | default "")) -}}{{- end -}}
+  <entry>
+    <title>{{ $entryTitle | transform.XMLEscape }}</title>
+    <link href="{{ $alternate | transform.XMLEscape }}" rel="alternate"/>
+    {{- if $isLink }}
+    <link href="{{ $permalink | transform.XMLEscape }}" rel="related"/>
+    {{- end }}
+    <id>{{ $permalink | transform.XMLEscape }}</id>
+    <published>{{ $published }}</published>
+    <updated>{{ $updated }}</updated>
+    <summary type="text">{{ $summaryText | transform.XMLEscape }}</summary>
+    <content type="html"><![CDATA[
+{{- partial "feed-post-content.xml" (dict "post" $post "permalink" $permalink "includeReplies" true) -}}
+]]></content>
+  </entry>
+  {{- end }}
+</feed>

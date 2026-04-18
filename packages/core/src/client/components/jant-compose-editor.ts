@@ -2253,7 +2253,15 @@ export class JantComposeEditor extends LitElement {
           })}
           title=${this.labels.rate}
           @click=${() => {
-            this._showRating = !this._showRating;
+            const willShow = !this._showRating;
+            this._showRating = willShow;
+            if (willShow) {
+              this.updateComplete.then(() => {
+                this.querySelector<HTMLElement>(
+                  ".compose-star-rating",
+                )?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+              });
+            }
           }}
         >
           ${renderComposeToolbarIcon(COMPOSE_TOOLBAR_ICONS.rate)}

@@ -1,24 +1,55 @@
 {{- $paginator := . -}}
-{{- if gt $paginator.TotalPages 1 -}}
+{{- $total := $paginator.TotalPages -}}
+{{- $current := $paginator.PageNumber -}}
+{{- if gt $total 1 -}}
+  {{- /* Mirror main site's getPageNumbers: always include 1, last, current,
+         and current±1. Insert 0 as an ellipsis marker for gaps. */ -}}
+  {{- $pages := slice -}}
+  {{- if le $total 7 -}}
+    {{- range seq 1 $total -}}
+      {{- $pages = $pages | append . -}}
+    {{- end -}}
+  {{- else -}}
+    {{- $set := slice 1 $total $current -}}
+    {{- if gt $current 1 -}}{{- $set = $set | append (sub $current 1) -}}{{- end -}}
+    {{- if lt $current $total -}}{{- $set = $set | append (add $current 1) -}}{{- end -}}
+    {{- $sorted := sort (uniq $set) -}}
+    {{- $prev := 0 -}}
+    {{- range $i, $p := $sorted -}}
+      {{- if and (gt $i 0) (gt (sub $p $prev) 1) -}}
+        {{- $pages = $pages | append 0 -}}
+      {{- end -}}
+      {{- $pages = $pages | append $p -}}
+      {{- $prev = $p -}}
+    {{- end -}}
+  {{- end -}}
   <nav class="pagination" aria-label="Pagination">
-    <ul class="pagination-list">
-      <li class="pagination-item pagination-prev">
-        {{- if $paginator.HasPrev -}}
-          <a class="pagination-link" href="{{ $paginator.Prev.URL }}" rel="prev">&larr; Newer</a>
+    {{- if $paginator.HasPrev -}}
+      <a class="pagination-link pagination-prev" href="{{ $paginator.Prev.URL }}" rel="prev">Previous</a>
+    {{- else -}}
+      <span class="pagination-link pagination-prev is-disabled" aria-disabled="true">Previous</span>
+    {{- end -}}
+    {{- range $pages -}}
+      {{- if eq . 0 -}}
+        <span class="pagination-ellipsis" aria-hidden="true">...</span>
+      {{- else if eq . $current -}}
+        <span class="pagination-current" aria-current="page">{{ . }}</span>
+      {{- else -}}
+        {{- $href := "" -}}
+        {{- if eq . 1 -}}
+          {{- $href = ($paginator.First.URL | default "/") -}}
         {{- else -}}
-          <span class="pagination-link is-disabled" aria-disabled="true">&larr; Newer</span>
+          {{- with index $paginator.Pagers (sub . 1) -}}
+            {{- $href = .URL -}}
+          {{- end -}}
         {{- end -}}
-      </li>
-      <li class="pagination-item pagination-current" aria-current="page">
-        Page {{ $paginator.PageNumber }} of {{ $paginator.TotalPages }}
-      </li>
-      <li class="pagination-item pagination-next">
-        {{- if $paginator.HasNext -}}
-          <a class="pagination-link" href="{{ $paginator.Next.URL }}" rel="next">Older &rarr;</a>
-        {{- else -}}
-          <span class="pagination-link is-disabled" aria-disabled="true">Older &rarr;</span>
-        {{- end -}}
-      </li>
-    </ul>
+        <a class="pagination-link" href="{{ $href }}">{{ . }}</a>
+      {{- end -}}
+    {{- end -}}
+    {{- if $paginator.HasNext -}}
+      <a class="pagination-link pagination-next" href="{{ $paginator.Next.URL }}" rel="next">Next</a>
+    {{- else -}}
+      <span class="pagination-link pagination-next is-disabled" aria-disabled="true">Next</span>
+    {{- end -}}
   </nav>
 {{- end -}}

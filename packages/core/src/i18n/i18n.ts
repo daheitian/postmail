@@ -38,12 +38,16 @@ export interface I18n extends LinguiI18n {
 }
 
 // The `en` runtime catalog merges both surfaces. For non-English locales we
-// only load the `settings` catalog — the public surface intentionally has no
-// translations, so Lingui falls back to the source English message on the
-// descriptor when a key isn't found in the active locale.
+// merge the English `public` catalog under the translated `settings` catalog
+// so that public-surface strings (e.g. site header nav labels, which render
+// on every admin page too) resolve to their English source at runtime instead
+// of falling through to the compiled hash id. The SWC plugin strips the
+// `message` descriptor fallback in production builds, so without this merge
+// any key missing from the active locale would render as its hash (`JqJ5Xv`,
+// `muKqfV`, etc.) on zh-* pages.
 const catalogEn: Messages = { ...publicEn, ...settingsEn };
-const catalogZhHans: Messages = settingsZhHans;
-const catalogZhHant: Messages = settingsZhHant;
+const catalogZhHans: Messages = { ...publicEn, ...settingsZhHans };
+const catalogZhHant: Messages = { ...publicEn, ...settingsZhHant };
 
 /**
  * Create a new i18n instance for a specific locale.

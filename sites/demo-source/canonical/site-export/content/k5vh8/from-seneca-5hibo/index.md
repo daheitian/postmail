@@ -10,7 +10,7 @@ build:
 format: "quote"
 status: "published"
 visibility: "public"
-summary_text: "While we wait for life, life passes."
+summary_text: "Copied this into the back page before I left the cafe."
 source_name: "From Seneca"
 source_url: "https://en.wikiquote.org/wiki/Seneca_the_Younger"
 quote_text: "While we wait for life, life passes."

@@ -957,19 +957,14 @@
   .site-home-header {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: 2rem;
+    margin-top: 2.5rem;
     margin-bottom: var(--space-xl);
   }
 
-  .site-description {
-    --type-body-size: var(--type-secondary);
-    color: color-mix(in srgb, var(--site-text-secondary) 72%, transparent);
-    line-height: 1.5;
-  }
-
   .site-description :where(p) {
-    margin-top: 0.4em;
-    margin-bottom: 0.4em;
+    margin-top: 0.65em;
+    margin-bottom: 0.65em;
   }
 
   /* --- Main content area -------------------------------------------------- */
@@ -11076,4 +11071,26 @@
       margin-top: 20px;
     }
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Home description — editorial "lede" paragraph.
+ *
+ * Treated like a magazine lede: serif, larger than feed body, comfortable
+ * line-height. Distinguished from feed posts by SIZE and FAMILY, not by
+ * suppression — going lighter/smaller would just push it into the feed's
+ * own visual range. Going bigger + serif establishes clear page hierarchy
+ * (intro → action → feed) and works for both short taglines and longer bios.
+ *
+ * Kept OUTSIDE @layer components so it can override `.prose` (unlayered),
+ * which otherwise forces `color: var(--tw-prose-body)` = inherit and would
+ * also defeat any font-family override.
+ * ------------------------------------------------------------------------- */
+
+.site-description {
+  font-family: var(--font-serif);
+  font-size: var(--type-body);
+  line-height: 1.55;
+  color: var(--site-text-primary);
+  --tw-prose-body: var(--site-text-primary);
 }

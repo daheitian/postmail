@@ -3510,6 +3510,55 @@ describe("JantComposeDialog", () => {
     expect(tiptap.getText()).toBe("/zzz");
   });
 
+  it("does not open the slash menu when the caret sits inside a `/word` in prose", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const tiptap = requireEditor(editor);
+
+    tiptap.commands.focus("end");
+    tiptap.commands.insertContent("before /now, after");
+    await flushUpdates(el);
+
+    // Move the caret into the middle of "now" (between "/" and "n").
+    const text = tiptap.getText();
+    const slashIndex = text.indexOf("/now");
+    // +2 accounts for the doc/paragraph boundary before the text starts.
+    tiptap.commands.setTextSelection(slashIndex + 2);
+    await flushUpdates(el);
+
+    expect(document.querySelector(".tiptap-slash-menu")).toBeNull();
+  });
+
+  it("does not reopen the slash menu when the caret moves back to an existing `/word`", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const tiptap = requireEditor(editor);
+
+    // Type "/image " followed by more text, then press Escape to close the
+    // menu that (rightly) opened while typing "/image".
+    tiptap.commands.focus("end");
+    tiptap.commands.insertContent("/image hello");
+    await flushUpdates(el);
+
+    // Menu should be gone because the space after "/image" closed it.
+    expect(document.querySelector(".tiptap-slash-menu")).toBeNull();
+
+    // Now move the caret back to just after "/image" (between "e" and " ").
+    const text = tiptap.getText();
+    const endOfImage = text.indexOf("/image") + "/image".length;
+    tiptap.commands.setTextSelection(endOfImage + 1);
+    await flushUpdates(el);
+
+    // Selection-only change should NOT reopen the menu.
+    expect(document.querySelector(".tiptap-slash-menu")).toBeNull();
+  });
+
   it("dialog cancel closes the emoji picker before prompting to save", async () => {
     const el = await createElement();
     const editor = requireElement(
@@ -4330,9 +4379,21 @@ describe("JantComposeDialog", () => {
     expect((receivedDetail as unknown as ComposeSubmitDetail).status).toBe(
       "draft",
     );
-    // Drafts panel opened instead of dialog closing
-    expect(el._draftsPanelOpen).toBe(true);
+    // Drafts panel waits for the bridge to finish writing before opening
+    expect(el._draftsPanelOpen).toBe(false);
     expect(el._confirmPanelOpen).toBe(false);
+
+    // Simulate the bridge signalling that the draft was saved
+    document.dispatchEvent(
+      new CustomEvent("jant:compose-submit-complete", {
+        detail: { status: "draft" },
+      }),
+    );
+    await el.updateComplete;
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+
+    expect(el._draftsPanelOpen).toBe(true);
 
     fetchSpy.mockRestore();
   });

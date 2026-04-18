@@ -853,6 +853,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
         await refreshComposeCollections();
         if (!leavePageAfterConfirmSave()) resetPageCompose();
         toastMsg(threadToast ?? "Draft saved.");
+        dispatchSubmitComplete(composeEl, "draft");
       }
       return;
     }
@@ -1042,8 +1043,27 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
         resetPageCompose();
       }
       toastMsg(toast ?? "Draft saved.");
+      dispatchSubmitComplete(composeEl, "draft");
     }
   } catch {
     await handleSubmitError("Something went wrong");
   }
 });
+
+/**
+ * Notify any interested listeners (e.g. the compose dialog waiting to open
+ * its drafts panel) that a compose submission has finished writing to the
+ * server. Dispatched on the compose element so it bubbles to the document.
+ */
+function dispatchSubmitComplete(
+  composeEl: JantComposeDialog | null,
+  status: "published" | "draft",
+) {
+  const target = composeEl ?? document;
+  target.dispatchEvent(
+    new CustomEvent("jant:compose-submit-complete", {
+      bubbles: true,
+      detail: { status },
+    }),
+  );
+}

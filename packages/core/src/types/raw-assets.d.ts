@@ -26,6 +26,11 @@ declare module "*.js?raw" {
   export default content;
 }
 
+declare module "*.xml?raw" {
+  const content: string;
+  export default content;
+}
+
 /**
  * Ambient declaration for bare `.css` side-effect imports. Vite injects the
  * stylesheet into the bundle output; at the type level, these imports have

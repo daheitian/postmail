@@ -10,17 +10,24 @@
   {{- if $post.Params.featured_at }} data-post-featured{{ end -}}
 >
   {{- if eq $format "link" -}}
+    {{- if $linkUrl -}}
+      {{- $domain := "" -}}
+      {{- with urls.Parse $linkUrl -}}{{- $domain = .Host -}}{{- end -}}
+      {{- if $domain -}}
+        <a href="{{ $linkUrl }}" class="post-card-link-domain" rel="noopener noreferrer" target="_blank">
+          <svg class="post-card-link-domain-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+          <span>{{ $domain }}</span>
+        </a>
+      {{- end -}}
+    {{- end -}}
     {{- if and $post.Title $linkUrl -}}
-      <h2 class="post-card-title">
+      <h2 class="post-card-title post-card-link-title">
         <a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $post.Title }}</a>
       </h2>
     {{- else if $post.Title -}}
-      <h2 class="post-card-title"><a href="{{ $post.RelPermalink }}">{{ $post.Title }}</a></h2>
-    {{- end -}}
-    {{- if $linkUrl -}}
-      <p class="post-card-link-host">
-        <a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $linkUrl | urlize }}</a>
-      </p>
+      <h2 class="post-card-title post-card-link-title"><a href="{{ $post.RelPermalink }}">{{ $post.Title }}</a></h2>
     {{- end -}}
     {{- /* Prefer Hugo's rendered HTML body — preserves paragraphs, links,
          emphasis, lists. Falls back to the plain-text `summary_text` stored

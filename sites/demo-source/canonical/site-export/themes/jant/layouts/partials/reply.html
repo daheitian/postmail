@@ -3,19 +3,28 @@
 {{- $slug := $reply.Params.slug | default $reply.Slug -}}
 {{- $media := $reply.Params.media | default slice -}}
 {{- $linkUrl := $reply.Params.link_url -}}
-<article class="reply reply-{{ $format }}" id="{{ $slug }}" data-format="{{ $format }}" data-slug="{{ $slug }}">
+<article class="reply thread-item reply-{{ $format }}" id="{{ $slug }}" data-format="{{ $format }}" data-slug="{{ $slug }}">
   {{- if eq $format "link" -}}
+    {{- if $linkUrl -}}
+      {{- $domain := "" -}}
+      {{- with urls.Parse $linkUrl -}}{{- $domain = .Host -}}{{- end -}}
+      {{- if $domain -}}
+        <a href="{{ $linkUrl }}" class="reply-link-domain" rel="noopener noreferrer" target="_blank">
+          <svg class="post-card-link-domain-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+          <span>{{ $domain }}</span>
+        </a>
+      {{- end -}}
+    {{- end -}}
     {{- if $reply.Title -}}
-      <h3 class="reply-title">
+      <h3 class="reply-title reply-link-title">
         {{- if $linkUrl -}}
           <a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $reply.Title }}</a>
         {{- else -}}
           {{ $reply.Title }}
         {{- end -}}
       </h3>
-    {{- end -}}
-    {{- if $linkUrl -}}
-      <p class="reply-link-host"><a href="{{ $linkUrl }}" rel="noopener noreferrer" target="_blank">{{ $linkUrl | urlize }}</a></p>
     {{- end -}}
   {{- else if eq $format "quote" -}}
     <blockquote class="reply-quote post-card-quote">

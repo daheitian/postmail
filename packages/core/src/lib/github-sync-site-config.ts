@@ -19,6 +19,7 @@ export function buildSyncSiteConfig(c: {
     siteLanguage: cfg.siteLanguage,
     showJantBrandingOnHome: cfg.showJantBrandingOnHome,
     homeDefaultView: cfg.homeDefaultView,
+    mainRssFeed: cfg.mainRssFeed,
     siteFooter: cfg.siteFooter,
     showHeaderAvatar: cfg.showHeaderAvatar,
     siteAvatarUrl: cfg.siteAvatarUrl,
@@ -36,5 +37,6 @@ export function buildSyncSiteConfig(c: {
     navItems: [],
     pageSize: cfg.pageSize,
     archivePageSize: cfg.archivePageSize,
+    rssFeedLimit: cfg.rssFeedLimit,
   };
 }
