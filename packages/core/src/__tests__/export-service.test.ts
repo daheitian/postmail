@@ -295,6 +295,21 @@ describe("createExportService (Hugo)", () => {
     expect(toml).toContain('home_default_view = "featured"');
   });
 
+  it("lowercases BCP-47 language codes in hugo.toml so Hugo accepts them", async () => {
+    // Hugo rejects mixed-case language codes like `zh-Hant` with
+    // "must be all lower case and no spaces" — so the exporter has to
+    // normalize the site language even though Jant stores BCP-47 casing.
+    const service = createExportService(
+      buildServices({ posts: [] }),
+      makeSiteConfig({ siteLanguage: "zh-Hant" }),
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    const toml = files.get("hugo.toml") as string;
+    expect(toml).toContain('languageCode = "zh-hant"');
+    expect(toml).toContain('defaultContentLanguage = "zh-hant"');
+    expect(toml).not.toContain("zh-Hant");
+  });
+
   it("emits data/jant.toml and data/collection_directory.toml that parse", async () => {
     const collection = makeCollection({ id: "col-1", slug: "ideas" });
     const service = createExportService(

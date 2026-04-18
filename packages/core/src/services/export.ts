@@ -1063,11 +1063,14 @@ function escapeTomlString(value: string): string {
 
 function buildHugoToml(config: SiteConfig): string {
   const baseUrl = (config.siteUrl || "https://example.com").replace(/\/+$/, "");
+  // Hugo requires language codes to be all lowercase (it rejects the BCP-47
+  // casing `zh-Hant` / `zh-Hans` with "must be all lower case and no spaces").
+  const language = config.siteLanguage.toLowerCase();
   const parts: string[] = [
     `baseURL = "${escapeTomlString(baseUrl)}/"`,
     `title = "${escapeTomlString(config.siteName)}"`,
-    `languageCode = "${escapeTomlString(config.siteLanguage)}"`,
-    `defaultContentLanguage = "${escapeTomlString(config.siteLanguage)}"`,
+    `languageCode = "${escapeTomlString(language)}"`,
+    `defaultContentLanguage = "${escapeTomlString(language)}"`,
     'theme = "jant"',
     `paginate = ${config.pageSize}`,
     "enableRobotsTXT = true",
