@@ -2410,6 +2410,10 @@ export async function run(argv) {
       // Create replies before aliases so reply slugs can claim their paths.
       if (!post) continue;
       const replySlugPaths = new Set();
+      // Jant threads are linear: each reply must point at the current end of
+      // the thread, not at the root. Track the tail as we go so the Nth
+      // reply chains after the (N−1)th.
+      let threadTailId = post.id;
       for (const replyBundle of rootBundle.children) {
         const replyFm = replyBundle.frontMatter;
         const replySlug = replyBundle.slug;
@@ -2496,12 +2500,15 @@ export async function run(argv) {
           bodyMarkdown: replyBody,
           attachments: replyAttachments,
           memberships: replyMemberships,
-          replyToId: post.id,
+          replyToId: threadTailId,
         });
 
         try {
-          await target.createPost(replyData);
+          const createdReply = await target.createPost(replyData);
           repliesCreated++;
+          if (createdReply?.id) {
+            threadTailId = createdReply.id;
+          }
         } catch (err) {
           console.error(`  Error creating reply: ${err.message}`);
           process.exit(1);
