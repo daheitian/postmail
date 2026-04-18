@@ -104,6 +104,23 @@ npx jant site export --url https://your-site.example --output ./jant-site-export
 
 You can also pass `--token`, but `JANT_API_TOKEN` is easier to reuse.
 
+### Localize Media After the Fact
+
+`site export` downloads referenced media by default, but you can also run the localization step on its own against any existing export — a directory or a ZIP. This is useful when you exported with `--no-localize-media`, when new media was added after an earlier export, or when an earlier run failed partway through.
+
+```bash
+# Against an unpacked site directory
+npx jant site localize-media --path ./jant-site
+
+# Against a ZIP (overwrites input by default)
+npx jant site localize-media --path ./jant-site-export.zip
+
+# Against a ZIP, write the result to a different file
+npx jant site localize-media --path ./jant-site-export.zip --output ./localized.zip
+```
+
+The command scans every markdown file and `hugo.toml`, downloads each remote media reference into `static/media/`, and rewrites the references to the local path. It is idempotent — files already present under `static/media/` are reused instead of re-downloaded. Anything that fails to download keeps its original URL so the export still builds.
+
 ### Customizing an Export
 
 The `themes/jant/` directory is the packaged Jant theme. If you sync the export to GitHub, Jant will overwrite everything under `themes/jant/**`, `content/**`, `data/**`, `hugo.toml`, `.gitignore`, and `README.md` on every push. Everything else in the repo is yours and is preserved.

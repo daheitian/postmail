@@ -1,48 +1,111 @@
 {{ define "main" }}
   {{- $items := slice -}}
-  {{- with .Site.Data.jant -}}{{- with .directory -}}{{- $items = . -}}{{- end -}}{{- end -}}
+  {{- with hugo.Data.jant -}}{{- with .directory -}}{{- $items = . -}}{{- end -}}{{- end -}}
+  {{- $collectionCount := 0 -}}
+  {{- range $items -}}
+    {{- if eq .type "collection" -}}{{- $collectionCount = add $collectionCount 1 -}}{{- end -}}
+  {{- end -}}
 
-  <section class="section section-collections">
-    <header class="section-header">
-      <h1 class="section-title">{{ .Title | default "Collections" }}</h1>
-      {{- with .Params.summary_text -}}
-        <p class="section-summary">{{ . }}</p>
-      {{- end -}}
-      {{ .Content }}
-    </header>
-
-    {{- if $items -}}
-      <ul class="collection-directory">
-        {{- range $items -}}
-          {{- if eq .type "divider" -}}
-            <li class="collection-directory-divider">
-              {{- with .label -}}
-                <span class="collection-directory-divider-label">{{ . }}</span>
-              {{- end -}}
-              <hr>
-            </li>
-          {{- else if eq .type "link" -}}
-            {{- $isExternal := or (hasPrefix .url "http://") (hasPrefix .url "https://") -}}
-            <li class="collection-directory-link">
-              <a href="{{ .url }}"{{ if $isExternal }} rel="noopener noreferrer" target="_blank"{{ end }}>{{ .label }}</a>
-            </li>
-          {{- else if eq .type "collection" -}}
-            <li class="collection-directory-item">
-              <a class="collection-directory-entry" href="{{ printf "/%s/" .slug | relURL }}">
-                <span class="collection-directory-title">{{ .title }}</span>
-                {{- if .entry_count -}}
-                  <span class="collection-directory-count">{{ .entry_count }} {{ if eq .entry_count 1 }}post{{ else }}posts{{ end }}</span>
-                {{- end -}}
-                {{- with .recent_activity_label -}}
-                  <span class="collection-directory-activity">Updated {{ . }}</span>
-                {{- end -}}
-              </a>
-            </li>
+  <div class="section section-collections" data-page="collections">
+    <div class="collections-page-shell">
+      <header class="collections-page-header">
+        <div class="collections-page-heading page-intro">
+          <div class="page-intro-title-row">
+            <h1 class="page-intro-title">{{ .Title | default "Collections" }}</h1>
+          </div>
+          <div class="page-intro-meta-row">
+            <p class="page-intro-meta">
+              {{- $collectionCount }} {{ if eq $collectionCount 1 }}collection{{ else }}collections{{ end -}}
+            </p>
+          </div>
+          {{- with .Params.summary_text -}}
+            <p class="page-intro-description">{{ . }}</p>
           {{- end -}}
-        {{- end -}}
-      </ul>
-    {{- else -}}
-      <p class="empty-state">No collections yet. Group related posts to organize them here.</p>
-    {{- end -}}
-  </section>
+          {{ .Content }}
+        </div>
+      </header>
+
+      {{- if $items -}}
+        <div class="collection-directory">
+          {{- range $items -}}
+            {{- if eq .type "divider" -}}
+              <div class="collection-directory-divider">
+                <div class="collection-directory-divider-row"{{ if not .label }} aria-hidden="true"{{ end }}>
+                  {{- with .label -}}
+                    <span class="collection-directory-divider-text">{{ . }}</span>
+                  {{- end -}}
+                  <hr class="collection-directory-divider-line">
+                </div>
+              </div>
+            {{- else if eq .type "link" -}}
+              {{- $isExternal := or (hasPrefix .url "http://") (hasPrefix .url "https://") -}}
+              <div class="collection-directory-item collection-directory-item-link">
+                <div class="collection-directory-main">
+                  <span class="collection-directory-sequence" aria-hidden="true">{{ .sequence }}</span>
+                  <div class="collection-directory-title-row">
+                    <a
+                      href="{{ .url }}"
+                      class="collection-directory-title-link"
+                      {{- if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end }}
+                    >
+                      <span class="collection-directory-title">
+                        {{- .label -}}
+                        <span class="collection-directory-title-marker" aria-hidden="true">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l2.92-2.92a5 5 0 0 0-7.07-7.08L11.7 5.24"/>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-2.92 2.92a5 5 0 0 0 7.07 7.08l1.69-1.7"/>
+                          </svg>
+                        </span>
+                      </span>
+                    </a>
+                  </div>
+                  {{- if .description_html -}}
+                    <div class="collection-directory-description prose">{{ .description_html | safeHTML }}</div>
+                  {{- else -}}
+                    <p class="collection-directory-summary">
+                      <span class="collection-directory-meta">Link</span>
+                    </p>
+                  {{- end -}}
+                </div>
+              </div>
+            {{- else if eq .type "collection" -}}
+              {{- $entryCount := .entry_count -}}
+              {{- $activityLabel := .recent_activity_label -}}
+              {{- $activityIso := .recent_activity_iso -}}
+              <div class="collection-directory-item">
+                <div class="collection-directory-main">
+                  <span class="collection-directory-sequence" aria-hidden="true">{{ .sequence }}</span>
+                  <div class="collection-directory-title-row">
+                    <a class="collection-directory-title-link" href="{{ printf "/%s/" .slug | relURL }}">
+                      <span class="collection-directory-title">{{ .title }}</span>
+                    </a>
+                  </div>
+                  {{- with .description_html -}}
+                    <div class="collection-directory-description prose">{{ . | safeHTML }}</div>
+                  {{- end -}}
+                  {{- if or $entryCount $activityLabel -}}
+                    <p class="collection-directory-summary">
+                      {{- if $entryCount -}}
+                        <span class="collection-directory-meta">
+                          {{- $entryCount }} {{ if eq $entryCount 1 }}entry{{ else }}entries{{ end -}}
+                        </span>
+                      {{- end -}}
+                      {{- if and $entryCount $activityLabel -}}
+                        <span class="collection-directory-meta-separator" aria-hidden="true">/</span>
+                      {{- end -}}
+                      {{- if $activityLabel -}}
+                        <time class="collection-directory-updated"{{ with $activityIso }} datetime="{{ . }}"{{ end }}>{{ $activityLabel }}</time>
+                      {{- end -}}
+                    </p>
+                  {{- end -}}
+                </div>
+              </div>
+            {{- end -}}
+          {{- end -}}
+        </div>
+      {{- else -}}
+        <p class="empty-state">Nothing published yet. Group related posts to organize them here.</p>
+      {{- end -}}
+    </div>
+  </div>
 {{ end }}

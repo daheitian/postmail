@@ -1,6 +1,6 @@
 format = "jant-site"
 version = 1
-generated_at = "2026-04-18T18:33:21.000Z"
+generated_at = "2026-04-18T19:31:17.000Z"
 site_name = "Jant"
 site_description = "Thoughts, links, and quotes — one post at a time"
 site_language = "en"
@@ -61,42 +61,60 @@ placement = "more"
 
 [[directory]]
 type = "collection"
+sequence = "00"
 slug = "city-walks"
 title = "City Walks"
+description_html = "<p>Routes, corners, and small things I notice outside.</p>"
 entry_count = 3
-recent_activity_label = "2026-03-09"
+recent_activity_label = "Mar 9"
+recent_activity_iso = "2026-03-09T18:30:00.000Z"
 
 [[directory]]
 type = "collection"
+sequence = "01"
 slug = "home-cooking"
 title = "Home Cooking"
+description_html = "<p>Weeknight dinners, soup weather, and things from the stove.</p>"
 entry_count = 5
-recent_activity_label = "2026-02-01"
+recent_activity_label = "Feb 1"
+recent_activity_iso = "2026-02-01T18:05:00.000Z"
 
 [[directory]]
 type = "collection"
+sequence = "02"
 slug = "reading-notes"
 title = "Reading Notes"
+description_html = "<p>Lines worth keeping and thoughts after a chapter ends.</p>"
 entry_count = 7
-recent_activity_label = "2026-02-05"
+recent_activity_label = "Feb 5"
+recent_activity_iso = "2026-02-05T06:55:00.000Z"
 
 [[directory]]
 type = "collection"
+sequence = "03"
 slug = "tiny-projects"
 title = "Tiny Projects"
+description_html = "<p>Repairs, setup tweaks, and half-day improvements around the apartment.</p>"
 entry_count = 8
-recent_activity_label = "2026-03-01"
+recent_activity_label = "Mar 1"
+recent_activity_iso = "2026-03-01T10:45:00.000Z"
 
 [[directory]]
 type = "collection"
+sequence = "04"
 slug = "useful-links"
 title = "Useful Links"
+description_html = "<p>Articles, tools, recipes, and pages I want to find again.</p>"
 entry_count = 7
-recent_activity_label = "2026-03-05"
+recent_activity_label = "Mar 5"
+recent_activity_iso = "2026-03-05T09:10:00.000Z"
 
 [[directory]]
 type = "collection"
+sequence = "05"
 slug = "weekend-notes"
 title = "Weekend Notes"
+description_html = "<p>Small updates from slow Saturdays and Sundays.</p>"
 entry_count = 14
-recent_activity_label = "2026-03-09"
+recent_activity_label = "Mar 9"
+recent_activity_iso = "2026-03-09T18:30:00.000Z"

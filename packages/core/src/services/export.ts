@@ -30,7 +30,7 @@ import {
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import { getMediaUrl, getPublicUrlForProvider } from "../lib/image.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
-import { toISOString } from "../lib/time.js";
+import { formatRelativeAge, toISOString } from "../lib/time.js";
 import {
   formatFrontMatter,
   type HugoCollectionRef,
@@ -139,10 +139,14 @@ type IconExportMode = "default" | "custom";
 type ExportedCollectionDirectoryItem =
   | {
       type: "collection";
+      sequence: string;
       slug: string;
       title: string;
+      /** Rendered HTML of the collection description, or null if empty. */
+      descriptionHtml?: string | null;
       entryCount?: number;
       recentActivityLabel?: string | null;
+      recentActivityIso?: string | null;
     }
   | {
       type: "divider";
@@ -150,18 +154,23 @@ type ExportedCollectionDirectoryItem =
     }
   | {
       type: "link";
+      sequence: string;
       label: string;
       url: string;
+      /** Rendered HTML of the link description, or null if empty. */
+      descriptionHtml?: string | null;
     };
 
 interface ExportCollectionDirectorySourceItem {
   type: "collection" | "divider" | "link";
   label?: string | null;
   url?: string | null;
+  description?: string | null;
   collection?: {
     id: string;
     slug: string;
     title: string;
+    description?: string | null;
     postCount?: number;
     recentActivityAt?: number;
   };
@@ -367,7 +376,7 @@ export function createExportService(
         });
       }
 
-      // Single data file consumed by templates via `.Site.Data.jant`. The
+      // Single data file consumed by templates via `hugo.Data.jant`. The
       // collection directory lives on the same object as `directory` so
       // everything Jant owns round-trips in one place.
       exportFiles.push({
@@ -1088,7 +1097,91 @@ function formatCollectionActivityLabel(
     return null;
   }
 
-  return toISOString(timestamp).slice(0, 10);
+  return formatRelativeAge(timestamp);
+}
+
+function formatCollectionActivityIso(
+  timestamp: number | undefined,
+): string | null {
+  if (typeof timestamp !== "number") {
+    return null;
+  }
+
+  return toISOString(timestamp);
+}
+
+/**
+ * Group-aware sequence labels for the exported collection directory.
+ *
+ * Mirrors the main site's `computeSequenceLabels` in
+ * `ui/shared/CollectionDirectory.tsx` so Hugo exports render the same numeric
+ * indices (e.g. "00" "01" under the first divider, "10" "11" under the
+ * second). Dividers themselves receive an empty string — their slot is
+ * reserved so the returned array is index-aligned with the source list.
+ */
+function computeCollectionDirectorySequenceLabels(
+  items: readonly ExportCollectionDirectorySourceItem[],
+): string[] {
+  const isContentItem = (item: ExportCollectionDirectorySourceItem) =>
+    (item.type === "collection" && item.collection) ||
+    (item.type === "link" && item.label && item.url);
+
+  const groupSizes: number[] = [];
+  let seenDivider = false;
+  let ungroupedCount = 0;
+  for (const item of items) {
+    if (item.type === "divider") {
+      seenDivider = true;
+      groupSizes.push(0);
+    } else if (isContentItem(item)) {
+      if (seenDivider) {
+        const lastGroupIndex = groupSizes.length - 1;
+        const lastGroupSize = groupSizes[lastGroupIndex];
+        if (lastGroupSize !== undefined) {
+          groupSizes[lastGroupIndex] = lastGroupSize + 1;
+        }
+      } else {
+        ungroupedCount += 1;
+      }
+    }
+  }
+
+  const hasGroups = groupSizes.length > 0;
+  const maxGroupIndex = Math.max(0, groupSizes.length - 1);
+  const groupWidth = hasGroups
+    ? Math.max(1, maxGroupIndex.toString(36).length)
+    : 0;
+  const ungroupedItemWidth = Math.max(
+    2,
+    String(Math.max(0, ungroupedCount - 1)).length,
+  );
+
+  const labels: string[] = [];
+  let groupIndex = -1;
+  let itemIndex = 0;
+
+  for (const item of items) {
+    if (item.type === "divider") {
+      groupIndex += 1;
+      itemIndex = 0;
+      labels.push("");
+    } else if (isContentItem(item)) {
+      if (hasGroups) {
+        const g = Math.max(0, groupIndex)
+          .toString(36)
+          .padStart(groupWidth, "0");
+        const i = itemIndex.toString(36);
+        labels.push(g + i);
+      } else {
+        labels.push(String(itemIndex).padStart(ungroupedItemWidth, "0"));
+      }
+      itemIndex += 1;
+    } else {
+      labels.push("");
+    }
+  }
+
+  return labels;
 }
 
 function buildExportedCollectionDirectoryItems(
@@ -1096,55 +1189,65 @@ function buildExportedCollectionDirectoryItems(
   collectionSlugMap: Map<string, string>,
   collectionMetrics: Map<string, ExportedCollectionMetrics>,
 ): ExportedCollectionDirectoryItem[] {
+  const sequenceLabels = computeCollectionDirectorySequenceLabels(items);
   const exportedItems: ExportedCollectionDirectoryItem[] = [];
 
-  for (const item of items) {
+  items.forEach((item, index) => {
     if (item.type === "divider") {
       exportedItems.push({
         type: "divider",
         label: item.label ?? null,
       });
-      continue;
+      return;
     }
 
     if (item.type === "link") {
       if (!item.label || !item.url) {
-        continue;
+        return;
       }
 
+      const description = item.description?.trim();
       exportedItems.push({
         type: "link",
+        sequence: sequenceLabels[index] ?? "",
         label: item.label,
         url: item.url,
+        descriptionHtml: description ? renderMarkdown(description) : null,
       });
-      continue;
+      return;
     }
 
     const collection = item.collection;
     if (!collection?.id) {
-      continue;
+      return;
     }
 
     const slug = collectionSlugMap.get(collection.id) ?? collection.slug;
     if (!slug) {
-      continue;
+      return;
     }
     const metrics = collectionMetrics.get(collection.id);
+    const activityTimestamp =
+      metrics?.recentActivityAt ?? collection.recentActivityAt;
 
+    const collectionDescription = collection.description?.trim();
     exportedItems.push({
       type: "collection",
+      sequence: sequenceLabels[index] ?? "",
       slug,
       title: collection.title || slug,
+      descriptionHtml: collectionDescription
+        ? renderMarkdown(collectionDescription)
+        : null,
       entryCount:
         metrics?.postCount ??
         (typeof collection.postCount === "number"
           ? collection.postCount
           : undefined),
-      recentActivityLabel: formatCollectionActivityLabel(
-        metrics?.recentActivityAt ?? collection.recentActivityAt,
-      ),
+      recentActivityLabel: formatCollectionActivityLabel(activityTimestamp),
+      recentActivityIso: formatCollectionActivityIso(activityTimestamp),
     });
-  }
+  });
 
   return exportedItems;
 }
@@ -1432,8 +1535,14 @@ function buildJantDataToml(
     parts.push("[[directory]]");
     parts.push(`type = "${escapeTomlString(item.type)}"`);
     if (item.type === "collection") {
+      parts.push(`sequence = "${escapeTomlString(item.sequence)}"`);
       parts.push(`slug = "${escapeTomlString(item.slug)}"`);
       parts.push(`title = "${escapeTomlString(item.title)}"`);
+      if (item.descriptionHtml) {
+        parts.push(
+          `description_html = "${escapeTomlString(item.descriptionHtml)}"`,
+        );
+      }
       if (typeof item.entryCount === "number") {
         parts.push(`entry_count = ${item.entryCount}`);
       }
@@ -1442,13 +1551,24 @@ function buildJantDataToml(
           `recent_activity_label = "${escapeTomlString(item.recentActivityLabel)}"`,
         );
       }
+      if (item.recentActivityIso) {
+        parts.push(
+          `recent_activity_iso = "${escapeTomlString(item.recentActivityIso)}"`,
+        );
+      }
     } else if (item.type === "divider") {
       if (item.label !== null) {
         parts.push(`label = "${escapeTomlString(item.label)}"`);
       }
     } else {
+      parts.push(`sequence = "${escapeTomlString(item.sequence)}"`);
       parts.push(`label = "${escapeTomlString(item.label)}"`);
       parts.push(`url = "${escapeTomlString(item.url)}"`);
+      if (item.descriptionHtml) {
+        parts.push(
+          `description_html = "${escapeTomlString(item.descriptionHtml)}"`,
+        );
+      }
     }
   }
 

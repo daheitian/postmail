@@ -146,7 +146,7 @@ No `aliases` on replies. The reply's URL is redirected by the root's
 | `/{root-slug}/`       | `post/list.html` — thread root + inline replies                   |
 | `/{reply-slug}/`      | `_default/alias.html` — redirects to `/{root-slug}/#{reply-slug}` |
 | `/{collection-slug}/` | `collection/single.html`                                          |
-| `/collections/`       | `collections/list.html` — reads `.Site.Data.jant.directory`       |
+| `/collections/`       | `collections/list.html` — reads `hugo.Data.jant.directory`        |
 
 The home template handles the pinned prepend in-layout: it iterates
 `where .Site.RegularPages "Params.pinned_at" "ne" nil` first, then

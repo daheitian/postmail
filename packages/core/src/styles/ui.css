@@ -11108,3 +11108,21 @@
   width: 100%;
   margin: 0;
 }
+
+/*
+ * Collection descriptions (directory cards + collection detail header).
+ * Same cascade fix as .site-description: layered color rules lose to the
+ * unlayered `.prose` rule, so the original "weakened secondary" intent never
+ * actually rendered. Re-apply both `color` and `--tw-prose-body` here to
+ * override `.prose`. Tuned a touch lighter than the original to give meta/
+ * description copy a clearly-secondary feel next to the collection title.
+ */
+.collection-directory-description,
+.collection-page-description {
+  --tw-prose-body: color-mix(
+    in srgb,
+    var(--site-text-secondary) 80%,
+    transparent
+  );
+  color: color-mix(in srgb, var(--site-text-secondary) 80%, transparent);
+}
