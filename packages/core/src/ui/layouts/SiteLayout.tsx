@@ -518,12 +518,16 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                       }}
                     />
                   )}
-                  {isAuthenticated && (
+                  {isAuthenticated ? (
                     <ComposePrompt
                       composeOpenShortcutDiscovered={
                         composeOpenShortcutDiscovered
                       }
                     />
+                  ) : (
+                    siteDescriptionHtml && (
+                      <hr class="site-description-divider" aria-hidden="true" />
+                    )
                   )}
                 </div>
               )}
