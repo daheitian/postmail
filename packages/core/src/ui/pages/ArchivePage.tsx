@@ -942,10 +942,10 @@ function getTileText(post: PostView): { title?: string; summary: string } {
 
   if (post.format === "quote" && post.quoteText)
     return { title: post.title || undefined, summary: post.quoteText };
-  if (post.title) {
-    const summary = fallbackSummary || post.url || "";
-    return { title: post.title, summary };
-  }
+  // When a post has a title, the title is already the primary text; showing
+  // the URL beneath it is pure duplication (the domain is already visible
+  // via the link-card chrome). Skip the URL fallback here.
+  if (post.title) return { title: post.title, summary: fallbackSummary };
   if (fallbackSummary) return { summary: fallbackSummary };
   if (post.url) return { summary: post.url };
   return { summary: getFormatLabel(post.format) };

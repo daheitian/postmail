@@ -1025,16 +1025,26 @@ function normalizeArchiveText(text: string | null | undefined): string {
 }
 
 function getArchiveSummaryText(post: Post): string | null {
+  // `summary_text` is a plain-text projection of the post's primary content,
+  // used for `<meta name="description">`, `og:description`, and archive/card
+  // fallbacks when the rendered body is empty. The candidate list differs
+  // per format so the description reflects the right "primary content":
+  //
+  // - Quote: body (commentary) → quoteText. Quotes have no title, so we
+  //   fall back to the quote itself to guarantee a meaningful description.
+  // - Link: body only. Links have a title + domain; the URL is already
+  //   serialized as `link_url` and rendered as a domain badge, so using
+  //   it as `summary_text` would duplicate that information.
+  // - Note: body only. If the body is empty, there's nothing to describe.
   const candidates =
     post.format === "quote"
-      ? [post.summary, post.quoteText, post.bodyText, post.url]
-      : [post.summary, post.bodyText, post.quoteText, post.url];
+      ? [post.summary, post.bodyText, post.quoteText]
+      : [post.summary, post.bodyText];
 
   for (const candidate of candidates) {
     const normalized = normalizeArchiveText(candidate);
     if (normalized) return normalized;
   }
-
   return null;
 }
 

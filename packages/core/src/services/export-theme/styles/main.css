@@ -1189,8 +1189,9 @@ hr.feed-divider {
 }
 
 /* Continuous vertical rail spanning the entire thread (root post + replies).
-   Sits outside the content via negative `left`. Matches `.thread-preview`. */
-.thread::before {
+   Only shown when the root post actually has replies — a lone post should
+   not have a rail or dot. Matches `.thread-preview`. */
+.thread-has-replies::before {
   content: "";
   position: absolute;
   left: var(--thread-rail-left);
@@ -1206,14 +1207,15 @@ hr.feed-divider {
   pointer-events: none;
 }
 
-/* Dot marker for each post in the thread (root + replies). */
+/* Dot marker for each post in the thread (root + replies). Shown only when
+   there are replies so a solo post doesn't get an orphaned dot. */
 .thread .thread-item {
   position: relative;
   min-width: 0;
   max-width: 100%;
 }
 
-.thread .thread-item::before {
+.thread-has-replies .thread-item::before {
   content: "";
   position: absolute;
   left: calc(

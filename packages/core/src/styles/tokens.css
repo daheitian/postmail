@@ -35,6 +35,17 @@
   --font-mono:
     ui-monospace, Menlo, Monaco, Consolas, "Cascadia Code", "Courier New",
     monospace;
+  /*
+   * Blockquote font family.
+   *
+   * Defaults to `inherit` so blockquotes follow the body font in sans-only
+   * themes (Clean, Friendly, Bold) and serif-only themes (Tufte, Bookish).
+   * Mixed themes that want a distinct blockquote voice — e.g. Classic, which
+   * pairs a sans body with serif headings — override this token in their
+   * `cssVariables` to point at a serif stack. This also restores a type-level
+   * distinction for CJK, where italic is disabled.
+   */
+  --font-blockquote: inherit;
 
   /* Typography — Font weights */
   --fw-light: 300;

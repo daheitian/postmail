@@ -5,7 +5,9 @@
   {{- $media := $root.Params.media | default slice -}}
   {{- $collections := $root.Params.collections | default slice -}}
   {{- $linkUrl := $root.Params.link_url -}}
-  <article class="thread thread-{{ $format }}" id="{{ $slug }}" data-format="{{ $format }}" data-slug="{{ $slug }}"
+  {{- $replies := $root.Pages.ByDate -}}
+  {{- $hasReplies := gt (len $replies) 0 -}}
+  <article class="thread thread-{{ $format }}{{ if $hasReplies }} thread-has-replies{{ end }}" id="{{ $slug }}" data-format="{{ $format }}" data-slug="{{ $slug }}"
     {{- if $root.Params.pinned_at }} data-post-pinned{{ end -}}
     {{- if $root.Params.featured_at }} data-post-featured{{ end -}}
   >
@@ -112,8 +114,7 @@
     </footer>
     </div>
 
-    {{- $replies := $root.Pages.ByDate -}}
-    {{- if $replies -}}
+    {{- if $hasReplies -}}
       <section class="thread-replies" aria-label="Replies">
         {{- range $replies -}}
           {{ partial "reply.html" . }}

@@ -290,6 +290,7 @@ html {
     background: var(--site-blockquote-bg);
     border-radius: 6px;
     color: var(--site-blockquote-text);
+    font-family: var(--font-blockquote);
     font-style: italic;
     font-weight: inherit;
     quotes: none;

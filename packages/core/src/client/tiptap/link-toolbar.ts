@@ -361,8 +361,12 @@ export const LinkToolbar = Extension.create({
           if (inputEl) (dialog ?? document.body).appendChild(inputEl);
 
           // Bubble menu link button — opens focused for immediate typing.
+          // Suppress the next plugin update so the blur/selection change from
+          // focusing the input field doesn't immediately hide the popup
+          // (getLinkRange returns null when the selection isn't yet a link).
           const openHandler = () => {
             suppressAutoShow = false;
+            suppressNextUpdate = true;
             showInput(editorView, { href: "", focus: true });
           };
           editorView.dom.addEventListener(

@@ -164,7 +164,12 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
     },
     headingFontFamily: EDITORIAL_SERIF,
     bodyFontFamily: SANS,
-    cssVariables: {},
+    cssVariables: {
+      // Echo the serif heading voice in blockquotes so pull-quotes feel
+      // literary alongside the sans body copy. Also restores a type-level
+      // distinction for CJK, where italic is disabled.
+      "--font-blockquote": EDITORIAL_SERIF,
+    },
     description: {
       id: "Warmer serif titles over plainspoken sans body copy",
       message: "Warmer serif titles over plainspoken sans body copy",

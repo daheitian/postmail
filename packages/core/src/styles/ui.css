@@ -8446,6 +8446,7 @@
     border-radius: 6px;
     background: var(--_blockquote-bg);
     color: var(--_blockquote-text);
+    font-family: var(--font-blockquote);
     font-style: italic;
     font-weight: inherit;
     quotes: none;
