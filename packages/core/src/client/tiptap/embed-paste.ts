@@ -10,9 +10,15 @@
  *
  * Anything else falls through to `LinkInputRules` so existing autolink
  * behaviour is preserved.
+ *
+ * Undo behaviour: after auto-conversion, one Cmd/Ctrl+Z reverts to the URL
+ * as a plain hyperlink (Notion / Ghost convention) so authors can opt out
+ * without learning a new affordance. Implemented as two transactions with
+ * an explicit history boundary in between.
  */
 
 import { Extension } from "@tiptap/core";
+import { closeHistory } from "@tiptap/pm/history";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { hasKnownProvider, resolveEmbed } from "../../lib/embed-providers.js";
 
@@ -49,7 +55,33 @@ export const EmbedPaste = Extension.create({
             if (!resolved) return false;
 
             event.preventDefault();
-            editor.commands.setEmbed({ url: text });
+
+            // Step 1: insert the URL as a linked text run. This is what one
+            // Cmd+Z step will land on, giving authors a way to opt out of
+            // the embed without any extra affordance.
+            const linkType = view.state.schema.marks.link;
+            const insertPos = $from.pos;
+            const tr1 = view.state.tr.insertText(text, insertPos);
+            if (linkType) {
+              tr1.addMark(
+                insertPos,
+                insertPos + text.length,
+                linkType.create({ href: text }),
+              );
+            }
+            view.dispatch(tr1);
+
+            // Step 2: in a separate history group, replace the linked text
+            // with the embed node. `closeHistory` forces a new undo step so
+            // the two transactions are not coalesced into one.
+            queueMicrotask(() => {
+              const start = insertPos;
+              const end = insertPos + text.length;
+              const tr2 = closeHistory(view.state.tr).delete(start, end);
+              view.dispatch(tr2);
+              editor.commands.setEmbed({ url: text });
+            });
+
             return true;
           },
         },

@@ -9053,9 +9053,34 @@
 
   .tiptap-embed-dialog-actions {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: 0.5rem;
     margin-top: 0.25rem;
+  }
+
+  .tiptap-embed-dialog-link-instead {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-right: auto;
+    color: var(--site-accent, var(--primary));
+    font-size: var(--type-xs);
+    font-weight: var(--fw-medium);
+    text-align: left;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 0.06em;
+    text-underline-offset: 0.18em;
+  }
+
+  .tiptap-embed-dialog-link-instead:hover {
+    color: var(--site-text-primary);
+  }
+
+  .tiptap-embed-dialog-link-instead[hidden] {
+    display: none;
   }
 
   .compose-tiptap-body .tiptap a {

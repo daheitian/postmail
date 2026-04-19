@@ -14,6 +14,7 @@ import { resolveEmbed } from "../../lib/embed-providers.js";
 
 export type EmbedDialogResult =
   | { kind: "embed"; url: string; caption?: string }
+  | { kind: "link"; url: string }
   | { kind: "html"; html: string };
 
 export interface EmbedDialogOptions {
@@ -130,6 +131,7 @@ export function openEmbedDialog(
         toggle.textContent = "Use a URL instead";
       }
       updateHint();
+      updateLinkBtnVisibility();
       queueMicrotask(() => {
         if (mode === "url") urlInput.focus();
         else htmlTextarea.focus();
@@ -164,12 +166,34 @@ export function openEmbedDialog(
       applyMode();
     });
 
-    urlInput.addEventListener("input", updateHint);
+    urlInput.addEventListener("input", () => {
+      updateHint();
+      updateLinkBtnVisibility();
+    });
 
     // Footer
     const footer = document.createElement("div");
     footer.className = "tiptap-embed-dialog-actions";
     panel.appendChild(footer);
+
+    // Secondary action: insert as a plain link instead of an embed.
+    // Visible only in URL mode and when the URL field has content — the
+    // dialog is for embeds first, so we don't surface the link option until
+    // the author has typed something they could meaningfully link.
+    const linkBtn = document.createElement("button");
+    linkBtn.type = "button";
+    linkBtn.className = "tiptap-embed-dialog-link-instead";
+    linkBtn.textContent = "Insert as link instead";
+    linkBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      const url = urlInput.value.trim();
+      if (!url) {
+        urlInput.focus();
+        return;
+      }
+      finish({ kind: "link", url });
+    });
+    footer.appendChild(linkBtn);
 
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
@@ -190,6 +214,11 @@ export function openEmbedDialog(
       submit();
     });
     footer.appendChild(insertBtn);
+
+    function updateLinkBtnVisibility() {
+      const hasUrl = mode === "url" && urlInput.value.trim().length > 0;
+      linkBtn.hidden = !hasUrl;
+    }
 
     function submit() {
       if (mode === "url") {

@@ -114,6 +114,19 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
               caption: result.caption,
             })
             .run();
+        } else if (result.kind === "link") {
+          // Insert the URL as text and wrap it with a link mark, so the
+          // "Insert as link instead" affordance produces a normal hyperlink
+          // rather than an embed.
+          editor
+            .chain()
+            .focus()
+            .insertContent({
+              type: "text",
+              text: result.url,
+              marks: [{ type: "link", attrs: { href: result.url } }],
+            })
+            .run();
         } else {
           editor.chain().focus().setHtmlBlock({ html: result.html }).run();
         }

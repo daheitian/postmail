@@ -171,9 +171,37 @@ class EmbedNodeView {
     const initialUrl = String(this.node.attrs.url ?? "");
     const initialCaption = String(this.node.attrs.caption ?? "");
     void openEmbedDialog({ initialUrl, initialCaption }).then((result) => {
-      if (!result || result.kind !== "embed") return;
+      if (!result) return;
       const pos = this.getPos();
       if (pos === undefined) return;
+
+      if (result.kind === "link") {
+        // Replace the embed node with the URL as a linked paragraph. We use
+        // chain commands so the link mark is applied through the schema's
+        // own Link extension instead of constructed by hand.
+        const from = pos;
+        const to = pos + this.node.nodeSize;
+        this.editor
+          .chain()
+          .focus()
+          .insertContentAt(
+            { from, to },
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: result.url,
+                  marks: [{ type: "link", attrs: { href: result.url } }],
+                },
+              ],
+            },
+          )
+          .run();
+        return;
+      }
+
+      if (result.kind !== "embed") return;
       const resolved = resolveEmbed(result.url);
       const nextAttrs = resolved
         ? {
