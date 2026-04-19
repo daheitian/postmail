@@ -1675,10 +1675,8 @@ When the source site has a storage provider configured (R2/S3/local proxy), imag
 To download every referenced media file into \`static/media/\` and rewrite the references to local paths, run this from the root of the export:
 
 \`\`\`sh
-npx -p @jant/core jant site pull-media --path .
+npx jant-cli site pull-media --path .
 \`\`\`
-
-The \`-p @jant/core\` flag tells \`npx\` which package provides the \`jant\` command, so this works even in an export repo that doesn't have \`@jant/core\` installed as a dependency.
 
 Safe to re-run; files already on disk are reused. Anything that fails to download keeps its original URL so the site still builds.
 

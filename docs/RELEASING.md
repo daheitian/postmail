@@ -16,10 +16,13 @@ We follow [Semantic Versioning](https://semver.org/):
 
 ## Packages
 
-| Package       | npm                                                                                           | Description          |
-| ------------- | --------------------------------------------------------------------------------------------- | -------------------- |
-| `@jant/core`  | [![npm](https://img.shields.io/npm/v/@jant/core)](https://www.npmjs.com/package/@jant/core)   | Core framework       |
-| `create-jant` | [![npm](https://img.shields.io/npm/v/create-jant)](https://www.npmjs.com/package/create-jant) | CLI scaffolding tool |
+| Package       | npm                                                                                           | Description                                         |
+| ------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `@jant/core`  | [![npm](https://img.shields.io/npm/v/@jant/core)](https://www.npmjs.com/package/@jant/core)   | Core framework (also ships the `jant` CLI)          |
+| `create-jant` | [![npm](https://img.shields.io/npm/v/create-jant)](https://www.npmjs.com/package/create-jant) | CLI scaffolding tool                                |
+| `jant-cli`    | [![npm](https://img.shields.io/npm/v/jant-cli)](https://www.npmjs.com/package/jant-cli)       | Thin `npx` wrapper around `@jant/core`'s `jant` CLI |
+
+The three packages are in a Changesets `fixed` group, so they always release together at the same version. `jant-cli` depends on `@jant/core` via `workspace:*`, which pnpm rewrites to the exact version on publish.
 
 ## Workflow
 
@@ -99,11 +102,15 @@ mise run release-publish-core
 
 # Publish create-jant
 mise run release-publish-create
+
+# Publish jant-cli (must run AFTER @jant/core is on the registry so the
+# workspace:* dependency resolves to a published version)
+mise run release-publish-cli
 ```
 
 ### Step 2: Configure Trusted Publishing on npm
 
-For each package (`@jant/core` and `create-jant`):
+For each package (`@jant/core`, `create-jant`, and `jant-cli`):
 
 1. Go to [npmjs.com](https://npmjs.com) → Your package → **Settings**
 2. Find **Trusted Publisher** section

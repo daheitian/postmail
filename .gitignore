@@ -4,6 +4,7 @@ test-results
 # Build outputs
 dist/
 build/
+temp*
 out/
 *.tsbuildinfo
 .codex-artifacts
