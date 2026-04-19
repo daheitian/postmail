@@ -12,9 +12,7 @@
       "types": "./src/node/index.ts",
       "default": "./dist/node.js"
     },
-    "./i18n": "./src/i18n/index.ts",
-    "./bin/jant.js": "./bin/jant.js",
-    "./package.json": "./package.json"
+    "./i18n": "./src/i18n/index.ts"
   },
   "bin": {
     "jant": "bin/jant.js"

@@ -873,7 +873,7 @@ run = """
 node -e "
 const write = require(require.resolve('@changesets/write', { paths: [require.resolve('@changesets/cli')] }));
 write.default(
-  { summary: process.argv[2], releases: [{ name: '@jant/core', type: process.argv[1] }, { name: 'create-jant', type: process.argv[1] }, { name: 'jant-cli', type: process.argv[1] }] },
+  { summary: process.argv[2], releases: [{ name: '@jant/core', type: process.argv[1] }, { name: 'create-jant', type: process.argv[1] }] },
   process.cwd()
 ).then(id => console.log('Created changeset:', id));
 " "$usage_bump" "$usage_summary"
@@ -912,7 +912,3 @@ run = "pnpm --filter @jant/core build && cd packages/core && npm publish --acces
 [tasks.release-publish-create]
 description = "Build and publish create-jant to npm"
 run = "pnpm --filter create-jant build && cd packages/create-jant && npm publish --access public --no-provenance --no-git-checks"
-
-[tasks.release-publish-cli]
-description = "Publish jant-cli (thin npx wrapper) to npm. Run after @jant/core is on the registry. Uses pnpm so workspace:* is rewritten to the real version."
-run = "pnpm --filter jant-cli publish --access public --no-provenance --no-git-checks"
