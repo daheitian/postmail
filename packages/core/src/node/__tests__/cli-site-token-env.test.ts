@@ -69,7 +69,7 @@ describe("site CLI token env", () => {
       "https://example.com",
       "--output",
       outputPath,
-      "--no-localize-media",
+      "--no-pull-media",
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(

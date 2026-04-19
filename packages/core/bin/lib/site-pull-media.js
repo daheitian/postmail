@@ -52,7 +52,7 @@ export function resolveExportUrl(rawUrl, baseUrl) {
   }
 }
 
-export function toLocalizedPublicPath(relativePath, sitePathPrefix = "") {
+export function toPulledPublicPath(relativePath, sitePathPrefix = "") {
   const trimmedPath = String(relativePath).replace(/^\/+/, "");
   const prefix = sitePathPrefix.replace(/\/+$/, "");
   if (!prefix) {
@@ -104,7 +104,7 @@ function guessExtensionFromContentType(contentType) {
   }
 }
 
-function createLocalizedRelativePath(resolvedUrl, contentType, usedPaths) {
+function createPulledRelativePath(resolvedUrl, contentType, usedPaths) {
   let fileName = "file";
 
   try {
@@ -327,7 +327,7 @@ export function collectMediaReferences(content) {
 }
 
 /**
- * Extract every localizable URL from a front matter `media:` array
+ * Extract every remote media URL from a front matter `media:` array
  * (each entry's `src` and `poster`). Needed because attachments that are
  * only referenced from front matter — notably text attachments, whose
  * `.md` body is never inlined — wouldn't otherwise be discovered by the
@@ -383,7 +383,7 @@ function rewriteFrontMatterMediaReferences(frontMatter, rewrites) {
 function getConfigMediaUrls(siteConfig) {
   // Hugo config: media URLs live under [params] (flat). Favicon and
   // apple-touch are written as theme-relative paths by the exporter, so
-  // only the avatar URL is a remote reference worth localizing.
+  // only the avatar URL is a remote reference worth pulling.
   const params = siteConfig?.params || {};
   const refs = [];
 
@@ -414,7 +414,7 @@ export function updateConfigMediaUrls(siteConfig, replacements) {
 
 function getJantDataMediaUrls(jantData) {
   // data/jant.toml mirrors the avatar URL for the import pipeline. Keep
-  // it in sync with hugo.toml so the import CLI can locate the localized
+  // it in sync with hugo.toml so the import CLI can locate the pulled
   // bytes on disk.
   if (!jantData || typeof jantData !== "object") {
     return [];
@@ -443,7 +443,7 @@ export function updateJantDataMediaUrls(jantData, replacements) {
   return changed;
 }
 
-async function resolveExistingLocalizedPath(
+async function resolveExistingPulledPath(
   rawUrl,
   baseUrl,
   sitePathPrefix,
@@ -477,7 +477,7 @@ async function resolveExistingLocalizedPath(
     return null;
   }
 
-  return toLocalizedPublicPath(pathname, sitePathPrefix);
+  return toPulledPublicPath(pathname, sitePathPrefix);
 }
 
 async function packDirectoryToZip(rootDir) {
@@ -503,7 +503,7 @@ async function unpackZipToDirectory(zipBytes, rootDir) {
   );
 }
 
-export async function localizeSiteExportDirectory(rootDir, options = {}) {
+export async function pullSiteExportDirectory(rootDir, options = {}) {
   const logger =
     typeof options.logger === "function" ? options.logger : () => {};
   const configPath = join(rootDir, "hugo.toml");
@@ -516,9 +516,9 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
   const jantDataText = await readFile(jantDataPath, "utf-8").catch(() => null);
   const jantData = jantDataText ? parse(jantDataText) : null;
   const markdownFiles = await readMarkdownFiles(rootDir);
-  const usedLocalizedPaths = new Set();
+  const usedPulledPaths = new Set();
   const rewrites = new Map();
-  const localizedByResolvedUrl = new Map();
+  const pulledByResolvedUrl = new Map();
   const stats = {
     downloaded: 0,
     reused: 0,
@@ -549,7 +549,7 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
       continue;
     }
 
-    const existingPath = await resolveExistingLocalizedPath(
+    const existingPath = await resolveExistingPulledPath(
       rawUrl,
       baseUrl,
       sitePathPrefix,
@@ -563,7 +563,7 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
         index: index + 1,
         total: uniqueReferences.length,
         rawUrl,
-        localizedPath: existingPath,
+        pulledPath: existingPath,
       });
       continue;
     }
@@ -573,8 +573,8 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
       continue;
     }
 
-    if (localizedByResolvedUrl.has(resolvedUrl)) {
-      const cachedPath = localizedByResolvedUrl.get(resolvedUrl);
+    if (pulledByResolvedUrl.has(resolvedUrl)) {
+      const cachedPath = pulledByResolvedUrl.get(resolvedUrl);
       if (cachedPath) {
         rewrites.set(rawUrl, cachedPath);
       }
@@ -600,7 +600,7 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
       }
     }
     if (!asset) {
-      localizedByResolvedUrl.set(resolvedUrl, null);
+      pulledByResolvedUrl.set(resolvedUrl, null);
       stats.failed += 1;
       logger({
         type: "asset-failed",
@@ -613,25 +613,25 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
       continue;
     }
 
-    const relativePath = createLocalizedRelativePath(
+    const relativePath = createPulledRelativePath(
       resolvedUrl,
       asset.contentType,
-      usedLocalizedPaths,
+      usedPulledPaths,
     );
     const outputPath = join(rootDir, "static", relativePath);
     await mkdir(dirname(outputPath), { recursive: true });
     await writeFile(outputPath, asset.bytes);
 
-    const localizedPath = toLocalizedPublicPath(relativePath, sitePathPrefix);
-    localizedByResolvedUrl.set(resolvedUrl, localizedPath);
-    rewrites.set(rawUrl, localizedPath);
+    const pulledPath = toPulledPublicPath(relativePath, sitePathPrefix);
+    pulledByResolvedUrl.set(resolvedUrl, pulledPath);
+    rewrites.set(rawUrl, pulledPath);
     stats.downloaded += 1;
     logger({
       type: "asset-downloaded",
       index: index + 1,
       total: uniqueReferences.length,
       rawUrl,
-      localizedPath,
+      pulledPath,
     });
   }
 
@@ -684,14 +684,14 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
   return stats;
 }
 
-export async function localizeSiteExportZipBytes(zipBytes, options = {}) {
-  const tempDir = await mkdtemp(join(tmpdir(), "jant-site-localize-"));
+export async function pullSiteExportZipBytes(zipBytes, options = {}) {
+  const tempDir = await mkdtemp(join(tmpdir(), "jant-site-pull-"));
 
   try {
     await unpackZipToDirectory(zipBytes, tempDir);
-    const stats = await localizeSiteExportDirectory(tempDir, options);
-    const localizedZip = await packDirectoryToZip(tempDir);
-    return { zipBytes: localizedZip, stats };
+    const stats = await pullSiteExportDirectory(tempDir, options);
+    const pulledZip = await packDirectoryToZip(tempDir);
+    return { zipBytes: pulledZip, stats };
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }

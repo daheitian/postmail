@@ -3,9 +3,9 @@ import { stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
-  localizeSiteExportDirectory,
-  localizeSiteExportZipBytes,
-} from "../../lib/site-localize-media.js";
+  pullSiteExportDirectory,
+  pullSiteExportZipBytes,
+} from "../../lib/site-pull-media.js";
 
 function describeProgressUrl(value) {
   try {
@@ -16,7 +16,7 @@ function describeProgressUrl(value) {
   }
 }
 
-function logLocalizationProgress(event) {
+function logPullProgress(event) {
   if (event.type === "scan-complete") {
     console.log(
       `Scanning export... found ${event.mediaReferences} referenced files in ${event.markdownFiles} content files`,
@@ -63,7 +63,7 @@ export async function run(argv) {
   });
 
   if (values.help) {
-    console.log("Usage: jant site localize-media [options]");
+    console.log("Usage: jant site pull-media [options]");
     console.log("");
     console.log("Download referenced media into a Jant site export.");
     console.log("");
@@ -90,29 +90,29 @@ export async function run(argv) {
       process.exit(1);
     }
 
-    console.log(`Localizing media in ${values.path}...`);
-    const stats = await localizeSiteExportDirectory(inputPath, {
-      logger: logLocalizationProgress,
+    console.log(`Pulling media in ${values.path}...`);
+    const stats = await pullSiteExportDirectory(inputPath, {
+      logger: logPullProgress,
     });
-    console.log(`Localized media in ${values.path}`);
+    console.log(`Pulled media in ${values.path}`);
     console.log(
-      `Media localization: localized ${stats.downloaded} media files, ${stats.reused} already localized, ${stats.failed} failed and were left as original URLs`,
+      `Media pull: pulled ${stats.downloaded} media files, ${stats.reused} already local, ${stats.failed} failed and were left as original URLs`,
     );
     return;
   }
 
   const outputPath = resolve(process.cwd(), values.output || values.path);
   const inputBytes = new Uint8Array(readFileSync(inputPath));
-  console.log(`Localizing media in ${values.path}...`);
-  const { zipBytes, stats } = await localizeSiteExportZipBytes(inputBytes, {
-    logger: logLocalizationProgress,
+  console.log(`Pulling media in ${values.path}...`);
+  const { zipBytes, stats } = await pullSiteExportZipBytes(inputBytes, {
+    logger: logPullProgress,
   });
   console.log(`Writing ${values.output || values.path}...`);
   writeFileSync(outputPath, Buffer.from(zipBytes));
   console.log(
-    `Localized media in ${values.path} -> ${values.output || values.path}`,
+    `Pulled media in ${values.path} -> ${values.output || values.path}`,
   );
   console.log(
-    `Media localization: localized ${stats.downloaded} media files, ${stats.reused} already localized, ${stats.failed} failed and were left as original URLs`,
+    `Media pull: pulled ${stats.downloaded} media files, ${stats.reused} already local, ${stats.failed} failed and were left as original URLs`,
   );
 }

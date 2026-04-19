@@ -62,7 +62,7 @@ service. They are user territory: Hugo's override rule picks any file
 under root `layouts/<name>.html` over
 `themes/jant/layouts/<name>.html`, so users get per-layout overrides
 without forking the theme. The CLI may populate `static/media/` when
-`--localize-media` is on, but that is a CLI-level concern — the core
+`--pull-media` is on, but that is a CLI-level concern — the core
 export service produces nothing at the repo root outside the
 `JANT_MANAGED_GLOBS` list.
 

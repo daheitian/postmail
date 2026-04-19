@@ -564,7 +564,7 @@ async function normalizeMediaSpec(spec, siteConfig, sourceRootDir) {
  *    attachments got their own public URL.
  * 2. Reference (current exports): the meta JSON only carries `kind: "text"`
  *    + `src: <url>` pointing at the `.md` artifact. We fetch that URL
- *    (falling back to `--localize-media` local disk via
+ *    (falling back to `--pull-media` local disk via
  *    `resolveImportLocalAssetPath`, same as images) and use the bytes as
  *    the markdown body.
  *

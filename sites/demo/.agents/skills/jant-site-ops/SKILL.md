@@ -62,7 +62,7 @@ Avoid calling `wrangler deploy` directly for the normal site workflow. Jant's de
 Useful commands when working with exported sites or static archives:
 
 ```bash
-npx jant site localize-media --help
+npx jant site pull-media --help
 npx jant assets prepare
 npx jant uploads cleanup --help
 ```

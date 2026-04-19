@@ -8,7 +8,7 @@ import {
 } from "../../lib/cli-api-token.js";
 import { openNodeDatabase } from "../../lib/node-database.js";
 import { loadNodeRuntime } from "../../lib/load-node-runtime.js";
-import { localizeSiteExportZipBytes } from "../../lib/site-localize-media.js";
+import { pullSiteExportZipBytes } from "../../lib/site-pull-media.js";
 
 function describeLocalExportSource(input) {
   if (input.siteUrl) {
@@ -47,10 +47,10 @@ function describeProgressUrl(value) {
   }
 }
 
-function logLocalizationProgress(event) {
+function logPullProgress(event) {
   if (event.type === "scan-complete") {
     console.log(
-      `Localizing media references... found ${event.mediaReferences} referenced files in ${event.markdownFiles} content files`,
+      `Pulling media references... found ${event.mediaReferences} referenced files in ${event.markdownFiles} content files`,
     );
     return;
   }
@@ -263,16 +263,16 @@ async function exportLocalSite(env = process.env) {
 }
 
 export async function run(argv) {
-  const noLocalizeMedia = argv.includes("--no-localize-media");
+  const noPullMedia = argv.includes("--no-pull-media");
   const { values } = parseArgs({
-    args: argv.filter((arg) => arg !== "--no-localize-media"),
+    args: argv.filter((arg) => arg !== "--no-pull-media"),
     options: {
       directory: {
         type: "string",
         short: "d",
       },
       help: { type: "boolean", short: "h" },
-      "localize-media": { type: "boolean" },
+      "pull-media": { type: "boolean" },
       output: {
         type: "string",
         short: "o",
@@ -305,10 +305,10 @@ export async function run(argv) {
       "  --directory, -d Export directly to a directory for hugo serve/debugging",
     );
     console.log(
-      "  --localize-media    Download referenced media into static/media/ (default: on)",
+      "  --pull-media    Download referenced media into static/media/ (default: on)",
     );
     console.log(
-      "  --no-localize-media Skip media localization and keep original URLs",
+      "  --no-pull-media Skip the media pull and keep original URLs",
     );
     console.log("  --token         API token for remote export");
     console.log("");
@@ -332,7 +332,7 @@ export async function run(argv) {
     ? resolve(process.cwd(), values.directory)
     : null;
   const token = getCliApiToken(process.env, values.token);
-  const localizeMedia = values["localize-media"] ?? !noLocalizeMedia;
+  const pullMedia = values["pull-media"] ?? !noPullMedia;
 
   if (values.url && !token) {
     console.error(
@@ -355,16 +355,16 @@ export async function run(argv) {
       }
     : await exportLocalSite(process.env);
   let zip = exported.zip;
-  let localizeStats = null;
+  let pullStats = null;
 
-  if (localizeMedia) {
-    console.log("Preparing localized export ZIP...");
-    const localized = await localizeSiteExportZipBytes(zip, {
+  if (pullMedia) {
+    console.log("Preparing pull-media export ZIP...");
+    const pulled = await pullSiteExportZipBytes(zip, {
       assetLoader: exported.assetLoader,
-      logger: logLocalizationProgress,
+      logger: logPullProgress,
     });
-    zip = localized.zipBytes;
-    localizeStats = localized.stats;
+    zip = pulled.zipBytes;
+    pullStats = pulled.stats;
   }
 
   const source = exported.source;
@@ -401,18 +401,16 @@ export async function run(argv) {
     console.log(`Exported site from ${source} to ${values.output}`);
   }
 
-  if (localizeStats) {
+  if (pullStats) {
     const details = [
-      `localized ${localizeStats.downloaded} media files`,
-      localizeStats.reused > 0
-        ? `${localizeStats.reused} already localized`
-        : null,
-      localizeStats.failed > 0
-        ? `${localizeStats.failed} failed and were left as original URLs`
+      `pulled ${pullStats.downloaded} media files`,
+      pullStats.reused > 0 ? `${pullStats.reused} already local` : null,
+      pullStats.failed > 0
+        ? `${pullStats.failed} failed and were left as original URLs`
         : null,
     ]
       .filter(Boolean)
       .join(", ");
-    console.log(`Media localization: ${details}`);
+    console.log(`Media pull: ${details}`);
   }
 }

@@ -12,13 +12,13 @@ import { describe, expect, it } from "vitest";
 import {
   collectMediaReferences,
   getSitePathPrefix,
-  localizeSiteExportDirectory,
+  pullSiteExportDirectory,
   resolveExportUrl,
-  toLocalizedPublicPath,
+  toPulledPublicPath,
   updateConfigMediaUrls,
-} from "../../bin/lib/site-localize-media.js";
+} from "../../bin/lib/site-pull-media.js";
 
-describe("site-localize-media helpers", () => {
+describe("site-pull-media helpers", () => {
   it("collects markdown, html, and attachment media references", () => {
     const content = `
 ![hero](/media/hero.webp)
@@ -43,9 +43,9 @@ describe("site-localize-media helpers", () => {
     ]);
   });
 
-  it("builds localized public paths with a site path prefix", () => {
+  it("builds pulled public paths with a site path prefix", () => {
     expect(getSitePathPrefix("https://example.com/blog")).toBe("/blog");
-    expect(toLocalizedPublicPath("media/photo.webp", "/blog")).toBe(
+    expect(toPulledPublicPath("media/photo.webp", "/blog")).toBe(
       "/blog/media/photo.webp",
     );
     expect(
@@ -79,8 +79,8 @@ describe("site-localize-media helpers", () => {
     expect(config.params.site_avatar_url).toBe("/blog/media/local-avatar.webp");
   });
 
-  it("localizes media files into static/media and rewrites content/config", async () => {
-    const rootDir = await mkdtemp(join(tmpdir(), "jant-localize-test-"));
+  it("pulls media files into static/media and rewrites content/config", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "jant-pull-media-test-"));
 
     try {
       await mkdir(join(rootDir, "content", "hello"), { recursive: true });
@@ -109,7 +109,7 @@ title: "Hello"
 `,
       );
 
-      const stats = await localizeSiteExportDirectory(rootDir, {
+      const stats = await pullSiteExportDirectory(rootDir, {
         assetLoader: async ({ resolvedUrl }) => ({
           bytes: new TextEncoder().encode(resolvedUrl),
           contentType: resolvedUrl.endsWith(".pdf")
@@ -133,15 +133,15 @@ title: "Hello"
       const config = await readFile(join(rootDir, "hugo.toml"), "utf-8");
       expect(config).toContain('site_avatar_url = "/blog/media/');
 
-      const localizedFiles = await readdir(join(rootDir, "static", "media"));
-      expect(localizedFiles).toHaveLength(3);
+      const pulledFiles = await readdir(join(rootDir, "static", "media"));
+      expect(pulledFiles).toHaveLength(3);
     } finally {
       await rm(rootDir, { recursive: true, force: true });
     }
   });
 
-  it("localizes front matter media[] entries including text attachments", async () => {
-    const rootDir = await mkdtemp(join(tmpdir(), "jant-localize-test-"));
+  it("pulls front matter media[] entries including text attachments", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "jant-pull-media-test-"));
 
     try {
       await mkdir(join(rootDir, "content", "hello"), { recursive: true });
@@ -171,7 +171,7 @@ No body image references here.
       );
 
       const loaded: string[] = [];
-      const stats = await localizeSiteExportDirectory(rootDir, {
+      const stats = await pullSiteExportDirectory(rootDir, {
         assetLoader: async ({ resolvedUrl }) => {
           loaded.push(resolvedUrl);
           return {
@@ -200,15 +200,15 @@ No body image references here.
       expect(content).toContain('src: "/media/');
       expect(content).toContain('poster: "/media/');
 
-      const localizedFiles = await readdir(join(rootDir, "static", "media"));
-      expect(localizedFiles).toHaveLength(3);
+      const pulledFiles = await readdir(join(rootDir, "static", "media"));
+      expect(pulledFiles).toHaveLength(3);
     } finally {
       await rm(rootDir, { recursive: true, force: true });
     }
   });
 
-  it("localizes protocol-relative media references with https asset URLs", async () => {
-    const rootDir = await mkdtemp(join(tmpdir(), "jant-localize-test-"));
+  it("pulls protocol-relative media references with https asset URLs", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "jant-pull-media-test-"));
 
     try {
       await mkdir(join(rootDir, "content", "hello"), { recursive: true });
@@ -228,7 +228,7 @@ title: "Hello"
       );
 
       const seenResolvedUrls = [];
-      const stats = await localizeSiteExportDirectory(rootDir, {
+      const stats = await pullSiteExportDirectory(rootDir, {
         assetLoader: async ({ resolvedUrl }) => {
           seenResolvedUrls.push(resolvedUrl);
           return {

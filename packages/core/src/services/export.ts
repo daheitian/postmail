@@ -979,7 +979,7 @@ async function buildThreadBundle(
  * they can be bundled next to the post as a Hugo page resource. Returns
  * null when storage is unavailable or the object cannot be read, in
  * which case the front matter entry still points at the resource name
- * and the CLI's localize step (or a later sync) can fill it in.
+ * and the CLI's pull-media step (or a later sync) can fill it in.
  */
 async function readMediaResourceFile(
   storage: StorageDriver | null,
@@ -1667,6 +1667,16 @@ static/                   — Copy files here to add them to the published site
 - **Styles** — edit \`themes/jant/static/main.css\`, or drop a \`static/main.css\` at the site root to override.
 - **Templates** — add files under \`layouts/\` at the site root to override the bundled theme.
 - **Debugging** — export to a directory with \`jant site export --directory ./my-site\`, then run \`cd my-site && hugo serve\`.
+
+## Re-fetching media
+
+Media is downloaded into \`static/media/\` by default at export time. If some files are missing — for example, you exported with \`--no-pull-media\`, new media was added to the source site, or a remote storage URL rotated — run:
+
+\`\`\`sh
+npx jant site pull-media --path .
+\`\`\`
+
+It scans the site's content and downloads any referenced media that isn't already local. Safe to re-run; files already on disk are reused.
 
 ## Notes
 

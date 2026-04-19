@@ -27,7 +27,7 @@ Use it when you want to:
 - inspect a static export locally
 - keep a portable archive of your published structure
 
-By default, Jant localizes referenced media into the export so the archive is more self-contained.
+By default, Jant pulls referenced media into the export so the archive is more self-contained.
 
 When the export comes from Jant, `data/jant.toml` also keeps Jant-specific metadata for round-trip imports, including header navigation and the collections directory structure (collection order, dividers, and custom links).
 
@@ -51,7 +51,7 @@ layouts/                  your overrides (optional)
 static/                   your static files + downloaded media
 ```
 
-Root `layouts/` and root `static/` are your territory. Hugo picks any file under root `layouts/<name>.html` over `themes/jant/layouts/<name>.html`, so you can override a single template without forking the theme. With `--localize-media` (the default), referenced media is downloaded into `static/media/` so the export is self-contained.
+Root `layouts/` and root `static/` are your territory. Hugo picks any file under root `layouts/<name>.html` over `themes/jant/layouts/<name>.html`, so you can override a single template without forking the theme. With `--pull-media` (the default), referenced media is downloaded into `static/media/` so the export is self-contained.
 
 ### URL Scheme
 
@@ -104,19 +104,19 @@ npx jant site export --url https://your-site.example --output ./jant-site-export
 
 You can also pass `--token`, but `JANT_API_TOKEN` is easier to reuse.
 
-### Localize Media After the Fact
+### Pull Media After the Fact
 
-`site export` downloads referenced media by default, but you can also run the localization step on its own against any existing export — a directory or a ZIP. This is useful when you exported with `--no-localize-media`, when new media was added after an earlier export, or when an earlier run failed partway through.
+`site export` downloads referenced media by default, but you can also run the pull step on its own against any existing export — a directory or a ZIP. This is useful when you exported with `--no-pull-media`, when new media was added after an earlier export, or when an earlier run failed partway through.
 
 ```bash
 # Against an unpacked site directory
-npx jant site localize-media --path ./jant-site
+npx jant site pull-media --path ./jant-site
 
 # Against a ZIP (overwrites input by default)
-npx jant site localize-media --path ./jant-site-export.zip
+npx jant site pull-media --path ./jant-site-export.zip
 
 # Against a ZIP, write the result to a different file
-npx jant site localize-media --path ./jant-site-export.zip --output ./localized.zip
+npx jant site pull-media --path ./jant-site-export.zip --output ./pulled.zip
 ```
 
 The command scans every markdown file and `hugo.toml`, downloads each remote media reference into `static/media/`, and rewrites the references to the local path. It is idempotent — files already present under `static/media/` are reused instead of re-downloaded. Anything that fails to download keeps its original URL so the export still builds.
