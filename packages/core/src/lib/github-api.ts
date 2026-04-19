@@ -43,6 +43,12 @@ export interface GitHubTreeItem {
 export interface GitHubTree {
   sha: string;
   tree: GitHubTreeItem[];
+  /**
+   * Set by the GitHub API when the tree response exceeds the item/size
+   * limit (currently 100k entries or ~7 MB). Only populated by read paths
+   * (`getTree`); write paths (`createTree`) do not return this field.
+   */
+  truncated?: boolean;
 }
 
 export interface GitHubCommit {
@@ -164,6 +170,18 @@ export interface GitHubClient {
     repo: string,
     items: GitHubTreeItem[],
     baseTree?: string,
+  ): Promise<GitHubTree>;
+
+  /**
+   * Read a Git tree by SHA. Pass `recursive: true` to flatten nested
+   * subtrees into a single list (check `truncated` on the response to
+   * detect the 100k/7MB limit).
+   */
+  getTree(
+    owner: string,
+    repo: string,
+    sha: string,
+    opts?: { recursive?: boolean },
   ): Promise<GitHubTree>;
 
   /** Create a Git commit object. */
@@ -340,6 +358,14 @@ export function createGitHubClient(
         tree: items,
         ...(baseTree ? { base_tree: baseTree } : {}),
       });
+    },
+
+    async getTree(owner, repo, sha, opts) {
+      const query = opts?.recursive ? "?recursive=1" : "";
+      return request<GitHubTree>(
+        "GET",
+        `/repos/${owner}/${repo}/git/trees/${sha}${query}`,
+      );
     },
 
     async createCommit(owner, repo, opts) {

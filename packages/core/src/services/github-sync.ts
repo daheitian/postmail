@@ -64,9 +64,13 @@ export const JANT_SYNC_MARKER_SCHEMA_VERSION = 3;
 /**
  * Hard list of paths Jant fully owns and always overwrites on push.
  * Anything outside this set is user territory and preserved via base_tree.
+ * Files inside this set that Jant no longer generates are deleted on the
+ * next push (see `computeManagedDeletions`).
  *
  * - `content/**` — posts, collections, sections (rendered by Hugo)
- * - `data/**` — Hugo data files (`data/jant.toml`)
+ * - `data/jant.toml` — nav, branding, collections directory (the rest of
+ *   `data/` is user territory so Hugo's `data/menu.toml` convention, etc.,
+ *   can be used freely)
  * - `themes/jant/**` — the packaged Jant theme (layouts + static assets)
  * - `hugo.toml` — site config, including `theme = "jant"`
  * - `.gitignore`, `README.md` — scaffolded once, then kept in sync
@@ -77,7 +81,7 @@ export const JANT_SYNC_MARKER_SCHEMA_VERSION = 3;
  */
 export const JANT_MANAGED_GLOBS = [
   "content/**",
-  "data/**",
+  "data/jant.toml",
   "themes/jant/**",
   "hugo.toml",
   ".gitignore",
@@ -86,42 +90,58 @@ export const JANT_MANAGED_GLOBS = [
 ] as const;
 
 /**
- * Paths that earlier schema versions (v1 flat layout, v2 Zola theme) used
- * to own but schema v3 (Hugo) no longer writes. On the first v3 push
- * against a pre-v3 marked repo, these are explicitly deleted so stale
- * Zola artifacts don't confuse the Hugo build or shadow theme assets.
+ * Match a repo-relative path against a single glob from
+ * `JANT_MANAGED_GLOBS`. Only two forms are supported because those are
+ * the only two shapes the constant uses:
  *
- * `static/custom.css` is included: v1 wrote Jant-admin custom CSS here, and
- * later versions write it under `themes/jant/static/custom.css`. Leaving
- * the legacy copy around would cause it to win over the current admin value.
+ * - Exact path (`"hugo.toml"`, `"data/jant.toml"`)
+ * - Directory prefix + `/**` (`"content/**"`, `"themes/jant/**"`)
  *
- * `config.toml` is the Zola-era config filename; v3 uses `hugo.toml`.
- *
- * `content/feed/_index.md` and `content/404.md` were Zola-era section
- * files; Hugo handles feeds and 404s through theme layouts instead.
+ * Exported for testing.
  */
-const V1_LEGACY_PATHS = [
-  "templates/base.html",
-  "templates/archive.html",
-  "templates/index.html",
-  "templates/page.html",
-  "templates/section.html",
-  "templates/taxonomy_list.html",
-  "templates/taxonomy_single.html",
-  "templates/collection.html",
-  "templates/featured.html",
-  "templates/atom.xml",
-  "templates/macros.html",
-  "static/tokens.css",
-  "static/style.css",
-  "static/theme.css",
-  "static/custom.css",
-  "static/favicon.ico",
-  "static/apple-touch-icon.png",
-  "config.toml",
-  "content/feed/_index.md",
-  "content/404.md",
-] as const;
+export function pathMatchesManagedGlob(path: string, glob: string): boolean {
+  if (glob.endsWith("/**")) {
+    const prefix = glob.slice(0, -3);
+    return path === prefix || path.startsWith(prefix + "/");
+  }
+  return path === glob;
+}
+
+/**
+ * True when `path` falls inside one of Jant's managed globs.
+ *
+ * Exported for testing.
+ */
+export function isManagedPath(path: string): boolean {
+  return JANT_MANAGED_GLOBS.some((g) => pathMatchesManagedGlob(path, g));
+}
+
+/**
+ * Compute the tree items that should null-out files on the remote HEAD
+ * which Jant claims ownership of (matches `JANT_MANAGED_GLOBS`) but is
+ * not writing in the current push (not in `writtenPaths`).
+ *
+ * Returns a list of `{ sha: null }` tree entries suitable for appending
+ * to the payload of `createTree`. Exported for testing.
+ */
+export function computeManagedDeletions(
+  headTreeItems: readonly GitHubTreeItem[],
+  writtenPaths: ReadonlySet<string>,
+): GitHubTreeItem[] {
+  const items: GitHubTreeItem[] = [];
+  for (const item of headTreeItems) {
+    if (item.type !== "blob") continue;
+    if (!isManagedPath(item.path)) continue;
+    if (writtenPaths.has(item.path)) continue;
+    items.push({
+      path: item.path,
+      mode: "100644",
+      type: "blob",
+      sha: null,
+    });
+  }
+  return items;
+}
 
 // ---------------------------------------------------------------------------
 // Ownership marker
@@ -435,8 +455,9 @@ export function createGitHubSyncService(
       const exportService = createExportService(services, siteConfig, deps);
       const exportFiles = await exportService.generateHugoFiles();
 
-      // Resolve HEAD before building the tree — needed both as the commit
-      // parent / base_tree and to detect marker schema migrations.
+      // Resolve HEAD before building the tree — needed as the commit
+      // parent, the base_tree, and the source for listing existing files
+      // to detect deletions.
       const repoInfo = await client.getRepo(owner, repo);
       const defaultBranch = repoInfo.default_branch;
 
@@ -444,16 +465,12 @@ export function createGitHubSyncService(
       // the same created_at — avoids a one-second drift between init and
       // the first sync commit.
       const now = Math.floor(Date.now() / 1000);
-      // Read existing marker (if any) to preserve created_at across pushes
-      // and decide whether a schema-migration cleanup is needed.
+      // Read existing marker (if any) so createdAt is preserved across pushes.
       const existingMarkerBeforeInit = await client
         .getFileContent(owner, repo, JANT_SYNC_MARKER_PATH)
         .catch(() => null);
       const existingMarkerText = existingMarkerBeforeInit
         ? decodeMarkerContent(existingMarkerBeforeInit)
-        : null;
-      const existingMarker = existingMarkerText
-        ? parseMarker(existingMarkerText)
         : null;
       const marker = buildMarker(existingMarkerText, now);
 
@@ -476,27 +493,6 @@ export function createGitHubSyncService(
           content: formatMarker(marker),
         },
       ];
-
-      // On the first push against a pre-v3 marked repo, null out legacy
-      // paths from earlier schema versions (flat Zola v1, theme-packaged
-      // Zola v2). Without this, leftover Zola `templates/**` or root
-      // `config.toml` would either confuse Hugo's build or (pre-v2)
-      // shadow the packaged theme. The cleanup runs exactly once:
-      // subsequent pushes see schema_version === 3 and skip this branch.
-      if (
-        existingMarker &&
-        existingMarker.site_id === siteId &&
-        (existingMarker.schema_version ?? 1) < 3
-      ) {
-        for (const legacyPath of V1_LEGACY_PATHS) {
-          treeItems.push({
-            path: legacyPath,
-            mode: "100644",
-            type: "blob",
-            sha: null,
-          });
-        }
-      }
 
       for (const file of exportFiles) {
         if (typeof file.content === "string") {
@@ -523,9 +519,26 @@ export function createGitHubSyncService(
         }
       }
 
+      // Deletion detection: anything on the remote HEAD that falls inside
+      // JANT_MANAGED_GLOBS but isn't being written this push must be
+      // removed. Without this, deleting a post in Jant would leave the
+      // old file behind on GitHub, because base_tree preserves everything
+      // we don't explicitly overwrite.
+      const headCommit = await client.getCommit(owner, repo, headSha);
+      const headTree = await client.getTree(owner, repo, headCommit.treeSha, {
+        recursive: true,
+      });
+      if (headTree.truncated) {
+        throw new Error(
+          "GitHub tree exceeds API limits (>100k entries or >7MB); " +
+            "incremental deletion cannot run safely against this repo.",
+        );
+      }
+      const writtenPaths = new Set<string>(treeItems.map((item) => item.path));
+      treeItems.push(...computeManagedDeletions(headTree.tree, writtenPaths));
+
       // Base the new tree on the current HEAD's tree so files outside Jant's
       // managed paths (user-added READMEs, CI config, etc.) are preserved.
-      const headCommit = await client.getCommit(owner, repo, headSha);
       const tree = await client.createTree(
         owner,
         repo,

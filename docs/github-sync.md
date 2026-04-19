@@ -120,12 +120,14 @@ Jant fully manages these paths and overwrites them on every push:
 
 - `content/**` — posts, collections, sections
 - `themes/jant/**` — the packaged Jant theme (layouts and static assets)
-- `data/**` — `jant.toml` (nav, branding, collections directory)
+- `data/jant.toml` — nav, branding, and the collections directory
 - `hugo.toml` — site configuration, including the `theme = "jant"` line
 - `.gitignore`, `README.md` — scaffolded by Jant
 - `.jant-sync` — ownership marker
 
-Everything else is yours. Jant preserves it across pushes. If you want to customize the site, edit root-level `layouts/<name>.html` or `static/<name>` — Hugo picks those over the theme's versions. Do not edit under `themes/jant/**` directly; the next push will revert your changes. See [Customizing an Export](export-and-import.md#customizing-an-export) for details.
+Files inside these managed paths that Jant no longer generates are removed on the next push. For example, deleting a post in Jant deletes the corresponding bundle from GitHub on the next sync.
+
+Everything else is yours. Jant preserves it across pushes. If you want to customize the site, edit root-level `layouts/<name>.html` or `static/<name>` — Hugo picks those over the theme's versions. The rest of `data/` is also free for your own Hugo data files (`menu.toml`, `authors.toml`, etc.). Do not edit under `themes/jant/**` directly; the next push will revert your changes. See [Customizing an Export](export-and-import.md#customizing-an-export) for details.
 
 ## Incremental Sync
 

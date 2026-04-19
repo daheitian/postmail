@@ -177,8 +177,8 @@ GitHub Sync keeps a single source of truth for which paths Jant owns:
 // packages/core/src/services/github-sync.ts
 export const JANT_MANAGED_GLOBS = [
   "content/**",
+  "data/jant.toml",
   "themes/jant/**",
-  "data/**",
   "hugo.toml",
   ".gitignore",
   "README.md",
@@ -186,10 +186,16 @@ export const JANT_MANAGED_GLOBS = [
 ] as const;
 ```
 
-Everything inside these globs is overwritten on every full sync.
-Everything outside is user territory and preserved via Git's `base_tree`
-on the push commit. There are no tiers (no "init-only" files, no
-"seed-on-first-push" exceptions) — the rule is binary.
+Everything inside these globs is overwritten on every full sync, and any
+managed-path file that Jant no longer generates is nulled out in the
+push tree so deletions in the app (e.g. deleting a post) propagate to
+GitHub. Everything outside is user territory and preserved via Git's
+`base_tree` on the push commit. There are no tiers (no "init-only"
+files, no "seed-on-first-push" exceptions) — the rule is binary.
+
+Note the narrow `data/jant.toml` entry: only that single file is
+managed. The rest of `data/` is open for the user's own Hugo data files
+(`menu.toml`, `authors.toml`, etc.) and is never deleted by sync.
 
 Corollary: a user who wants to edit Jant output must fork into root
 (`layouts/{name}.html` shadowing `themes/jant/layouts/{name}.html`) or
@@ -209,8 +215,8 @@ site and carries the schema version plus the site ID:
   "created_at": 1713225600,
   "managed_globs": [
     "content/**",
+    "data/jant.toml",
     "themes/jant/**",
-    "data/**",
     "hugo.toml",
     ".gitignore",
     "README.md",
@@ -219,36 +225,32 @@ site and carries the schema version plus the site ID:
 }
 ```
 
-`managed_globs` is duplicated into the marker so future schema bumps can
-diff the old set against the new set and decide what to clean up. On
-older markers this field may be absent; the classifier still accepts
-them as `"owned"` so existing connections don't break, and the next full
-push migrates the repo to the current schema.
+`managed_globs` is duplicated into the marker so future schema bumps
+can diff the old set against the new set and decide what to clean up.
+On older markers this field may be absent; the classifier still accepts
+them as `"owned"` so existing connections don't break, and the next
+full push rewrites the marker with the current schema.
 
 The export service does **not** emit `.jant-sync`. Only `github-sync.ts`
 writes it — it is the one component that knows the site ID.
 
-## Legacy schema migration (v1/v2 → v3)
+## Deletion detection on push
 
-Earlier schema versions wrote a Zola site (v1 had root-level
-`templates/` + `static/`; v2 moved those under `themes/jant/` but still
-produced `config.toml` + `feed` taxonomy). Schema v3 switches the
-exporter to Hugo, so legacy paths must disappear on the first v3 push
-against a pre-v3 marked repo, or they will confuse Hugo's build or
-shadow theme assets.
+`pushFullSync` reads the remote HEAD tree recursively, then for every
+blob whose path matches `JANT_MANAGED_GLOBS` but is not in the current
+push's written-path set, it appends a `{ sha: null }` entry to the tree
+payload. This is what makes in-app deletions (deleting a post,
+renaming a slug, removing a collection) propagate to GitHub —
+`base_tree` alone would silently preserve orphaned files.
 
-`pushFullSync` appends a fixed list of null-sha tree entries to delete
-legacy files — see `V1_LEGACY_PATHS` in `github-sync.ts`. The list
-covers:
+The check is symmetric: the same list (`JANT_MANAGED_GLOBS`) that
+decides what Jant writes also decides what Jant is allowed to delete.
+Files outside the managed globs are never touched regardless of what
+the user has done on either side.
 
-- every `templates/*.html` file from v1/v2
-- Zola-era CSS and asset files at the repo root (v1 only)
-- `config.toml` (v1/v2 used this; v3 uses `hugo.toml`)
-- `content/feed/_index.md` and `content/404.md` (v1/v2 section files
-  Hugo does not need)
-
-The migration is one-shot: once the marker reads `schema_version: 3`,
-subsequent pushes skip the legacy-deletion step.
+If GitHub's tree API reports `truncated: true` (more than 100k entries
+or >7 MB of tree data), the push aborts with an error rather than
+risking a partial deletion against an incomplete view of the repo.
 
 ## Customization paths for users
 

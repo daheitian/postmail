@@ -123,7 +123,7 @@ The command scans every markdown file and `hugo.toml`, downloads each remote med
 
 ### Customizing an Export
 
-The `themes/jant/` directory is the packaged Jant theme. If you sync the export to GitHub, Jant will overwrite everything under `themes/jant/**`, `content/**`, `data/**`, `hugo.toml`, `.gitignore`, and `README.md` on every push. Everything else in the repo is yours and is preserved.
+The `themes/jant/` directory is the packaged Jant theme. If you sync the export to GitHub, Jant will overwrite everything under `themes/jant/**`, `content/**`, plus `data/jant.toml`, `hugo.toml`, `.gitignore`, and `README.md` on every push — and delete files in those managed paths that Jant no longer generates (for example, a post you deleted in Jant). Everything else in the repo is yours and is preserved, including the rest of `data/` for your own Hugo data files.
 
 The supported ways to customize an exported site:
 

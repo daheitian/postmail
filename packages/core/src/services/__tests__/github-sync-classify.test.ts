@@ -139,8 +139,8 @@ describe("classifyRepoForSync", () => {
 
   it("accepts a legacy v1 marker as 'owned' (no managed_globs field)", async () => {
     // Pre-v2 markers have no managed_globs. Classification must still
-    // match on site_id so existing connections keep working; pushFullSync
-    // handles the v1 → v2 layout migration on the next push.
+    // match on site_id so existing connections keep working; the next
+    // push rewrites the marker with the current schema.
     const legacyMarker = JSON.stringify(
       {
         schema_version: 1,
