@@ -477,7 +477,7 @@ export class JantRepoPicker extends LitElement {
 
   render() {
     return html`
-      <div class="flex flex-col gap-6 max-w-form">
+      <div class="flex flex-col gap-6 max-w-lg">
         <div>
           <h2 class="text-lg font-medium mb-1">${this.labels.pageTitle}</h2>
           <p class="text-sm text-muted-foreground">

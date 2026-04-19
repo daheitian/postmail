@@ -1464,7 +1464,7 @@ settingsRoutes.get("/github-sync/app/install", async (c) => {
               cancel-url={publicPath(c, "/settings")}
               create-repo-name-hint={suggestedRepoName}
             >
-              <div class="flex flex-col gap-6 max-w-form">
+              <div class="flex flex-col gap-6 max-w-lg">
                 <div>
                   <h2 class="text-lg font-medium mb-1">Pick a repository</h2>
                   <p class="text-sm text-muted-foreground">
@@ -1589,7 +1589,7 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
           create-repo-name-hint={suggestedRepoName}
         >
           {/* SSR fallback while the Lit component upgrades. */}
-          <div class="flex flex-col gap-6 max-w-form">
+          <div class="flex flex-col gap-6 max-w-lg">
             <div>
               <h2 class="text-lg font-medium mb-1">Pick a repository</h2>
               <p class="text-sm text-muted-foreground">Loading repositories…</p>
@@ -1607,7 +1607,8 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
  * Uses the site's host — the first DNS label is a stable, URL-safe
  * identifier tied to this specific Jant instance. Fallback to "jant-site"
  * when the host parse fails so we never hand GitHub an empty `name=`.
- * Appending `-backup` makes the repo's purpose clear at a glance.
+ * Appending `-jant` namespaces the repo to this project without
+ * committing to backup-vs-sync wording.
  */
 function buildSuggestedRepoName(c: Context<Env>): string {
   let firstLabel = "";
@@ -1620,7 +1621,7 @@ function buildSuggestedRepoName(c: Context<Env>): string {
     .toLowerCase()
     .replace(/[^a-z0-9-_]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  return slug ? `${slug}-backup` : "jant-site-backup";
+  return slug ? `${slug}-jant` : "jant-site";
 }
 
 function buildRepoPickerLabels(c: Context<Env>): string {

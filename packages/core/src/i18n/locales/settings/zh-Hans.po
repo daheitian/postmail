@@ -21,7 +21,7 @@ msgstr "/* 在此填写您的自定义 CSS */"
 #. @context: GitHub sync picker — entry at the bottom of the owner dropdown that starts a new install flow
 #: src/routes/dash/settings.tsx
 msgid "+ Install on another account"
-msgstr ""
+msgstr "+ 在其他帐户上安装"
 
 #. @context: Redirect type option
 #: src/routes/dash/custom-urls.tsx
@@ -258,7 +258,7 @@ msgstr "更改此项会更新订阅者从 /feed 获取的内容。"
 #. @context: GitHub sync picker — status text while classifying the picked repo
 #: src/routes/dash/settings.tsx
 msgid "Checking repository…"
-msgstr ""
+msgstr "正在检查仓库…"
 
 #. @context: Font theme settings description
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -268,7 +268,7 @@ msgstr "为您的网站选择一种排版方向。每个主题都会同时改变
 #. @context: GitHub sync picker — page subtitle
 #: src/routes/dash/settings.tsx
 msgid "Choose the GitHub account and repository that should back up this site."
-msgstr ""
+msgstr "选择应为此站点备份的 GitHub 账户和仓库。"
 
 #. @context: Settings form field for CJK serif font selection
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -339,12 +339,12 @@ msgstr "通过个人访问令牌连接"
 #. @context: GitHub sync picker — explanatory body for foreign-repo confirmation. Placeholder {repo} is the owner/repo slug.
 #: src/routes/dash/settings.tsx
 msgid "Connecting will sync your site onto {repo}'s default branch on top of its existing history. Existing files outside Jant's managed paths are kept. This can't be undone."
-msgstr ""
+msgstr "连接后会将你的网站同步到 {repo} 的默认分支，并追加到其现有历史之上。Jant 管理路径之外的现有文件会被保留。此操作无法撤销。"
 
 #. @context: GitHub sync picker — primary action button while a request is in flight
 #: src/routes/dash/settings.tsx
 msgid "Connecting…"
-msgstr ""
+msgstr "连接中…"
 
 #. @context: Help text under the site language select
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -381,7 +381,7 @@ msgstr "无法复制。请再试一次。"
 #. @context: GitHub sync picker — generic failure message for Connect
 #: src/routes/dash/settings.tsx
 msgid "Couldn't connect. Check the error and try again."
-msgstr ""
+msgstr "无法连接。检查错误并重试。"
 
 #. @context: Error toast when nav delete fails
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -396,7 +396,7 @@ msgstr "保存失败。请稍后再试。"
 #. @context: GitHub sync picker — entry that opens github.com/new in a new tab
 #: src/routes/dash/settings.tsx
 msgid "Create a new repository on GitHub"
-msgstr ""
+msgstr "在 GitHub 上创建新仓库"
 
 #. @context: Label for curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -568,7 +568,7 @@ msgstr "显示在所有文章和页面的底部。"
 #. @context: Settings item description for static site export
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Download a Hugo-compatible archive — host it statically or move to another Jant."
-msgstr ""
+msgstr "下载一个与 Hugo 兼容的归档 — 将其静态托管或迁移到另一个 Jant。"
 
 #. @context: Step 1 heading — user must download a site export before deleting
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -608,7 +608,7 @@ msgstr "编辑"
 #. @context: GitHub sync picker — shown when the selected repo has no commits
 #: src/routes/dash/settings.tsx
 msgid "Empty repository. Ready to connect."
-msgstr ""
+msgstr "仓库为空。准备连接。"
 
 #. @context: Confirmation text after downloading the site export in delete flow
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -807,7 +807,7 @@ msgstr "最近一次提交"
 #. @context: Label for last sync error on GitHub Sync status
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Last error"
-msgstr ""
+msgstr "上次错误"
 
 #. @context: Label for last sync time on GitHub Sync status
 #: src/ui/dash/settings/GitHubSyncContent.tsx
@@ -864,7 +864,7 @@ msgstr "加载针对中文、日文或韩文内容优化的衬线字体。"
 #. @context: GitHub sync picker — loading state
 #: src/routes/dash/settings.tsx
 msgid "Loading…"
-msgstr ""
+msgstr "正在加载…"
 
 #. @context: Label for the canonical /feed URL
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -975,7 +975,7 @@ msgstr "新密码"
 #. @context: GitHub sync picker — shown when the owner list is empty
 #: src/routes/dash/settings.tsx
 msgid "No accounts authorized yet"
-msgstr ""
+msgstr "尚未授权任何账户"
 
 #. @context: Empty state when no sessions exist (shouldn't normally appear)
 #: src/ui/dash/settings/SessionsContent.tsx
@@ -1005,7 +1005,7 @@ msgstr "当前还没有导航项目。添加链接或在下方启用系统项目
 #. @context: GitHub sync picker — empty state when search returns nothing
 #: src/routes/dash/settings.tsx
 msgid "No repositories match."
-msgstr ""
+msgstr "没有匹配的仓库。"
 
 #. @context: Shown when no sync has happened yet on GitHub Sync status
 #: src/ui/dash/settings/GitHubSyncContent.tsx
@@ -1027,7 +1027,7 @@ msgstr "在 {providerLabel} 打开托管站点控制以取消计费或永久删�
 #. @context: GitHub sync picker — placeholder text showing the expected input shape
 #: src/routes/dash/settings.tsx
 msgid "owner/repo"
-msgstr ""
+msgstr "owner/repo"
 
 #. @context: Settings item description for color theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1074,12 +1074,12 @@ msgstr "个人访问令牌"
 #. @context: GitHub sync picker — page heading
 #: src/routes/dash/settings.tsx
 msgid "Pick a repository"
-msgstr ""
+msgstr "选择仓库"
 
 #. @context: GitHub sync picker — repo dropdown placeholder before an owner is chosen
 #: src/routes/dash/settings.tsx
 msgid "Pick an account first"
-msgstr ""
+msgstr "请先选择一个账号"
 
 #. @context: Description in collection picker section
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1101,7 +1101,7 @@ msgstr "文章"
 #. @context: GitHub sync picker — badge next to private repos
 #: src/routes/dash/settings.tsx
 msgid "Private"
-msgstr ""
+msgstr "私有"
 
 #. @context: Avatar upload button text while generating favicon variants
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -1158,7 +1158,7 @@ msgstr "重定向、个性化路径和 URL 控制"
 #. @context: GitHub sync picker — tooltip for the refresh button next to the search input
 #: src/routes/dash/settings.tsx
 msgid "Refresh repository list"
-msgstr ""
+msgstr "刷新仓库列表"
 
 #. @context: Button to remove the blog avatar
 #. @context: Remove system item from navigation
@@ -1211,7 +1211,7 @@ msgstr "撤销此令牌？任何使用它的脚本将停止工作。"
 #. @context: Hint shown while a GitHub Sync push is running, reassuring the user they don't have to stay on the page
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Safe to leave this page — syncing continues in the background."
-msgstr ""
+msgstr "放心离开此页面 — 同步会在后台继续进行。"
 
 #. @context: Button to save settings
 #. @context: Button to save settings changes
@@ -1235,7 +1235,7 @@ msgstr "搜索"
 #. @context: GitHub sync picker — search input placeholder
 #: src/routes/dash/settings.tsx
 msgid "Search repositories"
-msgstr ""
+msgstr "搜索仓库"
 
 #. @context: Toast after saving search settings
 #. @context: Toast after saving search settings
@@ -1267,12 +1267,12 @@ msgstr "查看你的登录位置并撤销旧会话"
 #. @context: GitHub sync picker — repo dropdown placeholder
 #: src/routes/dash/settings.tsx
 msgid "Select a repository"
-msgstr ""
+msgstr "选择仓库"
 
 #. @context: GitHub sync picker — owner dropdown placeholder when nothing is selected
 #: src/routes/dash/settings.tsx
 msgid "Select an account"
-msgstr ""
+msgstr "选择账户"
 
 #. @context: Error shown when session management is blocked in demo mode
 #: src/routes/dash/settings.tsx
@@ -1306,7 +1306,7 @@ msgstr "在主页底部显示 \"Build with Jant\""
 #. @context: GitHub sync picker — paginated repo count hint. Placeholders {shown} and {total} are integers.
 #: src/routes/dash/settings.tsx
 msgid "Showing {shown} of {total}"
-msgstr ""
+msgstr "显示 {shown} 共 {total}"
 
 #. @context: Settings link — sign out action
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1353,7 +1353,7 @@ msgstr "立即同步"
 #. @context: Shown while a GitHub Sync push is running in the background
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Syncing…"
-msgstr ""
+msgstr "正在同步…"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1413,22 +1413,22 @@ msgstr "此图用于您的 favicon 和 apple-touch-icon。为获得最佳效果�
 #. @context: GitHub sync picker — confirmation card heading for foreign repos
 #: src/routes/dash/settings.tsx
 msgid "This repository already has commits"
-msgstr ""
+msgstr "该仓库已有提交"
 
 #. @context: GitHub sync picker — heading above the foreign-repo confirmation
 #: src/routes/dash/settings.tsx
 msgid "This repository has existing content."
-msgstr ""
+msgstr "此仓库已有内容。"
 
 #. @context: GitHub sync picker — blocking message when marker belongs to another site. Placeholder {host} is the other site's host.
 #: src/routes/dash/settings.tsx
 msgid "This repository is already backing up another Jant site ({host}). Pick a different repository."
-msgstr ""
+msgstr "此仓库已在为另一个 Jant 站点 ({host}) 进行备份。请选择其他仓库。"
 
 #. @context: GitHub sync picker — shown when the selected repo's marker matches this site
 #: src/routes/dash/settings.tsx
 msgid "This repository is already backing up this site."
-msgstr ""
+msgstr "此仓库已在备份此站点。"
 
 #. @context: Warning text on account deletion page
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1463,7 +1463,7 @@ msgstr "令牌让您无需登录即可从脚本、快捷方式和其他工具访
 #. @context: GitHub sync picker — retry button
 #: src/routes/dash/settings.tsx
 msgid "Try again"
-msgstr ""
+msgstr "重试"
 
 #. @context: Intro text on the settings home page below the title
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1478,7 +1478,7 @@ msgstr "类型"
 #. @context: GitHub sync picker — label above the typed-confirmation input
 #: src/routes/dash/settings.tsx
 msgid "Type {repo} to confirm"
-msgstr ""
+msgstr "输入 {repo} 以确认"
 
 #. @context: Instruction to type confirmation phrase before deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1488,7 +1488,7 @@ msgstr "输入以下短语以确认："
 #. @context: GitHub sync picker — hint telling the user typing will search the full list
 #: src/routes/dash/settings.tsx
 msgid "type to search all"
-msgstr ""
+msgstr "输入以搜索全部"
 
 #. @context: Settings item description for font theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1563,7 +1563,7 @@ msgstr "想要更多控制？"
 #. @context: GitHub sync picker — hint under the create-on-github entry. Placeholder {name} is the suggested repo name.
 #: src/routes/dash/settings.tsx
 msgid "We'll prefill the name {name}. The list refreshes on return."
-msgstr ""
+msgstr "我们会预先填充名称 {name}。返回时列表会刷新。"
 
 #. @context: Description for backup and restore documentation link in account settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
