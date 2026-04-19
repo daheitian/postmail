@@ -45,7 +45,7 @@ describe("Compose Routes", () => {
       });
 
       expect(res.status).toBe(302);
-      expect(res.headers.get("Location")).toBe("/signin");
+      expect(res.headers.get("Location")).toBe("/signin?redirect=%2Fcompose");
     });
 
     it("creates a note post and returns timeline card via SSE", async () => {

@@ -142,7 +142,25 @@ describe("requireAuth", () => {
     expect(await res.text()).toBe("Settings");
   });
 
-  it("redirects unauthenticated requests to /signin", async () => {
+  it("redirects unauthenticated requests to /signin with the original path", async () => {
+    const app = createTestHonoApp();
+    app.use("*", async (c, next) => {
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        siteMembers: createMockSiteMembers(),
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.get("/settings/general", requireAuth(), (c) => c.text("Settings"));
+
+    const res = await app.request("/settings/general", { redirect: "manual" });
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe(
+      "/signin?redirect=%2Fsettings%2Fgeneral",
+    );
+  });
+
+  it("preserves query string when redirecting to /signin", async () => {
     const app = createTestHonoApp();
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));
@@ -153,12 +171,16 @@ describe("requireAuth", () => {
     });
     app.get("/settings", requireAuth(), (c) => c.text("Settings"));
 
-    const res = await app.request("/settings", { redirect: "manual" });
+    const res = await app.request("/settings?tab=profile", {
+      redirect: "manual",
+    });
     expect(res.status).toBe(302);
-    expect(res.headers.get("Location")).toBe("/signin");
+    expect(res.headers.get("Location")).toBe(
+      "/signin?redirect=%2Fsettings%3Ftab%3Dprofile",
+    );
   });
 
-  it("redirects to custom path", async () => {
+  it("does not add a redirect query when requireAuth targets a custom path", async () => {
     const app = createTestHonoApp();
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));

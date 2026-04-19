@@ -11,7 +11,7 @@ import type { AppVariables } from "../types/app-context.js";
 import { getDevApiToken, getInternalAdminToken } from "../lib/env.js";
 import { NotFoundError, UnauthorizedError } from "../lib/errors.js";
 import { getRuntimeSitePathPrefix } from "../lib/site-resolution.js";
-import { toPublicHref } from "../lib/url.js";
+import { isSafeInternalRedirect, toPublicHref } from "../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -79,6 +79,38 @@ export function hasValidLocalDevToken(
 }
 
 /**
+ * Paths that should never be used as post-signin redirect targets (would
+ * either loop back to signin or hit an unauthenticated endpoint).
+ */
+const POST_SIGNIN_REDIRECT_BLOCKLIST = new Set([
+  "/signin",
+  "/signout",
+  "/setup",
+  "/reset",
+  "/__sso",
+]);
+
+function getPostSigninRedirect(requestUrl: string): string | null {
+  // `c.req.url` is already the app-internal URL — `prepareRequestForRouting`
+  // strips any configured site path prefix before Hono sees it, so we just
+  // need to preserve pathname + query and validate it as a safe same-origin
+  // redirect target.
+  let url: URL;
+  try {
+    url = new URL(requestUrl);
+  } catch {
+    return null;
+  }
+
+  const pathname = url.pathname || "/";
+  if (POST_SIGNIN_REDIRECT_BLOCKLIST.has(pathname)) return null;
+  if (pathname.startsWith("/api/")) return null;
+
+  const candidate = `${pathname}${url.search}`;
+  return isSafeInternalRedirect(candidate) ? candidate : null;
+}
+
+/**
  * Middleware that requires authentication.
  * Redirects to signin page if not authenticated.
  * Session-only — Bearer tokens are not accepted for dashboard pages.
@@ -90,7 +122,19 @@ export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
       appConfig: c.var.appConfig,
       currentSiteDomain: c.var.currentSiteDomain,
     });
-    const redirectTarget = toPublicHref(redirectTo, sitePathPrefix);
+
+    const buildRedirectTarget = () => {
+      const publicHref = toPublicHref(redirectTo, sitePathPrefix);
+      // Only append `?redirect=...` when redirecting to the default signin flow.
+      // Callers passing a custom path get it untouched.
+      if (redirectTo !== "/signin") return publicHref;
+
+      const postSignin = getPostSigninRedirect(c.req.url);
+      if (!postSignin) return publicHref;
+
+      const separator = publicHref.includes("?") ? "&" : "?";
+      return `${publicHref}${separator}redirect=${encodeURIComponent(postSignin)}`;
+    };
 
     try {
       const session = await c.var.auth.api.getSession({
@@ -98,7 +142,7 @@ export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
       });
 
       if (!session?.user) {
-        return c.redirect(redirectTarget);
+        return c.redirect(buildRedirectTarget());
       }
 
       const membership = await c.var.services.siteMembers.get(
@@ -106,12 +150,12 @@ export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
         session.user.id,
       );
       if (!membership) {
-        return c.redirect(redirectTarget);
+        return c.redirect(buildRedirectTarget());
       }
 
       await next();
     } catch {
-      return c.redirect(redirectTarget);
+      return c.redirect(buildRedirectTarget());
     }
   };
 }

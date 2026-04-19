@@ -26,6 +26,36 @@ describe("getHostedControlPlaneSigninUrl", () => {
     );
   });
 
+  it("forwards a safe post-signin redirect through the handoff URL", () => {
+    const url = getHostedControlPlaneSigninUrl(
+      {
+        HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
+        SITE_RESOLUTION_MODE: "host-based",
+      },
+      "https://site7.localtest.me/signin",
+      "/settings/general",
+    );
+
+    expect(url).toBe(
+      "https://cloud-jant.localtest.me/auth/handoff/start?host=site7.localtest.me&redirect=%2Fsettings%2Fgeneral",
+    );
+  });
+
+  it("falls back to / when the supplied redirect is unsafe", () => {
+    const url = getHostedControlPlaneSigninUrl(
+      {
+        HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
+        SITE_RESOLUTION_MODE: "host-based",
+      },
+      "https://site7.localtest.me/signin",
+      "//evil.example/steal",
+    );
+
+    expect(url).toBe(
+      "https://cloud-jant.localtest.me/auth/handoff/start?host=site7.localtest.me&redirect=%2F",
+    );
+  });
+
   it("returns null outside host-based mode", () => {
     const url = getHostedControlPlaneSigninUrl(
       {

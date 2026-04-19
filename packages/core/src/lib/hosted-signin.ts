@@ -3,10 +3,15 @@ import {
   getHostedControlPlaneProviderLabel as getConfiguredHostedControlPlaneProviderLabel,
   getSiteResolutionMode,
 } from "./env.js";
+import { isSafeInternalRedirect } from "./url.js";
 
-function getHostedAdminContinuationPath(publicRequestUrl: string): string {
+function getHostedAdminContinuationPath(
+  publicRequestUrl: string,
+  redirect?: string,
+): string {
   const currentHost = new URL(publicRequestUrl).host;
-  return `/auth/handoff/start?host=${encodeURIComponent(currentHost)}&redirect=${encodeURIComponent("/")}`;
+  const safeRedirect = isSafeInternalRedirect(redirect) ? redirect : "/";
+  return `/auth/handoff/start?host=${encodeURIComponent(currentHost)}&redirect=${encodeURIComponent(safeRedirect)}`;
 }
 
 function buildHostedControlPlaneUrl(
@@ -31,11 +36,12 @@ function buildHostedControlPlaneUrl(
 export function getHostedControlPlaneSigninUrl(
   env: object | undefined | null,
   publicRequestUrl: string,
+  redirect?: string,
 ): string | null {
   return buildHostedControlPlaneUrl(
     env,
     "/auth/handoff/start",
-    getHostedAdminContinuationPath(publicRequestUrl).replace(
+    getHostedAdminContinuationPath(publicRequestUrl, redirect).replace(
       /^\/auth\/handoff\/start/,
       "",
     ),

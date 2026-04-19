@@ -14,7 +14,7 @@ import { SigninSchema } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { getI18n } from "../../i18n/index.js";
 import { getHostedControlPlaneSigninUrl } from "../../lib/hosted-signin.js";
-import { toPublicPath } from "../../lib/url.js";
+import { isSafeInternalRedirect, toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -22,11 +22,13 @@ const SigninContent: FC<{
   demoEmail?: string;
   demoPassword?: string;
   sitePathPrefix?: string;
-}> = ({ demoEmail, demoPassword, sitePathPrefix = "" }) => {
+  redirect?: string;
+}> = ({ demoEmail, demoPassword, sitePathPrefix = "", redirect }) => {
   const { i18n } = useLingui();
   const signals = JSON.stringify({
     email: demoEmail || "",
     password: demoPassword || "",
+    ...(redirect ? { redirect } : {}),
   }).replace(/</g, "\\u003c");
 
   return (
@@ -121,9 +123,15 @@ const SigninContent: FC<{
 export const signinRoutes = new Hono<Env>();
 
 signinRoutes.get("/signin", async (c) => {
+  const rawRedirect = c.req.query("redirect");
+  const redirect = isSafeInternalRedirect(rawRedirect)
+    ? rawRedirect
+    : undefined;
+
   const hostedSigninUrl = getHostedControlPlaneSigninUrl(
     c.env,
     c.var.publicRequestUrl,
+    redirect,
   );
   if (hostedSigninUrl) {
     return c.redirect(hostedSigninUrl);
@@ -157,6 +165,7 @@ signinRoutes.get("/signin", async (c) => {
         demoEmail={c.var.appConfig.demoEmail}
         demoPassword={c.var.appConfig.demoPassword}
         sitePathPrefix={c.var.appConfig.sitePathPrefix}
+        redirect={redirect}
       />
     </BaseLayout>,
   );
@@ -195,6 +204,14 @@ signinRoutes.post("/signin", async (c) => {
   }
 
   const { email, password } = parsed.data;
+  const rawRedirect =
+    body && typeof body === "object" && "redirect" in body
+      ? (body as { redirect?: unknown }).redirect
+      : undefined;
+  const redirectTarget =
+    typeof rawRedirect === "string" && isSafeInternalRedirect(rawRedirect)
+      ? rawRedirect
+      : "/";
 
   try {
     const { headers } = await c.var.auth.api.signInEmail({
@@ -203,9 +220,10 @@ signinRoutes.post("/signin", async (c) => {
       headers: c.req.raw.headers,
     });
 
-    return dsRedirect(toPublicPath("/", c.var.appConfig.sitePathPrefix), {
-      headers,
-    });
+    return dsRedirect(
+      toPublicPath(redirectTarget, c.var.appConfig.sitePathPrefix),
+      { headers },
+    );
   } catch {
     return dsToast(
       i18n._(

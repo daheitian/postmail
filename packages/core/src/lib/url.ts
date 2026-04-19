@@ -304,6 +304,40 @@ export function toPublicHref(href: string, sitePathPrefix = ""): string {
 }
 
 /**
+ * Check whether a path is a safe same-origin redirect target.
+ *
+ * Accepts only paths that start with a single `/` (no protocol-relative
+ * `//host`, no scheme, no control characters). Callers should use this to
+ * validate user-supplied `redirect` query parameters before issuing a
+ * `Location` header.
+ *
+ * @param path - Candidate redirect path
+ * @returns `true` when the path is safe to use as an internal redirect
+ *
+ * @example
+ * ```ts
+ * isSafeInternalRedirect("/settings") // true
+ * isSafeInternalRedirect("//evil.example") // false
+ * isSafeInternalRedirect("https://evil.example") // false
+ * ```
+ */
+export function isSafeInternalRedirect(
+  path: string | null | undefined,
+): path is string {
+  if (typeof path !== "string") return false;
+  if (!path.startsWith("/")) return false;
+  if (path.startsWith("//")) return false;
+  // Disallow backslash-prefixed paths (some browsers treat `/\host` as
+  // protocol-relative) and control characters that could smuggle headers.
+  if (path.startsWith("/\\")) return false;
+  for (let i = 0; i < path.length; i += 1) {
+    const code = path.charCodeAt(i);
+    if (code < 0x20 || code === 0x7f) return false;
+  }
+  return true;
+}
+
+/**
  * Remove the site path prefix from a public request pathname.
  *
  * @param pathname - Public request pathname
