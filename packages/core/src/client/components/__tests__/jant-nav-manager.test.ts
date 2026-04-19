@@ -50,8 +50,9 @@ const labels: NavManagerLabels = {
   cancel: "Cancel",
   collection: "collection",
   addCollection: "Add Collection",
+  addCollectionToNavigation: "Add collection to navigation",
   addCollectionDescription:
-    "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours.",
+    "Pin a collection to your navigation bar. An asterisk (*) appears next to collections updated in the last 48 hours.",
   allCollectionsAdded: "All collections are already in your navigation.",
   noCollections:
     "No collections yet. Create one first, then add it to your navigation.",

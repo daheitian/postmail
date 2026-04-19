@@ -306,14 +306,19 @@ export function NavigationContent({
     addCollection: i18n._(
       msg({
         message: "Add Collection",
-        comment:
-          "@context: Button and section heading for adding a collection to nav",
+        comment: "@context: Button for adding a collection to nav",
+      }),
+    ),
+    addCollectionToNavigation: i18n._(
+      msg({
+        message: "Add collection to navigation",
+        comment: "@context: Section heading for adding a collection to nav",
       }),
     ),
     addCollectionDescription: i18n._(
       msg({
         message:
-          "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours.",
+          "Pin a collection to your navigation bar. An asterisk (*) appears next to collections updated in the last 48 hours.",
         comment: "@context: Description in collection picker section",
       }),
     ),

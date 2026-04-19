@@ -76,10 +76,15 @@ msgstr "Active Tokens"
 msgid "Add a custom link to any URL"
 msgstr "Add a custom link to any URL"
 
-#. @context: Button and section heading for adding a collection to nav
+#. @context: Button for adding a collection to nav
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Collection"
 msgstr "Add Collection"
+
+#. @context: Section heading for adding a collection to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add collection to navigation"
+msgstr "Add collection to navigation"
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -1110,8 +1115,8 @@ msgstr "Pick an account first"
 
 #. @context: Description in collection picker section
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours."
-msgstr "Pin a collection to your navigation bar. A dot appears next to collections updated in the last 48 hours."
+msgid "Pin a collection to your navigation bar. An asterisk (*) appears next to collections updated in the last 48 hours."
+msgstr "Pin a collection to your navigation bar. An asterisk (*) appears next to collections updated in the last 48 hours."
 
 #. @context: Post badge - pinned
 #: src/ui/dash/StatusBadge.tsx

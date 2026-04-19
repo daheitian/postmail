@@ -939,7 +939,7 @@ export class JantNavManager extends LitElement {
       return html`
         <section class="mt-8">
           <h2 class="text-lg font-semibold mb-1">
-            ${this.labels.addCollection}
+            ${this.labels.addCollectionToNavigation}
           </h2>
           <p class="text-sm text-muted-foreground">
             ${this.labels.noCollections}
@@ -961,7 +961,7 @@ export class JantNavManager extends LitElement {
       return html`
         <section class="mt-8">
           <h2 class="text-lg font-semibold mb-1">
-            ${this.labels.addCollection}
+            ${this.labels.addCollectionToNavigation}
           </h2>
           <p class="text-sm text-muted-foreground">
             ${this.labels.allCollectionsAdded}
@@ -986,7 +986,9 @@ export class JantNavManager extends LitElement {
 
     return html`
       <section class="mt-8">
-        <h2 class="text-lg font-semibold mb-1">${this.labels.addCollection}</h2>
+        <h2 class="text-lg font-semibold mb-1">
+          ${this.labels.addCollectionToNavigation}
+        </h2>
         <p class="text-sm text-muted-foreground mb-3">
           ${this.labels.addCollectionDescription}
         </p>

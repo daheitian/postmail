@@ -56,6 +56,7 @@ export interface NavManagerLabels {
   labelAndUrlRequired: string;
   collection: string;
   addCollection: string;
+  addCollectionToNavigation: string;
   addCollectionDescription: string;
   allCollectionsAdded: string;
   noCollections: string;
