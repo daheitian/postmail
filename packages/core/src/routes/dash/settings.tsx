@@ -1636,7 +1636,7 @@ function buildRepoPickerLabels(c: Context<Env>): string {
     pageSubtitle: i18n._(
       msg({
         message:
-          "Choose the GitHub account and repository that should back up this site.",
+          "Choose the GitHub account and repository to sync with this site.",
         comment: "@context: GitHub sync picker — page subtitle",
       }),
     ),

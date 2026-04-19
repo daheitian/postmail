@@ -503,7 +503,7 @@ export class JantRepoPicker extends LitElement {
         <label class="label">${this.labels.ownerLabel}</label>
         <button
           type="button"
-          class="input flex items-center justify-between w-full text-left"
+          class="btn-outline w-full justify-between font-normal"
           @click=${() => this.#toggleOwner()}
           aria-haspopup="listbox"
           aria-expanded=${this._ownerOpen}
@@ -593,9 +593,7 @@ export class JantRepoPicker extends LitElement {
         <label class="label">${this.labels.repositoryLabel}</label>
         <button
           type="button"
-          class="input flex items-center justify-between w-full text-left ${disabled
-            ? "opacity-60 cursor-not-allowed"
-            : ""}"
+          class="btn-outline w-full justify-between font-normal"
           @click=${() => this.#toggleRepo()}
           aria-haspopup="listbox"
           aria-expanded=${this._repoOpen}

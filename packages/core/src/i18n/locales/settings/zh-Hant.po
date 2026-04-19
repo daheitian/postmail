@@ -267,8 +267,8 @@ msgstr "為您的網站選擇一種排版風格。每個主題會同時改變字
 
 #. @context: GitHub sync picker — page subtitle
 #: src/routes/dash/settings.tsx
-msgid "Choose the GitHub account and repository that should back up this site."
-msgstr "選擇應該備份此網站的 GitHub 帳號與儲存庫。"
+msgid "Choose the GitHub account and repository to sync with this site."
+msgstr "選擇要與此網站同步的 GitHub 帳號和儲存庫."
 
 #. @context: Settings form field for CJK serif font selection
 #: src/ui/dash/settings/GeneralContent.tsx

@@ -267,8 +267,8 @@ msgstr "Choose a typographic direction for your site. Each theme changes both th
 
 #. @context: GitHub sync picker — page subtitle
 #: src/routes/dash/settings.tsx
-msgid "Choose the GitHub account and repository that should back up this site."
-msgstr "Choose the GitHub account and repository that should back up this site."
+msgid "Choose the GitHub account and repository to sync with this site."
+msgstr "Choose the GitHub account and repository to sync with this site."
 
 #. @context: Settings form field for CJK serif font selection
 #: src/ui/dash/settings/GeneralContent.tsx
