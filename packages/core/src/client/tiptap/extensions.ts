@@ -20,6 +20,9 @@ import { Footnotes } from "./footnotes.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
 import { ImageNode } from "./image-node.js";
 import { MoreBreak } from "./more-break.js";
+import { EmbedNode } from "./embed-node.js";
+import { HtmlBlockNode } from "./html-block-node.js";
+import { EmbedPaste } from "./embed-paste.js";
 import { MarkdownClipboard } from "./markdown-clipboard.js";
 import {
   MARKDOWN_MARKED_OPTIONS,
@@ -93,6 +96,8 @@ export function createEditorExtensions(
     ...createMarkdownContentExtensions({
       imageExtension: ImageNode,
       moreBreakExtension: MoreBreak,
+      embedExtension: EmbedNode,
+      htmlBlockExtension: HtmlBlockNode,
     }),
     ReclaimModEnter,
     Markdown.configure({
@@ -106,6 +111,7 @@ export function createEditorExtensions(
     WrappingInputRules,
     MarkdownClipboard,
     SlashCommands,
+    EmbedPaste,
     PasteMedia.configure(options.pasteMedia ?? {}),
     BubbleMenu.configure({
       toolbarMode: options.toolbarMode ?? "default",

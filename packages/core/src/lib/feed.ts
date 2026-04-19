@@ -44,8 +44,34 @@ function escapeCdata(str: string): string {
   return str.replaceAll("]]>", "]]]]><![CDATA[>");
 }
 
+/**
+ * Strip embedded content that is unsafe or unsupported in feed readers.
+ *
+ * - `<figure class="tiptap-embed-figure">` is replaced by its fallback link
+ *   (rendered by `renderEmbedFigure`), so subscribers still get a clickable
+ *   "Watch on YouTube →" line. Atom/RSS readers reject `<iframe>` outright.
+ * - `<div class="tiptap-html-block">` (raw HTML escape hatch) is dropped
+ *   wholesale — author-pasted HTML is for the live site only.
+ * - Stray `<iframe>`, `<script>`, and `<style>` are removed defensively.
+ */
 function stripUnsafeFeedHtml(html: string): string {
-  return html.replaceAll(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+  return html
+    .replaceAll(
+      /<figure\b[^>]*class="[^"]*\btiptap-embed-figure\b[^"]*"[^>]*>([\s\S]*?)<\/figure>/gi,
+      (_match, inner: string) => {
+        const fallback = inner.match(
+          /<a\b[^>]*class="[^"]*\btiptap-embed-fallback\b[^"]*"[^>]*>[\s\S]*?<\/a>/i,
+        );
+        return fallback ? `<p>${fallback[0]}</p>` : "";
+      },
+    )
+    .replaceAll(
+      /<div\b[^>]*class="[^"]*\btiptap-html-block\b[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+      "",
+    )
+    .replaceAll(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, "")
+    .replaceAll(/<iframe\b[^>]*\/?>/gi, "")
+    .replaceAll(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
 }
 
 function getFeedSummaryText(post: PostView): string {

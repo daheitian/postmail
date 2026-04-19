@@ -250,6 +250,73 @@ const MarkdownFigureImageSupport = Extension.create({
   },
 });
 
+/**
+ * Marked tokenizer for the `jant-embed` fenced block.
+ *
+ * Body is one URL on its own line, optionally followed by `key=value` lines
+ * for caption/title overrides. We intentionally re-resolve provider attrs at
+ * parse time (in the node's `parseMarkdown`) so old posts pick up new
+ * orientation/sandbox/CSP rules without needing a republish.
+ */
+export function createEmbedMarkdownToken() {
+  return {
+    name: "embed",
+    level: "block" as const,
+    start(src: string) {
+      return src.indexOf("```jant-embed");
+    },
+    tokenize(src: string) {
+      const match = src.match(/^```jant-embed[ \t]*\n([\s\S]*?)\n?```(?:\n|$)/);
+      if (!match) return undefined;
+      const body = match[1] ?? "";
+      const lines = body
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const url = lines[0] ?? "";
+      const attrs: Record<string, string> = {};
+      for (let i = 1; i < lines.length; i += 1) {
+        const line = lines[i];
+        if (!line) continue;
+        const eq = line.indexOf("=");
+        if (eq <= 0) continue;
+        const key = line.slice(0, eq).trim();
+        const value = line.slice(eq + 1).trim();
+        if (key) attrs[key] = value;
+      }
+      return {
+        type: "embed",
+        raw: match[0],
+        url,
+        attrs,
+      };
+    },
+  };
+}
+
+/**
+ * Marked tokenizer for the `jant-html` fenced block. Body is raw HTML, kept
+ * verbatim end-to-end; the node renders trusted HTML on the published page.
+ */
+export function createHtmlBlockMarkdownToken() {
+  return {
+    name: "htmlBlock",
+    level: "block" as const,
+    start(src: string) {
+      return src.indexOf("```jant-html");
+    },
+    tokenize(src: string) {
+      const match = src.match(/^```jant-html[ \t]*\n([\s\S]*?)\n?```(?:\n|$)/);
+      if (!match) return undefined;
+      return {
+        type: "htmlBlock",
+        raw: match[0],
+        html: match[1] ?? "",
+      };
+    },
+  };
+}
+
 export function createMoreBreakMarkdownToken() {
   return {
     name: "moreBreak",
@@ -304,6 +371,151 @@ export const MarkdownMoreBreak = Node.create({
   parseMarkdown: (_token, helpers) => helpers.createNode("moreBreak"),
   renderMarkdown: () => MORE_BREAK_MARKER,
   markdownTokenizer: createMoreBreakMarkdownToken(),
+});
+
+/**
+ * Server-side schema for the `embed` node. Persisted attrs hold the resolved
+ * iframe `src` so old posts keep rendering even if a provider entry is later
+ * removed from the registry. `parseMarkdown` re-runs the provider lookup so
+ * attrs stay fresh on every parse.
+ */
+export const MarkdownEmbedNode = Node.create({
+  name: "embed",
+  group: "block",
+  atom: true,
+  selectable: true,
+  draggable: true,
+
+  addAttributes() {
+    return {
+      url: { default: "" },
+      provider: { default: "" },
+      providerName: { default: "" },
+      src: { default: "" },
+      orientation: { default: "landscape" },
+      heightPx: { default: null },
+      sandbox: { default: "" },
+      allow: { default: "" },
+      caption: { default: "" },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: 'figure[data-jant-node="embed"]',
+        getAttrs(dom) {
+          const element = dom as QueryableElement;
+          const provider = element.getAttribute("data-provider") ?? "";
+          const url =
+            element.getAttribute("data-url") ??
+            element.querySelector("a")?.getAttribute("href") ??
+            "";
+          return {
+            url,
+            provider,
+            providerName: element.getAttribute("data-provider-name") ?? "",
+            src: element.getAttribute("data-src") ?? "",
+            orientation:
+              element.getAttribute("data-orientation") ?? "landscape",
+          };
+        },
+      },
+    ];
+  },
+
+  renderHTML({ node }) {
+    const attrs: Record<string, string> = {
+      "data-jant-node": "embed",
+    };
+    if (node.attrs.provider)
+      attrs["data-provider"] = String(node.attrs.provider);
+    if (node.attrs.providerName)
+      attrs["data-provider-name"] = String(node.attrs.providerName);
+    if (node.attrs.url) attrs["data-url"] = String(node.attrs.url);
+    if (node.attrs.src) attrs["data-src"] = String(node.attrs.src);
+    if (node.attrs.orientation)
+      attrs["data-orientation"] = String(node.attrs.orientation);
+    return ["figure", attrs];
+  },
+
+  parseMarkdown: (token, helpers) => {
+    const url = typeof token.url === "string" ? token.url : "";
+    const tokenAttrs =
+      token.attrs && typeof token.attrs === "object"
+        ? (token.attrs as Record<string, string>)
+        : {};
+    return helpers.createNode("embed", {
+      url,
+      caption: tokenAttrs.caption ?? "",
+    });
+  },
+
+  renderMarkdown: (node) => {
+    const attrs = (node.attrs ?? {}) as Record<string, unknown>;
+    const url = typeof attrs.url === "string" ? attrs.url.trim() : "";
+    if (!url) return "";
+    const lines = [url];
+    const caption =
+      typeof attrs.caption === "string" ? attrs.caption.trim() : "";
+    if (caption) lines.push(`caption=${caption}`);
+    return ["```jant-embed", ...lines, "```"].join("\n");
+  },
+
+  markdownTokenizer: createEmbedMarkdownToken(),
+});
+
+/**
+ * Server-side schema for the `htmlBlock` node — author-trusted raw HTML.
+ * Round-trips through markdown verbatim.
+ */
+export const MarkdownHtmlBlockNode = Node.create({
+  name: "htmlBlock",
+  group: "block",
+  atom: true,
+  selectable: true,
+  draggable: true,
+
+  addAttributes() {
+    return {
+      html: { default: "" },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: 'div[data-jant-node="html-block"]',
+        getAttrs(dom) {
+          const element = dom as QueryableElement;
+          return {
+            html: element.textContent ?? "",
+          };
+        },
+      },
+    ];
+  },
+
+  renderHTML({ node }) {
+    return [
+      "div",
+      { "data-jant-node": "html-block" },
+      String(node.attrs.html ?? ""),
+    ];
+  },
+
+  parseMarkdown: (token, helpers) => {
+    const html = typeof token.html === "string" ? token.html : "";
+    return helpers.createNode("htmlBlock", { html });
+  },
+
+  renderMarkdown: (node) => {
+    const html =
+      typeof node.attrs?.html === "string" ? (node.attrs.html as string) : "";
+    return ["```jant-html", html, "```"].join("\n");
+  },
+
+  markdownTokenizer: createHtmlBlockMarkdownToken(),
 });
 
 function createFootnoteReferenceMarkdownToken() {
@@ -499,6 +711,8 @@ export const MarkdownFootnoteDefinition = Node.create({
 interface MarkdownContentExtensionOptions {
   imageExtension?: AnyExtension;
   moreBreakExtension?: AnyExtension;
+  embedExtension?: AnyExtension;
+  htmlBlockExtension?: AnyExtension;
 }
 
 export function createMarkdownContentExtensions(
@@ -521,6 +735,8 @@ export function createMarkdownContentExtensions(
     MarkdownFigureImageSupport,
     options.imageExtension ?? MarkdownImageNode,
     options.moreBreakExtension ?? MarkdownMoreBreak,
+    options.embedExtension ?? MarkdownEmbedNode,
+    options.htmlBlockExtension ?? MarkdownHtmlBlockNode,
     MarkdownFootnoteReference,
     MarkdownFootnoteDefinition,
   ];

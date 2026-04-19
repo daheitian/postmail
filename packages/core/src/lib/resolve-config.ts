@@ -219,6 +219,8 @@ export function resolveConfig(
         ? allSettings["THEME_MODE"]
         : "auto",
     customCSS: allSettings["CUSTOM_CSS"] ?? "",
+    customHeadHtml: allSettings["CUSTOM_HEAD_HTML"] ?? "",
+    customBodyEndHtml: allSettings["CUSTOM_BODY_END_HTML"] ?? "",
 
     // Site appearance (DB internal)
     siteAvatar,

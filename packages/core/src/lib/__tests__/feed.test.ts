@@ -56,6 +56,45 @@ describe("feed renderers", () => {
     expect(xml).not.toContain('{"kind":"text"}');
   });
 
+  it("strips embed iframes and replaces them with the fallback link", () => {
+    const post = makePostView({
+      bodyHtml:
+        "<p>Watch this:</p>" +
+        '<figure class="tiptap-embed-figure" data-provider="youtube" data-orientation="landscape">' +
+        '<div class="tiptap-embed-frame">' +
+        '<iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" sandbox="allow-scripts" loading="lazy"></iframe>' +
+        "</div>" +
+        '<a class="tiptap-embed-fallback" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener noreferrer">YouTube →</a>' +
+        "</figure>",
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+    expect(xml).not.toContain("<iframe");
+    expect(xml).not.toContain("tiptap-embed-figure");
+    expect(xml).toContain("tiptap-embed-fallback");
+    expect(xml).toContain("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  });
+
+  it("strips raw HTML blocks entirely", () => {
+    const post = makePostView({
+      bodyHtml:
+        "<p>Sign up:</p>" +
+        '<div class="tiptap-html-block"><script src="https://letterbird.co/embed/v1.js"></script></div>',
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+    expect(xml).not.toContain("tiptap-html-block");
+    expect(xml).not.toContain("letterbird.co/embed/v1.js");
+    expect(xml).not.toContain("<script");
+    expect(xml).toContain("<p>Sign up:</p>");
+  });
+
+  it("removes stray iframes even outside embed figures", () => {
+    const post = makePostView({
+      bodyHtml: '<p>Hi</p><iframe src="https://example.com"></iframe>',
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+    expect(xml).not.toContain("<iframe");
+  });
+
   it("does not expose quote attribution as feed title", () => {
     const xml = defaultFeedRenderer(
       makeFeedData(

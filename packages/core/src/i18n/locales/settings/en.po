@@ -126,6 +126,11 @@ msgstr "Always show the dark version of the theme."
 msgid "Always show the light version of the theme."
 msgstr "Always show the light version of the theme."
 
+#. @context: Code Injection security warning body
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "Anything you paste here has full access to your visitors' browsers. Only use code from sources you trust."
+msgstr "Anything you paste here has full access to your visitors' browsers. Only use code from sources you trust."
+
 #. @context: Link to API documentation
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "API reference"
@@ -274,6 +279,18 @@ msgstr "Choose the GitHub account and repository to sync with this site."
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "CJK Font"
 msgstr "CJK Font"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — code injection settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Code Injection"
+msgstr "Code Injection"
+
+#. @context: Toast after saving Code Injection settings
+#: src/routes/dash/settings.tsx
+msgid "Code injection updated."
+msgstr "Code injection updated."
 
 #. @context: Nav item type badge for collection items
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -754,6 +771,16 @@ msgstr "Hosted account"
 msgid "I want to delete {siteName}"
 msgstr "I want to delete {siteName}"
 
+#. @context: Code Injection body-end field description
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "Injected before </body>. Use for chat widgets and scripts that should not block page load."
+msgstr "Injected before </body>. Use for chat widgets and scripts that should not block page load."
+
+#. @context: Code Injection head field description
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "Injected before </head>. Use for analytics, custom meta tags, and styles that must load early."
+msgstr "Injected before </head>. Use for analytics, custom meta tags, and styles that must load early."
+
 #. @context: Button label to start the GitHub App install flow on GitHub Sync setup
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Install GitHub App"
@@ -1213,9 +1240,11 @@ msgstr "Revoke this token? Any scripts using it will stop working."
 msgid "Safe to leave this page — syncing continues in the background."
 msgstr "Safe to leave this page — syncing continues in the background."
 
+#. @context: Button to save Code Injection settings
 #. @context: Button to save settings
 #. @context: Button to save settings changes
 #. @context: Save nav item changes
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1325,10 +1354,17 @@ msgstr "Signed in {date}"
 msgid "Site"
 msgstr "Site"
 
+#. @context: Code Injection field group label for body end
 #. @context: Settings section heading for site footer
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Site Footer"
 msgstr "Site Footer"
+
+#. @context: Code Injection field group label for <head>
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "Site Header"
+msgstr "Site Header"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1339,6 +1375,11 @@ msgstr "Site Name"
 #: src/routes/dash/settings.tsx
 msgid "Site settings updated."
 msgstr "Site settings updated."
+
+#. @context: Settings item description for code injection
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Site-wide HTML for analytics and widgets"
+msgstr "Site-wide HTML for analytics and widgets"
 
 #. @context: Color theme preview card body sentence
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1394,6 +1435,11 @@ msgstr "These devices are currently signed in to your account. Revoke any sessio
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "this blog"
 msgstr "this blog"
+
+#. @context: Code Injection security warning headline
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "This code runs on every page of your site."
+msgstr "This code runs on every page of your site."
 
 #. @context: Help text for choosing whether /feed points to latest or featured posts
 #: src/ui/dash/settings/GeneralContent.tsx

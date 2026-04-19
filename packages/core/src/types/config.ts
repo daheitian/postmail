@@ -199,6 +199,16 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  CUSTOM_HEAD_HTML: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  CUSTOM_BODY_END_HTML: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
   SITE_AVATAR: {
     defaultValue: "",
     envOnly: false,
@@ -456,6 +466,8 @@ export interface AppConfig {
   defaultFontThemeId: string;
   themeMode: ThemeMode;
   customCSS: string;
+  customHeadHtml: string;
+  customBodyEndHtml: string;
 
   // Site appearance (DB internal)
   siteAvatar: string;

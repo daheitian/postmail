@@ -126,6 +126,11 @@ msgstr "始終顯示深色主題。"
 msgid "Always show the light version of the theme."
 msgstr "永遠顯示主題的淺色版本。"
 
+#. @context: Code Injection security warning body
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "Anything you paste here has full access to your visitors' browsers. Only use code from sources you trust."
+msgstr ""
+
 #. @context: Link to API documentation
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "API reference"
@@ -274,6 +279,18 @@ msgstr "選擇要與此網站同步的 GitHub 帳號和儲存庫."
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "CJK Font"
 msgstr "CJK 字體"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — code injection settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Code Injection"
+msgstr ""
+
+#. @context: Toast after saving Code Injection settings
+#: src/routes/dash/settings.tsx
+msgid "Code injection updated."
+msgstr ""
 
 #. @context: Nav item type badge for collection items
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -754,6 +771,16 @@ msgstr "託管帳號"
 msgid "I want to delete {siteName}"
 msgstr "我想刪除 {siteName}"
 
+#. @context: Code Injection body-end field description
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "Injected before </body>. Use for chat widgets and scripts that should not block page load."
+msgstr ""
+
+#. @context: Code Injection head field description
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "Injected before </head>. Use for analytics, custom meta tags, and styles that must load early."
+msgstr ""
+
 #. @context: Button label to start the GitHub App install flow on GitHub Sync setup
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Install GitHub App"
@@ -1213,9 +1240,11 @@ msgstr "要撤銷這個權杖嗎？任何使用它的腳本都會停止運作。
 msgid "Safe to leave this page — syncing continues in the background."
 msgstr "可以放心離開此頁面 — 同步會在背景繼續進行。"
 
+#. @context: Button to save Code Injection settings
 #. @context: Button to save settings
 #. @context: Button to save settings changes
 #. @context: Save nav item changes
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1325,10 +1354,17 @@ msgstr "已於 {date} 登入"
 msgid "Site"
 msgstr "網站"
 
+#. @context: Code Injection field group label for body end
 #. @context: Settings section heading for site footer
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Site Footer"
 msgstr "網站頁尾"
+
+#. @context: Code Injection field group label for <head>
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "Site Header"
+msgstr ""
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1339,6 +1375,11 @@ msgstr "網站名稱"
 #: src/routes/dash/settings.tsx
 msgid "Site settings updated."
 msgstr "網站設定已更新."
+
+#. @context: Settings item description for code injection
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Site-wide HTML for analytics and widgets"
+msgstr ""
 
 #. @context: Color theme preview card body sentence
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1394,6 +1435,11 @@ msgstr "這些裝置目前已登入您的帳號。撤銷任何您不認識的工
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "this blog"
 msgstr "此部落格"
+
+#. @context: Code Injection security warning headline
+#: src/ui/dash/appearance/CodeInjectionContent.tsx
+msgid "This code runs on every page of your site."
+msgstr ""
 
 #. @context: Help text for choosing whether /feed points to latest or featured posts
 #: src/ui/dash/settings/GeneralContent.tsx

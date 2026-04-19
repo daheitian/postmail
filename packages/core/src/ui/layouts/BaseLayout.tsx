@@ -108,6 +108,12 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
 
   // Read custom CSS from appConfig
   const customCSS = appConfig?.customCSS || undefined;
+  // Code-injection escape hatches: admin-only settings, rendered raw on every
+  // page so analytics scripts, chat widgets, etc. can be installed site-wide.
+  // These are deliberate exceptions to the "everything goes through escapeHtml"
+  // rule — see CLAUDE.md / Code Injection settings page.
+  const customHeadHtml = appConfig?.customHeadHtml || undefined;
+  const customBodyEndHtml = appConfig?.customBodyEndHtml || undefined;
   const themeMode = appConfig?.themeMode ?? "auto";
   const activeTheme = resolveBuiltinTheme(appConfig?.themeId);
   const browserThemeColors = getThemeBrowserColors(activeTheme);
@@ -313,6 +319,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           {customCSS && (
             <style dangerouslySetInnerHTML={{ __html: customCSS }} />
           )}
+          {customHeadHtml && raw(customHeadHtml)}
           <script type="module" src={clientScriptPath} />
         </head>
         <body
@@ -367,6 +374,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
               </div>
             )}
           </div>
+          {customBodyEndHtml && raw(customBodyEndHtml)}
         </body>
       </html>
     </>

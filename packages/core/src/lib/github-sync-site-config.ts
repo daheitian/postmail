@@ -3,40 +3,55 @@
  * context. Kept in its own file so routes, API handlers, and the
  * inline sync runner can share one source of truth — historically each
  * call site had its own near-identical copy.
+ *
+ * The shape mirrors `routes/api/export.ts` so `jant site export` and
+ * `jant github sync` produce byte-identical Hugo sites (modulo media
+ * files, which Sync intentionally skips). If you add a field to the
+ * export route, add it here too.
  */
 
 import type { SiteConfig } from "../services/export.js";
 import type { AppVariables } from "../types/app-context.js";
+import { getHomeDefaultViewFromNavItems } from "./navigation.js";
 
-export function buildSyncSiteConfig(c: {
-  var: { appConfig: AppVariables["appConfig"] };
-}): SiteConfig {
-  const cfg = c.var.appConfig;
+export async function buildSyncSiteConfig(c: {
+  var: Pick<
+    AppVariables,
+    "services" | "appConfig" | "allSettings" | "themeStyle"
+  >;
+}): Promise<SiteConfig> {
+  const { services, appConfig, allSettings, themeStyle } = c.var;
+  const navItems = await services.navItems.list();
+  const appleTouchKey = allSettings["SITE_FAVICON_APPLE_TOUCH"] ?? "";
   return {
-    siteName: cfg.siteName,
-    siteUrl: cfg.siteUrl,
-    siteDescription: cfg.siteDescription,
-    siteLanguage: cfg.siteLanguage,
-    showJantBrandingOnHome: cfg.showJantBrandingOnHome,
-    homeDefaultView: cfg.homeDefaultView,
-    mainRssFeed: cfg.mainRssFeed,
-    siteFooter: cfg.siteFooter,
-    showHeaderAvatar: cfg.showHeaderAvatar,
-    siteAvatarUrl: cfg.siteAvatarUrl,
-    themeId: cfg.themeId,
-    defaultThemeId: cfg.defaultThemeId,
-    fontThemeId: cfg.fontThemeId,
-    themeMode: cfg.themeMode,
-    noindex: cfg.noindex,
-    customCss: cfg.customCSS,
-    r2PublicUrl: cfg.r2PublicUrl,
-    s3PublicUrl: cfg.s3PublicUrl,
-    localPublicUrl: cfg.localPublicUrl,
-    imageTransformUrl: cfg.imageTransformUrl,
-    sitePathPrefix: cfg.sitePathPrefix,
-    navItems: [],
-    pageSize: cfg.pageSize,
-    archivePageSize: cfg.archivePageSize,
-    rssFeedLimit: cfg.rssFeedLimit,
+    siteName: appConfig.siteName,
+    siteUrl: appConfig.siteUrl,
+    siteDescription: appConfig.siteDescription,
+    siteLanguage: appConfig.siteLanguage,
+    showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
+    homeDefaultView: getHomeDefaultViewFromNavItems(navItems),
+    mainRssFeed: appConfig.mainRssFeed,
+    siteFooter: appConfig.siteFooter,
+    showHeaderAvatar: appConfig.showHeaderAvatar,
+    siteAvatarUrl: appConfig.siteAvatarUrl,
+    faviconIcoBase64: allSettings["SITE_FAVICON_ICO"] ?? undefined,
+    appleTouchIconStorageKey: appleTouchKey || undefined,
+    faviconVersion: appConfig.faviconVersion,
+    themeId: appConfig.themeId,
+    defaultThemeId: appConfig.defaultThemeId,
+    fontThemeId: appConfig.fontThemeId,
+    themeMode: appConfig.themeMode,
+    noindex: appConfig.noindex,
+    themeCss: themeStyle,
+    customCss: appConfig.customCSS,
+    r2PublicUrl: appConfig.r2PublicUrl,
+    s3PublicUrl: appConfig.s3PublicUrl,
+    localPublicUrl: appConfig.localPublicUrl,
+    imageTransformUrl: appConfig.imageTransformUrl,
+    sitePathPrefix: appConfig.sitePathPrefix,
+    navItems,
+    pageSize: appConfig.pageSize,
+    archivePageSize: appConfig.archivePageSize,
+    rssFeedLimit: appConfig.rssFeedLimit,
   };
 }

@@ -112,8 +112,12 @@ describe("secureHeadersMiddleware", () => {
     expect(response.headers.get("referrer-policy")).toBe(
       "strict-origin-when-cross-origin",
     );
+    // Public pages omit frame-ancestors so the site can be embedded elsewhere,
+    // and they open https: in script/frame/connect-src so author-injected
+    // analytics, embeds, and code-injection HTML can run.
     expect(csp).not.toContain("frame-ancestors");
-    expect(csp).not.toContain("frame-src");
+    expect(csp).toContain("frame-src 'self' https:");
+    expect(csp).toContain("script-src 'self' 'unsafe-eval' blob: https:");
   });
 
   it("blocks protected pages from being embedded in iframes", async () => {

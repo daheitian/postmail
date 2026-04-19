@@ -185,7 +185,7 @@ export async function triggerGitHubSyncInline(c: Context<Env>): Promise<void> {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildSyncSiteConfig(c),
+    await buildSyncSiteConfig(c),
     { storage: c.var.storage, githubApp: getGitHubAppConfig(c.env) },
   );
 

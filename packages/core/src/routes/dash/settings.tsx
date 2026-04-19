@@ -37,6 +37,7 @@ import { NavigationContent } from "../../ui/dash/appearance/NavigationContent.js
 import { ColorThemeContent } from "../../ui/dash/appearance/ColorThemeContent.js";
 import { FontThemeContent } from "../../ui/dash/appearance/FontThemeContent.js";
 import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
+import { CodeInjectionContent } from "../../ui/dash/appearance/CodeInjectionContent.js";
 import { ApiTokensContent } from "../../ui/dash/settings/ApiTokensContent.js";
 import { DeleteAccountContent } from "../../ui/dash/settings/DeleteAccountContent.js";
 import {
@@ -119,6 +120,7 @@ function breadcrumbLabel(
     | "colorTheme"
     | "fontTheme"
     | "customCss"
+    | "codeInjection"
     | "account"
     | "sessions"
     | "password"
@@ -155,6 +157,13 @@ function breadcrumbLabel(
     case "customCss":
       return i18n._(
         msg({ message: "Custom CSS", comment: "@context: Breadcrumb label" }),
+      );
+    case "codeInjection":
+      return i18n._(
+        msg({
+          message: "Code Injection",
+          comment: "@context: Breadcrumb label",
+        }),
       );
     case "account":
       return i18n._(
@@ -891,6 +900,70 @@ settingsRoutes.post("/custom-css", async (c) => {
 });
 
 // ===========================================================================
+// Code Injection — site-wide HTML in <head> and at end of <body>.
+// ===========================================================================
+
+settingsRoutes.get("/code-injection", async (c) => {
+  const customHeadHtml =
+    c.var.allSettings[SETTINGS_KEYS.CUSTOM_HEAD_HTML] ?? "";
+  const customBodyEndHtml =
+    c.var.allSettings[SETTINGS_KEYS.CUSTOM_BODY_END_HTML] ?? "";
+  const navData = await getNavigationData(c);
+
+  return renderPublicPage(c, {
+    title: buildPageTitle("Code Injection", navData.siteName),
+    navData,
+    content: (
+      <>
+        <AdminBreadcrumb
+          parent={breadcrumbLabel(c, "settings")}
+          parentHref={publicPath(c, "/settings")}
+          current={breadcrumbLabel(c, "codeInjection")}
+        />
+        <CodeInjectionContent
+          customHeadHtml={customHeadHtml}
+          customBodyEndHtml={customBodyEndHtml}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
+        />
+      </>
+    ),
+  });
+});
+
+settingsRoutes.post("/code-injection", async (c) => {
+  const i18n = getI18n(c);
+  const body = await c.req.json<{
+    customHeadHtml?: string;
+    customBodyEndHtml?: string;
+  }>();
+  const { settings } = c.var.services;
+
+  const headHtml = body.customHeadHtml?.trim() ?? "";
+  const bodyEndHtml = body.customBodyEndHtml?.trim() ?? "";
+
+  if (headHtml) {
+    await settings.set(SETTINGS_KEYS.CUSTOM_HEAD_HTML, headHtml);
+  } else {
+    await settings.remove(SETTINGS_KEYS.CUSTOM_HEAD_HTML);
+  }
+
+  if (bodyEndHtml) {
+    await settings.set(SETTINGS_KEYS.CUSTOM_BODY_END_HTML, bodyEndHtml);
+  } else {
+    await settings.remove(SETTINGS_KEYS.CUSTOM_BODY_END_HTML);
+  }
+
+  return dsToast(
+    i18n._(
+      msg({
+        message: "Code injection updated.",
+        comment: "@context: Toast after saving Code Injection settings",
+      }),
+    ),
+  );
+});
+
+// ===========================================================================
 // Account sub-menu
 // ===========================================================================
 
@@ -1338,7 +1411,7 @@ settingsRoutes.post("/github-sync/connect", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildSyncSiteConfig(c),
+    await buildSyncSiteConfig(c),
     { storage: c.var.storage, githubApp: getGitHubAppConfig(c.env) },
   );
   const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");
@@ -1371,7 +1444,7 @@ settingsRoutes.post("/github-sync/push", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildSyncSiteConfig(c),
+    await buildSyncSiteConfig(c),
     { storage: c.var.storage, githubApp: getGitHubAppConfig(c.env) },
   );
 
@@ -1399,7 +1472,7 @@ settingsRoutes.post("/github-sync/disconnect", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildSyncSiteConfig(c),
+    await buildSyncSiteConfig(c),
     { githubApp: getGitHubAppConfig(c.env) },
   );
   await syncService.teardownWebhook();
@@ -1605,10 +1678,10 @@ settingsRoutes.get("/github-sync/app/callback", async (c) => {
  * Derive a default repository name to prefill on github.com/new.
  *
  * Uses the site's host — the first DNS label is a stable, URL-safe
- * identifier tied to this specific Jant instance. Fallback to "jant-site"
- * when the host parse fails so we never hand GitHub an empty `name=`.
- * Appending `-jant` namespaces the repo to this project without
- * committing to backup-vs-sync wording.
+ * identifier tied to this specific Jant instance. Fallback to
+ * "jant-site-sync" when the host parse fails so we never hand GitHub an
+ * empty `name=`. The `-jant-sync` suffix disambiguates the sync mirror
+ * from a user's own `{slug}-jant` source repo.
  */
 function buildSuggestedRepoName(c: Context<Env>): string {
   let firstLabel = "";
@@ -1621,7 +1694,7 @@ function buildSuggestedRepoName(c: Context<Env>): string {
     .toLowerCase()
     .replace(/[^a-z0-9-_]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  return slug ? `${slug}-jant` : "jant-site";
+  return slug ? `${slug}-jant-sync` : "jant-site-sync";
 }
 
 function buildRepoPickerLabels(c: Context<Env>): string {
@@ -1950,7 +2023,7 @@ settingsRoutes.post("/github-sync/app/connect", async (c) => {
   const syncService = createGitHubSyncService(
     c.var.services,
     c.var.currentSite.id,
-    buildSyncSiteConfig(c),
+    await buildSyncSiteConfig(c),
     { storage: c.var.storage, githubApp: app },
   );
   const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");

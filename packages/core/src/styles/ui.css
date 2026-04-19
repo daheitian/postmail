@@ -8747,6 +8747,317 @@
     display: none;
   }
 
+  /* --- Embed placeholder card in editor --------------------------------- */
+
+  .tiptap-embed-card {
+    margin: 0.75em 0;
+    border: 1px solid var(--site-divider);
+    border-radius: 8px;
+    padding: 0.75em 0.9em;
+    background: var(--site-elevated-bg);
+    display: grid;
+    gap: 0.4em;
+    transition: border-color 0.15s;
+  }
+
+  .tiptap-embed-card[data-selected="true"] {
+    border-color: var(--primary);
+  }
+
+  .tiptap-embed-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5em;
+  }
+
+  .tiptap-embed-card-provider {
+    font-size: var(--type-2xs);
+    font-weight: var(--fw-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--site-text-secondary);
+  }
+
+  .tiptap-embed-card-actions {
+    display: inline-flex;
+    gap: 0.35em;
+  }
+
+  .tiptap-embed-card-btn {
+    appearance: none;
+    border: 1px solid var(--site-divider);
+    background: transparent;
+    color: var(--site-text-secondary);
+    border-radius: 6px;
+    padding: 0.18em 0.55em;
+    font-size: var(--type-2xs);
+    font-weight: var(--fw-medium);
+    cursor: pointer;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .tiptap-embed-card-btn:hover {
+    color: var(--site-text-primary);
+    border-color: color-mix(in srgb, var(--site-text-primary) 25%, transparent);
+  }
+
+  .tiptap-embed-card-url {
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    color: var(--site-text-primary);
+    text-decoration: none;
+    word-break: break-all;
+    line-height: 1.35;
+  }
+
+  .tiptap-embed-card-url:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 0.06em;
+    text-underline-offset: 0.15em;
+  }
+
+  .tiptap-embed-card-caption {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: var(--type-xs);
+    color: var(--site-text-secondary);
+    padding: 0.15em 0;
+  }
+
+  .tiptap-embed-card-caption::placeholder {
+    color: color-mix(in srgb, var(--site-text-secondary) 55%, transparent);
+  }
+
+  /* --- Raw HTML block card in editor ------------------------------------ */
+
+  .tiptap-html-block-card {
+    margin: 0.75em 0;
+    border: 1px solid var(--site-divider);
+    border-radius: 8px;
+    background: var(--site-elevated-bg);
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .tiptap-html-block-card[data-selected="true"] {
+    border-color: var(--primary);
+  }
+
+  .tiptap-html-block-header {
+    display: flex;
+    align-items: center;
+    padding: 0.45em 0.75em;
+    font-size: var(--type-2xs);
+    font-weight: var(--fw-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--site-text-secondary);
+    border-bottom: 1px solid var(--site-divider);
+  }
+
+  .tiptap-html-block-textarea {
+    display: block;
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    background: transparent;
+    color: var(--site-text-primary);
+    font-family: var(--font-mono);
+    font-size: var(--type-xs);
+    line-height: 1.5;
+    padding: 0.65em 0.75em;
+    min-height: 4.5em;
+  }
+
+  .tiptap-html-block-hint {
+    margin: 0;
+    padding: 0 0.75em 0.55em;
+    font-size: var(--type-2xs);
+    color: var(--site-text-secondary);
+  }
+
+  /* --- Published embed figure ------------------------------------------- */
+
+  .tiptap-embed-figure {
+    margin: 1.25em 0;
+    display: grid;
+    gap: 0.4em;
+  }
+
+  .tiptap-embed-frame {
+    position: relative;
+    width: 100%;
+    background: oklch(0 0 0 / 0.9);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .tiptap-embed-figure[data-orientation="landscape"] .tiptap-embed-frame {
+    aspect-ratio: 16 / 9;
+  }
+
+  .tiptap-embed-figure[data-orientation="portrait"] .tiptap-embed-frame {
+    aspect-ratio: 9 / 16;
+    max-width: 360px;
+    margin-inline: auto;
+  }
+
+  .tiptap-embed-figure[data-orientation="square"] .tiptap-embed-frame {
+    aspect-ratio: 1 / 1;
+  }
+
+  .tiptap-embed-figure[data-orientation="auto"] .tiptap-embed-frame {
+    aspect-ratio: auto;
+    height: var(--tiptap-embed-height, auto);
+    background: transparent;
+  }
+
+  .tiptap-embed-figure .tiptap-embed-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .tiptap-embed-figure[data-orientation="auto"] .tiptap-embed-frame iframe {
+    position: static;
+  }
+
+  .tiptap-embed-fallback {
+    display: inline-block;
+    font-size: var(--type-xs);
+    color: var(--site-text-secondary);
+    text-decoration: none;
+  }
+
+  .tiptap-embed-fallback:hover {
+    color: var(--site-text-primary);
+    text-decoration: underline;
+  }
+
+  .tiptap-embed-figure figcaption {
+    text-align: center;
+    font-size: var(--type-xs);
+    color: var(--site-text-secondary);
+  }
+
+  /* --- Embed dialog ----------------------------------------------------- */
+
+  .tiptap-embed-dialog {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: var(--site-text-primary);
+  }
+
+  .tiptap-embed-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(10px);
+  }
+
+  .tiptap-embed-dialog-panel {
+    width: min(calc(100vw - 2rem), 32rem);
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    display: grid;
+    gap: 0.85rem;
+    padding: 1.25rem;
+    border-radius: 1.1rem;
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 94%,
+      var(--site-page-bg) 6%
+    );
+    box-shadow: 0 28px 80px -42px rgba(15, 23, 42, 0.42);
+    outline: none;
+  }
+
+  .tiptap-embed-dialog-title {
+    margin: 0;
+    font-size: var(--type-ui-title);
+    font-weight: var(--fw-semibold);
+    letter-spacing: -0.015em;
+  }
+
+  .tiptap-embed-dialog-field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .tiptap-embed-dialog-label {
+    display: grid;
+    gap: 0.35rem;
+    font-size: var(--type-xs);
+    font-weight: var(--fw-medium);
+    color: var(--site-text-secondary);
+  }
+
+  .tiptap-embed-dialog-input,
+  .tiptap-embed-dialog-textarea {
+    width: 100%;
+    font-size: var(--type-sm);
+    color: var(--site-text-primary);
+  }
+
+  .tiptap-embed-dialog-textarea {
+    font-family: var(--font-mono);
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 9rem;
+  }
+
+  .tiptap-embed-dialog-hint {
+    margin: 0;
+    font-size: var(--type-2xs);
+    color: var(--site-text-secondary);
+    min-height: 1.2em;
+  }
+
+  .tiptap-embed-dialog-warning {
+    margin: 0;
+    font-size: var(--type-2xs);
+    color: var(--destructive, #b91c1c);
+    line-height: 1.45;
+  }
+
+  .tiptap-embed-dialog-toggle {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: var(--site-accent, var(--primary));
+    font-size: var(--type-xs);
+    font-weight: var(--fw-medium);
+    text-align: left;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 0.06em;
+    text-underline-offset: 0.18em;
+    justify-self: start;
+  }
+
+  .tiptap-embed-dialog-toggle:hover {
+    color: var(--site-text-primary);
+  }
+
+  .tiptap-embed-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
   .compose-tiptap-body .tiptap a {
     color: var(--site-prose-link-color, var(--site-content-link));
     font-weight: inherit;

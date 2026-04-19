@@ -19,10 +19,12 @@ import {
   getFixedFloatingContainerRect,
   getFloatingPosition,
 } from "./floating-position.js";
+import { openEmbedDialog } from "./embed-dialog.js";
 
 // SVG icons (18×18, stroke-based, Lucide style)
 const ICONS = {
   image: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`,
+  embed: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/><polygon points="10 8 15 11 10 14 10 8" fill="currentColor"/></svg>`,
   divider: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/></svg>`,
   readMore: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="m9 18 3 3 3-3"/><path d="m9 6-3-3-3 3"/><path d="M3 6h18"/></svg>`,
   footnote: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10"/><path d="M12 4v11"/><path d="M9 9h6"/><path d="M16 20h4"/><path d="M18 14v6"/></svg>`,
@@ -72,13 +74,50 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
     label: "Media",
     description: "Upload an image or video.",
     group: "media",
-    keywords: ["image", "video", "photo", "upload", "embed"],
+    keywords: ["image", "video", "photo", "upload"],
     icon: ICONS.image,
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).run();
       document.dispatchEvent(
         new CustomEvent("jant:slash-image", { bubbles: true }),
       );
+    },
+  },
+  {
+    label: "Embed",
+    description: "Embed a YouTube video, tweet, or any HTTPS page.",
+    group: "media",
+    keywords: [
+      "embed",
+      "youtube",
+      "vimeo",
+      "spotify",
+      "video",
+      "iframe",
+      "html",
+      "letterbird",
+    ],
+    icon: ICONS.embed,
+    command: (editor, range) => {
+      editor.chain().focus().deleteRange(range).run();
+      void openEmbedDialog().then((result) => {
+        if (!result) {
+          editor.commands.focus();
+          return;
+        }
+        if (result.kind === "embed") {
+          editor
+            .chain()
+            .focus()
+            .setEmbed({
+              url: result.url,
+              caption: result.caption,
+            })
+            .run();
+        } else {
+          editor.chain().focus().setHtmlBlock({ html: result.html }).run();
+        }
+      });
     },
   },
   {

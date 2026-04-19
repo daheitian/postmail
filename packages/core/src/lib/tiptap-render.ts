@@ -11,6 +11,7 @@ import {
   normalizeFootnoteArtifacts,
   normalizeFootnoteLabel,
 } from "./footnotes.js";
+import { renderEmbedFromAttrs } from "./embed-render.js";
 import { escapeHtml } from "./html.js";
 import { renderPublishedImageFigure } from "./rich-image.js";
 import { sanitizeUrl } from "./url.js";
@@ -196,6 +197,17 @@ const NODE_RENDERERS: Record<string, NodeRenderer> = {
   horizontalRule: () => "<hr>",
   hardBreak: () => "<br>",
   image: (node) => renderPublishedImageFigure(node.attrs ?? {}),
+  embed: (node) => renderEmbedFromAttrs(node.attrs),
+  // htmlBlock: deliberately raw output. The author is the only writer in
+  // Jant's single-author model, this node is admin-only via the editor UI,
+  // and the value is round-tripped through markdown unchanged. This is a
+  // documented exception to the "every dynamic string must be escaped" rule
+  // in CLAUDE.md — see also `dangerouslySetInnerHTML` for `customCSS`.
+  htmlBlock: (node) => {
+    const html = getStringAttr(node.attrs, "html");
+    if (!html) return "";
+    return `<div class="tiptap-html-block">${html}</div>`;
+  },
   moreBreak: () => "<!--more-->",
   footnoteReference: (node, context) => renderSidenoteReference(node, context),
   footnoteDefinition: () => "",

@@ -388,14 +388,30 @@ export async function listInstallationReposPage(
       full_name: string;
       private: boolean;
       default_branch: string;
+      updated_at: string | null;
+      created_at: string | null;
     }>;
   };
-  const repos = data.repositories.map((r) => ({
-    fullName: r.full_name,
-    name: r.name,
-    private: r.private,
-    defaultBranch: r.default_branch,
-  }));
+  // GitHub's installation/repositories endpoint has no `sort` parameter —
+  // newly added repos land at the end of the list. Sort the page by
+  // updated_at desc (falling back to created_at) so a freshly created
+  // repo appears at the top, which is what users expect when they come
+  // back from `github.com/new`. For accounts with >100 repos the newest
+  // one may still live on a later page; the picker's search path then
+  // takes over and also sorts by `updated` server-side.
+  const repos = data.repositories
+    .slice()
+    .sort((a, b) => {
+      const at = Date.parse(a.updated_at ?? a.created_at ?? "") || 0;
+      const bt = Date.parse(b.updated_at ?? b.created_at ?? "") || 0;
+      return bt - at;
+    })
+    .map((r) => ({
+      fullName: r.full_name,
+      name: r.name,
+      private: r.private,
+      defaultBranch: r.default_branch,
+    }));
   const hasMore = repos.length === perPage;
   return {
     repos,
@@ -428,9 +444,12 @@ export async function searchInstallationRepos(
   // both user and org accounts). GitHub's search syntax uses space-separated
   // qualifiers; our caller should pre-trim `q`.
   const fullQuery = `${q} in:name user:${accountLogin} fork:true`;
+  // Sort by last-updated desc so a freshly created repo surfaces first.
   const params = new URLSearchParams({
     q: fullQuery,
     per_page: String(perPage),
+    sort: "updated",
+    order: "desc",
   });
   const res = await fetch(
     `${GITHUB_API}/search/repositories?${params.toString()}`,
