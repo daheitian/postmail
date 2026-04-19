@@ -53,6 +53,7 @@ import {
   githubSyncAdminRoutes,
 } from "./routes/api/github-sync.js";
 import { internalTextAttachmentsRoutes } from "./routes/api/internal/text-attachments.js";
+import { internalSearchReindexRoutes } from "./routes/api/internal/search-reindex.js";
 import { internalUploadsRoutes } from "./routes/api/internal/uploads.js";
 import { publicPostsApiRoutes } from "./routes/api/public/posts.js";
 // Routes - Compose
@@ -337,6 +338,7 @@ export function createApp(): App {
   app.route("/api/internal/api-tokens", internalApiTokensRoutes);
   app.route("/api/internal/sites", internalSitesRoutes);
   app.route("/api/internal/text-attachments", internalTextAttachmentsRoutes);
+  app.route("/api/internal/search/reindex", internalSearchReindexRoutes);
   app.route("/api/internal/uploads", internalUploadsRoutes);
   app.route("/api/github-sync", githubSyncWebhookRoutes);
 

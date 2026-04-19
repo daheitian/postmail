@@ -2073,4 +2073,102 @@ describe("PostService", () => {
       expect(updatedRoot?.lastActivityAt).toBe(1000);
     });
   });
+
+  describe("reindexBodyText", () => {
+    function bodyWithLink(text: string, href: string): string {
+      return JSON.stringify({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text,
+                marks: [{ type: "link", attrs: { href } }],
+              },
+            ],
+          },
+        ],
+      });
+    }
+
+    it("recomputes body_text and updates only rows that differ", async () => {
+      const post = await postService.create({
+        format: "note",
+        body: bodyWithLink("docs", "https://rebuild.example/page"),
+      });
+
+      // Simulate the pre-fix state by stripping URLs from body_text directly.
+      await db
+        .update(posts)
+        .set({ bodyText: "docs" })
+        .where(eq(posts.id, post.id));
+
+      const firstPass = await postService.reindexBodyText();
+      expect(firstPass.processed).toBe(1);
+      expect(firstPass.updated).toBe(1);
+      expect(firstPass.skipped).toBe(0);
+      expect(firstPass.done).toBe(true);
+      expect(firstPass.nextCursor).toBeNull();
+
+      const reindexed = await postService.getById(post.id);
+      expect(reindexed?.bodyText).toContain("rebuild.example");
+
+      // Idempotent: re-running immediately should be a no-op.
+      const secondPass = await postService.reindexBodyText();
+      expect(secondPass.updated).toBe(0);
+      expect(secondPass.skipped).toBe(1);
+      expect(secondPass.done).toBe(true);
+    });
+
+    it("skips soft-deleted posts", async () => {
+      const live = await postService.create({
+        format: "note",
+        body: bodyWithLink("a", "https://live.example"),
+      });
+      const gone = await postService.create({
+        format: "note",
+        body: bodyWithLink("b", "https://gone.example"),
+      });
+
+      // Strip body_text on both to force an update on the next pass.
+      await db
+        .update(posts)
+        .set({ bodyText: "a" })
+        .where(eq(posts.id, live.id));
+      await db
+        .update(posts)
+        .set({ bodyText: "b" })
+        .where(eq(posts.id, gone.id));
+      await postService.delete(gone.id);
+
+      const result = await postService.reindexBodyText();
+      expect(result.processed).toBe(1);
+      expect(result.updated).toBe(1);
+      expect(result.done).toBe(true);
+    });
+
+    it("paginates with cursor when more posts remain", async () => {
+      for (let i = 0; i < 3; i++) {
+        await postService.create({
+          format: "note",
+          body: bodyWithLink(`p${i}`, `https://p${i}.example`),
+        });
+      }
+
+      const first = await postService.reindexBodyText({ limit: 2 });
+      expect(first.processed).toBe(2);
+      expect(first.done).toBe(false);
+      expect(first.nextCursor).not.toBeNull();
+
+      const second = await postService.reindexBodyText({
+        limit: 2,
+        cursor: first.nextCursor ?? undefined,
+      });
+      expect(second.processed).toBe(1);
+      expect(second.done).toBe(true);
+      expect(second.nextCursor).toBeNull();
+    });
+  });
 });

@@ -93,15 +93,25 @@ const SEARCHABLE_TYPES = new Set([
  * matching.
  *
  * @param bodyJson - TipTap JSON string (the `body` column)
+ * @param options.includeLinkHrefs
+ *   When `true`, URLs from inline link marks are appended after the link text
+ *   so they get indexed for search. Default `false` keeps the output clean for
+ *   plain-text consumers like `toPlainText`/`extractTitle`.
  * @returns Plain text for FTS indexing, or null if parsing fails or doc is empty
  *
  * @example
  * ```ts
  * const text = extractBodyText(body);
  * // "Hello world Some code here"
+ *
+ * const indexed = extractBodyText(body, { includeLinkHrefs: true });
+ * // "See this page https://example.com"
  * ```
  */
-export function extractBodyText(bodyJson: string): string | null {
+export function extractBodyText(
+  bodyJson: string,
+  options: { includeLinkHrefs?: boolean } = {},
+): string | null {
   let doc: TiptapNode;
   try {
     doc = JSON.parse(bodyJson) as TiptapNode;
@@ -111,9 +121,23 @@ export function extractBodyText(bodyJson: string): string | null {
 
   if (doc.type !== "doc" || !doc.content) return null;
 
+  const includeLinkHrefs = options.includeLinkHrefs === true;
+
   function collectText(node: TiptapNode): string {
     if (!SEARCHABLE_TYPES.has(node.type)) return "";
-    if (node.type === "text") return node.text ?? "";
+    if (node.type === "text") {
+      const text = node.text ?? "";
+      if (!includeLinkHrefs || !node.marks || node.marks.length === 0) {
+        return text;
+      }
+      const hrefs: string[] = [];
+      for (const mark of node.marks) {
+        if (mark.type !== "link") continue;
+        const href = mark.attrs?.href;
+        if (typeof href === "string" && href.trim()) hrefs.push(href);
+      }
+      return hrefs.length > 0 ? `${text} ${hrefs.join(" ")}` : text;
+    }
     if (node.type === "hardBreak") return " ";
     if (!node.content) return "";
     return node.content.map(collectText).join(" ");

@@ -16,6 +16,7 @@ import { ExitableMarks } from "./exitable-marks.js";
 import { TabIndent } from "./tab-indent.js";
 import { LinkInputRules } from "./link-input-rules.js";
 import { WrappingInputRules } from "./wrapping-input-rules.js";
+import { InsertParagraphAround } from "./insert-paragraph-around.js";
 import { Footnotes } from "./footnotes.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
 import { ImageNode } from "./image-node.js";
@@ -80,6 +81,7 @@ export function createSettingsEditorExtensions(
     WrappingInputRules,
     MarkdownClipboard,
     ExitableMarks,
+    InsertParagraphAround,
     BubbleMenu.configure({
       toolbarMode: "compose",
     }),
@@ -120,6 +122,7 @@ export function createEditorExtensions(
       toolbarMode: options.toolbarMode ?? "default",
     }),
     ExitableMarks,
+    InsertParagraphAround,
     TabIndent,
   ];
 }

@@ -246,6 +246,115 @@ describe("extractBodyText", () => {
     expect(result).toContain("Below rule");
   });
 
+  it("includes link mark hrefs when includeLinkHrefs is true", () => {
+    const doc = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "See " },
+            {
+              type: "text",
+              text: "this page",
+              marks: [
+                {
+                  type: "link",
+                  attrs: { href: "https://example.com/foo" },
+                },
+              ],
+            },
+            { type: "text", text: " for details." },
+          ],
+        },
+      ],
+    });
+
+    const result = extractBodyText(doc, { includeLinkHrefs: true });
+    expect(result).toContain("this page");
+    expect(result).toContain("https://example.com/foo");
+    expect(result).toContain("See");
+    expect(result).toContain("for details.");
+  });
+
+  it("omits link mark hrefs by default (plain-text contract)", () => {
+    const doc = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "See " },
+            {
+              type: "text",
+              text: "this page",
+              marks: [
+                {
+                  type: "link",
+                  attrs: { href: "https://example.com/foo" },
+                },
+              ],
+            },
+            { type: "text", text: "." },
+          ],
+        },
+      ],
+    });
+
+    const result = extractBodyText(doc);
+    expect(result).toContain("this page");
+    expect(result).not.toContain("example.com");
+    expect(result).not.toContain("https://");
+  });
+
+  it("ignores non-link marks (bold, italic, code, etc.)", () => {
+    const doc = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "emphasized",
+              marks: [{ type: "bold" }, { type: "italic" }],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(extractBodyText(doc, { includeLinkHrefs: true })).toBe("emphasized");
+  });
+
+  it("skips link marks with empty or whitespace-only hrefs", () => {
+    const doc = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "broken",
+              marks: [{ type: "link", attrs: { href: "   " } }],
+            },
+            {
+              type: "text",
+              text: "also-broken",
+              marks: [{ type: "link", attrs: {} }],
+            },
+          ],
+        },
+      ],
+    });
+
+    const result = extractBodyText(doc, { includeLinkHrefs: true });
+    expect(result).toContain("broken");
+    expect(result).toContain("also-broken");
+    expect(result).not.toMatch(/https?:\/\//);
+  });
+
   it("returns null for invalid JSON", () => {
     expect(extractBodyText("not json")).toBeNull();
     expect(extractBodyText("{invalid")).toBeNull();
@@ -452,6 +561,37 @@ describe("extractSummary", () => {
     });
 
     expect(extractSummary(doc, 5, 500)).toBe("After decorations");
+  });
+
+  it("does not leak link mark URLs into the plaintext summary", () => {
+    // Regression guard: extractBodyText (for search) includes link hrefs,
+    // but extractSummary (for feeds/meta descriptions) must not.
+    const doc = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "See " },
+            {
+              type: "text",
+              text: "this link",
+              marks: [
+                {
+                  type: "link",
+                  attrs: { href: "https://example.com/foo" },
+                },
+              ],
+            },
+            { type: "text", text: "." },
+          ],
+        },
+      ],
+    });
+
+    const result = extractSummary(doc, 5, 500);
+    expect(result).toBe("See this link.");
+    expect(result).not.toContain("example.com");
   });
 
   it("returns null for invalid JSON", () => {

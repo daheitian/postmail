@@ -204,6 +204,50 @@ describe("SearchService", () => {
     expect(results[0]?.post.url).toContain("example.com");
   });
 
+  it("finds posts by URL embedded in inline markdown links", async () => {
+    // TipTap stores markdown links as marks on text nodes. Their href
+    // must reach body_text so users can search for the URL, not just
+    // the visible link text.
+    const bodyWithLink = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "See " },
+            {
+              type: "text",
+              text: "this page",
+              marks: [
+                {
+                  type: "link",
+                  attrs: { href: "https://inline-link.example/article" },
+                },
+              ],
+            },
+            { type: "text", text: " for details." },
+          ],
+        },
+      ],
+    });
+
+    await postService.create({
+      format: "note",
+      body: bodyWithLink,
+    });
+
+    const d1 = createMockD1(sqlite);
+    const searchService = createSearchService(d1, DEFAULT_TEST_SITE_ID);
+
+    // Searching by the link's URL host should match.
+    const byUrl = await searchService.search("inline-link.example");
+    expect(byUrl.length).toBeGreaterThanOrEqual(1);
+
+    // Regression guard: the visible link text still matches too.
+    const byText = await searchService.search("this page");
+    expect(byText.length).toBeGreaterThanOrEqual(1);
+  });
+
   it("finds posts with short queries (< 3 chars) via LIKE fallback", async () => {
     await postService.create({
       format: "note",

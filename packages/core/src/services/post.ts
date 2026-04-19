@@ -19,6 +19,7 @@ import {
   isNotNull,
   asc,
   lte,
+  gt,
 } from "drizzle-orm";
 import {
   type Database,
@@ -292,6 +293,28 @@ export interface PostService {
   getDistinctYears(filters?: PostFilters): Promise<number[]>;
   /** For each thread ID, return the ID of the last published, non-deleted post */
   getLastPostIdsByThread(threadIds: string[]): Promise<Map<string, string>>;
+  /**
+   * Rebuild `post.body_text` for a batch of non-deleted posts, cursor-paginated
+   * by post id. For each row, recomputes the plain-text extraction via
+   * `extractBodyText(body)` and writes it back only when it differs from the
+   * stored value. FTS indexes (SQLite trigger / Postgres generated column)
+   * refresh automatically on the UPDATE.
+   *
+   * Idempotent: re-running after a no-op pass returns `updated: 0`.
+   *
+   * @param options.limit  Batch size (1..500, default 50)
+   * @param options.cursor Exclusive lower bound on post id; pass the previous
+   *                       response's `nextCursor` to continue
+   * @returns processed/updated/skipped counts, the next cursor, and a `done`
+   *          flag the caller uses to terminate the loop
+   */
+  reindexBodyText(options?: { limit?: number; cursor?: string }): Promise<{
+    processed: number;
+    updated: number;
+    skipped: number;
+    nextCursor: string | null;
+    done: boolean;
+  }>;
 }
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
@@ -1377,7 +1400,9 @@ export function createPostService(
       });
 
       const bodyHtml = body ? renderTiptapJson(body) : null;
-      const bodyText = body ? extractBodyText(body) : null;
+      const bodyText = body
+        ? extractBodyText(body, { includeLinkHrefs: true })
+        : null;
 
       // Generate summary for titled notes with body content
       let summary: string | null = null;
@@ -1879,7 +1904,7 @@ export function createPostService(
           ? renderTiptapJson(normalizedBody)
           : null;
         updates.bodyText = normalizedBody
-          ? extractBodyText(normalizedBody)
+          ? extractBodyText(normalizedBody, { includeLinkHrefs: true })
           : null;
       }
 
@@ -2966,6 +2991,62 @@ export function createPostService(
         .orderBy(desc(publishedYearExpr));
 
       return rows.map((r) => parseInt(r.year, 10));
+    },
+
+    async reindexBodyText(options = {}) {
+      const requested = options.limit ?? 50;
+      const limit = Math.min(Math.max(Math.trunc(requested), 1), 500);
+      const cursor = options.cursor;
+
+      const whereConditions = [
+        eq(posts.siteId, siteId),
+        isNull(posts.deletedAt),
+      ];
+      if (cursor) whereConditions.push(gt(posts.id, cursor));
+
+      // Fetch one extra row to detect end-of-data without a separate COUNT.
+      const rows = await db
+        .select({
+          id: posts.id,
+          body: posts.body,
+          bodyText: posts.bodyText,
+        })
+        .from(posts)
+        .where(and(...whereConditions))
+        .orderBy(asc(posts.id))
+        .limit(limit + 1);
+
+      const hasMore = rows.length > limit;
+      const batch = hasMore ? rows.slice(0, limit) : rows;
+
+      let updated = 0;
+      let skipped = 0;
+
+      for (const row of batch) {
+        const nextBodyText = row.body
+          ? extractBodyText(row.body, { includeLinkHrefs: true })
+          : null;
+        if (nextBodyText === row.bodyText) {
+          skipped++;
+          continue;
+        }
+        await db
+          .update(posts)
+          .set({ bodyText: nextBodyText })
+          .where(and(eq(posts.siteId, siteId), eq(posts.id, row.id)));
+        updated++;
+      }
+
+      const lastRow = batch.at(-1);
+      const lastId = lastRow ? lastRow.id : null;
+
+      return {
+        processed: batch.length,
+        updated,
+        skipped,
+        nextCursor: hasMore ? lastId : null,
+        done: !hasMore,
+      };
     },
   };
 }
