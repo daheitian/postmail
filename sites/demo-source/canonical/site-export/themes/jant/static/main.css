@@ -22,6 +22,7 @@
 }
 
 html {
+  font-size: 15px;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -78,15 +79,19 @@ h1 {
   line-height: var(--type-display-leading);
   font-weight: var(--type-display-weight);
   letter-spacing: var(--type-display-tracking);
-  margin-top: 0;
+  margin: 4rem 0 1.5rem;
 }
 
 h2 {
   font-size: var(--type-content-title);
+  font-style: italic;
+  margin: 2.1rem 0 1.4rem;
 }
 
 h3 {
   font-size: var(--type-content-subtitle);
+  font-style: italic;
+  margin: 2rem 0 1.4rem;
 }
 
 h4 {
@@ -102,7 +107,7 @@ h6 {
 }
 
 p {
-  margin: 0 0 1em;
+  margin: 1.4rem 0;
 }
 
 small {
@@ -212,12 +217,23 @@ blockquote cite {
 
 ul,
 ol {
-  padding-left: 1.5em;
-  margin: 0 0 1em;
+  padding-left: 1.625em;
+  margin: 1.25em 0;
 }
 
-li + li {
-  margin-top: 0.25em;
+li {
+  margin-top: 1.2em;
+  margin-bottom: 1.2em;
+}
+
+/* Normalize li > p so list spacing is controlled by li alone,
+   regardless of whether the markdown renderer wraps li contents in <p>. */
+li > p:first-child {
+  margin-top: 0;
+}
+
+li > p:last-child {
+  margin-bottom: 0;
 }
 
 a {

@@ -55,7 +55,11 @@
           {{- else if $post.Params.source_name -}}
             <span class="post-card-quote-source">{{ $post.Params.source_name }}</span>
           {{- else -}}
-            <a href="{{ $post.Params.source_url }}" class="post-card-quote-source" rel="noopener noreferrer" target="_blank">{{ $post.Params.source_url }}</a>
+            {{- $sourceDomain := "" -}}
+            {{- with urls.Parse $post.Params.source_url -}}
+              {{- $sourceDomain = .Host | replaceRE "^(?:www|m|mobile)\\." "" -}}
+            {{- end -}}
+            <a href="{{ $post.Params.source_url }}" class="post-card-quote-source" rel="noopener noreferrer" target="_blank">{{ or $sourceDomain $post.Params.source_url }}</a>
           {{- end -}}
         </div>
       {{- end -}}

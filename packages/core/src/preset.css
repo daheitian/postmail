@@ -225,14 +225,46 @@ html {
     margin-bottom: 1.4rem;
   }
 
-  :where(li:not(:first-child), dt:not(:first-child)) {
-    margin-top: 0.25rem;
+  :where(h4, h5, h6) {
+    font-size: var(--type-content-body);
+    font-weight: var(--fw-medium);
+  }
+
+  :where(h5, h6) {
+    color: var(--site-reading-meta);
+  }
+
+  :where(ul, ol) {
+    margin: 1.25em 0;
+    padding-left: 1.625em;
+  }
+
+  :where(li, dt) {
+    margin-top: 1.2em;
+    margin-bottom: 1.2em;
+  }
+
+  /* Normalize li > p so list spacing is controlled by li alone,
+     regardless of whether the markdown renderer wraps li contents in <p>. */
+  :where(li) > :where(p:first-child) {
+    margin-top: 0;
+  }
+
+  :where(li) > :where(p:last-child) {
+    margin-bottom: 0;
   }
 
   :where(code, pre code) {
     font-size: var(--type-code);
     line-height: 1.42;
     overflow-wrap: break-word;
+  }
+
+  :where(:not(pre) > code) {
+    padding: 0.1em 0.35em;
+    background-color: var(--site-feed-card-bg);
+    border: 1px solid var(--site-feed-card-border);
+    border-radius: 0.25rem;
   }
 
   :where(pre code) {
@@ -335,6 +367,12 @@ html {
   blockquote ol,
   blockquote pre {
     margin-top: 0.6em;
+  }
+
+  blockquote cite {
+    font-style: normal;
+    color: var(--site-reading-meta);
+    font-size: var(--type-sm);
   }
 }
 
