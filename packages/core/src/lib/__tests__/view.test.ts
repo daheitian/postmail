@@ -206,6 +206,72 @@ describe("toPostView", () => {
     expect(view.summaryHasMore).toBe(true);
   });
 
+  it("injects #continue anchor at the block boundary when body has a leading <hr>", () => {
+    // Regression: structural nodes like `horizontalRule` appear in bodyHtml
+    // but are excluded from the summary. Slicing bodyHtml by summary.length
+    // landed mid-tag (e.g. inside </h2>), producing corrupted markup like
+    // `<h2>...&lt;<span id="continue"></span>/h2&gt;`.
+    const textA = "A".repeat(300);
+    const textB = "B".repeat(300);
+    const body = JSON.stringify({
+      type: "doc",
+      content: [
+        { type: "horizontalRule" },
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: textA }],
+        },
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: textB }],
+        },
+      ],
+    });
+    const p1 = `<p>${textA}</p>`;
+    const p2 = `<p>${textB}</p>`;
+    const bodyHtml = `<hr>${p1}${p2}`;
+    const view = toPostView(
+      makePostWithMedia({ title: "Article", body, bodyHtml }),
+      EMPTY_CTX,
+    );
+    expect(view.summaryHasMore).toBe(true);
+    expect(view.bodyHtml).toBe(`<hr>${p1}<span id="continue"></span>${p2}`);
+    // Must not corrupt tags by splitting them mid-character.
+    expect(view.bodyHtml).not.toContain("&lt;");
+    expect(view.bodyHtml).not.toContain("&gt;");
+  });
+
+  it("places the #continue anchor at the moreBreak boundary", () => {
+    const body = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Lead" }],
+        },
+        { type: "moreBreak" },
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Rest" }],
+        },
+      ],
+    });
+    const view = toPostView(
+      makePostWithMedia({
+        title: "Article",
+        body,
+        bodyHtml: "<p>Lead</p><!--more--><p>Rest</p>",
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.summaryHasMore).toBe(true);
+    // The anchor sits at the summary boundary. The `<!--more-->` marker is an
+    // inert HTML comment, so it's fine to keep in the post-anchor body.
+    expect(view.bodyHtml).toBe(
+      '<p>Lead</p><span id="continue"></span><!--more--><p>Rest</p>',
+    );
+  });
+
   it("does not compute summaryHtml for posts without title", () => {
     const view = toPostView(
       makePostWithMedia({

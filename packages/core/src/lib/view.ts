@@ -36,6 +36,7 @@ import {
 import { getCollectionPagePath } from "./collection-paths.js";
 import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
 import { extractSummaryHtml } from "./summary.js";
+import { renderTiptapDocument } from "./tiptap-render.js";
 import { highlightText } from "./search-snippet.js";
 import { toPublicPath } from "./url.js";
 
@@ -216,14 +217,38 @@ export function toPostView(
       summaryHasMore = result.hasMore;
 
       // Inject #continue anchor at the excerpt boundary for scroll targeting.
-      // Both summaryHtml and bodyHtml are rendered by the same renderTiptapJson,
-      // so the excerpt HTML is a prefix of bodyHtml.
+      // The summary HTML is NOT a byte-prefix of bodyHtml — structural nodes
+      // like `horizontalRule` and `moreBreak` appear in bodyHtml but are
+      // excluded from the summary, so slicing bodyHtml by summary.length lands
+      // mid-tag and corrupts the markup. Instead, render the pre-boundary
+      // doc slice and splice the anchor at that exact block boundary.
       if (result.hasMore && post.bodyHtml) {
-        const pos = result.html.length;
-        bodyHtmlWithAnchor =
-          post.bodyHtml.slice(0, pos) +
-          '<span id="continue"></span>' +
-          post.bodyHtml.slice(pos);
+        try {
+          const doc = JSON.parse(post.body) as {
+            type?: string;
+            content?: unknown[];
+          };
+          if (
+            doc.type === "doc" &&
+            Array.isArray(doc.content) &&
+            result.breakAtIndex > 0 &&
+            result.breakAtIndex <= doc.content.length
+          ) {
+            const beforeHtml = renderTiptapDocument({
+              type: "doc",
+              content: doc.content.slice(0, result.breakAtIndex) as never[],
+            });
+            if (post.bodyHtml.startsWith(beforeHtml)) {
+              bodyHtmlWithAnchor =
+                beforeHtml +
+                '<span id="continue"></span>' +
+                post.bodyHtml.slice(beforeHtml.length);
+            }
+          }
+        } catch {
+          // Fallback: leave bodyHtml untouched if the split can't be computed
+          // safely. Better no anchor than a broken document.
+        }
       }
     }
   }

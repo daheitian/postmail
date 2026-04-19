@@ -214,19 +214,22 @@ export function extractSummary(
  * @param bodyJson - Tiptap JSON string
  * @param maxBlocks - Maximum number of top-level blocks to include
  * @param maxChars - Maximum total plain-text character count
- * @returns HTML summary and whether content was truncated, or null
+ * @returns HTML summary, whether content was truncated, and the index in
+ *   `doc.content` where the content after the summary boundary begins, or null.
+ *   `breakAtIndex` lets callers align the summary with the full-body rendering
+ *   when splitting at the "read more" boundary (e.g. to insert an anchor).
  *
  * @example
  * ```ts
  * const result = extractSummaryHtml(body, 5, 500);
- * // { html: "<ul><li><p>Item</p></li></ul>", hasMore: true }
+ * // { html: "<ul><li><p>Item</p></li></ul>", hasMore: true, breakAtIndex: 1 }
  * ```
  */
 export function extractSummaryHtml(
   bodyJson: string,
   maxBlocks: number = 5,
   maxChars: number = 500,
-): { html: string; hasMore: boolean } | null {
+): { html: string; hasMore: boolean; breakAtIndex: number } | null {
   let doc: TiptapNode;
   try {
     doc = JSON.parse(bodyJson) as TiptapNode;
@@ -255,15 +258,21 @@ export function extractSummaryHtml(
     return {
       html: renderTiptapDocument(subDoc),
       hasMore: true,
+      // Anchor goes in place of the moreBreak marker, so the marker itself
+      // is NOT part of the pre-anchor body. It remains in the post-anchor
+      // body as an inert HTML comment.
+      breakAtIndex: moreBreakIdx,
     };
   }
 
   // No moreBreak — accumulate blocks up to limits
   const selected: TiptapNode[] = [];
   let totalChars = 0;
+  let lastSelectedIdx = -1;
 
-  for (const node of nodes) {
-    if (!SUMMARY_BLOCK_TYPES.has(node.type)) continue;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    if (!node || !SUMMARY_BLOCK_TYPES.has(node.type)) continue;
 
     const text = extractPlainText(node).trim();
     if (
@@ -274,6 +283,7 @@ export function extractSummaryHtml(
 
     selected.push(node);
     totalChars += text.length;
+    lastSelectedIdx = i;
   }
 
   if (selected.length === 0) return null;
@@ -285,5 +295,6 @@ export function extractSummaryHtml(
   return {
     html: renderTiptapDocument(subDoc),
     hasMore: selected.length < totalContentNodes,
+    breakAtIndex: lastSelectedIdx + 1,
   };
 }
