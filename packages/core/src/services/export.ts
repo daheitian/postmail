@@ -1668,15 +1668,17 @@ static/                   — Copy files here to add them to the published site
 - **Templates** — add files under \`layouts/\` at the site root to override the bundled theme.
 - **Debugging** — export to a directory with \`jant site export --directory ./my-site\`, then run \`cd my-site && hugo serve\`.
 
-## Re-fetching media
+## Fetching media locally
 
-Media is downloaded into \`static/media/\` by default at export time. If some files are missing — for example, you exported with \`--no-pull-media\`, new media was added to the source site, or a remote storage URL rotated — run:
+When the source site has a storage provider configured (R2/S3/local proxy), images and attachments in this export link to the provider URL instead of being bundled. That keeps the repo small but means the files aren't on disk — fine if Hugo can reach the internet, not fine if you want a fully self-contained archive.
+
+To download every referenced media file into \`static/media/\` and rewrite the references to local paths, run:
 
 \`\`\`sh
 npx jant site pull-media --path .
 \`\`\`
 
-It scans the site's content and downloads any referenced media that isn't already local. Safe to re-run; files already on disk are reused.
+Safe to re-run; files already on disk are reused. Anything that fails to download keeps its original URL so the site still builds.
 
 ## Notes
 
