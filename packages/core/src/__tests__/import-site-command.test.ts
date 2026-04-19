@@ -21,6 +21,8 @@ const {
   resolveCollectionMemberships,
   buildPostPayloadFromBundle,
   getRootAliasPathsForImport,
+  uploadMediaList,
+  normalizeTextAttachmentSpec,
 } = __test__;
 
 async function writeFileTree(
@@ -192,6 +194,62 @@ describe("Hugo import CLI helpers", () => {
       tempDir,
     );
     expect(spec).toBeNull();
+  });
+
+  it("uploadMediaList keys urlMap by the original body URL so rewrites actually match", async () => {
+    await mkdir(join(tempDir, "static", "media"), { recursive: true });
+    await writeFile(
+      join(tempDir, "static/media/inline.png"),
+      new Uint8Array([0]),
+    );
+
+    const target = {
+      uploadMedia: async () => ({
+        id: "med_new",
+        url: "https://target.example/media/med_new.png",
+      }),
+    };
+
+    const result = await uploadMediaList(
+      [{ src: "/media/inline.png" }],
+      target,
+      { base_url: "https://origin.example/" },
+      tempDir,
+    );
+
+    expect(result.uploaded).toBe(1);
+    // The key must be the raw path that `findImageUrls` extracted from the
+    // markdown AST (`/media/inline.png`) — otherwise `rewriteMediaReferences`
+    // would never match and the post body would retain the old URL.
+    expect(result.urlMap.get("/media/inline.png")).toBe(
+      "https://target.example/media/med_new.png",
+    );
+  });
+
+  it("normalizeTextAttachmentSpec handles a kind:text entry from front matter media[]", async () => {
+    await mkdir(join(tempDir, "static", "media", "files"), { recursive: true });
+    await writeFile(
+      join(tempDir, "static/media/files/note.md"),
+      "# Note\n\nhello world",
+    );
+
+    const spec = await normalizeTextAttachmentSpec(
+      {
+        kind: "text",
+        src: "/media/files/note.md",
+        summary: "hello world",
+        original_name: "note.md",
+      },
+      { base_url: "https://example.com/" },
+      tempDir,
+    );
+
+    expect(spec).toEqual({
+      type: "text",
+      contentFormat: "markdown",
+      content: "# Note\n\nhello world",
+      summary: "hello world",
+    });
   });
 
   it("resolveCollectionMemberships drops unknown slugs and converts timestamps to seconds", () => {

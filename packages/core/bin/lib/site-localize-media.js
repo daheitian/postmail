@@ -19,6 +19,10 @@ import {
   isSkippableUrl,
   rewriteMediaReferences,
 } from "./site-media-parser.js";
+import {
+  formatFrontMatter,
+  parseFrontMatter,
+} from "../../src/lib/hugo-markdown.ts";
 
 export function getSitePathPrefix(baseUrl) {
   if (typeof baseUrl !== "string" || baseUrl.trim() === "") {
@@ -322,6 +326,60 @@ export function collectMediaReferences(content) {
   return collectParsedMediaReferences(content);
 }
 
+/**
+ * Extract every localizable URL from a front matter `media:` array
+ * (each entry's `src` and `poster`). Needed because attachments that are
+ * only referenced from front matter — notably text attachments, whose
+ * `.md` body is never inlined — wouldn't otherwise be discovered by the
+ * body-only scan.
+ */
+function collectFrontMatterMediaReferences(frontMatter) {
+  if (!frontMatter || !Array.isArray(frontMatter.media)) {
+    return [];
+  }
+  const refs = [];
+  for (const entry of frontMatter.media) {
+    if (!entry || typeof entry !== "object") continue;
+    if (typeof entry.src === "string" && !isSkippableUrl(entry.src)) {
+      refs.push(entry.src);
+    }
+    if (typeof entry.poster === "string" && !isSkippableUrl(entry.poster)) {
+      refs.push(entry.poster);
+    }
+  }
+  return refs;
+}
+
+/**
+ * Apply `rewrites` to a front matter `media:` array in place, returning
+ * whether anything changed. Mirror of `rewriteMediaReferences` for the
+ * body, but restricted to the two fields we know about.
+ */
+function rewriteFrontMatterMediaReferences(frontMatter, rewrites) {
+  if (!frontMatter || !Array.isArray(frontMatter.media)) {
+    return false;
+  }
+  let changed = false;
+  for (const entry of frontMatter.media) {
+    if (!entry || typeof entry !== "object") continue;
+    if (typeof entry.src === "string") {
+      const next = rewrites.get(entry.src);
+      if (typeof next === "string" && next !== entry.src) {
+        entry.src = next;
+        changed = true;
+      }
+    }
+    if (typeof entry.poster === "string") {
+      const next = rewrites.get(entry.poster);
+      if (typeof next === "string" && next !== entry.poster) {
+        entry.poster = next;
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
 function getConfigMediaUrls(siteConfig) {
   // Hugo config: media URLs live under [params] (flat). Favicon and
   // apple-touch are written as theme-relative paths by the exporter, so
@@ -473,6 +531,8 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
   for (const filePath of markdownFiles) {
     const content = await readFile(filePath, "utf-8");
     allReferences.push(...collectMediaReferences(content));
+    const { frontMatter } = await parseFrontMatter(content);
+    allReferences.push(...collectFrontMatterMediaReferences(frontMatter));
   }
   allReferences.push(...getConfigMediaUrls(siteConfig));
   allReferences.push(...getJantDataMediaUrls(jantData));
@@ -577,11 +637,32 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
 
   for (const filePath of markdownFiles) {
     const content = await readFile(filePath, "utf-8");
-    const updatedContent = rewriteMediaReferences(content, rewrites);
-    if (updatedContent !== content) {
-      await writeFile(filePath, updatedContent);
-      stats.filesUpdated += 1;
+    const hasFrontMatter = /^(---|\+\+\+)\r?\n/.test(content);
+
+    if (!hasFrontMatter) {
+      // Legacy fragments or plain markdown without front matter — keep the
+      // original file shape and only rewrite the body.
+      const updatedContent = rewriteMediaReferences(content, rewrites);
+      if (updatedContent !== content) {
+        await writeFile(filePath, updatedContent);
+        stats.filesUpdated += 1;
+      }
+      continue;
     }
+
+    const { frontMatter, body } = await parseFrontMatter(content);
+    const frontMatterChanged = rewriteFrontMatterMediaReferences(
+      frontMatter,
+      rewrites,
+    );
+    const rewrittenBody = rewriteMediaReferences(body, rewrites);
+    const bodyChanged = rewrittenBody !== body;
+
+    if (!frontMatterChanged && !bodyChanged) continue;
+
+    const frontMatterBlock = await formatFrontMatter(frontMatter);
+    await writeFile(filePath, `${frontMatterBlock}${rewrittenBody}`);
+    stats.filesUpdated += 1;
   }
 
   if (updateConfigMediaUrls(siteConfig, rewrites)) {

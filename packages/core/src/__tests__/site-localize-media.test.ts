@@ -140,6 +140,73 @@ title: "Hello"
     }
   });
 
+  it("localizes front matter media[] entries including text attachments", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "jant-localize-test-"));
+
+    try {
+      await mkdir(join(rootDir, "content", "hello"), { recursive: true });
+      await writeFile(
+        join(rootDir, "hugo.toml"),
+        `baseURL = "https://example.com/"
+`,
+      );
+      await writeFile(
+        join(rootDir, "content", "hello", "_index.md"),
+        `---
+title: "Hello"
+media:
+  - id: "med_text"
+    kind: "text"
+    src: "https://media.jant.me/media/files/note.md"
+    original_name: "note.md"
+    mime_type: "text/markdown"
+  - id: "med_image"
+    kind: "image"
+    src: "https://media.jant.me/media/photo.webp"
+    poster: "https://media.jant.me/media/photo-thumb.webp"
+---
+
+No body image references here.
+`,
+      );
+
+      const loaded: string[] = [];
+      const stats = await localizeSiteExportDirectory(rootDir, {
+        assetLoader: async ({ resolvedUrl }) => {
+          loaded.push(resolvedUrl);
+          return {
+            bytes: new TextEncoder().encode(resolvedUrl),
+            contentType: resolvedUrl.endsWith(".md")
+              ? "text/markdown"
+              : "image/webp",
+          };
+        },
+      });
+
+      expect(stats.downloaded).toBe(3);
+      expect(loaded).toEqual(
+        expect.arrayContaining([
+          "https://media.jant.me/media/files/note.md",
+          "https://media.jant.me/media/photo.webp",
+          "https://media.jant.me/media/photo-thumb.webp",
+        ]),
+      );
+
+      const content = await readFile(
+        join(rootDir, "content", "hello", "_index.md"),
+        "utf-8",
+      );
+      expect(content).not.toContain("https://media.jant.me/");
+      expect(content).toContain('src: "/media/');
+      expect(content).toContain('poster: "/media/');
+
+      const localizedFiles = await readdir(join(rootDir, "static", "media"));
+      expect(localizedFiles).toHaveLength(3);
+    } finally {
+      await rm(rootDir, { recursive: true, force: true });
+    }
+  });
+
   it("localizes protocol-relative media references with https asset URLs", async () => {
     const rootDir = await mkdtemp(join(tmpdir(), "jant-localize-test-"));
 

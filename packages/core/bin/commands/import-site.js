@@ -705,7 +705,16 @@ async function uploadMediaList(mediaSpecs, target, siteConfig, sourceRootDir) {
     if (!normalized || normalized.src.startsWith("data:")) continue;
     const result = await target.uploadMedia(normalized);
     if (!result) continue;
-    urlMap.set(normalized.src, result.url);
+    // Key the rewrite map by the *original* URL as it appears in the body
+    // (e.g. `/media/...`). `normalized.src` has been resolved against
+    // `siteConfig.base_url` and becomes absolute, which would never match
+    // `node.url` from the markdown AST during `rewriteMediaReferences`.
+    if (typeof spec.src === "string" && spec.src.trim() !== "") {
+      urlMap.set(spec.src, result.url);
+    }
+    if (normalized.src !== spec.src) {
+      urlMap.set(normalized.src, result.url);
+    }
     mediaIds.push(result.id);
     uploaded += 1;
   }
@@ -1973,6 +1982,7 @@ export const __test__ = {
   normalizeTextAttachmentSpec,
   extractAttachmentBlocks,
   buildImportedAttachments,
+  uploadMediaList,
   buildSettingsUpdatesFromConfig,
   normalizeImportedNavItems,
   normalizeImportedCollectionDirectory,
@@ -2321,9 +2331,18 @@ export async function run(argv) {
       // Upload media declared in flat `media:` front matter. Each entry's
       // `src` is either a site-relative path (bytes under `static/`) or an
       // absolute URL (media still served by the original provider).
+      // Text attachments (`kind: "text"`) live under the same `media:` key
+      // but must be imported via `normalizeTextAttachmentSpec` so the body
+      // is decoded and stored as a text attachment rather than uploaded as
+      // a generic media file.
       const rootResourceSpecs = [];
+      const rootTextAttachmentEntries = [];
       if (Array.isArray(rootFm.media)) {
         for (const entry of rootFm.media) {
+          if (entry && typeof entry === "object" && entry.kind === "text") {
+            rootTextAttachmentEntries.push(entry);
+            continue;
+          }
           const spec = await mediaSpecFromJantMedia(entry, sourceRootDir);
           if (spec) rootResourceSpecs.push(spec);
         }
@@ -2371,6 +2390,21 @@ export async function run(argv) {
       // so the post record carries them even when none appear in body text.
       for (const mediaId of rootResourceIds) {
         importedAttachments.push({ type: "media", mediaId });
+      }
+
+      // Build text attachments declared in the flat `media:` front matter.
+      // These reference a `.md` artifact that holds the full body; the
+      // normalizer fetches the bytes (local disk first, then remote URL)
+      // and decodes them.
+      if (!skipMedia && !dryRun) {
+        for (const textEntry of rootTextAttachmentEntries) {
+          const textAttachment = await normalizeTextAttachmentSpec(
+            textEntry,
+            siteConfig,
+            sourceRootDir,
+          );
+          if (textAttachment) importedAttachments.push(textAttachment);
+        }
       }
 
       const memberships = resolveCollectionMemberships(
@@ -2449,8 +2483,13 @@ export async function run(argv) {
         let replyAttachments = [];
 
         const replyResourceSpecs = [];
+        const replyTextAttachmentEntries = [];
         if (Array.isArray(replyFm.media)) {
           for (const entry of replyFm.media) {
+            if (entry && typeof entry === "object" && entry.kind === "text") {
+              replyTextAttachmentEntries.push(entry);
+              continue;
+            }
             const spec = await mediaSpecFromJantMedia(entry, sourceRootDir);
             if (spec) replyResourceSpecs.push(spec);
           }
@@ -2494,6 +2533,17 @@ export async function run(argv) {
         mediaUploaded += attachmentResult.uploaded;
         for (const mediaId of replyResourceIds) {
           replyAttachments.push({ type: "media", mediaId });
+        }
+
+        if (!skipMedia) {
+          for (const textEntry of replyTextAttachmentEntries) {
+            const textAttachment = await normalizeTextAttachmentSpec(
+              textEntry,
+              siteConfig,
+              sourceRootDir,
+            );
+            if (textAttachment) replyAttachments.push(textAttachment);
+          }
         }
 
         const replyMemberships = resolveCollectionMemberships(
