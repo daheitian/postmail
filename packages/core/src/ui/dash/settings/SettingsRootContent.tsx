@@ -189,23 +189,6 @@ export function SettingsRootContent({
             }),
           )}
         />
-        <SettingsDirectoryLink
-          href={toPublicPath("/settings/code-injection", sitePathPrefix)}
-          icon={ICONS.terminal}
-          tone="subtle"
-          name={i18n._(
-            msg({
-              message: "Code Injection",
-              comment: "@context: Settings item — code injection settings",
-            }),
-          )}
-          description={i18n._(
-            msg({
-              message: "Site-wide HTML for analytics and widgets",
-              comment: "@context: Settings item description for code injection",
-            }),
-          )}
-        />
       </SettingsDirectorySection>
 
       <SettingsDirectorySection
@@ -258,6 +241,23 @@ export function SettingsRootContent({
             msg({
               message: "Redirects, vanity paths, and URL control",
               comment: "@context: Settings item description for custom URLs",
+            }),
+          )}
+        />
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/code-injection", sitePathPrefix)}
+          icon={ICONS.terminal}
+          tone="subtle"
+          name={i18n._(
+            msg({
+              message: "Code Injection",
+              comment: "@context: Settings item — code injection settings",
+            }),
+          )}
+          description={i18n._(
+            msg({
+              message: "Site-wide HTML for analytics and widgets",
+              comment: "@context: Settings item description for code injection",
             }),
           )}
         />
