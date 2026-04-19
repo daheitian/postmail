@@ -70,6 +70,11 @@ import {
 } from "../../lib/github-sync-trigger.js";
 import { buildSyncSiteConfig } from "../../lib/github-sync-site-config.js";
 import {
+  readGitHubSyncStatus,
+  renderStatusCardHtml,
+  getSyncStatusStreamUrl,
+} from "../../lib/github-sync-status.js";
+import {
   generateInstallNonce,
   signInstallState,
   verifyInstallState,
@@ -1454,8 +1459,10 @@ settingsRoutes.post("/github-sync/push", async (c) => {
   }
 
   // Run the push in the background so the status card's live "Syncing…"
-  // indicator drives the UX instead of the button's own spinner. The
-  // button returns a toast immediately; the page polls for completion.
+  // indicator drives the UX instead of a toast. We patch the status card
+  // into its pending state immediately so Datastar re-evaluates `data-init`
+  // on the new element and opens the SSE status stream, which then polls
+  // until the push completes.
   await markSyncPending(c.var.services.settings);
   const push = runBackgroundSync(c.var.services.settings, syncService);
   try {
@@ -1463,7 +1470,16 @@ settingsRoutes.post("/github-sync/push", async (c) => {
   } catch {
     // executionCtx unavailable (tests / Node).
   }
-  return dsToast("Syncing to GitHub…");
+
+  const status = await readGitHubSyncStatus(c); // pending=true after markSyncPending
+  const streamUrl = getSyncStatusStreamUrl(c);
+  const html = renderStatusCardHtml(c, status, streamUrl);
+  return sse(c, async (stream) => {
+    stream.patchElements(html, {
+      mode: "outer",
+      selector: "#github-sync-status",
+    });
+  });
 });
 
 settingsRoutes.post("/github-sync/disconnect", async (c) => {
