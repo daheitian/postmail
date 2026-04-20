@@ -14,7 +14,7 @@ function getGuidance(siteUrl) {
   return [
     `The deployed demo-public Worker at ${siteUrl} does not expose the internal API token admin route yet.`,
     "Deploy the latest demo-public Worker code and make sure INTERNAL_ADMIN_TOKEN is set as a Worker secret.",
-    "Run: mise run deploy-demo-public",
+    "Run: mise run deploy-demo",
   ].join("\n");
 }
 

@@ -110,11 +110,10 @@ Recommended split:
 5. Rebuild the public demo from the canonical snapshot:
 
    ```sh
-   mise run demo-public-rebuild
+   mise run demo-rebuild
    ```
 
-The nightly reset workflow for `demo-public` should use the same canonical
-snapshot.
+The nightly reset workflow for `demo` should use the same canonical snapshot.
 
 ## Resetting demo-source
 

@@ -18,7 +18,7 @@ const ensured = await ensureManagedSetup({
   siteLanguage: DEFAULT_SITE_LANGUAGE,
   missingAdminMessage: [
     "No credential user found in the demo database.",
-    "Run `mise run db-demo-bootstrap` to create the managed demo shell.",
+    "Run `mise run demo-bootstrap` to create the managed demo shell.",
   ].join("\n"),
 });
 

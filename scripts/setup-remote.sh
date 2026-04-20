@@ -36,4 +36,4 @@ mise install
 pnpm install
 
 # Set up local database, dev auth, and the canonical demo snapshot
-mise run db-local-rebuild-demo
+mise run db-wrangler-rebuild-demo

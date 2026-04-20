@@ -68,6 +68,6 @@ Configure these repository secrets before relying on CI deploys:
 3. Review the generated `sites/content-lab/scripts/content-lab-snapshot.sql`.
 4. Copy the curated snapshot into `packages/core/src/db/rehearsal-fixtures/`.
 5. Update the fixture manifest's `baseMigrationTag`.
-6. Verify with `mise run db-rehearse-local`.
+6. Verify with `mise run db-wrangler-rehearse`.
 
 The exported snapshot is intentionally ignored by Git. It is a working artifact, not a canonical fixture.

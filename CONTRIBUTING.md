@@ -168,11 +168,11 @@ mise run check-tests-coverage # Run tests with coverage report
 ### Database
 
 ```bash
-mise run db-schema-generate # Generate Drizzle migrations (from core schema)
-mise run db-local-migrate   # Apply migrations (local D1) — usually not needed, dev auto-runs this
-mise run db-local-load-demo-snapshot # Reload the canonical demo snapshot into the current local DB shell
-mise run db-local-rebuild-demo       # Recreate the local DB shell and load the canonical demo snapshot
-mise run db-local-clean     # Delete local D1 database (.wrangler)
+mise run db-schema-generate        # Generate Drizzle migrations (from core schema)
+mise run db-wrangler-migrate       # Apply migrations (local Wrangler/D1) — usually not needed, dev auto-runs this
+mise run db-wrangler-load-demo     # Reload the canonical demo snapshot into the current local DB shell
+mise run db-wrangler-rebuild-demo  # Recreate the local Wrangler DB shell and load the canonical demo snapshot
+mise run db-wrangler-clean         # Delete local Wrangler/D1 database (.wrangler) — alias: `clean`
 ```
 
 ### Auth Debugging
@@ -201,11 +201,11 @@ mise run i18n-translate   # Auto-translate all locales using AI (needs OPENAI_AP
 ### Release
 
 ```bash
-mise run release-changeset-create # Create a changeset for your changes
-mise run release-changeset-status # Show pending changesets
-mise run release-version          # Apply changesets (bump versions, generate CHANGELOG)
-mise run release-publish          # Build and publish packages to npm (CI only)
-mise run release-publish-dry      # Dry run publish
+mise run changeset          # Create a changeset for your changes
+mise run changeset-status   # Show pending changesets
+mise run release-version    # Apply changesets (bump versions, generate CHANGELOG)
+mise run release-publish    # Build and publish packages to npm (CI only)
+mise run release-publish-dry # Dry run publish
 ```
 
 ### Utilities
@@ -252,7 +252,7 @@ mise run check-ci         # Run all CI checks (lint + typecheck + test + build +
 6. **Create a changeset** (if your changes affect published packages):
 
    ```bash
-   mise run release-changeset-create
+   mise run changeset
    ```
 
 7. **Commit and push:**
@@ -421,7 +421,7 @@ mise run db-schema-generate # Generate migration files
 mise run dev              # Migrations auto-apply on dev server start
 ```
 
-You rarely need to run `mise run db-local-migrate` manually — both `dev` and `dev-debug` auto-apply migrations.
+You rarely need to run `mise run db-wrangler-migrate` manually — both `dev` and `dev-debug` auto-apply migrations.
 
 ### Local Development Data
 
@@ -430,7 +430,7 @@ The local development workflow is intentionally simple:
 1. **Recreate the local Cloudflare D1 shell** when you want a clean slate:
 
    ```bash
-   mise run db-local-rebuild-demo
+   mise run db-wrangler-rebuild-demo
    ```
 
    This recreates the local database, runs migrations, bootstraps the local shell, and loads the canonical demo snapshot from `sites/demo-source/canonical/snapshot/`.
@@ -438,7 +438,7 @@ The local development workflow is intentionally simple:
 2. **Recreate the local Node SQLite shell** when you are using the Node runtime:
 
    ```bash
-   mise run db-node-reset
+   mise run db-node-rebuild-demo
    ```
 
    This resets the configured local SQLite database and local media directory, writes missing dev auth values to `packages/core/.env.node`, bootstraps the local shell, and loads the canonical demo snapshot. This workflow is only for single-site Node development with SQLite and local filesystem storage.
@@ -446,7 +446,7 @@ The local development workflow is intentionally simple:
 3. **Import the canonical demo site export** into an empty local Node database when you want the portable `site import` path instead of snapshot restore:
 
    ```bash
-   mise run db-node-import-demo-site-export
+   mise run db-node-load-demo
    ```
 
    This migrates the configured local Node database, bootstraps the local shell, and imports `sites/demo-source/canonical/site-export/`. It is intended for single-site local PostgreSQL or SQLite development with local filesystem storage, and it refuses to run against a non-empty content database.
@@ -454,7 +454,7 @@ The local development workflow is intentionally simple:
 4. **Reload just the canonical demo snapshot** into the current local shell:
 
    ```bash
-   mise run db-local-load-demo-snapshot
+   mise run db-wrangler-load-demo
    ```
 
 The canonical snapshot remains the primary development truth source. The
@@ -466,8 +466,9 @@ and less ambiguous.
 ### Reset
 
 ```bash
-mise run db-local-clean   # Delete local D1 database only
-mise run clean-reset      # Nuclear reset — everything (node_modules, dist, db, cache, lockfile)
+mise run db-wrangler-clean   # Delete local Wrangler/D1 database only (alias: `clean`)
+mise run db-node-clean       # Delete local Node SQLite database and media storage
+mise run clean-reset         # Nuclear reset — everything (node_modules, dist, db, cache, lockfile)
 ```
 
 After any reset, just run `mise run dev` — migrations are applied automatically.
@@ -534,7 +535,7 @@ The site language is a site-wide setting (from `settings.SITE_LANGUAGE` in the d
 2. If changing published packages, add a changeset:
 
    ```bash
-   mise run release-changeset-create
+   mise run changeset
    ```
 
 3. Update documentation if needed.
@@ -572,7 +573,7 @@ We use [Changesets](https://github.com/changesets/changesets) for version manage
 After making changes that should be released:
 
 ```bash
-mise run release-changeset-create
+mise run changeset
 ```
 
 This will prompt you to:
@@ -591,14 +592,14 @@ This will prompt you to:
 
 ### Release Workflow
 
-1. Make changes and create a changeset (`mise run release-changeset-create`).
+1. Make changes and create a changeset (`mise run changeset`).
 2. Open a PR and merge to `main`.
 3. A Release PR is auto-created (or updated) by the bot.
 4. Merge the Release PR to publish to npm automatically.
 
 ```bash
 # Check pending changesets
-mise run release-changeset-status
+mise run changeset-status
 
 # Dry run publish (no actual publish)
 mise run release-publish-dry

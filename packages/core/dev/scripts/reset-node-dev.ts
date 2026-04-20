@@ -179,28 +179,28 @@ function resolveLocalPath(pathValue: unknown, cwd: string) {
 function assertLocalResetConfig(env: Bindings) {
   if (getCliSiteResolutionMode(env) !== "single-site") {
     throw new Error(
-      "db-node-reset only supports single-site local development. Set SITE_RESOLUTION_MODE=single-site for this workflow.",
+      "db-node-rebuild-demo only supports single-site local development. Set SITE_RESOLUTION_MODE=single-site for this workflow.",
     );
   }
 
   const dialect = resolveDatabaseDialect(env.DATABASE_URL ?? "");
   if (dialect !== "sqlite") {
     throw new Error(
-      "db-node-reset only supports Node SQLite development databases.",
+      "db-node-rebuild-demo only supports Node SQLite development databases.",
     );
   }
 
   const databasePath = resolveDatabasePath(env.DATABASE_URL ?? "", coreDir);
   if (databasePath === ":memory:") {
     throw new Error(
-      "db-node-reset cannot target an in-memory SQLite database.",
+      "db-node-rebuild-demo cannot target an in-memory SQLite database.",
     );
   }
 
   const storageDriver = String(env.STORAGE_DRIVER ?? "").trim();
   if (storageDriver && storageDriver !== "local") {
     throw new Error(
-      "db-node-reset only supports STORAGE_DRIVER=local or an unset storage driver.",
+      "db-node-rebuild-demo only supports STORAGE_DRIVER=local or an unset storage driver.",
     );
   }
 

@@ -1,4 +1,4 @@
-# Demo Public Operations
+# Demo Operations
 
 `sites/demo` is the public demo runtime at `demo.jant.me`.
 
@@ -9,11 +9,11 @@ also doubles as the starter template source.
 ## Common Commands
 
 ```sh
-mise run demo-public-bootstrap
-mise run demo-public-rebuild
-mise run demo-public-verify
-mise run demo-public-clear-content
-mise run demo-public-clear-api-tokens
+mise run demo-bootstrap
+mise run demo-rebuild
+mise run demo-verify
+mise run demo-clear-content
+mise run demo-clear-api-tokens
 ```
 
 ## Environment Files for Repo Tasks
@@ -42,20 +42,18 @@ Recommended split:
 1. Curate content in `demo-source`.
 2. Freeze it with `mise run demo-source-export-canonical`.
 3. Review and commit `sites/demo-source/canonical/snapshot/`.
-4. Publish it to `demo-public` with `mise run demo-public-rebuild`.
+4. Publish it to `demo` with `mise run demo-rebuild`.
 5. Let `.github/workflows/reset-demo.yml` re-run the same rebuild nightly.
 
 ## Notes
 
-- `demo-public-rebuild` is snapshot-based. It no longer imports the old static
+- `demo-rebuild` is snapshot-based. It no longer imports the old static
   site export.
-- `demo-public-rebuild` keeps a standalone storage cleanup step before import.
+- `demo-rebuild` keeps a standalone storage cleanup step before import.
   That cleanup exists so demo maintenance can enforce its own storage policy
   separately from the normal snapshot restore contract.
-- `demo-public-rebuild` also clears every user-created API token through
+- `demo-rebuild` also clears every user-created API token through
   `INTERNAL_ADMIN_TOKEN`, so demo tokens are disposable across nightly
   resets.
 - The rebuild workflow still imports the canonical snapshot with an explicit
   remap intent rather than relying on implicit single-site behavior.
-- `db-demo-reseed` remains as a compatibility alias for
-  `mise run demo-public-rebuild`.

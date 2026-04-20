@@ -28,7 +28,7 @@ We follow [Semantic Versioning](https://semver.org/):
 1. **Make changes** in a feature branch
 2. **Create a changeset**:
    ```bash
-   mise run release-changeset-create
+   mise run changeset
    ```
 3. **Commit** the changeset file with your changes
 4. **Open PR** and merge to main
@@ -48,10 +48,10 @@ When PRs with changesets are merged:
 
 ```bash
 # Create a new changeset
-mise run release-changeset-create
+mise run changeset
 
 # Check pending changesets
-mise run release-changeset-status
+mise run changeset-status
 
 # Apply changesets locally (bump versions)
 mise run release-version

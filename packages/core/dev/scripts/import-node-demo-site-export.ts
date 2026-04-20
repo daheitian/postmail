@@ -192,7 +192,7 @@ function describeDatabaseTarget(env: Bindings) {
 function assertLocalImportConfig(env: Bindings) {
   if (getCliSiteResolutionMode(env) !== "single-site") {
     throw new Error(
-      "db-node-import-demo-site-export only supports single-site local development. Set SITE_RESOLUTION_MODE=single-site for this workflow.",
+      "db-node-load-demo only supports single-site local development. Set SITE_RESOLUTION_MODE=single-site for this workflow.",
     );
   }
 
@@ -202,7 +202,7 @@ function assertLocalImportConfig(env: Bindings) {
     const databasePath = resolveDatabasePath(databaseUrl, coreDir);
     if (databasePath === ":memory:") {
       throw new Error(
-        "db-node-import-demo-site-export cannot target an in-memory SQLite database.",
+        "db-node-load-demo cannot target an in-memory SQLite database.",
       );
     }
   }
@@ -210,7 +210,7 @@ function assertLocalImportConfig(env: Bindings) {
   const storageDriver = String(env.STORAGE_DRIVER ?? "").trim();
   if (storageDriver && storageDriver !== "local") {
     throw new Error(
-      "db-node-import-demo-site-export only supports STORAGE_DRIVER=local or an unset storage driver.",
+      "db-node-load-demo only supports STORAGE_DRIVER=local or an unset storage driver.",
     );
   }
 

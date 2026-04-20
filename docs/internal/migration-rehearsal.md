@@ -25,13 +25,13 @@ Current fixture:
 Run it locally:
 
 ```sh
-mise run db-rehearse-local
+mise run db-wrangler-rehearse
 ```
 
 Run it against the dedicated remote rehearsal database:
 
 ```sh
-mise run db-rehearse-remote
+mise run db-remote-rehearse
 ```
 
 Remote execution uses two different paths on purpose:
@@ -76,7 +76,7 @@ Recommended loop:
 2. Run `mise run db-content-lab-export`.
 3. Copy the snapshot into `packages/core/src/db/rehearsal-fixtures/`.
 4. Update the fixture manifest's `baseMigrationTag` to the latest migration tag on `main`.
-5. Verify with `mise run db-rehearse-local`.
+5. Verify with `mise run db-wrangler-rehearse`.
 6. Commit the refreshed fixture in a separate change when possible.
 
 The content-lab snapshot is written to `sites/content-lab/scripts/content-lab-snapshot.sql` and stays out of Git by default.
