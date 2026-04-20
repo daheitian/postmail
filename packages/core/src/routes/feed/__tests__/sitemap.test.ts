@@ -269,8 +269,30 @@ describe("Sitemap Routes", () => {
       });
 
       const xml = await (await app.request("/sitemap-posts-1.xml")).text();
-      expect(xml).toContain("/my-alias");
+      expect(xml).toContain(`<loc>${TEST_SITE_ORIGIN}/my-alias</loc>`);
       expect(xml).not.toContain(`/${post.slug}<`);
+    });
+
+    it("emits absolute URLs anchored to the site origin for nested aliases", async () => {
+      // Regression: `getPostAliases` returns aliases with a leading "/", so
+      // blindly prepending another "/" produces "//blog/foo", which
+      // `new URL()` resolves as protocol-relative and hijacks the hostname
+      // (e.g. `https://blog/foo`).
+      const { app, services } = createSitemapTestApp();
+      const post = await services.posts.create({
+        format: "note",
+        bodyMarkdown: "body",
+        status: "published",
+      });
+      await services.customUrls.create({
+        path: "blog/about-notes",
+        targetType: "post",
+        targetId: post.id,
+      });
+
+      const xml = await (await app.request("/sitemap-posts-1.xml")).text();
+      expect(xml).toContain(`<loc>${TEST_SITE_ORIGIN}/blog/about-notes</loc>`);
+      expect(xml).not.toMatch(/<loc>https?:\/\/blog\//);
     });
   });
 
@@ -284,8 +306,16 @@ describe("Sitemap Routes", () => {
       expect(xml).toContain("<urlset");
       expect(xml).toContain("/reading");
       expect(xml).toContain("/movies");
-      // Directory page is included when there's at least one collection.
-      expect(xml).toContain("/collections");
+    });
+
+    it("does not include the /collections directory page (lives in pages shard)", async () => {
+      const { app, services } = createSitemapTestApp();
+      await services.collections.create({ slug: "reading", title: "Reading" });
+
+      const xml = await (await app.request("/sitemap-collections.xml")).text();
+      // Only per-collection URLs should appear here; the directory landing
+      // is emitted by `/sitemap-pages.xml`.
+      expect(xml).not.toContain("<loc>http://localhost:8787/collections</loc>");
     });
 
     it("returns an empty urlset when there are no collections", async () => {
@@ -307,6 +337,44 @@ describe("Sitemap Routes", () => {
       expect(xml).toContain("<urlset");
       expect(xml).toContain("<priority>1.0</priority>");
       expect(xml).toContain("<changefreq>daily</changefreq>");
+    });
+
+    it("includes the archive aggregate page", async () => {
+      const { app } = createSitemapTestApp();
+      const xml = await (await app.request("/sitemap-pages.xml")).text();
+      expect(xml).toContain(`${TEST_SITE_ORIGIN}/archive`);
+    });
+
+    it("includes /latest when the homepage default is 'featured'", async () => {
+      const { app, services } = createSitemapTestApp();
+      await services.settings.set("HOME_DEFAULT_VIEW", "featured");
+
+      const xml = await (await app.request("/sitemap-pages.xml")).text();
+      expect(xml).toContain(`${TEST_SITE_ORIGIN}/latest`);
+      expect(xml).not.toContain(`${TEST_SITE_ORIGIN}/featured`);
+    });
+
+    it("includes /featured when the homepage default is 'latest'", async () => {
+      const { app, services } = createSitemapTestApp();
+      await services.settings.set("HOME_DEFAULT_VIEW", "latest");
+
+      const xml = await (await app.request("/sitemap-pages.xml")).text();
+      expect(xml).toContain(`${TEST_SITE_ORIGIN}/featured`);
+      expect(xml).not.toContain(`${TEST_SITE_ORIGIN}/latest`);
+    });
+
+    it("includes /collections only when collections exist", async () => {
+      const { app, services } = createSitemapTestApp();
+
+      const emptyXml = await (await app.request("/sitemap-pages.xml")).text();
+      expect(emptyXml).not.toContain(`${TEST_SITE_ORIGIN}/collections`);
+
+      await services.collections.create({ slug: "reading", title: "Reading" });
+
+      const populatedXml = await (
+        await app.request("/sitemap-pages.xml")
+      ).text();
+      expect(populatedXml).toContain(`${TEST_SITE_ORIGIN}/collections`);
     });
   });
 });

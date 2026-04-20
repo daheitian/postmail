@@ -126,7 +126,11 @@ sitemapRoutes.get("/:file{sitemap-posts-[0-9]+\\.xml}", async (c) => {
   });
 
   const urls: SitemapUrlEntry[] = shardEntries.map((entry) => {
-    const path = entry.alias ? `/${entry.alias}` : `/${entry.slug}`;
+    // `entry.alias` already includes a leading "/" (see
+    // `paths.getPostAliases`); slugs are stored raw. Prepending "/" to an
+    // alias would create "//path" which `new URL()` interprets as
+    // protocol-relative and hijacks the hostname.
+    const path = entry.alias ?? `/${entry.slug}`;
     return {
       loc: absoluteUrl(path, siteUrl, sitePathPrefix),
       lastmod: toIsoDate(entry.updatedAt),
@@ -155,6 +159,8 @@ sitemapRoutes.get("/sitemap-collections.xml", async (c) => {
   const collections = await c.var.services.collections.list();
 
   // Resolve each collection's canonical URL (alias if one exists, else slug).
+  // The `/collections` directory itself lives in `/sitemap-pages.xml`, since
+  // it's a static aggregate page rather than per-collection content.
   const urls: SitemapUrlEntry[] = await Promise.all(
     collections.map(async (collection) => {
       const alias = await c.var.services.customUrls.getByTarget(
@@ -170,14 +176,6 @@ sitemapRoutes.get("/sitemap-collections.xml", async (c) => {
     }),
   );
 
-  // Also include the collections directory itself when there are collections.
-  if (collections.length > 0) {
-    urls.unshift({
-      loc: absoluteUrl("/collections", siteUrl, sitePathPrefix),
-      priority: "0.5",
-    });
-  }
-
   return xmlResponse(renderSitemapUrlSet(urls), CACHE_SHORT);
 });
 
@@ -187,7 +185,7 @@ sitemapRoutes.get("/sitemap-collections.xml", async (c) => {
 
 sitemapRoutes.get("/sitemap-pages.xml", async (c) => {
   const { appConfig } = c.var;
-  const { siteUrl, sitePathPrefix } = appConfig;
+  const { siteUrl, sitePathPrefix, homeDefaultView } = appConfig;
 
   const urls: SitemapUrlEntry[] = [
     {
@@ -195,7 +193,35 @@ sitemapRoutes.get("/sitemap-pages.xml", async (c) => {
       priority: "1.0",
       changefreq: "daily",
     },
+    {
+      loc: absoluteUrl("/archive", siteUrl, sitePathPrefix),
+      priority: "0.5",
+      changefreq: "weekly",
+    },
   ];
+
+  // Whichever of /latest and /featured is NOT the homepage default is a
+  // standalone URL worth indexing; the other 302-redirects to `/`.
+  const secondaryAggregate =
+    homeDefaultView === "featured" ? "/latest" : "/featured";
+  urls.push({
+    loc: absoluteUrl(secondaryAggregate, siteUrl, sitePathPrefix),
+    priority: "0.6",
+    changefreq: "daily",
+  });
+
+  // Include the collections directory landing page when at least one
+  // collection exists. When there are no collections, `/collections` still
+  // renders (as an empty directory), but indexing an empty aggregate page
+  // adds no value.
+  const collections = await c.var.services.collections.list();
+  if (collections.length > 0) {
+    urls.push({
+      loc: absoluteUrl("/collections", siteUrl, sitePathPrefix),
+      priority: "0.5",
+      changefreq: "weekly",
+    });
+  }
 
   return xmlResponse(renderSitemapUrlSet(urls), CACHE_SHORT);
 });
