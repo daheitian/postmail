@@ -1,8 +1,26 @@
 import type { Post } from "../types.js";
 import { extractDisplayDomain } from "./url.js";
+import { extractBodyText } from "./summary.js";
 
 const TITLE_MAX_CHARS = 72;
 const DESCRIPTION_MAX_CHARS = 160;
+
+/**
+ * Derive a clean plain-text projection of the body for human-facing meta.
+ *
+ * We cannot reuse `post.bodyText` here: that column is written with
+ * `includeLinkHrefs: true` so inline link URLs land in the FTS index, which
+ * pollutes the stored text with trailing URLs. Re-derive from the source
+ * TipTap JSON (`post.body`) without that option.
+ */
+function getCleanBodyText(post: Post): string {
+  // Prefer re-derivation from `post.body` (TipTap JSON). Fall back to
+  // `post.bodyText` only when `body` is absent (legacy rows / fixtures);
+  // without link marks in the source, there is no URL pollution to worry
+  // about.
+  if (post.body) return extractBodyText(post.body) ?? "";
+  return post.bodyText ?? "";
+}
 
 function normalizeText(text: string | null | undefined): string {
   return (text ?? "").replace(/\s+/g, " ").trim();
@@ -49,7 +67,7 @@ function getTitleCandidate(post: Post): string {
   const summarySnippet = getFirstParagraph(post.summary);
   if (summarySnippet) return clipText(summarySnippet, TITLE_MAX_CHARS);
 
-  const bodySnippet = getFirstParagraph(post.bodyText);
+  const bodySnippet = getFirstParagraph(getCleanBodyText(post));
   if (bodySnippet) return clipText(bodySnippet, TITLE_MAX_CHARS);
 
   if (post.format === "link" && post.url) {
@@ -68,7 +86,7 @@ function getDescriptionCandidate(post: Post): string {
   const summaryText = normalizeText(post.summary);
   if (summaryText) return clipText(summaryText, DESCRIPTION_MAX_CHARS);
 
-  const bodyText = normalizeText(post.bodyText);
+  const bodyText = normalizeText(getCleanBodyText(post));
   if (bodyText) return clipText(bodyText, DESCRIPTION_MAX_CHARS);
 
   const quoteText = normalizeText(post.quoteText);

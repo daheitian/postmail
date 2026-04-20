@@ -35,7 +35,7 @@ import {
 } from "./time.js";
 import { getCollectionPagePath } from "./collection-paths.js";
 import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
-import { extractSummaryHtml } from "./summary.js";
+import { extractSummaryHtml, extractBodyText } from "./summary.js";
 import { renderTiptapDocument } from "./tiptap-render.js";
 import { highlightText } from "./search-snippet.js";
 import { toPublicPath } from "./url.js";
@@ -160,8 +160,17 @@ function getPlainSummary(post: PostWithMedia): string | undefined {
     return normalizePreviewText(post.quoteText);
   }
 
+  // `post.bodyText` is written with `includeLinkHrefs: true` for FTS search
+  // indexing, so it's polluted with trailing link URLs. For human-facing
+  // preview text, prefer a clean re-derivation from the source TipTap JSON.
+  // Fall back to `post.bodyText` when the body isn't valid JSON (legacy rows
+  // or fixtures); that path predates link-href injection and carries no
+  // pollution risk.
+  const cleanBody = post.body ? extractBodyText(post.body) : null;
+
   return (
     normalizePreviewText(post.summary) ||
+    normalizePreviewText(cleanBody) ||
     normalizePreviewText(post.bodyText) ||
     getLegacyBodyPreview(post) ||
     normalizePreviewText(post.url)
