@@ -134,6 +134,13 @@
       "when": 1776685646209,
       "tag": "0018_yummy_franklin_richards",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1776712486504,
+      "tag": "0019_bored_magus",
+      "breakpoints": true
     }
   ]
 }

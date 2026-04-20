@@ -1,8 +1,5 @@
 import type { FC } from "hono/jsx";
-import {
-  DECORATIVE_QUOTE_MARK_PATHS,
-  DECORATIVE_QUOTE_MARK_VIEWBOX,
-} from "../../lib/decorative-quote-mark.js";
+import { Icon } from "./Icon.js";
 
 interface DecorativeQuoteMarkProps {
   class?: string;
@@ -22,14 +19,6 @@ export const DecorativeQuoteMark: FC<DecorativeQuoteMarkProps> = ({
     data-direction={direction}
     aria-hidden="true"
   >
-    <svg
-      viewBox={DECORATIVE_QUOTE_MARK_VIEWBOX}
-      role="presentation"
-      focusable="false"
-    >
-      {DECORATIVE_QUOTE_MARK_PATHS.map((path) => (
-        <path fill="currentColor" d={path} />
-      ))}
-    </svg>
+    <Icon name="decorative-quote" />
   </span>
 );

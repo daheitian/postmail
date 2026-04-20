@@ -36,3 +36,40 @@ export function getIconSvg(name: string): string | null {
   const svg = (lucideIcons as Record<string, string>)[pascalName];
   return typeof svg === "string" ? svg : null;
 }
+
+/**
+ * Get the inner SVG contents for a Lucide icon (the path children only,
+ * without the outer <svg> wrapper). Used by the icon sprite to build
+ * <symbol> definitions.
+ *
+ * @param name - Kebab-case icon name
+ * @returns Inner SVG markup (e.g. "<path ... />"), or null when unknown
+ *
+ * @example
+ * ```ts
+ * getIconInnerSvg("book-open");
+ * // -> "<path d=\"...\"/><path d=\"...\"/>"
+ * ```
+ */
+export function getIconInnerSvg(name: string): string | null {
+  const svg = getIconSvg(name);
+  if (!svg) return null;
+  // lucide-static output looks like:
+  //   <svg ... viewBox="0 0 24 24" ...><path .../>...<line .../></svg>
+  // Strip the outer <svg ...> and </svg>.
+  const openTagEnd = svg.indexOf(">");
+  const closeTagStart = svg.lastIndexOf("</svg>");
+  if (openTagEnd < 0 || closeTagStart < 0) return null;
+  return svg.slice(openTagEnd + 1, closeTagStart);
+}
+
+/**
+ * Default stroke/fill attributes inherited by <symbol> children when a
+ * lucide icon is referenced via <use>. These mirror the attributes lucide
+ * normally sets on the outer <svg> so the currentColor-based theming keeps
+ * working through <use>.
+ */
+export const LUCIDE_SYMBOL_ATTRS =
+  'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+
+export const LUCIDE_VIEWBOX = "0 0 24 24";

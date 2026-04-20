@@ -1,0 +1,2 @@
+ALTER TABLE `site` ADD `provisioning_idempotency_key` text;--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_site_provisioning_idempotency_key` ON `site` (`provisioning_idempotency_key`) WHERE "site"."provisioning_idempotency_key" IS NOT NULL;

@@ -45,4 +45,89 @@ describe("SiteAdminService", () => {
 
     expect(siteRows).toEqual([{ key: "demo-cloud" }]);
   });
+
+  it("returns the existing site when replayed with the same idempotency key", async () => {
+    const { db } = createTestDatabase();
+    const service = createSiteAdminService(db, sqliteSchemaBundle, "sqlite", {
+      siteResolutionMode: "host-based",
+    });
+
+    const first = await service.createManagedSite({
+      key: "idem-site",
+      primaryHost: "idem-site.example.com",
+      siteName: "Idempotent Site",
+      idempotencyKey: "job_abc",
+    });
+
+    const second = await service.createManagedSite({
+      key: "idem-site",
+      primaryHost: "idem-site.example.com",
+      siteName: "Idempotent Site",
+      idempotencyKey: "job_abc",
+    });
+
+    expect(second.site.id).toBe(first.site.id);
+    expect(second.domain.id).toBe(first.domain.id);
+  });
+
+  it("rejects reuse of an idempotency key with different key or primary host", async () => {
+    const { db } = createTestDatabase();
+    const service = createSiteAdminService(db, sqliteSchemaBundle, "sqlite", {
+      siteResolutionMode: "host-based",
+    });
+
+    await service.createManagedSite({
+      key: "idem-site",
+      primaryHost: "idem-site.example.com",
+      siteName: "Idempotent Site",
+      idempotencyKey: "job_xyz",
+    });
+
+    await expect(
+      service.createManagedSite({
+        key: "other-site",
+        primaryHost: "idem-site.example.com",
+        siteName: "Other Site",
+        idempotencyKey: "job_xyz",
+      }),
+    ).rejects.toEqual(
+      new ConflictError(
+        "Idempotency key was reused with a different site key or primary host.",
+      ),
+    );
+
+    await expect(
+      service.createManagedSite({
+        key: "idem-site",
+        primaryHost: "different-host.example.com",
+        siteName: "Idempotent Site",
+        idempotencyKey: "job_xyz",
+      }),
+    ).rejects.toEqual(
+      new ConflictError(
+        "Idempotency key was reused with a different site key or primary host.",
+      ),
+    );
+  });
+
+  it("treats requests without an idempotency key as independent creations", async () => {
+    const { db } = createTestDatabase();
+    const service = createSiteAdminService(db, sqliteSchemaBundle, "sqlite", {
+      siteResolutionMode: "host-based",
+    });
+
+    await service.createManagedSite({
+      key: "no-idem-site",
+      primaryHost: "no-idem-site.example.com",
+      siteName: "No Idem Site",
+    });
+
+    await expect(
+      service.createManagedSite({
+        key: "no-idem-site",
+        primaryHost: "no-idem-site-2.example.com",
+        siteName: "No Idem Site",
+      }),
+    ).rejects.toEqual(new ConflictError("Site key is already in use."));
+  });
 });

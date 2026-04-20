@@ -60,11 +60,15 @@ export const sites = sqliteTable(
     })
       .notNull()
       .default("active"),
+    provisioningIdempotencyKey: text("provisioning_idempotency_key"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
     uniqueIndex("uq_site_key").on(table.key),
+    uniqueIndex("uq_site_provisioning_idempotency_key")
+      .on(table.provisioningIdempotencyKey)
+      .where(sql`${table.provisioningIdempotencyKey} IS NOT NULL`),
     check(
       "chk_site_status",
       sql`${table.status} IN (${sqlTextEnum(SITE_STATUSES)})`,

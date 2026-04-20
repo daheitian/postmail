@@ -33,6 +33,7 @@ const CreateManagedSiteSchema = z.object({
   siteName: z.string().trim().min(1).max(120),
   siteLanguage: z.string().trim().max(35).optional(),
   timeZone: z.string().trim().max(100).optional(),
+  idempotencyKey: z.string().trim().min(1).max(128).optional(),
 });
 
 const ManagedSiteDomainSchema = z.object({

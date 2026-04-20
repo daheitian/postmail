@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import {
   executeStatement,
   type Database,
@@ -45,6 +45,13 @@ export interface CreateManagedSiteInput {
   siteName: string;
   siteLanguage?: string | null;
   timeZone?: string | null;
+  /**
+   * Optional caller-supplied idempotency key. When provided, retrying the same
+   * request returns the previously created site instead of a 409 conflict.
+   * Reusing the key with a different `key` or `primaryHost` is rejected as a
+   * client bug.
+   */
+  idempotencyKey?: string | null;
 }
 
 export interface ManagedSiteResult {
@@ -194,6 +201,47 @@ export function createSiteAdminService(
     return `${protocol}//${domain.host}${pathPrefix}`;
   }
 
+  async function loadByIdempotencyKey(
+    targetDb: Database,
+    idempotencyKey: string,
+  ): Promise<ManagedSiteResult | null> {
+    const siteRow = (
+      await targetDb
+        .select()
+        .from(sites)
+        .where(eq(sites.provisioningIdempotencyKey, idempotencyKey))
+        .limit(1)
+    )[0];
+    if (!siteRow) {
+      return null;
+    }
+
+    const domainRow = (
+      await targetDb
+        .select()
+        .from(siteDomains)
+        .where(
+          and(
+            eq(siteDomains.siteId, siteRow.id),
+            eq(siteDomains.kind, "primary"),
+          ),
+        )
+        .limit(1)
+    )[0];
+    if (!domainRow) {
+      // A site row without a primary domain means the original creation aborted
+      // mid-transaction on a dialect without real transactions. Treat as not
+      // found so the caller can retry; the partial unique index will surface a
+      // genuine duplicate.
+      return null;
+    }
+
+    return {
+      site: toSite(siteRow),
+      domain: toSiteDomain(domainRow),
+    };
+  }
+
   async function createWithDatabase(
     targetDb: Database,
     input: CreateManagedSiteInput,
@@ -201,6 +249,22 @@ export function createSiteAdminService(
     const siteKey = input.key.trim();
     const primaryHost = input.primaryHost.trim().toLowerCase();
     const siteName = input.siteName.trim();
+    const idempotencyKey = input.idempotencyKey?.trim() || null;
+
+    if (idempotencyKey) {
+      const existing = await loadByIdempotencyKey(targetDb, idempotencyKey);
+      if (existing) {
+        if (
+          existing.site.key !== siteKey ||
+          existing.domain.host !== primaryHost
+        ) {
+          throw new ConflictError(
+            "Idempotency key was reused with a different site key or primary host.",
+          );
+        }
+        return existing;
+      }
+    }
 
     const existingSite = await targetDb
       .select({ id: sites.id })
@@ -231,6 +295,7 @@ export function createSiteAdminService(
           id: siteId,
           key: siteKey,
           status: "active",
+          provisioningIdempotencyKey: idempotencyKey,
           createdAt: timestamp,
           updatedAt: timestamp,
         })

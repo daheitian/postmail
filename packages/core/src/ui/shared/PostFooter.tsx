@@ -13,8 +13,8 @@ import type {
   PostFooterDisplayOptions,
 } from "../../types.js";
 import { useLingui } from "../../i18n/context.js";
-import { FEATURED_SPARKLE_PATH } from "../../lib/featured-icons.js";
 import { sanitizeUrl } from "../../lib/url.js";
+import { Icon } from "./Icon.js";
 
 interface PostFooterProps {
   post: PostView;
@@ -46,18 +46,7 @@ export const CompactCollectionTags: FC<{
       <a href={first.url} class="post-collection-tag">
         {showIcon && (
           <span class="post-collection-primary-icon" aria-hidden="true">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.35"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <rect x="3" y="5.05" width="10" height="8.15" rx="2.2" />
-              <path d="M5.1 5.05V4.2a1.1 1.1 0 0 1 1.1-1.1h3.6a1.1 1.1 0 0 1 1.1 1.1v.85" />
-            </svg>
+            <Icon name="post-collection-lock" />
           </span>
         )}
         <span class="post-collection-tag-text">{first.title}</span>
@@ -162,17 +151,7 @@ export const PostMenuTriggerButton: FC<{ className?: string }> = ({
       aria-expanded="false"
       data-post-menu-trigger
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-      >
-        <circle cx="5" cy="12" r="1.75" />
-        <circle cx="12" cy="12" r="1.75" />
-        <circle cx="19" cy="12" r="1.75" />
-      </svg>
+      <Icon name="post-menu-dots" size={15} />
     </button>
   );
 };
@@ -222,18 +201,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
           data-tooltip={featuredLabel}
           data-align="center"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.35"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d={FEATURED_SPARKLE_PATH} />
-          </svg>
+          <Icon name="featured-sparkle" />
         </span>
         {showTimestamp && (
           <PostPublishedLink post={post} className="u-url post-footer-link" />
@@ -252,18 +220,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
               }),
             )}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M7 17 17 7" />
-              <path d="M9 7h8v8" />
-            </svg>
+            <Icon name="post-external-link" />
           </a>
         )}
         <CompactCollectionTags
@@ -286,20 +243,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
               )}
               data-reply-trigger
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="9 17 4 12 9 7" />
-                <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
-              </svg>
+              <Icon name="post-reply" size={14} />
             </button>
           )}
           <PostMenuTriggerButton />
