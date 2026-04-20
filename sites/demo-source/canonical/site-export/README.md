@@ -67,7 +67,19 @@ static/                   — Copy files here to add them to the published site
 - **Jant metadata** — `data/jant.toml` drives nav and the collections directory, and is preserved across round-trip import.
 - **Styles** — edit `themes/jant/static/main.css`, or drop a `static/main.css` at the site root to override.
 - **Templates** — add files under `layouts/` at the site root to override the bundled theme.
-- **Debugging** — export to a directory with `jant site export --directory ./my-site`, then run `cd my-site && hugo serve`.
+- **Debugging** — from a Jant site project, run `npx jant site export --directory ./my-site`, then `cd my-site && hugo serve`.
+
+## Fetching media locally
+
+When the source site has a storage provider configured (R2/S3/local proxy), images and attachments in this export link to the provider URL instead of being bundled. That keeps the repo small but means the files aren't on disk — fine if Hugo can reach the internet, not fine if you want a fully self-contained archive.
+
+To download every referenced media file into `static/media/` and rewrite the references to local paths, run this from the root of the export:
+
+```sh
+npx @jant/core site pull-media --path .
+```
+
+Safe to re-run; files already on disk are reused. Anything that fails to download keeps its original URL so the site still builds.
 
 ## Notes
 
