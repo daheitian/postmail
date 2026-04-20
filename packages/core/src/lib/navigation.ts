@@ -60,8 +60,15 @@ export function getHomeDefaultViewFromNavItems(
  * });
  * ```
  */
-export async function getNavigationData(c: Context): Promise<NavigationData> {
-  const items = await c.var.services.navItems.list();
+export async function getNavigationData(
+  c: Context,
+  options?: { preloadedItems?: NavItem[] },
+): Promise<NavigationData> {
+  // Callers that already fetched nav items (e.g. home route, which needs
+  // `homeDefaultView` before deciding which timeline to assemble) can pass
+  // them in to avoid a redundant DB round-trip.
+  const items =
+    options?.preloadedItems ?? (await c.var.services.navItems.list());
   const currentPath = c.var.publicPath;
   const appConfig = c.var.appConfig;
 
@@ -86,17 +93,9 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   // Render footer markdown
   const siteFooterHtml = siteFooter ? renderMarkdown(siteFooter) : undefined;
 
-  // Check auth status (needed for compose button and system nav items)
-  let isAuthenticated = false;
+  // Auth state is populated once per request by `attachSession` middleware.
+  const isAuthenticated = c.var.isAuthenticated;
   let collections: Collection[] = [];
-  try {
-    const session = await c.var.auth.api.getSession({
-      headers: c.req.raw.headers,
-    });
-    isAuthenticated = !!session?.user;
-  } catch {
-    // Not authenticated
-  }
 
   // Compute freshness for collection nav items
   const collectionNavIds: string[] = [];

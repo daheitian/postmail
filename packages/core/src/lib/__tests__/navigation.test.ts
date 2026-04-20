@@ -56,16 +56,8 @@ describe("getNavigationData", () => {
             listByRecentActivity: async () => [],
           },
         },
-        auth: {
-          api: {
-            getSession: async () => null,
-          },
-        },
-      },
-      req: {
-        raw: {
-          headers: new Headers(),
-        },
+        isAuthenticated: false,
+        session: null,
       },
     } as unknown as Context;
 
@@ -126,16 +118,8 @@ describe("getNavigationData", () => {
             listByRecentActivity: async () => [],
           },
         },
-        auth: {
-          api: {
-            getSession: async () => null,
-          },
-        },
-      },
-      req: {
-        raw: {
-          headers: new Headers(),
-        },
+        isAuthenticated: false,
+        session: null,
       },
     } as unknown as Context;
 

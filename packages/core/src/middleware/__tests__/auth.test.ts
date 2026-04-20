@@ -7,6 +7,7 @@ import {
   isLocalHostname,
   hasValidLocalDevToken,
 } from "../auth.js";
+import { attachSession } from "../session.js";
 import { errorHandler } from "../error-handler.js";
 import { DEFAULT_APP_PORT } from "../../lib/env.js";
 import type { Bindings } from "../../types.js";
@@ -135,6 +136,7 @@ describe("requireAuth", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/settings", requireAuth(), (c) => c.text("Settings"));
 
     const res = await app.request("/settings");
@@ -151,6 +153,7 @@ describe("requireAuth", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/settings/general", requireAuth(), (c) => c.text("Settings"));
 
     const res = await app.request("/settings/general", { redirect: "manual" });
@@ -169,6 +172,7 @@ describe("requireAuth", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/settings", requireAuth(), (c) => c.text("Settings"));
 
     const res = await app.request("/settings?tab=profile", {
@@ -189,6 +193,7 @@ describe("requireAuth", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/settings", requireAuth("/login"), (c) => c.text("Settings"));
 
     const res = await app.request("/settings", { redirect: "manual" });
@@ -209,6 +214,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("/api/data");
@@ -229,6 +235,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("/api/data");
@@ -256,6 +263,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("/api/data");
@@ -276,6 +284,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("/api/data", {
@@ -303,6 +312,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("/api/data", {
@@ -326,6 +336,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("/api/data", {
@@ -352,6 +363,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request(LOCAL_API_URL, {
@@ -378,6 +390,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("https://myblog.com/api/data", {
@@ -404,6 +417,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("https://jant.localtest.me/api/data", {
@@ -432,6 +446,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("https://jant.me/api/data", {
@@ -458,6 +473,7 @@ describe("requireInternalAdminApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.post("/api/internal/demo", requireInternalAdminApi(), (c) =>
       c.json({ ok: true }),
     );
@@ -481,6 +497,7 @@ describe("requireInternalAdminApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.post("/api/internal/demo", requireInternalAdminApi(), (c) =>
       c.json({ ok: true }),
     );
@@ -507,6 +524,7 @@ describe("requireInternalAdminApi", () => {
       } as AppVariables["services"]);
       await next();
     });
+    app.use("*", attachSession());
     app.post("/api/internal/demo", requireInternalAdminApi(), (c) =>
       c.json({ ok: true }),
     );

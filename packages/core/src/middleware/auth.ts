@@ -136,15 +136,13 @@ export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
       return `${publicHref}${separator}redirect=${encodeURIComponent(postSignin)}`;
     };
 
+    // Session was already fetched by `attachSession` middleware.
+    const session = c.var.session;
+    if (!session?.user) {
+      return c.redirect(buildRedirectTarget());
+    }
+
     try {
-      const session = await c.var.auth.api.getSession({
-        headers: c.req.raw.headers,
-      });
-
-      if (!session?.user) {
-        return c.redirect(buildRedirectTarget());
-      }
-
       const membership = await c.var.services.siteMembers.get(
         c.var.currentSite.id,
         session.user.id,
@@ -167,26 +165,21 @@ export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
  */
 export function requireAuthApi(): MiddlewareHandler<Env> {
   return async (c, next) => {
-    // 1. Try session auth (existing behavior)
-    try {
-      const session = await c.var.auth.api.getSession({
-        headers: c.req.raw.headers,
-      });
-
-      if (session?.user) {
+    // 1. Try session auth (session is pre-fetched by `attachSession` middleware).
+    const session = c.var.session;
+    if (session?.user) {
+      try {
         const membership = await c.var.services.siteMembers.get(
           c.var.currentSite.id,
           session.user.id,
         );
-        if (!membership) {
-          throw new UnauthorizedError();
+        if (membership) {
+          await next();
+          return;
         }
-
-        await next();
-        return;
+      } catch {
+        // Membership check failed — fall through to Bearer token
       }
-    } catch {
-      // Session check failed — fall through to Bearer token
     }
 
     // 2. Try Bearer token auth

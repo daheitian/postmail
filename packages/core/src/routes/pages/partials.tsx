@@ -1,4 +1,4 @@
-import { Hono, type Context } from "hono";
+import { Hono } from "hono";
 import { I18nProvider } from "../../i18n/index.js";
 import { parseIdParam } from "../../lib/errors.js";
 import { ID_PREFIX } from "../../lib/ids.js";
@@ -18,17 +18,6 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const partialPageRoutes = new Hono<Env>();
 
-async function getIsAuthenticated(c: Context<Env>): Promise<boolean> {
-  try {
-    const session = await c.var.auth.api.getSession({
-      headers: c.req.raw.headers,
-    });
-    return !!session?.user;
-  } catch {
-    return false;
-  }
-}
-
 partialPageRoutes.get("/_/version", (c) => {
   return c.json({ version: CORE_VERSION });
 });
@@ -39,7 +28,7 @@ partialPageRoutes.get("/_/timeline-item/:threadRootId", async (c) => {
     ID_PREFIX.post,
   );
   const item = await assembleTimelineItem(c, threadRootId, {
-    isAuthenticated: await getIsAuthenticated(c),
+    isAuthenticated: c.var.isAuthenticated,
   });
 
   if (!item) {
@@ -56,7 +45,7 @@ partialPageRoutes.get("/_/timeline-item/:threadRootId", async (c) => {
 partialPageRoutes.get("/_/post-card/:postId", async (c) => {
   const postId = parseIdParam(c.req.param("postId"), ID_PREFIX.post);
   const postView = await assemblePostCardView(c, postId, {
-    isAuthenticated: await getIsAuthenticated(c),
+    isAuthenticated: c.var.isAuthenticated,
   });
 
   if (!postView) {
@@ -73,7 +62,7 @@ partialPageRoutes.get("/_/post-card/:postId", async (c) => {
 partialPageRoutes.get("/_/post-view/:postId", async (c) => {
   const postId = parseIdParam(c.req.param("postId"), ID_PREFIX.post);
   const display = await assemblePostPageDisplay(c, postId, {
-    isAuthenticated: await getIsAuthenticated(c),
+    isAuthenticated: c.var.isAuthenticated,
   });
 
   if (!display) {

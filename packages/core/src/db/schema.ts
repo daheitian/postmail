@@ -813,3 +813,26 @@ export const githubAppInstallation = sqliteTable(
     ),
   ],
 );
+
+// =============================================================================
+// Rate Limit
+// =============================================================================
+
+/**
+ * Per-key sliding-window rate-limit counters. Used by the Cloudflare Workers
+ * runtime; Node deployments keep the state in memory instead.
+ *
+ * `key` is typically a scope prefix plus client IP (e.g. "search:1.2.3.4").
+ * `window_start` is the aligned start of the window in Unix seconds — we
+ * store two adjacent windows per key to support the sliding-window-counter
+ * algorithm.
+ */
+export const rateLimit = sqliteTable(
+  "rate_limit",
+  {
+    key: text("key").notNull(),
+    windowStart: integer("window_start").notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.key, table.windowStart] })],
+);

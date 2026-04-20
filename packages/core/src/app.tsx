@@ -66,6 +66,7 @@ import { manifestRoutes } from "./routes/feed/manifest.js";
 
 // Middleware
 import { requireAuth } from "./middleware/auth.js";
+import { attachSession } from "./middleware/session.js";
 import { requireOnboarding } from "./middleware/onboarding.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { withConfig } from "./middleware/config.js";
@@ -307,9 +308,14 @@ export function createApp(): App {
     c.set("auth", runtime.auth);
     c.set("currentSite", runtime.currentSite);
     c.set("currentSiteDomain", runtime.currentSiteDomain);
+    c.set("rateLimiter", runtime.rateLimiter);
 
     await next();
   });
+
+  // Populate c.var.session / c.var.isAuthenticated once per request so
+  // downstream handlers don't each call auth.api.getSession themselves.
+  app.use("*", attachSession());
 
   app.use("*", async (c, next) => {
     const redirectUrl = await getHostedCanonicalRedirect({

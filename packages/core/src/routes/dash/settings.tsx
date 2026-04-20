@@ -1016,11 +1016,9 @@ settingsRoutes.get("/account/sessions", async (c) => {
 
   const navData = await getNavigationData(c);
 
-  // Get current session to mark it
-  const currentSession = await c.var.auth.api.getSession({
-    headers: c.req.raw.headers,
-  });
-  const currentToken = currentSession?.session?.token ?? "";
+  // Session was pre-fetched by `attachSession`; this route is behind
+  // `requireAuth`, so it's guaranteed to be present here.
+  const currentToken = c.var.session?.session?.token ?? "";
 
   // List all active sessions
   const rawSessions = await c.var.auth.api.listSessions({

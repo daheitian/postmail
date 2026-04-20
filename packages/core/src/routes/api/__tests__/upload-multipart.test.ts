@@ -19,6 +19,7 @@ import { createSiteMemberService } from "../../../services/site-member.js";
 import { errorHandler } from "../../../middleware/error-handler.js";
 import { createI18n } from "../../../i18n/i18n.js";
 import { DEFAULT_APP_PORT } from "../../../lib/env.js";
+import { createMemoryRateLimiter } from "../../../lib/rate-limit-memory.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
 import type { Database } from "../../../db/index.js";
 import type { StorageDriver, UploadedPart } from "../../../lib/storage.js";
@@ -265,6 +266,7 @@ function createTestAppWithStorage(options: {
     c.set("allSettings", allSettings);
     c.set("appConfig", resolveConfig(c.env, allSettings));
     c.set("storage", options.storage);
+    c.set("rateLimiter", createMemoryRateLimiter());
 
     const i18n = createI18n("en");
     c.set("lang", "en");
@@ -276,20 +278,25 @@ function createTestAppWithStorage(options: {
         "test-user",
         "owner",
       );
+      const session = {
+        user: { id: "test-user", email: "test@test.com", name: "Test" },
+        session: { id: "test-session" },
+      } as unknown as AppVariables["session"];
       c.set("auth", {
         api: {
-          getSession: async () => ({
-            user: { id: "test-user", email: "test@test.com", name: "Test" },
-            session: { id: "test-session" },
-          }),
+          getSession: async () => session,
         },
       } as AppVariables["auth"]);
+      c.set("session", session);
+      c.set("isAuthenticated", true);
     } else {
       c.set("auth", {
         api: {
           getSession: async () => null,
         },
       } as AppVariables["auth"]);
+      c.set("session", null);
+      c.set("isAuthenticated", false);
     }
 
     await next();

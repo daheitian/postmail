@@ -110,4 +110,52 @@ describe("Search API Routes", () => {
     // Should not return 401
     expect(res.status).not.toBe(401);
   });
+
+  it("rate-limits repeated requests from the same IP", async () => {
+    // Test app uses in-memory defaults (30/min). Send 31 requests from
+    // the same spoofed IP and confirm the tail gets a 429 with Retry-After.
+    const { app } = createTestApp({ fts: true });
+    app.route("/api/search", searchApiRoutes);
+
+    const headers = { "cf-connecting-ip": "203.0.113.7" };
+    let ok = 0;
+    let throttled = 0;
+    let lastRetryAfter: string | null = null;
+
+    for (let i = 0; i < 31; i++) {
+      const res = await app.request("/api/search?q=hi", { headers });
+      if (res.status === 429) {
+        throttled += 1;
+        lastRetryAfter = res.headers.get("retry-after");
+      } else if (res.status === 200) {
+        ok += 1;
+      }
+    }
+
+    expect(ok).toBe(30);
+    expect(throttled).toBe(1);
+    expect(Number(lastRetryAfter)).toBeGreaterThan(0);
+  });
+
+  it("does not rate-limit when appConfig.rateLimit.disabled is true", async () => {
+    const { app } = createTestApp({ fts: true });
+
+    // Flip the disabled flag after the test-app middleware seeds
+    // appConfig, but before the search route runs. Middleware order:
+    // createTestApp's global use → this override → search route.
+    app.use("/api/search/*", async (c, next) => {
+      c.set("appConfig", {
+        ...c.var.appConfig,
+        rateLimit: { ...c.var.appConfig.rateLimit, disabled: true },
+      });
+      await next();
+    });
+    app.route("/api/search", searchApiRoutes);
+
+    const headers = { "cf-connecting-ip": "203.0.113.8" };
+    for (let i = 0; i < 40; i++) {
+      const res = await app.request("/api/search?q=hi", { headers });
+      expect(res.status).not.toBe(429);
+    }
+  });
 });

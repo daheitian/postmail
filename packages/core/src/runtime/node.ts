@@ -12,6 +12,8 @@ import {
   shouldUseSecureCookies,
 } from "../lib/env.js";
 import { createHostedControlPlaneClient } from "../lib/hosted-control-plane.js";
+import { createMemoryRateLimiter } from "../lib/rate-limit-memory.js";
+import type { RateLimiter } from "../lib/rate-limit.js";
 import { createStorageDriver, type StorageDriver } from "../lib/storage.js";
 import {
   createHostedHandoffService,
@@ -33,8 +35,21 @@ export interface NodeRequestRuntime {
   currentSiteDomain: SiteDomain | null;
   db: Database;
   hostedHandoff: HostedHandoffService;
+  rateLimiter: RateLimiter;
   services: Services;
   storage: StorageDriver | null;
+}
+
+/**
+ * Single process-wide rate limiter for the Node runtime. Node serves all
+ * requests out of one persistent process, so in-memory counters are
+ * reliable and avoid per-request D1 round-trips. Constructed lazily on
+ * first use so tests that never build a request runtime don't pay for it.
+ */
+let sharedNodeRateLimiter: RateLimiter | null = null;
+function getNodeRateLimiter(): RateLimiter {
+  sharedNodeRateLimiter ??= createMemoryRateLimiter();
+  return sharedNodeRateLimiter;
 }
 
 export interface NodeCliRuntime {
@@ -131,6 +146,7 @@ export async function createNodeRequestRuntime(
       schema: databaseSchema,
       secret: hostedControlPlaneSsoSecret,
     }),
+    rateLimiter: getNodeRateLimiter(),
     services: createServices(db, rawQuery, siteLookup.site.id, {
       databaseDialect,
       bootstrapSite: getSingleSiteBootstrapOptions(env),

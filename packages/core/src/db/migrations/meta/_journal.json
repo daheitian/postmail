@@ -127,6 +127,13 @@
       "when": 1776405286944,
       "tag": "0017_powerful_moonstone",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1776685646209,
+      "tag": "0018_yummy_franklin_richards",
+      "breakpoints": true
     }
   ]
 }

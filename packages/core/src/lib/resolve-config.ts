@@ -228,6 +228,15 @@ export function resolveConfig(
     siteAvatarUrl,
     faviconVersion: allSettings["SITE_FAVICON_VERSION"] ?? "",
 
+    // Rate limiting (ENV only). Defaults are conservative enough for a
+    // human typing in the search UI but reject bot floods.
+    rateLimit: {
+      disabled: getEnvString(env, "RATE_LIMIT_DISABLED") === "true",
+      searchPerMinute:
+        parseInt(getEnvString(env, "RATE_LIMIT_SEARCH_PER_MIN") ?? "30", 10) ||
+        30,
+    },
+
     // Settings form placeholders (ENV > Default, without DB)
     fallbacks: {
       siteName: resolveFallback("SITE_NAME", env),

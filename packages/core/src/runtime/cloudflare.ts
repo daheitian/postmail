@@ -10,6 +10,8 @@ import {
   shouldUseSecureCookies,
 } from "../lib/env.js";
 import { createHostedControlPlaneClient } from "../lib/hosted-control-plane.js";
+import { createD1RateLimiter } from "../lib/rate-limit-d1.js";
+import type { RateLimiter } from "../lib/rate-limit.js";
 import { createStorageDriver, type StorageDriver } from "../lib/storage.js";
 import {
   createHostedHandoffService,
@@ -30,6 +32,7 @@ export interface CloudflareRequestRuntime {
   currentSiteDomain: SiteDomain | null;
   db: Database;
   hostedHandoff: HostedHandoffService;
+  rateLimiter: RateLimiter;
   services: Services;
   storage: StorageDriver | null;
 }
@@ -88,6 +91,7 @@ export async function createCloudflareRequestRuntime(
       schema: sqliteSchemaBundle,
       secret: hostedControlPlaneSsoSecret,
     }),
+    rateLimiter: createD1RateLimiter(db, sqliteSchemaBundle),
     services: createServices(db, session, siteLookup.site.id, {
       databaseDialect: "sqlite",
       bootstrapSite: getSingleSiteBootstrapOptions(env),

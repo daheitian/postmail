@@ -7,10 +7,23 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { ValidationError, ExternalServiceError } from "../../lib/errors.js";
 import { toSearchApiResult } from "../../lib/api-search.js";
+import { rateLimit } from "../../middleware/rate-limit.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const searchApiRoutes = new Hono<Env>();
+
+// Per-IP rate limit. The request-time wrapper is needed because the
+// per-minute cap is pulled from `appConfig` which is only available on
+// `c.var`; constructing the middleware once at module load would capture
+// an undefined value.
+searchApiRoutes.use("*", async (c, next) =>
+  rateLimit({
+    name: "search",
+    limit: c.var.appConfig.rateLimit.searchPerMinute,
+    windowSec: 60,
+  })(c, next),
+);
 
 // Search posts
 searchApiRoutes.get("/", async (c) => {

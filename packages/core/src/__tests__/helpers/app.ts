@@ -13,6 +13,7 @@ import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
 import { createI18n } from "../../i18n/i18n.js";
 import { DEFAULT_APP_PORT } from "../../lib/env.js";
+import { createMemoryRateLimiter } from "../../lib/rate-limit-memory.js";
 import { resolveConfig } from "../../lib/resolve-config.js";
 import type { StorageDriver } from "../../lib/storage.js";
 import type { HostedHandoffService } from "../../services/hosted-handoff.js";
@@ -56,6 +57,9 @@ export function createTestApp(options: TestAppOptions = {}) {
     slugIdLength: 5,
     siteResolutionMode: options.siteResolutionMode ?? "single-site",
   });
+
+  // Fresh limiter per test app so counters don't leak between tests.
+  const rateLimiter = createMemoryRateLimiter();
 
   const app = new Hono<Env>();
 
@@ -105,6 +109,7 @@ export function createTestApp(options: TestAppOptions = {}) {
     c.set("allSettings", allSettings);
     c.set("appConfig", resolveConfig(c.env, allSettings));
     c.set("storage", options.storage ?? null);
+    c.set("rateLimiter", rateLimiter);
 
     // i18n (English default for tests)
     const i18n = createI18n("en");
@@ -117,21 +122,27 @@ export function createTestApp(options: TestAppOptions = {}) {
         "test-user",
         "owner",
       );
+      const session = {
+        user: { id: "test-user", email: "test@test.com", name: "Test" },
+        session: { id: "test-session" },
+      } as unknown as AppVariables["session"];
       // Mock auth that always returns a session
       c.set("auth", {
         api: {
-          getSession: async () => ({
-            user: { id: "test-user", email: "test@test.com", name: "Test" },
-            session: { id: "test-session" },
-          }),
+          getSession: async () => session,
         },
       } as AppVariables["auth"]);
+      // Mirror what `attachSession` middleware would produce in production.
+      c.set("session", session);
+      c.set("isAuthenticated", true);
     } else {
       c.set("auth", {
         api: {
           getSession: async () => null,
         },
       } as AppVariables["auth"]);
+      c.set("session", null);
+      c.set("isAuthenticated", false);
     }
 
     await next();

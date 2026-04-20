@@ -855,3 +855,21 @@ export const githubAppInstallation = pgTable(
     ),
   ],
 );
+
+// ---------------------------------------------------------------------------
+// Rate Limit
+// ---------------------------------------------------------------------------
+
+/**
+ * Per-key sliding-window rate-limit counters. Mirrors the SQLite `rate_limit`
+ * table — kept in lockstep because both dialects are production targets.
+ */
+export const rateLimit = pgTable(
+  "rate_limit",
+  {
+    key: text("key").notNull(),
+    windowStart: integer("window_start").notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.key, table.windowStart] })],
+);

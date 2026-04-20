@@ -476,6 +476,14 @@ export interface AppConfig {
   siteAvatarUrl: string;
   faviconVersion: string;
 
+  // Rate limiting (ENV only)
+  rateLimit: {
+    /** When true, all rate-limit middleware becomes a no-op. */
+    disabled: boolean;
+    /** Per-IP cap for `/api/search` requests per 60-second window. */
+    searchPerMinute: number;
+  };
+
   // Settings form placeholders (ENV > Default, without DB)
   fallbacks: {
     siteName: string;
