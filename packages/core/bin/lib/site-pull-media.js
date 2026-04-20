@@ -19,10 +19,7 @@ import {
   isSkippableUrl,
   rewriteMediaReferences,
 } from "./site-media-parser.js";
-import {
-  formatFrontMatter,
-  parseFrontMatter,
-} from "../../src/lib/hugo-markdown.ts";
+import { formatFrontMatter, parseFrontMatter } from "./hugo-markdown.js";
 
 export function getSitePathPrefix(baseUrl) {
   if (typeof baseUrl !== "string" || baseUrl.trim() === "") {

@@ -33,6 +33,28 @@ interface TextPreviewAutoOpen {
   mediaId: string;
 }
 
+/**
+ * Build the canonical absolute URL for a post page.
+ *
+ * Reply URLs render the full thread, so search engines see overlapping
+ * content at every reply URL. Point the canonical to the thread root so
+ * crawlers consolidate ranking on one URL.
+ *
+ * The root post is always at index 0 of `threadPostViews` (getThread orders
+ * by createdAt ASC, and the DB check constraint guarantees root has the
+ * smallest createdAt in its thread). When `threadPostViews` is undefined the
+ * post is not part of a multi-post thread, so the post itself is the root.
+ */
+function buildPostCanonicalHref(
+  postView: { permalink: string },
+  threadPostViews: Array<{ permalink: string }> | undefined,
+  siteUrl: string,
+): string {
+  const rootPermalink = threadPostViews?.[0]?.permalink ?? postView.permalink;
+  if (!siteUrl) return rootPermalink;
+  return new URL(rootPermalink, siteUrl).toString();
+}
+
 async function renderPostWithTextPreview(
   c: Context<Env>,
   post: Post,
@@ -48,6 +70,11 @@ async function renderPostWithTextPreview(
 
   const navData = await navDataPromise;
   const meta = buildPostMeta(post, navData.siteName);
+  const canonicalHref = buildPostCanonicalHref(
+    display.postView,
+    display.threadPostViews,
+    c.var.appConfig.siteUrl,
+  );
 
   // Use the attachment summary as the page title (for OG/link previews),
   // and pass the post title in the payload so the client can restore it
@@ -68,6 +95,7 @@ async function renderPostWithTextPreview(
   return renderPublicPage(c, {
     title: pageTitle,
     description: meta.description,
+    canonicalHref,
     navData,
     content: (
       <>
@@ -127,10 +155,16 @@ async function renderPost(c: Context<Env>, post: Post) {
 
   const navData = await navDataPromise;
   const meta = buildPostMeta(post, navData.siteName);
+  const canonicalHref = buildPostCanonicalHref(
+    display.postView,
+    display.threadPostViews,
+    c.var.appConfig.siteUrl,
+  );
 
   return renderPublicPage(c, {
     title: meta.title,
     description: meta.description,
+    canonicalHref,
     navData,
     content: (
       <PostPage post={display.postView} threadPosts={display.threadPostViews} />

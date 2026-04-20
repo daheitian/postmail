@@ -138,13 +138,6 @@ export interface FeedData {
   posts: FeedPostView[];
 }
 
-/** Data passed to sitemap renderers */
-export interface SitemapData {
-  siteUrl: string;
-  sitemapUrl: string;
-  posts: PostView[];
-}
-
 // =============================================================================
 // Timeline Types
 // =============================================================================

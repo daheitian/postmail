@@ -90,7 +90,8 @@ exec ./packages/core/bin/jant.js "${args[@]}"
 # =============================================================================
 # Testing
 # =============================================================================
-[tasks.check-tests]
+[tasks.test]
+alias="check-tests"
 description = "Run all tests (typecheck + lint + vitest)"
 run = """
 mise run check-types

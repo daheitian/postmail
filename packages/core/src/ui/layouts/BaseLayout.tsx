@@ -49,6 +49,13 @@ export interface BaseLayoutProps {
   faviconUrl?: string;
   faviconVersion?: string;
   socialImageUrl?: string;
+  /**
+   * Absolute canonical URL for the current page. Rendered as
+   * `<link rel="canonical">` when set. Use on pages whose primary content is
+   * also reachable via another URL (e.g. reply posts, which render the full
+   * thread at both the reply URL and the thread-root URL).
+   */
+  canonicalHref?: string;
   noindex?: boolean;
   isAuthenticated?: boolean;
   clientBundle?: "public" | "full";
@@ -65,6 +72,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   faviconUrl,
   faviconVersion,
   socialImageUrl,
+  canonicalHref,
   noindex,
   isAuthenticated = false,
   clientBundle,
@@ -265,6 +273,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           {resolvedNoindex && (
             <meta name="robots" content="noindex, nofollow" />
           )}
+          {canonicalHref && <link rel="canonical" href={canonicalHref} />}
           <link rel="icon" href={resolvedFaviconHref} sizes="16x16 32x32" />
           <link rel="apple-touch-icon" href={resolvedAppleTouchHref} />
           <link

@@ -2171,4 +2171,111 @@ describe("PostService", () => {
       expect(second.nextCursor).toBeNull();
     });
   });
+
+  describe("listForSitemap", () => {
+    it("returns published non-reply non-private non-deleted posts", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+        status: "published",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "reply",
+        replyToId: root.id,
+        status: "published",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "private",
+        visibility: "private",
+        status: "published",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "draft",
+        status: "draft",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "latest hidden",
+        visibility: "latest_hidden",
+        status: "published",
+      });
+
+      const entries = await postService.listForSitemap({ limit: 100 });
+      const ids = entries.map((e) => e.id);
+      // Root post and latest_hidden post should be included; reply/private/draft excluded.
+      expect(ids).toHaveLength(2);
+      expect(ids).toContain(root.id);
+    });
+
+    it("returns entries in ascending id order", async () => {
+      const created: string[] = [];
+      for (let i = 0; i < 5; i++) {
+        const post = await postService.create({
+          format: "note",
+          bodyMarkdown: `post ${i}`,
+          status: "published",
+        });
+        created.push(post.id);
+      }
+
+      const entries = await postService.listForSitemap({ limit: 100 });
+      const ids = entries.map((e) => e.id);
+      // TypeIDs embed a UUIDv7 timestamp, so creation order == ascending id.
+      expect(ids).toEqual([...ids].sort());
+      expect(ids).toEqual(created);
+    });
+
+    it("respects afterId as an exclusive cursor", async () => {
+      const posts = [];
+      for (let i = 0; i < 5; i++) {
+        posts.push(
+          await postService.create({
+            format: "note",
+            bodyMarkdown: `post ${i}`,
+            status: "published",
+          }),
+        );
+      }
+
+      const firstPage = await postService.listForSitemap({ limit: 2 });
+      expect(firstPage).toHaveLength(2);
+
+      const cursor = firstPage[firstPage.length - 1]?.id;
+      const secondPage = await postService.listForSitemap({
+        afterId: cursor,
+        limit: 2,
+      });
+      expect(secondPage.map((e) => e.id)).toEqual([posts[2]?.id, posts[3]?.id]);
+
+      const thirdPage = await postService.listForSitemap({
+        afterId: secondPage[secondPage.length - 1]?.id,
+        limit: 2,
+      });
+      expect(thirdPage.map((e) => e.id)).toEqual([posts[4]?.id]);
+    });
+
+    it("countForSitemap matches listForSitemap without a cursor", async () => {
+      for (let i = 0; i < 3; i++) {
+        await postService.create({
+          format: "note",
+          bodyMarkdown: `p${i}`,
+          status: "published",
+        });
+      }
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "private",
+        visibility: "private",
+        status: "published",
+      });
+
+      const count = await postService.countForSitemap();
+      const entries = await postService.listForSitemap({ limit: 100 });
+      expect(count).toBe(entries.length);
+      expect(count).toBe(3);
+    });
+  });
 });

@@ -10,12 +10,7 @@
  * ```
  */
 
-import type {
-  FeedData,
-  FeedPostView,
-  PostView,
-  SitemapData,
-} from "../types.js";
+import type { FeedData, FeedPostView, PostView } from "../types.js";
 import { extractDisplayDomain } from "./url.js";
 
 /**
@@ -242,40 +237,81 @@ export function defaultFeedRenderer(data: FeedData): string {
 }
 
 /**
- * Default Sitemap renderer.
- *
- * @param data - Sitemap data with PostView[]
- * @returns Sitemap XML string
+ * Maximum URLs per sitemap shard. The sitemap.xml spec allows up to 50,000
+ * per file; 500 keeps individual shards cheap to generate on D1 and makes old
+ * (already-filled) shards small enough to cache aggressively at the edge.
  */
-export function defaultSitemapRenderer(data: SitemapData): string {
-  const { siteUrl, sitemapUrl, posts } = data;
+export const SITEMAP_SHARD_SIZE = 500;
 
-  const postUrls = posts
-    .map((post) => {
-      const loc = escapeXml(new URL(post.permalink, siteUrl).toString());
-      const lastmod = post.updatedAt.split("T")[0];
-      const priority = post.featured ? "0.8" : "0.6";
+/** One `<url>` entry inside a sitemap `<urlset>`. */
+export interface SitemapUrlEntry {
+  loc: string;
+  /** ISO date (YYYY-MM-DD) or full ISO datetime */
+  lastmod?: string;
+  changefreq?:
+    | "always"
+    | "hourly"
+    | "daily"
+    | "weekly"
+    | "monthly"
+    | "yearly"
+    | "never";
+  /** "0.0" – "1.0" */
+  priority?: string;
+}
 
-      return `
-  <url>
-    <loc>${loc}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <priority>${priority}</priority>
-  </url>`;
+/** One `<sitemap>` entry inside a `<sitemapindex>`. */
+export interface SitemapIndexEntry {
+  loc: string;
+  lastmod?: string;
+}
+
+/**
+ * Render a sitemap `<urlset>` XML document from a list of URL entries.
+ *
+ * Used by the sharded sitemap endpoints in `routes/feed/sitemap.ts`.
+ */
+export function renderSitemapUrlSet(entries: SitemapUrlEntry[]): string {
+  const urls = entries
+    .map((entry) => {
+      const parts = [`    <loc>${escapeXml(entry.loc)}</loc>`];
+      if (entry.lastmod) {
+        parts.push(`    <lastmod>${escapeXml(entry.lastmod)}</lastmod>`);
+      }
+      if (entry.changefreq) {
+        parts.push(
+          `    <changefreq>${escapeXml(entry.changefreq)}</changefreq>`,
+        );
+      }
+      if (entry.priority) {
+        parts.push(`    <priority>${escapeXml(entry.priority)}</priority>`);
+      }
+      return `  <url>\n${parts.join("\n")}\n  </url>`;
     })
-    .join("");
-
-  const homepageUrl = `
-  <url>
-    <loc>${escapeXml(siteUrl)}</loc>
-    <priority>1.0</priority>
-    <changefreq>daily</changefreq>
-  </url>`;
+    .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Generated from ${escapeXml(sitemapUrl)} -->
-  ${homepageUrl}
-  ${postUrls}
+${urls}
 </urlset>`;
+}
+
+/**
+ * Render a `<sitemapindex>` XML document listing shard sitemap URLs.
+ */
+export function renderSitemapIndex(entries: SitemapIndexEntry[]): string {
+  const items = entries
+    .map((entry) => {
+      const parts = [`    <loc>${escapeXml(entry.loc)}</loc>`];
+      if (entry.lastmod) {
+        parts.push(`    <lastmod>${escapeXml(entry.lastmod)}</lastmod>`);
+      }
+      return `  <sitemap>\n${parts.join("\n")}\n  </sitemap>`;
+    })
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${items}
+</sitemapindex>`;
 }

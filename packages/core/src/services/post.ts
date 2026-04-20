@@ -157,6 +157,17 @@ export interface PostBodyContent {
   chars: number;
 }
 
+/** Minimal projection used by the sitemap renderer. */
+export interface SitemapPostEntry {
+  id: string;
+  /** Canonical slug from `path_registry` */
+  slug: string;
+  /** Primary alias, if the post has one; used in preference to `slug` for URLs */
+  alias: string | null;
+  updatedAt: number;
+  featuredAt: number | null;
+}
+
 export interface PostService {
   getById(id: string): Promise<Post | null>;
   getBodyContent(id: string): Promise<PostBodyContent | null>;
@@ -168,6 +179,35 @@ export interface PostService {
   }): Promise<string>;
   checkSlugAvailability(slug: string, excludePostId?: string): Promise<boolean>;
   list(filters?: PostFilters): Promise<Post[]>;
+  /**
+   * List minimal fields needed to render sitemap entries, paginated by `id`
+   * (ascending). Excludes replies, private posts, deleted posts, and drafts.
+   *
+   * Uses keyset pagination on the primary key so old sitemap shards are cheap
+   * to serve and stable across shard boundaries: a newly created post always
+   * gets a larger TypeID than any previously-committed post, so it lands in
+   * the last shard and never rewrites older ones.
+   *
+   * @param options.afterId  Exclusive lower bound on `id`. Omit for the first
+   *                         shard.
+   * @param options.limit    Maximum rows to return.
+   */
+  listForSitemap(options: {
+    afterId?: string;
+    limit: number;
+  }): Promise<SitemapPostEntry[]>;
+  /** Count posts that qualify for the sitemap (same filters as `listForSitemap`) */
+  countForSitemap(): Promise<number>;
+  /**
+   * Return the id at the given 0-based offset in the sitemap ordering.
+   * Used to compute keyset cursors for sharded sitemap endpoints.
+   *
+   * Returns `null` when the offset is beyond the available rows.
+   *
+   * Walks the primary-key index with `ORDER BY id ASC LIMIT 1 OFFSET ?` —
+   * SQLite/D1 scan only the index for this, not the row data.
+   */
+  getSitemapIdAt(offset: number): Promise<string | null>;
   /** Count posts matching filters (ignores cursor, offset, limit) */
   count(filters?: PostFilters): Promise<number>;
   /** Count posts matching filters up to a fixed limit (ignores cursor, offset, limit) */
@@ -1321,6 +1361,83 @@ export function createPostService(
 
       const rows = await query;
       return hydratePosts(rows);
+    },
+
+    async listForSitemap({ afterId, limit }) {
+      // Share the filter conditions with `list()` so visibility/reply/deleted
+      // semantics stay consistent if they ever change.
+      const conditions = buildFilterConditions({
+        status: "published",
+        excludePrivate: true,
+        excludeReplies: true,
+      });
+      if (afterId !== undefined) {
+        conditions.push(sql`${posts.id} > ${afterId}`);
+      }
+
+      const rows = await db
+        .select({
+          id: posts.id,
+          updatedAt: posts.updatedAt,
+          featuredAt: posts.featuredAt,
+        })
+        .from(posts)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(asc(posts.id))
+        .limit(limit);
+
+      if (rows.length === 0) return [];
+
+      const ids = rows.map((row) => row.id);
+      const [slugMap, aliasesMap] = await Promise.all([
+        resolvedPaths.getPostSlugMap(ids),
+        resolvedPaths.getPostAliases(ids),
+      ]);
+
+      return rows
+        .map((row): SitemapPostEntry | null => {
+          const slug = slugMap.get(row.id);
+          if (!slug) return null;
+          const alias = aliasesMap.get(row.id)?.[0] ?? null;
+          return {
+            id: row.id,
+            slug,
+            alias,
+            updatedAt: row.updatedAt,
+            featuredAt: row.featuredAt,
+          };
+        })
+        .filter((entry): entry is SitemapPostEntry => entry !== null);
+    },
+
+    async countForSitemap() {
+      const conditions = buildFilterConditions({
+        status: "published",
+        excludePrivate: true,
+        excludeReplies: true,
+      });
+      const result = await db
+        .select({ count: sql<number>`CAST(count(*) AS INTEGER)`.as("count") })
+        .from(posts)
+        .where(conditions.length > 0 ? and(...conditions) : undefined);
+      return result[0]?.count ?? 0;
+    },
+
+    async getSitemapIdAt(offset) {
+      if (offset < 0) return null;
+      const conditions = buildFilterConditions({
+        status: "published",
+        excludePrivate: true,
+        excludeReplies: true,
+      });
+      const rows = await db
+        .select({ id: posts.id })
+        .from(posts)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(asc(posts.id))
+        .limit(1)
+        .offset(offset);
+      return rows[0]?.id ?? null;
     },
 
     async count(filters = {}) {

@@ -24,6 +24,13 @@ export interface RenderPublicPageOptions {
   appleTouchHref?: string;
   /** Optional explicit social image href */
   socialImageUrl?: string;
+  /**
+   * Absolute canonical URL for this page. Forwarded to `BaseLayout` and
+   * rendered as `<link rel="canonical">`. Only set when the page has a
+   * different canonical location (e.g. thread reply pages point back to the
+   * thread root).
+   */
+  canonicalHref?: string;
   /** Navigation data (from getNavigationData) */
   navData: NavigationData;
   /** Page content JSX to render inside SiteLayout */
@@ -66,6 +73,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     faviconHref,
     appleTouchHref,
     socialImageUrl,
+    canonicalHref,
     navData,
     content,
     sidebar,
@@ -116,6 +124,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
       faviconHref={faviconHref}
       appleTouchHref={appleTouchHref}
       socialImageUrl={socialImageUrl}
+      canonicalHref={canonicalHref}
       faviconUrl={faviconUrl}
       faviconVersion={faviconVersion}
       noindex={noindex}
