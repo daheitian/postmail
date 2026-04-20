@@ -28,6 +28,7 @@ import {
   getDefaultJantFaviconIcoBytes,
 } from "../lib/jant-branding.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
+import { extractBodyText } from "../lib/summary.js";
 import { getMediaUrl, getPublicUrlForProvider } from "../lib/image.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
 import { formatRelativeAge, toISOString } from "../lib/time.js";
@@ -1074,10 +1075,16 @@ function getArchiveSummaryText(post: Post): string | null {
   //   serialized as `link_url` and rendered as a domain badge, so using
   //   it as `summary_text` would duplicate that information.
   // - Note: body only. If the body is empty, there's nothing to describe.
+  //
+  // Note: we re-derive the body text from `post.body` (TipTap JSON) rather
+  // than reusing `post.bodyText`, because `bodyText` is written with
+  // `includeLinkHrefs: true` for FTS search indexing — that pollutes the
+  // stored text with trailing link URLs. Here we need clean prose.
+  const cleanBodyText = post.body ? extractBodyText(post.body) : null;
   const candidates =
     post.format === "quote"
-      ? [post.summary, post.bodyText, post.quoteText]
-      : [post.summary, post.bodyText];
+      ? [post.summary, cleanBodyText, post.quoteText]
+      : [post.summary, cleanBodyText];
 
   for (const candidate of candidates) {
     const normalized = normalizeArchiveText(candidate);
