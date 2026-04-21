@@ -31,6 +31,8 @@ export interface CustomSymbol {
 
 const STROKE_THIN =
   'fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"';
+const STROKE_POST_BADGE =
+  'fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"';
 
 export const CUSTOM_SYMBOLS: Record<string, CustomSymbol> = {
   // Featured sparkle (thinner stroke than lucide's stock "sparkles").
@@ -98,6 +100,16 @@ export const CUSTOM_SYMBOLS: Record<string, CustomSymbol> = {
   "toast-close": {
     viewBox: "0 0 24 24",
     inner: `<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M18 6 6 18M6 6l12 12" />`,
+  },
+  // Post status badge: pinned (custom pin, thin 1.75 stroke).
+  "post-status-pin": {
+    viewBox: "0 0 24 24",
+    inner: `<line ${STROKE_POST_BADGE} x1="12" x2="12" y1="17" y2="22" /><path ${STROKE_POST_BADGE} d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" />`,
+  },
+  // Post status badge: private (lucide eye-off, thin 1.75 stroke).
+  "post-status-private": {
+    viewBox: "0 0 24 24",
+    inner: `<path ${STROKE_POST_BADGE} d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /><path ${STROKE_POST_BADGE} d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /><path ${STROKE_POST_BADGE} d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /><path ${STROKE_POST_BADGE} d="m2 2 20 20" />`,
   },
 };
 
