@@ -17,6 +17,7 @@
 
 import type { FC } from "hono/jsx";
 import { collectIcon } from "./icon-collector.js";
+import { getIconViewBox } from "./custom-icons.js";
 
 export interface IconProps {
   /** Kebab-case icon name (lucide or custom). */
@@ -47,6 +48,7 @@ export const Icon: FC<IconProps> = ({
 
   return (
     <svg
+      viewBox={getIconViewBox(name)}
       {...(size !== undefined ? { width: size, height: size } : {})}
       {...(cls ? { class: cls } : {})}
       {...(ariaLabel ? { "aria-label": ariaLabel, role: "img" } : {})}

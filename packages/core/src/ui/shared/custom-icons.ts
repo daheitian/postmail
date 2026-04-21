@@ -104,3 +104,17 @@ export const CUSTOM_SYMBOLS: Record<string, CustomSymbol> = {
 export function getCustomSymbol(name: string): CustomSymbol | null {
   return CUSTOM_SYMBOLS[name] ?? null;
 }
+
+/**
+ * Return the viewBox for an icon's outer <svg> wrapper.
+ *
+ * This must match the <symbol>'s viewBox so the browser computes the correct
+ * intrinsic aspect ratio. Without this, outer <svg> with `height: auto` in
+ * CSS falls back to the 300×150 replaced-element default instead of the
+ * icon's real aspect ratio.
+ *
+ * Falls back to lucide's "0 0 24 24" for lucide-sourced icons.
+ */
+export function getIconViewBox(name: string): string {
+  return CUSTOM_SYMBOLS[name]?.viewBox ?? "0 0 24 24";
+}
