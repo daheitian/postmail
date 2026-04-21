@@ -2100,6 +2100,10 @@
     width: 30px;
     height: 9px;
     margin: 4rem 0;
+    /* Center over the post-body column. On desktop the body column is
+       `var(--layout-content-width)` (55%). Between 760-1024px it switches
+       to `min(100%, 35rem)` via preset.css, so the hr must track that
+       same rule — otherwise the glyph drifts left of the content center. */
     margin-left: calc(var(--layout-content-width) / 2 - 15px);
     color: var(--site-feed-divider-color);
     background-color: currentColor;
@@ -2111,6 +2115,14 @@
     mask-position: center;
     -webkit-mask-size: contain;
     mask-size: contain;
+  }
+
+  @media (max-width: 1024px) {
+    .site-content hr.feed-divider {
+      /* Match preset.css `min(100%, 35rem)` body-column width so the hr
+         stays visually aligned with the post column at this breakpoint. */
+      margin-left: calc(min(100%, 35rem) / 2 - 15px);
+    }
   }
 
   .feed-card {
