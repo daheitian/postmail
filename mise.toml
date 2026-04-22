@@ -395,7 +395,7 @@ run = "pnpm --filter @jant/core build && pnpm --filter jant-demo dev"
 description = "Deploy the public demo site to demo.jant.me"
 run = """
 pnpm --filter @jant/core build
-node scripts/demo-shared/run-with-env.mjs --site demo -- pnpm --filter jant-demo run deploy
+node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- pnpm exec jant deploy
 """
 
 [tasks.db-demo-migrate]

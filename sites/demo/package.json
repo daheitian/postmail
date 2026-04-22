@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "jant migrate --local && node scripts/dev.mjs",
-    "deploy": "node ../../scripts/demo-shared/run-with-env.mjs --site demo -- pnpm exec jant deploy",
+    "deploy": "jant deploy",
     "reset-password": "jant reset-password",
     "export": "jant export"
   },
