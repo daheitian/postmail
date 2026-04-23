@@ -307,3 +307,8 @@ npx jant site snapshot export --remote --config ./wrangler.toml --output ./backu
 如果你连这两个数字都没法衡量，那你的备份方案还没完成。
 
 如果你不能有把握地把一份备份恢复到一套空白环境里，那你其实还没有一个真正的备份。
+
+## 接下来
+
+- [自动化与 API](automation-and-api.md) —— 把备份脚本化定时执行
+- [GitHub 同步](github-sync.md) —— 让内容额外有一份 Git 历史

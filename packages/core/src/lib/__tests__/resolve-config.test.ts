@@ -307,16 +307,16 @@ describe("resolveConfig", () => {
   });
 
   it("fontThemeId falls through DB → ENV → hardcoded default", () => {
-    const c1 = resolveConfig(makeEnv({ DEFAULT_FONT_THEME: "classic" }), {
+    const c1 = resolveConfig(makeEnv({ DEFAULT_FONT_THEME: "tufte" }), {
       FONT_THEME: "geometric",
     });
     expect(c1.fontThemeId).toBe("geometric");
 
-    const c2 = resolveConfig(makeEnv({ DEFAULT_FONT_THEME: "classic" }), {});
-    expect(c2.fontThemeId).toBe("classic");
+    const c2 = resolveConfig(makeEnv({ DEFAULT_FONT_THEME: "tufte" }), {});
+    expect(c2.fontThemeId).toBe("tufte");
 
     const c3 = resolveConfig(makeEnv(), {});
-    expect(c3.fontThemeId).toBe("tufte");
+    expect(c3.fontThemeId).toBe("classic");
   });
 
   it("uses unprefixed env names across the config surface", () => {

@@ -2,10 +2,15 @@
 
 你可以通过两种方式把 Jant 部署到 Cloudflare：
 
-- `Option A`：从 starter 仓库一键部署
-- `Option B`：使用 `create-jant` 创建站点仓库，然后手动部署
+- **Option A**：从 starter 仓库一键部署
+- **Option B**：使用 `create-jant` 创建站点仓库，然后手动部署
 
 如果你想把 Jant 跑在自己的服务器上，请看 [使用 Docker 部署](deployment-docker.md)。
+
+## 前置条件
+
+- 一个 Cloudflare 账号
+- 如果走 Option B，需要 [Node.js](https://nodejs.org/) 24 或更高版本
 
 ## Option A：一键部署
 
@@ -58,12 +63,36 @@ npm create jant@latest my-site
 cd my-site
 ```
 
-## 开始前
+如果你更喜欢 `pnpm` 或 `yarn`，也可以使用它们的 `create` 命令。Jant 会根据你使用的包管理器调整脚手架中的脚本。
 
-你需要准备：
+`create-jant` 会自动：
 
-- 一个 Cloudflare 账号
-- 一个 Jant 站点仓库
+- 安装依赖
+- 初始化 git 仓库
+- 生成带安全本地 `AUTH_SECRET` 的 `.dev.vars`
+- 创建一个已经接好 D1 与 R2 绑定、可继续配置的 Cloudflare Workers 项目
+
+如果你传了 `--no-install` 或 `--no-git`，这些步骤需要你自己完成。
+
+### 先在本地跑一下
+
+```bash
+npm run dev
+```
+
+打开 [http://localhost:3000](http://localhost:3000)，完成初始化（创建管理员账号、设置站点名称、选择语言）。
+
+如果你想换一个本地端口：
+
+```bash
+PORT=3030 npm run dev
+```
+
+## 部署准备
+
+Option B 创建好本地站点之后，把它推到 Cloudflare 之前，需要再准备几样：
+
+- 一个 Jant 站点仓库（`create-jant` 已经为你创建）
 - 可用的 Wrangler，命令通过 `npx wrangler` 运行
 
 先登录：
@@ -213,4 +242,8 @@ npm install @jant/core@latest
 npm run deploy
 ```
 
-配置细节见 [配置](configuration.md)。恢复规划见 [备份与恢复](backups.md)。
+## 接下来
+
+- [配置](configuration.md) —— 调整环境变量和站点行为
+- [写作与内容组织](writing-and-organizing.md) —— 站点跑起来后开始写
+- [备份与恢复](backups.md) —— 长期运行需要的恢复规划

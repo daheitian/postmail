@@ -63,7 +63,7 @@ export const CONFIG_FIELDS = {
     envKeys: ["DEFAULT_THEME"],
   },
   DEFAULT_FONT_THEME: {
-    defaultValue: "tufte",
+    defaultValue: "classic",
     envOnly: true,
     envKeys: ["DEFAULT_FONT_THEME"],
   },

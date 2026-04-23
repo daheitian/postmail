@@ -177,3 +177,8 @@ Feeds：
 当多篇帖子共享同一个主题，但并不是按顺序写出来时，用 collection。
 
 当你想让内容获得额外可见性，并进入默认 feed 分发时，用 featured。
+
+## 接下来
+
+- [主题定制](theming.md) —— 调整站点外观
+- [GitHub 同步](github-sync.md) —— 让内容同时存在于自己的 Git 仓库

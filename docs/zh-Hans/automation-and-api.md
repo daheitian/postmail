@@ -134,10 +134,15 @@ curl -X POST "$JANT_URL/api/mcp" \
 
 ## 一条现实建议
 
-如果你的目标只是“让 agent 能稳定发帖、传图、改设置”，先把这三件事跑通就够了：
+如果你的目标只是"让 agent 能稳定发帖、传图、改设置"，先把这三件事跑通就够了：
 
 1. `npx jant posts create`
 2. `npx jant media upload`
 3. `npx jant settings update`
 
 等这三条稳定了，再考虑 MCP、多工具编排，或者更复杂的内容工作流。
+
+## 接下来
+
+- [API 参考（英文）](../API.md) —— 完整字段、请求体和错误格式
+- [常见问题](faq.md) —— 包括"能用 AI agent 发帖吗？"

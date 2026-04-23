@@ -223,3 +223,8 @@ Jant 会自动跟随访问者的系统偏好（浅色 / 深色）。如果你想
 - 自定义 CSS 拥有最高优先级，会覆盖一切，包括所选颜色主题。
 - 颜色推荐使用 `oklch()`。一个实用经验是：让 `--primary` 稍微更稳一些，用于实心控件；再让 `--site-accent` 承担更柔和的编辑气质颜色。
 - 一定要在浅色和深色模式都测试。如果你在 `:root` 里覆盖了某个颜色变量，也要想一想它是否需要在 `@media (prefers-color-scheme: dark)` 或 `:root[data-theme-mode="dark"]` 下对应覆盖。
+
+## 接下来
+
+- [GitHub 同步](github-sync.md) —— 内容备份和 Git 版本历史
+- [导出与导入](export-and-import.md) —— 站点迁移和归档

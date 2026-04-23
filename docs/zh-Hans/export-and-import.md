@@ -186,3 +186,8 @@ npx jant db export --remote --output ./jant-remote.sql
 
 - [备份与恢复](backups.md)
 - [API 参考（英文）](../API.md)
+
+## 接下来
+
+- [备份与恢复](backups.md) —— 完整的备份和恢复策略
+- [自动化与 API](automation-and-api.md) —— 把这些操作脚本化

@@ -418,3 +418,9 @@ Cloudflare 生产环境可以通过 Wrangler 或 Dashboard 设置 secrets：
 openssl rand -base64 32
 npx wrangler secret put AUTH_SECRET
 ```
+
+## 接下来
+
+- [写作与内容组织](writing-and-organizing.md) —— 开始用 Jant
+- [主题定制](theming.md) —— 调整外观
+- [备份与恢复](backups.md) —— 准备好长期运行

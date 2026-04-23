@@ -145,3 +145,9 @@ HOST_PORT=8080
 - `data/media/`
 
 如果你后来切换到 Postgres 或 S3 兼容存储，你的备份模型也要跟着变化。详见 [备份与恢复](backups.md)。
+
+## 接下来
+
+- [配置](configuration.md) —— 调整环境变量和站点行为
+- [写作与内容组织](writing-and-organizing.md) —— 站点跑起来后开始写
+- [备份与恢复](backups.md) —— 长期运行需要的恢复规划
