@@ -12,29 +12,29 @@
 
 ## 不知道选哪个
 
-**选 Jant 托管**，如果：
-
-- 你不想处理任何技术配置
-- 想现在就开始写，5 分钟内上线
-- $10.46/年可以接受
-
-**选 Cloudflare 自托管**，如果：
+**选 [Cloudflare 自托管](deployment.md)**，如果：
 
 - 你想要免费（Cloudflare 免费额度通常完全够用）
-- 愿意花半小时跟着文档一次性配置好
+- 愿意花 15 分钟跟着文档一次性配置好
 - 不需要有自己的服务器，有 Cloudflare 账号就行
 
-**选 Docker 自托管**，如果：
+**选 [Docker 自托管](deployment-docker.md)**，如果：
 
 - 你已经有一台自己的服务器在跑别的服务
 - 熟悉 Docker，想把 Jant 和其他服务放在一起管理
 
-选错了也不要紧。三种方式用的是同一套数据格式，随时可以迁移。
+**选 [Jant 托管](hosted.md)**，如果：
+
+- 你不想处理任何技术配置
+- 想现在就开始写，1 分钟内上线
+- 每年 $10.46 在你的预算内
+
+选错了也不要紧。三种方式都可以导入导出，随时可以迁移。
 
 ## 接下来
 
 挑一条路径，跟着对应的指南走：
 
-- [部署到 Cloudflare](deployment.md)
-- [使用 Docker 部署](deployment-docker.md)
-- [Jant 托管](hosted.md)
+- [使用 Cloudflare 自托管](deployment.md)
+- [使用 Docker 自托管](deployment-docker.md)
+- [使用 Jant 托管](hosted.md)

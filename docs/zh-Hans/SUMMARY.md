@@ -13,9 +13,9 @@
 
 ## 运行你的站点
 
-- [部署到 Cloudflare](deployment.md)
+- [使用 Cloudflare 部署](deployment.md)
 - [使用 Docker 部署](deployment-docker.md)
-- [托管](hosted.md)
+- [使用 Jant 托管](hosted.md)
 - [配置](configuration.md)
 
 ## 使用你的站点
