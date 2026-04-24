@@ -1,16 +1,21 @@
-# 摘要
+# Summary
+
+## 前言
+
+- [为什么今天仍然值得写博客？](why-blog.md)
+
+---
 
 ## 开始
 
 - [简介](overview.md)
-- [为什么今天仍然值得写博客](why-blog.md)
 - [开始使用](getting-started.md)
 
 ## 运行你的站点
 
-- [托管](hosted.md)
 - [部署到 Cloudflare](deployment.md)
 - [使用 Docker 部署](deployment-docker.md)
+- [托管](hosted.md)
 - [配置](configuration.md)
 
 ## 使用你的站点

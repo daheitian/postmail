@@ -2,9 +2,11 @@
 
 > **Pre-1.0**：Jant 仍处于早期阶段。请预期会有粗糙边角、破坏性变更，以及仍在持续调整的文档。
 
-Jant 是一个为单作者设计的小型博客系统。支持 Note、Link、Quote 三种格式，帖子之间可以串成 Thread，可以用 collection 组织帖子。有一个类似 Twitter/ Threads 的发帖体验，而不是像 Wordpress/Ghost 那样打开后台管理面板。
+Jant 是一个为单作者设计的轻量博客系统，支持 **Note、Link、Quote** 三种内容格式。帖子之间可以串成 Thread，也可以用 Collection 归类整理。它的发帖体验更接近 Twitter / Threads，而非 WordPress / Ghost 那样的后台管理面板。
 
-你可以在线看一下 Jant 实际运行的样子：[demo.jant.me](https://demo.jant.me)，你可以在 [Demo](https://demo.jant.me) 里直接体验发帖（导航栏的 `More` 菜单下拉里可以 [登录](https://demo.jant.me/signin)，用户名和密码已自动填充)
+![Jant Home](https://jant-me-media.jant.me/assets/jant-home.png)
+
+你可以访问 [demo.jant.me](https://demo.jant.me) 在线体验 Jant 的实际效果，并直接尝试发帖（点击导航栏 `More` 菜单下拉中的[登录](https://demo.jant.me/signin)，用户名和密码已自动填充，数据每日清空）。也可以参考作者自己的[博客](https://owen.jant.blog/)，这是一个真实使用中的样本。
 
 ## 一种"无压力"的公开写作
 
@@ -15,39 +17,33 @@ Jant 的名字灵感来自 Jantelagen（詹代法则）——出自 1933 年一�
 
 Jant 想通过拆分“发布”与“广播”的行为，将那份**“无压力”**的公开表达带回个人博客中：
 
-- **静默式记录**： 发布时可选择在首页（Latest）隐藏，仅保留在你选择的特定合集和历史存档(`/archive`)中。这让你可以毫无负担地记录，而不必担心这些细碎的表达打乱首页的叙事节奏。
+- **静默式记录**： 发布时可选择在首页（Latest）隐藏，仅保留在你选择的特定合集和历史存档(`/archive`)中。这让你可以毫无负担地记录，而不必担心某些细碎的表达打乱首页的叙事节奏。
 - **非侵扰式更新**： 即使内容出现在首页 Latest 中，也不会触发 RSS Feed 推送。
 - **策展式分发**：只有被标记为 Featured 的内容，才会进入订阅者的 RSS Feed。
 
-如果你还在犹豫"这个时代写博客是不是一件奇怪的事"，[这篇文章](why-blog.md)是写给你的。
+如果你还没想好要不要写博客，[这篇文章](why-blog.md)或许能给你一个理由。
 
-## 博客的发布体验应该是现代的
+## 博客的发布体验，应该是现代的
 
-传统博客有一个后台。进去之后是表单：标题、正文、分类、标签、摘要、SEO 设置、封面图……填完才能发布。这套界面为管理内容设计，不为写东西设计。
+传统博客给你一个后台。进去是一张表单：标题、正文、分类、标签、摘要、SEO、封面图……填完，才能发布。这套界面是为管理内容设计的，不是为写东西设计的。
 
-Twitter 和 Threads 证明了另一条路：没有后台，没有表单，没有标题——想到就写，写完就发。低摩擦让记录真正发生。
+Twitter 和 Threads 证明了另一条路：没有后台，没有表单，没有标题。想到就写，写完就发。正是这种低摩擦，让记录真正发生了。
 
-Jant 把这种体验带回个人博客：标题是可选的，想法可以随时追加成 thread，发布只需一个动作。
+Jant 想把这种体验还给个人博客：标题是可选的，随时可以追加成 Thread，发布只需要一个动作。
 
 ![Jant](https://jant-me-media.jant.me/assets/compose.webp)
 
 ## Jant 有什么
 
-- **三种帖子格式** —— note、link、quote, 都是一等公民。
+- **三种帖子格式** —— **Note、Link、Quote**, 都是一等公民。
 - **Threads** —— 想法可以延续，不必凑成长文
 - **Collections** —— 按主题策展，更像书架而不是标签
-- **媒体附件** —— 图片、视频、音频、Markdown 文本附件、文档
-- **Ratings** —— 给书、电影、播客、文章打分
-- **GitHub 同步** —— 双向同步：Jant 的每次编辑自动 commit 到 GitHub，在 GitHub 上修改文件也会同步回 Jant。同步的仓库本身就是一个完整的 Hugo 静态博客，可以直接接 GitHub Actions 构建发布，也是内容的完整备份。
-- **[完整 API 与 MCP](automation-and-api.md)** —— 自动化发布、导入、维护；支持 MCP，适合 AI agent 工具调用
-- **[Hugo 站点导出](export-and-import.md)** —— 随时带着内容离开
-
-## 你可以怎么跑它
-
-- **[Cloudflare 自托管](deployment.md)** —— 跑在 Cloudflare Workers 上，几乎可以免费（除了你的域名费用，每年 $10.46）
-- **[Docker 自托管](deployment-docker.md)** —— 跑在自己的服务器上。
-- **[Jant 托管服务](hosted.md)** —— 不想处理部署的话，可以在 [jant.me](https://jant.me) 注册，$10.46/年一个站点，包含 10 GB 媒体存储、自动 HTTPS 和自定义域名。这个价格数字和 Cloudflare 的 .com 域名的年费相同。几年前我在博客里[写过](https://owen.jant.blog/nyvyu)，这个价格对我来说很舒服，而且还可以覆盖成本。很开心能有机会用在这里。
+- **支持多种媒体附件** —— 图片、视频、音频、Markdown 文本附件、文档
+- **评分** —— 给书、电影、播客、文章打分
+- **GitHub Markdown 静态站点双向同步** —— Jant 的每次编辑[自动同步 到 GitHub](github-sync.md)，在 GitHub 上修改文件也会自动同步回 Jant。同步的仓库本身就是一个完整的 Hugo 静态博客，可以直接接 GitHub Actions 构建发布，也是内容的完整备份。
+- **完整 API 与 MCP** —— 自动化发布、导入、维护；[支持 MCP](automation-and-api.md)，适合 AI agent 工具调用
+- **完整的 Hugo 静态站点导出** —— 你可以随时[带着内容](export-and-import.md)离开
 
 ## 接下来
 
-[开始使用](getting-started.md) —— 选一条路径开始。
+阅读 [开始使用](getting-started.md)，了解如何开始运行一个 Jant 博客。
