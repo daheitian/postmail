@@ -719,11 +719,29 @@ export class JantPostMenu extends LitElement {
       const article = document.querySelector<HTMLElement>(
         `article[data-post-id="${this._data.id}"]`,
       );
-      // Remove the feed item wrapper if it exists, otherwise the article itself
-      const feedItem = article?.closest(".feed-item");
-      const feedContainer = feedItem?.parentElement;
-      (feedItem ?? article)?.remove();
-      removeLeadingFeedDivider(feedContainer);
+      // If the post is inside a thread group, only remove its .thread-item
+      // wrapper so sibling posts in the same thread stay visible. Fall back
+      // to removing the .feed-item wrapper (or the article itself) only when
+      // the post is standalone or the thread group is now empty.
+      const threadItem = article?.closest<HTMLElement>(".thread-item");
+      const threadGroup = threadItem?.closest<HTMLElement>(".thread-group");
+      if (threadItem && threadGroup) {
+        threadItem.remove();
+        const remainingPosts = threadGroup.querySelectorAll(
+          ".thread-item:not(.thread-item-gap)",
+        );
+        if (remainingPosts.length === 0) {
+          const feedItem = threadGroup.closest<HTMLElement>(".feed-item");
+          const feedContainer = feedItem?.parentElement ?? null;
+          (feedItem ?? threadGroup).remove();
+          removeLeadingFeedDivider(feedContainer);
+        }
+      } else {
+        const feedItem = article?.closest<HTMLElement>(".feed-item");
+        const feedContainer = feedItem?.parentElement ?? null;
+        (feedItem ?? article)?.remove();
+        removeLeadingFeedDivider(feedContainer);
+      }
 
       showToast("Post deleted.");
     } catch {
