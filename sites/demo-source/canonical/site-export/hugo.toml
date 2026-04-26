@@ -27,7 +27,7 @@ rel = "alternate"
 suffixes = [ "xml" ]
 
 [params]
-description = "Thoughts, links, and quotes — one post at a time"
+description = ""
 home_default_view = "latest"
 main_rss_feed = "featured"
 show_jant_branding_on_home = true
@@ -35,7 +35,7 @@ show_header_avatar = false
 noindex = false
 theme_id = "tufte"
 default_theme_id = "tufte"
-font_theme_id = "tufte"
+font_theme_id = "classic"
 theme_mode = "auto"
 page_size = 50
 archive_page_size = 50

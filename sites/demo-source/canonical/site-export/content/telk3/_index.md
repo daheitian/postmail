@@ -5,8 +5,6 @@ updated: "2026-04-03T02:30:59.000Z"
 slug: "telk3"
 type: "post"
 aliases:
-  - "/openstreetmap-for-route-wandering/"
-  - "/9gqsf/"
   - "/from-thoreau-pawt2/"
 format: "note"
 status: "published"
@@ -23,7 +21,7 @@ collections:
     collected_at: "2026-04-03T02:30:59.000Z"
     position: 1
     pinned_at: null
-last_activity_at: "2026-03-09T18:30:00.000Z"
+last_activity_at: "2026-03-09T18:05:00.000Z"
 ---
 
 Took the long way home because the light was good and the air finally felt like spring.

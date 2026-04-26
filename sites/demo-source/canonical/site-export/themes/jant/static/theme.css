@@ -37,11 +37,18 @@
   --site-reading-body: oklch(0.22 0.005 70);
   --site-reading-quote: oklch(0.36 0.008 55);
   --font-body:
-    et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua",
-    "Source Serif 4", var(--font-cjk-serif-fallback), ui-serif, serif;
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC",
+    "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei",
+    "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif;
   --font-heading:
-    et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua",
-    "Source Serif 4", var(--font-cjk-serif-fallback), ui-serif, serif;
+    "New York Small", "New York", "Iowan Old Style", Charter,
+    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+    var(--font-cjk-serif-fallback), ui-serif, serif;
+  --font-blockquote:
+    "New York Small", "New York", "Iowan Old Style", Charter,
+    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+    var(--font-cjk-serif-fallback), ui-serif, serif;
 }
 :root:root[data-theme-mode="dark"] {
   color-scheme: dark;
@@ -78,11 +85,18 @@
   --search-mark-color: oklch(0.92 0.08 90);
   --dash-bg: oklch(0.15 0.005 70);
   --font-body:
-    et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua",
-    "Source Serif 4", var(--font-cjk-serif-fallback), ui-serif, serif;
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC",
+    "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei",
+    "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif;
   --font-heading:
-    et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua",
-    "Source Serif 4", var(--font-cjk-serif-fallback), ui-serif, serif;
+    "New York Small", "New York", "Iowan Old Style", Charter,
+    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+    var(--font-cjk-serif-fallback), ui-serif, serif;
+  --font-blockquote:
+    "New York Small", "New York", "Iowan Old Style", Charter,
+    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+    var(--font-cjk-serif-fallback), ui-serif, serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:root:not([data-theme-mode="light"]) {
@@ -120,10 +134,17 @@
     --search-mark-color: oklch(0.92 0.08 90);
     --dash-bg: oklch(0.15 0.005 70);
     --font-body:
-      et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua",
-      "Source Serif 4", var(--font-cjk-serif-fallback), ui-serif, serif;
+      ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC",
+      "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei",
+      "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif;
     --font-heading:
-      et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua",
-      "Source Serif 4", var(--font-cjk-serif-fallback), ui-serif, serif;
+      "New York Small", "New York", "Iowan Old Style", Charter,
+      "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+      var(--font-cjk-serif-fallback), ui-serif, serif;
+    --font-blockquote:
+      "New York Small", "New York", "Iowan Old Style", Charter,
+      "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+      var(--font-cjk-serif-fallback), ui-serif, serif;
   }
 }
