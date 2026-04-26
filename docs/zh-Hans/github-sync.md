@@ -8,9 +8,9 @@ GitHub 仓库同时也是一个对 AI 工具友好的文件接口。Jant 提供�
 
 ## 工作原理
 
-**Jant → GitHub**：当你创建、编辑或删除一篇帖子，Jant 把这次变更以带 YAML front matter 的 Markdown 文件推送到你的仓库。Thread 回复嵌入到根帖文件里。媒体不会被复制进仓库，仅以 URL 引用。
+**Jant → GitHub**：当你创建、编辑或删除一篇帖子，Jant 把这次变更以带 YAML front matter 的 Markdown 文件推送到你的仓库。Thread 回复各自成为独立文件，嵌套在根帖目录下。媒体不会被复制进仓库，仅以 URL 引用。
 
-**GitHub → Jant**：当你在 GitHub 上编辑一个 Markdown 文件并 push，webhook 会通知 Jant。Jant 解析文件，按 slug 匹配到已有帖子，然后更新内容。在 GitHub 上删除文件会软删除对应的帖子。
+**GitHub → Jant**：当你在 GitHub 上编辑一个 Markdown 文件并 push，webhook 会通知 Jant。Jant 解析文件，按 slug 匹配到已有帖子，然后更新内容。在 GitHub 上删除文件不会产生任何效果——文件删除操作被故意忽略，删帖必须通过 Jant UI 操作。
 
 Jant 自己产生的 commit 会带上 `[jant-sync]` 标记。带这个标记的 webhook 会被忽略，所以变更不会来回反弹。
 
@@ -18,22 +18,18 @@ Jant 自己产生的 commit 会带上 `[jant-sync]` 标记。带这个标记的 
 
 - 帖子正文（Markdown）
 - 标题、URL、引文文本以及其他 front matter 字段
-- Thread 回复（合并到根帖文件里）
+- Thread 回复（各自作为独立文件嵌套在根帖目录下）
 
 ### 哪些东西不会从 GitHub 同步过来
 
-- 在 GitHub 上新增一个 `.md` 文件**不会**创建一篇新帖子。只有已有帖子可以被更新
-- 媒体附件不会被改动，仍保留在原 URL
+- 在 GitHub 上新增一个 `.md` 文件**不会**创建一篇新帖子。你只能通过修改 Git 仓库中现有的文件来更新 Post。
 - 设置、导航、collections、主题不会被 webhook 影响
 
 ## 两种连接方式
 
-Jant 支持两种 GitHub 同步认证方式：
+自托管用户默认使用 **Personal Access Token（PAT）**——创建一个 token 粘贴进 Jant 即可，无需额外配置。
 
-1. **Personal Access Token (PAT)** —— 始终可用。你创建一个 token 粘贴进 Jant。最适合自托管。
-2. **GitHub App** —— 在部署配置了 GitHub App 时可用。用户一键安装到自己的仓库，Jant 永远不需要接触长期 token。最适合托管平台。
-
-当部署配置了 GitHub App 时，设置页会同时显示两个选项，并推荐使用 App。
+如果部署配置了 GitHub App，设置页会额外显示 App 连接选项，并推荐使用——用户一键安装到自己的仓库，Jant 永远不需要接触长期 token，更适合托管平台。
 
 ## 方式 A —— Personal Access Token
 
@@ -55,7 +51,7 @@ Jant 支持两种 GitHub 同步认证方式：
 
 Jant 会校验 token、保存配置，并在仓库里创建 webhook。不需要手动设置 webhook。
 
-## 方式 B —— GitHub App（推荐用于托管）
+## 方式 B —— GitHub App
 
 当 Jant 部署设置了以下环境变量时，GitHub App 连接流程会启用：
 
@@ -152,7 +148,7 @@ Jant 用 installation 按需签发短期 token——任何 token 都不会被长
 - `link_url`（link 帖子）
 - `quote_text`（quote 帖子）
 
-在 GitHub 上删除文件会软删除 Jant 里的帖子。
+在 GitHub 上删除文件不会有任何效果——文件删除操作被忽略，以防止意外数据丢失。
 
 ## 断开连接
 
@@ -208,12 +204,13 @@ push 进行中时，settings 页会显示一个实时的 "Syncing…" 指示器�
 ## 限制
 
 - **每个站点一个仓库**：不支持多仓库同步
-- **不能从 GitHub 创建新帖子**：在 GitHub 上新增 `.md` 文件不会在 Jant 创建帖子，只能更新或删除已有帖子
+- **不能从 GitHub 创建或删除帖子**：在 GitHub 上新增或删除 `.md` 文件在 Jant 里不会产生任何效果，只能通过编辑文件内容来更新已有帖子
 - **文本附件不同步**：媒体和文本附件内容仅以 URL 引用
 - **速率限制**：GitHub 对认证用户每小时允许 5,000 次 API 请求。一次 1,000 篇帖子的完整同步大约用掉 1,000 次请求（每个文件一个 blob）。增量同步每次用 1-2 次
 
 ## 接下来
 
+- [主题定制](theming.md) —— 调整站点外观
 - [导出与导入](export-and-import.md) —— Hugo 导出和站点迁移
 - [备份与恢复](backups.md) —— 完整备份策略
 - [配置](configuration.md) —— 相关环境变量

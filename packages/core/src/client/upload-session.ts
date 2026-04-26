@@ -108,7 +108,7 @@ async function initiateUpload(file: File): Promise<InitiateResponse> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       filename: file.name,
-      contentType: file.type,
+      contentType: file.type || "application/octet-stream",
       size: file.size,
       checksumSha256: await sha256Base64(file),
     }),

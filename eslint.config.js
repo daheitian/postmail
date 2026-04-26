@@ -66,6 +66,7 @@ export default [
         CustomEvent: "readonly",
         EventListener: "readonly",
         customElements: "readonly",
+        navigator: "readonly",
         queueMicrotask: "readonly",
         requestAnimationFrame: "readonly",
         cancelAnimationFrame: "readonly",

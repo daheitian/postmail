@@ -1,15 +1,11 @@
 # 配置
 
-Jant 从两个地方读取配置：
+Jant 的配置来自两个地方：
 
-- 环境变量，用于基础设施和运行时行为
-- dashboard 设置，用于站点级的发布行为
+- **环境变量**：控制基础设施和运行时行为
+- **设置页面**：站点名称、外观、时区等可在线调整的选项
 
-大多数单站点安装，只需要少量几个值：
-
-- `AUTH_SECRET`
-- 当你需要固定 canonical host 时使用 `SITE_ORIGIN`
-- 选择一种存储方案：R2、S3 或本地文件
+大多数单站点安装只需要设置一个值：`AUTH_SECRET`，其余按需配置。
 
 ## 环境变量
 
@@ -23,9 +19,9 @@ Jant 从两个地方读取配置：
 
 所有运行时都必须设置这个变量：
 
-| 变量          | 说明                                     |
-| ------------- | ---------------------------------------- |
-| `AUTH_SECRET` | 随机字符串，至少 32 个字符，用于会话签名 |
+| 变量          | 说明                                                                         |
+| ------------- | ---------------------------------------------------------------------------- |
+| `AUTH_SECRET` | better-auth 用于签名 session cookie 的密钥，至少 32 个字符。不要提交进版本库 |
 
 不要把 `AUTH_SECRET` 提交进版本库。
 
@@ -35,37 +31,18 @@ Jant 从两个地方读取配置：
 
 ### 公开 URL 和子路径
 
-这些变量在 `single-site` 模式下才有意义：
+大多数情况下，这两个变量都不需要设置。Jant 默认从请求的 host 自动推导 origin，并挂载在根路径下。
 
-| 变量               | 说明                                              |
-| ------------------ | ------------------------------------------------- |
-| `SITE_ORIGIN`      | 可选的固定公开 origin，例如 `https://example.com` |
-| `SITE_PATH_PREFIX` | 可选的公开路径前缀，例如 `/blog`                  |
+| 变量               | 说明                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| `SITE_ORIGIN`      | 固定公开 origin，例如 `https://example.com`。影响 RSS、sitemap、export、auth callbacks 等生成的绝对 URL |
+| `SITE_PATH_PREFIX` | 公开路径前缀，例如 `/blog`。影响所有路由和静态资源路径                                                  |
 
-常见组合：
+只有在以下情况才需要设置：
 
-- 根路径部署，并根据请求 host 推导：两个都留空
-- 固定 host：设置 `SITE_ORIGIN=https://example.com`
-- 子路径部署：设置 `SITE_PATH_PREFIX=/blog`
-- 固定 host 且挂在子路径下：两个都设置
-
-`SITE_ORIGIN` 会影响 RSS、sitemap、exports、auth callbacks 等绝对 URL。
-
-`SITE_PATH_PREFIX` 会影响路由和构建出的静态资源，包括前缀下的 `/_assets`。
-
-在 `host-based` 模式下，Jant 会忽略这两个值，直接从请求 host 解析站点。
-
-### 站点解析模式
-
-| 变量                   | 取值                          | 说明                       |
-| ---------------------- | ----------------------------- | -------------------------- |
-| `SITE_RESOLUTION_MODE` | `single-site` 或 `host-based` | 控制 Jant 如何解析当前站点 |
-
-- `single-site` 是普通的自托管模式
-- `host-based` 用于托管型多站点场景
-- 在 `single-site` 模式下，Node 启动时期望数据库里恰好只有一个已初始化站点
-
-大多数自托管用户都应该保持 `single-site`。
+- **站点在反向代理后面，并且反向代理没有正确的传递 Host，导致自动推导的 host 不正确**：设置 `SITE_ORIGIN=https://example.com`
+- **挂在子路径下**（例如 `example.com/blog`）：设置 `SITE_PATH_PREFIX=/blog`
+- **需要写死域名**
 
 ### Node 和 Docker
 
@@ -92,33 +69,16 @@ DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME
 
 Node 和 Docker 的常用变量：
 
-| 变量                   | 默认值                   | 说明                                                                          |
-| ---------------------- | ------------------------ | ----------------------------------------------------------------------------- |
-| `DATA_DIR`             | `./data`                 | 默认 SQLite 和本地媒体路径的基础目录                                          |
-| `LOCAL_STORAGE_PATH`   | `<DATA_DIR>/media`       | 覆盖本地媒体目录                                                              |
-| `LOCAL_PUBLIC_URL`     | 未设置                   | 供 Jant 外部直接提供媒体的公开基地址；留空时，Jant 使用自己的 `/media/*` 路由 |
-| `HOST`                 | 裸 Node 下是 `127.0.0.1` | `jant start` 的绑定地址                                                       |
-| `PORT`                 | `3000`                   | `jant start` 的绑定端口                                                       |
-| `TRUST_PROXY`          | `false`                  | 是否信任反向代理传来的转发头                                                  |
-| `SITE_RESOLUTION_MODE` | `single-site`            | 站点解析模式                                                                  |
+| 变量                 | 默认值                   | 说明                                                                          |
+| -------------------- | ------------------------ | ----------------------------------------------------------------------------- |
+| `DATA_DIR`           | `./data`                 | 默认 SQLite 和本地媒体路径的基础目录                                          |
+| `LOCAL_STORAGE_PATH` | `<DATA_DIR>/media`       | 覆盖本地媒体目录                                                              |
+| `LOCAL_PUBLIC_URL`   | 未设置                   | 供 Jant 外部直接提供媒体的公开基地址；留空时，Jant 使用自己的 `/media/*` 路由 |
+| `HOST`               | 裸 Node 下是 `127.0.0.1` | `jant start` 的绑定地址                                                       |
+| `PORT`               | `3000`                   | `jant start` 的绑定端口                                                       |
+| `TRUST_PROXY`        | `false`                  | 是否信任反向代理传来的转发头                                                  |
 
 官方 Docker 镜像默认把 `DATA_DIR` 设为 `/var/lib/jant`，而 Docker Compose 通常会把 `TRUST_PROXY=true`。
-
-### 托管控制平面集成变量
-
-只有在 `SITE_RESOLUTION_MODE=host-based` 时才使用这些变量。
-
-| 变量                                       | 说明                                                     |
-| ------------------------------------------ | -------------------------------------------------------- |
-| `HOSTED_CONTROL_PLANE_BASE_URL`            | 公开的托管控制平面 URL，用于托管登录、重置密码和账号跳转 |
-| `HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL`   | 可选的控制平面内部 URL，供服务间调用                     |
-| `HOSTED_CONTROL_PLANE_PROVIDER_NAME`       | 可选的 provider 名称标签，显示在托管账号 UI 中           |
-| `HOSTED_CONTROL_PLANE_INTERNAL_TOKEN`      | 托管控制平面内部 API 使用的共享 bearer token             |
-| `INTERNAL_ADMIN_TOKEN`                     | 内部管理路由使用的共享 bearer token                      |
-| `HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET` | 域名校验响应使用的 32+ 字符 secret                       |
-| `HOSTED_CONTROL_PLANE_SSO_SECRET`          | 托管后台接力 token 使用的 32+ 字符 secret                |
-
-启用 `host-based` 模式后，如果缺少必需变量，启动会直接失败。这是刻意设计的。
 
 ### Feed 默认值（可选）
 
@@ -150,6 +110,8 @@ Node 和 Docker 的常用变量：
 Node 不支持 `r2`。
 
 Cloudflare 不支持 `local`。
+
+通过 `STORAGE_DRIVER` 环境变量切换驱动，例如 `STORAGE_DRIVER=s3`。不设置时使用各运行时的默认值。
 
 对 Node 和 Docker 来说，`local` 是最快起步的方式；`s3` 通常是更适合长期生产环境的选择。
 
@@ -273,26 +235,6 @@ IMAGE_TRANSFORM_URL = "https://media.yourdomain.com/cdn-cgi/image"
 IMAGE_TRANSFORM_URL = "https://yourdomain.com/cdn-cgi/image"
 ```
 
-### 临时上传清理
-
-Jant 会把进行中的上传暂存在一个临时存储前缀下，并在新的上传初始化过程中顺带清理过期的上传会话。
-
-如果你确实需要手动清理路径，可以使用内部维护端点：
-
-```bash
-curl -X POST https://your-site.example/api/internal/uploads/cleanup \
-  -H "Authorization: Bearer $INTERNAL_ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"limit": 50}'
-```
-
-或者使用 CLI 包装命令：
-
-```bash
-export INTERNAL_ADMIN_TOKEN=your-internal-admin-token
-npx jant uploads cleanup --url https://your-site.example --limit 50
-```
-
 ### Slug（可选）
 
 | 变量             | 默认值 | 说明                                       |
@@ -317,7 +259,7 @@ npx jant uploads cleanup --url https://your-site.example --limit 50
 
 ## Dashboard 设置
 
-这些设置可以在初始化完成后，通过 Jant dashboard 修改。其中一些也可以从环境变量预置进去。
+这些设置可以在初始化完成后，通过 Jant dashboard 修改。所有设置都可以通过同名环境变量预置初始值——dashboard 里改过的值优先级高于环境变量。
 
 | 设置                         | 用途                                     |
 | ---------------------------- | ---------------------------------------- |
@@ -338,9 +280,9 @@ npx jant uploads cleanup --url https://your-site.example --limit 50
 这些顶层路径是保留的，不能作为 post 或自定义页面的 slug：
 
 ```text
-featured, latest, collections, signin, signout, setup, settings, posts, dash,
-api, feed, search, archive, media, pages, reset, compose, static, assets,
-_assets, health
+featured, latest, collections, signin, signout, setup, settings, dash,
+api, feed, search, archive, media, pages, reset, compose, new, static, assets,
+_assets, healthz, readyz
 ```
 
 ## 配置文件
@@ -383,8 +325,8 @@ DATABASE_URL=file:./data/jant.sqlite
 
 有用的模板：
 
-- 仓库根目录下的 Docker / Node 示例：[`../../.env.example`](../../.env.example)
-- package 内部的 Node 示例：[`../../packages/core/.env.node.example`](../../packages/core/.env.node.example)
+- 仓库根目录下的 Docker / Node 示例：[`.env.example`](https://github.com/jant-me/jant/blob/main/.env.example)
+- package 内部的 Node 示例：[`packages/core/.env.node.example`](https://github.com/jant-me/jant/blob/main/packages/core/.env.node.example)
 
 ### .dev.vars（本地开发）
 

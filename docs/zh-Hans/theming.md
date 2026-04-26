@@ -88,20 +88,23 @@ Jant 给你三层视觉控制能力：
 
 ## 排版变量
 
-| 变量             | 默认值                  | 控制什么              |
-| ---------------- | ----------------------- | --------------------- |
-| `--font-body`    | 系统 sans-serif         | 正文、输入框、UI 标签 |
-| `--font-heading` | 偏编辑风格的 serif 组合 | 标题、站点 logo       |
-| `--font-serif`   | 系统 serif + Noto 回退  | serif 强调文本        |
-| `--font-mono`    | 系统 monospace          | 代码块                |
-| `--fw-light`     | 300                     | 轻量强调              |
-| `--fw-regular`   | 400                     | 正文                  |
-| `--fw-medium`    | 500                     | 标签、激活导航        |
-| `--fw-semibold`  | 600                     | 标题、按钮            |
-| `--fw-bold`      | 700                     | 强强调                |
-| `--fw-extrabold` | 800                     | 站点 logo             |
+| 变量                | 默认值                  | 控制什么                                      |
+| ------------------- | ----------------------- | --------------------------------------------- |
+| `--font-body`       | 系统 sans-serif         | 正文、输入框                                  |
+| `--font-heading`    | 偏编辑风格的 serif 组合 | 文章标题、h1–h3                               |
+| `--font-site-title` | 偏编辑风格的 serif 组合 | 站点 logo（标题栏）                           |
+| `--font-ui`         | 系统 sans-serif         | 按钮、导航、标签、badge（字型主题不影响此项） |
+| `--font-serif`      | 系统 serif + Noto 回退  | serif 强调文本                                |
+| `--font-blockquote` | `inherit`               | 引用块字族，默认跟随正文字体                  |
+| `--font-mono`       | 系统 monospace          | 代码块                                        |
+| `--fw-light`        | 300                     | 轻量强调                                      |
+| `--fw-regular`      | 400                     | 正文                                          |
+| `--fw-medium`       | 500                     | 标签、激活导航                                |
+| `--fw-semibold`     | 600                     | 标题、按钮                                    |
+| `--fw-bold`         | 700                     | 强强调                                        |
+| `--fw-extrabold`    | 800                     | 站点 logo                                     |
 
-字型主题（**Settings > Font Theme**）会覆盖 `--font-heading`、`--font-body`，以及一小组用于标题、标签和正文节奏的排版变量。你仍然可以继续在 Custom CSS 里覆盖它们。
+字型主题（**Settings > Font Theme**）会覆盖 `--font-heading`、`--font-body`，以及一小组用于标题、标签和正文节奏的排版变量。`--font-ui` 不受字型主题影响，始终保持 sans-serif，以确保按钮、导航等界面元素的可读性。你仍然可以继续在 Custom CSS 里覆盖它们。
 
 ### 示例：更轻的字重
 
@@ -114,17 +117,17 @@ Jant 给你三层视觉控制能力：
 
 ## 布局变量
 
-| 变量             | 默认值   | 控制什么          |
-| ---------------- | -------- | ----------------- |
-| `--site-width`   | `500px`  | 内容最大宽度      |
-| `--site-padding` | `1.5rem` | 横向内边距        |
-| `--content-gap`  | `1rem`   | feed 项之间的间距 |
+| 变量                  | 默认值   | 控制什么          |
+| --------------------- | -------- | ----------------- |
+| `--content-max-width` | `42rem`  | 内容最大宽度      |
+| `--site-padding`      | `1.5rem` | 横向内边距        |
+| `--content-gap`       | `1rem`   | feed 项之间的间距 |
 
 ### 示例：更宽的布局
 
 ```css
 :root {
-  --site-width: 700px;
+  --content-max-width: 55rem;
 }
 ```
 
@@ -160,6 +163,7 @@ Jant 给你三层视觉控制能力：
 | `data-page`          | 页面 wrapper | `home`, `post`, `search`, `archive`, `collection`, `collections`, `featured` |
 | `data-post`          | `<article>`  | 每篇帖子都会带上                                                             |
 | `data-format`        | `<article>`  | `note`, `link`, `quote`                                                      |
+| `data-post-slug`     | `<article>`  | 帖子的 slug（便于调试和按帖子定制样式）                                      |
 | `data-post-body`     | 内容 div     | 帖子正文                                                                     |
 | `data-post-meta`     | 元信息 div   | 帖子元信息（日期、标签）                                                     |
 | `data-post-media`    | 媒体 div     | 帖子图片 / 视频区域                                                          |
@@ -226,5 +230,4 @@ Jant 会自动跟随访问者的系统偏好（浅色 / 深色）。如果你想
 
 ## 接下来
 
-- [GitHub 同步](github-sync.md) —— 内容备份和 Git 版本历史
 - [导出与导入](export-and-import.md) —— 站点迁移和归档

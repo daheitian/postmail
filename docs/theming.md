@@ -88,19 +88,21 @@ These are derived from the core palette by default. Built-in themes set `--site-
 
 ## Typography Variables
 
-| Variable         | Default                      | What it controls                                                              |
-| ---------------- | ---------------------------- | ----------------------------------------------------------------------------- |
-| `--font-body`    | System sans-serif            | Post body text, content copy                                                  |
-| `--font-heading` | Editorial serif stack        | Post titles, site logo                                                        |
-| `--font-ui`      | System sans-serif            | Buttons, nav, labels, badges — always sans-serif, not affected by font themes |
-| `--font-serif`   | System serif + Noto fallback | Serif accents (quotes)                                                        |
-| `--font-mono`    | System monospace             | Code blocks                                                                   |
-| `--fw-light`     | 300                          | Light accents                                                                 |
-| `--fw-regular`   | 400                          | Body text                                                                     |
-| `--fw-medium`    | 500                          | Labels, active nav                                                            |
-| `--fw-semibold`  | 600                          | Headings, buttons                                                             |
-| `--fw-bold`      | 700                          | Strong emphasis                                                               |
-| `--fw-extrabold` | 800                          | Site logo                                                                     |
+| Variable            | Default                      | What it controls                                                              |
+| ------------------- | ---------------------------- | ----------------------------------------------------------------------------- |
+| `--font-body`       | System sans-serif            | Post body text, content copy                                                  |
+| `--font-heading`    | Editorial serif stack        | Post titles and headings (h1–h3)                                              |
+| `--font-site-title` | Editorial serif stack        | Site logo (header)                                                            |
+| `--font-ui`         | System sans-serif            | Buttons, nav, labels, badges — always sans-serif, not affected by font themes |
+| `--font-serif`      | System serif + Noto fallback | Serif accents (quotes)                                                        |
+| `--font-blockquote` | `inherit`                    | Blockquote font family, defaults to body font                                 |
+| `--font-mono`       | System monospace             | Code blocks                                                                   |
+| `--fw-light`        | 300                          | Light accents                                                                 |
+| `--fw-regular`      | 400                          | Body text                                                                     |
+| `--fw-medium`       | 500                          | Labels, active nav                                                            |
+| `--fw-semibold`     | 600                          | Headings, buttons                                                             |
+| `--fw-bold`         | 700                          | Strong emphasis                                                               |
+| `--fw-extrabold`    | 800                          | Site logo                                                                     |
 
 Font themes (**Settings > Font Theme**) override `--font-heading`, `--font-body`, and a small set of typography rhythm tokens for headings, labels, and body copy. `--font-ui` is intentionally not affected by font themes — it always stays sans-serif so buttons, navigation, and other interface elements remain legible regardless of the content font. You can further override any of these in Custom CSS.
 
@@ -115,17 +117,17 @@ Font themes (**Settings > Font Theme**) override `--font-heading`, `--font-body`
 
 ## Layout Variables
 
-| Variable         | Default  | What it controls           |
-| ---------------- | -------- | -------------------------- |
-| `--site-width`   | `500px`  | Maximum content width      |
-| `--site-padding` | `1.5rem` | Horizontal padding         |
-| `--content-gap`  | `1rem`   | Spacing between feed items |
+| Variable              | Default  | What it controls           |
+| --------------------- | -------- | -------------------------- |
+| `--content-max-width` | `42rem`  | Maximum content width      |
+| `--site-padding`      | `1.5rem` | Horizontal padding         |
+| `--content-gap`       | `1rem`   | Spacing between feed items |
 
 ### Example: Wider layout
 
 ```css
 :root {
-  --site-width: 700px;
+  --content-max-width: 55rem;
 }
 ```
 

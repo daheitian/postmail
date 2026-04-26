@@ -6838,6 +6838,9 @@
     border: none;
     padding: 8px;
     transition: background-color 0.15s;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
   }
 
   .compose-attachment-retry:hover {
@@ -6865,6 +6868,19 @@
     line-height: 1.3;
     text-align: center;
     opacity: 0.9;
+  }
+
+  .compose-attachment-error-msg {
+    font-size: 10px;
+    line-height: 1.3;
+    color: white;
+    text-align: center;
+    word-break: break-all;
+    padding: 0 4px;
+    user-select: text;
+    text-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.9),
+      0 0 6px rgba(0, 0, 0, 0.7);
   }
 
   .compose-attachment-remove {

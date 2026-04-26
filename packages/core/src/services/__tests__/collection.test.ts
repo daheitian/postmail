@@ -127,25 +127,27 @@ describe("CollectionService", () => {
       ).rejects.toThrow("Use lowercase letters, numbers, and hyphens only.");
     });
 
-    it("allows root-level slugs that only conflicted in the old namespace", async () => {
+    it("allows valid non-reserved collection slugs", async () => {
       await expect(
         collectionService.create({
-          slug: "new",
-          title: "New",
+          slug: "favorites",
+          title: "Favorites",
         }),
       ).resolves.toMatchObject({
-        slug: "new",
-        title: "New",
+        slug: "favorites",
+        title: "Favorites",
       });
     });
 
     it("rejects slugs reserved by top-level routes", async () => {
-      await expect(
-        collectionService.create({
-          slug: "collections",
-          title: "Collections",
-        }),
-      ).rejects.toThrow("This link is reserved. Choose something else.");
+      for (const slug of ["collections", "new", "compose"]) {
+        await expect(
+          collectionService.create({
+            slug,
+            title: slug,
+          }),
+        ).rejects.toThrow("This link is reserved. Choose something else.");
+      }
     });
   });
 

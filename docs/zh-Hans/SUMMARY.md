@@ -21,11 +21,11 @@
 ## 使用你的站点
 
 - [写作与内容组织](writing-and-organizing.md)
+- [GitHub 同步](github-sync.md)
 - [主题定制](theming.md)
 
 ## 数据与集成
 
-- [GitHub 同步](github-sync.md)
 - [导出与导入](export-and-import.md)
 - [备份与恢复](backups.md)
 - [自动化与 API](automation-and-api.md)

@@ -8,7 +8,7 @@
 | **[Docker 自托管](deployment-docker.md)** | 有自己服务器的人         | 你的服务器成本   |
 | **[Jant 托管](hosted.md)**                | 不想处理部署的人         | $10.46/年        |
 
-三条路径得到的是同一个 Jant：同一套帖子格式、同一套 API、同样可以随时 [导出](export-and-import.md) 或通过 [GitHub 同步](github-sync.md) 把内容带走。
+三条路径得到的是同一个 Jant，你可以随时 [导出](export-and-import.md) 或通过 [GitHub 同步](github-sync.md) 来迁移内容。
 
 ## 不知道选哪个
 
@@ -20,8 +20,8 @@
 
 **选 [Docker 自托管](deployment-docker.md)**，如果：
 
-- 你已经有一台自己的服务器在跑别的服务
-- 熟悉 Docker，想把 Jant 和其他服务放在一起管理
+- 你已经有一台自己的服务器
+- 熟悉 Docker 部署
 
 **选 [Jant 托管](hosted.md)**，如果：
 
@@ -29,11 +29,11 @@
 - 想现在就开始写，1 分钟内上线
 - 每年 $10.46 在你的预算内
 
-选错了也不要紧。三种方式都可以导入导出，随时可以迁移。
+选错也不要紧，三种方式都可以导入导出，随时可以迁移。
 
 ## 接下来
 
-挑一条路径，跟着对应的指南走：
+选择你的部署方式，跟着对应的指南走：
 
 - [使用 Cloudflare 自托管](deployment.md)
 - [使用 Docker 自托管](deployment-docker.md)

@@ -641,6 +641,7 @@ export class JantComposeDialog extends LitElement {
   private _suppressBeforeUnload = false;
   private _dialogEl: HTMLDialogElement | null = null;
   private _mousedownOnBackdrop = false;
+  private _mousedownPos: { x: number; y: number } | null = null;
   private _filePickerActive = false;
   private _ignoreNextEscapeClose = false;
   private _openEditRequestId = 0;
@@ -2264,13 +2265,36 @@ export class JantComposeDialog extends LitElement {
     this.requestClose();
   };
 
+  // Returns true if the given point is inside any open top-layer popover.
+  // Browsers sometimes fire backdrop click events even when the pointer is
+  // over a popover that is rendered above the dialog in the top layer —
+  // document.elementFromPoint() ignores the top layer, so we check bounding
+  // rects manually.
+  private _pointInOpenPopover(x: number, y: number): boolean {
+    for (const el of document.querySelectorAll<HTMLElement>(":popover-open")) {
+      const r = el.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private _handleDialogMousedown = (e: Event) => {
     // Track whether the mousedown originated on the backdrop (the <dialog>
     // itself). When the user drag-selects text inside the editor and the
     // pointer overshoots to the backdrop, the subsequent click event fires
     // with target === dialog. Without this guard, that click triggers
     // requestClose() and the unsaved-changes confirmation pops up.
-    this._mousedownOnBackdrop = e.target === this._dialogEl;
+    const me = e as MouseEvent;
+    // Treat as backdrop only when target is the dialog AND the cursor is not
+    // over an open popover (e.g. a toast notification in the top layer).
+    this._mousedownOnBackdrop =
+      e.target === this._dialogEl &&
+      !this._pointInOpenPopover(me.clientX, me.clientY);
+    this._mousedownPos = this._mousedownOnBackdrop
+      ? { x: me.clientX, y: me.clientY }
+      : null;
   };
 
   private _handleDialogClick = (e: Event) => {
@@ -2279,6 +2303,26 @@ export class JantComposeDialog extends LitElement {
     if (!this._mousedownOnBackdrop) return;
 
     const mouseEvent = e as MouseEvent;
+
+    // If the pointer moved more than 4px since mousedown, the user was
+    // dragging (e.g. selecting text in a toast on top of the backdrop) —
+    // don't treat that as an intentional dismiss click.
+    if (this._mousedownPos) {
+      const dx = mouseEvent.clientX - this._mousedownPos.x;
+      const dy = mouseEvent.clientY - this._mousedownPos.y;
+      if (dx * dx + dy * dy > 16) return;
+    }
+
+    // Also guard against text-selection drags that end back on the backdrop.
+    const selection = document.getSelection();
+    if (selection && !selection.isCollapsed) return;
+
+    // Guard against click pass-through from a top-layer popover: browsers can
+    // route a click on a popover to the dialog backdrop simultaneously.
+    if (this._pointInOpenPopover(mouseEvent.clientX, mouseEvent.clientY)) {
+      return;
+    }
+
     const hitTarget = document.elementFromPoint(
       mouseEvent.clientX,
       mouseEvent.clientY,

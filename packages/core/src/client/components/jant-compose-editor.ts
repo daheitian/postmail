@@ -1961,6 +1961,11 @@ export class JantComposeEditor extends LitElement {
                 </svg>
                 <span class="compose-retry-label">${this.labels.retryAll}</span>
               </span>
+              ${a.error
+                ? html`<span class="compose-attachment-error-msg"
+                    >${a.error}</span
+                  >`
+                : nothing}
             </button>
           `
         : nothing}
@@ -1976,7 +1981,6 @@ export class JantComposeEditor extends LitElement {
       <button
         type="button"
         class="compose-attachment-remove"
-        title=${this.labels.removeAttachment}
         aria-label=${this.labels.removeAttachment}
         @click=${onClick}
       >

@@ -22,10 +22,17 @@ export const QUEUED_TOAST_STORAGE_KEY = "jant.pendingToast";
 
 /** Ensure the toast container is in the top layer (above <dialog> etc.) */
 function ensureTopLayer(container: HTMLElement): void {
+  if (typeof container.showPopover !== "function") return;
+
+  // Re-promote above any modal dialog that was opened after the toast container.
   if (
-    !container.matches(":popover-open") &&
-    typeof container.showPopover === "function"
+    container.matches(":popover-open") &&
+    document.querySelector("dialog[open]")
   ) {
+    container.hidePopover();
+  }
+
+  if (!container.matches(":popover-open")) {
     container.showPopover();
   }
 }
@@ -85,6 +92,11 @@ const TOAST_ICONS = {
     '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>',
 };
 
+const COPY_ICON =
+  '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+const CHECK_ICON =
+  '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg>';
+
 /** Build toast inner content using safe DOM APIs (icon is trusted, text uses textContent). */
 function setToastContent(
   toast: HTMLElement,
@@ -102,6 +114,21 @@ function setToastContent(
     a.className = "toast-action";
     a.textContent = action.label;
     toast.appendChild(a);
+  }
+  if (type === "error" && navigator.clipboard) {
+    const btn = document.createElement("button");
+    btn.className = "toast-copy";
+    btn.setAttribute("aria-label", "Copy error message");
+    btn.innerHTML = COPY_ICON;
+    btn.addEventListener("click", () => {
+      navigator.clipboard.writeText(message).then(() => {
+        btn.innerHTML = CHECK_ICON;
+        setTimeout(() => {
+          btn.innerHTML = COPY_ICON;
+        }, 1500);
+      });
+    });
+    toast.appendChild(btn);
   }
 }
 

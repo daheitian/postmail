@@ -423,7 +423,8 @@ async function uploadFile(
   } catch (error) {
     const message = error instanceof Error ? error.message : "Upload failed";
     editor?.updateAttachmentStatus(clientId, "error", null, message);
-    showToast(message, "error");
+    // Error is shown on the attachment thumbnail; only toast when there's no editor context.
+    if (!editor) showToast(message, "error");
     return null;
   }
 }

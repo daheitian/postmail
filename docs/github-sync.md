@@ -8,9 +8,9 @@ A GitHub repository also serves as a file-based interface for AI tools. Jant pro
 
 ## How It Works
 
-**Jant to GitHub** — When you create, edit, or delete a post, Jant pushes the change to your repository as a Markdown file with YAML front matter. Thread replies are embedded in the root post file. Media stays where it is (referenced by URL, not copied into the repo).
+**Jant to GitHub** — When you create, edit, or delete a post, Jant pushes the change to your repository as a Markdown file with YAML front matter. Thread replies each become their own file nested under the root post's directory. Media stays where it is (referenced by URL, not copied into the repo).
 
-**GitHub to Jant** — When you edit a Markdown file on GitHub and push, a webhook notifies Jant. Jant parses the file, matches it to an existing post by slug, and updates the content. Deleting a file on GitHub soft-deletes the matching post.
+**GitHub to Jant** — When you edit a Markdown file on GitHub and push, a webhook notifies Jant. Jant parses the file, matches it to an existing post by slug, and updates the content. File deletions on GitHub are intentionally ignored — deleting posts must go through Jant's UI.
 
 Jant marks its own commits with `[jant-sync]` in the commit message. Incoming webhooks with that marker are skipped, so changes never bounce back and forth.
 
@@ -18,7 +18,7 @@ Jant marks its own commits with `[jant-sync]` in the commit message. Incoming we
 
 - Post body (Markdown)
 - Title, URL, quote text, and other front matter fields
-- Thread replies (merged into the root post file)
+- Thread replies (each stored as a separate nested file under the root post directory)
 
 ### What Does Not Sync from GitHub
 
@@ -28,12 +28,9 @@ Jant marks its own commits with `[jant-sync]` in the commit message. Incoming we
 
 ## Two Ways to Connect
 
-Jant supports two authentication methods for GitHub Sync:
+Self-hosted users connect with a **Personal Access Token (PAT)** by default — create a token, paste it into Jant, done. No extra configuration required.
 
-1. **Personal Access Token (PAT)** — always available. You create a token and paste it into Jant. Best for self-hosters.
-2. **GitHub App** — available when the deployment has a GitHub App configured. Users install the App on their repo with a single click and Jant never touches a long-lived token. Best for hosted platforms.
-
-When a GitHub App is configured, the setup page shows both options and recommends the App.
+If the deployment has a GitHub App configured, the setup page also shows an App connect option and recommends it. Users install the App on their repo with a single click and Jant never touches a long-lived token — better suited for hosted platforms.
 
 ## Option A — Personal Access Token
 
@@ -152,7 +149,7 @@ Only the following fields are updated from GitHub edits:
 - `link_url` (for link posts)
 - `quote_text` (for quote posts)
 
-Deleting a file on GitHub soft-deletes the post in Jant.
+Deleting a file on GitHub has no effect — file deletions from GitHub are ignored to prevent accidental data loss.
 
 ## Disconnect
 
@@ -208,7 +205,7 @@ Rapid edits coalesce: if a second change arrives during an in-flight push, it's 
 ## Limitations
 
 - **One repository per site.** Multi-repo sync is not supported.
-- **No post creation from GitHub.** Adding a new `.md` file on GitHub does not create a post in Jant. Only existing posts can be updated or deleted.
+- **No post creation or deletion from GitHub.** Adding or deleting `.md` files on GitHub has no effect in Jant. Only existing posts can be updated by editing their content.
 - **Text attachments are not synced.** Media and text attachment content are referenced by URL only.
 - **Rate limits.** GitHub allows 5,000 API requests per hour for authenticated users. A full sync of 1,000 posts uses roughly 1,000 requests (one blob per file). Incremental syncs use 1-2 requests each.
 
