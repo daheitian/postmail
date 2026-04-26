@@ -1,20 +1,14 @@
 /**
  * GitHub Sync Trigger
  *
- * Two dispatch paths:
+ * `triggerGitHubSyncInline` runs pushFullSync in the current worker
+ * invocation via `c.executionCtx.waitUntil`. Works uniformly on
+ * Workers and Node, no queue binding required.
  *
- * - `triggerGitHubSync` (queue-based): the original design, kept for
- *   future use when a Cloudflare Queue binding is actually wired up.
- *   Falls back to a no-op queue today, which silently drops jobs.
- * - `triggerGitHubSyncInline` (inline): runs pushFullSync in the
- *   current worker invocation via `c.executionCtx.waitUntil`. Works
- *   uniformly on Workers and Node, no queue binding required. This
- *   is what every caller uses today.
- *
- * Both paths debounce through a PENDING flag. When a new trigger
- * arrives while a sync is running, the inline runner records it via
- * DIRTY; the running sync re-runs once more after completion so the
- * new edits land.
+ * Debounces through a PENDING flag. When a new trigger arrives while
+ * a sync is running, the inline runner records it via DIRTY; the
+ * running sync re-runs once more after completion so the new edits
+ * land.
  */
 
 import type { Context } from "hono";
@@ -22,22 +16,9 @@ import type { SettingsService } from "../services/settings.js";
 import type { GitHubSyncService } from "../services/github-sync.js";
 import type { AppVariables } from "../types/app-context.js";
 import type { Bindings } from "../types/bindings.js";
-import { noopQueue, type JobQueue } from "./job-queue.js";
-import { createCfJobQueue } from "./job-queue-cf.js";
 import { buildSyncSiteConfig } from "./github-sync-site-config.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
-
-/**
- * Resolve the appropriate job queue from the environment.
- * Returns the CF Queue adapter if available, otherwise noop.
- */
-export function resolveJobQueue(env: { GITHUB_SYNC_QUEUE?: Queue }): JobQueue {
-  if (env.GITHUB_SYNC_QUEUE) {
-    return createCfJobQueue(env.GITHUB_SYNC_QUEUE);
-  }
-  return noopQueue;
-}
 
 /**
  * Maximum time a sync is allowed to be "in flight" before we consider
@@ -87,31 +68,6 @@ export async function markSyncPending(
     String(Math.floor(Date.now() / 1000)),
   );
   await settings.set("GITHUB_SYNC_DIRTY", "");
-}
-
-/**
- * Queue-based trigger. Safe to call on every post mutation. Kept for
- * compatibility with the original design but currently enqueues to a
- * noop queue on every known deployment — callers should use
- * `triggerGitHubSyncInline` instead.
- */
-export async function triggerGitHubSync(
-  queue: JobQueue,
-  settings: SettingsService,
-  siteId: string,
-): Promise<void> {
-  const enabled = await settings.get("GITHUB_SYNC_ENABLED");
-  if (enabled !== "true") return;
-
-  const alreadyPending = await settings.get("GITHUB_SYNC_PENDING");
-  if (alreadyPending === "true") return;
-
-  await settings.set("GITHUB_SYNC_PENDING", "true");
-  await queue.enqueue({
-    kind: "github-sync-push",
-    siteId,
-    data: {},
-  });
 }
 
 /**

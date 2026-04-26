@@ -82,6 +82,3 @@ export type { MediaContext } from "./lib/view.js";
 
 // Default feed renderers (for custom feed implementations)
 export { defaultFeedRenderer } from "./lib/feed.js";
-
-// GitHub Sync queue handler (for Cloudflare Workers queue consumer)
-export { handleQueueBatch as handleGitHubSyncQueueBatch } from "./lib/github-sync-queue-handler.js";

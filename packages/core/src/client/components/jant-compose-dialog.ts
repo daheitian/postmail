@@ -5006,6 +5006,38 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private _renderHideFromLatestQuickToggleRow() {
+    if (this._visibilityLocked) return nothing;
+    if (this._visibility === "private") return nothing;
+    return html`
+      <div class="compose-quick-actions-row">
+        ${this._renderHideFromLatestQuickToggle()}
+      </div>
+    `;
+  }
+
+  private _renderHideFromLatestQuickToggle() {
+    if (this._visibilityLocked) return nothing;
+    if (this._visibility === "private") return nothing;
+
+    const checked = this._visibility === "latest_hidden";
+    return html`
+      <label class="compose-publish-quick-toggle">
+        <input
+          type="checkbox"
+          class="input compose-publish-quick-toggle-input"
+          .checked=${checked}
+          ?disabled=${this._loading}
+          @change=${(e: Event) => {
+            const target = e.target as HTMLInputElement;
+            this._setVisibility(target.checked ? "latest_hidden" : "public");
+          }}
+        />
+        <span>${this.labels.publishHideFromLatest}</span>
+      </label>
+    `;
+  }
+
   private _renderEditLoadingState() {
     return html`
       <div
@@ -5387,14 +5419,16 @@ export class JantComposeDialog extends LitElement {
         ${isOpeningEdit
           ? nothing
           : html`<div
-              class=${classMap({
-                "compose-action-row": true,
-                "compose-action-row-overlay-open":
-                  this._showPublishPanel || this._showCollection,
-              })}
-            >
-              ${this._renderCollectionSelector()} ${this._renderPublishButton()}
-            </div>`}
+                class=${classMap({
+                  "compose-action-row": true,
+                  "compose-action-row-overlay-open":
+                    this._showPublishPanel || this._showCollection,
+                })}
+              >
+                ${this._renderCollectionSelector()}
+                ${this._renderPublishButton()}
+              </div>
+              ${this._renderHideFromLatestQuickToggleRow()}`}
         ${this._renderMobilePublishPanel()} ${this._renderAttachedPanel()}
         ${this._renderAltPanel()} ${this._renderDraftsPanel()}
         ${this._renderConfirmPanel()}

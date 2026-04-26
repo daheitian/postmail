@@ -87,6 +87,4 @@ export interface Bindings {
   CORS_ORIGINS?: EnvBindingValue;
   HOST?: string;
   PORT?: string;
-  // GitHub Sync queue (Cloudflare Queues)
-  GITHUB_SYNC_QUEUE?: Queue;
 }

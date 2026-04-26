@@ -651,9 +651,15 @@ export function createGitHubSyncService(
         if (frontMatter.link_url !== undefined) {
           updateData.url = frontMatter.link_url;
         }
+        if (frontMatter.source_name !== undefined)
+          updateData.sourceName = frontMatter.source_name;
+        if (frontMatter.source_url !== undefined)
+          updateData.sourceUrl = frontMatter.source_url;
         if (frontMatter.quote_text !== undefined) {
           updateData.quoteText = frontMatter.quote_text;
         }
+        if (frontMatter.rating !== undefined)
+          updateData.rating = frontMatter.rating;
 
         if (Object.keys(updateData).length > 0) {
           await services.posts.update(existingPost.id, updateData);

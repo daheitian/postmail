@@ -141,6 +141,13 @@
       "when": 1776712486504,
       "tag": "0019_bored_magus",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1777225887121,
+      "tag": "0020_free_zaladane",
+      "breakpoints": true
     }
   ]
 }

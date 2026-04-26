@@ -11,7 +11,6 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { verifyGitHubWebhookSignature } from "../../lib/webhook-signature.js";
-import { resolveJobQueue } from "../../lib/github-sync-trigger.js";
 import { createGitHubClient, parseRepoSlug } from "../../lib/github-api.js";
 import {
   createGitHubSyncService,
@@ -72,18 +71,35 @@ githubSyncWebhookRoutes.post("/webhook", async (c) => {
     return c.json({ ok: true, skipped: "jant-sync commits" });
   }
 
-  // Enqueue pull job
-  const queue = resolveJobQueue(c.env);
-  await queue.enqueue({
-    kind: "github-sync-pull",
-    siteId: c.var.currentSite.id,
-    data: {
-      ref: payload.ref,
-      before: payload.before,
-      after: payload.after,
-      commits: payload.commits,
-    },
-  });
+  // Run the pull inline. Self-hosted Node deployments don't have a
+  // CF Queue binding, and the legacy queue path silently dropped jobs
+  // through `noopQueue`. Mirroring `triggerGitHubSyncInline`, we hand
+  // the work to `executionCtx.waitUntil` so the HTTP response returns
+  // immediately while the sync runs in the background.
+  const syncService = createGitHubSyncService(
+    c.var.services,
+    c.var.currentSite.id,
+    await buildSyncSiteConfig(c),
+    { storage: c.var.storage, githubApp: getGitHubAppConfig(c.env) },
+  );
+
+  const settings = c.var.services.settings;
+  const run = (async () => {
+    try {
+      await syncService.handleWebhookPush(payload);
+      await settings.set("GITHUB_SYNC_LAST_ERROR", "");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      await settings.set("GITHUB_SYNC_LAST_ERROR", message);
+    }
+  })();
+
+  try {
+    c.executionCtx?.waitUntil(run);
+  } catch {
+    // executionCtx not available (e.g. tests) — promise still resolves
+    // on its own; HTTP response returns immediately either way.
+  }
 
   return c.json({ ok: true, queued: true });
 });

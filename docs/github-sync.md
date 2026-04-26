@@ -17,7 +17,7 @@ Jant marks its own commits with `[jant-sync]` in the commit message. Incoming we
 ### What Syncs
 
 - Post body (Markdown)
-- Title, URL, quote text, and other front matter fields
+- Title, URL, source attribution, quote text, rating, and other front matter fields
 - Thread replies (each stored as a separate nested file under the root post directory)
 
 ### What Does Not Sync from GitHub
@@ -26,15 +26,11 @@ Jant marks its own commits with `[jant-sync]` in the commit message. Incoming we
 - Media attachments are not modified. They remain at their original URLs.
 - Settings, navigation, collections, and themes are not affected by incoming webhooks.
 
-## Two Ways to Connect
+## Connecting
 
-Self-hosted users connect with a **Personal Access Token (PAT)** by default — create a token, paste it into Jant, done. No extra configuration required.
+### Personal Access Token
 
-If the deployment has a GitHub App configured, the setup page also shows an App connect option and recommends it. Users install the App on their repo with a single click and Jant never touches a long-lived token — better suited for hosted platforms.
-
-## Option A — Personal Access Token
-
-You need a GitHub **fine-grained Personal Access Token** with these permissions on the target repository:
+The default for self-hosted users. You need a GitHub **fine-grained Personal Access Token** with these permissions on the target repository:
 
 | Permission   | Access     | Why                          |
 | ------------ | ---------- | ---------------------------- |
@@ -43,8 +39,6 @@ You need a GitHub **fine-grained Personal Access Token** with these permissions 
 
 Create the token at [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta). Scope it to a single repository for least privilege.
 
-### Setup
-
 1. Create a repository on GitHub (public or private, either works).
 2. Open **Settings > Data > GitHub Sync** in your Jant dashboard.
 3. Paste your token and enter the repository as `owner/repo`.
@@ -52,58 +46,13 @@ Create the token at [github.com/settings/tokens?type=beta](https://github.com/se
 
 Jant validates the token, saves the configuration, and creates a webhook on the repository. No manual webhook setup required.
 
-## Option B — GitHub App (recommended for hosted)
+### GitHub App
 
-When these environment variables are set on the Jant deployment, the GitHub App connect flow is enabled:
+Available when the deployment has a GitHub App configured. You never touch a long-lived token — Jant issues short-lived credentials on demand.
 
-| Variable                    | Required | What it is                                                                                                                                                                                                                                                        |
-| --------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_APP_ID`             | Yes      | Numeric App ID from the GitHub App settings page.                                                                                                                                                                                                                 |
-| `GITHUB_APP_PRIVATE_KEY`    | Yes      | PKCS#8 PEM private key generated in the GitHub App settings. `\n` escapes are expanded automatically, so you can store it on a single line.                                                                                                                       |
-| `GITHUB_APP_SLUG`           | Yes      | App slug (the last segment of `github.com/apps/<slug>`). Used to build install URLs.                                                                                                                                                                              |
-| `GITHUB_APP_WEBHOOK_SECRET` | No       | Shared secret for GitHub App webhooks. Used by two endpoints: the per-repo push webhook (takes precedence over the per-site secret) and the App-level webhook at `/api/github-sync/app-webhook`, which reacts to installation and installation-repository events. |
-
-### Creating the GitHub App
-
-Go to **Settings > Developer settings > GitHub Apps > New GitHub App** (on your user or org). Two configurations are documented — pick the one that matches your deployment.
-
-> **Setup URL vs Callback URL.** GitHub Apps expose two confusingly similar fields. The install flow uses **Setup URL** — that's where GitHub sends the browser after the user finishes installing, with `installation_id` and `state`. **Callback URL** is for OAuth user-to-server identification ("Sign in with GitHub"), which Jant does not use. Always set **Setup URL**, leave Callback URL blank.
-
-#### Self-hosted (single site, one host)
-
-1. **Homepage URL**: your Jant site.
-2. **Setup URL (optional)**: `https://<your-jant-site>/settings/github-sync/app/callback`.
-3. **Redirect on update**: ✅ checked.
-4. **Callback URL**: leave blank.
-5. **Webhook**: check **Active** and set the URL to `https://<your-jant-site>/api/github-sync/app-webhook`. Paste the same value used for `GITHUB_APP_WEBHOOK_SECRET` into **Secret**. This keeps Jant's installation state in sync when the App is uninstalled, suspended, or repositories are removed. Per-repo push webhooks are still registered automatically at the site host.
-6. **Repository permissions**: `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
-7. **Subscribe to events**: `Push`, `Installation`, `Installation repositories`.
-8. **Where can this GitHub App be installed**: "Only on this account".
-9. Generate a private key (PKCS#8 PEM) and copy the App ID.
-
-#### Hosted / multi-site (one control plane, many site hosts)
-
-A GitHub App only supports one Setup URL, but hosted sites live on different hosts. The control plane (`jant-cloud`) ships a dispatcher at `/api/github/install-callback` that verifies the signed install state and 302s the browser to the originating site.
-
-1. **Homepage URL**: your control plane URL.
-2. **Setup URL (optional)**: `https://<your-control-plane>/api/github/install-callback`.
-3. **Redirect on update**: ✅ checked.
-4. **Callback URL**: leave blank.
-5. **Webhook**: check **Active** and set the URL to `https://<your-control-plane>/api/github-app-webhook`. The control plane forwards the delivery to every affected site's `/api/github-sync/app-webhook`. Paste the same value used for `GITHUB_APP_WEBHOOK_SECRET` into **Secret**. Each site still registers its own repo-level push webhook at its own host.
-6. **Repository permissions**: same as self-hosted — `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
-7. **Subscribe to events**: `Push`, `Installation`, `Installation repositories`.
-8. **Where can this GitHub App be installed**: "Any account".
-9. Generate a private key (PKCS#8 PEM) and copy the App ID.
-
-In this mode the install `state` is signed with `HOSTED_CONTROL_PLANE_SSO_SECRET` — the same secret hosted deployments already share between core and control plane. Both services must see the same value; no extra env var is needed.
-
-### User Setup
-
-1. Open **Settings > Data > GitHub Sync** in the Jant dashboard.
+1. Open **Settings > Data > GitHub Sync** in your Jant dashboard.
 2. Click **Install GitHub App**. You will be redirected to GitHub to pick which repositories the App can access.
 3. After installing, GitHub redirects you back. Pick the repository you want to sync and click **Connect**.
-
-Jant uses the installation to issue short-lived tokens on demand — no token is ever stored long-term.
 
 ## Push a Full Sync
 
@@ -142,12 +91,14 @@ You can edit any managed Markdown file directly on GitHub (or locally and push).
 
 Matching works by slug: Jant reads the `slug` field from the YAML front matter and looks up the corresponding post. If no match is found, the file is skipped.
 
-Only the following fields are updated from GitHub edits:
+The following fields are updated from GitHub edits:
 
 - `body` (the Markdown content below the front matter)
 - `title`
 - `link_url` (for link posts)
+- `source_name`, `source_url` (attribution for link and quote posts)
 - `quote_text` (for quote posts)
+- `rating`
 
 Deleting a file on GitHub has no effect — file deletions from GitHub are ignored to prevent accidental data loss.
 
@@ -208,6 +159,53 @@ Rapid edits coalesce: if a second change arrives during an in-flight push, it's 
 - **No post creation or deletion from GitHub.** Adding or deleting `.md` files on GitHub has no effect in Jant. Only existing posts can be updated by editing their content.
 - **Text attachments are not synced.** Media and text attachment content are referenced by URL only.
 - **Rate limits.** GitHub allows 5,000 API requests per hour for authenticated users. A full sync of 1,000 posts uses roughly 1,000 requests (one blob per file). Incremental syncs use 1-2 requests each.
+
+## Self-hosted: Configuring the GitHub App
+
+This section is for administrators setting up a GitHub App on their own Jant deployment. End users connecting via GitHub App only need the steps in [Connecting](#connecting) above.
+
+Set these environment variables on the Jant deployment to enable the GitHub App connect flow:
+
+| Variable                    | Required | What it is                                                                                                                                                                                                                                                        |
+| --------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_APP_ID`             | Yes      | Numeric App ID from the GitHub App settings page.                                                                                                                                                                                                                 |
+| `GITHUB_APP_PRIVATE_KEY`    | Yes      | PKCS#8 PEM private key generated in the GitHub App settings. `\n` escapes are expanded automatically, so you can store it on a single line.                                                                                                                       |
+| `GITHUB_APP_SLUG`           | Yes      | App slug (the last segment of `github.com/apps/<slug>`). Used to build install URLs.                                                                                                                                                                              |
+| `GITHUB_APP_WEBHOOK_SECRET` | No       | Shared secret for GitHub App webhooks. Used by two endpoints: the per-repo push webhook (takes precedence over the per-site secret) and the App-level webhook at `/api/github-sync/app-webhook`, which reacts to installation and installation-repository events. |
+
+### Creating the GitHub App
+
+Go to **Settings > Developer settings > GitHub Apps > New GitHub App** (on your user or org). Two configurations are documented — pick the one that matches your deployment.
+
+> **Setup URL vs Callback URL.** GitHub Apps expose two confusingly similar fields. The install flow uses **Setup URL** — that's where GitHub sends the browser after the user finishes installing, with `installation_id` and `state`. **Callback URL** is for OAuth user-to-server identification ("Sign in with GitHub"), which Jant does not use. Always set **Setup URL**, leave Callback URL blank.
+
+#### Self-hosted (single site, one host)
+
+1. **Homepage URL**: your Jant site.
+2. **Setup URL (optional)**: `https://<your-jant-site>/settings/github-sync/app/callback`.
+3. **Redirect on update**: ✅ checked.
+4. **Callback URL**: leave blank.
+5. **Webhook**: check **Active** and set the URL to `https://<your-jant-site>/api/github-sync/app-webhook`. Paste the same value used for `GITHUB_APP_WEBHOOK_SECRET` into **Secret**. This keeps Jant's installation state in sync when the App is uninstalled, suspended, or repositories are removed. Per-repo push webhooks are still registered automatically at the site host.
+6. **Repository permissions**: `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
+7. **Subscribe to events**: `Push`, `Installation`, `Installation repositories`.
+8. **Where can this GitHub App be installed**: "Only on this account".
+9. Generate a private key (PKCS#8 PEM) and copy the App ID.
+
+#### Hosted / multi-site (one control plane, many site hosts)
+
+A GitHub App only supports one Setup URL, but hosted sites live on different hosts. The control plane (`jant-cloud`) ships a dispatcher at `/api/github/install-callback` that verifies the signed install state and 302s the browser to the originating site.
+
+1. **Homepage URL**: your control plane URL.
+2. **Setup URL (optional)**: `https://<your-control-plane>/api/github/install-callback`.
+3. **Redirect on update**: ✅ checked.
+4. **Callback URL**: leave blank.
+5. **Webhook**: check **Active** and set the URL to `https://<your-control-plane>/api/github-app-webhook`. The control plane forwards the delivery to every affected site's `/api/github-sync/app-webhook`. Paste the same value used for `GITHUB_APP_WEBHOOK_SECRET` into **Secret**. Each site still registers its own repo-level push webhook at its own host.
+6. **Repository permissions**: same as self-hosted — `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
+7. **Subscribe to events**: `Push`, `Installation`, `Installation repositories`.
+8. **Where can this GitHub App be installed**: "Any account".
+9. Generate a private key (PKCS#8 PEM) and copy the App ID.
+
+In this mode the install `state` is signed with `HOSTED_CONTROL_PLANE_SSO_SECRET` — the same secret hosted deployments already share between core and control plane. Both services must see the same value; no extra env var is needed.
 
 ## Related Reading
 

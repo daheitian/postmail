@@ -17,7 +17,7 @@ Jant 自己产生的 commit 会带上 `[jant-sync]` 标记。带这个标记的 
 ### 哪些东西会同步
 
 - 帖子正文（Markdown）
-- 标题、URL、引文文本以及其他 front matter 字段
+- 标题、URL、来源信息、引文文本、评分等 front matter 字段
 - Thread 回复（各自作为独立文件嵌套在根帖目录下）
 
 ### 哪些东西不会从 GitHub 同步过来
@@ -25,90 +25,37 @@ Jant 自己产生的 commit 会带上 `[jant-sync]` 标记。带这个标记的 
 - 在 GitHub 上新增一个 `.md` 文件**不会**创建一篇新帖子。你只能通过修改 Git 仓库中现有的文件来更新 Post。
 - 设置、导航、collections、主题不会被 webhook 影响
 
-## 两种连接方式
+## 连接
 
-自托管用户默认使用 **Personal Access Token（PAT）**——创建一个 token 粘贴进 Jant 即可，无需额外配置。
+### Personal Access Token
 
-如果部署配置了 GitHub App，设置页会额外显示 App 连接选项，并推荐使用——用户一键安装到自己的仓库，Jant 永远不需要接触长期 token，更适合托管平台。
-
-## 方式 A —— Personal Access Token
-
-你需要一个 GitHub **fine-grained Personal Access Token**，对目标仓库授予以下权限：
+自托管用户的默认连接方式。你需要一个 GitHub **fine-grained Personal Access Token**，对目标仓库授予以下权限：
 
 | 权限         | 访问级别   | 用途                     |
 | ------------ | ---------- | ------------------------ |
 | **Contents** | Read/Write | 推送和读取 Markdown 文件 |
 | **Webhooks** | Read/Write | 自动创建 push webhook    |
 
-在 [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) 创建 token。最小权限原则：把 token 限定到单个仓库。
-
-### 设置步骤
+在 [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) 创建 token。最小权限原则：把 token 限定到单个仓库，添加 `Contents`, `Webhooks` permissions.
 
 1. 在 GitHub 上创建一个仓库（公开私有都行）
-2. 在 Jant dashboard 里打开 **Settings > Data > GitHub Sync**
+2. 在 Jant dashboard 里打开 **Settings > Integrations > GitHub Sync**
 3. 粘贴 token，输入仓库 `owner/repo`
 4. 点击 **Connect**
 
 Jant 会校验 token、保存配置，并在仓库里创建 webhook。不需要手动设置 webhook。
 
-## 方式 B —— GitHub App
+### GitHub App
 
-当 Jant 部署设置了以下环境变量时，GitHub App 连接流程会启用：
+在部署配置了 GitHub App 时可用。你无需接触任何长期 token——Jant 按需签发短期凭证。
 
-| 变量                        | 必需 | 说明                                                                                                                                                                 |
-| --------------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_APP_ID`             | 是   | GitHub App 设置页里的数字 App ID                                                                                                                                     |
-| `GITHUB_APP_PRIVATE_KEY`    | 是   | 在 GitHub App 设置里生成的 PKCS#8 PEM 私钥。`\n` 转义会自动展开，所以你可以单行存放                                                                                  |
-| `GITHUB_APP_SLUG`           | 是   | App slug（`github.com/apps/<slug>` 的最后一段）。用于构造安装 URL                                                                                                    |
-| `GITHUB_APP_WEBHOOK_SECRET` | 否   | GitHub App webhook 的共享 secret。两个 endpoint 会用：单仓库 push webhook（优先级高于站点级 secret）和 App 级 webhook `/api/github-sync/app-webhook`（响应安装事件） |
-
-### 创建 GitHub App
-
-进入 **Settings > Developer settings > GitHub Apps > New GitHub App**（个人或组织都行）。下面记录了两种配置——按你的部署模式选一种。
-
-> **Setup URL vs Callback URL**：GitHub App 有两个名字相近、容易混淆的字段。安装流程使用 **Setup URL**——用户安装完成后，GitHub 会带着 `installation_id` 和 `state` 把浏览器跳转到这里。**Callback URL** 用于 OAuth 用户身份识别（"Sign in with GitHub"），Jant 不使用。永远设置 **Setup URL**，留空 Callback URL。
-
-#### 自托管（单站点，单一 host）
-
-1. **Homepage URL**：你的 Jant 站点
-2. **Setup URL (optional)**：`https://<your-jant-site>/settings/github-sync/app/callback`
-3. **Redirect on update**：✅ 勾选
-4. **Callback URL**：留空
-5. **Webhook**：勾选 **Active**，URL 设为 `https://<your-jant-site>/api/github-sync/app-webhook`，**Secret** 填 `GITHUB_APP_WEBHOOK_SECRET` 的值。这样在 App 被卸载、暂停或仓库被移除时，Jant 的安装状态能保持同步。单仓库 push webhook 仍然在站点 host 上自动注册
-6. **Repository permissions**：`Contents: Read & write`、`Metadata: Read-only`、`Webhooks: Read & write`
-7. **Subscribe to events**：`Push`、`Installation`、`Installation repositories`
-8. **Where can this GitHub App be installed**："Only on this account"
-9. 生成一个私钥（PKCS#8 PEM），并复制 App ID
-
-#### 托管 / 多站点（一个控制平面，多个站点 host）
-
-GitHub App 只支持一个 Setup URL，但托管站点分布在不同 host 上。控制平面（`jant-cloud`）在 `/api/github/install-callback` 提供了一个 dispatcher，验证签名过的安装 state 后，把浏览器 302 跳转回原始站点。
-
-1. **Homepage URL**：控制平面 URL
-2. **Setup URL (optional)**：`https://<your-control-plane>/api/github/install-callback`
-3. **Redirect on update**：✅ 勾选
-4. **Callback URL**：留空
-5. **Webhook**：勾选 **Active**，URL 设为 `https://<your-control-plane>/api/github-app-webhook`。控制平面会把每次投递转发到所有受影响站点的 `/api/github-sync/app-webhook`。**Secret** 填 `GITHUB_APP_WEBHOOK_SECRET` 的值。每个站点仍在自己的 host 上注册自己的仓库级 push webhook
-6. **Repository permissions**：和自托管相同——`Contents: Read & write`、`Metadata: Read-only`、`Webhooks: Read & write`
-7. **Subscribe to events**：`Push`、`Installation`、`Installation repositories`
-8. **Where can this GitHub App be installed**："Any account"
-9. 生成一个私钥（PKCS#8 PEM），并复制 App ID
-
-在这个模式下，安装 `state` 用 `HOSTED_CONTROL_PLANE_SSO_SECRET` 签名——和托管部署在 core 与控制平面之间共享的是同一个 secret。两端必须看到相同的值；不需要额外的环境变量。
-
-### 用户操作
-
-1. 在 Jant dashboard 打开 **Settings > Data > GitHub Sync**
+1. 在 Jant dashboard 里打开 **Settings > Integrations > GitHub Sync**
 2. 点击 **Install GitHub App**。你会被跳转到 GitHub 选择 App 可访问的仓库
 3. 安装完成后，GitHub 把你跳转回来。选要同步的仓库，点 **Connect**
 
-Jant 用 installation 按需签发短期 token——任何 token 都不会被长期保存。
-
 ## 推送一次完整同步
 
-连接好之后，点 **Push Full Sync** 把所有帖子写入仓库。这会产生一个单独的 commit，把每个 thread 作为 Hugo branch bundle 写入 `content/` 下，同时附上能让 [Hugo](https://gohugo.io) 构建站点所需的主题和配置。
-
-你可以随时重新执行完整同步。它会用一次原子 commit 替换仓库内容。Git 把没变的文件视为 no-op，所以未变更文件的 blame 历史会保留。
+连接之后，Jant 会自动推送一次完整同步。需要时你也可以随时手动重新执行。
 
 ### Jant 在仓库里管理哪些路径
 
@@ -141,12 +88,14 @@ Jant 用 installation 按需签发短期 token——任何 token 都不会被长
 
 匹配规则按 slug 进行：Jant 读取 YAML front matter 里的 `slug` 字段，找到对应帖子。匹配不到的文件会被跳过。
 
-只有以下字段会被 GitHub 编辑更新：
+以下字段会被 GitHub 编辑更新：
 
 - `body`（front matter 下方的 Markdown 内容）
 - `title`
 - `link_url`（link 帖子）
+- `source_name`、`source_url`（link 和 quote 帖子的来源信息）
 - `quote_text`（quote 帖子）
+- `rating`
 
 在 GitHub 上删除文件不会有任何效果——文件删除操作被忽略，以防止意外数据丢失。
 
@@ -207,6 +156,35 @@ push 进行中时，settings 页会显示一个实时的 "Syncing…" 指示器�
 - **不能从 GitHub 创建或删除帖子**：在 GitHub 上新增或删除 `.md` 文件在 Jant 里不会产生任何效果，只能通过编辑文件内容来更新已有帖子
 - **文本附件不同步**：媒体和文本附件内容仅以 URL 引用
 - **速率限制**：GitHub 对认证用户每小时允许 5,000 次 API 请求。一次 1,000 篇帖子的完整同步大约用掉 1,000 次请求（每个文件一个 blob）。增量同步每次用 1-2 次
+
+## 自部署：配置 GitHub App
+
+本节面向在自己的 Jant 部署上配置 GitHub App 的管理员。通过 GitHub App 连接的终端用户只需参照上方的[连接](#连接)步骤操作即可。
+
+在 Jant 部署上设置以下环境变量，即可启用 GitHub App 连接流程：
+
+| 变量                        | 必需 | 说明                                                                                                                                                                 |
+| --------------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_APP_ID`             | 是   | GitHub App 设置页里的数字 App ID                                                                                                                                     |
+| `GITHUB_APP_PRIVATE_KEY`    | 是   | 在 GitHub App 设置里生成的 PKCS#8 PEM 私钥。`\n` 转义会自动展开，所以你可以单行存放                                                                                  |
+| `GITHUB_APP_SLUG`           | 是   | App slug（`github.com/apps/<slug>` 的最后一段）。用于构造安装 URL                                                                                                    |
+| `GITHUB_APP_WEBHOOK_SECRET` | 否   | GitHub App webhook 的共享 secret。两个 endpoint 会用：单仓库 push webhook（优先级高于站点级 secret）和 App 级 webhook `/api/github-sync/app-webhook`（响应安装事件） |
+
+### 创建 GitHub App
+
+进入 **Settings > Developer settings > GitHub Apps > New GitHub App**（个人或组织都行）。
+
+> **Setup URL vs Callback URL**：GitHub App 有两个名字相近、容易混淆的字段。安装流程使用 **Setup URL**——用户安装完成后，GitHub 会带着 `installation_id` 和 `state` 把浏览器跳转到这里。**Callback URL** 用于 OAuth 用户身份识别（"Sign in with GitHub"），Jant 不使用。永远设置 **Setup URL**，留空 Callback URL。
+
+1. **Homepage URL**：你的 Jant 站点
+2. **Setup URL (optional)**：`https://<your-jant-site>/settings/github-sync/app/callback`
+3. **Redirect on update**：✅ 勾选
+4. **Callback URL**：留空
+5. **Webhook**：勾选 **Active**，URL 设为 `https://<your-jant-site>/api/github-sync/app-webhook`，**Secret** 填 `GITHUB_APP_WEBHOOK_SECRET` 的值。这样在 App 被卸载、暂停或仓库被移除时，Jant 的安装状态能保持同步。单仓库 push webhook 仍然在站点 host 上自动注册
+6. **Repository permissions**：`Contents: Read & write`、`Metadata: Read-only`、`Webhooks: Read & write`
+7. **Subscribe to events**：`Push`、`Installation`、`Installation repositories`
+8. **Where can this GitHub App be installed**："Only on this account"
+9. 生成一个私钥（PKCS#8 PEM），并复制 App ID
 
 ## 接下来
 
