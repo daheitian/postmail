@@ -10,6 +10,7 @@ import { z } from "zod";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
+import { withConfig } from "../../middleware/config.js";
 import { verifyGitHubWebhookSignature } from "../../lib/webhook-signature.js";
 import { createGitHubClient, parseRepoSlug } from "../../lib/github-api.js";
 import {
@@ -35,7 +36,12 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const githubSyncWebhookRoutes = new Hono<Env>();
 
-githubSyncWebhookRoutes.post("/webhook", async (c) => {
+// `withConfig` here loads `appConfig`/`allSettings`/`themeStyle` for
+// `buildSyncSiteConfig`. The webhook subrouter is mounted before the
+// global `withConfig` middleware (it must skip auth/onboarding), so we
+// apply it route-locally rather than per-subrouter — the sibling
+// `/app-webhook` is host-agnostic and doesn't need site config.
+githubSyncWebhookRoutes.post("/webhook", withConfig(), async (c) => {
   // Prefer an app-level webhook secret when configured (GitHub App deployments
   // can set a single shared secret on the App and skip per-site secrets);
   // otherwise fall back to the per-site secret saved during setup.
