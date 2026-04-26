@@ -31,7 +31,7 @@ Twitter 和 Threads 证明了另一条路：没有后台，没有表单，没有
 
 Jant 想把这种体验还给个人博客：标题是可选的，随时可以追加成 Thread，发布只需要一个动作。
 
-![Jant](https://jant-me-media.jant.me/assets/compose.webp)
+![Jant](https://jant-me-media.jant.me/assets/new.png)
 
 ## Jant 有什么
 
