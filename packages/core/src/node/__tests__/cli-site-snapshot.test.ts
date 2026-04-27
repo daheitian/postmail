@@ -331,6 +331,69 @@ describe("jant site snapshot export/import", () => {
     );
   });
 
+  it("skips downloading storage objects when --skip-objects is passed", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "jant-site-snapshot-skip-objects-"),
+    );
+    tempDirs.push(root);
+
+    const sourceDbPath = join(root, "source.sqlite");
+    const sourceStoragePath = join(root, "source-media");
+    const snapshotPath = join(root, "snapshot");
+
+    await migrate({ DATABASE_URL: `file:${sourceDbPath}` } as Bindings);
+    const sourceStorage = createLocalDriver({ rootPath: sourceStoragePath });
+    await sourceStorage.put(SNAPSHOT_MEDIA_KEY, new Uint8Array([1, 2, 3, 4]), {
+      contentType: "image/png",
+    });
+
+    const sourceSqlite = new Database(sourceDbPath);
+    try {
+      sourceSqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_SITE_KEY}', 'active', 1774009100, 1774009100);
+
+        INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES
+          ('${SNAPSHOT_SITE_ID}', 'SITE_NAME', 'Skip Objects Source', 1774009200);
+
+        INSERT INTO "post" (
+          "id", "site_id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
+          "thread_id", "published_at", "last_activity_at", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_POST_ID}', '${SNAPSHOT_SITE_ID}', 'note', 'published', 'public',
+          'Snapshot post', 'Hello snapshot', '<p>Hello snapshot</p>', 'Hello snapshot',
+          '${SNAPSHOT_POST_ID}', 1774009200, 1774009200, 1774009200, 1774009200
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "position", "media_kind", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', '${SNAPSHOT_POST_ID}',
+          '${SNAPSHOT_MEDIA_ID}.png', 'sample.png', 'image/png', 4, '${SNAPSHOT_MEDIA_KEY}',
+          'local', 'a0', 'image', 1774009200, 1774009200
+        );
+      `);
+    } finally {
+      sourceSqlite.close();
+    }
+
+    process.env.DATABASE_URL = `file:${sourceDbPath}`;
+    process.env.LOCAL_STORAGE_PATH = sourceStoragePath;
+
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const { run: runExport } =
+      await import("../../../bin/commands/site/snapshot/export.js");
+    await runExport(["--output", snapshotPath, "--skip-objects"]);
+
+    expect(existsSync(join(snapshotPath, "meta.json"))).toBe(true);
+    expect(existsSync(join(snapshotPath, "db.sql"))).toBe(true);
+    expect(existsSync(join(snapshotPath, "objects"))).toBe(false);
+
+    const dbSql = await readFile(join(snapshotPath, "db.sql"), "utf-8");
+    expect(dbSql).toContain(SNAPSHOT_MEDIA_KEY);
+  });
+
   it("requires --replace for snapshot import", async () => {
     const root = await mkdtemp(join(tmpdir(), "jant-site-snapshot-replace-"));
     tempDirs.push(root);

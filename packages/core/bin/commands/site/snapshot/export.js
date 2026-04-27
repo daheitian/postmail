@@ -185,6 +185,7 @@ export async function run(argv) {
       "persist-to": { type: "string" },
       remote: { type: "boolean", default: false },
       site: { type: "string" },
+      "skip-objects": { type: "boolean", default: false },
       url: { type: "string" },
     },
   });
@@ -225,6 +226,19 @@ export async function run(argv) {
     console.log(
       "  --persist-to            Local D1/R2 state directory override",
     );
+    console.log(
+      "  --skip-objects          Skip downloading storage objects. The archive only contains meta.json and db.sql.",
+    );
+    console.log(
+      "                          Only safe when the import target's storage already has the same keys",
+    );
+    console.log(
+      "                          (e.g. moving between Workers that share an R2 bucket). Otherwise the",
+    );
+    console.log(
+      "                          imported site will be missing media — pair with `--allow-missing-objects`",
+    );
+    console.log("                          on import.");
     console.log("");
     console.log(
       "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime and the configured storage driver.",
@@ -281,15 +295,23 @@ export async function run(argv) {
 
     await writeFile(join(scratchDir, "db.sql"), dbSql);
 
-    if (objects.length > 0) {
-      console.log(`Downloading ${objects.length} referenced object(s)...`);
-    }
+    if (values["skip-objects"]) {
+      if (objects.length > 0) {
+        console.log(
+          `--skip-objects: leaving ${objects.length} referenced object(s) out of the archive.`,
+        );
+      }
+    } else {
+      if (objects.length > 0) {
+        console.log(`Downloading ${objects.length} referenced object(s)...`);
+      }
 
-    for (const [index, object] of objects.entries()) {
-      const relativeObjectPath = snapshotObjectPath(object.key);
-      const absoluteObjectPath = join(scratchDir, relativeObjectPath);
-      console.log(`[${index + 1}/${objects.length}] ${object.key}`);
-      await context.downloadObject(object.key, absoluteObjectPath);
+      for (const [index, object] of objects.entries()) {
+        const relativeObjectPath = snapshotObjectPath(object.key);
+        const absoluteObjectPath = join(scratchDir, relativeObjectPath);
+        console.log(`[${index + 1}/${objects.length}] ${object.key}`);
+        await context.downloadObject(object.key, absoluteObjectPath);
+      }
     }
 
     await writeFile(

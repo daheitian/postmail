@@ -232,6 +232,20 @@ Remote Cloudflare D1:
 npx jant site snapshot export --remote --config ./wrangler.toml --output ./jant-site-snapshot.zip
 ```
 
+### Skip Downloading Media
+
+When source and target share the same R2 / S3 bucket — for example, you're moving the database state to a different Worker but the media is already there — pass `--skip-objects` to leave the `objects/` directory out of the archive:
+
+```bash
+npx jant site snapshot export --output ./jant-site-snapshot.zip --skip-objects
+```
+
+The archive shrinks to just `meta.json` + `db.sql`.
+
+> **Heads up:** this is a footgun unless the import target's storage already contains every key referenced in `db.sql`. Otherwise images, avatars, and the apple-touch icon will all 404 after import.
+>
+> Pair this with `--allow-missing-objects` on import (see below). By default import runs a target-storage preflight and aborts with a missing-keys list before applying `db.sql`.
+
 ### Import a Snapshot
 
 Snapshot import currently requires `--replace`.

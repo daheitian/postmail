@@ -153,6 +153,20 @@ npx jant site snapshot export --output ./jant-site-snapshot.zip
 npx jant site snapshot export --remote --config ./wrangler.toml --output ./jant-site-snapshot.zip
 ```
 
+### 跳过媒体文件下载
+
+如果源和目标共用同一个 R2 / S3 桶——比如你只是想把 db 状态搬到另一个 Worker 但媒体已经在那儿了——可以加 `--skip-objects` 跳过 `objects/` 目录的填充：
+
+```bash
+npx jant site snapshot export --output ./jant-site-snapshot.zip --skip-objects
+```
+
+归档变得只有 `meta.json` + `db.sql`，体积显著变小。
+
+> **注意**：这是一个会埋雷的优化——只有目标 storage 已经包含 db.sql 引用的所有 storage key 时才安全。否则导入完站点上的图、头像、apple-touch 图标会全部 404。
+>
+> 导入端要配合用 `--allow-missing-objects`（见下文），import 默认会做一次目标 storage 预检并 abort，把缺失列表打印出来。
+
 ### 导入 Snapshot
 
 目前 snapshot import 需要带上 `--replace`。
