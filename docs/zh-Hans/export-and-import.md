@@ -195,6 +195,21 @@ npx jant site snapshot import --path ./jant-site-snapshot.zip --replace --remap-
 
 只有在你真的理解后果、并且流程可信时，才使用 `--remap-site`。
 
+### 接受缺失的对象
+
+import 默认会做一次预检：从 db.sql 里捞出所有 `storage_key` / `poster_key`，对照 `objects/` 目录里的文件。任何缺失都会 abort，并把缺失的 key 列表打印出来。
+
+如果你确认目标 storage 已经有这些文件——比如导入一个 `--skip-objects` 归档到共用 R2 桶的 Worker——加 `--allow-missing-objects` 跳过这道闸：
+
+```bash
+npx jant site snapshot import \
+  --path ./jant-site-snapshot.zip \
+  --replace \
+  --allow-missing-objects
+```
+
+带 flag 的运行仍然会把缺失列表打到 stderr，可以重定向出来事后追溯。
+
 ## 数据库导出
 
 `db export` 会把当前数据库写成原始 SQL。

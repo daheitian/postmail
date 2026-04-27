@@ -274,6 +274,21 @@ npx jant site snapshot import --path ./jant-site-snapshot.zip --replace --remap-
 
 Use `--remap-site` only in trusted workflows where you understand the consequences.
 
+### Allowing Missing Objects
+
+By default, import runs a preflight: every `storage_key` / `poster_key` referenced by `db.sql` must have a matching file in `objects/`. Any missing key aborts the import and prints the list before `db.sql` is applied.
+
+When you've confirmed the target storage already has those files — for instance, importing a `--skip-objects` archive into a Worker that shares its R2 bucket with the source — bypass the check with `--allow-missing-objects`:
+
+```bash
+npx jant site snapshot import \
+  --path ./jant-site-snapshot.zip \
+  --replace \
+  --allow-missing-objects
+```
+
+Even with the flag set, the missing list still prints to stderr so you can capture it for audit.
+
 ## Database Export
 
 `db export` writes raw SQL for the current database.
