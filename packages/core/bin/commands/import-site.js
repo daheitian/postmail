@@ -438,6 +438,18 @@ function isAbsoluteUrl(value) {
 }
 
 /**
+ * True when `url` points to a different location than the import target —
+ * i.e. has a scheme (`https://`, `data:`) or is protocol-relative (`//cdn…`).
+ * False for relative paths (`/media/x`, `./x`, `x`), which always belong to
+ * the source site and must be rehosted. Used to filter the body-fallback
+ * upload when `--skip-remote-media` is set.
+ */
+function isAbsoluteImportUrl(value) {
+  if (typeof value !== "string") return false;
+  return /^([a-z][a-z0-9+.\-]*:|\/\/)/i.test(value);
+}
+
+/**
  * Resolve a `media:` entry's `src` or `poster` reference to a local disk
  * path when the export bundled the bytes under `static/`. Absolute URLs
  * (remote-linked media) skip the disk lookup — the uploader fetches them
@@ -641,19 +653,7 @@ async function buildImportedAttachments(
   target,
   siteConfig,
   sourceRootDir,
-  options = {},
 ) {
-  if (
-    sourceRootDir &&
-    typeof sourceRootDir === "object" &&
-    !Array.isArray(sourceRootDir) &&
-    options &&
-    Object.keys(options).length === 0
-  ) {
-    options = sourceRootDir;
-    sourceRootDir = null;
-  }
-
   const attachments = [];
   let uploaded = 0;
 
@@ -665,10 +665,6 @@ async function buildImportedAttachments(
     );
     if (textAttachment) {
       attachments.push(textAttachment);
-      continue;
-    }
-
-    if (options.skipUploads) {
       continue;
     }
 
@@ -1976,6 +1972,7 @@ function buildPostPayloadFromBundle(bundle, options) {
 }
 
 export const __test__ = {
+  isAbsoluteImportUrl,
   resolveImportUrl,
   readMediaSpecAsset,
   normalizeMediaSpec,
@@ -2009,7 +2006,7 @@ export async function run(argv) {
       token: { type: "string" },
       path: { type: "string", default: "." },
       "dry-run": { type: "boolean", default: false },
-      "skip-media": { type: "boolean", default: false },
+      "skip-remote-media": { type: "boolean", default: false },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -2034,7 +2031,7 @@ export async function run(argv) {
     );
     console.log("  --dry-run     Parse and validate without making API calls");
     console.log(
-      "  --skip-media  Skip remote media download/upload (embedded text attachments still import)",
+      "  --skip-remote-media  Skip uploading absolute-URL images found in body (relative paths and declared media still import)",
     );
     console.log("");
     console.log(
@@ -2066,7 +2063,7 @@ export async function run(argv) {
 
   const apiUrl = values.url?.replace(/\/$/, "");
   const dryRun = values["dry-run"];
-  const skipMedia = values["skip-media"];
+  const skipRemoteMedia = values["skip-remote-media"];
   const target = dryRun
     ? null
     : values.url
@@ -2149,7 +2146,7 @@ export async function run(argv) {
             `[dry-run] Would replace navigation with ${importedNav.items.length} items`,
           );
         }
-        if (avatarImport && !skipMedia) {
+        if (avatarImport) {
           if (avatarImport.mode === "remove") {
             console.log("[dry-run] Would remove existing site avatar");
           } else {
@@ -2204,7 +2201,7 @@ export async function run(argv) {
           }
         }
 
-        if (avatarImport && !skipMedia) {
+        if (avatarImport) {
           try {
             await target.syncSiteAvatar(
               avatarImport.mode === "set" ? avatarImport : null,
@@ -2349,7 +2346,7 @@ export async function run(argv) {
       }
 
       const rootResourceIds = [];
-      if (!skipMedia && !dryRun && rootResourceSpecs.length > 0) {
+      if (!dryRun && rootResourceSpecs.length > 0) {
         const result = await uploadBundleResources(rootResourceSpecs, target);
         mediaUploaded += result.uploaded;
         if (result.urlMap.size > 0) {
@@ -2360,8 +2357,13 @@ export async function run(argv) {
 
       // Fallback: rewrite any leftover in-body image URLs (covers hand-
       // authored Hugo content where the exporter didn't declare resources).
-      if (!skipMedia && !dryRun) {
-        const imageMedia = findImageUrls(rootBody).map((src) => ({ src }));
+      // `--skip-remote-media` filters out absolute URLs here so we only
+      // rehost relative paths (the source site's own files).
+      if (!dryRun) {
+        const fallbackUrls = findImageUrls(rootBody).filter(
+          (url) => !skipRemoteMedia || !isAbsoluteImportUrl(url),
+        );
+        const imageMedia = fallbackUrls.map((src) => ({ src }));
         const uploadResult = await uploadMediaList(
           imageMedia,
           target,
@@ -2380,7 +2382,6 @@ export async function run(argv) {
           target,
           siteConfig,
           sourceRootDir,
-          { skipUploads: skipMedia },
         );
         importedAttachments = attachmentResult.attachments;
         mediaUploaded += attachmentResult.uploaded;
@@ -2396,7 +2397,7 @@ export async function run(argv) {
       // These reference a `.md` artifact that holds the full body; the
       // normalizer fetches the bytes (local disk first, then remote URL)
       // and decodes them.
-      if (!skipMedia && !dryRun) {
+      if (!dryRun) {
         for (const textEntry of rootTextAttachmentEntries) {
           const textAttachment = await normalizeTextAttachmentSpec(
             textEntry,
@@ -2496,7 +2497,7 @@ export async function run(argv) {
         }
 
         const replyResourceIds = [];
-        if (!skipMedia && replyResourceSpecs.length > 0) {
+        if (replyResourceSpecs.length > 0) {
           const result = await uploadBundleResources(
             replyResourceSpecs,
             target,
@@ -2508,8 +2509,11 @@ export async function run(argv) {
           replyResourceIds.push(...result.mediaIds);
         }
 
-        if (!skipMedia) {
-          const imageMedia = findImageUrls(replyBody).map((src) => ({ src }));
+        {
+          const fallbackUrls = findImageUrls(replyBody).filter(
+            (url) => !skipRemoteMedia || !isAbsoluteImportUrl(url),
+          );
+          const imageMedia = fallbackUrls.map((src) => ({ src }));
           const uploadResult = await uploadMediaList(
             imageMedia,
             target,
@@ -2527,7 +2531,6 @@ export async function run(argv) {
           target,
           siteConfig,
           sourceRootDir,
-          { skipUploads: skipMedia },
         );
         replyAttachments = attachmentResult.attachments;
         mediaUploaded += attachmentResult.uploaded;
@@ -2535,15 +2538,13 @@ export async function run(argv) {
           replyAttachments.push({ type: "media", mediaId });
         }
 
-        if (!skipMedia) {
-          for (const textEntry of replyTextAttachmentEntries) {
-            const textAttachment = await normalizeTextAttachmentSpec(
-              textEntry,
-              siteConfig,
-              sourceRootDir,
-            );
-            if (textAttachment) replyAttachments.push(textAttachment);
-          }
+        for (const textEntry of replyTextAttachmentEntries) {
+          const textAttachment = await normalizeTextAttachmentSpec(
+            textEntry,
+            siteConfig,
+            sourceRootDir,
+          );
+          if (textAttachment) replyAttachments.push(textAttachment);
         }
 
         const replyMemberships = resolveCollectionMemberships(

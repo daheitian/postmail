@@ -47,6 +47,7 @@ import {
   adoptPendingInlineImageUploads,
 } from "../tiptap/inline-image-upload.js";
 import { isSafeAbsoluteUrl } from "../../lib/url.js";
+import { randomUUID } from "../random-uuid.js";
 
 interface ComposeFilePickerCloseDetail {
   cancelled: boolean;
@@ -220,7 +221,7 @@ export class JantComposeEditor extends LitElement {
   private _lastEditorSelection: ComposeEditorSelection | null = null;
   private _emojiPickerEl: HTMLElement | null = null;
   private _emojiContainer: HTMLElement | null = null;
-  private readonly _urlStatusId = `compose-url-status-${crypto.randomUUID()}`;
+  private readonly _urlStatusId = `compose-url-status-${randomUUID()}`;
   private _onDocClickBound = this._onDocumentClick.bind(this);
   private _scrollBufferApplied = false;
   private _filePickerCleanup: (() => void) | null = null;
@@ -880,7 +881,7 @@ export class JantComposeEditor extends LitElement {
     // Convert media attachments to ComposeAttachment[] with status "done"
     if (data.media?.length) {
       const attachments = data.media.map((m) => ({
-        clientId: crypto.randomUUID(),
+        clientId: randomUUID(),
         file: new File([], m.originalName ?? "existing", { type: m.mimeType }),
         previewUrl: m.previewUrl,
         posterUrl: null,
@@ -906,7 +907,7 @@ export class JantComposeEditor extends LitElement {
           // Invalid JSON — leave as null
         }
         return {
-          clientId: t.clientId ?? crypto.randomUUID(),
+          clientId: t.clientId ?? randomUUID(),
           bodyJson: parsed,
           bodyHtml: t.bodyHtml ?? "",
           summary: t.summary,
@@ -979,7 +980,7 @@ export class JantComposeEditor extends LitElement {
 
   private _openAttachedText() {
     const item: AttachedTextItem = {
-      clientId: crypto.randomUUID(),
+      clientId: randomUUID(),
       bodyJson: null,
       bodyHtml: "",
       summary: "",
@@ -1242,7 +1243,7 @@ export class JantComposeEditor extends LitElement {
         continue;
       }
 
-      const clientId = crypto.randomUUID();
+      const clientId = randomUUID();
       const previewUrl = URL.createObjectURL(file);
       newAttachments.push({
         clientId,

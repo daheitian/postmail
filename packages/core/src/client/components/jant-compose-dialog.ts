@@ -40,6 +40,7 @@ import { getMediaCategory } from "../../lib/upload.js";
 import { getSlugValidationIssue } from "../../lib/slug-format.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 import { MAX_THREAD_POSTS } from "../../types.js";
+import { randomUUID } from "../random-uuid.js";
 
 interface ReplyToMedia {
   url: string;
@@ -2788,9 +2789,9 @@ export class JantComposeDialog extends LitElement {
 
             // Enter thread mode
             this._threadItems = [
-              { id: crypto.randomUUID(), format: post.format },
+              { id: randomUUID(), format: post.format },
               ...ordered.map((p) => ({
-                id: crypto.randomUUID(),
+                id: randomUUID(),
                 format: p.format,
               })),
             ];
@@ -3161,7 +3162,7 @@ export class JantComposeDialog extends LitElement {
     if (draft.threadItems && draft.threadItems.length >= 2) {
       this._format = draft.threadItems[0].format;
       this._threadItems = draft.threadItems.map((item) => ({
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         format: item.format,
       }));
       this._focusedThreadIndex = 0;
@@ -5097,8 +5098,8 @@ export class JantComposeDialog extends LitElement {
       const bodyJson = currentEditor?.getNormalizedBodyJson() ?? null;
 
       this._threadItems = [
-        { id: crypto.randomUUID(), format: this._format },
-        { id: crypto.randomUUID(), format: lastFormat },
+        { id: randomUUID(), format: this._format },
+        { id: randomUUID(), format: lastFormat },
       ];
 
       // Capture rating state before re-render (these can't change asynchronously)
@@ -5157,7 +5158,7 @@ export class JantComposeDialog extends LitElement {
     } else {
       this._threadItems = [
         ...this._threadItems,
-        { id: crypto.randomUUID(), format: lastFormat },
+        { id: randomUUID(), format: lastFormat },
       ];
     }
 

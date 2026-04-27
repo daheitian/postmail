@@ -49,10 +49,7 @@ export const HomePage: FC<HomePageProps> = ({
                 {!isAuthenticated && (
                   <>
                     {" "}
-                    <a
-                      href={signinUrl}
-                      class="underline-offset-2 hover:underline"
-                    >
+                    <a href={signinUrl} class="underline underline-offset-2">
                       {i18n._(
                         msg({
                           message: "Sign in if this is your space.",

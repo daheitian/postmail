@@ -49,8 +49,7 @@ cd ./jant-site && hugo serve
 先在 **Settings > API Tokens** 里创建一个 API token，然后运行：
 
 ```bash
-export JANT_API_TOKEN=jnt_your_token
-npx jant site export --url https://your-site.example --output ./jant-site-export.zip
+JANT_API_TOKEN=jnt_your_token npx jant site export --url https://your-site.example --output ./jant-site-export.zip
 ```
 
 你也可以直接传 `--token`，但 `JANT_API_TOKEN` 更适合反复使用。
@@ -92,11 +91,24 @@ export JANT_API_TOKEN=jnt_your_token
 npx jant site import --url https://your-site.example --path ./jant-site-export.zip
 ```
 
-如果你只想导入帖子和 collection 数据，而不传媒体文件，可以跳过媒体：
+### 跳过 body 里的远程图片
+
+默认情况下，import 会把所有媒体重新 host 到目标站点：front matter `media:` 里声明的资源、body 里 `![](...)` 引用的图片（包括指向远程 URL 的）、头像，都会被抓取并上传，body 里的 URL 也会改写到新地址。这样目标站点对源站点完全独立——源站点之后下线也不会影响图。
+
+如果你不希望 body 里那些**指向第三方 URL 的图**（imgur、Wikipedia、随便一个 https 链接）被镜像到自己的存储——比如担心带宽、版权、或者只是觉得没必要——可以加 `--skip-remote-media`：
 
 ```bash
-npx jant site import --path ./jant-site-export.zip --skip-media
+npx jant site import --path ./jant-site-export.zip --skip-remote-media
 ```
+
+加了之后：
+
+- **相对路径**（`/media/...`、`./foo.png`）—— 仍然上传，这些是源站点自己的文件
+- **绝对 URL**（任何 `https://...`、`//cdn...`）—— 不抓取、不上传，body 里保留原样
+
+front matter `media:` 声明的资源、头像、文本附件不受这个 flag 影响，永远会被搬过来。
+
+> **注意**：如果你的源站点把媒体放在**独立的存储域名**（比如 R2 公开域名 `media.yourdomain.com`、S3 CDN），body 里那些图也会被识别为"绝对 URL"。只有在你确定那个域名长期可用（比如源/目标共享同一个存储桶）时再用这个 flag，否则源站点 R2 之后失效，图就全死了。
 
 ## Site Snapshots
 

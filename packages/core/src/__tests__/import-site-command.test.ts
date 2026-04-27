@@ -23,6 +23,7 @@ const {
   getRootAliasPathsForImport,
   uploadMediaList,
   normalizeTextAttachmentSpec,
+  isAbsoluteImportUrl,
 } = __test__;
 
 async function writeFileTree(
@@ -224,6 +225,23 @@ describe("Hugo import CLI helpers", () => {
     expect(result.urlMap.get("/media/inline.png")).toBe(
       "https://target.example/media/med_new.png",
     );
+  });
+
+  it("isAbsoluteImportUrl distinguishes absolute URLs from relative paths for --skip-remote-media", () => {
+    // Relative paths — always treated as the source site's own files.
+    expect(isAbsoluteImportUrl("/media/foo.png")).toBe(false);
+    expect(isAbsoluteImportUrl("./foo.png")).toBe(false);
+    expect(isAbsoluteImportUrl("../foo.png")).toBe(false);
+    expect(isAbsoluteImportUrl("foo.png")).toBe(false);
+    // Absolute / scheme'd / protocol-relative URLs — treated as remote.
+    expect(isAbsoluteImportUrl("https://example.com/foo.png")).toBe(true);
+    expect(isAbsoluteImportUrl("http://example.com/foo.png")).toBe(true);
+    expect(isAbsoluteImportUrl("HTTPS://Example.com/Foo.png")).toBe(true);
+    expect(isAbsoluteImportUrl("//cdn.example.com/foo.png")).toBe(true);
+    expect(isAbsoluteImportUrl("data:image/png;base64,AAA")).toBe(true);
+    // Non-strings.
+    expect(isAbsoluteImportUrl(undefined)).toBe(false);
+    expect(isAbsoluteImportUrl(null)).toBe(false);
   });
 
   it("normalizeTextAttachmentSpec handles a kind:text entry from front matter media[]", async () => {

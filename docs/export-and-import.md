@@ -170,11 +170,24 @@ export JANT_API_TOKEN=jnt_your_token
 npx jant site import --url https://your-site.example --path ./jant-site-export.zip
 ```
 
-Skip media transfer when you only want post and collection data:
+### Skip Remote Images in Body
+
+By default, import rehosts everything: media declared in front matter `media:`, every image referenced in body markdown (including absolute URLs to third-party hosts), avatars — all are fetched and uploaded so the target site has zero dependency on the source.
+
+If you don't want third-party body images (imgur, Wikipedia, arbitrary https links) mirrored into your own storage, pass `--skip-remote-media`:
 
 ```bash
-npx jant site import --path ./jant-site-export.zip --skip-media
+npx jant site import --path ./jant-site-export.zip --skip-remote-media
 ```
+
+With this flag:
+
+- **Relative paths** (`/media/...`, `./foo.png`) — still uploaded; these are the source site's own files
+- **Absolute URLs** (any `https://...`, `//cdn...`) — left as-is in the body; not fetched, not uploaded
+
+Front-matter `media:` declarations, avatars, and text attachments are unaffected and always transfer.
+
+> **Caveat**: if the source site serves its media from a **separate storage domain** (R2 public URL like `media.yourdomain.com`, an S3 CDN, etc.), body images will be classified as absolute URLs too. Only use this flag when that domain is durable — e.g. source and target share the same bucket — otherwise images will break once the source site goes away.
 
 ## Site Snapshots
 
