@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -207,15 +208,15 @@ describe("jant site snapshot export/import", () => {
       await import("../../../bin/commands/site/snapshot/export.js");
     await runExport(["--output", snapshotPath]);
 
-    const manifest = JSON.parse(
-      await readFile(join(snapshotPath, "storage-manifest.json"), "utf-8"),
+    const meta = JSON.parse(
+      await readFile(join(snapshotPath, "meta.json"), "utf-8"),
     );
-    expect(manifest.objects.map((object) => object.key)).toEqual([
-      SNAPSHOT_AVATAR_KEY,
-      SNAPSHOT_APPLE_TOUCH_KEY,
-      SNAPSHOT_MEDIA_KEY,
-      SNAPSHOT_POSTER_KEY,
-    ]);
+    expect(meta).toEqual({
+      format: "jant-site-snapshot",
+      version: 1,
+      site: { id: SNAPSHOT_SITE_ID, key: SNAPSHOT_SITE_KEY },
+    });
+    expect(existsSync(join(snapshotPath, "storage-manifest.json"))).toBe(false);
     expect(exportLogSpy).toHaveBeenCalledWith(
       `Exported Node database snapshot to ${snapshotPath}`,
     );
@@ -328,15 +329,10 @@ describe("jant site snapshot export/import", () => {
           {
             format: "jant-site-snapshot",
             version: 1,
-            scope: "content",
           },
           null,
           2,
         ),
-      ),
-      writeFile(
-        join(snapshotPath, "storage-manifest.json"),
-        JSON.stringify({ version: 1, objects: [] }, null, 2),
       ),
       writeFile(join(snapshotPath, "db.sql"), ""),
     ]);

@@ -126,9 +126,18 @@ front matter `media:` 声明的资源、头像、文本附件不受这个 flag �
 - navigation items
 - media records
 - path registry entries
-- 它们所引用的存储对象本身
+- 它们所引用的存储对象本身（默认会全部下载，归档大小≈媒体总量）
 
 Snapshot import 不会替换认证和外壳层数据，比如 users、sessions 和 API tokens。
+
+归档的目录结构很简单——只有三件套：
+
+```
+jant-site-snapshot.zip
+├── meta.json                  // { format, version, site }
+├── db.sql                     // 完整 SQL，含 favicon.ico 的 base64
+└── objects/<storage-key>/...  // 所有 media 引用的对象
+```
 
 ### 导出 Snapshot
 

@@ -205,9 +205,18 @@ A snapshot includes the content and presentation data Jant needs to restore a si
 - navigation items
 - media records
 - path registry entries
-- the referenced storage objects themselves
+- the referenced storage objects themselves (always downloaded in full — archive size ≈ media total)
 
 Snapshot import does not replace auth and shell data such as users, sessions, and API tokens.
+
+The archive layout is intentionally simple — three pieces:
+
+```
+jant-site-snapshot.zip
+├── meta.json                  // { format, version, site }
+├── db.sql                     // full SQL, including the favicon.ico base64
+└── objects/<storage-key>/...  // every object referenced by media rows
+```
 
 ### Export a Snapshot
 

@@ -1,9 +1,8 @@
-import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
+import { join, relative } from "node:path";
 
 export const SNAPSHOT_FORMAT = "jant-site-snapshot";
 export const SNAPSHOT_VERSION = 1;
-export const SNAPSHOT_SCOPE = "content";
 
 export const SNAPSHOT_TABLES = [
   "site_setting",
@@ -191,19 +190,14 @@ export function snapshotObjectPath(key) {
   return `objects/${key}`.replace(/\\/g, "/");
 }
 
-export function buildSnapshotMeta(source, site) {
+export function buildSnapshotMeta(site) {
   return {
     format: SNAPSHOT_FORMAT,
     version: SNAPSHOT_VERSION,
-    scope: SNAPSHOT_SCOPE,
-    createdAt: new Date().toISOString(),
-    source,
     site: {
       id: site.id,
       key: site.key,
     },
-    tables: SNAPSHOT_TABLES,
-    settingKeys: SNAPSHOT_SETTING_KEYS,
   };
 }
 
@@ -224,12 +218,6 @@ export function assertSnapshotMeta(meta) {
     );
   }
 
-  if (meta.scope !== SNAPSHOT_SCOPE) {
-    throw new Error(
-      `Unsupported snapshot scope: expected ${SNAPSHOT_SCOPE}, got ${String(meta.scope)}`,
-    );
-  }
-
   if (
     meta.site !== undefined &&
     (!meta.site ||
@@ -238,24 +226,6 @@ export function assertSnapshotMeta(meta) {
       typeof meta.site.key !== "string")
   ) {
     throw new Error("Snapshot meta site must contain string id and key.");
-  }
-}
-
-export function assertSnapshotManifest(manifest) {
-  if (!manifest || typeof manifest !== "object") {
-    throw new Error("Snapshot storage-manifest.json is missing or invalid.");
-  }
-
-  if (manifest.version !== SNAPSHOT_VERSION) {
-    throw new Error(
-      `Unsupported storage manifest version: expected ${SNAPSHOT_VERSION}, got ${String(manifest.version)}`,
-    );
-  }
-
-  if (!Array.isArray(manifest.objects)) {
-    throw new Error(
-      "Snapshot storage-manifest.json must contain an objects array.",
-    );
   }
 }
 
@@ -301,22 +271,55 @@ export function rewriteSnapshotSiteIdentifiers(
   return sql.replaceAll(escapedSource, escapedTarget);
 }
 
-export function remapSnapshotManifestObjects(
-  manifest,
-  sourceSiteId,
-  targetSiteId,
-) {
+export function remapSnapshotObjectKey(key, sourceSiteId, targetSiteId) {
   if (!sourceSiteId || sourceSiteId === targetSiteId) {
-    return manifest;
+    return key;
+  }
+  return String(key).replaceAll(sourceSiteId, targetSiteId);
+}
+
+/**
+ * Walks `<rootDir>/objects/` recursively and returns one entry per file.
+ *
+ * The relative path inside `objects/` is the storage key as it existed at
+ * export time (with forward slashes). If the snapshot was produced by a
+ * different site than the import target, callers apply
+ * `remapSnapshotObjectKey()` before uploading.
+ */
+export async function enumerateSnapshotObjectFiles(rootDir) {
+  const objectsRoot = join(rootDir, "objects");
+  const entries = [];
+
+  async function walk(dir) {
+    let items;
+    try {
+      items = await readdir(dir, { withFileTypes: true });
+    } catch (error) {
+      if (error && error.code === "ENOENT") {
+        return;
+      }
+      throw error;
+    }
+
+    for (const item of items) {
+      const fullPath = join(dir, item.name);
+      if (item.isDirectory()) {
+        await walk(fullPath);
+        continue;
+      }
+
+      const key = relative(objectsRoot, fullPath).replace(/\\/g, "/");
+      entries.push({
+        key,
+        filePath: fullPath,
+        contentType: guessContentTypeFromKey(key),
+      });
+    }
   }
 
-  return {
-    ...manifest,
-    objects: manifest.objects.map((object) => ({
-      ...object,
-      key: String(object.key).replaceAll(sourceSiteId, targetSiteId),
-    })),
-  };
+  await walk(objectsRoot);
+  entries.sort((a, b) => a.key.localeCompare(b.key));
+  return entries;
 }
 
 function prependSiteIdInsert(sql, tableName, siteId) {
@@ -429,11 +432,6 @@ export function normalizeD1Sql(sql) {
     .replace(/^\s*COMMIT\s*;\s*$/gim, "")
     .replace(/^\s*ROLLBACK\s*;\s*$/gim, "")
     .trim();
-}
-
-export async function sha256File(filePath) {
-  const bytes = await readFile(filePath);
-  return createHash("sha256").update(bytes).digest("hex");
 }
 
 export function guessContentTypeFromKey(key) {

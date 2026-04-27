@@ -5,7 +5,6 @@ import {
   readFile,
   readdir,
   rm,
-  stat,
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -24,7 +23,6 @@ import {
   buildSnapshotStorageQuery,
   collectSnapshotObjects,
   getSnapshotSelectSql,
-  sha256File,
   SNAPSHOT_TABLES,
   snapshotObjectPath,
 } from "../../../lib/site-snapshot.js";
@@ -280,7 +278,6 @@ export async function run(argv) {
 
     const objectRows = await context.query(buildSnapshotStorageQuery(site.id));
     const objects = collectSnapshotObjects(objectRows);
-    const manifestObjects = [];
 
     await writeFile(join(scratchDir, "db.sql"), dbSql);
 
@@ -293,40 +290,11 @@ export async function run(argv) {
       const absoluteObjectPath = join(scratchDir, relativeObjectPath);
       console.log(`[${index + 1}/${objects.length}] ${object.key}`);
       await context.downloadObject(object.key, absoluteObjectPath);
-      const fileStat = await stat(absoluteObjectPath);
-      manifestObjects.push({
-        key: object.key,
-        file: relativeObjectPath,
-        contentType: object.contentType || undefined,
-        size: fileStat.size,
-        sha256: await sha256File(absoluteObjectPath),
-      });
     }
 
     await writeFile(
       join(scratchDir, "meta.json"),
-      JSON.stringify(
-        buildSnapshotMeta(
-          {
-            runtime,
-            label: getCliRuntimeLabel(runtime),
-          },
-          site,
-        ),
-        null,
-        2,
-      ) + "\n",
-    );
-    await writeFile(
-      join(scratchDir, "storage-manifest.json"),
-      JSON.stringify(
-        {
-          version: 1,
-          objects: manifestObjects,
-        },
-        null,
-        2,
-      ) + "\n",
+      JSON.stringify(buildSnapshotMeta(site), null, 2) + "\n",
     );
 
     if (shouldZip) {

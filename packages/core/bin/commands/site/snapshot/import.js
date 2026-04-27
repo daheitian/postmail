@@ -16,17 +16,16 @@ import { loadNodeRuntime } from "../../../lib/load-node-runtime.js";
 import { openNodeDatabase } from "../../../lib/node-database.js";
 import { deleteR2Object, uploadR2Object } from "../../../lib/r2-query.js";
 import {
-  assertSnapshotManifest,
   assertSnapshotMeta,
   buildReplaceSql,
   buildSnapshotStorageQuery,
   collectSnapshotObjects,
+  enumerateSnapshotObjectFiles,
   getSnapshotBootstrapSite,
   normalizeD1Sql,
-  remapSnapshotManifestObjects,
+  remapSnapshotObjectKey,
   rewriteLegacySnapshotSql,
   rewriteSnapshotSiteIdentifiers,
-  sha256File,
   validateSnapshotTargetSite,
 } from "../../../lib/site-snapshot.js";
 import {
@@ -155,23 +154,6 @@ async function readSnapshotJson(rootDir, filename) {
   return JSON.parse(await readFile(absolutePath, "utf-8"));
 }
 
-async function validateManifestObjects(rootDir, manifest) {
-  for (const object of manifest.objects) {
-    const absolutePath = join(rootDir, object.file);
-    const fileStat = await stat(absolutePath).catch(() => null);
-    if (!fileStat?.isFile()) {
-      throw new Error(`Snapshot object file is missing: ${object.file}`);
-    }
-
-    const actualHash = await sha256File(absolutePath);
-    if (actualHash !== object.sha256) {
-      throw new Error(
-        `Snapshot object checksum mismatch for ${object.key}: expected ${object.sha256}, got ${actualHash}`,
-      );
-    }
-  }
-}
-
 export async function run(argv) {
   const { values } = parseArgs({
     args: argv,
@@ -263,16 +245,9 @@ export async function run(argv) {
 
   try {
     const meta = await readSnapshotJson(materialized.rootDir, "meta.json");
-    const rawManifest = await readSnapshotJson(
-      materialized.rootDir,
-      "storage-manifest.json",
-    );
     assertSnapshotMeta(meta);
     const explicitRemap = values["remap-site"] === true;
     const snapshotSite = getSnapshotBootstrapSite(meta);
-    const originalManifest = rawManifest;
-    assertSnapshotManifest(originalManifest);
-    await validateManifestObjects(materialized.rootDir, originalManifest);
     const resolutionMode = getCliSiteResolutionMode(process.env);
 
     const { site: targetSite } = await resolveCliSite(context, {
@@ -307,17 +282,19 @@ export async function run(argv) {
       );
     }
 
-    const manifest = shouldRemapSite
-      ? remapSnapshotManifestObjects(
-          originalManifest,
-          snapshotSite?.id ?? "",
-          targetSite.id,
-        )
-      : originalManifest;
-
-    const snapshotKeys = new Set(
-      manifest.objects.map((object) => String(object.key)),
+    const sourceSiteId = shouldRemapSite ? (snapshotSite?.id ?? "") : "";
+    const objectFiles = await enumerateSnapshotObjectFiles(
+      materialized.rootDir,
     );
+    const snapshotObjects = objectFiles.map((entry) => ({
+      filePath: entry.filePath,
+      contentType: entry.contentType,
+      key: shouldRemapSite
+        ? remapSnapshotObjectKey(entry.key, sourceSiteId, targetSite.id)
+        : entry.key,
+    }));
+    const snapshotKeys = new Set(snapshotObjects.map((object) => object.key));
+
     const currentObjectRows = await context.query(
       buildSnapshotStorageQuery(targetSite.id),
     );
@@ -325,11 +302,11 @@ export async function run(argv) {
       collectSnapshotObjects(currentObjectRows).map((object) => object.key),
     );
 
-    for (const object of manifest.objects) {
+    for (const object of snapshotObjects) {
       await context.uploadObject(
         object.key,
-        join(materialized.rootDir, object.file),
-        typeof object.contentType === "string" ? object.contentType : "",
+        object.filePath,
+        object.contentType || "",
       );
     }
 

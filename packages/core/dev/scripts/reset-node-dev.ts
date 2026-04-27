@@ -1,21 +1,20 @@
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { mkdir, readFile, rm, stat } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { and, asc, eq } from "drizzle-orm";
 import {
-  assertSnapshotManifest,
   assertSnapshotMeta,
   buildReplaceSql,
   buildSnapshotStorageQuery,
   collectSnapshotObjects,
+  enumerateSnapshotObjectFiles,
   getSnapshotBootstrapSite,
-  remapSnapshotManifestObjects,
+  remapSnapshotObjectKey,
   rewriteLegacySnapshotSql,
   rewriteSnapshotSiteIdentifiers,
-  sha256File,
   validateSnapshotTargetSite,
 } from "../../bin/lib/site-snapshot.js";
 import {
@@ -241,29 +240,10 @@ async function assertCanonicalSnapshot() {
   const meta = JSON.parse(
     await readFile(resolve(canonicalDir, "meta.json"), "utf8"),
   );
-  const manifest = JSON.parse(
-    await readFile(resolve(canonicalDir, "storage-manifest.json"), "utf8"),
-  );
 
   assertSnapshotMeta(meta);
-  assertSnapshotManifest(manifest);
 
-  for (const object of manifest.objects) {
-    const absolutePath = resolve(canonicalDir, object.file);
-    const fileStat = await stat(absolutePath).catch(() => null);
-    if (!fileStat?.isFile()) {
-      throw new Error(`Snapshot object file is missing: ${object.file}`);
-    }
-
-    const actualHash = await sha256File(absolutePath);
-    if (actualHash !== object.sha256) {
-      throw new Error(
-        `Snapshot object checksum mismatch for ${object.key}: expected ${object.sha256}, got ${actualHash}`,
-      );
-    }
-  }
-
-  return { manifest, meta };
+  return { meta };
 }
 
 async function resetLocalFilesystem(paths: {
@@ -456,12 +436,8 @@ async function importCanonicalSnapshot(bindings: Bindings) {
     const meta = JSON.parse(
       await readFile(resolve(canonicalDir, "meta.json"), "utf8"),
     );
-    const originalManifest = JSON.parse(
-      await readFile(resolve(canonicalDir, "storage-manifest.json"), "utf8"),
-    );
 
     assertSnapshotMeta(meta);
-    assertSnapshotManifest(originalManifest);
 
     const explicitRemap = true;
     const snapshotSite = getSnapshotBootstrapSite(meta);
@@ -488,17 +464,17 @@ async function importCanonicalSnapshot(bindings: Bindings) {
       validateSnapshotTargetSite(meta, targetSite);
     }
 
-    const manifest = shouldRemapSite
-      ? remapSnapshotManifestObjects(
-          originalManifest,
-          snapshotSite?.id ?? "",
-          targetSite.id,
-        )
-      : originalManifest;
+    const sourceSiteId = shouldRemapSite ? (snapshotSite?.id ?? "") : "";
+    const objectFiles = await enumerateSnapshotObjectFiles(canonicalDir);
+    const snapshotObjects = objectFiles.map((entry) => ({
+      filePath: entry.filePath,
+      contentType: entry.contentType,
+      key: shouldRemapSite
+        ? remapSnapshotObjectKey(entry.key, sourceSiteId, targetSite.id)
+        : entry.key,
+    }));
+    const snapshotKeys = new Set(snapshotObjects.map((object) => object.key));
 
-    const snapshotKeys = new Set(
-      manifest.objects.map((object: { key: string }) => String(object.key)),
-    );
     const currentObjectRows = await opened.query(
       buildSnapshotStorageQuery(targetSite.id),
     );
@@ -508,15 +484,10 @@ async function importCanonicalSnapshot(bindings: Bindings) {
       ),
     );
 
-    for (const object of manifest.objects) {
-      const filePath = resolve(canonicalDir, object.file);
-      await mkdir(dirname(filePath), { recursive: true });
-      const bytes = new Uint8Array(await readFile(filePath));
+    for (const object of snapshotObjects) {
+      const bytes = new Uint8Array(await readFile(object.filePath));
       await runtime.storage.put(object.key, bytes, {
-        contentType:
-          typeof object.contentType === "string" && object.contentType
-            ? object.contentType
-            : undefined,
+        contentType: object.contentType || undefined,
       });
     }
 
