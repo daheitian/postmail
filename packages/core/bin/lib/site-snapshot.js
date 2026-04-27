@@ -395,6 +395,98 @@ export function rewriteLegacySnapshotSql(sql, siteId) {
   return `${rewrittenStatements.join(";\n")};\n`;
 }
 
+/**
+ * Pull the storage_key + poster_key values referenced by every media INSERT
+ * inside a snapshot's `db.sql`.
+ *
+ * The dump format is controlled by `dumpDatabaseToSql`, which produces
+ * `INSERT INTO "media" (col, ...) VALUES (val, ...);` statements with single
+ * quoted string literals. We use the SQL-aware splitter to chunk the dump,
+ * then parse each media INSERT via the column list. This is the import-side
+ * "what should be on storage after this snapshot lands" question, used by
+ * the preflight check that runs before db.sql is applied.
+ */
+export function extractMediaStorageKeysFromDumpSql(sql, sourceSiteId) {
+  const uncommented = sql
+    .split("\n")
+    .filter((line) => !line.trimStart().startsWith("--"))
+    .join("\n");
+  const statements = splitSqlStatements(uncommented);
+  const keys = new Set();
+
+  for (const statement of statements) {
+    const match = statement.match(
+      /INSERT\s+INTO\s+"?media"?\s*\(([^)]+)\)\s*VALUES\s*\(([\s\S]+)\)\s*;?\s*$/i,
+    );
+    if (!match) continue;
+
+    const colNames = match[1]
+      .split(",")
+      .map((col) => col.trim().replace(/^"|"$/g, ""));
+    const values = parseSqlValueList(match[2]);
+    if (values.length !== colNames.length) continue;
+
+    if (sourceSiteId) {
+      const siteIdIdx = colNames.indexOf("site_id");
+      if (siteIdIdx >= 0) {
+        const siteIdVal = parseSqlScalar(values[siteIdIdx]);
+        if (siteIdVal !== sourceSiteId) continue;
+      }
+    }
+
+    for (const col of ["storage_key", "poster_key"]) {
+      const idx = colNames.indexOf(col);
+      if (idx < 0) continue;
+      const value = parseSqlScalar(values[idx]);
+      if (typeof value === "string" && value.trim() !== "") {
+        keys.add(value);
+      }
+    }
+  }
+
+  return keys;
+}
+
+function parseSqlValueList(raw) {
+  const values = [];
+  let current = "";
+  let inString = false;
+
+  for (let index = 0; index < raw.length; index += 1) {
+    const char = raw[index];
+    if (char === "'") {
+      current += char;
+      if (inString && raw[index + 1] === "'") {
+        current += "'";
+        index += 1;
+        continue;
+      }
+      inString = !inString;
+      continue;
+    }
+    if (char === "," && !inString) {
+      values.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+
+  const tail = current.trim();
+  if (tail) values.push(tail);
+  return values;
+}
+
+function parseSqlScalar(raw) {
+  if (raw === undefined) return null;
+  const trimmed = raw.trim();
+  if (trimmed === "" || /^null$/i.test(trimmed)) return null;
+  if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
+    return trimmed.slice(1, -1).replaceAll("''", "'");
+  }
+  return trimmed;
+}
+
 export function buildReplaceSql(siteId) {
   const statements = [];
 

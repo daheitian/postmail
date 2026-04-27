@@ -394,6 +394,186 @@ describe("jant site snapshot export/import", () => {
     expect(dbSql).toContain(SNAPSHOT_MEDIA_KEY);
   });
 
+  it("aborts import when objects/ is missing keys referenced by db.sql", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "jant-site-snapshot-missing-objects-"),
+    );
+    tempDirs.push(root);
+
+    const sourceDbPath = join(root, "source.sqlite");
+    const sourceStoragePath = join(root, "source-media");
+    const targetDbPath = join(root, "target.sqlite");
+    const targetStoragePath = join(root, "target-media");
+    const snapshotPath = join(root, "snapshot");
+
+    await migrate({ DATABASE_URL: `file:${sourceDbPath}` } as Bindings);
+    await migrate({ DATABASE_URL: `file:${targetDbPath}` } as Bindings);
+
+    const sourceStorage = createLocalDriver({ rootPath: sourceStoragePath });
+    await sourceStorage.put(SNAPSHOT_MEDIA_KEY, new Uint8Array([1, 2, 3, 4]), {
+      contentType: "image/png",
+    });
+
+    const sourceSqlite = new Database(sourceDbPath);
+    const targetSqlite = new Database(targetDbPath);
+    try {
+      sourceSqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_SITE_KEY}', 'active', 1774009100, 1774009100);
+
+        INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES
+          ('${SNAPSHOT_SITE_ID}', 'SITE_NAME', 'Source', 1774009200);
+
+        INSERT INTO "post" (
+          "id", "site_id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
+          "thread_id", "published_at", "last_activity_at", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_POST_ID}', '${SNAPSHOT_SITE_ID}', 'note', 'published', 'public',
+          'Snapshot post', 'Hello snapshot', '<p>Hello snapshot</p>', 'Hello snapshot',
+          '${SNAPSHOT_POST_ID}', 1774009200, 1774009200, 1774009200, 1774009200
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "position", "media_kind", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', '${SNAPSHOT_POST_ID}',
+          '${SNAPSHOT_MEDIA_ID}.png', 'sample.png', 'image/png', 4, '${SNAPSHOT_MEDIA_KEY}',
+          'local', 'a0', 'image', 1774009200, 1774009200
+        );
+      `);
+
+      targetSqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_SITE_KEY}', 'active', 1774009000, 1774009000);
+      `);
+    } finally {
+      sourceSqlite.close();
+      targetSqlite.close();
+    }
+
+    process.env.DATABASE_URL = `file:${sourceDbPath}`;
+    process.env.LOCAL_STORAGE_PATH = sourceStoragePath;
+
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const { run: runExport } =
+      await import("../../../bin/commands/site/snapshot/export.js");
+    await runExport(["--output", snapshotPath, "--skip-objects"]);
+
+    process.env.DATABASE_URL = `file:${targetDbPath}`;
+    process.env.LOCAL_STORAGE_PATH = targetStoragePath;
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { run: runImport } =
+      await import("../../../bin/commands/site/snapshot/import.js");
+
+    await expect(
+      runImport(["--path", snapshotPath, "--replace"]),
+    ).rejects.toThrow(/missing storage objects/);
+
+    expect(warnSpy.mock.calls.flat().join("\n")).toContain(SNAPSHOT_MEDIA_KEY);
+  });
+
+  it("imports a --skip-objects snapshot when --allow-missing-objects is passed", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "jant-site-snapshot-allow-missing-"),
+    );
+    tempDirs.push(root);
+
+    const sourceDbPath = join(root, "source.sqlite");
+    const sourceStoragePath = join(root, "source-media");
+    const targetDbPath = join(root, "target.sqlite");
+    const targetStoragePath = join(root, "target-media");
+    const snapshotPath = join(root, "snapshot");
+
+    await migrate({ DATABASE_URL: `file:${sourceDbPath}` } as Bindings);
+    await migrate({ DATABASE_URL: `file:${targetDbPath}` } as Bindings);
+
+    const sourceStorage = createLocalDriver({ rootPath: sourceStoragePath });
+    const targetStorage = createLocalDriver({ rootPath: targetStoragePath });
+    await sourceStorage.put(SNAPSHOT_MEDIA_KEY, new Uint8Array([1, 2, 3, 4]), {
+      contentType: "image/png",
+    });
+    // Simulate a shared bucket: target already has the file.
+    await targetStorage.put(SNAPSHOT_MEDIA_KEY, new Uint8Array([1, 2, 3, 4]), {
+      contentType: "image/png",
+    });
+
+    const sourceSqlite = new Database(sourceDbPath);
+    const targetSqlite = new Database(targetDbPath);
+    try {
+      sourceSqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_SITE_KEY}', 'active', 1774009100, 1774009100);
+
+        INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES
+          ('${SNAPSHOT_SITE_ID}', 'SITE_NAME', 'Source', 1774009200);
+
+        INSERT INTO "post" (
+          "id", "site_id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
+          "thread_id", "published_at", "last_activity_at", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_POST_ID}', '${SNAPSHOT_SITE_ID}', 'note', 'published', 'public',
+          'Snapshot post', 'Hello snapshot', '<p>Hello snapshot</p>', 'Hello snapshot',
+          '${SNAPSHOT_POST_ID}', 1774009200, 1774009200, 1774009200, 1774009200
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "position", "media_kind", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', '${SNAPSHOT_POST_ID}',
+          '${SNAPSHOT_MEDIA_ID}.png', 'sample.png', 'image/png', 4, '${SNAPSHOT_MEDIA_KEY}',
+          'local', 'a0', 'image', 1774009200, 1774009200
+        );
+      `);
+
+      targetSqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_SITE_KEY}', 'active', 1774009000, 1774009000);
+      `);
+    } finally {
+      sourceSqlite.close();
+      targetSqlite.close();
+    }
+
+    process.env.DATABASE_URL = `file:${sourceDbPath}`;
+    process.env.LOCAL_STORAGE_PATH = sourceStoragePath;
+
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const { run: runExport } =
+      await import("../../../bin/commands/site/snapshot/export.js");
+    await runExport(["--output", snapshotPath, "--skip-objects"]);
+
+    process.env.DATABASE_URL = `file:${targetDbPath}`;
+    process.env.LOCAL_STORAGE_PATH = targetStoragePath;
+
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { run: runImport } =
+      await import("../../../bin/commands/site/snapshot/import.js");
+    await runImport([
+      "--path",
+      snapshotPath,
+      "--replace",
+      "--allow-missing-objects",
+    ]);
+
+    const verifySqlite = new Database(targetDbPath, { readonly: true });
+    try {
+      const mediaRow = verifySqlite
+        .prepare(
+          `SELECT "storage_key" FROM "media" WHERE "id" = '${SNAPSHOT_MEDIA_ID}'`,
+        )
+        .get() as { storage_key: string } | undefined;
+      expect(mediaRow?.storage_key).toBe(SNAPSHOT_MEDIA_KEY);
+    } finally {
+      verifySqlite.close();
+    }
+
+    // Target storage still has the pre-existing file (we didn't try to upload).
+    expect(await targetStorage.get(SNAPSHOT_MEDIA_KEY)).not.toBeNull();
+  });
+
   it("requires --replace for snapshot import", async () => {
     const root = await mkdtemp(join(tmpdir(), "jant-site-snapshot-replace-"));
     tempDirs.push(root);

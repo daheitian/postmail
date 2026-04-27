@@ -21,6 +21,7 @@ import {
   buildSnapshotStorageQuery,
   collectSnapshotObjects,
   enumerateSnapshotObjectFiles,
+  extractMediaStorageKeysFromDumpSql,
   getSnapshotBootstrapSite,
   normalizeD1Sql,
   remapSnapshotObjectKey,
@@ -172,6 +173,7 @@ export async function run(argv) {
       remote: { type: "boolean", default: false },
       replace: { type: "boolean", default: false },
       "remap-site": { type: "boolean", default: false },
+      "allow-missing-objects": { type: "boolean", default: false },
       site: { type: "string" },
       url: { type: "string" },
     },
@@ -218,6 +220,19 @@ export async function run(argv) {
     console.log(
       "  --remap-site            Rewrite snapshot site_id and storage keys to the resolved target site",
     );
+    console.log(
+      "  --allow-missing-objects Continue importing even when objects/ is missing files referenced by db.sql.",
+    );
+    console.log(
+      "                          Use this when the target storage already has those keys (e.g. a snapshot",
+    );
+    console.log(
+      "                          exported with --skip-objects between sites that share an R2 bucket).",
+    );
+    console.log(
+      "                          Without this flag, import aborts before applying db.sql and prints the",
+    );
+    console.log("                          missing key list.");
     console.log("");
     console.log(
       "In single-site mode, snapshot imports automatically remap to the only initialized site.",
@@ -295,6 +310,50 @@ export async function run(argv) {
     }));
     const snapshotKeys = new Set(snapshotObjects.map((object) => object.key));
 
+    const rawDbSql = await readFile(
+      join(materialized.rootDir, "db.sql"),
+      "utf-8",
+    );
+
+    // Preflight: every storage_key/poster_key referenced by db.sql must have
+    // a corresponding file in objects/, or we'll end up with broken media
+    // unless the target storage already has it. Default to abort; let the
+    // user override with --allow-missing-objects when they know the files
+    // already live in the target bucket (typical --skip-objects flow).
+    const sourceKeysInObjects = new Set(objectFiles.map((entry) => entry.key));
+    const expectedSourceKeys = extractMediaStorageKeysFromDumpSql(
+      rawDbSql,
+      snapshotSite?.id ?? "",
+    );
+    const missingFromObjects = [...expectedSourceKeys]
+      .filter((key) => !sourceKeysInObjects.has(key))
+      .sort();
+
+    if (missingFromObjects.length > 0) {
+      const display = missingFromObjects.slice(0, 10);
+      const remainder = missingFromObjects.length - display.length;
+      console.warn(
+        `\n${missingFromObjects.length} object(s) referenced by db.sql are missing from the snapshot's objects/:`,
+      );
+      for (const key of display) {
+        console.warn(`  ${key}`);
+      }
+      if (remainder > 0) {
+        console.warn(`  …and ${remainder} more`);
+      }
+
+      if (!values["allow-missing-objects"]) {
+        throw new Error(
+          "Snapshot is missing storage objects referenced by db.sql. " +
+            "Pass --allow-missing-objects to import anyway (only safe when the target storage already has these keys).",
+        );
+      }
+
+      console.warn(
+        "Continuing with --allow-missing-objects; the target storage must already have these keys or media references will 404.\n",
+      );
+    }
+
     const currentObjectRows = await context.query(
       buildSnapshotStorageQuery(targetSite.id),
     );
@@ -310,10 +369,6 @@ export async function run(argv) {
       );
     }
 
-    const rawDbSql = await readFile(
-      join(materialized.rootDir, "db.sql"),
-      "utf-8",
-    );
     const dbSql = snapshotSite
       ? shouldRemapSite
         ? rewriteSnapshotSiteIdentifiers(
