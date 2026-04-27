@@ -176,7 +176,10 @@ settingsApiRoutes.post("/avatar", requireAuthApi(), async (c) => {
 
 // Remove site avatar (requires auth)
 settingsApiRoutes.delete("/avatar", requireAuthApi(), async (c) => {
-  await c.var.services.settings.removeAvatar(c.var.storage);
+  await c.var.services.settings.removeAvatar(c.var.storage, {
+    media: c.var.services.media,
+    storageProvider: c.var.appConfig.storageDriver,
+  });
   try {
     await syncHostedControlPlaneSiteAvatar({
       appConfig: c.var.appConfig,

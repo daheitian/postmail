@@ -19,6 +19,7 @@ const SNAPSHOT_POST_ID = "pst_01jpyy18fh4w2m7r8k3c5t9qdn";
 const SNAPSHOT_PATH_ID = "pth_01jpyy1k2v6m4s8r1t5c9b3qgh";
 const SNAPSHOT_MEDIA_ID = "med_01jpyy1vxh4m7s2k8r5c9t3qbn";
 const SNAPSHOT_AVATAR_MEDIA_ID = "med_01jpyy1zs6m4v8r2k5t9c3b7qh";
+const SNAPSHOT_APPLE_TOUCH_MEDIA_ID = "med_01jpyy20kt5n9r3k8t6c4d2qhf";
 const SNAPSHOT_MEDIA_KEY = `media/${SNAPSHOT_SITE_ID}/files/${SNAPSHOT_MEDIA_ID}.png`;
 const SNAPSHOT_POSTER_KEY = `media/${SNAPSHOT_SITE_ID}/posters/${SNAPSHOT_MEDIA_ID}.webp`;
 const SNAPSHOT_AVATAR_KEY = `media/${SNAPSHOT_SITE_ID}/assets/avatar/${SNAPSHOT_AVATAR_MEDIA_ID}.png`;
@@ -154,6 +155,24 @@ describe("jant site snapshot export/import", () => {
           '${SNAPSHOT_MEDIA_ID}.png', 'sample.png', 'image/png', 4, '${SNAPSHOT_MEDIA_KEY}',
           'local', 1, 1, 'Sample alt', 'a0', '${SNAPSHOT_POSTER_KEY}', 'image',
           1774009200, 1774009200
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "position", "media_kind", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_AVATAR_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', NULL,
+          '${SNAPSHOT_AVATAR_MEDIA_ID}.png', 'avatar.png', 'image/png', 3, '${SNAPSHOT_AVATAR_KEY}',
+          'local', 'a0', 'image', 1774009202, 1774009202
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "position", "media_kind", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_APPLE_TOUCH_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', NULL,
+          'apple-touch-icon.png', 'apple-touch-icon.png', 'image/png', 3, '${SNAPSHOT_APPLE_TOUCH_KEY}',
+          'local', 'a0', 'image', 1774009203, 1774009203
         );
       `);
 
@@ -410,6 +429,24 @@ describe("jant site snapshot export/import", () => {
           'local', 1, 1, 'Sample alt', 'a0', '${SNAPSHOT_POSTER_KEY}', 'image',
           1774009200, 1774009200
         );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "position", "media_kind", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_AVATAR_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', NULL,
+          '${SNAPSHOT_AVATAR_MEDIA_ID}.png', 'avatar.png', 'image/png', 3, '${SNAPSHOT_AVATAR_KEY}',
+          'local', 'a0', 'image', 1774009202, 1774009202
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "position", "media_kind", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_APPLE_TOUCH_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', NULL,
+          'apple-touch-icon.png', 'apple-touch-icon.png', 'image/png', 3, '${SNAPSHOT_APPLE_TOUCH_KEY}',
+          'local', 'a0', 'image', 1774009203, 1774009203
+        );
       `);
 
       targetSqlite.exec(`
@@ -557,6 +594,24 @@ describe("jant site snapshot export/import", () => {
           '${SNAPSHOT_MEDIA_ID}.png', 'sample.png', 'image/png', 4, '${SNAPSHOT_MEDIA_KEY}',
           'local', 1, 1, 'Sample alt', 'a0', '${SNAPSHOT_POSTER_KEY}', 'image',
           1774009200, 1774009200
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "position", "media_kind", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_AVATAR_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', NULL,
+          '${SNAPSHOT_AVATAR_MEDIA_ID}.png', 'avatar.png', 'image/png', 3, '${SNAPSHOT_AVATAR_KEY}',
+          'local', 'a0', 'image', 1774009202, 1774009202
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "position", "media_kind", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_APPLE_TOUCH_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', NULL,
+          'apple-touch-icon.png', 'apple-touch-icon.png', 'image/png', 3, '${SNAPSHOT_APPLE_TOUCH_KEY}',
+          'local', 'a0', 'image', 1774009203, 1774009203
         );
       `);
 

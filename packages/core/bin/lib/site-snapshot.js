@@ -46,11 +46,6 @@ export const SNAPSHOT_SETTING_KEYS = [
   "NOINDEX",
 ];
 
-export const SNAPSHOT_STORAGE_SETTING_KEYS = [
-  "SITE_AVATAR",
-  "SITE_FAVICON_APPLE_TOUCH",
-];
-
 function escapeSqlString(value) {
   return String(value).replaceAll("'", "''");
 }
@@ -142,16 +137,6 @@ export function buildSnapshotStorageQuery(siteId) {
       WHERE "poster_key" IS NOT NULL
         AND "site_id" = '${escapeSqlString(siteId)}'
         AND trim("poster_key") <> ''
-
-      UNION ALL
-
-      SELECT
-        "value" AS "key",
-        NULL AS "contentType"
-      FROM "site_setting"
-      WHERE "key" IN (${quoteList(SNAPSHOT_STORAGE_SETTING_KEYS)})
-        AND "site_id" = '${escapeSqlString(siteId)}'
-        AND trim("value") <> ''
     )
     WHERE "key" IS NOT NULL
       AND trim("key") <> ''

@@ -132,7 +132,10 @@ export interface SettingsService {
    *
    * @param storage - Optional storage driver for deleting the apple-touch-icon file
    */
-  removeAvatar(storage?: StorageDriver | null): Promise<void>;
+  removeAvatar(
+    storage?: StorageDriver | null,
+    deps?: { media?: MediaService; storageProvider?: string },
+  ): Promise<void>;
 }
 
 export function createSettingsService(
@@ -419,11 +422,30 @@ export function createSettingsService(
           "favicon",
           "apple-touch-icon.png",
         );
+
+        // The storage key is fixed across uploads, so an existing media
+        // row would violate the (provider, storage_key) unique index.
+        const existing = await deps.media.getByStorageKey(
+          appleTouchKey,
+          deps.storageProvider,
+        );
+        if (existing) {
+          await deps.media.delete(existing.id);
+        }
+
         await deps.storage.put(
           appleTouchKey,
           new Uint8Array(data.appleTouchIcon),
           { contentType: "image/png" },
         );
+        await deps.media.create({
+          filename: "apple-touch-icon.png",
+          originalName: "apple-touch-icon.png",
+          mimeType: "image/png",
+          size: data.appleTouchIcon.byteLength,
+          storageKey: appleTouchKey,
+          provider: deps.storageProvider,
+        });
         await this.set("SITE_FAVICON_APPLE_TOUCH", appleTouchKey);
       }
 
@@ -438,10 +460,20 @@ export function createSettingsService(
       await this.set("SITE_FAVICON_VERSION", version);
     },
 
-    async removeAvatar(storage) {
+    async removeAvatar(storage, deps) {
       const appleTouchKey = await this.get("SITE_FAVICON_APPLE_TOUCH");
       if (storage && appleTouchKey) {
         await storage.delete(appleTouchKey);
+      }
+
+      if (deps?.media && deps.storageProvider && appleTouchKey) {
+        const existing = await deps.media.getByStorageKey(
+          appleTouchKey,
+          deps.storageProvider,
+        );
+        if (existing) {
+          await deps.media.delete(existing.id);
+        }
       }
 
       await this.remove("SITE_AVATAR");

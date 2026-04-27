@@ -542,8 +542,9 @@ describe("Settings API Routes", () => {
       expect(storage.put).toHaveBeenCalledTimes(2);
 
       const mediaList = await services.media.list();
-      expect(mediaList).toHaveLength(1);
-      expect(mediaList[0]?.originalName).toBe("avatar.png");
+      expect(mediaList).toHaveLength(2);
+      const originalNames = mediaList.map((entry) => entry.originalName).sort();
+      expect(originalNames).toEqual(["apple-touch-icon.png", "avatar.png"]);
     });
   });
 
