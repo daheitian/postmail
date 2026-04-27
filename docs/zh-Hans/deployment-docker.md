@@ -1,8 +1,6 @@
 # 使用 Docker 部署
 
-官方 Docker 镜像是 `owenyoung/jant`。
-
-它会运行 Node 版本的运行时，应用待执行的 migrations，然后启动 Jant。
+官方镜像 `owenyoung/jant` 运行 Node 版本的 Jant，启动前会自动跑数据库迁移。
 
 Docker Hub：<https://hub.docker.com/r/owenyoung/jant>
 
@@ -10,33 +8,26 @@ Docker Hub：<https://hub.docker.com/r/owenyoung/jant>
 
 你需要准备：
 
-- Docker Engine 27 或更新版本，或者其他较新的 Docker 发行版
-- Docker Compose v2
-- 一个足够长、足够随机的 `AUTH_SECRET`
+- [Docker](https://docs.docker.com/engine/install/) 和 [Docker Compose](https://docs.docker.com/compose/install/)
+- 一个足够长、足够随机的 `AUTH_SECRET`，可以用 `openssl rand -base64 32` 生成
 
 ## 用 Docker Compose 快速开始
 
-下载官方 Compose 文件：
+建一个目录用来放站点的配置和数据，然后下载官方 Compose 文件：
 
 ```bash
+mkdir jant-site && cd jant-site
 curl -O https://raw.githubusercontent.com/jant-me/jant/main/compose.yml
 curl -o .env https://raw.githubusercontent.com/jant-me/jant/main/.env.example
-mkdir -p data/media
 ```
 
-编辑 `.env`，至少设置：
+编辑 `.env`，至少把 `AUTH_SECRET` 换成一个真实的密钥，可以用 `openssl rand -base64 32` 生成：
 
 ```env
-AUTH_SECRET=replace-with-a-long-random-secret
+AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me
 ```
 
-如果你需要生成一个 secret，可以用：
-
-```bash
-openssl rand -base64 32
-```
-
-启动整个栈：
+启动：
 
 ```bash
 docker compose up -d
@@ -44,74 +35,127 @@ docker compose up -d
 
 打开 `http://127.0.0.1:3000`。
 
-## 默认 Compose 配置会给你什么
+## 默认 Compose 里有什么
 
-自带的 `compose.yml` 使用的是一个简单的单节点布局：
+`compose.yml` 启动两个 service，共用同一个数据卷 `./data:/var/lib/jant`：
 
-- 官方镜像 `owenyoung/jant:latest`
-- SQLite 数据库存放在 `./data/jant.sqlite`
-- 上传媒体存放在 `./data/media/`
-- 容器数据挂载到 `/var/lib/jant`
-- `TRUST_PROXY=true`，适合放在你自己控制的反向代理之后
+- **`jant-migrate`** —— 每次 `docker compose up` 时跑一次 `jant migrate`。迁移失败，`jant` 不会启动。
+- **`jant`** —— 长期运行的应用容器，监听 `3000` 端口，带 `/healthz` 健康检查，日志按 10 MB × 3 文件轮转。
 
-这是在 VPS 或家用服务器上自托管 Jant 最简单的方式。
+跑起来之后，宿主机的 `./data/` 下会出现：
 
-默认 Compose 之所以使用本地媒体，是因为它可以让站点最快跑起来。但如果你打算长期运行，一个 S3 兼容存储通常会是更好的选择。
+- `jant.sqlite` —— SQLite 数据库
+- `media/` —— 上传的媒体文件
 
-## 重要环境变量
+镜像和 Compose 已经预设了几个默认值，正常不用改：
 
-把这些值写进 `.env`：
+| 变量          | 默认值          | 来源    | 作用                       |
+| ------------- | --------------- | ------- | -------------------------- |
+| `HOST`        | `0.0.0.0`       | 镜像    | 容器内监听地址             |
+| `PORT`        | `3000`          | 镜像    | 容器内监听端口             |
+| `DATA_DIR`    | `/var/lib/jant` | 镜像    | 数据库和本地媒体的根目录   |
+| `TRUST_PROXY` | `true`          | Compose | 信任 `X-Forwarded-*`       |
+| `TZ`          | `UTC`           | Compose | 容器时区，可在 `.env` 覆盖 |
 
-| 变量               | 是否必需           | 用途                                                                   |
-| ------------------ | ------------------ | ---------------------------------------------------------------------- |
-| `AUTH_SECRET`      | 是                 | 会话签名与认证                                                         |
-| `SITE_ORIGIN`      | 通常需要           | 用于 RSS、sitemap、导出和认证回调的 canonical URL                      |
-| `SITE_PATH_PREFIX` | 仅子路径部署时需要 | 公开挂载路径，例如 `/blog`                                             |
-| `TRUST_PROXY`      | 视情况而定         | 如果运行在 Caddy、Nginx、Traefik 或其他可信反向代理之后，就设为 `true` |
+## 数据库
 
-示例：
+Jant 通过 `DATABASE_URL` 的 scheme 决定连哪种数据库：
+
+- `file:` —— SQLite（默认）
+- `postgres:` 或 `postgresql:` —— Postgres
+
+### SQLite（默认）
+
+镜像里已经设好 `DATA_DIR=/var/lib/jant`。如果 `DATABASE_URL` 留空，Jant 会从 `DATA_DIR` 推导出 SQLite 路径，等同于：
 
 ```env
-AUTH_SECRET=replace-with-a-long-random-secret
-SITE_ORIGIN=https://your-jant.example
-# SITE_PATH_PREFIX=/blog
-TRUST_PROXY=true
+DATA_DIR=/var/lib/jant
+DATABASE_URL=file:/var/lib/jant/jant.sqlite
 ```
 
-Node 和 Docker 的完整变量列表见 [配置](configuration.md)。
+因为这两个默认值是配套的，默认 Compose 不需要在 `.env` 里写任何数据库相关的变量——容器内的 `/var/lib/jant` 通过卷映射到宿主机的 `./data/`，所以最终落成 `./data/jant.sqlite`。
 
-## 本地媒体还是 S3？
+只有在你想换路径时才需要显式设置，比如：
 
-如果你想要最简单的配置，或者只是在单机上测试，就用本地媒体。
+```env
+DATABASE_URL=file:/var/lib/jant/custom.sqlite
+```
 
-如果你想要 Docker / Node 路线下更推荐的长期方案，就用 S3 兼容存储。它能把媒体文件放在应用主机之外，也让以后迁移或重建应用更容易，而不必把上传文件当成容器本地状态来处理。
+### 切换到 Postgres
 
-## 不用 Compose 运行
+直接用 `postgres:` URL 覆盖：
 
-如果你只想起一个容器，其他部分自己管，也可以用 `docker run`：
+```env
+DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME
+```
+
+切完之后 SQLite 文件就不会再被读写，但本地媒体目录（`./data/media/`）仍由本地存储驱动管理，除非同时切到 S3。
+
+## 媒体存储
+
+默认用本地存储，文件落在 `./data/media/`。够用、起步快，缺点是媒体和应用主机绑在一起，迁移、重建容器都要带着这堆文件走。
+
+长期运行更推荐 S3 兼容存储（AWS S3、Backblaze B2、MinIO、DigitalOcean Spaces 等）：
+
+```env
+STORAGE_DRIVER=s3
+S3_ENDPOINT=https://s3.us-east-1.amazonaws.com
+S3_BUCKET=my-bucket
+S3_REGION=us-east-1
+S3_PUBLIC_URL=https://cdn.example.com
+S3_ACCESS_KEY_ID=your-access-key
+S3_SECRET_ACCESS_KEY=your-secret-key
+```
+
+字段含义和 CORS 设置见 [配置 § 存储](configuration.md#存储)。
+
+## 反向代理与公开 URL
+
+把 Jant 放在 Caddy、Nginx、Traefik 等反向代理后面是常见用法。Compose 已经默认 `TRUST_PROXY=true`，所以转发头会被尊重。
+
+需要额外设置的情况：
+
+- **反向代理没正确传 `Host`，导致 Jant 推不出真实域名**：在 `.env` 里写死 `SITE_ORIGIN=https://your-jant.example`。它影响 RSS、sitemap、导出文件、auth 回调里的绝对 URL。
+- **挂在子路径下**（如 `example.com/blog`）：`SITE_PATH_PREFIX=/blog`。
+
+完整变量表见 [配置](configuration.md)。
+
+## 不用 Compose 跑
+
+如果只想起一个容器，先手动跑迁移再启动应用：
 
 ```bash
+# 先跑迁移
+docker run --rm \
+  -e AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me \
+  -v "$(pwd)/data:/var/lib/jant" \
+  owenyoung/jant:latest \
+  node bin/jant.js migrate
+
+# 再启动应用
 docker run -d \
   --name jant \
   -p 3000:3000 \
-  -e AUTH_SECRET=replace-with-a-long-random-secret \
+  -e AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me \
   -e TRUST_PROXY=false \
   -v "$(pwd)/data:/var/lib/jant" \
   owenyoung/jant:latest
 ```
 
-如果容器运行在你自己的反向代理之后，请把 `TRUST_PROXY=true`。
+容器在你自己的反向代理后面时，把 `TRUST_PROXY` 改成 `true`。
 
 ## 更新站点
 
-拉取最新镜像并重启：
+拉最新镜像并重启就行：
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
-如果你想获得可重复部署，可以固定具体版本：
+每次 `up` 时 Compose 都会先把 `jant-migrate` 跑一遍，等它成功退出再启动 `jant`（见上面的 [默认 Compose 里有什么](#默认-compose-里有什么)）。所以新镜像里带的迁移文件会自动跑，迁移失败的话 `jant` 也不会启动到一个数据库 schema 不匹配的状态。
+
+需要可重复部署时，把镜像 tag 固定下来：
 
 ```env
 IMAGE=owenyoung/jant:<version>
@@ -119,19 +163,13 @@ IMAGE=owenyoung/jant:<version>
 
 ## 常用命令
 
-查看日志：
-
 ```bash
-docker compose logs -f
+docker compose logs -f       # 跟随日志
+docker compose ps            # 查看 service 状态
+docker compose down          # 停止整个栈
 ```
 
-停止整个栈：
-
-```bash
-docker compose down
-```
-
-修改公开端口：
+改对外暴露的端口（写进 `.env`）：
 
 ```env
 HOST_PORT=8080
@@ -139,15 +177,15 @@ HOST_PORT=8080
 
 ## 备份
 
-在默认 Docker 配置下，一个完整备份至少包含这两样：
+默认 Docker 配置下，一次完整备份至少要包含：
 
-- `data/jant.sqlite`
-- `data/media/`
+- `./data/jant.sqlite` —— 数据库
+- `./data/media/` —— 上传的媒体
 
-如果你后来切换到 Postgres 或 S3 兼容存储，你的备份模型也要跟着变化。详见 [备份与恢复](backups.md)。
+切到 Postgres 或 S3 之后，备份对象也会跟着变。详见 [备份与恢复](backups.md)。
 
 ## 接下来
 
-- [配置](configuration.md) —— 调整环境变量和站点行为
+- [配置](configuration.md) —— 全部环境变量和站点行为
 - [写作与内容组织](writing-and-organizing.md) —— 站点跑起来后开始写
 - [备份与恢复](backups.md) —— 长期运行需要的恢复规划

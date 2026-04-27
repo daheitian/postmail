@@ -12,6 +12,40 @@ import {
 import type { Bindings } from "../types.js";
 
 const HOSTED_SHARED_SECRET_MIN_LENGTH = 32;
+export const AUTH_SECRET_MIN_LENGTH = 32;
+
+const AUTH_SECRET_GENERATION_HINT =
+  "Generate one with `openssl rand -base64 32`.";
+
+const AUTH_SECRET_PLACEHOLDER_MARKER = "replace-me";
+
+type AuthSecretIssueKind = "missing" | "placeholder" | "too-short";
+
+export function getAuthSecretIssueKind(
+  env: Pick<Bindings, "AUTH_SECRET">,
+): AuthSecretIssueKind | null {
+  const secret = getAuthSecret(env);
+  if (!secret) {
+    return "missing";
+  }
+  if (secret.toLowerCase().includes(AUTH_SECRET_PLACEHOLDER_MARKER)) {
+    return "placeholder";
+  }
+  if (secret.length < AUTH_SECRET_MIN_LENGTH) {
+    return "too-short";
+  }
+  return null;
+}
+
+export function getAuthSecretReadinessError(kind: AuthSecretIssueKind): string {
+  if (kind === "placeholder") {
+    return `AUTH_SECRET still uses the placeholder value from .env.example. ${AUTH_SECRET_GENERATION_HINT}`;
+  }
+  if (kind === "too-short") {
+    return `AUTH_SECRET must be at least ${AUTH_SECRET_MIN_LENGTH} characters before Jant can accept traffic. ${AUTH_SECRET_GENERATION_HINT}`;
+  }
+  return "AUTH_SECRET must be set before Jant can accept traffic.";
+}
 
 interface StartupConfigurationIssue {
   message: string;
@@ -41,13 +75,25 @@ ${input.bodyHtml}
 </html>`;
 }
 
-function getAuthSecretErrorHtml(): string {
-  const runtimeInstructions = `<p>Set <code>AUTH_SECRET=...</code> in the environment used to start Jant.</p>
+function getAuthSecretErrorHtml(kind: AuthSecretIssueKind): string {
+  const runtimeInstructions = `<p>Set <code>AUTH_SECRET=...</code> in the environment used to start Jant. Generate one with <code>openssl rand -base64 32</code>.</p>
 <p><strong>Cloudflare Workers:</strong> add <code>AUTH_SECRET</code> as a Worker secret in the dashboard under Variables and Secrets, or run <code>wrangler secret put AUTH_SECRET</code>.</p>`;
 
+  const titleByKind: Record<AuthSecretIssueKind, string> = {
+    missing: "AUTH_SECRET is not set",
+    placeholder: "AUTH_SECRET is still the placeholder from .env.example",
+    "too-short": `AUTH_SECRET is too short (must be at least ${AUTH_SECRET_MIN_LENGTH} characters)`,
+  };
+
+  const leadByKind: Record<AuthSecretIssueKind, string> = {
+    missing: `<p>Jant needs a ${AUTH_SECRET_MIN_LENGTH}+ character auth secret to sign sessions.</p>`,
+    placeholder: `<p>The current <code>AUTH_SECRET</code> still contains the <code>replace-me</code> placeholder from <code>.env.example</code>. This value is publicly known and unsafe to use; replace it with a real secret before serving traffic.</p>`,
+    "too-short": `<p>Jant needs an auth secret of at least ${AUTH_SECRET_MIN_LENGTH} characters to sign sessions. The current value is too short.</p>`,
+  };
+
   return renderConfigurationErrorPage({
-    title: "AUTH_SECRET is not set",
-    bodyHtml: `<p>Jant needs a 32+ character auth secret to sign sessions.</p>${runtimeInstructions}`,
+    title: titleByKind[kind],
+    bodyHtml: `${leadByKind[kind]}${runtimeInstructions}`,
     docsHref:
       "https://github.com/jant-me/jant/blob/main/docs/configuration.md#required",
   });
@@ -231,8 +277,9 @@ export function getStartupConfigurationErrorPage(
     | "SITE_RESOLUTION_MODE"
   >,
 ): string | null {
-  if (!getAuthSecret(env)) {
-    return getAuthSecretErrorHtml();
+  const authSecretIssue = getAuthSecretIssueKind(env);
+  if (authSecretIssue) {
+    return getAuthSecretErrorHtml(authSecretIssue);
   }
 
   const hostBasedIssues = collectHostBasedStartupConfigurationIssues(env);

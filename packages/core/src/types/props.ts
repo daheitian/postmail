@@ -22,6 +22,8 @@ export interface HomePageProps {
   currentPage: number;
   totalPages: number;
   baseUrl: string;
+  isAuthenticated: boolean;
+  signinUrl: string;
 }
 
 /** Props for the single post page component */

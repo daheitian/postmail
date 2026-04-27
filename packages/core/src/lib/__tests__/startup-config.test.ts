@@ -16,10 +16,10 @@ const VALID_HOST_BASED_ENV = {
 };
 
 describe("getStartupConfigurationErrorPage", () => {
-  it("does not block startup when AUTH_SECRET is present", () => {
+  it("does not block startup when AUTH_SECRET is present and long enough", () => {
     expect(
       getStartupConfigurationErrorPage({
-        AUTH_SECRET: "test-secret",
+        AUTH_SECRET: "test-secret-with-enough-entropy-for-startup-checks",
         DEV_API_TOKEN: "jnt_dev_test123",
       }),
     ).toBeNull();
@@ -34,8 +34,33 @@ describe("getStartupConfigurationErrorPage", () => {
     expect(page).toContain(
       "Set <code>AUTH_SECRET=...</code> in the environment used to start Jant.",
     );
+    expect(page).toContain("openssl rand -base64 32");
     expect(page).toContain("wrangler secret put AUTH_SECRET");
     expect(page).toContain("Open configuration instructions");
+  });
+
+  it("returns an error page when AUTH_SECRET is shorter than 32 characters", () => {
+    const page = getStartupConfigurationErrorPage({
+      AUTH_SECRET: "too-short",
+      DEV_API_TOKEN: "jnt_dev_test123",
+    });
+
+    expect(page).toContain("AUTH_SECRET is too short");
+    expect(page).toContain("at least 32 characters");
+    expect(page).toContain("openssl rand -base64 32");
+  });
+
+  it("returns an error page when AUTH_SECRET still uses the .env.example placeholder", () => {
+    const page = getStartupConfigurationErrorPage({
+      AUTH_SECRET: "replace-me-replace-me-replace-me-replace-me-replace-me",
+      DEV_API_TOKEN: "jnt_dev_test123",
+    });
+
+    expect(page).toContain(
+      "AUTH_SECRET is still the placeholder from .env.example",
+    );
+    expect(page).toContain("publicly known");
+    expect(page).toContain("openssl rand -base64 32");
   });
 
   it("does not block startup when host-based required variables are present", () => {

@@ -71,6 +71,8 @@ npx jant site export --url https://your-site.example --output ./jant-site-export
 - slug 或 alias 冲突会让导入停止
 - `--dry-run` 只做校验，不会真正写入
 
+如果目标站点不是空的——通常是因为上一次导入没成功、留下了一些内容——可以通过 Dashboard 的 **Settings → Account → Delete Account** 来重置。这个流程会先强制让你下载一份 `site export`，再让你打字输入确认短语，然后一次性清掉 posts、media、collections、settings 以及账号本身。重新注册一次就拿到一个干净的目标站点了。目前没有更轻量的"只清内容不删账号"入口。
+
 ### 先做一次 Dry Run
 
 ```bash

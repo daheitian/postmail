@@ -1353,11 +1353,6 @@ msgstr ""
 msgid "Notes"
 msgstr ""
 
-#. @context: Empty state message on home page
-#: src/ui/pages/HomePage.tsx
-msgid "Nothing here yet."
-msgstr ""
-
 #. @context: Empty state message on an aggregate collection page
 #: src/ui/pages/CollectionPage.tsx
 msgid "Nothing here yet. Add posts to one of these collections to fill this view."
@@ -1550,6 +1545,11 @@ msgstr ""
 #. @context: Search highlight text on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "quiet design"
+msgstr ""
+
+#. @context: Empty state message on home page
+#: src/ui/pages/HomePage.tsx
+msgid "Quiet here for now."
 msgstr ""
 
 #. @context: Muted sample label
@@ -1802,6 +1802,11 @@ msgstr ""
 #: src/routes/auth/signin.tsx
 #: src/routes/auth/signin.tsx
 msgid "Sign In"
+msgstr ""
+
+#. @context: Sign-in nudge shown to visitors on an empty home page, hinting that the site owner can sign in to start writing
+#: src/ui/pages/HomePage.tsx
+msgid "Sign in if this is your space."
 msgstr ""
 
 #. @context: Token label on sample page

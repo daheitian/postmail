@@ -155,6 +155,60 @@ Feeds：
 - `/{slug}/feed` 返回单个 collection 的 feed
 - `/collections/{slug1}+{slug2}/feed` 返回组合 collection 的 feed
 
+## 自定义 URL
+
+除了默认的 slug，Jant 还支持给帖子、collection、归档页设置自定义路径，并支持配置跳转规则。在管理后台进入 **设置 → 高级 → 自定义 URL** 即可统一管理（对应路径是 `/settings/custom-urls`）。
+
+一共有四种类型：
+
+- **Post**：给某篇帖子设置一个新的主要路径，原 slug 会自动 301 跳到新路径
+- **Collection**：给某个 collection 设置一个新的主要路径，原 slug 同样自动 301 跳过去
+- **Archive**：把一组归档筛选条件固化成一个固定路径，比如 `/quotes` 实际渲染 `/archive?format=quote&visibility=public&view=list`
+- **Redirect**：把任意路径跳转到另一个路径，或者外部 URL
+
+### 给帖子或 collection 设置自定义路径
+
+进入 **设置 → 高级 → 自定义 URL**，点击右上角的 **New Custom URL**：
+
+- **Path**：你希望对外暴露的新路径，比如 `blog/my-post`（不需要写开头的 `/`）
+- **Type**：选 `Post` 或 `Collection`
+- **Target Slug**：要指向的帖子或 collection 的 slug
+
+设置之后，新路径会成为这条内容对外的主要 URL（permalink、feed、og:url 都使用新路径），原本的 slug 会自动 `301` 跳到新路径——已经传播出去的旧链接不会失效。
+
+适合用来重新设计 URL 结构（例如把所有长文统一放到 `blog/...` 之下），或者把从其他平台搬过来的内容挂回到原来的链接上。
+
+### 自定义归档视图
+
+如果你经常浏览“某一类”的帖子，可以把对应的归档筛选保存成一个简短可记的入口：
+
+- **Path**：例如 `notes`
+- **Type**：选 `Archive`
+- **Query Parameters**：归档支持的筛选参数，例如 `format=note&view=list` 或 `format=link&visibility=public`
+
+### 跳转规则
+
+- **Path**：旧路径或外部已经在传播的路径
+- **Type**：选 `Redirect`
+- **Destination**：目标路径（`/new-path`）或完整外部 URL（`https://...`）
+- **Redirect Type**：
+  - `301 (Permanent)` —— 用于永久搬迁，搜索引擎会更新索引
+  - `302 (Temporary)` —— 用于临时调整，搜索引擎仍记原路径
+
+### 关于直接修改 slug
+
+如果你只是想换一个对外展示的路径，**优先用上面的 Post / Collection 自定义 URL**——原 slug 会自动跳过去，不需要额外操作。
+
+如果你确实要在编辑器里直接改 slug 字段，注意 Jant 不会自动保留旧地址，旧路径会变成 404。这种情况下请同时到 **设置 → 高级 → 自定义 URL** 手动加一条 `301`，把旧路径指向新 slug。
+
+### 保留路径
+
+下列一级路径是 Jant 自身在用的入口，不能用作自定义 URL：
+
+`featured`、`latest`、`signin`、`signout`、`setup`、`settings`、`dash`、`api`、`feed`、`search`、`archive`、`media`、`pages`、`reset`、`collections`、`compose`、`new`、`static`、`assets`、`_assets`、`healthz`、`readyz`
+
+Path 只支持小写字母、数字、连字符和斜杠。
+
 ## 什么时候用 Thread、Collection 和 Featured
 
 当多篇帖子属于同一个连续对话时，用 thread。

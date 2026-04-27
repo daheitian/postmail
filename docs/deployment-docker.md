@@ -26,7 +26,7 @@ curl -o .env https://raw.githubusercontent.com/jant-me/jant/main/.env.example
 Edit `.env` and set at least:
 
 ```env
-AUTH_SECRET=replace-with-a-long-random-secret
+AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me
 ```
 
 Generate a secret with:
@@ -74,7 +74,7 @@ Set these in `.env`:
 Example:
 
 ```env
-AUTH_SECRET=replace-with-a-long-random-secret
+AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me
 SITE_ORIGIN=https://your-jant.example
 # SITE_PATH_PREFIX=/blog
 TRUST_PROXY=true
@@ -172,7 +172,7 @@ Use `docker run` when you want one container and will manage the rest yourself:
 ```bash
 # Run migrations first
 docker run --rm \
-  -e AUTH_SECRET=replace-with-a-long-random-secret \
+  -e AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me \
   -v "$(pwd)/data:/var/lib/jant" \
   owenyoung/jant:latest \
   node bin/jant.js migrate
@@ -181,7 +181,7 @@ docker run --rm \
 docker run -d \
   --name jant \
   -p 3000:3000 \
-  -e AUTH_SECRET=replace-with-a-long-random-secret \
+  -e AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me \
   -e TRUST_PROXY=false \
   -v "$(pwd)/data:/var/lib/jant" \
   owenyoung/jant:latest

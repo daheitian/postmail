@@ -33,6 +33,12 @@ usage = 'arg "[password]" default="jant-dev-debug-login"'
 dir = "packages/core"
 run = 'node dev/scripts/setup-dev-auth.mjs "$usage_password"'
 
+[tasks.dev-auth-sync]
+description = "Update the local Node admin password to match DEMO_PASSWORD in .env.node (or arg)"
+usage = 'arg "[password]"'
+dir = "packages/core"
+run = 'pnpm exec tsx dev/scripts/sync-dev-password.ts "$usage_password"'
+
 [tasks.serve-node]
 description = "Serve the production Node runtime locally (reads packages/core/.env.node)"
 run = "HOST=0.0.0.0 node --env-file packages/core/.env.node packages/core/bin/jant.js start"

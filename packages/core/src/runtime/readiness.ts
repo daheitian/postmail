@@ -1,7 +1,10 @@
 import { createDatabase, createNodeDatabase } from "../db/index.js";
 import { sqliteSchemaBundle } from "../db/schema-bundle.js";
-import { getAuthSecret } from "../lib/env.js";
-import { getHostBasedStartupConfigurationIssues } from "../lib/startup-config.js";
+import {
+  getAuthSecretIssueKind,
+  getAuthSecretReadinessError,
+  getHostBasedStartupConfigurationIssues,
+} from "../lib/startup-config.js";
 import { createSiteService } from "../services/site.js";
 import type { Bindings } from "../types/bindings.js";
 
@@ -33,8 +36,9 @@ function getStartupConfigurationReadiness(
 ): ReadinessCheckStatus {
   const errors: string[] = [];
 
-  if (!getAuthSecret(env)) {
-    errors.push("AUTH_SECRET must be set before Jant can accept traffic.");
+  const authSecretIssue = getAuthSecretIssueKind(env);
+  if (authSecretIssue) {
+    errors.push(getAuthSecretReadinessError(authSecretIssue));
   }
 
   for (const issue of getHostBasedStartupConfigurationIssues(env)) {

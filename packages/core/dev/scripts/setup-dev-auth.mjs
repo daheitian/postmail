@@ -48,13 +48,12 @@ function upsertEnvValue(lines, key, value) {
   return nextLines;
 }
 
-const password =
-  process.argv.find(
-    (arg) =>
-      !arg.startsWith("-") &&
-      arg !== process.argv[0] &&
-      arg !== process.argv[1],
-  ) || DEFAULT_DEV_PASSWORD;
+const cliPassword = process.argv.find(
+  (arg) =>
+    !arg.startsWith("-") &&
+    arg !== process.argv[0] &&
+    arg !== process.argv[1],
+);
 const debugPort = Number(process.env.DEBUG_PORT || "19020");
 const localPort = Number(process.env.PORT || "3000");
 const localBaseUrl = `http://localhost:${localPort}`;
@@ -63,6 +62,12 @@ const localtestBaseUrl = `http://jant.localtest.me:${localPort}`;
 const localtestDebugBaseUrl = `http://jant.localtest.me:${debugPort}`;
 
 let lines = readEnvLines();
+
+const password =
+  cliPassword?.trim() ||
+  process.env.DEMO_PASSWORD?.trim() ||
+  readEnvValue(lines, "DEMO_PASSWORD").trim() ||
+  DEFAULT_DEV_PASSWORD;
 
 const authSecret =
   readEnvValue(lines, "AUTH_SECRET") || randomBytes(32).toString("base64");

@@ -30,7 +30,7 @@ Use `docker run` when you want a single container without Compose:
 docker run -d \
   --name jant \
   -p 3000:3000 \
-  -e AUTH_SECRET=replace-with-a-long-random-secret \
+  -e AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me \
   -e TRUST_PROXY=false \
   -v "$(pwd)/data:/var/lib/jant" \
   owenyoung/jant:latest

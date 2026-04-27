@@ -149,6 +149,8 @@ Important rules:
 - slug or alias conflicts stop the import
 - `--dry-run` validates the archive without writing anything
 
+If the target is not empty — usually because a previous import attempt left content behind — reset it through the dashboard at **Settings → Account → Delete Account**. That flow forces a `site export` download first, asks you to type a confirmation phrase, then wipes posts, media, collections, settings, and the account itself. Sign up again and you have a clean target. There is no lighter-weight "wipe content only" reset today.
+
 ### Dry Run an Import
 
 ```bash

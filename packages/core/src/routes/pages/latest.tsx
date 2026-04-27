@@ -59,6 +59,8 @@ latestRoutes.get("/", async (c) => {
         baseUrl={toPublicPath("/latest", navData.sitePathPrefix)}
         currentPage={currentPage}
         totalPages={totalPages}
+        isAuthenticated={navData.isAuthenticated}
+        signinUrl={`${toPublicPath("/signin", navData.sitePathPrefix)}?redirect=${encodeURIComponent(toPublicPath("/latest", navData.sitePathPrefix))}`}
       />
     ),
   });

@@ -16,6 +16,8 @@ export const HomePage: FC<HomePageProps> = ({
   baseUrl,
   currentPage,
   totalPages,
+  isAuthenticated,
+  signinUrl,
 }) => {
   const { i18n } = useLingui();
 
@@ -37,15 +39,29 @@ export const HomePage: FC<HomePageProps> = ({
         <div data-feed>
           <div id="timeline-feed">
             <div id="timeline-items" class="flex flex-col">
-              <p
-                id="empty-timeline"
-                class="py-12 text-center text-muted-foreground"
-              >
+              <p id="empty-timeline" class="py-8 text-muted-foreground">
                 {i18n._(
                   msg({
-                    message: "Nothing here yet.",
+                    message: "Quiet here for now.",
                     comment: "@context: Empty state message on home page",
                   }),
+                )}
+                {!isAuthenticated && (
+                  <>
+                    {" "}
+                    <a
+                      href={signinUrl}
+                      class="underline-offset-2 hover:underline"
+                    >
+                      {i18n._(
+                        msg({
+                          message: "Sign in if this is your space.",
+                          comment:
+                            "@context: Sign-in nudge shown to visitors on an empty home page, hinting that the site owner can sign in to start writing",
+                        }),
+                      )}
+                    </a>
+                  </>
                 )}
               </p>
             </div>

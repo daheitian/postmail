@@ -104,6 +104,8 @@ homeRoutes.get("/", async (c) => {
         baseUrl={toPublicPath("/", navData.sitePathPrefix)}
         currentPage={currentPage}
         totalPages={totalPages}
+        isAuthenticated={isAuthenticated}
+        signinUrl={`${toPublicPath("/signin", navData.sitePathPrefix)}?redirect=${encodeURIComponent(toPublicPath("/", navData.sitePathPrefix))}`}
       />
     ),
   });

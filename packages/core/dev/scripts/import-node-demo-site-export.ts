@@ -104,6 +104,24 @@ function upsertEnvValue(lines: string[], key: string, value: string) {
   return nextLines;
 }
 
+function resolvePassword(cliPassword: string | undefined) {
+  if (cliPassword) {
+    return cliPassword;
+  }
+
+  const fromProcess = process.env.DEMO_PASSWORD?.trim();
+  if (fromProcess) {
+    return fromProcess;
+  }
+
+  const fromFile = parseEnvFile(readEnvLines()).DEMO_PASSWORD?.trim();
+  if (fromFile) {
+    return fromFile;
+  }
+
+  return DEFAULT_DEV_PASSWORD;
+}
+
 function buildRuntimeEnv(password: string, checkOnly: boolean) {
   let lines = readEnvLines();
   const envFileValues = parseEnvFile(lines);
@@ -488,7 +506,7 @@ async function main() {
     process.exit(0);
   }
 
-  const password = positionals[0] || DEFAULT_DEV_PASSWORD;
+  const password = resolvePassword(positionals[0]);
   const checkOnly = values.check ?? false;
   const { env } = buildRuntimeEnv(password, checkOnly);
   const config = assertLocalImportConfig(env);

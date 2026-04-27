@@ -50,6 +50,40 @@ describe("getInstanceReadiness", () => {
     });
   });
 
+  it("reports startup configuration failures when AUTH_SECRET is too short", async () => {
+    const { sqlite } = createTestDatabase();
+
+    const result = await getInstanceReadiness({
+      AUTH_SECRET: "too-short",
+      NODE_SQLITE: sqlite,
+    });
+
+    expect(result.status).toBe("error");
+    expect(result.checks.database).toEqual({ ok: true });
+    expect(result.checks.startupConfig.ok).toBe(false);
+    expect(result.checks.startupConfig.error).toContain(
+      "AUTH_SECRET must be at least 32 characters",
+    );
+    expect(result.checks.startupConfig.error).toContain(
+      "openssl rand -base64 32",
+    );
+  });
+
+  it("reports startup configuration failures when AUTH_SECRET is still the placeholder", async () => {
+    const { sqlite } = createTestDatabase();
+
+    const result = await getInstanceReadiness({
+      AUTH_SECRET: "replace-me-replace-me-replace-me-replace-me-replace-me",
+      NODE_SQLITE: sqlite,
+    });
+
+    expect(result.status).toBe("error");
+    expect(result.checks.startupConfig.ok).toBe(false);
+    expect(result.checks.startupConfig.error).toContain(
+      "AUTH_SECRET still uses the placeholder value from .env.example",
+    );
+  });
+
   it("reports host-based startup issues when required env is missing", async () => {
     const { sqlite } = createTestDatabase();
 
