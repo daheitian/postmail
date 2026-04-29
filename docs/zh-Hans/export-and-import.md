@@ -31,28 +31,23 @@
 
 如果这个导出来自 Jant，`data/jant.toml` 还会保留供 round-trip import 使用的 Jant 元数据，包括 header navigation 和 collections directory 结构（collection 顺序、divider、自定义 link）。
 
-### 导出本地站点
-
-```bash
-npx jant site export --output ./jant-site-export.zip
-```
-
-如果你想直接查看生成出来的站点，也可以直接导出到目录：
-
-```bash
-npx jant site export --directory ./jant-site
-cd ./jant-site && hugo serve
-```
-
-### 导出远端站点
+### 导出站点
 
 先在 **Settings > API Tokens** 里创建一个 API token，然后运行：
 
 ```bash
-JANT_API_TOKEN=jnt_your_token npx jant site export --url https://your-site.example --output ./jant-site-export.zip
+export JANT_API_TOKEN=jnt_your_token
+npx jant site export https://your-site.example --output ./jant-site-export.zip
 ```
 
-你也可以直接传 `--token`，但 `JANT_API_TOKEN` 更适合反复使用。
+如果你想直接查看生成出来的站点，可以直接导出到目录：
+
+```bash
+npx jant site export https://your-site.example --directory ./jant-site
+cd ./jant-site && hugo serve
+```
+
+你也可以用 `--token` 显式传 token，但 `JANT_API_TOKEN` 更适合反复使用。
 
 ## Site Import
 
@@ -74,21 +69,17 @@ JANT_API_TOKEN=jnt_your_token npx jant site export --url https://your-site.examp
 
 ### 先做一次 Dry Run
 
-```bash
-npx jant site import --path ./jant-site-export.zip --dry-run
-```
-
-### 导入到本地站点
+dry-run 不会真正连接目标站点，但 URL 仍然必填（参数形态保持一致）：
 
 ```bash
-npx jant site import --path ./jant-site-export.zip
+npx jant site import https://your-site.example --path ./jant-site-export.zip --dry-run
 ```
 
-### 导入到远端站点
+### 导入到站点
 
 ```bash
 export JANT_API_TOKEN=jnt_your_token
-npx jant site import --url https://your-site.example --path ./jant-site-export.zip
+npx jant site import https://your-site.example --path ./jant-site-export.zip
 ```
 
 ### 跳过 body 里的远程图片
@@ -98,7 +89,7 @@ npx jant site import --url https://your-site.example --path ./jant-site-export.z
 如果你不希望 body 里那些**指向第三方 URL 的图**（imgur、Wikipedia、随便一个 https 链接）被镜像到自己的存储——比如担心带宽、版权、或者只是觉得没必要——可以加 `--skip-remote-media`：
 
 ```bash
-npx jant site import --path ./jant-site-export.zip --skip-remote-media
+npx jant site import https://your-site.example --path ./jant-site-export.zip --skip-remote-media
 ```
 
 加了之后：

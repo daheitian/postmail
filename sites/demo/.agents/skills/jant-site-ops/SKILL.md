@@ -32,8 +32,8 @@ What they do:
 ```bash
 npx jant migrate --local
 npx jant migrate --remote --config ./wrangler.toml
-npx jant site export --output ./jant-site-export.zip
-npx jant site import --path ./jant-site-export.zip --dry-run
+npx jant site export https://your-site.example --output ./jant-site-export.zip
+npx jant site import https://your-site.example --path ./jant-site-export.zip --dry-run
 npx jant site snapshot export --output ./jant-site-snapshot.zip
 npx jant site snapshot import --path ./jant-site-snapshot.zip --replace
 npx jant db export --output ./jant-export.sql
@@ -69,16 +69,16 @@ npx jant uploads cleanup --help
 
 Use `assets prepare` when you need the publishable asset directory assembled locally.
 
-## Remote Operations
+## Authentication
 
-Remote site export/import can use an API token:
+`site export` and `site import` always target a deployed site URL and require an API token:
 
 ```bash
 export JANT_API_TOKEN=jnt_your_token
-npx jant site export --url https://your-site.example --output ./jant-site-export.zip
+npx jant site export https://your-site.example --output ./jant-site-export.zip
 ```
 
-For remote D1-oriented commands, pass `--remote` and your Wrangler config when needed.
+For D1-oriented commands like snapshot export and `db export`, pass `--remote` and your Wrangler config when needed.
 
 ## Gotchas
 

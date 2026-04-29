@@ -13,7 +13,7 @@ Export a remote site into a normal directory:
 ```bash
 mkdir -p backups
 export JANT_API_TOKEN=jnt_your_token
-npx jant site export --url https://your-site.example --directory ./backups/jant-site-export-$(date +%F)
+npx jant site export https://your-site.example --directory ./backups/jant-site-export-$(date +%F)
 ```
 
 Create a restore-friendly snapshot that keeps internal IDs, storage keys, and referenced object files:
@@ -91,7 +91,7 @@ Use the remote site URL and export to a normal directory:
 ```bash
 mkdir -p backups
 export JANT_API_TOKEN=jnt_your_token
-npx jant site export --url https://your-site.example --directory ./backups/jant-site-export-$(date +%F)
+npx jant site export https://your-site.example --directory ./backups/jant-site-export-$(date +%F)
 ```
 
 Do not treat `site export` as your primary disaster-recovery plan for a live production site.

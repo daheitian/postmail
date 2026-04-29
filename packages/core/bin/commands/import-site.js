@@ -18,8 +18,6 @@ import {
   normalizeImportedBody,
   rewriteMediaReferences,
 } from "../lib/site-media-parser.js";
-import { openNodeDatabase } from "../lib/node-database.js";
-import { loadNodeRuntime } from "../lib/load-node-runtime.js";
 import { parseFrontMatter as parseFrontMatterShared } from "../lib/hugo-markdown.js";
 
 /**
@@ -1483,223 +1481,6 @@ function createRemoteTarget(apiUrl, token) {
   };
 }
 
-async function createLocalTarget(env = process.env) {
-  const nodeDatabase = await openNodeDatabase(env);
-  const { createNodeCliRuntime, resolveConfig } = await loadNodeRuntime();
-  const bindings = nodeDatabase.bindings;
-  const runtime = await createNodeCliRuntime(bindings);
-  const allSettings = await runtime.services.settings.getAll();
-  const appConfig = resolveConfig(bindings, allSettings);
-  const summaryConfig = {
-    maxParagraphs: appConfig.summaryMaxParagraphs,
-    maxChars: appConfig.summaryMaxChars,
-  };
-
-  return {
-    async close() {
-      await nodeDatabase.close();
-    },
-    async getSetupStatus() {
-      return runtime.services.settings.isOnboardingComplete();
-    },
-    async updateSettings(updates) {
-      await runtime.services.settings.setMany(updates);
-      return { settings: updates };
-    },
-    async updateImportSettings(updates) {
-      await runtime.services.settings.setMany(updates);
-      return { success: true };
-    },
-    async listNavItems() {
-      return runtime.services.navItems.list();
-    },
-    async createNavItem(data) {
-      return runtime.services.navItems.create(data);
-    },
-    async deleteNavItem(id) {
-      return runtime.services.navItems.delete(id);
-    },
-    async removeSiteAvatar() {
-      return runtime.services.settings.removeAvatar(runtime.storage);
-    },
-    async uploadSiteAvatar(data) {
-      if (!runtime.storage) {
-        throw new Error("Local import requires configured storage.");
-      }
-
-      const avatarAsset = await readImportAsset({
-        sourceUrl: data.avatarUrl,
-        sourceFilePath: data.avatarFilePath,
-      });
-      if (!avatarAsset) {
-        throw new Error(`Failed to read site avatar: ${data.avatarUrl}`);
-      }
-
-      let faviconIco;
-      if (data.faviconUrl || data.faviconFilePath) {
-        const faviconAsset = await readImportAsset({
-          sourceUrl: data.faviconUrl,
-          sourceFilePath: data.faviconFilePath,
-          mimeType: "image/x-icon",
-          originalName: "favicon.ico",
-        });
-        if (faviconAsset) {
-          faviconIco = toArrayBuffer(faviconAsset.bytes);
-        }
-      }
-
-      let appleTouchIcon;
-      if (data.appleTouchUrl) {
-        const appleTouchAsset = await readImportAsset({
-          sourceUrl: data.appleTouchUrl,
-          sourceFilePath: data.appleTouchFilePath,
-        });
-        if (appleTouchAsset) {
-          appleTouchIcon = toArrayBuffer(appleTouchAsset.bytes);
-        }
-      }
-
-      await runtime.services.settings.uploadAvatar(
-        {
-          file: createUploadFile(
-            avatarAsset.filename,
-            avatarAsset.contentType,
-            avatarAsset.bytes,
-          ),
-          faviconIco,
-          appleTouchIcon,
-        },
-        {
-          media: runtime.services.media,
-          storage: runtime.storage,
-          storageProvider: appConfig.storageDriver,
-          maxFileSizeMB: appConfig.uploadMaxFileSize,
-        },
-      );
-
-      return { success: true };
-    },
-    async syncSiteAvatar(data) {
-      await this.removeSiteAvatar();
-      if (!data) {
-        return { success: true };
-      }
-      return this.uploadSiteAvatar(data);
-    },
-    async listCollections() {
-      return runtime.services.collections.list();
-    },
-    async listCollectionDirectoryItems() {
-      return runtime.services.collections.listDirectoryItems();
-    },
-    async createCollection(data) {
-      return runtime.services.collections.create(data);
-    },
-    async createCollectionDirectoryItem(data) {
-      return runtime.services.collections.createDirectoryItem(data);
-    },
-    async moveCollectionDirectoryItem(id, after, before) {
-      return runtime.services.collections.moveDirectoryItem(id, after, before);
-    },
-    async deleteCollectionDirectoryItem(id) {
-      return runtime.services.collections.deleteDirectoryItem(id);
-    },
-    async createPost(data) {
-      const { attachments, ...postData } = data;
-      return runtime.services.posts.createWithAttachments(
-        postData,
-        attachments,
-        {
-          media: runtime.services.media,
-          storage: runtime.storage,
-          storageDriver: appConfig.storageDriver,
-          maxFileSizeMB: appConfig.uploadMaxFileSize,
-        },
-        summaryConfig,
-      );
-    },
-    async createAlias(path, targetSlug) {
-      const post = await runtime.services.posts.getBySlug(targetSlug);
-      if (!post) {
-        throw new Error(`Post with slug "${targetSlug}" not found`);
-      }
-      return runtime.services.customUrls.create({
-        path,
-        targetType: "post",
-        targetId: post.id,
-      });
-    },
-    async uploadMedia(mediaSpec) {
-      if (!runtime.storage) {
-        throw new Error("Local import requires configured storage.");
-      }
-
-      const asset = await readMediaSpecAsset(mediaSpec);
-      if (!asset) return null;
-
-      const originalName =
-        mediaSpec.originalName ||
-        asset.filename ||
-        getFilenameFromUrl(mediaSpec.src) ||
-        "file";
-      const bytes = asset.bytes;
-      const { id, filename, storageKey } =
-        generateImportedStorageKey(originalName);
-      const mimeType =
-        mediaSpec.mimeType || asset.contentType || guessMimeType(originalName);
-      let posterKey;
-
-      if (mediaSpec.poster) {
-        const posterAsset = await readMediaSpecAsset(mediaSpec, "poster");
-        if (posterAsset) {
-          const posterName = posterAsset.filename || "poster.webp";
-          const posterExt = extname(posterName) || ".webp";
-          posterKey = storageKey.replace(/(\.[^.]+)?$/, `-poster${posterExt}`);
-          await runtime.storage.put(posterKey, posterAsset.bytes, {
-            contentType: posterAsset.contentType || guessMimeType(posterName),
-          });
-        }
-      }
-
-      await runtime.storage.put(storageKey, bytes, {
-        contentType: mimeType,
-      });
-
-      const createdMedia = await runtime.services.media.create({
-        id,
-        filename,
-        originalName,
-        mimeType,
-        size: mediaSpec.size ?? bytes.byteLength,
-        storageKey,
-        provider: appConfig.storageDriver,
-        width: mediaSpec.width ?? undefined,
-        height: mediaSpec.height ?? undefined,
-        alt: mediaSpec.alt ?? undefined,
-        position: mediaSpec.position ?? undefined,
-        blurhash: mediaSpec.blurhash ?? undefined,
-        waveform: mediaSpec.waveform ?? undefined,
-        posterKey,
-        summary: mediaSpec.summary ?? undefined,
-        chars: mediaSpec.chars ?? undefined,
-        mediaKind: mediaSpec.kind ?? undefined,
-      });
-
-      return {
-        id: createdMedia.id,
-        url: getMediaPublicUrl(
-          createdMedia.storageKey,
-          createdMedia.provider,
-          appConfig,
-        ),
-      };
-    },
-    async checkPostSlugAvailability(slug) {
-      return runtime.services.posts.checkSlugAvailability(slug);
-    },
-  };
-}
-
 /**
  * Walk `content/` and classify each `_index.md` / `index.md` bundle by its
  * front-matter `type`. Returns ordered root-post bundles (with child reply
@@ -1998,11 +1779,48 @@ export const __test__ = {
   buildPostPayloadFromBundle,
 };
 
+function printImportUsage() {
+  console.log("Usage: jant site import <url> [options]");
+  console.log("");
+  console.log("Import a Hugo export directory or ZIP into a Jant site.");
+  console.log("");
+  console.log("Arguments:");
+  console.log("  <url>         Jant site URL (required)");
+  console.log("");
+  console.log("Options:");
+  console.log(
+    "  --path        Path to export directory or ZIP file (default: .)",
+  );
+  console.log("  --dry-run     Parse and validate without making API calls");
+  console.log(
+    "  --skip-remote-media  Skip uploading absolute-URL images found in body (relative paths and declared media still import)",
+  );
+  console.log("  --token       API token (overrides JANT_API_TOKEN)");
+  console.log("");
+  console.log(
+    "Import expects an empty target site and fails on slug or alias conflicts.",
+  );
+  console.log("");
+  console.log("Authentication:");
+  console.log(`  export ${CLI_API_TOKEN_ENV_VAR}=jnt_your_token`);
+  console.log("  jant site import https://your-site.example --path ./export");
+  console.log("");
+  console.log("Examples:");
+  console.log(
+    "  jant site import https://your-site.example --path ./jant-site",
+  );
+  console.log(
+    "  jant site import https://your-site.example --path ./jant-site-export.zip",
+  );
+  console.log("");
+  console.log("Compatibility alias: jant import-site");
+}
+
 export async function run(argv) {
-  const { values } = parseArgs({
+  const { values, positionals } = parseArgs({
     args: argv,
+    allowPositionals: true,
     options: {
-      url: { type: "string" },
       token: { type: "string" },
       path: { type: "string", default: "." },
       "dry-run": { type: "boolean", default: false },
@@ -2012,63 +1830,38 @@ export async function run(argv) {
   });
 
   if (values.help) {
-    console.log("Usage: jant site import [--url <url>] [options]");
-    console.log("");
-    console.log("Import a Hugo export directory or ZIP into a Jant instance.");
-    console.log("");
-    console.log("Modes:");
-    console.log(
-      "  Local           No --url; imports into the local Node database runtime",
-    );
-    console.log(
-      `  Remote          --url requires ${CLI_API_TOKEN_ENV_VAR} or --token`,
-    );
-    console.log("");
-    console.log("Options:");
-    console.log("  --url         Target remote Jant instance URL");
-    console.log(
-      "  --path        Path to export directory or ZIP file (default: .)",
-    );
-    console.log("  --dry-run     Parse and validate without making API calls");
-    console.log(
-      "  --skip-remote-media  Skip uploading absolute-URL images found in body (relative paths and declared media still import)",
-    );
-    console.log("");
-    console.log(
-      "Import expects an empty target site and fails on slug or alias conflicts.",
-    );
-    console.log("");
-    console.log("Authentication:");
-    console.log(`  Set ${CLI_API_TOKEN_ENV_VAR} env var (recommended):`);
-    console.log(`    export ${CLI_API_TOKEN_ENV_VAR}=jnt_your_token`);
-    console.log("    jant site import --url https://your-site.com");
-    console.log("");
-    console.log("Examples:");
-    console.log("  jant site import --path ./jant-site");
-    console.log("  jant site import --path ./jant-site-export.zip");
-    console.log("");
-    console.log("Compatibility alias: jant import-site");
+    printImportUsage();
     process.exit(0);
   }
 
-  const token = getCliApiToken(process.env, values.token);
-  if (values.url && !token && !values["dry-run"]) {
+  const url = positionals[0];
+  if (!url) {
+    console.error("Error: site URL is required");
+    console.error("");
+    printImportUsage();
+    process.exit(1);
+  }
+  if (positionals.length > 1) {
     console.error(
-      `Error: remote import requires ${CLI_API_TOKEN_ENV_VAR} or --token (unless using --dry-run)`,
+      `Error: unexpected extra arguments: ${positionals.slice(1).join(" ")}`,
+    );
+    process.exit(1);
+  }
+
+  const dryRun = values["dry-run"];
+  const token = getCliApiToken(process.env, values.token);
+  if (!token && !dryRun) {
+    console.error(
+      `Error: site import requires ${CLI_API_TOKEN_ENV_VAR} or --token (unless using --dry-run)`,
     );
     console.error("");
     console.error(`  export ${CLI_API_TOKEN_ENV_VAR}=jnt_your_token`);
     process.exit(1);
   }
 
-  const apiUrl = values.url?.replace(/\/$/, "");
-  const dryRun = values["dry-run"];
+  const apiUrl = url.replace(/\/$/, "");
   const skipRemoteMedia = values["skip-remote-media"];
-  const target = dryRun
-    ? null
-    : values.url
-      ? createRemoteTarget(apiUrl, token)
-      : await createLocalTarget(process.env);
+  const target = dryRun ? null : createRemoteTarget(apiUrl, token);
 
   // 1. Read source — directory or ZIP
   const inputPath = resolve(process.cwd(), values.path);
@@ -2118,7 +1911,7 @@ export async function run(argv) {
     if (target) {
       const setupError = await getIncompleteSetupError(
         target,
-        values.url ? `Target site at ${apiUrl}` : "Local target site",
+        `Target site at ${apiUrl}`,
       );
       if (setupError) {
         console.error("");

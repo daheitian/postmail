@@ -34,8 +34,8 @@ npx jant media list --mimePrefix image/
 npx jant collections list
 npx jant settings get
 npx jant search "quiet design"
-npx jant site export --output ./jant-site-export.zip
-npx jant site import --path ./jant-site-export.zip --dry-run
+npx jant site export https://your-site.example --output ./jant-site-export.zip
+npx jant site import https://your-site.example --path ./jant-site-export.zip --dry-run
 npx jant db export --output ./jant-export.sql
 ```
 

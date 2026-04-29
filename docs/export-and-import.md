@@ -80,29 +80,23 @@ A `site export` → `site import` round-trip preserves every post's featured, pi
 
 Any field you don't see documented here is Jant-internal and should not be hand-edited — changing a timestamp in front matter and re-importing will replace the stored value.
 
-### Export the Local Site
-
-```bash
-npx jant site export --output ./jant-site-export.zip
-```
-
-Export directly to a directory when you want to inspect the generated site:
-
-```bash
-npx jant site export --directory ./jant-site
-cd ./jant-site && hugo serve
-```
-
-### Export a Remote Site
+### Export the Site
 
 Create an API token in **Settings > API Tokens**, then:
 
 ```bash
 export JANT_API_TOKEN=jnt_your_token
-npx jant site export --url https://your-site.example --output ./jant-site-export.zip
+npx jant site export https://your-site.example --output ./jant-site-export.zip
 ```
 
-You can also pass `--token`, but `JANT_API_TOKEN` is easier to reuse.
+Export directly to a directory when you want to inspect the generated site:
+
+```bash
+npx jant site export https://your-site.example --directory ./jant-site
+cd ./jant-site && hugo serve
+```
+
+You can also pass `--token` explicitly, but `JANT_API_TOKEN` is easier to reuse.
 
 ### Pull Media After the Fact
 
@@ -153,21 +147,17 @@ If the target is not empty — usually because a previous import attempt left co
 
 ### Dry Run an Import
 
-```bash
-npx jant site import --path ./jant-site-export.zip --dry-run
-```
-
-### Import into the Local Site
+`--dry-run` doesn't connect to the target site, but the URL is still required so the argument shape stays consistent:
 
 ```bash
-npx jant site import --path ./jant-site-export.zip
+npx jant site import https://your-site.example --path ./jant-site-export.zip --dry-run
 ```
 
-### Import into a Remote Site
+### Import into a Site
 
 ```bash
 export JANT_API_TOKEN=jnt_your_token
-npx jant site import --url https://your-site.example --path ./jant-site-export.zip
+npx jant site import https://your-site.example --path ./jant-site-export.zip
 ```
 
 ### Skip Remote Images in Body
@@ -177,7 +167,7 @@ By default, import rehosts everything: media declared in front matter `media:`, 
 If you don't want third-party body images (imgur, Wikipedia, arbitrary https links) mirrored into your own storage, pass `--skip-remote-media`:
 
 ```bash
-npx jant site import --path ./jant-site-export.zip --skip-remote-media
+npx jant site import https://your-site.example --path ./jant-site-export.zip --skip-remote-media
 ```
 
 With this flag:

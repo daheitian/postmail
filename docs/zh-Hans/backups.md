@@ -13,7 +13,7 @@
 ```bash
 mkdir -p backups
 export JANT_API_TOKEN=jnt_your_token
-npx jant site export --url https://your-site.example --directory ./backups/jant-site-export-$(date +%F)
+npx jant site export https://your-site.example --directory ./backups/jant-site-export-$(date +%F)
 ```
 
 创建一个用于恢复的快照，保留内部 ID、存储键和被引用的对象文件：
@@ -91,7 +91,7 @@ Jant 有三种不同的备份与恢复工具，它们解决的问题不一样：
 ```bash
 mkdir -p backups
 export JANT_API_TOKEN=jnt_your_token
-npx jant site export --url https://your-site.example --directory ./backups/jant-site-export-$(date +%F)
+npx jant site export https://your-site.example --directory ./backups/jant-site-export-$(date +%F)
 ```
 
 不要把 `site export` 当成生产环境灾难恢复的主要方案。

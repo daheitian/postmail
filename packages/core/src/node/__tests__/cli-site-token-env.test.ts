@@ -65,7 +65,6 @@ describe("site CLI token env", () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
 
     await runSiteExport([
-      "--url",
       "https://example.com",
       "--output",
       outputPath,
@@ -95,7 +94,6 @@ describe("site CLI token env", () => {
 
     await expect(
       runImportSite([
-        "--url",
         "https://example.com",
         "--path",
         "/definitely-missing-jant-import-source",
@@ -106,9 +104,7 @@ describe("site CLI token env", () => {
       "Path not found: /definitely-missing-jant-import-source",
     );
     expect(errorSpy).not.toHaveBeenCalledWith(
-      expect.stringContaining(
-        "remote import requires JANT_API_TOKEN or --token",
-      ),
+      expect.stringContaining("site import requires JANT_API_TOKEN or --token"),
     );
   });
 
@@ -123,7 +119,6 @@ describe("site CLI token env", () => {
 
     await expect(
       runImportSite([
-        "--url",
         "https://example.com",
         "--path",
         "/definitely-missing-jant-import-source",
@@ -131,7 +126,7 @@ describe("site CLI token env", () => {
     ).rejects.toThrow("process.exit:1");
 
     expect(errorSpy).toHaveBeenCalledWith(
-      "Error: remote import requires JANT_API_TOKEN or --token (unless using --dry-run)",
+      "Error: site import requires JANT_API_TOKEN or --token (unless using --dry-run)",
     );
   });
 });

@@ -6,21 +6,7 @@ import {
   CLI_API_TOKEN_ENV_VAR,
   getCliApiToken,
 } from "../../lib/cli-api-token.js";
-import { openNodeDatabase } from "../../lib/node-database.js";
-import { loadNodeRuntime } from "../../lib/load-node-runtime.js";
 import { pullSiteExportZipBytes } from "../../lib/site-pull-media.js";
-
-function describeLocalExportSource(input) {
-  if (input.siteUrl) {
-    return input.siteUrl;
-  }
-
-  if (input.siteDomain?.host) {
-    return `https://${input.siteDomain.host}${input.siteDomain.pathPrefix || ""}`;
-  }
-
-  return `site "${input.site.key}"`;
-}
 
 async function exportRemoteSite(url, token) {
   const response = await fetch(`${url.replace(/\/$/, "")}/api/export/hugo`, {
@@ -83,189 +69,46 @@ function logPullProgress(event) {
   }
 }
 
-function getStorageKeyFromUrl(url, appConfig) {
-  try {
-    const resolvedUrl = new URL(url, appConfig.siteUrl);
-    let pathname = resolvedUrl.pathname;
-    const publicPathPrefixes = [
-      appConfig.r2PublicUrl,
-      appConfig.s3PublicUrl,
-      appConfig.localPublicUrl,
-    ]
-      .filter(Boolean)
-      .map((value) => {
-        try {
-          const parsed = new URL(value);
-          return parsed.pathname.replace(/\/+$/, "");
-        } catch {
-          return "";
-        }
-      })
-      .filter(Boolean);
-
-    for (const prefix of publicPathPrefixes) {
-      if (pathname.startsWith(`${prefix}/`)) {
-        pathname = pathname.slice(prefix.length + 1);
-        break;
-      }
-      if (pathname === prefix) {
-        pathname = "";
-        break;
-      }
-    }
-
-    const sitePathPrefix = appConfig.sitePathPrefix || "";
-    if (sitePathPrefix && pathname.startsWith(`${sitePathPrefix}/`)) {
-      pathname = pathname.slice(sitePathPrefix.length + 1);
-    } else {
-      pathname = pathname.replace(/^\/+/, "");
-    }
-
-    if (!pathname.startsWith("media/") && !pathname.startsWith("favicon/")) {
-      return null;
-    }
-
-    return pathname;
-  } catch {
-    return null;
-  }
-}
-
-async function readStorageBody(body) {
-  const reader = body.getReader();
-  const chunks = [];
-  let totalLength = 0;
-
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    totalLength += value.length;
-  }
-
-  const bytes = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.length;
-  }
-
-  return bytes;
-}
-
-function createLocalAssetLoader(storage, appConfig) {
-  if (!storage) {
-    return null;
-  }
-
-  return async ({ resolvedUrl }) => {
-    const storageKey = getStorageKeyFromUrl(resolvedUrl, appConfig);
-    if (!storageKey) {
-      return null;
-    }
-
-    const object = await storage.get(storageKey);
-    if (!object?.body) {
-      return null;
-    }
-
-    return {
-      bytes: await readStorageBody(object.body),
-      contentType: object.contentType || "",
-    };
-  };
-}
-
-async function exportLocalSite(env = process.env) {
-  const nodeDatabase = await openNodeDatabase(env);
-
-  try {
-    const {
-      createExportService,
-      createNodeCliRuntime,
-      resolveConfig,
-      buildThemeStyle,
-      BUILTIN_COLOR_THEMES,
-      BUILTIN_FONT_THEMES,
-      getCjkSerifCssVariables,
-      getFontThemeCssVariables,
-    } = await loadNodeRuntime();
-    const runtime = await createNodeCliRuntime(nodeDatabase.bindings);
-    const allSettings = await runtime.services.settings.getAll();
-    const navItems = await runtime.services.navItems.list();
-    const appConfig = resolveConfig(nodeDatabase.bindings, allSettings);
-    const activeTheme = BUILTIN_COLOR_THEMES.find(
-      (theme) => theme.id === (appConfig.themeId || appConfig.defaultThemeId),
-    );
-    const fontTheme = appConfig.fontThemeId
-      ? BUILTIN_FONT_THEMES.find((theme) => theme.id === appConfig.fontThemeId)
-      : undefined;
-    const fontOverrides = {
-      ...getCjkSerifCssVariables(appConfig.siteLanguage),
-      ...(fontTheme ? getFontThemeCssVariables(fontTheme) : {}),
-    };
-    const themeCss = buildThemeStyle(
-      activeTheme,
-      appConfig.themeMode,
-      fontOverrides,
-    );
-    const appleTouchKey = allSettings.SITE_FAVICON_APPLE_TOUCH || "";
-    const exportService = createExportService(
-      runtime.services,
-      {
-        siteName: appConfig.siteName,
-        siteUrl: appConfig.siteUrl,
-        siteDescription: appConfig.siteDescription,
-        siteLanguage: appConfig.siteLanguage,
-        showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
-        homeDefaultView: appConfig.homeDefaultView,
-        mainRssFeed: appConfig.mainRssFeed,
-        siteFooter: appConfig.siteFooter,
-        showHeaderAvatar: appConfig.showHeaderAvatar,
-        siteAvatarUrl: appConfig.siteAvatarUrl,
-        faviconIcoBase64: allSettings.SITE_FAVICON_ICO || undefined,
-        appleTouchIconStorageKey: appleTouchKey || undefined,
-        faviconVersion: appConfig.faviconVersion,
-        themeId: appConfig.themeId,
-        defaultThemeId: appConfig.defaultThemeId,
-        fontThemeId: appConfig.fontThemeId,
-        themeMode: appConfig.themeMode,
-        noindex: appConfig.noindex,
-        themeCss,
-        customCss: appConfig.customCSS,
-        r2PublicUrl: appConfig.r2PublicUrl,
-        s3PublicUrl: appConfig.s3PublicUrl,
-        localPublicUrl: appConfig.localPublicUrl,
-        imageTransformUrl: appConfig.imageTransformUrl,
-        sitePathPrefix: appConfig.sitePathPrefix,
-        navItems,
-        pageSize: appConfig.pageSize,
-        archivePageSize: appConfig.archivePageSize,
-        rssFeedLimit: appConfig.rssFeedLimit,
-      },
-      {
-        storage: runtime.storage,
-      },
-    );
-
-    return {
-      zip: await exportService.generateHugoSite(),
-      assetLoader: createLocalAssetLoader(runtime.storage, appConfig),
-      source: describeLocalExportSource({
-        site: runtime.currentSite,
-        siteDomain: runtime.currentSiteDomain,
-        siteUrl: appConfig.siteUrl,
-      }),
-    };
-  } finally {
-    await nodeDatabase.close();
-  }
+function printUsage() {
+  console.log("Usage: jant site export <url> [options]");
+  console.log("");
+  console.log("Export a Jant site as a Hugo ZIP archive or directory.");
+  console.log("");
+  console.log("Arguments:");
+  console.log("  <url>           Jant site URL (required)");
+  console.log("");
+  console.log("Options:");
+  console.log(
+    "  --output, -o    Output ZIP path (default: jant-site-export.zip)",
+  );
+  console.log(
+    "  --directory, -d Export directly to a directory for hugo serve/debugging",
+  );
+  console.log(
+    "  --pull-media    Download referenced media into static/media/ (default: on)",
+  );
+  console.log("  --no-pull-media Skip the media pull and keep original URLs");
+  console.log("  --token         API token (overrides JANT_API_TOKEN)");
+  console.log("");
+  console.log("Authentication:");
+  console.log(`  export ${CLI_API_TOKEN_ENV_VAR}=jnt_your_token`);
+  console.log("  jant site export https://your-site.example");
+  console.log("");
+  console.log("Examples:");
+  console.log(
+    "  jant site export https://your-site.example -o ./export.zip",
+  );
+  console.log(
+    "  jant site export https://your-site.example -d ./jant-site && cd ./jant-site && hugo serve",
+  );
 }
 
 export async function run(argv) {
   const noPullMedia = argv.includes("--no-pull-media");
-  const { values } = parseArgs({
-    args: argv.filter((arg) => arg !== "--no-pull-media"),
+  const filteredArgv = argv.filter((arg) => arg !== "--no-pull-media");
+  const { values, positionals } = parseArgs({
+    args: filteredArgv,
+    allowPositionals: true,
     options: {
       directory: {
         type: "string",
@@ -279,47 +122,26 @@ export async function run(argv) {
         default: "jant-site-export.zip",
       },
       token: { type: "string" },
-      url: { type: "string" },
     },
   });
 
   if (values.help) {
-    console.log("Usage: jant site export [--url <url>] [options]");
-    console.log("");
-    console.log("Export a Jant site as a Hugo ZIP archive or directory.");
-    console.log("");
-    console.log("Modes:");
-    console.log(
-      "  Local           No --url; exports from the local Node database runtime",
-    );
-    console.log(
-      `  Remote          --url requires ${CLI_API_TOKEN_ENV_VAR} or --token`,
-    );
-    console.log("");
-    console.log("Options:");
-    console.log("  --url           Remote Jant site URL");
-    console.log(
-      "  --output, -o    Output ZIP path (default: jant-site-export.zip)",
-    );
-    console.log(
-      "  --directory, -d Export directly to a directory for hugo serve/debugging",
-    );
-    console.log(
-      "  --pull-media    Download referenced media into static/media/ (default: on)",
-    );
-    console.log(
-      "  --no-pull-media Skip the media pull and keep original URLs",
-    );
-    console.log("  --token         API token for remote export");
-    console.log("");
-    console.log("Authentication:");
-    console.log(`  export ${CLI_API_TOKEN_ENV_VAR}=jnt_your_token`);
-    console.log("  jant site export --url https://your-site.com");
-    console.log("");
-    console.log("Examples:");
-    console.log("  jant site export --directory ./jant-site");
-    console.log("  cd ./jant-site && hugo serve");
+    printUsage();
     process.exit(0);
+  }
+
+  const url = positionals[0];
+  if (!url) {
+    console.error("Error: site URL is required");
+    console.error("");
+    printUsage();
+    process.exit(1);
+  }
+  if (positionals.length > 1) {
+    console.error(
+      `Error: unexpected extra arguments: ${positionals.slice(1).join(" ")}`,
+    );
+    process.exit(1);
   }
 
   if (values.directory && values.output !== "jant-site-export.zip") {
@@ -334,40 +156,29 @@ export async function run(argv) {
   const token = getCliApiToken(process.env, values.token);
   const pullMedia = values["pull-media"] ?? !noPullMedia;
 
-  if (values.url && !token) {
+  if (!token) {
     console.error(
-      `Error: remote export requires ${CLI_API_TOKEN_ENV_VAR} or --token`,
+      `Error: site export requires ${CLI_API_TOKEN_ENV_VAR} or --token`,
     );
     process.exit(1);
   }
 
-  console.log(
-    values.url
-      ? `Exporting site from ${values.url}...`
-      : "Exporting site from the local runtime...",
-  );
+  console.log(`Exporting site from ${url}...`);
 
-  const exported = values.url
-    ? {
-        zip: await exportRemoteSite(values.url, token),
-        assetLoader: null,
-        source: values.url,
-      }
-    : await exportLocalSite(process.env);
-  let zip = exported.zip;
+  const zipBytes = await exportRemoteSite(url, token);
+  let zip = zipBytes;
   let pullStats = null;
 
   if (pullMedia) {
     console.log("Preparing pull-media export ZIP...");
     const pulled = await pullSiteExportZipBytes(zip, {
-      assetLoader: exported.assetLoader,
+      assetLoader: null,
       logger: logPullProgress,
     });
     zip = pulled.zipBytes;
     pullStats = pulled.stats;
   }
 
-  const source = exported.source;
   if (outputDirectory) {
     let existingEntries = [];
     try {
@@ -393,12 +204,12 @@ export async function run(argv) {
       mkdirSync(dirname(fullPath), { recursive: true });
       writeFileSync(fullPath, Buffer.from(bytes));
     }
-    console.log(`Exported site from ${source} to ${values.directory}`);
+    console.log(`Exported site from ${url} to ${values.directory}`);
     console.log(`Preview with: cd ${values.directory} && hugo serve`);
   } else {
     console.log(`Writing ${values.output}...`);
     writeFileSync(output, Buffer.from(zip));
-    console.log(`Exported site from ${source} to ${values.output}`);
+    console.log(`Exported site from ${url} to ${values.output}`);
   }
 
   if (pullStats) {
