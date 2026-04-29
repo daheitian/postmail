@@ -1,75 +1,132 @@
 # 导出与导入
 
-这些命令都应该在安装了 `@jant/core` 的 Jant 项目目录里运行。对于通过 `create-jant` 创建的站点来说，通常就是项目根目录。
+本文涉及的所有命令应在已安装 `@jant/core` 的 Jant 项目目录中运行。通过 `create-jant` 创建的站点，通常即为项目根目录。
 
-## 先选对工具
+## 选择合适的工具
 
-| 需求                         | 使用这个                                         |
-| ---------------------------- | ------------------------------------------------ |
-| 把内容迁移到另一个 Jant 站点 | `site export` 和 `site import`                   |
-| 生成一个可移植的静态归档     | `site export`                                    |
-| 按原样恢复内部 ID 和存储键   | `site snapshot export` 和 `site snapshot import` |
-| 导出原始数据库 SQL           | `db export`                                      |
+| 需求                       | 使用                                             |
+| -------------------------- | ------------------------------------------------ |
+| 跨 Jant 站点迁移内容       | `site export` 与 `site import`                   |
+| 生成可移植的静态归档       | `site export`                                    |
+| 按原样恢复内部 ID 与存储键 | `site snapshot export` 与 `site snapshot import` |
+| 导出原始数据库 SQL         | `db export`                                      |
 
-`site export` 是为可移植性准备的。
-
-`site snapshot` 是为恢复准备的。
-
-它们不是同一回事。
+`site export` 面向可移植性，`site snapshot` 面向可恢复性。两者用途不同，请勿混用。
 
 ## Site Export
 
-`site export` 会生成一个兼容 Hugo 的导出，格式可以是 ZIP 文件，也可以是目录。
+`site export` 生成兼容 Hugo 的站点导出，输出格式为 ZIP 归档或目录。典型用途包括跨 Jant 站点迁移内容、在本地使用 Hugo 构建预览、长期保留可移植的已发布结构归档。
 
-适合用在这些场景：
+导出默认会将引用的媒体文件下载至 `static/media/`，使归档自包含。若导出由 Jant 生成，`data/jant.toml` 同时保留 round-trip 导入所需的元数据，包括 header navigation 与 collections directory 结构（collection 顺序、divider、自定义 link）。
 
-- 把内容迁移到另一个 Jant 站点
-- 本地检查一个静态导出
-- 保留一个可移植的已发布结构归档
+### 导出结构
 
-默认情况下，Jant 会把导出中引用到的媒体本地化进去，让归档尽量更自包含。
+导出本质是一个标准 Hugo 站点。模板与静态资源被打包为 `themes/jant/` 主题，`hugo.toml` 中设置 `theme = "jant"`：
 
-如果这个导出来自 Jant，`data/jant.toml` 还会保留供 round-trip import 使用的 Jant 元数据，包括 header navigation 和 collections directory 结构（collection 顺序、divider、自定义 link）。
+```
+hugo.toml
+content/                  posts、collections、sections
+  {slug}/
+    _index.md             thread root（branch bundle）
+    {reply-slug}/
+      index.md            reply（leaf bundle，build.render = "never"）
+data/
+  jant.toml               nav items、品牌、显示偏好、collections directory
+themes/jant/              打包后的 Jant 主题（layouts + static）
+README.md
+.gitignore
+layouts/                  用户自定义覆盖（可选）
+static/                   用户自有静态文件 + 下载的媒体
+```
+
+根目录下的 `layouts/` 与 `static/` 由用户自由维护。Hugo 优先加载根目录 `layouts/<name>.html` 而非 `themes/jant/layouts/<name>.html`，因此可在不 fork 主题的前提下单独覆盖任意模板。
+
+### URL 方案
+
+| URL                   | 渲染内容                                          |
+| --------------------- | ------------------------------------------------- |
+| `/`                   | 首页：pinned posts 优先，随后是非 pinned 的第一页 |
+| `/page/N/`            | 非 pinned 旧 posts 的分页（N ≥ 2）                |
+| `/archive/`           | 归档：所有已发布 posts，按时间倒序                |
+| `/archive/page/N/`    | 归档分页（N ≥ 2）                                 |
+| `/featured/`          | 精选：标记为 featured 的 posts，最新优先          |
+| `/{slug}/`            | 单条 thread（root post 与内联 replies）           |
+| `/{reply-slug}/`      | Alias，重定向至 `/{root-slug}/#{reply-slug}`      |
+| `/{collection-slug}/` | 单个 collection                                   |
+| `/collections/`       | Collections directory                             |
+
+每页条数由 Jant **Settings > Posts per page** 设置控制。
+
+### Round-trip 保真
+
+`site export` → `site import` 的一次往返会完整保留每个 post 的 featured、pinned 与 collection 归属信息：
+
+- `featured_at` 与 `pinned_at` 在 front matter 中以 ISO 时间戳写入，而非布尔值；重新导入后会恢复至该 post 当时被 feature 或 pin 的具体时刻。
+- Front matter 顶层的 `collections` 数组中，每条 entry 携带 `collected_at`、`position` 以及 per-collection `pinned_at`；每个 reply 的 leaf bundle 在自身 front matter 中保留同等信息。
+
+未在文档中列出的字段属于 Jant 内部使用，请勿手动修改：修改后再次导入会直接覆盖存储中的原值。
 
 ### 导出站点
 
-先在 **Settings > API Tokens** 里创建一个 API token，然后运行：
+首先在 **Settings > API Tokens** 中创建 API token，然后运行：
 
 ```bash
-export JANT_API_TOKEN=jnt_your_token
-npx jant site export https://your-site.example --output ./jant-site-export.zip
+JANT_API_TOKEN=jnt_your_token npx jant site export https://your-site.example --output ./jant-site-export.zip
 ```
 
-如果你想直接查看生成出来的站点，可以直接导出到目录：
+若需直接查看生成的站点结构，可导出至目录：
 
 ```bash
 npx jant site export https://your-site.example --directory ./jant-site
 cd ./jant-site && hugo serve
 ```
 
-你也可以用 `--token` 显式传 token，但 `JANT_API_TOKEN` 更适合反复使用。
+亦可通过 `--token` 显式传入 token；在频繁使用的场景下，`JANT_API_TOKEN` 更为方便。
+
+### 单独拉取媒体
+
+`site export` 默认下载媒体，但拉取步骤也可针对已存在的导出（目录或 ZIP）单独执行。常见场景包括：先前以 `--no-pull-media` 导出、导出后新增了媒体、或上一次拉取过程中断。
+
+```bash
+# 针对已解压目录
+npx jant site pull-media --path ./jant-site
+
+# 针对 ZIP（默认覆盖原文件）
+npx jant site pull-media --path ./jant-site-export.zip
+
+# 针对 ZIP 并输出至新文件
+npx jant site pull-media --path ./jant-site-export.zip --output ./pulled.zip
+```
+
+该命令扫描所有 markdown 文件与 `hugo.toml`，将每个远程媒体引用下载至 `static/media/` 并重写为本地路径。操作是幂等的：`static/media/` 中已存在的文件会直接复用，不重复下载。下载失败的引用保留原 URL，不影响 Hugo 构建。
+
+### 自定义导出
+
+`themes/jant/` 是打包后的 Jant 主题。当导出被同步至 GitHub 时，每次 push Jant 都会覆盖 `themes/jant/**` 与 `content/**`，以及 `data/jant.toml`、`hugo.toml`、`.gitignore`、`README.md`，并删除上述 managed paths 下 Jant 不再生成的文件（例如已在 Jant 中删除的 post）。其余文件由用户自行维护，会被完整保留，包括 `data/` 下用户自定义的 Hugo data files。
+
+支持的自定义方式：
+
+- **覆盖单个模板**：将 `themes/jant/layouts/<name>.html` 复制至根目录 `layouts/<name>.html`，对根目录副本进行编辑。Hugo 优先加载根目录模板，无需 fork 整个主题。
+- **新增静态文件**：放置于根目录 `static/`，将以对应 URL 提供服务，并优先于 `themes/jant/static/` 下的同名文件。
+- **调整颜色、字体或布局细节**：使用 Jant 中的 **Settings > Custom CSS**。该值在每次 export 时写入 `themes/jant/static/custom.css`，应通过 dashboard 修改，而非直接编辑 repo。
+
+直接编辑 `themes/jant/**` 不受支持，下次 sync 或 export 会覆盖修改。站点级配置请通过 Jant 的 **Settings** 调整，不要手动编辑 `hugo.toml`。
 
 ## Site Import
 
-`site import` 会读取一个 site export 目录或 ZIP，并把它导入到 Jant。
+`site import` 读取 site export 目录或 ZIP 并将其导入 Jant。典型用途包括 Jant 站点之间的迁移、从可移植导出中恢复内容、以及在写入前预览导入结果。
 
-适合用在这些场景：
+需注意以下约束：
 
-- 从一个 Jant 站点迁移到另一个 Jant 站点
-- 从一个可移植导出里恢复内容
-- 在真正写入之前先预览一次导入结果
+- 目标站点必须为空
+- slug 或 alias 冲突会中止导入
+- `--dry-run` 仅执行校验，不写入数据
 
-重要规则：
+若目标站点非空（通常是上一次导入未完成留下的残留），可通过 Dashboard 的 **Settings → Account → Delete Account** 进行重置。该流程会强制先下载一份 `site export`，要求输入确认短语，然后一次性清除 posts、media、collections、settings 与账号本身；重新注册即可获得干净的目标站点。目前不提供"仅清除内容、保留账号"的轻量入口。
 
-- 导入要求目标站点是空的
-- slug 或 alias 冲突会让导入停止
-- `--dry-run` 只做校验，不会真正写入
+### 先执行 Dry Run
 
-如果目标站点不是空的——通常是因为上一次导入没成功、留下了一些内容——可以通过 Dashboard 的 **Settings → Account → Delete Account** 来重置。这个流程会先强制让你下载一份 `site export`，再让你打字输入确认短语，然后一次性清掉 posts、media、collections、settings 以及账号本身。重新注册一次就拿到一个干净的目标站点了。目前没有更轻量的"只清内容不删账号"入口。
-
-### 先做一次 Dry Run
-
-dry-run 不会真正连接目标站点，但 URL 仍然必填（参数形态保持一致）：
+Dry-run 不会连接目标站点，但 URL 仍为必填项，以保持参数形态一致：
 
 ```bash
 npx jant site import https://your-site.example --path ./jant-site-export.zip --dry-run
@@ -78,38 +135,35 @@ npx jant site import https://your-site.example --path ./jant-site-export.zip --d
 ### 导入到站点
 
 ```bash
-export JANT_API_TOKEN=jnt_your_token
-npx jant site import https://your-site.example --path ./jant-site-export.zip
+JANT_API_TOKEN=jnt_your_token npx jant site import https://your-site.example --path ./jant-site-export.zip
 ```
 
-### 跳过 body 里的远程图片
+### 跳过 body 中的远程图片
 
-默认情况下，import 会把所有媒体重新 host 到目标站点：front matter `media:` 里声明的资源、body 里 `![](...)` 引用的图片（包括指向远程 URL 的）、头像，都会被抓取并上传，body 里的 URL 也会改写到新地址。这样目标站点对源站点完全独立——源站点之后下线也不会影响图。
+默认情况下，import 会将所有媒体重新托管至目标站点：front matter `media:` 中声明的资源、body 中 `![](...)` 引用的图片（包括远程 URL）以及头像均会被抓取上传，body 中的 URL 也会重写至新地址。这样目标站点完全独立于源站点，源站点后续下线不会影响目标站点的图片可用性。
 
-如果你不希望 body 里那些**指向第三方 URL 的图**（imgur、Wikipedia、随便一个 https 链接）被镜像到自己的存储——比如担心带宽、版权、或者只是觉得没必要——可以加 `--skip-remote-media`：
+若不希望将 body 中**指向第三方 URL 的图片**（如 imgur、Wikipedia 等任意 https 链接）镜像至自有存储——出于带宽、版权或必要性的考量——可加 `--skip-remote-media`：
 
 ```bash
 npx jant site import https://your-site.example --path ./jant-site-export.zip --skip-remote-media
 ```
 
-加了之后：
+启用后：
 
-- **相对路径**（`/media/...`、`./foo.png`）—— 仍然上传，这些是源站点自己的文件
-- **绝对 URL**（任何 `https://...`、`//cdn...`）—— 不抓取、不上传，body 里保留原样
+- **相对路径**（`/media/...`、`./foo.png`）：仍会上传，属于源站点自有文件
+- **绝对 URL**（任意 `https://...`、`//cdn...`）：不抓取、不上传，body 中保留原值
 
-front matter `media:` 声明的资源、头像、文本附件不受这个 flag 影响，永远会被搬过来。
+Front matter `media:` 声明的资源、头像与文本附件不受此 flag 影响，始终会被迁移。
 
-> **注意**：如果你的源站点把媒体放在**独立的存储域名**（比如 R2 公开域名 `media.yourdomain.com`、S3 CDN），body 里那些图也会被识别为"绝对 URL"。只有在你确定那个域名长期可用（比如源/目标共享同一个存储桶）时再用这个 flag，否则源站点 R2 之后失效，图就全死了。
+> **注意**：若源站点将媒体托管于独立存储域名（如 R2 公开域名 `media.yourdomain.com`、S3 CDN 等），body 中的此类图片也会被识别为绝对 URL。仅在确定该域名长期可用（例如源站点与目标站点共用同一存储桶）时启用此 flag，否则源站点 R2 失效后，相关图片将全部不可用。
 
 ## Site Snapshots
 
-`site snapshot export` 和 `site snapshot import` 会保留 Jant 内部的 IDs、存储键以及对象文件。
+`site snapshot export` 与 `site snapshot import` 会完整保留 Jant 内部的 IDs、存储键以及对象文件。当目标是可往返恢复的快照而非内容迁移时，应使用 snapshot。
 
-当你要的是“可往返恢复”的快照，而不是内容迁移时，就用 snapshot。
+### Snapshot 包含的内容
 
-### Snapshot 包含什么
-
-一个 snapshot 会包含 Jant 恢复已发布结构所需的内容和展示数据，包括：
+Snapshot 包含 Jant 恢复已发布结构所需的全部内容与展示数据：
 
 - posts
 - collections
@@ -117,16 +171,16 @@ front matter `media:` 声明的资源、头像、文本附件不受这个 flag �
 - navigation items
 - media records
 - path registry entries
-- 它们所引用的存储对象本身（默认会全部下载，归档大小≈媒体总量）
+- 上述记录引用的存储对象本身（默认全量下载，归档大小约等于媒体总量）
 
-Snapshot import 不会替换认证和外壳层数据，比如 users、sessions 和 API tokens。
+Snapshot import 不会替换认证与外壳层数据，例如 users、sessions、API tokens。
 
-归档的目录结构很简单——只有三件套：
+归档结构由三部分组成：
 
 ```
 jant-site-snapshot.zip
 ├── meta.json                  // { format, version, site }
-├── db.sql                     // 完整 SQL，含 favicon.ico 的 base64
+├── db.sql                     // 完整 SQL，包含 favicon.ico 的 base64
 └── objects/<storage-key>/...  // 所有 media 引用的对象
 ```
 
@@ -146,21 +200,21 @@ npx jant site snapshot export --remote --config ./wrangler.toml --output ./jant-
 
 ### 跳过媒体文件下载
 
-如果源和目标共用同一个 R2 / S3 桶——比如你只是想把 db 状态搬到另一个 Worker 但媒体已经在那儿了——可以加 `--skip-objects` 跳过 `objects/` 目录的填充：
+若源与目标共用同一个 R2 / S3 存储桶（例如仅需将数据库状态迁移至另一个 Worker，而媒体文件已存在于目标桶中），可使用 `--skip-objects` 跳过 `objects/` 目录的填充：
 
 ```bash
 npx jant site snapshot export --output ./jant-site-snapshot.zip --skip-objects
 ```
 
-归档变得只有 `meta.json` + `db.sql`，体积显著变小。
+此时归档仅包含 `meta.json` 与 `db.sql`，体积显著缩小。
 
-> **注意**：这是一个会埋雷的优化——只有目标 storage 已经包含 db.sql 引用的所有 storage key 时才安全。否则导入完站点上的图、头像、apple-touch 图标会全部 404。
+> **注意**：这是一项有风险的优化，仅当目标 storage 已包含 db.sql 引用的所有 storage key 时才安全。否则导入完成后，站点上的图片、头像与 apple-touch 图标将全部返回 404。
 >
-> 导入端要配合用 `--allow-missing-objects`（见下文），import 默认会做一次目标 storage 预检并 abort，把缺失列表打印出来。
+> 导入端需配合使用 `--allow-missing-objects`（见下文）；import 默认会对目标 storage 执行预检，遇到缺失对象时会中止运行并输出缺失列表。
 
 ### 导入 Snapshot
 
-目前 snapshot import 需要带上 `--replace`。
+当前 snapshot import 必须显式传入 `--replace`。
 
 本地：
 
@@ -174,23 +228,11 @@ npx jant site snapshot import --path ./jant-site-snapshot.zip --replace
 npx jant site snapshot import --remote --config ./wrangler.toml --path ./jant-site-snapshot.zip --replace
 ```
 
-### 重映射站点 ID
+### 允许缺失对象
 
-在 `single-site` 模式下，Jant 会自动把 snapshot 映射到数据库里唯一已经初始化的那个站点。
+Import 默认执行一次预检：从 db.sql 中提取所有 `storage_key` 与 `poster_key`，与 `objects/` 目录中的文件进行比对。任何缺失都会触发中止，并输出缺失 key 的完整列表。
 
-如果你明确要把一个站点的内容导入到另一个已存在的站点容器里，可以使用：
-
-```bash
-npx jant site snapshot import --path ./jant-site-snapshot.zip --replace --remap-site
-```
-
-只有在你真的理解后果、并且流程可信时，才使用 `--remap-site`。
-
-### 接受缺失的对象
-
-import 默认会做一次预检：从 db.sql 里捞出所有 `storage_key` / `poster_key`，对照 `objects/` 目录里的文件。任何缺失都会 abort，并把缺失的 key 列表打印出来。
-
-如果你确认目标 storage 已经有这些文件——比如导入一个 `--skip-objects` 归档到共用 R2 桶的 Worker——加 `--allow-missing-objects` 跳过这道闸：
+若已确认目标 storage 中存在这些文件（例如将 `--skip-objects` 归档导入至与源共用 R2 桶的 Worker），可使用 `--allow-missing-objects` 跳过该校验：
 
 ```bash
 npx jant site snapshot import \
@@ -199,17 +241,11 @@ npx jant site snapshot import \
   --allow-missing-objects
 ```
 
-带 flag 的运行仍然会把缺失列表打到 stderr，可以重定向出来事后追溯。
+即使启用该 flag，缺失列表仍会输出至 stderr，可重定向保存以便后续审计。
 
 ## 数据库导出
 
-`db export` 会把当前数据库写成原始 SQL。
-
-适合用在这些场景：
-
-- 检查数据库内容
-- 和其他备份一起保存一个 SQL dump
-- 把数据接入你自己的运维工具
+`db export` 将当前数据库导出为原始 SQL。典型用途包括检查数据库内容、与其他备份一同留存 SQL dump、以及接入自有运维工具链。
 
 本地：
 
@@ -223,14 +259,11 @@ npx jant db export --output ./jant-export.sql
 npx jant db export --remote --output ./jant-remote.sql
 ```
 
-原始 SQL 导出本身并不是完整的 Jant 备份。你仍然需要媒体文件。
+原始 SQL 导出本身并非完整的 Jant 备份，仍需另行处理媒体文件。
 
-## 相关阅读
+## 延伸阅读
 
-- [备份与恢复](backups.md)
+- [备份与恢复](backups.md) —— 完整的备份与恢复策略
+- [GitHub Sync](github-sync.md) —— 通过 GitHub 仓库实现内容备份与双向编辑
+- [自动化与 API](automation-and-api.md) —— 将上述操作脚本化
 - [API 参考（英文）](../API.md)
-
-## 接下来
-
-- [备份与恢复](backups.md) —— 完整的备份和恢复策略
-- [自动化与 API](automation-and-api.md) —— 把这些操作脚本化

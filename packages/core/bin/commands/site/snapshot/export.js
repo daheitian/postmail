@@ -29,8 +29,8 @@ import {
 import { resolveCliSite } from "../../../lib/site-selection.js";
 import { dumpDatabaseToSql } from "../../../lib/sql-export.js";
 import {
+  bootstrapCliRuntime,
   getCliRuntimeLabel,
-  resolveCliRuntime,
 } from "../../../lib/runtime-target.js";
 import { resolveWranglerVarString } from "../../../lib/wrangler-config.js";
 
@@ -176,6 +176,7 @@ export async function run(argv) {
       host: { type: "string" },
       help: { type: "boolean", short: "h" },
       local: { type: "boolean", default: false },
+      node: { type: "boolean", default: false },
       output: {
         type: "string",
         short: "o",
@@ -192,7 +193,7 @@ export async function run(argv) {
 
   if (values.help) {
     console.log(
-      "Usage: jant site snapshot export [--local | --remote] [--output <dir|zip>]",
+      "Usage: jant site snapshot export [--local | --remote | --node] [--output <dir|zip>]",
     );
     console.log("");
     console.log(
@@ -204,6 +205,9 @@ export async function run(argv) {
       "  --local                 Force local D1 instead of DATABASE_URL",
     );
     console.log("  --remote                Export from remote D1");
+    console.log(
+      "  --node                  Force Node runtime even if DATABASE_URL is unset",
+    );
     console.log(
       "  --output, -o           Output directory or .zip file (default: jant-site-snapshot)",
     );
@@ -241,12 +245,18 @@ export async function run(argv) {
     console.log("                          on import.");
     console.log("");
     console.log(
-      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime and the configured storage driver.",
+      "`.env.node` next to your project (or in packages/core/) is auto-loaded.",
+    );
+    console.log(
+      "If DATABASE_URL or DATA_DIR is then set and no runtime flag is passed,",
+    );
+    console.log(
+      "this command uses the Node database runtime and configured storage driver.",
     );
     process.exit(0);
   }
 
-  const runtime = resolveCliRuntime(values);
+  const { runtime } = bootstrapCliRuntime(values);
   const outputPath = resolve(process.cwd(), values.output);
   const shouldZip = isZipPath(outputPath);
   const scratchDir = shouldZip
@@ -271,6 +281,7 @@ export async function run(argv) {
       url: values.url,
     });
 
+    console.log(`Dumping database (${SNAPSHOT_TABLES.length} tables)...`);
     const dbSql = await dumpDatabaseToSql(
       {
         query(sql) {
@@ -287,9 +298,13 @@ export async function run(argv) {
             getSnapshotSelectSql(tableName, site.id),
           ]),
         ),
+        onProgress: ({ index, total, table }) => {
+          console.log(`  [${index}/${total}] ${table}`);
+        },
       },
     );
 
+    console.log("Listing storage objects...");
     const objectRows = await context.query(buildSnapshotStorageQuery(site.id));
     const objects = collectSnapshotObjects(objectRows);
 

@@ -159,6 +159,8 @@ export async function getTableColumns(
 
 export async function dumpDatabaseToSql(queryRunner, options) {
   const dialect = options.dialect ?? "sqlite";
+  const onProgress =
+    typeof options.onProgress === "function" ? options.onProgress : null;
   const configuredTables = Array.isArray(options.tables)
     ? sortExportTables(options.tables)
     : null;
@@ -169,7 +171,12 @@ export async function dumpDatabaseToSql(queryRunner, options) {
   sql += `-- Exported: ${timestamp}\n`;
   sql += `-- Source: ${options.source}\n\n`;
 
-  for (const tableName of tables) {
+  for (const [tableIndex, tableName] of tables.entries()) {
+    onProgress?.({
+      index: tableIndex + 1,
+      total: tables.length,
+      table: tableName,
+    });
     const columnNames = await getTableColumns(queryRunner, tableName, dialect);
     if (columnNames.length === 0) {
       continue;

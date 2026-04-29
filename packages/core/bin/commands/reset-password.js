@@ -4,8 +4,8 @@ import { executeD1, queryD1 } from "../lib/d1-query.js";
 import { openNodeDatabase } from "../lib/node-database.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
 import {
+  bootstrapCliRuntime,
   getCliRuntimeLabel,
-  resolveCliRuntime,
 } from "../lib/runtime-target.js";
 import { resolveCliSite } from "../lib/site-selection.js";
 
@@ -18,6 +18,7 @@ export async function run(argv) {
       env: { type: "string" },
       host: { type: "string" },
       local: { type: "boolean", default: false },
+      node: { type: "boolean", default: false },
       "path-prefix": { type: "string" },
       "persist-to": { type: "string" },
       remote: { type: "boolean", default: false },
@@ -28,13 +29,14 @@ export async function run(argv) {
   });
 
   if (values.help) {
-    console.log("Usage: jant reset-password [--local | --remote]");
+    console.log("Usage: jant reset-password [--local | --remote | --node]");
     console.log("");
     console.log("Generate a password reset token (expires in 15 minutes).");
     console.log("");
     console.log("Options:");
     console.log("  --local   Force local D1 instead of DATABASE_URL");
     console.log("  --remote  Run against remote D1 database (default: local)");
+    console.log("  --node    Force Node runtime even if DATABASE_URL is unset");
     console.log("  --site    Target site id");
     console.log("  --host    Target site host");
     console.log("  --url     Target site URL");
@@ -45,12 +47,16 @@ export async function run(argv) {
     console.log("  --persist-to Local D1 state directory override");
     console.log("");
     console.log(
-      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime.",
+      "`.env.node` next to your project (or in packages/core/) is auto-loaded.",
     );
+    console.log(
+      "If DATABASE_URL or DATA_DIR is then set and no runtime flag is passed,",
+    );
+    console.log("this command uses the Node database runtime.");
     process.exit(0);
   }
 
-  const runtime = resolveCliRuntime(values);
+  const { runtime } = bootstrapCliRuntime(values);
 
   const token = randomBytes(32).toString("hex");
   const hash = createHash("sha256").update(token).digest("hex");

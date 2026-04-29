@@ -3,13 +3,13 @@ import { parseArgs } from "node:util";
 import { executeD1 } from "../../lib/d1-query.js";
 import { openNodeDatabase } from "../../lib/node-database.js";
 import {
+  bootstrapCliRuntime,
   getCliRuntimeLabel,
-  resolveCliRuntime,
 } from "../../lib/runtime-target.js";
 
 function formatUsage() {
   console.log(
-    "Usage: jant db execute-file --file <path> [--local | --remote] [--config <file>] [--env <name>] [--database <binding>]",
+    "Usage: jant db execute-file --file <path> [--local | --remote | --node] [--config <file>] [--env <name>] [--database <binding>]",
   );
   console.log("");
   console.log(
@@ -21,6 +21,9 @@ function formatUsage() {
   console.log("  --local            Force local D1 instead of DATABASE_URL");
   console.log("  --remote           Run against remote D1");
   console.log(
+    "  --node             Force Node runtime even if DATABASE_URL is unset",
+  );
+  console.log(
     "  --config           Wrangler config file (default: wrangler.toml)",
   );
   console.log("  --env              Wrangler environment name");
@@ -28,8 +31,12 @@ function formatUsage() {
   console.log("  --persist-to       Local D1 state directory override");
   console.log("");
   console.log(
-    "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime.",
+    "`.env.node` next to your project (or in packages/core/) is auto-loaded.",
   );
+  console.log(
+    "If DATABASE_URL or DATA_DIR is then set and no runtime flag is passed,",
+  );
+  console.log("this command uses the Node database runtime.");
 }
 
 async function loadSqlFile(filePath) {
@@ -59,6 +66,7 @@ export async function run(argv) {
       file: { type: "string" },
       help: { type: "boolean", short: "h" },
       local: { type: "boolean", default: false },
+      node: { type: "boolean", default: false },
       "persist-to": { type: "string" },
       remote: { type: "boolean", default: false },
     },
@@ -73,7 +81,7 @@ export async function run(argv) {
     throw new Error("Missing required --file <path> argument.");
   }
 
-  const runtime = resolveCliRuntime(values);
+  const { runtime } = bootstrapCliRuntime(values);
   const sql = await loadSqlFile(values.file);
 
   if (runtime === "node") {

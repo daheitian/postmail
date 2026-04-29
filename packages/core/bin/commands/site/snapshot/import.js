@@ -33,7 +33,7 @@ import {
   getCliSiteResolutionMode,
   resolveCliSite,
 } from "../../../lib/site-selection.js";
-import { resolveCliRuntime } from "../../../lib/runtime-target.js";
+import { bootstrapCliRuntime } from "../../../lib/runtime-target.js";
 
 function isZipPath(filePath) {
   return filePath.toLowerCase().endsWith(".zip");
@@ -167,6 +167,7 @@ export async function run(argv) {
       host: { type: "string" },
       help: { type: "boolean", short: "h" },
       local: { type: "boolean", default: false },
+      node: { type: "boolean", default: false },
       path: { type: "string", default: "." },
       "path-prefix": { type: "string" },
       "persist-to": { type: "string" },
@@ -181,7 +182,7 @@ export async function run(argv) {
 
   if (values.help) {
     console.log(
-      "Usage: jant site snapshot import --path <dir|zip> --replace [--local | --remote]",
+      "Usage: jant site snapshot import --path <dir|zip> --replace [--local | --remote | --node]",
     );
     console.log("");
     console.log(
@@ -203,6 +204,9 @@ export async function run(argv) {
       "  --local                 Force local D1 instead of DATABASE_URL",
     );
     console.log("  --remote                Import into remote D1");
+    console.log(
+      "  --node                  Force Node runtime even if DATABASE_URL is unset",
+    );
     console.log(
       "  --config                Wrangler config file (default: wrangler.toml)",
     );
@@ -235,6 +239,14 @@ export async function run(argv) {
     console.log("                          missing key list.");
     console.log("");
     console.log(
+      "`.env.node` next to your project (or in packages/core/) is auto-loaded.",
+    );
+    console.log(
+      "If DATABASE_URL or DATA_DIR is then set and no runtime flag is passed,",
+    );
+    console.log("this command uses the Node database runtime.");
+    console.log("");
+    console.log(
       "In single-site mode, snapshot imports automatically remap to the only initialized site.",
     );
     console.log("");
@@ -250,7 +262,7 @@ export async function run(argv) {
     );
   }
 
-  const runtime = resolveCliRuntime(values);
+  const { runtime } = bootstrapCliRuntime(values);
   const inputPath = resolve(process.cwd(), values.path);
   const materialized = await materializeSnapshotInput(inputPath);
   const context =

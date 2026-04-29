@@ -5,8 +5,8 @@ import { queryD1 } from "../lib/d1-query.js";
 import { openNodeDatabase } from "../lib/node-database.js";
 import { dumpDatabaseToSql } from "../lib/sql-export.js";
 import {
+  bootstrapCliRuntime,
   getCliRuntimeLabel,
-  resolveCliRuntime,
 } from "../lib/runtime-target.js";
 
 function createD1QueryRunner(runtime) {
@@ -25,6 +25,7 @@ export async function run(argv) {
       database: { type: "string", default: "DB" },
       env: { type: "string" },
       local: { type: "boolean", default: false },
+      node: { type: "boolean", default: false },
       remote: { type: "boolean", default: false },
       output: { type: "string", short: "o", default: "jant-export.sql" },
       help: { type: "boolean", short: "h" },
@@ -34,7 +35,7 @@ export async function run(argv) {
 
   if (values.help) {
     console.log(
-      "Usage: jant db export [--local | --remote] [--output <file>] [--config <file>] [--env <name>] [--database <binding>]",
+      "Usage: jant db export [--local | --remote | --node] [--output <file>] [--config <file>] [--env <name>] [--database <binding>]",
     );
     console.log("");
     console.log("Export the current database to a SQL file.");
@@ -43,6 +44,9 @@ export async function run(argv) {
     console.log("  --local           Force local D1 instead of DATABASE_URL");
     console.log(
       "  --remote          Export from remote D1 database (default: local)",
+    );
+    console.log(
+      "  --node            Force Node runtime even if DATABASE_URL is unset",
     );
     console.log(
       "  --output, -o      Output file path (default: jant-export.sql)",
@@ -55,14 +59,18 @@ export async function run(argv) {
     console.log("  --persist-to      Local D1 state directory override");
     console.log("");
     console.log(
-      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime.",
+      "`.env.node` next to your project (or in packages/core/) is auto-loaded.",
     );
+    console.log(
+      "If DATABASE_URL or DATA_DIR is then set and no runtime flag is passed,",
+    );
+    console.log("this command uses the Node database runtime.");
     console.log("");
     console.log("Compatibility alias: jant export");
     process.exit(0);
   }
 
-  const runtime = resolveCliRuntime(values);
+  const { runtime } = bootstrapCliRuntime(values);
   const output = values.output;
   let sql;
 

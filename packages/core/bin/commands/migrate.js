@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -10,11 +10,14 @@ import {
   applyPgBackfills,
 } from "../lib/migration-runner.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
+import { loadNodeEnvFile } from "../lib/node-env.js";
 import { openNodeSqlite, resolveDatabaseDialect } from "../lib/node-sqlite.js";
 import {
+  bootstrapCliRuntime,
   getCliRuntimeLabel,
-  resolveCliRuntime,
 } from "../lib/runtime-target.js";
+
+export { loadNodeEnvFile };
 
 export function isMigrationDebugEnabled(env = process.env) {
   return env.JANT_DEBUG_MIGRATE === "1";
@@ -40,38 +43,6 @@ export function describeNodeDatabaseTarget(databaseUrl) {
   } catch {
     return "<invalid-database-url>";
   }
-}
-
-export function loadNodeEnvFile(envPath, env = process.env) {
-  const result = {
-    envPath,
-    found: false,
-    assignedKeys: [],
-    skippedKeys: [],
-  };
-
-  try {
-    const content = readFileSync(envPath, "utf8");
-    result.found = true;
-    for (const line of content.split("\n")) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#")) continue;
-      const eqIdx = trimmed.indexOf("=");
-      if (eqIdx < 1) continue;
-      const key = trimmed.slice(0, eqIdx).trim();
-      const value = trimmed.slice(eqIdx + 1).trim();
-      if (key in env) {
-        result.skippedKeys.push(key);
-        continue;
-      }
-      env[key] = value;
-      result.assignedKeys.push(key);
-    }
-  } catch {
-    // .env.node not found
-  }
-
-  return result;
 }
 
 function logMigrationDebug(message) {
@@ -222,7 +193,7 @@ export async function run(argv) {
     console.log("  --local            Force local D1 instead of DATABASE_URL");
     console.log("  --remote           Run against remote D1");
     console.log(
-      "  --node             Force Node runtime (loads .env.node for DATABASE_URL)",
+      "  --node             Force Node runtime even if DATABASE_URL is unset",
     );
     console.log(
       "  --config           Wrangler config file (default: wrangler.toml)",
@@ -232,20 +203,20 @@ export async function run(argv) {
     console.log("  --persist-to       Local D1 state directory override");
     console.log("");
     console.log(
-      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime.",
+      "`.env.node` next to your project (or in packages/core/) is auto-loaded.",
     );
+    console.log(
+      "If DATABASE_URL or DATA_DIR is then set and no runtime flag is passed,",
+    );
+    console.log("this command uses the Node database runtime.");
     process.exit(0);
   }
 
-  // --node: load .env.node and force node runtime
-  let nodeEnvLoadResult;
-  if (values.node) {
-    const __dir = dirname(fileURLToPath(import.meta.url));
-    const envPath = resolve(__dir, "../../.env.node");
-    nodeEnvLoadResult = loadNodeEnvFile(envPath);
-  }
-
-  const runtime = resolveCliRuntime(values);
+  // bootstrapCliRuntime auto-loads `.env.node` (so DATABASE_URL/DATA_DIR
+  // resolve without sourcing the file) and prints a one-line banner with
+  // the chosen target.
+  const { runtime, envLoad } = bootstrapCliRuntime(values);
+  const nodeEnvLoadResult = envLoad;
   const debugMigrate = isMigrationDebugEnabled();
   const databaseUrl = process.env.DATABASE_URL ?? "";
   const databaseDialect =
@@ -255,30 +226,26 @@ export async function run(argv) {
 
   if (debugMigrate) {
     logMigrationDebug(`cli.runtime=${runtime}`);
-    if (values.node) {
-      const databaseUrlSource = nodeEnvLoadResult?.assignedKeys.includes(
-        "DATABASE_URL",
-      )
-        ? ".env.node"
-        : process.env.DATABASE_URL
-          ? "process.env"
-          : "<unset>";
-      const dataDirSource = nodeEnvLoadResult?.assignedKeys.includes("DATA_DIR")
-        ? ".env.node"
-        : process.env.DATA_DIR
-          ? "process.env"
-          : "<unset>";
-      const envPath = nodeEnvLoadResult?.envPath ?? "<unknown>";
-      const envState = nodeEnvLoadResult?.found ? "loaded" : "missing";
-      const skippedKeys = nodeEnvLoadResult?.skippedKeys.join(", ") || "<none>";
-      logMigrationDebug(`cli.node_env.path=${envPath}`);
-      logMigrationDebug(`cli.node_env.state=${envState}`);
-      logMigrationDebug(`cli.node_env.skipped_keys=${skippedKeys}`);
-      logMigrationDebug(
-        `cli.node_env.database_url_source=${databaseUrlSource}`,
-      );
-      logMigrationDebug(`cli.node_env.data_dir_source=${dataDirSource}`);
-    }
+    const databaseUrlSource = nodeEnvLoadResult?.assignedKeys.includes(
+      "DATABASE_URL",
+    )
+      ? ".env.node"
+      : process.env.DATABASE_URL
+        ? "process.env"
+        : "<unset>";
+    const dataDirSource = nodeEnvLoadResult?.assignedKeys.includes("DATA_DIR")
+      ? ".env.node"
+      : process.env.DATA_DIR
+        ? "process.env"
+        : "<unset>";
+    const envPath = nodeEnvLoadResult?.envPath ?? "<unknown>";
+    const envState = nodeEnvLoadResult?.found ? "loaded" : "missing";
+    const skippedKeys = nodeEnvLoadResult?.skippedKeys.join(", ") || "<none>";
+    logMigrationDebug(`cli.node_env.path=${envPath}`);
+    logMigrationDebug(`cli.node_env.state=${envState}`);
+    logMigrationDebug(`cli.node_env.skipped_keys=${skippedKeys}`);
+    logMigrationDebug(`cli.node_env.database_url_source=${databaseUrlSource}`);
+    logMigrationDebug(`cli.node_env.data_dir_source=${dataDirSource}`);
 
     if (runtime === "node") {
       logMigrationDebug(`cli.node.dialect=${databaseDialect ?? "<unset>"}`);

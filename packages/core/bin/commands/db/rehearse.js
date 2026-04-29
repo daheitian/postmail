@@ -1,8 +1,8 @@
 import { parseArgs } from "node:util";
 import { rehearseD1Migrations } from "../../lib/migration-rehearsal.js";
 import {
+  bootstrapCliRuntime,
   getCliRuntimeLabel,
-  resolveCliRuntime,
 } from "../../lib/runtime-target.js";
 
 export async function run(argv) {
@@ -46,7 +46,7 @@ export async function run(argv) {
     throw new Error("Missing required --fixture option.");
   }
 
-  const runtime = resolveCliRuntime(values);
+  const { runtime } = bootstrapCliRuntime(values);
   if (runtime === "node") {
     throw new Error(
       "Migration rehearsal only supports D1. Pass --local or --remote.",
