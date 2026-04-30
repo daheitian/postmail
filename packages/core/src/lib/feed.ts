@@ -10,8 +10,9 @@
  * ```
  */
 
-import type { FeedData, FeedPostView, PostView } from "../types.js";
+import type { FeedData, FeedPostView, MediaView, PostView } from "../types.js";
 import { extractDisplayDomain } from "./url.js";
+import { getMediaCategory } from "./upload.js";
 
 /**
  * Escape special XML characters.
@@ -100,6 +101,112 @@ function renderRatingHtml(rating: number): string {
   return `<p>${filled}${empty} ${rating}/5</p>`;
 }
 
+function formatFeedBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatFeedDuration(seconds: number): string {
+  const total = Math.max(0, Math.round(seconds));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function getMediaMeta(item: MediaView): string {
+  const parts: string[] = [];
+  if (item.durationSeconds != null && item.durationSeconds > 0) {
+    parts.push(formatFeedDuration(item.durationSeconds));
+  }
+  if (item.size != null && item.size > 0) {
+    parts.push(formatFeedBytes(item.size));
+  }
+  return parts.join(" · ");
+}
+
+/**
+ * Render a single media attachment as HTML for embedding in feed content.
+ *
+ * - Images embed as `<figure><a><img/></a><figcaption/></figure>` with alt
+ *   used as caption when present.
+ * - Videos render as a poster thumbnail linked to the file with a caption
+ *   describing the action — feed reader support for `<video>` is uneven, so
+ *   we never inline the player.
+ * - Audio, text, and document attachments render as plain links with size
+ *   and duration metadata when known. Text attachments link to the rendered
+ *   preview page when a post permalink is available.
+ */
+function renderMediaItem(item: MediaView, postPermalinkUrl?: string): string {
+  const category = getMediaCategory(item.mimeType);
+  const url = escapeXml(item.url);
+  const name = item.originalName ?? "";
+  const altText = item.altText ?? "";
+  const caption = item.altText?.trim() || "";
+  const meta = getMediaMeta(item);
+
+  if (category === "image") {
+    const dims =
+      item.width && item.height
+        ? ` width="${item.width}" height="${item.height}"`
+        : "";
+    const figcaption = caption
+      ? `<figcaption>${escapeXml(caption)}</figcaption>`
+      : "";
+    return `<figure><a href="${url}"><img src="${url}" alt="${escapeXml(altText)}"${dims}/></a>${figcaption}</figure>`;
+  }
+
+  if (category === "video") {
+    const poster = item.posterUrl || item.thumbnailUrl;
+    const dims =
+      item.width && item.height
+        ? ` width="${item.width}" height="${item.height}"`
+        : "";
+    const label = `Watch video${meta ? ` · ${meta}` : ""}`;
+    return `<figure><a href="${url}"><img src="${escapeXml(poster)}" alt="${escapeXml(altText || name)}"${dims}/></a><figcaption>${escapeXml(label)}</figcaption></figure>`;
+  }
+
+  if (category === "audio") {
+    const label = name || "Audio";
+    const suffix = meta ? ` (${escapeXml(meta)})` : "";
+    return `<p><a href="${url}">${escapeXml(label)}</a>${suffix}</p>`;
+  }
+
+  if (category === "text") {
+    const previewHref = postPermalinkUrl
+      ? escapeXml(`${postPermalinkUrl}/text/${item.id}`)
+      : url;
+    const heading = name ? escapeXml(name) : "Attached text";
+    if (item.summary?.trim()) {
+      const charsLine =
+        typeof item.chars === "number" && item.chars > 0
+          ? ` · ${item.chars} chars`
+          : "";
+      return `<aside><p><strong>${heading}</strong>${escapeXml(charsLine)}</p><p>${escapeXml(item.summary)}</p><p><a href="${previewHref}">Read full text →</a></p></aside>`;
+    }
+    return `<p><a href="${previewHref}">${heading}</a></p>`;
+  }
+
+  // document, archive, office, font, 3d, code → plain link
+  const label = name || "Attachment";
+  const suffix = meta ? ` (${escapeXml(meta)})` : "";
+  return `<p><a href="${url}">${escapeXml(label)}</a>${suffix}</p>`;
+}
+
+/**
+ * Render all media attachments for a post as HTML for embedding in feed
+ * content. Returns an empty string when the post has no media.
+ */
+function renderMediaForFeed(
+  media: MediaView[],
+  postPermalinkUrl?: string,
+): string {
+  if (media.length === 0) return "";
+  return media
+    .map((item) => renderMediaItem(item, postPermalinkUrl))
+    .join("\n");
+}
+
 /**
  * Build the HTML content for a single post (root or reply).
  *
@@ -127,6 +234,11 @@ function buildSinglePostContent(post: PostView, permalinkUrl?: string): string {
 
   if (post.bodyHtml) {
     parts.push(stripUnsafeFeedHtml(post.bodyHtml));
+  }
+
+  const mediaHtml = renderMediaForFeed(post.media, permalinkUrl);
+  if (mediaHtml) {
+    parts.push(mediaHtml);
   }
 
   if (post.rating && post.rating > 0) {
@@ -209,15 +321,29 @@ export function defaultFeedRenderer(data: FeedData): string {
         ? `\n    <link href="${escapedPermalink}" rel="related"/>`
         : "";
 
+      // One <link rel="enclosure"> per attachment so podcast/offline readers
+      // can fetch them. Atom omits length when size is unknown; mimeType is
+      // always known from the upload pipeline.
+      const enclosureLinks = post.media
+        .map((m) => {
+          const lengthAttr =
+            m.size != null && m.size > 0 ? ` length="${m.size}"` : "";
+          const titleAttr = m.originalName
+            ? ` title="${escapeXml(m.originalName)}"`
+            : "";
+          return `\n    <link rel="enclosure" type="${escapeXml(m.mimeType)}" href="${escapeXml(m.url)}"${lengthAttr}${titleAttr}/>`;
+        })
+        .join("");
+
       return `
   <entry>
     <title>${escapeXml(title)}</title>
-    <link href="${alternateLink}" rel="alternate"/>${relatedLink}
+    <link href="${alternateLink}" rel="alternate"/>${relatedLink}${enclosureLinks}
     <id>${escapedPermalink}</id>
     <published>${publishedAt}</published>
     <updated>${updatedAt}</updated>
     <summary type="text">${escapeXml(summary)}</summary>
-    <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post, siteUrl, alternateUrl ? permalinkUrl : undefined))}]]></content>
+    <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post, siteUrl, permalinkUrl))}]]></content>
   </entry>`;
     })
     .join("");

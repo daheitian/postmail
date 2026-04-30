@@ -101,15 +101,11 @@ Public 页面（首页、Featured、Latest 等导航文案）当前固定为 Eng
 
 ## SQLite 和 Postgres 怎么选（Docker 部署）？
 
-单机部署直接用 SQLite，性能足够、备份只需打包一个文件。已有 Postgres 基础设施时可考虑换 Postgres。切换通过 `DATABASE_URL` 的 scheme 控制（`file:` 或 `postgres:`），见 [配置 § Node 和 Docker](configuration.md#node-和-docker)。
+单机部署可直接用 SQLite，性能足够、备份只需打包一个文件。已有 Postgres 基础设施时可考虑换 Postgres。切换通过 `DATABASE_URL` 的 scheme 控制（`file:` 或 `postgres:`），见 [配置 § Node 和 Docker](configuration.md#node-和-docker)。
 
 ## 能挂在子路径下吗（例如 `example.com/blog`）？
 
 可以。设置 `SITE_PATH_PREFIX=/blog`。Cloudflare 还需要在 Workers Routes 里把 `yourdomain.com/blog*` 路由到 Worker。详见 [部署 § 部署在子路径下](deployment.md#部署在子路径下)。
-
-## 备份多久做一次？
-
-按 RPO（可接受的数据丢失量）决定。建议启用 [GitHub 同步](github-sync.md) 作为内容层的实时副本。其他关于备份的完整方案见 [备份与恢复](backups.md)。
 
 ## 改了 `AUTH_SECRET` 会怎样？
 
@@ -117,11 +113,13 @@ Public 页面（首页、Featured、Latest 等导航文案）当前固定为 Eng
 
 ## 删除的帖子能恢复吗？
 
-不能。删除是永久的——帖子行、对应的路径、所属 Collection 关联以及附件 media 都会被一起清理（正文里嵌入的 inline media 不动）。删帖前 UI 会有二次确认，做好这一步就行。
+不能。删除是永久的——帖子行、对应的路径、所属 Collection 关联以及附件 media 都会被一起清理（正文里嵌入的 inline media 不动）。删帖前 UI 会有二次确认。
 
 ## 能在托管和自托管之间互相迁移吗？
 
-可以，方向都支持。流程：源站点 `site snapshot export` → 目标站点用空账号 `site snapshot import --replace`。Snapshot 会保留原始 IDs 与存储键，URL 不会变。详见 [导出与导入 § Site Snapshots](export-and-import.md#site-snapshots)。
+可以，方向都支持。推荐用 `site export` → `site import`：源站点导出为 ZIP，目标站点用空账号导入。全程走 HTTP API，托管与自托管两端都能用，slug 与 URL 会原样保留。详见 [导出与导入](export-and-import.md)。
+
+`site snapshot` 不适用于这一场景。它需要直连数据库与对象存储，托管侧没有这种入口，因此只能用于两端都是自托管、且需要连同内部 IDs 与存储键一起保留的场景。
 
 ## 在 GitHub 上删了文件，为什么 Jant 里没删？
 
@@ -133,20 +131,15 @@ Public 页面（首页、Featured、Latest 等导航文案）当前固定为 Eng
 
 ## 能迁回 WordPress / Ghost 吗？
 
-没有现成路径，但 `site export` 输出的是标准 Markdown + YAML front matter，写一个一次性转换脚本到 WordPress WXR 或 Ghost JSON 都不复杂。
+没有现成路径，但 `site export` 输出的是标准 Markdown + YAML front matter，可以请 AI 写一个一次性转换脚本到 WordPress WXR 或 Ghost JSON.
 
 ## Pre-1.0，破坏性变更会很多吗？
 
-会有，但每次都会在 commit 和 changelog 里记录。建议升级前看一眼变更记录，并保留一份近期备份。
-
-## 有发展路线图吗？
-
-主要由作者本人的实际需求驱动。重大变更通过 commit 和 changelog 公开。建议和功能请求走 GitHub Issues。
+可能会有，但不到万不得已不会采用破坏性变更，如有的话，每次都会在 commit 和 changelog 里记录。建议升级前看一眼变更记录，并保留一份近期备份。
 
 ## 反馈渠道？
 
-- GitHub Issues —— bug 和功能请求
-- 邮件 `owen#jant.me` —— 一般咨询（把 `#` 换成 `@`）
+- [GitHub Issues](https://github.com/jant-me/jant/issues) —— bug 和功能请求
 - 邮件 `support#jant.me` —— 托管账户问题
 
 ## 为什么叫 Jant？

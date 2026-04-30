@@ -1,6 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { defaultFeedRenderer } from "../feed.js";
-import type { FeedData, FeedPostView, PostView } from "../../types.js";
+import type {
+  FeedData,
+  FeedPostView,
+  MediaView,
+  PostView,
+} from "../../types.js";
+
+function makeMediaView(overrides: Partial<MediaView> = {}): MediaView {
+  return {
+    id: "med_1",
+    url: "https://example.com/media/file.bin",
+    thumbnailUrl: "https://example.com/media/file.bin",
+    mimeType: "application/octet-stream",
+    ...overrides,
+  };
+}
 
 function makePostView(overrides: Partial<FeedPostView> = {}): FeedPostView {
   return {
@@ -205,5 +220,166 @@ describe("feed renderers", () => {
     expect(xml).toContain("<hr/>");
     expect(xml).toContain('<time datetime="2026-03-19T12:00:00.000Z">');
     expect(xml).toContain("<p>This is a reply</p>");
+  });
+
+  it("embeds image attachments as figures with alt text caption", () => {
+    const post = makePostView({
+      bodyHtml: "<p>Look at this.</p>",
+      media: [
+        makeMediaView({
+          id: "med_img",
+          url: "https://example.com/media/photo.jpg",
+          thumbnailUrl: "https://example.com/media/photo-thumb.jpg",
+          mimeType: "image/jpeg",
+          altText: "A red bicycle",
+          width: 1200,
+          height: 800,
+          size: 245_000,
+        }),
+      ],
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+
+    expect(xml).toContain('<a href="https://example.com/media/photo.jpg">');
+    expect(xml).toContain(
+      '<img src="https://example.com/media/photo.jpg" alt="A red bicycle" width="1200" height="800"/>',
+    );
+    expect(xml).toContain("<figcaption>A red bicycle</figcaption>");
+    expect(xml).toContain(
+      '<link rel="enclosure" type="image/jpeg" href="https://example.com/media/photo.jpg" length="245000"',
+    );
+  });
+
+  it("renders video attachments as poster + caption (never inline <video>)", () => {
+    const post = makePostView({
+      media: [
+        makeMediaView({
+          id: "med_vid",
+          url: "https://example.com/media/clip.mp4",
+          thumbnailUrl: "https://example.com/media/clip-thumb.jpg",
+          posterUrl: "https://example.com/media/clip-poster.jpg",
+          mimeType: "video/mp4",
+          durationSeconds: 42,
+          size: 1_200_000,
+          width: 1920,
+          height: 1080,
+        }),
+      ],
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+
+    expect(xml).not.toContain("<video");
+    expect(xml).toContain(
+      '<img src="https://example.com/media/clip-poster.jpg"',
+    );
+    expect(xml).toContain("Watch video · 0:42 · 1.1 MB");
+    expect(xml).toContain(
+      '<link rel="enclosure" type="video/mp4" href="https://example.com/media/clip.mp4" length="1200000"',
+    );
+  });
+
+  it("renders audio attachments as a labeled link with duration and size", () => {
+    const post = makePostView({
+      media: [
+        makeMediaView({
+          id: "med_audio",
+          url: "https://example.com/media/song.mp3",
+          thumbnailUrl: "https://example.com/media/song.mp3",
+          mimeType: "audio/mpeg",
+          originalName: "song.mp3",
+          durationSeconds: 215,
+          size: 5_242_880,
+        }),
+      ],
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+
+    expect(xml).toContain(
+      '<a href="https://example.com/media/song.mp3">song.mp3</a> (3:35 · 5.0 MB)',
+    );
+    expect(xml).toContain(
+      '<link rel="enclosure" type="audio/mpeg" href="https://example.com/media/song.mp3" length="5242880" title="song.mp3"',
+    );
+  });
+
+  it("inlines text-attachment summaries with a link to the rendered preview", () => {
+    const post = makePostView({
+      permalink: "/post-1",
+      media: [
+        makeMediaView({
+          id: "med_txt",
+          url: "https://example.com/media/notes.md",
+          thumbnailUrl: "https://example.com/media/notes.md",
+          mimeType: "text/markdown",
+          originalName: "notes.md",
+          summary: "Outline of the talk: intro, three acts, takeaways.",
+          chars: 4200,
+        }),
+      ],
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+
+    expect(xml).toContain("<strong>notes.md</strong>");
+    expect(xml).toContain("Outline of the talk: intro, three acts, takeaways.");
+    expect(xml).toContain("4200 chars");
+    expect(xml).toContain(
+      '<a href="https://example.com/post-1/text/med_txt">Read full text →</a>',
+    );
+  });
+
+  it("renders document attachments as a link with size suffix", () => {
+    const post = makePostView({
+      media: [
+        makeMediaView({
+          id: "med_pdf",
+          url: "https://example.com/media/spec.pdf",
+          thumbnailUrl: "https://example.com/media/spec.pdf",
+          mimeType: "application/pdf",
+          originalName: "spec.pdf",
+          size: 524_288,
+        }),
+      ],
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+
+    expect(xml).toContain(
+      '<a href="https://example.com/media/spec.pdf">spec.pdf</a> (512 KB)',
+    );
+    expect(xml).toContain(
+      '<link rel="enclosure" type="application/pdf" href="https://example.com/media/spec.pdf" length="524288" title="spec.pdf"',
+    );
+  });
+
+  it("escapes XML special characters in media URLs and names", () => {
+    const post = makePostView({
+      media: [
+        makeMediaView({
+          id: "med_x",
+          url: "https://example.com/media/file.pdf?a=1&b=2",
+          thumbnailUrl: "https://example.com/media/file.pdf?a=1&b=2",
+          mimeType: "application/pdf",
+          originalName: "Q&A <draft>.pdf",
+          size: 1024,
+        }),
+      ],
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+
+    expect(xml).not.toContain("?a=1&b=2");
+    expect(xml).toContain("?a=1&amp;b=2");
+    expect(xml).toContain("Q&amp;A &lt;draft&gt;.pdf");
+  });
+
+  it("emits no enclosure links and no media block when post has no media", () => {
+    const xml = defaultFeedRenderer(
+      makeFeedData(
+        makePostView({
+          bodyHtml: "<p>Plain text only.</p>",
+        }),
+      ),
+    );
+
+    expect(xml).not.toContain('rel="enclosure"');
+    expect(xml).not.toContain("<figure>");
   });
 });
