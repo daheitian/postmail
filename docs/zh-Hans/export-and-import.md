@@ -147,7 +147,7 @@ npx jant site pull-media --path ./jant-site-export.zip --output ./pulled.zip
 
 - **覆盖单个模板**：将 `themes/jant/layouts/<name>.html` 复制至根目录 `layouts/<name>.html`，对根目录副本进行编辑。Hugo 优先加载根目录模板，无需 fork 整个主题。
 - **新增静态文件**：放置于根目录 `static/`，将以对应 URL 提供服务，并优先于 `themes/jant/static/` 下的同名文件。
-- **调整颜色、字体或布局细节**：使用 Jant 中的 **Settings > Custom CSS**。该值在每次 export 时写入 `themes/jant/static/custom.css`，应通过 dashboard 修改，而非直接编辑 repo。
+- **调整颜色、字体或布局细节**：使用 Jant 中的 **Settings > Custom CSS**。该值在每次 export 时写入 `themes/jant/static/custom.css`，应通过 Settings 修改，而非直接编辑 repo。
 
 直接编辑 `themes/jant/**` 不受支持，下次 sync 或 export 会覆盖修改。站点级配置请通过 Jant 的 **Settings** 调整，不要手动编辑 `hugo.toml`。
 
@@ -161,7 +161,7 @@ npx jant site pull-media --path ./jant-site-export.zip --output ./pulled.zip
 - slug 或 alias 冲突会中止导入
 - `--dry-run` 仅执行校验，不写入数据
 
-若目标站点非空（通常是上一次导入未完成留下的残留），可通过 Dashboard 的 **Settings → Account → Delete Account** 进行重置。该流程会强制先下载一份 `site export`，要求输入确认短语，然后一次性清除 posts、media、collections、settings 与账号本身；重新注册即可获得干净的目标站点。目前不提供"仅清除内容、保留账号"的轻量入口。
+若目标站点非空（通常是上一次导入未完成留下的残留），可通过 **Settings → Account → Delete Account** 进行重置。该流程会强制先下载一份 `site export`，要求输入确认短语，然后一次性清除 posts、media、collections、settings 与账号本身；重新注册即可获得干净的目标站点。目前不提供"仅清除内容、保留账号"的轻量入口。
 
 ### 先执行 Dry Run
 

@@ -37,7 +37,7 @@ interface ThemeModeColors {
   searchMarkBg?: string;
   /** Search highlight text color */
   searchMarkColor?: string;
-  /** Admin dashboard background */
+  /** Settings page background */
   dashBg?: string;
   /** Detail-page title color for long-form reading */
   readingTitle?: string;

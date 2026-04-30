@@ -29,8 +29,8 @@ SITE_ORIGIN = "https://demo.jant.me" # @create-jant: @remove
 # SITE_PATH_PREFIX = "/blog"
 
 # Optional: Site configuration
-# You can also set these in the dashboard UI at /dash/settings
-# https://github.com/jant-me/jant/blob/main/docs/configuration.md#dashboard-settings
+# You can also set these from the Settings page at /settings
+# https://github.com/jant-me/jant/blob/main/docs/configuration.md#settings-page
 # SITE_NAME = "My Blog"
 # SITE_DESCRIPTION = "A personal blog powered by Jant"
 # SITE_LANGUAGE = "en"

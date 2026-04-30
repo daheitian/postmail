@@ -3,7 +3,7 @@
 Jant reads configuration from two places:
 
 - environment variables for infrastructure and runtime behavior
-- dashboard settings for site-level publishing behavior
+- the Settings page for site-level publishing behavior
 
 Most single-site installs only need a few values:
 
@@ -335,9 +335,9 @@ CORS_ORIGINS=https://dashboard.example.com,chrome-extension://abcdef1234567890
 | `SUMMARY_MAX_CHARS`      | `500`   | Maximum characters in generated summaries     |
 | `RSS_FEED_LIMIT`         | `50`    | Maximum number of posts included in RSS feeds |
 
-## Dashboard Settings
+## Settings Page
 
-These settings can be changed in the Jant dashboard after setup. Some of them can also be seeded from environment variables.
+These settings can be changed on the Jant Settings page after setup. Some of them can also be seeded from environment variables.
 
 | Setting                      | Purpose                                                   |
 | ---------------------------- | --------------------------------------------------------- |
@@ -351,7 +351,7 @@ These settings can be changed in the Jant dashboard after setup. Some of them ca
 | `SHOW_JANT_BRANDING_ON_HOME` | Show or hide Jant branding on the home page               |
 | `NOINDEX`                    | Ask search engines not to index the site                  |
 
-Color theme, font theme, custom CSS, avatar, and other appearance details are also managed in the dashboard.
+Color theme, font theme, custom CSS, avatar, and other appearance details are also managed on the Settings page.
 
 ## Reserved Paths
 

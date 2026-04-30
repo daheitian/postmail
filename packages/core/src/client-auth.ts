@@ -1,7 +1,7 @@
 /**
  * Authenticated client entry point.
  *
- * Extends the public bundle with editor, upload, and dashboard interactions
+ * Extends the public bundle with editor, upload, and settings interactions
  * that should not be shipped to anonymous page views.
  */
 

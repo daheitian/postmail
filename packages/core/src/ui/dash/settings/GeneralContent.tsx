@@ -102,13 +102,13 @@ export function GeneralContent({
     siteLanguage: i18n._(
       msg({
         message: "Language",
-        comment: "@context: Settings form field for site/dashboard language",
+        comment: "@context: Settings form field for site/admin language",
       }),
     ),
     siteLanguageHelp: i18n._(
       msg({
         message:
-          "Controls the language of the dashboard and settings. Public pages stay in English.",
+          "Controls the language of the settings pages. Public pages stay in English.",
         comment: "@context: Help text under the site language select",
       }),
     ),
@@ -296,7 +296,7 @@ export function GeneralContent({
 
   // Language options — `value` must stay in sync with `src/i18n/locales.ts`.
   // Labels are native names (untranslated) so they stay recognizable to any
-  // reader regardless of the currently active dashboard locale.
+  // reader regardless of the currently active settings locale.
   const languagesJson = JSON.stringify([
     { value: "en", label: "English" },
     {

@@ -257,9 +257,9 @@ IMAGE_TRANSFORM_URL = "https://yourdomain.com/cdn-cgi/image"
 | `SUMMARY_MAX_CHARS`      | `500`  | 自动生成摘要时的最大字符数   |
 | `RSS_FEED_LIMIT`         | `50`   | RSS feeds 中包含的最大帖子数 |
 
-## Dashboard 设置
+## Settings 页面设置
 
-这些设置可以在初始化完成后，通过 Jant dashboard 修改。所有设置都可以通过同名环境变量预置初始值——dashboard 里改过的值优先级高于环境变量。
+这些设置可以在初始化完成后，通过 Jant 的 Settings 页面修改。所有设置都可以通过同名环境变量预置初始值——Settings 里改过的值优先级高于环境变量。
 
 | 设置                         | 用途                                     |
 | ---------------------------- | ---------------------------------------- |
@@ -273,7 +273,7 @@ IMAGE_TRANSFORM_URL = "https://yourdomain.com/cdn-cgi/image"
 | `SHOW_JANT_BRANDING_ON_HOME` | 是否在首页显示 Jant 品牌标识             |
 | `NOINDEX`                    | 请求搜索引擎不要收录这个站点             |
 
-颜色主题、字型主题、自定义 CSS、头像以及其他外观细节，也都在 dashboard 里管理。
+颜色主题、字型主题、自定义 CSS、头像以及其他外观细节，也都在 Settings 里管理。
 
 ## 保留路径
 

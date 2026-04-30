@@ -113,7 +113,7 @@ function getPostSigninRedirect(requestUrl: string): string | null {
 /**
  * Middleware that requires authentication.
  * Redirects to signin page if not authenticated.
- * Session-only — Bearer tokens are not accepted for dashboard pages.
+ * Session-only — Bearer tokens are not accepted for settings pages.
  */
 export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
   return async (c, next) => {

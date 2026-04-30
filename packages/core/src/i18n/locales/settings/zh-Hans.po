@@ -370,8 +370,8 @@ msgstr "连接中…"
 
 #. @context: Help text under the site language select
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "Controls the language of the dashboard and settings. Public pages stay in English."
-msgstr "控制仪表板和设置所用的语言。公共页面保持英文。"
+msgid "Controls the language of the settings pages. Public pages stay in English."
+msgstr "控制设置页面所用的语言。公共页面保持英文。"
 
 #. @context: Feedback after copying API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -811,7 +811,7 @@ msgstr "标签和 URL 为必填项"
 msgid "Label is required"
 msgstr "标签为必填项"
 
-#. @context: Settings form field for site/dashboard language
+#. @context: Settings form field for site/admin language
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Language"
 msgstr "语言"

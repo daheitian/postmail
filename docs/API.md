@@ -1,6 +1,6 @@
 # Jant API Reference
 
-Jant exposes a compact HTTP API for automations, content migration, dashboard tooling, and hosted control-plane operations.
+Jant exposes a compact HTTP API for automations, content migration, settings tooling, and hosted control-plane operations.
 
 - Base URL: `https://your-site.com`
 - Default format: JSON
@@ -43,7 +43,7 @@ Auth labels in this document:
 
 ### API tokens
 
-For scripts and integrations, create an API token in the dashboard:
+For scripts and integrations, create an API token from Settings:
 
 1. Sign in to Jant.
 2. Open `Settings -> API Tokens`.
@@ -56,11 +56,11 @@ curl https://your-site.com/api/posts \
   -H "Authorization: Bearer jnt_YOUR_TOKEN"
 ```
 
-API tokens grant the same API access as an authenticated dashboard session for the current site.
+API tokens grant the same API access as an authenticated browser session for the current site.
 
 ### Session cookies
 
-Browser requests can use the normal dashboard session cookie after signing in at `/signin`.
+Browser requests can use the normal session cookie after signing in at `/signin`.
 
 ### Local development token
 
@@ -373,7 +373,7 @@ Notes:
 
 Base path: `/api/public/posts`
 
-These endpoints expose the public reading view, not the dashboard editing view.
+These endpoints expose the public reading view, not the editing view used in Settings.
 
 Public post responses include these fields:
 
@@ -1154,7 +1154,7 @@ Response:
 }
 ```
 
-If the request sends `Accept: text/event-stream`, the endpoint may return SSE patches instead of JSON for dashboard use.
+If the request sends `Accept: text/event-stream`, the endpoint may return SSE patches instead of JSON for live UI updates.
 
 ### Legacy explicit multipart relay
 
@@ -1934,7 +1934,7 @@ Response:
 
 Base path: `/api/settings`
 
-These endpoints manage user-editable site settings and a small amount of dashboard state.
+These endpoints manage user-editable site settings and a small amount of UI state.
 
 All settings endpoints require auth.
 
@@ -2056,7 +2056,7 @@ In demo mode, `NOINDEX` updates are rejected and the returned value stays `"true
 
 Auth: `Session or token`
 
-This is a small dashboard-state endpoint used by the compose UI.
+This is a small UI-state endpoint used by the compose UI.
 
 - First call stores the timestamp and returns `201`
 - Later calls return `200`

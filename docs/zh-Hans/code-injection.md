@@ -9,13 +9,13 @@
 | 站点头部 | `</head>` 之前 | 必须早加载的内容：网站统计、自定义 meta 标签、字体、CSS   |
 | 网站页脚 | `</body>` 之前 | 不能阻塞渲染的内容：聊天 widget、评论组件、延迟加载的脚本 |
 
-注入的内容会出现在站点的**每个公开页面**，包括 dashboard 之外的所有路由。它直接以原样写入 HTML——这意味着：
+注入的内容会出现在站点的**每个公开页面**，也就是 settings 之外的所有路由。它直接以原样写入 HTML——这意味着：
 
 - 任何脚本都拥有访客浏览器的完整访问权限。只放你信任来源的代码。
 - 错写的标签会破坏页面结构。改完后建议在浏览器里看一眼控制台。
 - 注入的脚本会影响首屏性能。能延迟加载的就别放头部。
 
-> Jant 默认对公开页面设置严格的 Content Security Policy，禁止内联 `<script>` 执行。当你保存了非空的代码注入内容后，公开页面 CSP 的 `script-src` 会自动加上 `'unsafe-inline'`，让你贴的内联脚本能跑；清空两个注入框后会自动恢复到严格策略。Dashboard、API 和静态资源路径不受这条放宽影响。
+> Jant 默认对公开页面设置严格的 Content Security Policy，禁止内联 `<script>` 执行。当你保存了非空的代码注入内容后，公开页面 CSP 的 `script-src` 会自动加上 `'unsafe-inline'`，让你贴的内联脚本能跑；清空两个注入框后会自动恢复到严格策略。Settings、API 和静态资源路径不受这条放宽影响。
 
 ## Jant 与第三方组件的几个关键事实
 
@@ -139,13 +139,32 @@
 ></script>
 ```
 
-两者都不需要单独配置事件——`pageview` 在每次完整页面加载时自动上报，Jant 是服务端渲染的多页站，默认就工作。
+**Google Analytics 4**：
 
-如果只想统计公开页面、跳过 dashboard，可以加一层守卫：
+```html
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-XXXXXXXXXX");
+</script>
+```
+
+把 `G-XXXXXXXXXX` 换成 GA4 后台 → 管理 → 数据流里的 Measurement ID。GA4 比 Plausible / Umami 重一些，并且会在访客浏览器里设置第三方 Cookie——如果你的站点在欧盟可访问，需要自己再加一层 cookie consent。
+
+上面这些都不需要单独配置事件——`pageview` 在每次完整页面加载时自动上报，Jant 是服务端渲染的多页站，默认就工作。
+
+如果只想统计公开页面、跳过 settings，可以加一层守卫：
 
 ```html
 <script>
-  if (!location.pathname.startsWith("/dash")) {
+  if (!location.pathname.startsWith("/settings")) {
     var s = document.createElement("script");
     s.defer = true;
     s.src = "https://plausible.io/js/script.js";

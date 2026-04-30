@@ -123,7 +123,7 @@ The supported ways to customize an exported site:
 
 - **Override a single template.** Copy the file you want to change from `themes/jant/layouts/<name>.html` to `layouts/<name>.html` at the project root, then edit the root copy. Hugo loads root layouts before theme layouts, so your version wins without forking the whole theme.
 - **Add static files.** Drop files into the root `static/` directory. They are served at the matching URL and take precedence over anything of the same name in `themes/jant/static/`.
-- **Change colors, fonts, or layout tweaks.** Use **Settings > Custom CSS** in Jant. The value is written to `themes/jant/static/custom.css` on every export, so it is safe to edit from the Jant dashboard but not from the repo.
+- **Change colors, fonts, or layout tweaks.** Use **Settings > Custom CSS** in Jant. The value is written to `themes/jant/static/custom.css` on every export, so it is safe to edit from Settings but not from the repo.
 
 Editing `themes/jant/**` directly in the repo is not supported — the next sync or export replaces it. For site-wide configuration, use Jant's **Settings** rather than editing `hugo.toml` by hand.
 
@@ -143,7 +143,7 @@ Important rules:
 - slug or alias conflicts stop the import
 - `--dry-run` validates the archive without writing anything
 
-If the target is not empty — usually because a previous import attempt left content behind — reset it through the dashboard at **Settings → Account → Delete Account**. That flow forces a `site export` download first, asks you to type a confirmation phrase, then wipes posts, media, collections, settings, and the account itself. Sign up again and you have a clean target. There is no lighter-weight "wipe content only" reset today.
+If the target is not empty — usually because a previous import attempt left content behind — reset it at **Settings → Account → Delete Account**. That flow forces a `site export` download first, asks you to type a confirmation phrase, then wipes posts, media, collections, settings, and the account itself. Sign up again and you have a clean target. There is no lighter-weight "wipe content only" reset today.
 
 ### Dry Run an Import
 

@@ -256,7 +256,7 @@ const ConnectSchema = z.object({
 // Connect: validate token, save config, create webhook
 githubSyncAdminRoutes.post("/setup", requireAuthApi(), async (c) => {
   // PAT connect is disabled when a GitHub App is configured — see the
-  // dashboard route for rationale.
+  // settings route for rationale.
   if (getGitHubAppConfig(c.env)) {
     return c.json(
       {

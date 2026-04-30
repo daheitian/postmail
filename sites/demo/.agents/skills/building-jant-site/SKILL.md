@@ -23,7 +23,7 @@ Do not patch `node_modules/@jant/core`.
 
 If the change is product behavior that should apply to all Jant sites, make it in the Jant monorepo. If the change is site-specific, keep it in:
 
-- dashboard settings
+- the Settings page
 - custom CSS
 - site docs or helper scripts
 - `wrangler.toml`
@@ -50,7 +50,7 @@ This already runs local migrations before starting Wrangler dev.
 
 ### 2. Pick the right customization layer
 
-- Content or editorial defaults: use the dashboard or the HTTP API
+- Content or editorial defaults: use the Settings page or the HTTP API
 - Theme and layout changes: use Settings plus custom CSS
 - Deployment and runtime config: edit `wrangler.toml`
 - One-off site behavior at the server edge: wrap `createApp()` in `index.js`

@@ -7,17 +7,18 @@
  *
  * Design rationale (Jant-specific):
  *
- *   - **Public pages** allow `frame-src 'https:'` and `script-src 'https:'`.
- *     The site author is the only content source — there is no UGC, no
- *     untrusted writer, no public composer. Locking down third-party scripts
- *     would block legitimate embeds (YouTube, Letterbird, analytics) and
- *     deliver no security benefit Jant doesn't already get from being
- *     single-author. This matches Ghost/WordPress/Bear precedent.
+ *   - **Public pages** allow `frame-src`, `script-src`, `style-src`,
+ *     `font-src`, and `connect-src` to load from any `https:` source. The site
+ *     author is the only content source — there is no UGC, no untrusted
+ *     writer, no public composer. Locking these down would block legitimate
+ *     embeds (YouTube, Letterbird, analytics), giscus's stylesheet, and
+ *     Google Fonts, and deliver no security benefit Jant doesn't already get
+ *     from being single-author. This matches Ghost/WordPress/Bear precedent.
  *
  *   - **Authoring/auth/API routes** (FRAME_PROTECTED_PATH_PREFIXES) keep the
  *     tight policy: only same-origin scripts, no third-party iframes, and
  *     `frame-ancestors 'none'`. Compromise of an embed page must not lead
- *     into the dashboard.
+ *     into the settings pages.
  */
 
 export interface CspBuildInput {
@@ -84,12 +85,15 @@ export function buildCspDirectives(
   const connectSrc = isDev ? ["'self'", "ws:"] : ["'self'"];
   for (const src of uploadConnectSources) appendUnique(connectSrc, src);
 
-  // On public (non-admin) pages, allow third-party iframes and scripts so
-  // embeds and code-injection HTML work. Admin pages stay tight.
+  // On public (non-admin) pages, allow third-party iframes, scripts,
+  // stylesheets, fonts, and fetch endpoints so embeds and code-injection
+  // HTML work. Admin pages stay tight.
   let frameSrc: string[] | undefined;
   if (!isFrameProtected) {
     frameSrc = ["'self'", "https:"];
     appendUnique(scriptSrc, "https:");
+    appendUnique(styleSrc, "https:");
+    appendUnique(fontSrc, "https:");
     appendUnique(connectSrc, "https:");
   }
 

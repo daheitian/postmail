@@ -24,11 +24,13 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。`/feed` 默认
 
 ## 支持多作者吗？
 
-不支持。多作者需要权限、审稿、署名、通知等一整套机制，会让产品方向偏向 CMS。需要这些能力，建议看 WordPress 或 Ghost。
+不支持。多作者需要权限、审稿、署名、通知等一整套机制，会让产品方向偏向 CMS。需要这些能力，建议考虑 WordPress 或 Ghost。
 
 ## 支持多语言吗？
 
-UI 同时提供英文和中文。站点内容本身可以是任何语言。`SITE_LANGUAGE` 控制站点的主要语言代码，影响 HTML `lang`、RSS metadata 和 dashboard 默认语言。
+站点内容本身可以是任何语言。Settings 页面同时提供英文和中文，在 **Settings → General → Language** 切换。
+
+需要注意：这个设置控制的是**内容语言声明 + Settings 页面语言**，影响范围是 `<html lang>`、RSS feed `<language>` metadata、以及登录后台的界面语言。**Public 页面的 UI 文案（按钮、Latest / Featured 等导航字串）始终保持英文**——这是有意的，避免大多数读者面对一个半中半英的页面。
 
 ## 可以带着内容离开吗？
 

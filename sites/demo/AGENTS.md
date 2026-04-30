@@ -11,7 +11,7 @@ This is a standalone Jant site created with `create-jant`.
 
 Most customization happens through:
 
-- site settings in the dashboard
+- site settings from the Settings page
 - custom CSS and theme variables
 - HTTP API calls
 - `jant` CLI commands for posts, collections, settings, search, export, import, migrate, and deploy

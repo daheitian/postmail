@@ -40,7 +40,7 @@ The default for self-hosted users. You need a GitHub **fine-grained Personal Acc
 Create the token at [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta). Scope it to a single repository for least privilege.
 
 1. Create a repository on GitHub (public or private, either works).
-2. Open **Settings > Data > GitHub Sync** in your Jant dashboard.
+2. Open **Settings > Data > GitHub Sync** in Jant.
 3. Paste your token and enter the repository as `owner/repo`.
 4. Click **Connect**.
 
@@ -50,7 +50,7 @@ Jant validates the token, saves the configuration, and creates a webhook on the 
 
 Available when the deployment has a GitHub App configured. You never touch a long-lived token — Jant issues short-lived credentials on demand.
 
-1. Open **Settings > Data > GitHub Sync** in your Jant dashboard.
+1. Open **Settings > Data > GitHub Sync** in Jant.
 2. Click **Install GitHub App**. You will be redirected to GitHub to pick which repositories the App can access.
 3. After installing, GitHub redirects you back. Pick the repository you want to sync and click **Connect**.
 

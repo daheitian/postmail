@@ -276,7 +276,7 @@ Report to the user:
 
 ## If You Need to Start Over
 
-First-time bulk migrations often need 2-3 attempts before the mapping is right. If the script halted halfway, posts came out wrong, or the user wants to re-run with a different mapping, the cleanest reset is through the dashboard:
+First-time bulk migrations often need 2-3 attempts before the mapping is right. If the script halted halfway, posts came out wrong, or the user wants to re-run with a different mapping, the cleanest reset is through Settings:
 
 **Settings → Account → Delete Account**
 

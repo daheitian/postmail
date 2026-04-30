@@ -12,15 +12,17 @@ function defaults() {
 }
 
 describe("buildCspDirectives", () => {
-  it("opens https for frames and scripts on public pages", () => {
+  it("opens https for frames, scripts, styles, fonts, and connect on public pages", () => {
     const directives = buildCspDirectives(defaults());
     expect(directives.frameSrc).toEqual(["'self'", "https:"]);
     expect(directives.scriptSrc).toContain("https:");
+    expect(directives.styleSrc).toContain("https:");
+    expect(directives.fontSrc).toContain("https:");
     expect(directives.connectSrc).toContain("https:");
     expect(directives.frameAncestors).toBeUndefined();
   });
 
-  it("locks down iframes and scripts on admin paths", () => {
+  it("locks down iframes, scripts, styles, and fonts on admin paths", () => {
     const directives = buildCspDirectives({
       ...defaults(),
       path: "/settings",
@@ -28,6 +30,8 @@ describe("buildCspDirectives", () => {
     });
     expect(directives.frameSrc).toBeUndefined();
     expect(directives.scriptSrc).not.toContain("https:");
+    expect(directives.styleSrc).not.toContain("https:");
+    expect(directives.fontSrc).not.toContain("https:");
     expect(directives.connectSrc).not.toContain("https:");
     expect(directives.frameAncestors).toEqual(["'none'"]);
   });

@@ -6,7 +6,7 @@ const config: LinguiConfig = {
   sourceLocale: "en",
   catalogs: [
     {
-      // Dashboard settings/admin surface — this catalog is translated.
+      // Settings/admin surface — this catalog is translated.
       path: "<rootDir>/src/i18n/locales/settings/{locale}",
       include: [
         "<rootDir>/src/routes/dash/**/*.{ts,tsx}",
