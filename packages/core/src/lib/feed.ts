@@ -126,6 +126,29 @@ function getMediaMeta(item: MediaView): string {
 }
 
 /**
+ * Strip MIME type parameters like `; charset=utf-8` so the visible label
+ * stays compact (e.g. `text/html` instead of `text/html; charset=utf-8`).
+ */
+function cleanMimeType(mimeType: string): string {
+  const semi = mimeType.indexOf(";");
+  return (semi >= 0 ? mimeType.slice(0, semi) : mimeType).trim();
+}
+
+/**
+ * Build the visible link text for non-visual attachments — paperclip +
+ * MIME-type tag + filename. Marks the line clearly as an attachment so it
+ * doesn't get mistaken for body text.
+ */
+function buildAttachmentLinkText(
+  item: MediaView,
+  fallbackName: string,
+): string {
+  const name = item.originalName?.trim() || fallbackName;
+  const mime = cleanMimeType(item.mimeType);
+  return `📎 [${escapeXml(mime)}] ${escapeXml(name)}`;
+}
+
+/**
  * Render a single media attachment as HTML for embedding in feed content.
  *
  * - Images embed as `<figure><a><img/></a><figcaption/></figure>` with alt
@@ -167,30 +190,31 @@ function renderMediaItem(item: MediaView, postPermalinkUrl?: string): string {
   }
 
   if (category === "audio") {
-    const label = name || "Audio";
+    const linkText = buildAttachmentLinkText(item, "Audio");
     const suffix = meta ? ` (${escapeXml(meta)})` : "";
-    return `<p><a href="${url}">${escapeXml(label)}</a>${suffix}</p>`;
+    return `<p><a href="${url}">${linkText}</a>${suffix}</p>`;
   }
 
   if (category === "text") {
     const previewHref = postPermalinkUrl
       ? escapeXml(`${postPermalinkUrl}/text/${item.id}`)
       : url;
-    const heading = name ? escapeXml(name) : "Attached text";
-    if (item.summary?.trim()) {
-      const charsLine =
-        typeof item.chars === "number" && item.chars > 0
-          ? ` · ${item.chars} chars`
-          : "";
-      return `<aside><p><strong>${heading}</strong>${escapeXml(charsLine)}</p><p>${escapeXml(item.summary)}</p><p><a href="${previewHref}">Read full text →</a></p></aside>`;
-    }
-    return `<p><a href="${previewHref}">${heading}</a></p>`;
+    const linkText = buildAttachmentLinkText(item, "Attached text");
+    // Prefer character count over byte size — more meaningful for text.
+    const textMeta =
+      typeof item.chars === "number" && item.chars > 0
+        ? `${item.chars} chars`
+        : meta;
+    const metaSuffix = textMeta ? ` (${escapeXml(textMeta)})` : "";
+    const summary = item.summary?.trim() ?? "";
+    const summarySuffix = summary ? `: ${escapeXml(summary)}` : "";
+    return `<p><a href="${previewHref}">${linkText}</a>${metaSuffix}${summarySuffix}</p>`;
   }
 
   // document, archive, office, font, 3d, code → plain link
-  const label = name || "Attachment";
+  const linkText = buildAttachmentLinkText(item, "Attachment");
   const suffix = meta ? ` (${escapeXml(meta)})` : "";
-  return `<p><a href="${url}">${escapeXml(label)}</a>${suffix}</p>`;
+  return `<p><a href="${url}">${linkText}</a>${suffix}</p>`;
 }
 
 /**

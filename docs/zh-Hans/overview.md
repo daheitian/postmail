@@ -2,48 +2,53 @@
 
 > **Pre-1.0**：Jant 仍处于早期阶段。请预期会有粗糙边角、破坏性变更，以及仍在持续调整的文档。
 
-Jant 是一个为单作者设计的轻量博客系统，支持 **Note、Link、Quote** 三种内容格式。帖子之间可以串成 Thread，也可以用 Collection 归类整理。它的发帖体验更接近 Twitter / Threads，而非 WordPress / Ghost 那样的后台管理面板。
+Jant 是一个为单作者设计的小型博客系统，支持 **Note、Link、Quote** 三种内容格式。可以串成 Thread，也可以归到 Collection 里。发布体验更接近 Twitter / Threads，而不是 WordPress / Ghost 的后台。
 
 ![Jant Home](https://jant-me-media.jant.me/assets/jant-home.png)
 
-你可以访问 [demo.jant.me](https://demo.jant.me) 在线体验 Jant 的实际效果，并直接尝试发帖（点击导航栏 `More` 菜单下拉中的[登录](https://demo.jant.me/signin)，用户名和密码已自动填充，数据每日清空）。也可以参考作者自己的[博客](https://owen.jant.blog/)，这是一个真实使用中的样本。
+在线演示：[demo.jant.me](https://demo.jant.me)。点击 `More` 菜单里的[登录](https://demo.jant.me/signin)直接体验，演示账号已自动填充，数据每日清空。
+
+也可以参考作者本人的博客：[owen.jant.blog](https://owen.jant.blog/)。
 
 ## 一种"无压力"的公开写作
 
-Jant 的名字灵感来自 Jantelagen（詹代法则）——出自 1933 年一部北欧讽刺小说的文化观念，大意是"别炫耀、别攀比"。这个词在北欧语境下其实带有贬义，常被视为压抑个性的集体文化的代名词。但也有幸福研究者从另一面看它：正是这种不比较、不打扰的默契，构成了一种无压力的社会底色，也是北欧高幸福感的来源之一。但是反观当下的社交网络，Feed 流正在制造着截然相反的压力：
+名字来自 _Jantelagen_（詹代法则）——出自 1933 年的北欧讽刺小说，常被概括为"别炫耀、别攀比"。这个词在北欧语境下偏贬义，被视为压抑个性的集体文化代名词；也有幸福研究者从另一面看它——这种不比较、不打扰的默契构成了北欧社会的底色，也是高幸福感的来源之一。
 
-- 一种来自看别人——无处不在的表演与攀比，催生了焦虑。
-- 一种来自被别人看——帖子被强制推送给所有关注者，让人因心理负担而丧失了表达欲。
+而当下的社交网络在制造截然相反的压力：
 
-Jant 想通过拆分“发布”与“广播”的行为，将那份**“无压力”**的公开表达带回个人博客中：
+- 一种来自看别人——无处不在的表演与攀比，催生焦虑。
+- 一种来自被别人看——帖子被强制推送给所有关注者，让人因心理负担而失去表达欲。
 
-- **静默式记录**： 发布时可选择在首页（Latest）隐藏，仅保留在你选择的特定合集和历史存档(`/archive`)中。这让你可以毫无负担地记录，而不必担心某些细碎的表达打乱首页的叙事节奏。
-- **非侵扰式更新**： 即使内容出现在首页 Latest 中，也不会触发 RSS Feed 推送。
-- **策展式分发**：只有被标记为 Featured 的内容，才会进入订阅者的 RSS Feed。
+大多数博客系统沿用了同样的逻辑——把"已发布"和"已广播"当成同一个决定。你发一篇东西，它就同时进入 RSS、订阅者的 feed、首页时间线。Jant 想要更安静的模型：
+
+- **静默式记录**：发布时可选择从首页（Latest）隐藏，仅保留在指定 collection 和 `/archive` 中。
+- **非侵扰式更新**：即使内容出现在首页 Latest 中，也不会自动触发 RSS 推送。
+- **策展式分发**：只有标记为 Featured 的内容才进入 `/feed` 和订阅者的 RSS。`/feed` 默认指向 Featured。
 
 如果你还没想好要不要写博客，[这篇文章](why-blog.md)或许能给你一个理由。
 
-## 博客的发布体验，应该是现代的
+## 写作体验
 
-传统博客给你一个后台。进去是一张表单：标题、正文、分类、标签、摘要、SEO、封面图……填完，才能发布。这套界面是为管理内容设计的，不是为写东西设计的。
+传统博客给你一张表单：标题、正文、分类、标签、摘要、SEO、封面图。这是管理内容的界面，不是写东西的界面。Jant 学 Twitter 和 Threads 的做法——标题可选，随时追加成 Thread，发布只有一个动作。
 
-Twitter 和 Threads 证明了另一条路：没有后台，没有表单，没有标题。想到就写，写完就发。正是这种低摩擦，让记录真正发生了。
-
-Jant 想把这种体验还给个人博客：标题是可选的，随时可以追加成 Thread，发布只需要一个动作。
-
-![Jant](https://jant-me-media.jant.me/assets/new.png)
+![Jant 撰写界面](https://jant-me-media.jant.me/assets/new.png)
 
 ## Jant 有什么
 
-- **三种帖子格式** —— **Note、Link、Quote**, 都是一等公民。
-- **Threads** —— 想法可以延续，不必凑成长文
-- **Collections** —— 按主题策展，更像书架而不是标签
-- **支持多种媒体附件** —— 图片、视频、音频、Markdown 文本附件、文档
-- **评分** —— 给书、电影、播客、文章打分
-- **GitHub Markdown 静态站点双向同步** —— Jant 的每次编辑[自动同步 到 GitHub](github-sync.md)，在 GitHub 上修改文件也会自动同步回 Jant。同步的仓库本身就是一个完整的 Hugo 静态博客，可以直接接 GitHub Actions 构建发布，也是内容的完整备份。
-- **完整 API 与 MCP** —— 自动化发布、导入、维护；[支持 MCP](automation-and-api.md)，适合 AI agent 工具调用
-- **完整的 Hugo 静态站点导出** —— 你可以随时[带着内容](export-and-import.md)离开
+- 三种格式：Note、Link、Quote
+- Threads：连续的想法可以延续，不必凑成长文
+- Collections：按主题策展，更像书架而不是标签
+- 媒体附件：图片、视频、音频、Markdown、文档、代码片段
+- 评分：给书、电影、播客、文章打分
+- Featured / Latest 分离：发布不等于推送
+- 搜索、归档页、RSS
+- 内建主题、字体主题、自定义 CSS
+- GitHub 双向同步：每次在 Jant 里编辑都会以 Markdown commit 到你的 GitHub 仓库；在 GitHub 上修改文件也会同步回站点。仓库本身就是一个 Hugo 站点，可独立 `hugo build`，也是完整备份。详见 [GitHub 同步](github-sync.md)。
+- API 与 MCP：自动化发布、导入、维护，适合 [AI agent 调用](automation-and-api.md)
+- Hugo 静态站点导出：你随时可以[带着内容](export-and-import.md)离开
 
 ## 接下来
 
-阅读 [开始使用](getting-started.md)，了解如何开始运行一个 Jant 博客。
+- [开始使用](getting-started.md) —— 跑起来一个 Jant 博客
+- [写作与内容组织](writing-and-organizing.md) —— Note / Link / Quote、Threads、Collections 的具体用法
+- [GitHub 同步](github-sync.md) —— 把内容同步到 GitHub 仓库

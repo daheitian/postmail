@@ -295,14 +295,14 @@ describe("feed renderers", () => {
     const xml = defaultFeedRenderer(makeFeedData(post));
 
     expect(xml).toContain(
-      '<a href="https://example.com/media/song.mp3">song.mp3</a> (3:35 · 5.0 MB)',
+      '<a href="https://example.com/media/song.mp3">📎 [audio/mpeg] song.mp3</a> (3:35 · 5.0 MB)',
     );
     expect(xml).toContain(
       '<link rel="enclosure" type="audio/mpeg" href="https://example.com/media/song.mp3" length="5242880" title="song.mp3"',
     );
   });
 
-  it("inlines text-attachment summaries with a link to the rendered preview", () => {
+  it("renders text attachments as a single-line link to the rendered preview with char count", () => {
     const post = makePostView({
       permalink: "/post-1",
       media: [
@@ -319,11 +319,54 @@ describe("feed renderers", () => {
     });
     const xml = defaultFeedRenderer(makeFeedData(post));
 
-    expect(xml).toContain("<strong>notes.md</strong>");
-    expect(xml).toContain("Outline of the talk: intro, three acts, takeaways.");
-    expect(xml).toContain("4200 chars");
     expect(xml).toContain(
-      '<a href="https://example.com/post-1/text/med_txt">Read full text →</a>',
+      '<a href="https://example.com/post-1/text/med_txt">📎 [text/markdown] notes.md</a> (4200 chars): Outline of the talk: intro, three acts, takeaways.',
+    );
+    // No multi-line aside / "Read full text" CTA — single line only.
+    expect(xml).not.toContain("Read full text");
+    expect(xml).not.toContain("<aside>");
+  });
+
+  it("omits the summary suffix when a text attachment has none", () => {
+    const post = makePostView({
+      permalink: "/post-1",
+      media: [
+        makeMediaView({
+          id: "med_txt_no_summary",
+          url: "https://example.com/media/silent.md",
+          thumbnailUrl: "https://example.com/media/silent.md",
+          mimeType: "text/markdown",
+          originalName: "silent.md",
+          chars: 50,
+        }),
+      ],
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+
+    expect(xml).toContain(
+      '<a href="https://example.com/post-1/text/med_txt_no_summary">📎 [text/markdown] silent.md</a> (50 chars)</p>',
+    );
+    expect(xml).not.toContain("(50 chars):");
+  });
+
+  it("falls back to file size when a text attachment has no char count", () => {
+    const post = makePostView({
+      permalink: "/post-1",
+      media: [
+        makeMediaView({
+          id: "med_txt2",
+          url: "https://example.com/media/raw.txt",
+          thumbnailUrl: "https://example.com/media/raw.txt",
+          mimeType: "text/plain",
+          originalName: "raw.txt",
+          size: 2048,
+        }),
+      ],
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+
+    expect(xml).toContain(
+      '<a href="https://example.com/post-1/text/med_txt2">📎 [text/plain] raw.txt</a> (2 KB)',
     );
   });
 
@@ -343,11 +386,33 @@ describe("feed renderers", () => {
     const xml = defaultFeedRenderer(makeFeedData(post));
 
     expect(xml).toContain(
-      '<a href="https://example.com/media/spec.pdf">spec.pdf</a> (512 KB)',
+      '<a href="https://example.com/media/spec.pdf">📎 [application/pdf] spec.pdf</a> (512 KB)',
     );
     expect(xml).toContain(
       '<link rel="enclosure" type="application/pdf" href="https://example.com/media/spec.pdf" length="524288" title="spec.pdf"',
     );
+  });
+
+  it("strips MIME-type parameters from the attachment label", () => {
+    const post = makePostView({
+      permalink: "/post-1",
+      media: [
+        makeMediaView({
+          id: "med_html",
+          url: "https://example.com/media/note.html",
+          thumbnailUrl: "https://example.com/media/note.html",
+          mimeType: "text/html; charset=utf-8",
+          originalName: "note.html",
+          chars: 120,
+        }),
+      ],
+    });
+    const xml = defaultFeedRenderer(makeFeedData(post));
+
+    // The visible link tag should be cleaned to the bare type
+    expect(xml).toContain("[text/html] note.html");
+    // The enclosure link still preserves the full canonical MIME type
+    expect(xml).toContain('type="text/html; charset=utf-8"');
   });
 
   it("escapes XML special characters in media URLs and names", () => {

@@ -1,307 +1,283 @@
 # 部署到 Cloudflare
 
-本文介绍如何将 Jant 部署到 Cloudflare。最简单的方式是点击下方的「Deploy to Cloudflare」按钮完成一键部署，再按照「部署后必做清单」完成两项关键配置，即可得到一个稳定、适合长期运行的站点。
+Cloudflare 是 Jant 推荐的部署平台。两条路径任选其一：
 
-如果你熟悉命令行操作，也可以使用 `create-jant` 在本地初始化项目，再参考[本地开发后再部署](#本地开发后再部署)章节完成上线。
+- **一键部署**：点 Deploy 按钮，约 5 分钟完成。资源全部由 Cloudflare 在你账号下自动创建。
+- **本地开发后再部署**：先在本地跑通，再用 Wrangler 上线。适合想先调主题或做离线调试的人。
 
-> 如果你希望将 Jant 部署在自己的服务器上，请参阅 [使用 Docker 部署](deployment-docker.md)。
+部署完成后还需要绑定自定义域名、配置 R2 公开访问，否则媒体加载会走 Worker 中转、消耗免费额度。
+
+在自己服务器上部署请看 [使用 Docker 部署](deployment-docker.md)。
+
+## 占位符约定
+
+正文里所有 `<...>` 都需要替换成你自己的值。
+
+| 占位符           | 含义                                          |
+| ---------------- | --------------------------------------------- |
+| `<github-user>`  | GitHub 用户名                                 |
+| `<repo>`         | 一键部署生成的仓库名                          |
+| `<project>`      | Worker 项目名（一键部署默认 `my-site`）       |
+| `<account>`      | Cloudflare 子域前缀，部署后由 Cloudflare 给出 |
+| `<your-domain>`  | 你的自定义域名                                |
+| `<media-domain>` | R2 媒体子域，例如 `media.<your-domain>`       |
+| `<database-id>`  | `wrangler d1 create` 输出的 D1 数据库 ID      |
 
 ## 前置条件
 
-开始之前，请确认以下三项已准备好：
+- **Cloudflare 账号**：[dash.cloudflare.com](https://dash.cloudflare.com/) 注册或登录。
+- **GitHub 账号**：一键部署会把代码托管到 GitHub。前往 [github.com](https://github.com/) 注册或登录。
+- **启用 R2**：进入 [R2 控制台](https://dash.cloudflare.com/?to=/:account/r2)，点 **Enable R2** 接受条款。这一步必须先做——跳过会让部署报 `uses R2 which is only available with an R2 subscription`。R2 用于存放上传的图片和视频，免费额度 10 GB 存储 + 每月 100 万次读取。
+- **自定义域名**（推荐）：托管在同一个 Cloudflare 账号下。如果还没添加，先在 Cloudflare 中接管 DNS。
+- **本地开发路线还需**：[Node.js](https://nodejs.org/) 24+、`git`、`openssl`。
 
-- **Cloudflare 账号**：前往 [dash.cloudflare.com](https://dash.cloudflare.com/) 注册或登录。
-- **[GitHub 账号](http://github.com/)**：一键部署会将站点代码托管到 GitHub。如果你的 Cloudflare 账户尚未关联过 GitHub，在部署表单的 **Git account** 下拉菜单中点击 **New GitHub Connection** 完成授权即可。
-- **在 Cloudflare 中[启用 R2](https://dash.cloudflare.com/?to=/:account/r2)**：R2 是 Cloudflare 提供的对象存储服务（类似于 AWS S3 或阿里云 OSS），Jant 用它来存储你上传的图片、视频等媒体文件。R2 提供免费额度（每月 10 GB 存储 + 100 万次读取），对个人博客完全够用，但首次使用前需要在控制台的 [R2 页面](https://dash.cloudflare.com/?to=/:account/r2) 同意一次服务条款。如果跳过这一步，部署时会出现「uses R2 which is only available with an R2 subscription」的错误提示。
-
-## 一键部署到 Cloudflare
+## 一键部署
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
 
-点击上方按钮后，无需在本地做任何准备。Cloudflare 会根据你在表单中填写的信息，自动完成以下所有操作：
+点 Deploy 按钮后，Cloudflare 会按表单内容自动创建 GitHub 仓库、D1 数据库、R2 存储桶，并完成首次部署。
 
-- 在你的 GitHub 账号下创建一个新仓库
-- 创建一个 D1 数据库（用于存储文章、用户等数据）
-- 创建一个 R2 存储桶（用于存放媒体文件）
-- 完成首次部署
+### 表单填写
 
-### 部署表单填写说明
+| 字段                       | 说明                                                                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Git account**            | 选你的 GitHub 账号。首次使用时点 **New GitHub Connection** 完成授权，Cloudflare 会自动创建仓库。                                    |
+| **Project name**           | 默认为 `my-site`。这个值同时是站点子域 `<project>.<account>.workers.dev` 和 GitHub 仓库名。建议现在就改成你想要的，例如 `my-blog`。 |
+| **D1 database**            | 保持默认 **Create new**，名称用默认值。                                                                                             |
+| **Database location hint** | 选距离自己近的区域；保持默认也行。                                                                                                  |
+| **R2 bucket**              | 保持默认 **Create new**，名称用默认值。                                                                                             |
+| **AUTH_SECRET**            | 保留自动生成的值，或换成自己的 32 字节以上随机字符串。这是用于会话签名的密钥，上线后不要修改。                                      |
 
-表单出现后，按以下建议填写即可：
+部署完成后，Cloudflare 会显示形如 `https://<project>.<account>.workers.dev` 的地址。**先不要创建管理员账号**——下一步绑定自定义域名后再创建，避免会话在切换域名时失效。
 
-| 字段                       | 说明                                                                                                                                                             |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Git account**            | 选择你的 GitHub 账号。Cloudflare 会自动为你创建新仓库。                                                                                                          |
-| **Project name**           | 默认为 `my-site`。这个名称会成为你的站点子域名（格式为 `<project>.<account>.workers.dev`），同时也是 GitHub 仓库名。建议现在就改成你想要的名称，例如 `my-blog`。 |
-| **D1 database**            | 保持默认的 **Create new**，数据库名称使用默认值即可。                                                                                                            |
-| **Database location hint** | 可选择一个距离你较近的区域；保持默认也完全没问题。                                                                                                               |
-| **R2 bucket**              | 保持默认的 **Create new**，存储桶名称使用默认值即可。                                                                                                            |
-| **AUTH_SECRET**            | 保留自动生成的值，或替换为你自己的 32 位以上随机字符串。这是用于保护登录安全的密钥。                                                                             |
+### 克隆到本地（推荐）
 
-### 完成首次部署
+代码仓库已经在你的 GitHub 账号下创建。克隆到本地后可以：
 
-1. 打开 Cloudflare 显示的站点地址，格式通常为 `https://<project>.<account>.workers.dev`
-2. 按照页面提示完成初始化：创建管理员账号、设置站点名称
-
-到这里，你的站点已经可以正常访问了。接下来请完成下方「部署后必做清单」中的两项配置——它们是让站点真正稳定运行的关键步骤。
-
-### 将代码仓库克隆到本地（推荐）
-
-一键部署完成后，Cloudflare 已经在你的 GitHub 账号下创建好了代码仓库。建议将它克隆到本地，这样你可以：
-
-- 直接修改 `wrangler.toml` 文件来添加环境变量（下一节会用到）
-- 在本地修改主题、添加页面、升级依赖
-- 每次将代码推送到 `main` 分支时，自动触发重新部署
+- 直接改 `wrangler.toml` 配环境变量（下一节会用到）
+- 改主题、加页面、升级依赖
+- 推送到 `main` 自动触发重新部署
 
 ```bash
-git clone git@github.com:<your-username>/<your-repo>.git
-cd <your-repo>
+git clone git@github.com:<github-user>/<repo>.git
+cd <repo>
 npm install
 ```
 
-如果暂时不想克隆也没关系——下一节的所有配置都可以直接在 Cloudflare 控制台中完成。
+不想克隆也行，下一节的所有配置都能在 Cloudflare 控制台完成。
 
-## 部署后必做清单
+## 上线前必做
 
-以下两项配置不做也不影响站点基本运行，但**任何希望长期稳定运营的站点都强烈建议完成**。无论你使用的是一键部署还是本地部署，都应该完成这两步。
+完成下面三步后再创建管理员账号。
 
-### ⚡ 1. 配置媒体文件公开访问（R2_PUBLIC_URL）
+### 1. 绑定自定义域名
 
-**为什么需要这一步？**
+1. 打开 [Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers-and-pages)，选中你的 Worker。
+2. 进入 **Settings** → **Domains & Routes** → **Add**。
+3. 填入你的域名 `<your-domain>`。
 
-不配置的情况下，每次访问者加载图片或视频，请求都会先经过 Cloudflare Worker 中转一次，再从 R2 取回文件。这会明显拖慢媒体加载速度，同时每个媒体请求都会占用你的 Worker 免费配额。
+域名托管在同一个 Cloudflare 账号下时，DNS 会自动写入，证书签发通常 1–2 分钟内生效。
 
-配置 `R2_PUBLIC_URL` 后，媒体文件可以通过 R2 的公开地址直接返回给访问者，无需经过 Worker，加载速度更快，也不再消耗 Worker 配额。
+### 2. 配置 R2 公开访问
 
-#### 第一步：为 R2 存储桶开启公开访问
+不配置时，每次访问图片或视频都要走 Worker 中转，速度慢且消耗 Worker 配额。配置 `R2_PUBLIC_URL` 后，媒体直接从 R2 公开域返回。
 
-1. 打开 Cloudflare 控制台 → **[R2](https://dash.cloudflare.com/?to=/:account/r2)** → 点击你的存储桶
-2. 进入 **Settings** → **Public access**，绑定自定义域名（例如 `media.yourdomain.com`）
+**给 R2 存储桶绑定一个公开子域**
 
-记下上一步获取到的 URL，下一步会用到。
+1. 打开 [R2 控制台](https://dash.cloudflare.com/?to=/:account/r2)，点开你的存储桶。
+2. **Settings** → **Public access** → **Custom Domains** → **Connect Domain**。
+3. 填一个属于你域名的子域，例如 `media.<your-domain>`。
+4. Cloudflare 自动写入 CNAME 并签发证书。状态从 "Initializing" 变为 "Active" 后，**完整复制 Public URL**（形如 `https://<media-domain>`，注意没有尾部斜杠）。
 
-#### 第二步：将 URL 配置给 Worker
+不要使用 r2.dev 的临时公开 URL——它有速率限制，不能用于生产。
 
-选择以下任意一种方式：
+如果状态长时间停在 "Initializing"，通常是该子域已被其他 DNS 记录占用——到 Cloudflare DNS 页面删除冲突记录后会自动恢复。
 
-**方式 A：通过 Cloudflare 控制台配置（推荐给一键部署的用户）**
+**把 URL 配给 Worker**，任选其一：
 
-打开 **[Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers-and-pages)** → 选中你的 Worker → **Settings** → **Variables and Secrets** → **Add**，添加名为 `R2_PUBLIC_URL` 的环境变量，值为上一步获取的 URL。保存后 Cloudflare 会自动重新部署。
+- **控制台**：[Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers-and-pages) → 选中 Worker → **Settings** → **Variables and Secrets** → **Add**。名称 `R2_PUBLIC_URL`，值 `https://<media-domain>`。保存后会自动重新部署。
+- **代码**：在 `wrangler.toml` 的 `[vars]` 段下加：
 
-**方式 B：通过 `wrangler.toml` 配置（推荐给本地开发的用户）**
+  ```toml
+  [vars]
+  R2_PUBLIC_URL = "https://<media-domain>"
+  ```
 
-在 `wrangler.toml` 中添加：
+  推送到 `main`，或运行 `npm run deploy`。
 
-```toml
-[vars]
-R2_PUBLIC_URL = "https://media.yourdomain.com"
+验证：随便打开一张已上传的图片，查看页面源码里 `<img src>` 应该是 `https://<media-domain>/...`，而不是 `<project>.<account>.workers.dev/...`。
+
+### 3. 启用图片自动缩放（可选）
+
+开启 [Image Transformations](https://developers.cloudflare.com/images/transform-images/) 后，Jant 会按访问者的屏幕宽度和像素密度请求对应尺寸，避免手机加载 4000px 原图。
+
+每月前 5000 次变换免费，超出后约 $0.50 / 1000 次。每张原图按需衍生 3–5 个尺寸，个人站基本不会触发付费。
+
+> 图片变换是域名（zone）级功能，需要先按上一步配置好 R2 自定义域名。
+
+1. 在 [Cloudflare 控制台](https://dash.cloudflare.com/) 选中你绑定的域名。
+2. 左侧菜单 → **Images** → **Transformations**。
+3. 把对应域名开关切到 **On**（首次启用会弹出条款确认）。
+
+把 `IMAGE_TRANSFORM_URL` 加到 Worker（添加方式同 `R2_PUBLIC_URL`），值为：
+
+```
+https://<media-domain>/cdn-cgi/image
 ```
 
-然后将代码推送到 `main` 分支，或执行 `npm run deploy` 使配置生效。
+## 初始化管理员
 
-#### 同时推荐开启图片自动缩放（IMAGE_TRANSFORM_URL）
+打开 `https://<your-domain>`，按提示创建管理员账号、设置站点名称。
 
-配置好公开访问后，建议进一步启用 Cloudflare 的 [Image Transformations](https://developers.cloudflare.com/images/transform-images/) 功能。开启后，Jant 会根据访问者的设备屏幕尺寸和像素密度，自动提供合适大小的图片，而不是让手机用户也加载完整的 4000px 大图。这能显著提升页面加载速度，并节省流量，对图片较多的站点尤为明显。
-
-Cloudflare 提供每月 5000 次独立变换的免费额度，对个人博客基本够用；超出后按实际用量计费，费用也非常低廉。
-
-> **前置要求**：图片变换是域名（zone）级别的功能，需要你已按上一步配置了自定义域名（如 `media.yourdomain.com`）。
-
-**第一步：在 Cloudflare 上启用图片变换**
-
-1. 打开 [Cloudflare 控制台](https://dash.cloudflare.com/)
-2. 在左侧列表中选中你绑定的域名
-3. 左侧菜单 → **Images** → **Transformations**
-4. 将对应域名的开关切换为 **On**（首次启用时会弹出条款确认）
-
-**第二步：将 `IMAGE_TRANSFORM_URL` 配置给 Worker**
-
-URL 格式为 `https://<你的 R2 公开域名>/cdn-cgi/image`：
-
-```toml
-[vars]
-IMAGE_TRANSFORM_URL = "https://media.yourdomain.com/cdn-cgi/image"
-```
-
-也可以通过 **[Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers-and-pages)** → 选中你的 Worker → **Settings** → **Variables and Secrets** → **Add** 添加，字段名保持一致即可。
-
-### 🌐 2. 绑定自定义域名
-
-默认分配的 `*.workers.dev` 域名可以正常使用，但作为一个长期运营的站点，使用自己的域名体验会更好，也更专业。
-
-1. 打开 **[Workers & Pages](https://dash.cloudflare.com/?to=/:account/workers-and-pages)**
-2. 选中你的 Worker
-3. 进入 **Settings** → **Domains & Routes** → **Add**
-4. 填入你想使用的域名（例如 `yourdomain.com`）。如果该域名已托管在同一 Cloudflare 账号下，DNS 会自动完成配置。
-
-更多可配置项请参阅 [配置文档](configuration.md)。
+更多可配置项见 [配置](configuration.md)。
 
 ## 本地开发后再部署
 
-如果你希望先在本地搭建和调试站点，再推送上线，可以按照以下步骤操作。
-
-> 需要 [Node.js](https://nodejs.org/) 24 或更高版本。
+如果你想先在本地搭好再上线，按下面操作。
 
 ```bash
 npm create jant@latest jant-site
 cd jant-site
 ```
 
-如果你使用 `pnpm` 或 `yarn`，也可以使用对应的 `create` 命令，Jant 会自动适配：
+`pnpm` 或 `yarn` 同样可用：
 
 ```bash
 pnpm create jant@latest jant-site
-# 或
 yarn create jant@latest jant-site
 ```
 
-`create-jant` 会自动完成以下操作：
+`create-jant` 会安装依赖、初始化 git、生成本地 `.dev.vars`（含本地 `AUTH_SECRET`），并创建已绑定 D1 和 R2 的 Wrangler 项目。
 
-- 安装依赖
-- 初始化 Git 仓库
-- 生成包含本地安全 `AUTH_SECRET` 的 `.dev.vars` 配置文件
-- 创建一个已配置好 D1 数据库与 R2 存储桶绑定的 Cloudflare Workers 项目
-
-### 启动本地开发服务器
-
-依赖已由 `create-jant` 安装完毕，直接运行：
+### 本地启动
 
 ```bash
 npm run dev
 ```
 
-打开 [http://localhost:3000](http://localhost:3000)，按提示完成初始化（创建管理员账号、设置站点名称、选择语言）。
+打开 [http://localhost:3000](http://localhost:3000)，按提示完成初始化（管理员账号、站点名、语言）。
 
-如需更改本地端口：
-
-```bash
-PORT=3030 npm run dev
-```
-
-### 准备部署到 Cloudflare
-
-将本地站点部署到 Cloudflare 之前，需要先完成以下准备工作。
-
-**登录 Cloudflare Wrangler**
+换端口：
 
 ```bash
-npx wrangler login
+PORT=8787 npm run dev
 ```
 
-**1. 创建 D1 数据库**
+### 部署到 Cloudflare
 
-```bash
-npx wrangler d1 create my-site-db
-```
+按顺序执行：
 
-将输出中的 `database_id` 复制到 `wrangler.toml`：
+1. **登录 Wrangler**
 
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "my-site-db"
-database_id = "your-database-id"
-```
+   ```bash
+   npx wrangler login
+   ```
 
-如果脚手架中的 `database_name` 与此不同，可以保持原有名称不变，或统一修改为一致。
+   浏览器跳转授权，回到终端看到 `Successfully logged in`。
 
-**2. 创建 R2 存储桶**
+2. **创建 D1 数据库**
 
-```bash
-npx wrangler r2 bucket create my-site-media
-```
+   ```bash
+   npx wrangler d1 create <project>-db
+   ```
 
-确保 `wrangler.toml` 中的存储桶名称与之一致：
+   把输出中的 `database_id` 写到 `wrangler.toml` 里 `[[d1_databases]]` 段：
 
-```toml
-[[r2_buckets]]
-binding = "R2"
-bucket_name = "my-site-media"
-```
+   ```toml
+   [[d1_databases]]
+   binding = "DB"
+   database_name = "<project>-db"
+   database_id = "<database-id>"
+   ```
 
-**3. 设置生产环境的 Auth Secret**
+   `database_name` 必须与刚才传给 `d1 create` 的名字一致。
 
-本地 `.dev.vars` 中的密钥仅用于开发环境。首次部署前，需要单独为生产环境设置一个真正的密钥。
+3. **创建 R2 存储桶**
 
-先生成一个 32 字节的随机字符串：
+   ```bash
+   npx wrangler r2 bucket create <project>-media
+   ```
 
-```bash
-openssl rand -base64 32
-```
+   `wrangler.toml` 里 `[[r2_buckets]] bucket_name` 必须与之相同：
 
-复制输出结果，然后运行以下命令并将其粘贴：
+   ```toml
+   [[r2_buckets]]
+   binding = "R2"
+   bucket_name = "<project>-media"
+   ```
 
-```bash
-npx wrangler secret put AUTH_SECRET
-```
+4. **设置生产 `AUTH_SECRET`**
 
-> **注意**：站点上线后请保持此密钥不变。修改密钥会导致所有已登录用户的会话立即失效。
+   `.dev.vars` 中的密钥仅本地用。生产密钥用以下命令交互式写入：
 
-### 执行部署
+   ```bash
+   openssl rand -base64 32 | npx wrangler secret put AUTH_SECRET
+   ```
 
-```bash
-npm run deploy
-```
+   一旦站点上线，**不要修改这个值**——会让所有现存会话失效。
 
-默认的 `deploy` 脚本会运行 `jant deploy`，自动完成以下操作：
+5. **部署**
 
-- 在远端应用数据库迁移（migrations）和数据补丁（data backfills）
-- 将静态资源部署到正确的目录
+   ```bash
+   npm run deploy
+   ```
 
-部署完成后，Cloudflare 会提供一个 `*.workers.dev` 格式的访问地址。打开后完成初始化（创建管理员账号、确认站点名称、发布第一篇内容），然后回到上方的[部署后必做清单](#部署后必做清单)，补充配置 `R2_PUBLIC_URL` 和自定义域名。
+   `npm run deploy` 调用 `jant deploy`，依次：
+   1. 应用 D1 迁移和数据补丁。
+   2. 上传 Worker 代码与静态资源。
+
+   成功后终端会打印形如 `https://<project>.<account>.workers.dev` 的地址。回到 [上线前必做](#上线前必做) 完成自定义域名和 R2 公开访问，再创建管理员。
 
 ## 进阶配置
 
 ### 通过 GitHub Actions 自动部署
 
-使用 `create-jant` 创建的项目中，已内置 `.github/workflows/deploy.yml`。
-
-如需在每次推送 `main` 分支时自动触发部署，只需在 GitHub 仓库中添加以下两个 Secrets：
+`create-jant` 创建的项目里已内置 `.github/workflows/deploy.yml`。在 GitHub 仓库添加两个 Secret，即可在每次推送 `main` 时自动部署：
 
 - `CF_API_TOKEN`
 - `CF_ACCOUNT_ID`
 
-该工作流会使用这两个凭据完成数据库迁移和 Worker 部署。
+获取方式：
 
-**如何获取这两个值：**
+- **`CF_ACCOUNT_ID`**：[Cloudflare 控制台](https://dash.cloudflare.com/) → 任意 Worker 或 Pages 项目 → 右侧栏 **Account ID**。
+- **`CF_API_TOKEN`**：[API Tokens 页面](https://dash.cloudflare.com/profile/api-tokens) → **Create Token** → 选 **Edit Cloudflare Workers** 模板（已包含部署 Worker、读写 D1、读写 R2 所需权限）。按提示选账号和域名（如果用了自定义域名），生成后**立即复制**——关闭页面后无法再次查看。
 
-1. **`CF_ACCOUNT_ID`**：打开 [Cloudflare 控制台](https://dash.cloudflare.com/)，进入任意一个 Worker 或 Pages 项目，右侧边栏会显示 **Account ID**，点击即可复制。
-2. **`CF_API_TOKEN`**：打开 [API Tokens 页面](https://dash.cloudflare.com/profile/api-tokens) → **Create Token**，选择 **Edit Cloudflare Workers** 模板（该模板已包含部署 Worker、读写 D1 数据库、读写 R2 存储桶所需的全部权限）。按提示选择你的账号和域名（如果使用了自定义域名），生成后**请立即复制 Token**，关闭页面后将无法再次查看。
-
-**添加到 GitHub：**
-
-打开仓库 → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**，分别添加 `CF_API_TOKEN` 和 `CF_ACCOUNT_ID`。
+添加到 GitHub：仓库 → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**。
 
 ### 部署在子路径下
 
-如果你希望将 Jant 挂载在某个子路径下（例如 `/blog`），而主域名下还有其他服务，需要以下两步配合完成：
+把 Jant 挂在某个子路径下（如 `<your-domain>/blog`），主域留给其他服务，需要两步：
 
-**1. 告知 Jant 子路径前缀**
+1. 告知 Jant 子路径前缀：
 
-```toml
-[vars]
-SITE_PATH_PREFIX = "/blog"
-```
+   ```toml
+   [vars]
+   SITE_PATH_PREFIX = "/blog"
+   ```
 
-Jant 会在部署时自动将带前缀的静态资源准备到 `/blog/_assets/*` 目录下。
+   Jant 会在部署时把带前缀的静态资源准备到 `/blog/_assets/*`。
 
-**2. 在 Cloudflare 中将该路径路由到 Worker**
+2. 在 [Cloudflare 控制台](https://dash.cloudflare.com/) → 选中你的域名 → **Workers Routes** → **Add route**，填 `<your-domain>/blog*`，Worker 选你的 Jant Worker。
 
-打开 [Cloudflare 控制台](https://dash.cloudflare.com/)，在左侧选中你的域名 → **Workers Routes** → **Add route**，填写 `yourdomain.com/blog*`，Worker 选择你的 Jant Worker。这样 `/blog` 路径下的请求将由 Worker 处理，其他路径不受影响。
+`SITE_PATH_PREFIX` 与 `SITE_ORIGIN` 是两个独立变量。`SITE_ORIGIN` 只接受 origin（scheme + host + port），路径部分会被忽略——子路径必须通过 `SITE_PATH_PREFIX` 设置。详细说明见 [配置 § 公开 URL 和子路径](configuration.md#公开-url-和子路径)。
 
-关于 `SITE_PATH_PREFIX` 与 `SITE_ORIGIN` 的详细说明，请参阅 [配置文档 → 公开 URL 和子路径](configuration.md#公开-url-和子路径)。
-
-### 更新已有站点
-
-升级 Jant 版本：
+### 升级
 
 ```bash
 npm install @jant/core@latest
 npm run deploy
 ```
 
-## 接下来可以做什么
+## 常见错误
 
-- [配置](configuration.md) —— 调整环境变量和站点行为
-- [写作与内容组织](writing-and-organizing.md) —— 站点运行起来后，开始发布内容
-- [备份与恢复](backups.md) —— 为长期运营做好数据保障
+- `uses R2 which is only available with an R2 subscription`：没启用 R2，到 [R2 控制台](https://dash.cloudflare.com/?to=/:account/r2) 接受条款。
+- `Authentication error [code: 10000]`：没登录或 token 过期，重新 `npx wrangler login`。
+- `database_id "..." is invalid`：`wrangler.toml` 里的 `database_id` 占位符没替换成 `wrangler d1 create` 输出的真实 ID。
+- `A worker with this name already exists`：改 `wrangler.toml` 顶部的 `name`。
+- 自定义域名长时间 SSL pending：该子域已被其他 DNS 记录占用，到 DNS 页面删冲突记录后自动恢复。
+
+## 接下来
+
+- [配置](configuration.md) —— 环境变量与站点行为
+- [写作与内容组织](writing-and-organizing.md) —— 上线后开始发布
+- [备份与恢复](backups.md) —— 定期导出 D1 + R2，防止误删或账号回收
