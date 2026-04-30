@@ -8,6 +8,7 @@ export {
   createNodeRequestRuntime,
 } from "../runtime/node.js";
 export { createExportService } from "../services/export.js";
+export { createStorageDriver } from "../lib/storage.js";
 export { resolveConfig } from "../lib/resolve-config.js";
 export { buildThemeStyle } from "../lib/theme.js";
 export { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";

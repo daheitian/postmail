@@ -16,6 +16,7 @@ import { loadNodeRuntime } from "../../../lib/load-node-runtime.js";
 import { openNodeDatabase } from "../../../lib/node-database.js";
 import { deleteR2Object, uploadR2Object } from "../../../lib/r2-query.js";
 import {
+  assertSnapshotDialectMatches,
   assertSnapshotMeta,
   buildReplaceSql,
   buildSnapshotStorageQuery,
@@ -52,10 +53,15 @@ function createWranglerOptions(values) {
 
 async function createNodeImportContext() {
   const nodeDatabase = await openNodeDatabase(process.env);
-  const { createNodeCliRuntime } = await loadNodeRuntime();
-  const runtime = await createNodeCliRuntime(nodeDatabase.bindings);
+  // Only need the storage driver — `createNodeCliRuntime` would also resolve
+  // the current site, which (a) is redundant with the bin-level resolveCliSite
+  // call below and (b) prints a generic "/setup first" error when the
+  // snapshot's own error path is more informative.
+  const { createStorageDriver } = await loadNodeRuntime();
+  const storage = createStorageDriver(nodeDatabase.bindings);
 
   return {
+    dialect: nodeDatabase.database.dialect,
     async close() {
       await nodeDatabase.close();
     },
@@ -66,20 +72,20 @@ async function createNodeImportContext() {
       await nodeDatabase.execute(sql);
     },
     async uploadObject(key, filePath, contentType) {
-      if (!runtime.storage) {
+      if (!storage) {
         throw new Error("Snapshot import requires configured storage.");
       }
 
       const bytes = new Uint8Array(await readFile(filePath));
-      await runtime.storage.put(key, bytes, {
+      await storage.put(key, bytes, {
         contentType: contentType || undefined,
       });
     },
     async deleteObject(key) {
-      if (!runtime.storage) {
+      if (!storage) {
         return;
       }
-      await runtime.storage.delete(key);
+      await storage.delete(key);
     },
   };
 }
@@ -88,6 +94,7 @@ function createD1ImportContext(runtime, values) {
   const wranglerOptions = createWranglerOptions(values);
 
   return {
+    dialect: "sqlite",
     async close() {},
     async query(sql) {
       return queryD1(sql, runtime, wranglerOptions);
@@ -273,6 +280,7 @@ export async function run(argv) {
   try {
     const meta = await readSnapshotJson(materialized.rootDir, "meta.json");
     assertSnapshotMeta(meta);
+    assertSnapshotDialectMatches(meta, context.dialect);
     const explicitRemap = values["remap-site"] === true;
     const snapshotSite = getSnapshotBootstrapSite(meta);
     const resolutionMode = getCliSiteResolutionMode(process.env);

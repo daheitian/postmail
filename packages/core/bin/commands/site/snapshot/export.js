@@ -97,8 +97,12 @@ async function assertWritableOutput(outputPath, force) {
 
 async function createNodeExportContext() {
   const nodeDatabase = await openNodeDatabase(process.env);
-  const { createNodeCliRuntime } = await loadNodeRuntime();
-  const runtime = await createNodeCliRuntime(nodeDatabase.bindings);
+  // Only need the storage driver — `createNodeCliRuntime` would also resolve
+  // the current site, which (a) is redundant with the bin-level resolveCliSite
+  // call below and (b) prints a generic "/setup first" error when the
+  // snapshot's own error path is more informative.
+  const { createStorageDriver } = await loadNodeRuntime();
+  const storage = createStorageDriver(nodeDatabase.bindings);
 
   return {
     dialect: nodeDatabase.database.dialect,
@@ -109,11 +113,11 @@ async function createNodeExportContext() {
       return nodeDatabase.query(sql);
     },
     async downloadObject(key, filePath) {
-      if (!runtime.storage) {
+      if (!storage) {
         throw new Error("Snapshot export requires configured storage.");
       }
 
-      const object = await runtime.storage.get(key);
+      const object = await storage.get(key);
       if (!object?.body) {
         throw new Error(`Storage object not found: ${key}`);
       }
@@ -331,7 +335,11 @@ export async function run(argv) {
 
     await writeFile(
       join(scratchDir, "meta.json"),
-      JSON.stringify(buildSnapshotMeta(site), null, 2) + "\n",
+      JSON.stringify(
+        buildSnapshotMeta(site, { dialect: context.dialect }),
+        null,
+        2,
+      ) + "\n",
     );
 
     if (shouldZip) {

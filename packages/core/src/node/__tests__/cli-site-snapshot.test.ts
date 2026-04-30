@@ -233,6 +233,7 @@ describe("jant site snapshot export/import", () => {
     expect(meta).toEqual({
       format: "jant-site-snapshot",
       version: 1,
+      dialect: "sqlite",
       site: { id: SNAPSHOT_SITE_ID, key: SNAPSHOT_SITE_KEY },
     });
     expect(existsSync(join(snapshotPath, "storage-manifest.json"))).toBe(false);

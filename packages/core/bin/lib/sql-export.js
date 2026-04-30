@@ -136,24 +136,34 @@ export async function getTableColumns(
   dialect = "sqlite",
 ) {
   if (dialect === "pg") {
+    // Skip GENERATED ALWAYS columns (e.g. post.search_text, post.search_document):
+    // Postgres rejects any explicit value — even `DEFAULT` — on those, so they
+    // must not appear in the INSERT column list. The target instance recomputes
+    // them from the source columns when the row is inserted.
     const rows = await queryRunner.query(`
       SELECT column_name AS name
       FROM information_schema.columns
       WHERE table_schema = 'public'
         AND table_name = ${sqlValue(tableName)}
+        AND is_generated = 'NEVER'
       ORDER BY ordinal_position
     `);
 
     return rows.map((row) => String(row.name));
   }
 
+  // SQLite doesn't currently use generated columns in this codebase, but
+  // table_xinfo (a strict superset of table_info) exposes the `hidden`
+  // flag (2 = VIRTUAL generated, 3 = STORED generated) so we filter those
+  // out defensively if any are introduced later.
   const rows = await queryRunner.query(
-    `PRAGMA table_info(${quoteIdentifier(tableName)})`,
+    `PRAGMA table_xinfo(${quoteIdentifier(tableName)})`,
   );
 
   return rows
     .slice()
     .sort((left, right) => Number(left.cid) - Number(right.cid))
+    .filter((row) => Number(row.hidden) !== 2 && Number(row.hidden) !== 3)
     .map((row) => String(row.name));
 }
 

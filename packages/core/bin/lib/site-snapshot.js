@@ -175,10 +175,20 @@ export function snapshotObjectPath(key) {
   return `objects/${key}`.replace(/\\/g, "/");
 }
 
-export function buildSnapshotMeta(site) {
+export const SNAPSHOT_DIALECTS = ["sqlite", "pg"];
+
+export function buildSnapshotMeta(site, options = {}) {
+  const dialect = options.dialect;
+  if (dialect && !SNAPSHOT_DIALECTS.includes(dialect)) {
+    throw new Error(
+      `Unsupported snapshot dialect: ${dialect}. Expected one of ${SNAPSHOT_DIALECTS.join(", ")}.`,
+    );
+  }
+
   return {
     format: SNAPSHOT_FORMAT,
     version: SNAPSHOT_VERSION,
+    ...(dialect ? { dialect } : {}),
     site: {
       id: site.id,
       key: site.key,
@@ -204,6 +214,15 @@ export function assertSnapshotMeta(meta) {
   }
 
   if (
+    meta.dialect !== undefined &&
+    !SNAPSHOT_DIALECTS.includes(meta.dialect)
+  ) {
+    throw new Error(
+      `Snapshot meta has unsupported dialect "${String(meta.dialect)}". Expected one of ${SNAPSHOT_DIALECTS.join(", ")}.`,
+    );
+  }
+
+  if (
     meta.site !== undefined &&
     (!meta.site ||
       typeof meta.site !== "object" ||
@@ -211,6 +230,43 @@ export function assertSnapshotMeta(meta) {
       typeof meta.site.key !== "string")
   ) {
     throw new Error("Snapshot meta site must contain string id and key.");
+  }
+}
+
+/**
+ * Read the snapshot's source dialect, if recorded.
+ *
+ * Older snapshots predate the `dialect` field — those return `undefined` and
+ * the caller decides whether to skip the check or refuse with a clear error.
+ */
+export function getSnapshotDialect(meta) {
+  return SNAPSHOT_DIALECTS.includes(meta?.dialect) ? meta.dialect : undefined;
+}
+
+/**
+ * Refuse to apply a snapshot whose source dialect doesn't match the target.
+ *
+ * Cross-dialect db.sql is not safe to replay: SQLite and Postgres differ on
+ * BLOB literals (`X'...'` vs `'\x...'`), boolean encoding (`0/1` vs `t/f`),
+ * `tsvector`/`generated` columns, identifier quoting edge cases, etc. Better
+ * to fail at the start of import than mid-way with a cryptic SQL error.
+ */
+export function assertSnapshotDialectMatches(meta, targetDialect) {
+  const sourceDialect = getSnapshotDialect(meta);
+  if (!sourceDialect) {
+    return;
+  }
+
+  if (sourceDialect !== targetDialect) {
+    throw new Error(
+      [
+        `Snapshot dialect mismatch: source is ${sourceDialect}, target is ${targetDialect}.`,
+        "Snapshot db.sql is dialect-specific (BLOB literals, generated columns, FTS, etc.)",
+        "and cannot be replayed across SQLite and Postgres safely.",
+        "Use `jant site export <url>` (HTTP, dialect-neutral) to move content between",
+        "different DB engines.",
+      ].join("\n"),
+    );
   }
 }
 
