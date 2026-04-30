@@ -252,6 +252,7 @@ dir = "packages/core"
 run = 'pnpm exec tsx dev/scripts/import-node-demo-site-export.ts "$usage_password"'
 
 [tasks.db-node-rebuild-demo]
+alias = "local-reset"
 description = "Recreate the local Node SQLite database and media storage, bootstrap the local shell, and load the canonical demo snapshot"
 usage = 'arg "[password]" default="jant-dev-debug-login"'
 dir = "packages/core"
@@ -277,6 +278,10 @@ run = "node ./dev/scripts/run-remote-rehearsal.mjs"
 description = "Import sites/demo-source/canonical/site-export into a remote Jant instance"
 usage = 'arg "<url>"'
 run = 'bash scripts/site/import.sh "$usage_url"'
+
+[tasks.import-local]
+description = "Import sites/demo-source/canonical/site-export into the local Node dev server (http://localhost:3000)"
+run = 'bash scripts/site/import.sh "http://localhost:3000"'
 
 # =============================================================================
 # i18n (Lingui)

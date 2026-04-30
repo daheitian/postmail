@@ -29,7 +29,11 @@ import {
 } from "../ui/font-themes.js";
 import type { Site, SiteDomain } from "../types.js";
 import { createCollectionService } from "./collection.js";
-import { createExportService } from "./export.js";
+// Note: `./export.js` is loaded lazily inside `exportManagedSite` because it
+// pulls in Vite-specific `?raw` asset imports (CSS/HTML/JS templates) at
+// module-load time. Importing it eagerly here would force every consumer of
+// `services/index.ts` — including Node-only dev scripts run under tsx — to
+// resolve those Vite-only imports just to construct the services bundle.
 import { createMediaService } from "./media.js";
 import { createNavItemService } from "./navigation.js";
 import { createPathService } from "./path.js";
@@ -675,6 +679,7 @@ export function createSiteAdminService(
       );
       const navItemList = await navItems.list();
       const appleTouchKey = allSettings[SETTINGS_KEYS.SITE_FAVICON_APPLE_TOUCH];
+      const { createExportService } = await import("./export.js");
       const exportService = createExportService(
         {
           collections,

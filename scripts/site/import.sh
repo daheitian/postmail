@@ -18,4 +18,4 @@ fi
 
 export JANT_API_TOKEN="$TOKEN"
 export NODE_TLS_REJECT_UNAUTHORIZED=0
-exec ./packages/core/bin/jant.js site import --url "$URL" --path sites/demo-source/canonical/site-export
+exec ./packages/core/bin/jant.js site import "$URL" --path sites/demo-source/canonical/site-export
