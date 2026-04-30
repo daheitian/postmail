@@ -6,7 +6,7 @@
  * slash (for example: "hello-world" or "collections/reading+tools").
  */
 
-import { and, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, ne } from "drizzle-orm";
 import { type Database, batchQuery } from "../db/index.js";
 import {
   sqliteSchemaBundle,
@@ -95,35 +95,9 @@ export function createPathService(
     return normalizePath(path);
   }
 
-  /**
-   * Removes a path_registry entry for the given normalized path if it belongs
-   * to a soft-deleted post, allowing the path to be reused.
-   */
-  async function reclaimDeletedPostPath(
-    normalizedPath: string,
-    excludePostId?: string,
-  ): Promise<void> {
-    const conditions = [
-      eq(pathRegistry.siteId, siteId),
-      eq(pathRegistry.path, normalizedPath),
-      isNotNull(pathRegistry.postId),
-      sql`EXISTS (
-        SELECT 1 FROM ${posts}
-        WHERE ${posts.id} = ${pathRegistry.postId}
-          AND ${posts.deletedAt} IS NOT NULL
-      )`,
-    ];
-    if (excludePostId) {
-      conditions.push(ne(pathRegistry.postId, excludePostId));
-    }
-    await db.delete(pathRegistry).where(and(...conditions));
-  }
-
   async function insertPath(input: CreatePathInput): Promise<PathRecord> {
     const timestamp = now();
     const normalizedPath = normalizeStoredPath(input.path);
-
-    await reclaimDeletedPostPath(normalizedPath);
 
     try {
       const result = await db
@@ -192,14 +166,6 @@ export function createPathService(
       const conditions = [
         eq(pathRegistry.siteId, siteId),
         eq(pathRegistry.path, normalized),
-        // Ignore paths owned by soft-deleted posts — those slugs are available
-        // for reuse. Paths not linked to a post (collections, redirects,
-        // archives) always block.
-        sql`(${pathRegistry.postId} IS NULL OR NOT EXISTS (
-          SELECT 1 FROM ${posts}
-          WHERE ${posts.id} = ${pathRegistry.postId}
-            AND ${posts.deletedAt} IS NOT NULL
-        ))`,
       ];
       if (excludeId) conditions.push(ne(pathRegistry.id, excludeId));
 
@@ -309,8 +275,6 @@ export function createPathService(
     async updatePostSlug(postId, slug) {
       const timestamp = now();
       const normalized = normalizeStoredPath(slug);
-
-      await reclaimDeletedPostPath(normalized, postId);
 
       try {
         await db
@@ -424,7 +388,6 @@ export function createPathService(
             eq(pathRegistry.kind, "slug"),
             isNotNull(pathRegistry.postId),
             isNotNull(posts.title),
-            isNull(posts.deletedAt),
             eq(posts.format, "note"),
           ),
         );

@@ -24,7 +24,7 @@
 - **Thread 内每个 child post 都有独立 URL**。`/parent-slug` 和 `/child-slug` 渲染同一条 thread 的完整内容，但浏览器地址栏不同。
 - **每个 URL 的 `<title>` / `og:title` 不同**，按当前 post 计算。
 - **`<link rel="canonical">` 始终指向 thread 根帖**。Thread 内任意 child URL 的 canonical 都是 `/{root-slug}`。
-- **可以通过 `[data-page="post"]` 判断当前是否在帖子详情页**，避免把评论挂到首页或 archive。
+- **每个帖子详情页底部都有一个 `<div data-post-end>` 插槽**，专门用来挂载评论、Webmentions、相关帖等"帖子尾部"内容。它已经按正文列宽（桌面 55%、760-1024px 收紧到 35rem、移动端 100%）和正文左对齐，注入的内容直接 `appendChild` 进去就和帖子正文对齐，不需要自己写媒体查询。在非帖子页面这个元素不存在，可以同时当页面守卫用（`if (!slot) return`）。
 
 也就是说：如果你直接复制第三方平台官方生成器给的代码，多数情况下 thread 的每个 child URL 会被识别成不同页面，各自起一份独立讨论。要让一条 thread 共用一份讨论，需要让组件读 `<link rel="canonical">` 而不是 `location.pathname`。
 
@@ -37,18 +37,13 @@
 ```html
 <script>
   (function () {
-    if (!document.querySelector('[data-page="post"]')) return;
+    var slot = document.querySelector("[data-post-end]");
+    if (!slot) return;
 
     var canonical = document.querySelector('link[rel="canonical"]');
     var term = canonical
       ? new URL(canonical.href, location.origin).pathname
       : location.pathname;
-
-    var mount = document.createElement("div");
-    mount.style.maxWidth = "var(--content-max-width, 42rem)";
-    mount.style.margin = "3rem auto";
-    mount.style.padding = "0 var(--site-padding, 1.5rem)";
-    (document.querySelector("main") || document.body).appendChild(mount);
 
     var s = document.createElement("script");
     s.src = "https://giscus.app/client.js";
@@ -65,14 +60,14 @@
     s.setAttribute("data-input-position", "bottom");
     s.setAttribute("data-theme", "preferred_color_scheme");
     s.setAttribute("data-lang", "zh-CN");
-    mount.appendChild(s);
+    slot.appendChild(s);
   })();
 </script>
 ```
 
 要点：
 
-- `[data-page="post"]` 守卫只在帖子详情页加载评论。
+- 通过 `[data-post-end]` 插槽挂载，自动跟正文列宽和左边对齐；非帖子页面没有这个元素，等于内置的页面守卫。
 - `data-mapping="specific"` 配合动态 term，把 giscus 的"按术语搜讨论"模式当成精确匹配用。
 - `data-strict="1"` 关闭 GitHub 模糊搜索，避免把不同 thread 误匹配到一起。
 - `data-theme="preferred_color_scheme"` 跟随 Jant 的浅/深色模式自动切换。
@@ -86,18 +81,16 @@
 ```html
 <script>
   (function () {
-    if (!document.querySelector('[data-page="post"]')) return;
+    var slot = document.querySelector("[data-post-end]");
+    if (!slot) return;
 
     var canonical = document.querySelector('link[rel="canonical"]');
     var canonicalUrl = canonical ? canonical.href : location.href;
     var canonicalPath = new URL(canonicalUrl, location.origin).pathname;
 
-    var mount = document.createElement("div");
-    mount.id = "disqus_thread";
-    mount.style.maxWidth = "var(--content-max-width, 42rem)";
-    mount.style.margin = "3rem auto";
-    mount.style.padding = "0 var(--site-padding, 1.5rem)";
-    (document.querySelector("main") || document.body).appendChild(mount);
+    var thread = document.createElement("div");
+    thread.id = "disqus_thread";
+    slot.appendChild(thread);
 
     window.disqus_config = function () {
       this.page.url = canonicalUrl;

@@ -108,8 +108,22 @@ export function GeneralContent({
     siteLanguageHelp: i18n._(
       msg({
         message:
-          "Controls the language of the settings pages. Public pages stay in English.",
-        comment: "@context: Help text under the site language select",
+          "Sets the content language announced to readers (HTML lang, RSS) and the dashboard language. Any BCP 47 tag is accepted; tags without a dashboard translation fall back to English.",
+        comment: "@context: Help text under the site language input",
+      }),
+    ),
+    siteLanguageSearchPlaceholder: i18n._(
+      msg({
+        message: "Search…",
+        comment:
+          "@context: Placeholder inside the language combobox search field",
+      }),
+    ),
+    siteLanguageNoMatches: i18n._(
+      msg({
+        message: "No matches.",
+        comment:
+          "@context: Empty state shown when the language search filters out every entry",
       }),
     ),
     cjkFont: i18n._(
@@ -294,21 +308,6 @@ export function GeneralContent({
     timezones.map((tz) => ({ value: tz.value, label: tz.label })),
   ).replace(/</g, "\\u003c");
 
-  // Language options — `value` must stay in sync with `src/i18n/locales.ts`.
-  // Labels are native names (untranslated) so they stay recognizable to any
-  // reader regardless of the currently active settings locale.
-  const languagesJson = JSON.stringify([
-    { value: "en", label: "English" },
-    {
-      value: "zh-Hans",
-      label: "\u7B80\u4F53\u4E2D\u6587 (Simplified Chinese)",
-    },
-    {
-      value: "zh-Hant",
-      label: "\u7E41\u9AD4\u4E2D\u6587 (Traditional Chinese)",
-    },
-  ]).replace(/</g, "\\u003c");
-
   const cjkFontsJson = JSON.stringify([
     { value: "off", label: "None" },
     {
@@ -342,7 +341,6 @@ export function GeneralContent({
           labels={labels}
           timezones={timezonesJson}
           cjk-fonts={cjkFontsJson}
-          languages={languagesJson}
           sitename-fallback={siteNameFallback}
           sitedescription-fallback={siteDescriptionFallback}
           main-feed-url={mainFeedUrl}

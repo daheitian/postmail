@@ -10,12 +10,16 @@
 import { LitElement, html, nothing } from "lit";
 import type { Editor } from "@tiptap/core";
 import { MAX_SITE_NAME_LENGTH } from "../../types.js";
+import {
+  getSupportedLocaleEntries,
+  getOrBuildEntry,
+  type LocaleEntry,
+} from "../../i18n/supported-locales.js";
 import type {
   SettingsInitialData,
   SettingsLabels,
   SettingsTimezone,
   SettingsCjkFont,
-  SettingsLanguage,
 } from "./settings-types.js";
 import { showToast } from "../toast.js";
 import {
@@ -28,7 +32,6 @@ export class JantSettingsGeneral extends LitElement {
     labels: { type: Object },
     timezones: { type: Array },
     cjkFonts: { type: Array, attribute: "cjk-fonts" },
-    languages: { type: Array },
     siteNameFallback: { type: String, attribute: "sitename-fallback" },
     siteDescriptionFallback: {
       type: String,
@@ -49,6 +52,8 @@ export class JantSettingsGeneral extends LitElement {
 
     // Language, CJK & time group
     _siteLanguage: { state: true },
+    _localeOpen: { state: true },
+    _localeQuery: { state: true },
     _cjkSerifFont: { state: true },
     _timeZone: { state: true },
     _origLocale: { state: true },
@@ -75,7 +80,6 @@ export class JantSettingsGeneral extends LitElement {
   declare labels: SettingsLabels;
   declare timezones: SettingsTimezone[];
   declare cjkFonts: SettingsCjkFont[];
-  declare languages: SettingsLanguage[];
   declare siteNameFallback: string;
   declare siteDescriptionFallback: string;
   declare demoMode: boolean;
@@ -97,6 +101,10 @@ export class JantSettingsGeneral extends LitElement {
 
   // Language, CJK & time
   declare _siteLanguage: string;
+  /** Whether the locale combobox dropdown is currently open. */
+  declare _localeOpen: boolean;
+  /** Search query inside the locale combobox. */
+  declare _localeQuery: string;
   declare _cjkSerifFont: string;
   declare _timeZone: string;
   declare _origLocale: {
@@ -137,7 +145,6 @@ export class JantSettingsGeneral extends LitElement {
     this.labels = {} as SettingsLabels;
     this.timezones = [];
     this.cjkFonts = [];
-    this.languages = [];
     this.siteNameFallback = "";
     this.siteDescriptionFallback = "";
     this.demoMode = false;
@@ -157,6 +164,8 @@ export class JantSettingsGeneral extends LitElement {
     this._siteLoading = false;
 
     this._siteLanguage = "en";
+    this._localeOpen = false;
+    this._localeQuery = "";
     this._cjkSerifFont = "off";
     this._timeZone = "UTC";
     this._origLocale = {
@@ -181,8 +190,16 @@ export class JantSettingsGeneral extends LitElement {
     this._searchLoading = false;
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener("click", this._onLocalePickerDocumentClick);
+    document.addEventListener("keydown", this._onLocalePickerKeydown);
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
+    document.removeEventListener("click", this._onLocalePickerDocumentClick);
+    document.removeEventListener("keydown", this._onLocalePickerKeydown);
     this._descEditor?.destroy();
     this._descEditor = null;
     this._footerEditor?.destroy();
@@ -385,6 +402,146 @@ export class JantSettingsGeneral extends LitElement {
         },
       }),
     );
+  }
+
+  // ── Locale combobox ────────────────────────────────────────────────
+
+  private _filteredLocaleEntries(): LocaleEntry[] {
+    const all = getSupportedLocaleEntries();
+    const query = this._localeQuery.trim().toLowerCase();
+    if (!query) return all;
+    return all.filter(
+      (e) =>
+        e.tag.toLowerCase().includes(query) ||
+        e.native.toLowerCase().includes(query) ||
+        e.english.toLowerCase().includes(query),
+    );
+  }
+
+  private _toggleLocalePicker = () => {
+    this._localeOpen = !this._localeOpen;
+    if (!this._localeOpen) {
+      this._localeQuery = "";
+    } else {
+      // Focus the search input on next paint.
+      this.updateComplete.then(() => {
+        const input = this.querySelector<HTMLInputElement>(
+          "[data-locale-search]",
+        );
+        input?.focus();
+      });
+    }
+  };
+
+  private _selectLocale(tag: string) {
+    this._siteLanguage = tag;
+    this._localeOpen = false;
+    this._localeQuery = "";
+    this._syncLocaleDirty();
+  }
+
+  private _onLocalePickerDocumentClick = (e: Event) => {
+    if (!this._localeOpen) return;
+    const target = e.target as Node | null;
+    const picker = this.querySelector("[data-locale-picker]");
+    if (picker && target && !picker.contains(target)) {
+      this._localeOpen = false;
+    }
+  };
+
+  private _onLocalePickerKeydown = (e: KeyboardEvent) => {
+    if (e.key === "Escape" && this._localeOpen) {
+      this._localeOpen = false;
+      this._localeQuery = "";
+    }
+  };
+
+  private _renderLanguagePicker() {
+    const current = getOrBuildEntry(this._siteLanguage || "en");
+    const filtered = this._filteredLocaleEntries();
+    const searchPlaceholder =
+      this.labels.siteLanguageSearchPlaceholder || "Search…";
+    const noMatches = this.labels.siteLanguageNoMatches || "No matches.";
+
+    return html`
+      <div class="relative" data-locale-picker>
+        <button
+          type="button"
+          class="input flex w-full items-center justify-between text-left"
+          aria-expanded=${this._localeOpen ? "true" : "false"}
+          aria-haspopup="listbox"
+          aria-labelledby="site-language-label"
+          @click=${this._toggleLocalePicker}
+        >
+          <span class="truncate">
+            ${current.native}
+            <span class="ml-2 text-xs text-muted-foreground">
+              ${current.tag} · ${Math.round(current.coverage * 100)}% translated
+            </span>
+          </span>
+          <span class="ml-2 text-muted-foreground" aria-hidden="true">▾</span>
+        </button>
+
+        ${this._localeOpen
+          ? html`
+              <div
+                class="absolute left-0 right-0 top-full z-10 mt-1 max-h-72 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
+              >
+                <div class="border-b p-2">
+                  <input
+                    type="text"
+                    class="input w-full"
+                    data-locale-search
+                    placeholder=${searchPlaceholder}
+                    autocomplete="off"
+                    spellcheck="false"
+                    .value=${this._localeQuery}
+                    @input=${(e: Event) => {
+                      this._localeQuery = (e.target as HTMLInputElement).value;
+                    }}
+                  />
+                </div>
+                <div role="listbox" class="max-h-56 overflow-auto py-1">
+                  ${filtered.length === 0
+                    ? html`
+                        <div class="px-3 py-2 text-sm text-muted-foreground">
+                          ${noMatches}
+                        </div>
+                      `
+                    : filtered.map(
+                        (entry) => html`
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected=${entry.tag === this._siteLanguage
+                              ? "true"
+                              : "false"}
+                            class=${[
+                              "flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-accent",
+                              entry.tag === this._siteLanguage
+                                ? "bg-accent/60"
+                                : "",
+                            ].join(" ")}
+                            @click=${() => this._selectLocale(entry.tag)}
+                          >
+                            <span class="flex flex-col">
+                              <span>${entry.native}</span>
+                              <span class="text-xs text-muted-foreground">
+                                ${entry.tag} · ${entry.english}
+                              </span>
+                            </span>
+                            <span class="text-xs text-muted-foreground">
+                              ${Math.round(entry.coverage * 100)}% translated
+                            </span>
+                          </button>
+                        `,
+                      )}
+                </div>
+              </div>
+            `
+          : nothing}
+      </div>
+    `;
   }
 
   // ── Feed group helpers ────────────────────────────────────────────
@@ -652,25 +809,10 @@ export class JantSettingsGeneral extends LitElement {
         >
           ${this._renderSectionTitle(this.labels.languageAndTime)}
           <div class="field">
-            <label class="label">${this.labels.siteLanguage}</label>
-            <select
-              class="select"
-              @change=${(e: Event) => {
-                this._siteLanguage = (e.target as HTMLSelectElement).value;
-                this._syncLocaleDirty();
-              }}
+            <label id="site-language-label" class="label"
+              >${this.labels.siteLanguage}</label
             >
-              ${this.languages.map(
-                (lang) => html`
-                  <option
-                    value=${lang.value}
-                    ?selected=${this._siteLanguage === lang.value}
-                  >
-                    ${lang.label}
-                  </option>
-                `,
-              )}
-            </select>
+            ${this._renderLanguagePicker()}
             <p class="text-sm text-muted-foreground mt-1">
               ${this.labels.siteLanguageHelp}
             </p>

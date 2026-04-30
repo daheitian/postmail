@@ -83,42 +83,18 @@ If that token is not configured, those endpoints behave as if they do not exist 
 
 ## Automation Entry Points
 
-Jant exposes the same site-owner automation surface three ways:
+Jant exposes the site-owner automation surface two ways:
 
-- local `npx jant` commands when the automation runs on the site machine
 - HTTP JSON endpoints under `/api/*`
 - an authenticated MCP endpoint at `/api/mcp`
 
-Projects created with `create-jant` also include `examples/agent-content-automation/README.md`, which shows copy-pasteable CLI and MCP flows for posts, media, and settings.
+Projects created with `create-jant` also include `examples/agent-content-automation/README.md`, which shows copy-pasteable HTTP and MCP flows for posts, media, and settings.
 
-### Local CLI
+Auth resolution for both surfaces:
 
-The site-aware CLI maps directly to the HTTP endpoints documented below.
-
-Available command groups:
-
-- `npx jant posts`
-- `npx jant media`
-- `npx jant collections`
-- `npx jant settings`
-- `npx jant search`
-
-Resolution rules:
-
-- Pass `--url https://your-site.com`, or let the CLI read `SITE_ORIGIN` from the environment or `wrangler.toml`.
-- Pass `--token jnt_...`, or set `JANT_API_TOKEN`.
-- On local hosts only, `DEV_API_TOKEN` is also accepted.
-- `npx jant collections list`, `npx jant collections get`, and `npx jant search` can call public endpoints without a token. Other commands require auth.
-
-Examples:
-
-```bash
-npx jant posts create --input ./post.json
-npx jant media upload ./cover.webp --alt "Cover image"
-npx jant collections add-post col_01... pst_01...
-npx jant settings update --json '{"SITE_NAME":"Quiet Notes"}'
-npx jant search "quiet design"
-```
+- pass `Authorization: Bearer jnt_...` (issued under Settings → API Tokens), or
+- on local hosts, send the same value with `DEV_API_TOKEN` from `.dev.vars`.
+- a small set of read endpoints — `GET /api/collections`, `GET /api/collections/:slug`, `GET /api/search` — work without a token.
 
 ### MCP
 
@@ -319,7 +295,6 @@ Post responses include these fields:
 | `rating`         | integer \| `null`                        | `1` to `5` when set                                       |
 | `replyToId`      | `pst_*` string \| `null`                 | Parent reply/post ID                                      |
 | `threadId`       | `pst_*` string                           | Thread root ID                                            |
-| `deletedAt`      | integer \| `null`                        | Soft-delete timestamp                                     |
 | `publishedAt`    | integer \| `null`                        | Publish timestamp                                         |
 | `lastActivityAt` | integer                                  | Last activity timestamp                                   |
 | `createdAt`      | integer                                  | Unix seconds                                              |
@@ -352,7 +327,6 @@ Example:
   "rating": null,
   "replyToId": null,
   "threadId": "pst_01jpyx3m7gw4w3h7m4bknq0v1d",
-  "deletedAt": null,
   "publishedAt": 1706000000,
   "lastActivityAt": 1706000000,
   "createdAt": 1706000000,
@@ -1025,7 +999,7 @@ Response:
 
 Auth: `Session or token`
 
-This is the media metadata endpoint used by `npx jant media list`.
+This is the media metadata listing endpoint.
 
 Query parameters:
 
@@ -2669,12 +2643,23 @@ Use that folder when you want ready-made examples for:
 - uploading media and attaching the returned `med_*` ID to a post
 - calling `/api/mcp` from an MCP-capable agent
 
-When the automation runs on the same machine as the site, prefer the local CLI first:
+Minimum HTTP equivalents (the README has the full set):
 
 ```bash
-npx jant posts create --input ./examples/agent-content-automation/note.json
-npx jant media upload ./path/to/photo.webp --alt "Cover image"
-npx jant settings update --input ./examples/agent-content-automation/site-settings.json
+curl -X POST "$JANT_URL/api/posts" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @./examples/agent-content-automation/note.json
+
+curl -X POST "$JANT_URL/api/upload" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -F "file=@./path/to/photo.webp" \
+  -F "alt=Cover image"
+
+curl -X PUT "$JANT_URL/api/settings" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @./examples/agent-content-automation/site-settings.json
 ```
 
 ### Migrate content from another system

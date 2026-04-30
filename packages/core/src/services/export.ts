@@ -1274,9 +1274,6 @@ function buildExportedCollectionMetrics(
   }
 
   for (const post of posts) {
-    if (post.deletedAt !== null) {
-      continue;
-    }
     // Drafts and private posts are excluded — they won't reach Hugo.
     if (post.status === "draft" || post.visibility === "private") {
       continue;

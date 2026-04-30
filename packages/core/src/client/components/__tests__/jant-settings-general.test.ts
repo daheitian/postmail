@@ -83,6 +83,8 @@ const labels: SettingsLabels = {
   aboutBlogHelp: "Displayed above your blog posts.",
   siteLanguage: "Site Language",
   siteLanguageHelp: "Language used for the site UI.",
+  siteLanguageSearchPlaceholder: "Search…",
+  siteLanguageNoMatches: "No matches.",
   cjkFont: "CJK Font",
   cjkFontHelp:
     "Load a serif font optimized for Chinese, Japanese, or Korean content.",
@@ -218,6 +220,74 @@ describe("JantSettingsGeneral", () => {
     const options = tzSelect?.querySelectorAll("option");
     expect(options?.length).toBe(2);
     expect(options?.[0]?.value).toBe("UTC");
+  });
+
+  it("opens the locale combobox and filters options as the user searches", async () => {
+    const el = await createElement();
+
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(
+        'button[aria-haspopup="listbox"][aria-labelledby="site-language-label"]',
+      ),
+      "expected locale picker trigger",
+    );
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+
+    trigger.click();
+    await el.updateComplete;
+
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+
+    const options = el.querySelectorAll<HTMLButtonElement>('[role="option"]');
+    expect(options.length).toBeGreaterThanOrEqual(20);
+    // Each option carries the universal "translated" coverage suffix.
+    for (const option of options) {
+      expect(option.textContent).toMatch(/% translated/);
+    }
+
+    const search = requireElement(
+      el.querySelector<HTMLInputElement>("[data-locale-search]"),
+      "expected search input",
+    );
+    search.value = "fin";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    const filtered = el.querySelectorAll<HTMLButtonElement>('[role="option"]');
+    expect(filtered.length).toBe(1);
+    expect(filtered[0]?.textContent).toMatch(/Suomi|Finnish/);
+  });
+
+  it("selects a non-catalog locale and reports 0% translated coverage on it", async () => {
+    const el = await createElement();
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(
+        'button[aria-labelledby="site-language-label"]',
+      ),
+      "expected trigger",
+    );
+    trigger.click();
+    await el.updateComplete;
+
+    const search = requireElement(
+      el.querySelector<HTMLInputElement>("[data-locale-search]"),
+      "expected search input",
+    );
+    search.value = "fi";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    const finnishOption = Array.from(
+      el.querySelectorAll<HTMLButtonElement>('[role="option"]'),
+    ).find((opt) => /Suomi|Finnish/.test(opt.textContent ?? ""));
+    finnishOption?.click();
+    await el.updateComplete;
+
+    // Picker closes after selection.
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    // Trigger reflects the new tag and shows 0% coverage.
+    expect(trigger.textContent).toMatch(/fi/);
+    expect(trigger.textContent).toMatch(/0% translated/);
   });
 
   it("renders CJK font options", async () => {

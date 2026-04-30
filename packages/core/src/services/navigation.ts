@@ -446,14 +446,12 @@ export function createNavItemService(
             sql`(
               ${postCollections.createdAt} > ${threshold}
               OR (${posts.updatedAt} > ${threshold}
-                AND ${posts.deletedAt} IS NULL
                 AND ${posts.status} = 'published')
               OR EXISTS (
                 SELECT 1 FROM ${posts} reply
                 WHERE reply.site_id = ${postCollections.siteId}
                   AND reply.thread_id = ${postCollections.postId}
                   AND reply.reply_to_id IS NOT NULL
-                  AND reply.deleted_at IS NULL
                   AND reply.status = 'published'
                   AND reply.created_at > ${threshold}
               )

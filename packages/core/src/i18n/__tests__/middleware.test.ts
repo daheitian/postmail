@@ -71,10 +71,52 @@ describe("i18nMiddleware", () => {
     expect(await res.text()).toBe("en|en");
   });
 
-  it("falls back to en on admin routes when SITE_LANGUAGE is unsupported", async () => {
+  it("preserves SITE_LANGUAGE for html lang while falling back catalog to en", async () => {
     const app = createApp({
       ONBOARDING_STATUS: "completed",
       SITE_LANGUAGE: "fr",
+    });
+    const res = await app.request("/settings");
+
+    // `lang` keeps the operator's content language verbatim; catalog falls
+    // back to en because Jant has no French dashboard translation yet.
+    expect(await res.text()).toBe("fr|en");
+  });
+
+  it("maps zh-CN content language to zh-Hans catalog", async () => {
+    const app = createApp({
+      ONBOARDING_STATUS: "completed",
+      SITE_LANGUAGE: "zh-CN",
+    });
+    const res = await app.request("/settings");
+
+    expect(await res.text()).toBe("zh-CN|zh-Hans");
+  });
+
+  it("maps zh-TW content language to zh-Hant catalog", async () => {
+    const app = createApp({
+      ONBOARDING_STATUS: "completed",
+      SITE_LANGUAGE: "zh-TW",
+    });
+    const res = await app.request("/settings");
+
+    expect(await res.text()).toBe("zh-TW|zh-Hant");
+  });
+
+  it("normalizes lowercase tags to canonical form", async () => {
+    const app = createApp({
+      ONBOARDING_STATUS: "completed",
+      SITE_LANGUAGE: "ZH-hans",
+    });
+    const res = await app.request("/settings");
+
+    expect(await res.text()).toBe("zh-Hans|zh-Hans");
+  });
+
+  it("falls back to en when SITE_LANGUAGE is not a valid BCP 47 tag", async () => {
+    const app = createApp({
+      ONBOARDING_STATUS: "completed",
+      SITE_LANGUAGE: "not a locale!!!",
     });
     const res = await app.request("/settings");
 

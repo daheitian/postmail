@@ -148,6 +148,13 @@
       "when": 1777225887121,
       "tag": "0020_free_zaladane",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1777545055083,
+      "tag": "0021_thankful_phalanx",
+      "breakpoints": true
     }
   ]
 }

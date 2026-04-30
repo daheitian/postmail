@@ -6,8 +6,7 @@
 
 - `sites/demo` 下的 `AGENTS.md`、`.agents/skills/`、`.claude/`
 - `packages/create-jant` 对模板和脚手架的同步逻辑
-- `jant posts` / `media` / `collections` / `settings` / `search` CLI
-- `/api/posts`、`/api/upload`、`/api/uploads`、`/api/attachments`、`/api/mcp`
+- `/api/posts`、`/api/upload`、`/api/uploads`、`/api/attachments`、`/api/settings`、`/api/search`、`/api/mcp`
 - 生成项目里的 `examples/agent-content-automation/`
 
 目标不是每次都跑满所有步骤，而是按改动范围选一层或多层验证。
@@ -109,7 +108,7 @@ pnpm add @jant/core@file:/Users/green/project/jant/1/packages/core
 pnpm list @jant/core
 ```
 
-如果你跳过这一步，生成项目里的 `pnpm dev`、`jant migrate`、`npx jant ...` 跑的仍然是已发布版本，而不是当前 checkout。
+如果你跳过这一步，生成项目里的 `pnpm dev`、`jant migrate` 等命令跑的仍然是已发布版本，而不是当前 checkout。
 
 ## 3. 生成站点手工验证
 
@@ -153,49 +152,48 @@ export JANT_URL=http://127.0.0.1:3000
 export JANT_API_TOKEN=你的token
 ```
 
-### 3.2 验证本地 CLI
+### 3.2 验证 HTTP API
 
-先确认命令入口还在：
-
-```bash
-npx jant posts --help
-npx jant media --help
-npx jant collections --help
-npx jant settings --help
-npx jant search --help
-```
-
-然后跑一组最短内容自动化样例：
+跑一组最短内容自动化样例：
 
 ```bash
-npx jant posts create --url "$JANT_URL" --input ./examples/agent-content-automation/note.json
-npx jant settings update --url "$JANT_URL" --input ./examples/agent-content-automation/site-settings.json
-npx jant search --url "$JANT_URL" "quiet design"
+curl -X POST "$JANT_URL/api/posts" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @./examples/agent-content-automation/note.json
+
+curl -X PUT "$JANT_URL/api/settings" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @./examples/agent-content-automation/site-settings.json
+
+curl "$JANT_URL/api/search?q=quiet+design" \
+  -H "Authorization: Bearer $JANT_API_TOKEN"
 ```
 
 如果要验证上传，准备一张本地图片，再执行：
 
 ```bash
-npx jant media upload ./path/to/photo.webp --url "$JANT_URL" --alt "Cover image"
-npx jant media list --url "$JANT_URL" --mimePrefix image/
+curl -X POST "$JANT_URL/api/upload" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -F "file=@./path/to/photo.webp" \
+  -F "alt=Cover image"
+
+curl "$JANT_URL/api/upload?mimePrefix=image/" \
+  -H "Authorization: Bearer $JANT_API_TOKEN"
 ```
 
 通过标准：
 
-- `posts create` 返回新建的 `pst_*`
-- `settings update` 返回更新后的 `settings`
-- `search` 返回合法 JSON，而不是认证或解析错误
-- `media upload` 返回 `med_*`
-- `media list` 能看到刚上传的文件
+- `POST /api/posts` 返回新建的 `pst_*`
+- `PUT /api/settings` 返回更新后的 `settings`
+- `GET /api/search` 返回合法 JSON，而不是认证或解析错误
+- `POST /api/upload` 返回 `med_*`
+- `GET /api/upload?mimePrefix=image/` 能看到刚上传的文件
 
-### 3.3 验证 HTTP API
+### 3.3 额外的裸 API 检查
 
-如果你改了 route、schema 或序列化逻辑，再补一轮裸 API 检查：
-
-```bash
-curl "$JANT_URL/api/upload?mimePrefix=image/" \
-  -H "Authorization: Bearer $JANT_API_TOKEN"
-```
+如果你改了 route、schema 或序列化逻辑，再补一轮：
 
 ```bash
 curl "$JANT_URL/api/settings" \
@@ -276,8 +274,6 @@ mise run check-lint
 
 ```bash
 pnpm exec vitest run \
-  packages/core/src/__tests__/bin/content-cli.test.ts \
-  packages/core/src/__tests__/bin/media-cli.test.ts \
   packages/core/src/routes/api/__tests__/upload.test.ts \
   packages/core/src/routes/api/__tests__/mcp.test.ts
 ```
@@ -310,7 +306,7 @@ mise run check-template
 
 - 只改公开文档或样例文案：第 1 层
 - 改 `sites/demo` / `create-jant`：第 2 层 + 第 4.3 层
-- 改 CLI：第 3.2 层 + 第 4.2 层
+- 改 `/api/posts`、`/api/settings`、`/api/search`、`/api/collections`：第 3.2 层 + 第 4.2 层
 - 改 `/api/upload`、`/api/uploads`、`/api/attachments`：第 3.2 到 3.4 层 + 第 4.2 层
 - 改 `/api/mcp` 或 tool schema：第 3.4 层 + 第 4.2 层
 - 改用户能直接依赖的整体自动化体验：第 2、3、4 层都跑
@@ -321,6 +317,6 @@ mise run check-template
 
 1. `pnpm --filter create-jant prepublishOnly`
 2. 生成一个临时项目并检查 `AGENTS.md`、`.agents/skills`、`.claude/skills`、`examples/agent-content-automation/`
-3. 至少跑一次 `npx jant posts create`
-4. 如果碰到上传或 MCP，额外跑 `npx jant media upload` 和 `/api/mcp initialize + tools/call`
+3. 至少跑一次 `curl -X POST $JANT_URL/api/posts ...` 验证内容自动化
+4. 如果碰到上传或 MCP，额外跑 `curl -X POST $JANT_URL/api/upload ...` 和 `/api/mcp initialize + tools/call`
 5. 跑定向 Vitest

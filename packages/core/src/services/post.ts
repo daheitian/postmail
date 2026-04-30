@@ -99,7 +99,6 @@ export interface PostFilters {
   excludeLatestHidden?: boolean;
   /** Exclude private posts from results */
   excludePrivate?: boolean;
-  includeDeleted?: boolean;
   threadId?: string;
   /** Unix timestamp (inclusive) — only posts published at or after this time */
   publishedAfter?: number;
@@ -572,13 +571,7 @@ export function createPostService(
         ),
       })
       .from(posts)
-      .where(
-        and(
-          eq(posts.siteId, siteId),
-          eq(posts.threadId, rootId),
-          isNull(posts.deletedAt),
-        ),
-      );
+      .where(and(eq(posts.siteId, siteId), eq(posts.threadId, rootId)));
 
     const latestPublishedAt = rootRows[0]?.latestPublishedAt ?? null;
     const root = await db
@@ -761,9 +754,6 @@ export function createPostService(
     if (filters.excludeReplies) {
       conditions.push(isNull(posts.replyToId));
     }
-    if (!filters.includeDeleted) {
-      conditions.push(isNull(posts.deletedAt));
-    }
     if (filters.publishedAfter !== undefined) {
       conditions.push(sql`${posts.publishedAt} >= ${filters.publishedAfter}`);
     }
@@ -820,13 +810,7 @@ export function createPostService(
     const rows = await db
       .select({ id: posts.id })
       .from(posts)
-      .where(
-        and(
-          eq(posts.siteId, siteId),
-          eq(posts.threadId, threadId),
-          isNull(posts.deletedAt),
-        ),
-      )
+      .where(and(eq(posts.siteId, siteId), eq(posts.threadId, threadId)))
       .orderBy(desc(posts.createdAt), desc(posts.id))
       .limit(1);
 
@@ -997,7 +981,6 @@ export function createPostService(
       previewProvider: row.previewProvider,
       replyToId: row.replyToId,
       threadId: row.threadId,
-      deletedAt: row.deletedAt,
       publishedAt: row.publishedAt,
       lastActivityAt: row.lastActivityAt ?? row.publishedAt ?? row.updatedAt,
       createdAt: row.createdAt,
@@ -1054,7 +1037,6 @@ export function createPostService(
             eq(posts.siteId, siteId),
             inArray(posts.id, chunk),
             eq(posts.status, "published"),
-            isNull(posts.deletedAt),
           ),
         ),
     );
@@ -1090,7 +1072,7 @@ export function createPostService(
   }
 
   function buildThreadRootPageConditions(options?: ThreadRootPageOptions) {
-    const conditions = [isNull(posts.deletedAt)];
+    const conditions: SQL[] = [];
     const status = options?.status;
 
     if (status) {
@@ -1230,13 +1212,7 @@ export function createPostService(
       const result = await db
         .select()
         .from(posts)
-        .where(
-          and(
-            eq(posts.siteId, siteId),
-            eq(posts.id, id),
-            isNull(posts.deletedAt),
-          ),
-        )
+        .where(and(eq(posts.siteId, siteId), eq(posts.id, id)))
         .limit(1);
       return hydratePost(result[0]);
     },
@@ -2442,17 +2418,35 @@ export function createPostService(
         }
       }
 
-      const timestamp = now();
-
       if (isRoot) {
-        await db
-          .update(posts)
-          .set({ deletedAt: timestamp, updatedAt: timestamp })
-          .where(and(eq(posts.siteId, siteId), eq(posts.threadId, id)));
+        // Delete the entire thread atomically. SQLite/D1's self-referential
+        // FK on thread_id triggers a violation when the root is removed (its
+        // own thread_id points to itself), so wrap the cascade in a
+        // transaction with PRAGMA defer_foreign_keys to push the FK check to
+        // commit time, by which point every referencing row is gone too.
+        if (databaseDialect === "pg") {
+          await db.transaction(async (tx) => {
+            await tx
+              .delete(posts)
+              .where(and(eq(posts.siteId, siteId), eq(posts.threadId, id)));
+          });
+        } else {
+          await db.batch([
+            db.run(sql`PRAGMA defer_foreign_keys = ON`),
+            db
+              .delete(posts)
+              .where(and(eq(posts.siteId, siteId), eq(posts.threadId, id))),
+          ]);
+        }
       } else {
+        // Re-parent any direct children of this reply onto its own parent so
+        // the thread chain stays connected after the reply is removed.
         await db
           .update(posts)
-          .set({ deletedAt: timestamp, updatedAt: timestamp })
+          .set({ replyToId: existing.replyToId })
+          .where(and(eq(posts.siteId, siteId), eq(posts.replyToId, id)));
+        await db
+          .delete(posts)
           .where(and(eq(posts.siteId, siteId), eq(posts.id, id)));
         await recalculateThreadLastActivity(existing.threadId);
       }
@@ -2461,33 +2455,14 @@ export function createPostService(
     },
 
     async deleteThreadDraft(id, deps) {
-      const deleted = await this.delete(id, deps);
-      if (!deleted) return false;
-
-      // Release path_registry entries for all posts in the thread so slugs
-      // can be reused by the replacement thread.
-      const threadRows = await db
-        .select({ id: posts.id })
-        .from(posts)
-        .where(and(eq(posts.siteId, siteId), eq(posts.threadId, id)));
-      for (const row of threadRows) {
-        await resolvedPaths.deleteByPostId(row.id);
-      }
-
-      return true;
+      return this.delete(id, deps);
     },
 
     async getThread(rootId) {
       const rows = await db
         .select()
         .from(posts)
-        .where(
-          and(
-            eq(posts.siteId, siteId),
-            eq(posts.threadId, rootId),
-            isNull(posts.deletedAt),
-          ),
-        )
+        .where(and(eq(posts.siteId, siteId), eq(posts.threadId, rootId)))
         .orderBy(posts.createdAt);
 
       return hydratePosts(rows);
@@ -2575,7 +2550,6 @@ export function createPostService(
             inArray(posts.threadId, postIds),
             eq(posts.status, "published"),
             isNotNull(posts.replyToId),
-            isNull(posts.deletedAt),
           ),
         )
         .groupBy(posts.threadId);
@@ -2607,7 +2581,6 @@ export function createPostService(
             inArray(posts.threadId, rootIds),
             eq(posts.status, "published"),
             isNotNull(posts.replyToId),
-            isNull(posts.deletedAt),
           ),
         )
         .as("ranked_replies");
@@ -2671,7 +2644,6 @@ export function createPostService(
             inArray(posts.threadId, rootIds),
             eq(posts.status, "published"),
             isNotNull(posts.replyToId),
-            isNull(posts.deletedAt),
           ),
         )
         .as("ranked_replies");
@@ -2994,7 +2966,6 @@ export function createPostService(
             eq(posts.siteId, siteId),
             inArray(posts.threadId, unique),
             eq(posts.status, "published"),
-            isNull(posts.deletedAt),
           ),
         )
         .orderBy(posts.threadId, posts.createdAt, posts.id);
@@ -3043,7 +3014,6 @@ export function createPostService(
               buildCollectionMembershipCondition(collectionIds),
               inArray(posts.threadId, chunk),
               eq(posts.status, "published"),
-              isNull(posts.deletedAt),
             ),
           )
           .groupBy(posts.threadId, posts.id)
@@ -3078,7 +3048,6 @@ export function createPostService(
             eq(posts.siteId, siteId),
             inArray(posts.threadId, unique),
             eq(posts.status, "published"),
-            isNull(posts.deletedAt),
           ),
         )
         .orderBy(posts.threadId, desc(posts.createdAt), desc(posts.id));
@@ -3115,10 +3084,7 @@ export function createPostService(
       const limit = Math.min(Math.max(Math.trunc(requested), 1), 500);
       const cursor = options.cursor;
 
-      const whereConditions = [
-        eq(posts.siteId, siteId),
-        isNull(posts.deletedAt),
-      ];
+      const whereConditions = [eq(posts.siteId, siteId)];
       if (cursor) whereConditions.push(gt(posts.id, cursor));
 
       // Fetch one extra row to detect end-of-data without a separate COUNT.

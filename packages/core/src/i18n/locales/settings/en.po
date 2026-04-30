@@ -368,11 +368,6 @@ msgstr "Connecting will sync your site onto {repo}'s default branch on top of it
 msgid "Connecting…"
 msgstr "Connecting…"
 
-#. @context: Help text under the site language select
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "Controls the language of the settings pages. Public pages stay in English."
-msgstr "Controls the language of the settings pages. Public pages stay in English."
-
 #. @context: Feedback after copying API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Copied"
@@ -1024,6 +1019,11 @@ msgstr "No custom URLs yet. Create one to add redirects or custom paths for post
 msgid "No file selected. Choose a file to upload."
 msgstr "No file selected. Choose a file to upload."
 
+#. @context: Empty state shown when the language search filters out every entry
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "No matches."
+msgstr "No matches."
+
 #. @context: Empty state for navigation items
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "No navigation items yet. Add links or enable system items below."
@@ -1273,6 +1273,11 @@ msgstr "Search repositories"
 msgid "Search settings updated."
 msgstr "Search settings updated."
 
+#. @context: Placeholder inside the language combobox search field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Search…"
+msgstr "Search…"
+
 #. @context: Settings group label for account security settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Security"
@@ -1319,6 +1324,11 @@ msgstr "Sessions"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sessions and password"
 msgstr "Sessions and password"
+
+#. @context: Help text under the site language input
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Sets the content language announced to readers (HTML lang, RSS) and the dashboard language. Any BCP 47 tag is accepted; tags without a dashboard translation fall back to English."
+msgstr "Sets the content language announced to readers (HTML lang, RSS) and the dashboard language. Any BCP 47 tag is accepted; tags without a dashboard translation fall back to English."
 
 #. @context: Breadcrumb label
 #. @context: Page title for the settings home page

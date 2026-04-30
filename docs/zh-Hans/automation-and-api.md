@@ -1,8 +1,7 @@
 # 自动化与 API
 
-Jant 给站点自动化提供了三种入口：
+Jant 给站点自动化提供两种入口：
 
-- 本地 `npx jant` CLI
 - HTTP JSON API
 - 认证后的 MCP endpoint：`/api/mcp`
 
@@ -15,83 +14,69 @@ Jant 给站点自动化提供了三种入口：
 
 这意味着，一个 agent 或脚本在生成项目里拿到的不只是 API token，还能直接看到项目约定和现成样例。
 
+> 历史说明：早期版本里有一组 `npx jant posts/media/collections/settings/search` CLI 命令，本质上是 HTTP API 的薄包装。在 pre-1.0 阶段已经移除——内容自动化统一走 HTTP 或 MCP，CLI 只保留本机操作类命令（`migrate`、`deploy`、`reset-password`、`site snapshot`、`export`、`import-site` 等）。
+
 ## 先选哪条路
 
-优先级建议很简单：
+- 写脚本、跑定时任务、做迁移、接外部系统：用 **HTTP API**
+- 你的调用方本身就是 MCP client：用 **MCP**
 
-- 自动化和站点运行在同一台机器上：先用本地 CLI
-- 你只是从外部脚本或服务调用站点：直接用 HTTP API
-- 你的调用方本来就支持 MCP：用 `/api/mcp`
-
-原因也很直接：
-
-- CLI 最省事，不用自己拼 URL 和请求头
-- HTTP API 最稳定，适合迁移脚本、后台任务和外部服务
-- MCP 更适合 agent 工具调用，不适合拿来替代普通 shell 脚本
-
-## 本地 CLI
-
-目前和内容自动化直接相关的命令组有：
-
-- `npx jant posts`
-- `npx jant media`
-- `npx jant collections`
-- `npx jant settings`
-- `npx jant search`
-
-CLI 的站点解析规则：
-
-- 传 `--url https://your-site.com`
-- 或者让 CLI 从环境变量 / `wrangler.toml` 里的 `SITE_ORIGIN` 读取
-
-认证规则：
-
-- 传 `--token jnt_...`
-- 或设置 `JANT_API_TOKEN`
-- 本地开发时也可以用 `DEV_API_TOKEN`
-
-最短示例：
-
-```bash
-npx jant posts create --input ./examples/agent-content-automation/note.json
-npx jant media upload ./path/to/photo.webp --alt "封面图"
-npx jant settings update --input ./examples/agent-content-automation/site-settings.json
-npx jant search "quiet design"
-```
-
-如果你想看完整样例，先读生成项目里的：
-
-```text
-examples/agent-content-automation/README.md
-```
+简单说：默认走 HTTP，MCP 只在调用方已经支持工具调用协议时才更顺手。
 
 ## HTTP API
 
-HTTP API 适合这些场景：
+认证方式：
 
-- 从别的系统导入内容
-- 跑定时任务
-- 把 Jant 接到外部后台或自动化平台
+- 请求头带 `Authorization: Bearer jnt_...`（在 Settings → API Tokens 里签发）
+- 本地开发可以用 `.dev.vars` 里的 `DEV_API_TOKEN`，发法相同
+- 少量公开读接口（`GET /api/collections`、`GET /api/collections/:slug`、`GET /api/search`）不需要 token
 
 常用入口：
 
 - `/api/posts`
-- `/api/uploads`
-- `/api/upload`
+- `/api/uploads`（推荐的分片上传流程）
+- `/api/upload`（一次性 multipart 上传，简单脚本更方便）
 - `/api/attachments`
 - `/api/collections`
 - `/api/settings`
 - `/api/search`
 
-建议：
+最短示例（发一条 note）：
 
-- 新的上传客户端优先用 `/api/uploads`
-- 如果你只是需要文件上传后的元数据读写，可以用 `/api/upload`
-- 文本附件内容通过 `/api/attachments/:id/content` 读取
+```bash
+curl -X POST "$JANT_URL/api/posts" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @./examples/agent-content-automation/note.json
+```
 
-完整字段、请求体和错误格式，请直接看英文 API 文档：
+上传一张图：
+
+```bash
+curl -X POST "$JANT_URL/api/upload" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -F "file=@./path/to/photo.webp" \
+  -F "alt=封面图"
+```
+
+更新设置：
+
+```bash
+curl -X PUT "$JANT_URL/api/settings" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @./examples/agent-content-automation/site-settings.json
+```
+
+完整字段、请求体和错误格式见英文 API 文档：
 
 - [API 参考（英文）](../API.md)
+
+完整可执行样例见生成项目里的：
+
+```text
+examples/agent-content-automation/README.md
+```
 
 ## MCP
 
@@ -134,11 +119,11 @@ curl -X POST "$JANT_URL/api/mcp" \
 
 ## 一条现实建议
 
-如果你的目标只是"让 agent 能稳定发帖、传图、改设置"，先把这三件事跑通就够了：
+如果你的目标只是"让 agent 能稳定发帖、传图、改设置"，先把这三个 HTTP 调用跑通就够了：
 
-1. `npx jant posts create`
-2. `npx jant media upload`
-3. `npx jant settings update`
+1. `POST /api/posts`
+2. `POST /api/upload`
+3. `PUT /api/settings`
 
 等这三条稳定了，再考虑 MCP、多工具编排，或者更复杂的内容工作流。
 

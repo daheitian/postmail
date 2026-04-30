@@ -490,12 +490,17 @@ html {
 .feed-link-domain,
 .feed-continue-link,
 [data-post-body].prose,
-[data-post-meta] {
+[data-post-meta],
+[data-post-end] {
   width: var(--layout-content-width);
 }
 
 .post-detail-title {
   width: min(80%, 45rem);
+}
+
+[data-post-end]:not(:empty) {
+  margin-top: 3rem;
 }
 
 @media (max-width: 1024px) {
@@ -512,7 +517,8 @@ html {
   .feed-link-domain,
   .feed-continue-link,
   [data-post-body].prose,
-  [data-post-meta] {
+  [data-post-meta],
+  [data-post-end] {
     width: min(100%, 35rem);
   }
 }

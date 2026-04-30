@@ -31,7 +31,6 @@ export function makePost(over: Partial<Post> = {}): Post {
     previewProvider: null,
     replyToId: null,
     threadId: "post-root",
-    deletedAt: null,
     publishedAt: 1773014400,
     lastActivityAt: 1773014400,
     createdAt: 1773014400,

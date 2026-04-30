@@ -23,7 +23,6 @@ const basePost: Post = {
   previewProvider: null,
   replyToId: null,
   threadId: "post-1",
-  deletedAt: null,
   publishedAt: 1,
   lastActivityAt: 1,
   createdAt: 1,

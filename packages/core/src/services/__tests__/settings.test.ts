@@ -264,13 +264,32 @@ describe("SettingsService", () => {
       expect(result.languageChanged).toBe(true);
     });
 
-    it("rejects unsupported locales", async () => {
+    it("accepts a locale without a shipped catalog (e.g. Swedish)", async () => {
+      const result = await settingsService.updateGeneral(
+        { ...defaults, siteLanguage: "sv" },
+        { oldLanguage: "en", fallbackSiteName: "Jant" },
+      );
+
+      expect(result.languageChanged).toBe(true);
+      expect(await settingsService.get("SITE_LANGUAGE")).toBe("sv");
+    });
+
+    it("normalizes BCP 47 casing to canonical form", async () => {
+      await settingsService.updateGeneral(
+        { ...defaults, siteLanguage: "ZH-hans" },
+        { oldLanguage: "en", fallbackSiteName: "Jant" },
+      );
+
+      expect(await settingsService.get("SITE_LANGUAGE")).toBe("zh-Hans");
+    });
+
+    it("rejects values that are not valid BCP 47 tags", async () => {
       await expect(
         settingsService.updateGeneral(
-          { ...defaults, siteLanguage: "sv" },
+          { ...defaults, siteLanguage: "not a locale!!!" },
           { oldLanguage: "en", fallbackSiteName: "Jant" },
         ),
-      ).rejects.toThrow(/supported language/i);
+      ).rejects.toThrow(/BCP 47/i);
     });
 
     it("returns no language change when same", async () => {

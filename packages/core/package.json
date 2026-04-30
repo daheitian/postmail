@@ -39,7 +39,8 @@
     "fonts:generate:tc": "node dev/scripts/generate-noto-serif-cjk.mjs tc",
     "i18n:extract": "lingui extract --clean",
     "i18n:compile": "lingui compile --typescript",
-    "i18n:build": "pnpm i18n:extract && pnpm i18n:compile",
+    "i18n:coverage": "node dev/scripts/compute-i18n-coverage.mjs",
+    "i18n:build": "pnpm i18n:extract && pnpm i18n:compile && pnpm i18n:coverage",
     "dev": "pnpm db:migrate:local && vite dev",
     "dev:node": "vite dev --config vite.config.node.ts --mode node --host 0.0.0.0",
     "dev:debug": "node dev/scripts/start-dev-debug.mjs",
@@ -48,8 +49,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "prepare": "lingui compile --typescript",
-    "prepublishOnly": "pnpm i18n:compile && pnpm build"
+    "prepare": "lingui compile --typescript && pnpm i18n:coverage",
+    "prepublishOnly": "pnpm i18n:compile && pnpm i18n:coverage && pnpm build"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1012.0",

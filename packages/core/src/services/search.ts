@@ -53,7 +53,6 @@ interface RawSearchRow {
   collection_id: string | null;
   reply_to_id: string | null;
   thread_id: string;
-  deleted_at: number | null;
   published_at: number | null;
   last_activity_at: number | null;
   created_at: number;
@@ -87,7 +86,6 @@ function mapRow(row: RawSearchRow): SearchResult {
       previewProvider: null,
       replyToId: row.reply_to_id,
       threadId: row.thread_id,
-      deletedAt: row.deleted_at,
       publishedAt: row.published_at,
       lastActivityAt:
         row.last_activity_at ?? row.published_at ?? row.updated_at,
@@ -189,7 +187,6 @@ export function createSearchService(
          AND path_registry.kind = 'slug'
         WHERE post_fts MATCH ?
           AND post.site_id = ?
-          AND post.deleted_at IS NULL
           AND post.status IN (${statusPlaceholders})
           ${formatFilter}
         ORDER BY post_fts.rank
@@ -264,7 +261,6 @@ export function createSearchService(
        AND path_registry.kind = 'slug'
       WHERE post.search_document @@ search_query.tsq
         AND post.site_id = ?
-        AND post.deleted_at IS NULL
         AND post.status IN (${statusPlaceholders})
         ${formatFilter}
       ORDER BY rank DESC, post.published_at DESC NULLS LAST, post.id DESC
@@ -311,7 +307,6 @@ export function createSearchService(
          AND path_registry.kind = 'slug'
         WHERE post.search_text ILIKE ?
           AND post.site_id = ?
-          AND post.deleted_at IS NULL
           AND post.status IN (${statusPlaceholders})
           ${formatFilter}
         ORDER BY rank DESC, post.published_at DESC NULLS LAST, post.id DESC
@@ -359,7 +354,6 @@ export function createSearchService(
         post.url ${likeOperator} ?
       )
       AND post.site_id = ?
-      AND post.deleted_at IS NULL
       AND post.status IN (${statusPlaceholders})
       ${formatFilter}
       ${likeOrderBy}

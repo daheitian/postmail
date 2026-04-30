@@ -15,22 +15,6 @@ Use one of these:
 - `Authorization: Bearer jnt_...` API token
 - local `DEV_API_TOKEN` on localhost-style hosts
 
-## Prefer Local CLI First
-
-When you already have shell access to the site directory, prefer the built-in `jant` CLI for common automation:
-
-```bash
-npx jant posts list --limit 20
-npx jant posts create --input ./post.json
-npx jant media upload ./photo.webp --alt "Cover image"
-npx jant media list --mimePrefix image/
-npx jant collections add-post col_... pst_...
-npx jant settings get
-npx jant search "quiet design"
-```
-
-The CLI uses the same site URL and token model as the HTTP API.
-
 ## Built-in MCP
 
 Jant also exposes a built-in MCP endpoint at `/api/mcp`.
@@ -39,7 +23,7 @@ Jant also exposes a built-in MCP endpoint at `/api/mcp`.
 - tools: posts, media, collections, settings, and search
 - protocol: streamable HTTP request/response shape with `initialize`, `tools/list`, and `tools/call`
 
-Use MCP when the caller already speaks MCP. Use the CLI or plain HTTP when you just need a direct script.
+Use MCP when the caller already speaks MCP. Use plain HTTP when you just need a direct script.
 
 Generated sites also include worked examples in `examples/agent-content-automation/`.
 
@@ -104,24 +88,19 @@ curl -X PUT "$JANT_URL/api/posts/pst_..." \
 
 ## Uploads
 
-For scripted clients, prefer the local CLI:
-
-```bash
-npx jant media upload ./photo.webp --alt "Cover image"
-```
-
 For raw HTTP clients, use the recommended upload session flow:
 
 1. `POST /api/uploads/init`
 2. upload bytes to the returned transport
 3. `POST /api/uploads/:id/complete`
 
-For simple agent scripts, the legacy one-shot endpoint can be easier:
+For simple agent scripts, the legacy one-shot endpoint is easier:
 
 ```bash
 curl -X POST "$JANT_URL/api/upload" \
   -H "Authorization: Bearer $JANT_API_TOKEN" \
-  -F "file=@./photo.jpg"
+  -F "file=@./photo.jpg" \
+  -F "alt=Cover image"
 ```
 
 Use the returned `med_*` ID inside a post attachment:

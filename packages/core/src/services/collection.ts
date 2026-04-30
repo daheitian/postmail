@@ -432,14 +432,14 @@ export function createCollectionService(
     const postCount = sql<number>`
       CAST(COUNT(
         CASE
-          WHEN ${posts.id} IS NOT NULL AND ${posts.deletedAt} IS NULL THEN 1
+          WHEN ${posts.id} IS NOT NULL THEN 1
         END
       ) AS INTEGER)
     `.as("post_count");
     const recentActivityAt = sql<number | null>`
       MAX(
         CASE
-          WHEN ${posts.id} IS NOT NULL AND ${posts.deletedAt} IS NULL
+          WHEN ${posts.id} IS NOT NULL
           THEN COALESCE(
             ${posts.lastActivityAt},
             ${posts.publishedAt},
@@ -1050,7 +1050,7 @@ export function createCollectionService(
         .from(postCollections)
         .innerJoin(
           sql`post`,
-          sql`post.id = ${postCollections.postId} AND post.deleted_at IS NULL AND post.site_id = ${siteId}`,
+          sql`post.id = ${postCollections.postId} AND post.site_id = ${siteId}`,
         )
         .where(eq(postCollections.siteId, siteId))
         .groupBy(postCollections.collectionId);

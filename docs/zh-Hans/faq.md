@@ -1,7 +1,5 @@
 # 常见问题
 
-按提问频率从高到低排列。设计动机请见 [简介](overview.md)。
-
 ## 为什么默认 `/feed` 是 Featured 而不是 Latest？
 
 Jant 把"发布到站点"和"广播给订阅者"看成两件事。`/feed` 默认指向 `Featured`，是为了让你可以放心地写细碎记录而不打扰订阅者。要恢复传统行为，进入 **Settings → General → Feeds → Main RSS feed**，切换为 `Latest` 即可。详见 [写作与内容组织 § 为什么默认 feed 是 Featured](writing-and-organizing.md#为什么默认-feed-是-featured)。
@@ -28,27 +26,27 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。`/feed` 默认
 
 ## 支持多语言吗？
 
-站点内容本身可以是任何语言。Settings 页面同时提供英文和中文，在 **Settings → General → Language** 切换。
+站点内容本身可以是任何语言。**Settings → General → Language** 可以设置语言。这个设置驱动两件事：
 
-需要注意：这个设置控制的是**内容语言声明 + Settings 页面语言**，影响范围是 `<html lang>`、RSS feed `<language>` metadata、以及登录后台的界面语言。**Public 页面的 UI 文案（按钮、Latest / Featured 等导航字串）始终保持英文**——这是有意的，避免大多数读者面对一个半中半英的页面。
+- **内容元数据**：`<html lang>` 和 RSS feed 的 `<language>` 字段会原样使用你填的标签——这是给搜索引擎、屏幕阅读器、订阅器看的
+- **Settings 界面语言**：目前仅支持 English/简体中文/繁体中文, 其他语言会 Fallback 到 English.
+
+Public 页面（首页、Featured、Latest 等导航文案）当前固定为 English.
 
 ## 可以带着内容离开吗？
 
-可以，三条路：
+可以：
 
 - [`site export`](export-and-import.md#site-export) —— 一次性导出为标准 Hugo 站点目录（ZIP 或目录），可直接 `hugo serve` 预览。
 - [GitHub 同步](github-sync.md) —— 内容始终以 Markdown 持续同步到你自己的 Git 仓库，仓库本身就是一个完整的 Hugo 站点。
-- [`db export`](export-and-import.md#数据库导出) —— 原始 SQL dump，用于自有运维工具链。
-
-托管和自托管都用同样的导出命令。
 
 ## 自托管和托管怎么选？
 
 | 你的情况                               | 选这个                                |
 | -------------------------------------- | ------------------------------------- |
-| 不想处理任何部署细节                   | [Jant 托管](hosted.md)                |
 | 想要近乎零成本，能跟着文档配置 15 分钟 | [Cloudflare 自托管](deployment.md)    |
 | 已经有自己的服务器和 Docker 经验       | [Docker 自托管](deployment-docker.md) |
+| 不想处理任何部署细节                   | [Jant 托管](hosted.md)                |
 
 三条路径运行的是同一份代码。先选托管再迁出，或反过来，都通过 [导出/导入](export-and-import.md) 完成。
 
@@ -62,7 +60,7 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。`/feed` 默认
 | 运维负担 | 几乎为零                 | HTTPS、反向代理、备份都自己来 |
 | 成本     | 多数个人站点在免费额度内 | 你的服务器成本                |
 
-如果两边都新，先试 Cloudflare。
+如果两边都是新手，建议选择 Cloudflare。
 
 ## Cloudflare 免费额度真的够吗？
 
@@ -72,17 +70,16 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。`/feed` 默认
 
 - **托管**：Dashboard → 选中站点 → **域名** → 添加，按提示配置 DNS。证书自动签发与续期。
 - **Cloudflare 自托管**：Workers & Pages → 你的 Worker → Settings → Domains & Routes → Add，详见 [部署到 Cloudflare](deployment.md) 中的"绑定自定义域名"。
-- **Docker 自托管**：在反向代理里指过来，并设置 `SITE_ORIGIN`。
+- **Docker 自托管**：在反向代理里指过来。
 
 ## AI agent 能发帖吗？
 
-可以。三种入口，按场景选：
+可以。两种入口，按场景选：
 
-- **本地 CLI**（`npx jant posts create` 等）：自动化和站点在同一台机器时最省事
-- **HTTP JSON API**：外部脚本、定时任务、第三方集成
+- **HTTP JSON API**：默认推荐——`POST /api/posts` + Bearer token，外部脚本、定时任务、第三方集成都用它
 - **MCP endpoint**（`/api/mcp`）：调用方本身就是 MCP client 时
 
-`create-jant` 生成的项目自带 `AGENTS.md`、`.claude/skills/` 和 `examples/agent-content-automation/`。详见 [自动化与 API](automation-and-api.md)。
+`create-jant` 生成的项目自带 `AGENTS.md`、`.claude/skills/` 和 `examples/agent-content-automation/`，里面有可以直接 copy 的 curl 示例。详见 [自动化与 API](automation-and-api.md)。
 
 启用 [GitHub 同步](github-sync.md) 后，AI 也可以直接读写 Git 仓库里的 Markdown——对很多 coding agent 来说比 API 更自然。
 
@@ -94,17 +91,17 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。`/feed` 默认
 
 - **托管**：自动，无需操作。
 - **Cloudflare**：`npm install @jant/core@latest && npm run deploy`，迁移会在部署时自动跑。
-- **Docker**：`docker compose pull && docker compose up -d`，迁移容器会先跑一遍再启动应用。
+- **Docker**：`docker compose pull && docker compose up -d`，这个命令会先运行数据库迁移，再启动应用。
 
 升级前建议先做一次完整备份，见 [备份与恢复](backups.md)。
 
 ## 媒体上传有大小限制吗？
 
-非图片默认 500 MB，可通过 `UPLOAD_MAX_FILE_SIZE_MB` 调整。图片有更严格的内置限制，主要受影响的是视频、音频和 PDF。详见 [配置 § 上传大小限制](configuration.md#上传大小限制可选)。
+非图片默认 500 MB，可通过 `UPLOAD_MAX_FILE_SIZE_MB` 调整。详见 [配置 § 上传大小限制](configuration.md#上传大小限制可选)。
 
 ## SQLite 和 Postgres 怎么选（Docker 部署）？
 
-单机部署直接用 SQLite，性能足够、备份只需打包一个文件。需要多实例、托管数据库、或已有 Postgres 基础设施时再换 Postgres。切换通过 `DATABASE_URL` 的 scheme 控制（`file:` 或 `postgres:`），见 [配置 § Node 和 Docker](configuration.md#node-和-docker)。
+单机部署直接用 SQLite，性能足够、备份只需打包一个文件。已有 Postgres 基础设施时可考虑换 Postgres。切换通过 `DATABASE_URL` 的 scheme 控制（`file:` 或 `postgres:`），见 [配置 § Node 和 Docker](configuration.md#node-和-docker)。
 
 ## 能挂在子路径下吗（例如 `example.com/blog`）？
 
@@ -112,7 +109,7 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。`/feed` 默认
 
 ## 备份多久做一次？
 
-按 RPO（可接受的数据丢失量）决定。最低限度建议：站点级 [Site Snapshot](backups.md#site-snapshot) 每周一次 + 启用 [GitHub 同步](github-sync.md) 作为内容层的实时副本。Cloudflare 用户可叠加 D1 的 time-travel；Docker + Postgres 用户可加 `pg_dump` 的定时任务。完整方案见 [备份与恢复](backups.md)。
+按 RPO（可接受的数据丢失量）决定。建议启用 [GitHub 同步](github-sync.md) 作为内容层的实时副本。其他关于备份的完整方案见 [备份与恢复](backups.md)。
 
 ## 改了 `AUTH_SECRET` 会怎样？
 
@@ -120,7 +117,7 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。`/feed` 默认
 
 ## 删除的帖子能恢复吗？
 
-帖子使用软删除（`deleted_at`），所以底层数据库里仍然存在一段时间，但 Jant UI 没有"恢复"按钮。可靠做法是依赖你的备份策略：从 [Site Snapshot](backups.md#site-snapshot) 或数据库备份里恢复。
+不能。删除是永久的——帖子行、对应的路径、所属 Collection 关联以及附件 media 都会被一起清理（正文里嵌入的 inline media 不动）。删帖前 UI 会有二次确认，做好这一步就行。
 
 ## 能在托管和自托管之间互相迁移吗？
 

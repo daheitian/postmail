@@ -9,7 +9,11 @@ import {
   sqliteSchemaBundle,
   type DatabaseSchema,
 } from "../db/schema-bundle.js";
-import { baseLocale, isLocale } from "../i18n/locales.js";
+import {
+  baseLocale,
+  isValidContentLanguage,
+  normalizeContentLanguage,
+} from "../i18n/locales.js";
 import { createNavItemService } from "./navigation.js";
 import { createSettingsService } from "./settings.js";
 import { createSiteMemberService } from "./site-member.js";
@@ -57,8 +61,8 @@ export function createBootstrapService(
       await settings.set("SITE_NAME", data.siteName.trim());
       await settings.set("TIME_ZONE", data.timeZone ?? "UTC");
       const siteLanguage =
-        data.siteLanguage && isLocale(data.siteLanguage)
-          ? data.siteLanguage
+        data.siteLanguage && isValidContentLanguage(data.siteLanguage)
+          ? normalizeContentLanguage(data.siteLanguage)
           : baseLocale;
       await settings.set("SITE_LANGUAGE", siteLanguage);
       if (data.cjkSerifFont && data.cjkSerifFont !== "off") {

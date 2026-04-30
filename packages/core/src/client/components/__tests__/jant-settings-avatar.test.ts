@@ -40,6 +40,8 @@ const labels: SettingsLabels = {
   aboutBlogHelp: "Displayed above your blog posts.",
   siteLanguage: "Site Language",
   siteLanguageHelp: "Language used for the site UI.",
+  siteLanguageSearchPlaceholder: "Search…",
+  siteLanguageNoMatches: "No matches.",
   cjkFont: "CJK Font",
   cjkFontHelp:
     "Load a serif font optimized for Chinese, Japanese, or Korean content.",

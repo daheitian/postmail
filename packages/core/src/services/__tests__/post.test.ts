@@ -82,7 +82,6 @@ describe("PostService", () => {
       expect(post.visibility).toBe("public");
       expect(post.pinnedAt).toBeNull();
       expect(post.bodyHtml).toContain("<p>Hello world</p>");
-      expect(post.deletedAt).toBeNull();
       expect(post.threadId).toBe(post.id);
     });
 
@@ -787,7 +786,7 @@ describe("PostService", () => {
       ]);
     });
 
-    it("excludes deleted posts by default", async () => {
+    it("excludes deleted posts", async () => {
       const post = await postService.create({
         format: "note",
         bodyMarkdown: "test",
@@ -798,17 +797,6 @@ describe("PostService", () => {
       const posts = await postService.list();
       expect(posts).toHaveLength(1);
       expect(posts[0]?.bodyText).toBe("kept");
-    });
-
-    it("includes deleted posts when requested", async () => {
-      const post = await postService.create({
-        format: "note",
-        bodyMarkdown: "test",
-      });
-      await postService.delete(post.id);
-
-      const posts = await postService.list({ includeDeleted: true });
-      expect(posts).toHaveLength(1);
     });
 
     it("supports limit", async () => {
@@ -1485,8 +1473,8 @@ describe("PostService", () => {
     });
   });
 
-  describe("delete (soft delete)", () => {
-    it("soft-deletes a post", async () => {
+  describe("delete", () => {
+    it("removes a post", async () => {
       const post = await postService.create({
         format: "note",
         bodyMarkdown: "test",
@@ -1495,7 +1483,6 @@ describe("PostService", () => {
       const result = await postService.delete(post.id);
       expect(result).toBe(true);
 
-      // Should not appear in regular queries
       const found = await postService.getById(post.id);
       expect(found).toBeNull();
     });
@@ -1518,7 +1505,6 @@ describe("PostService", () => {
 
       await postService.delete(root.id);
 
-      // Both root and reply should be soft-deleted
       expect(await postService.getById(root.id)).toBeNull();
       expect(await postService.getById(reply.id)).toBeNull();
     });
@@ -1541,10 +1527,24 @@ describe("PostService", () => {
 
       await postService.delete(reply1.id);
 
-      // Root should still exist
       expect(await postService.getById(root.id)).not.toBeNull();
-      // reply1 should be deleted
       expect(await postService.getById(reply1.id)).toBeNull();
+    });
+
+    it("frees the slug for reuse after deletion", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "first",
+        title: "Same Title",
+      });
+      await postService.delete(post.id);
+
+      const reused = await postService.create({
+        format: "note",
+        bodyMarkdown: "second",
+        title: "Same Title",
+      });
+      expect(reused.slug).toBe(post.slug);
     });
   });
 

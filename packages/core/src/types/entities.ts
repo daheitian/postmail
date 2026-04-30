@@ -66,7 +66,6 @@ export interface Post {
   previewProvider: string | null;
   replyToId: string | null;
   threadId: string;
-  deletedAt: number | null;
   publishedAt: number | null;
   lastActivityAt: number;
   createdAt: number;

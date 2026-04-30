@@ -5,7 +5,7 @@
   "assertions": [
     {
       "name": "published posts exist",
-      "sql": "SELECT COUNT(*) AS count FROM post WHERE deleted_at IS NULL",
+      "sql": "SELECT COUNT(*) AS count FROM post",
       "column": "count",
       "atLeast": 1
     },

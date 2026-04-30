@@ -41,7 +41,6 @@ const countsRow = queryRemoteD1({
         SELECT COUNT(*)
         FROM post
         WHERE site_id = '${escapedSiteId}'
-          AND deleted_at IS NULL
           AND status = 'published'
           AND COALESCE(visibility, 'public') <> 'private'
       ) AS post_count,
@@ -73,7 +72,6 @@ if (postCount > 0) {
       AND path_registry.site_id = post.site_id
       AND path_registry.kind = 'slug'
      WHERE post.site_id = '${escapedSiteId}'
-       AND post.deleted_at IS NULL
        AND post.status = 'published'
        AND COALESCE(post.visibility, 'public') <> 'private'
      ORDER BY post.created_at, post.id

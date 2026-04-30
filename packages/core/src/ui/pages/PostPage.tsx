@@ -49,6 +49,8 @@ export const PostPage: FC<PostPageProps> = ({ post, threadPosts }) => {
       ) : (
         <TimelineItemFromPost post={post} mode="detail" />
       )}
+      {/* Public integration slot — code injection (giscus, Webmentions, etc.) appends here. */}
+      <div data-post-end />
     </div>
   );
 };

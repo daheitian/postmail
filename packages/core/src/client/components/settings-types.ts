@@ -43,6 +43,10 @@ export interface SettingsLabels {
   markdownSupported: string;
   siteLanguage: string;
   siteLanguageHelp: string;
+  /** Placeholder shown inside the locale combobox search field. */
+  siteLanguageSearchPlaceholder: string;
+  /** Empty-state message when the search filters out every option. */
+  siteLanguageNoMatches: string;
   cjkFont: string;
   cjkFontHelp: string;
   timeZone: string;
@@ -67,12 +71,6 @@ export interface SettingsTimezone {
 
 /** CJK font option for the select dropdown */
 export interface SettingsCjkFont {
-  value: string;
-  label: string;
-}
-
-/** Site language option for the select dropdown */
-export interface SettingsLanguage {
   value: string;
   label: string;
 }

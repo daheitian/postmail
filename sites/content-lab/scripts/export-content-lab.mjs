@@ -113,7 +113,6 @@ const tables = [
     "post",
     `SELECT * FROM post
      WHERE site_id = '${escapedSiteId}'
-       AND deleted_at IS NULL
      ORDER BY CASE WHEN reply_to_id IS NULL THEN 0 ELSE 1 END, created_at, id`,
   ],
   [
@@ -139,7 +138,6 @@ const tables = [
     `SELECT pc.* FROM post_collection pc
      JOIN post p ON p.id = pc.post_id
      WHERE pc.site_id = '${escapedSiteId}'
-       AND p.deleted_at IS NULL
      ORDER BY pc.created_at, pc.collection_id, pc.post_id`,
   ],
   [
@@ -150,7 +148,7 @@ const tables = [
      WHERE pr.site_id = '${escapedSiteId}'
        AND (
          pr.kind = 'redirect'
-        OR (pr.post_id IS NOT NULL AND p.deleted_at IS NULL)
+        OR (pr.post_id IS NOT NULL AND p.id IS NOT NULL)
         OR (pr.collection_id IS NOT NULL AND c.id IS NOT NULL)
        )
      ORDER BY pr.path, pr.id`,
@@ -164,9 +162,7 @@ const tables = [
   [
     "media",
     `SELECT m.* FROM media m
-     LEFT JOIN post p ON p.id = m.post_id
      WHERE m.site_id = '${escapedSiteId}'
-       AND (m.post_id IS NULL OR p.deleted_at IS NULL)
      ORDER BY m.created_at, m.id`,
   ],
 ];

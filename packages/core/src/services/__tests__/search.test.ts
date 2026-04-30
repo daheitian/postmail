@@ -44,7 +44,6 @@ function createSearchRow(overrides?: Partial<Record<string, unknown>>) {
     collection_id: null,
     reply_to_id: null,
     thread_id: "pst_01jpyz2pvf4m7s2k8r5c9t0qce",
-    deleted_at: null,
     published_at: 1774009100,
     last_activity_at: 1774009100,
     created_at: 1774009100,

@@ -368,11 +368,6 @@ msgstr "连接后会将你的网站同步到 {repo} 的默认分支，并追加�
 msgid "Connecting…"
 msgstr "连接中…"
 
-#. @context: Help text under the site language select
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "Controls the language of the settings pages. Public pages stay in English."
-msgstr "控制设置页面所用的语言。公共页面保持英文。"
-
 #. @context: Feedback after copying API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Copied"
@@ -1024,6 +1019,11 @@ msgstr "尚无自定义 URL。创建一个以便为文章添加重定向或自�
 msgid "No file selected. Choose a file to upload."
 msgstr "未选择文件。请选择要上传的文件。"
 
+#. @context: Empty state shown when the language search filters out every entry
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "No matches."
+msgstr "无匹配结果。"
+
 #. @context: Empty state for navigation items
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "No navigation items yet. Add links or enable system items below."
@@ -1273,6 +1273,11 @@ msgstr "搜索仓库"
 msgid "Search settings updated."
 msgstr "搜索设置已更新。"
 
+#. @context: Placeholder inside the language combobox search field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Search…"
+msgstr "搜索…"
+
 #. @context: Settings group label for account security settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Security"
@@ -1319,6 +1324,11 @@ msgstr "会话"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sessions and password"
 msgstr "会话与密码"
+
+#. @context: Help text under the site language input
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Sets the content language announced to readers (HTML lang, RSS) and the dashboard language. Any BCP 47 tag is accepted; tags without a dashboard translation fall back to English."
+msgstr "声明给读者的内容语言（HTML lang、RSS），同时驱动后台界面的语言。可填任意 BCP 47 标签；没有对应翻译时后台会回退为英文。"
 
 #. @context: Breadcrumb label
 #. @context: Page title for the settings home page

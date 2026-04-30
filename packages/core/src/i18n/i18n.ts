@@ -12,13 +12,29 @@ import type {
   Messages,
 } from "@lingui/core";
 import { I18n as LinguiI18nRuntime } from "@lingui/core";
-import { locales, baseLocale, isLocale, type Locale } from "./locales.js";
+import {
+  locales,
+  baseLocale,
+  isLocale,
+  isValidContentLanguage,
+  normalizeContentLanguage,
+  resolveCatalogLocale,
+  type Locale,
+} from "./locales.js";
 import { messages as publicEn } from "./locales/public/en.js";
 import { messages as settingsEn } from "./locales/settings/en.js";
 import { messages as settingsZhHans } from "./locales/settings/zh-Hans.js";
 import { messages as settingsZhHant } from "./locales/settings/zh-Hant.js";
 
-export { locales, baseLocale, isLocale, type Locale };
+export {
+  locales,
+  baseLocale,
+  isLocale,
+  isValidContentLanguage,
+  normalizeContentLanguage,
+  resolveCatalogLocale,
+  type Locale,
+};
 
 export type TranslationValues = Record<string, unknown>;
 export type TranslationMessage = {

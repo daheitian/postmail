@@ -170,7 +170,6 @@ export const posts = sqliteTable(
     previewProvider: text("preview_provider"),
     replyToId: text("reply_to_id"),
     threadId: text("thread_id").notNull(),
-    deletedAt: integer("deleted_at"),
     publishedAt: integer("published_at"),
     lastActivityAt: integer("last_activity_at"),
     createdAt: integer("created_at").notNull(),
@@ -201,40 +200,37 @@ export const posts = sqliteTable(
       foreignColumns: [table.siteId, table.id],
     }),
     index("idx_post_site_thread_id").on(table.siteId, table.threadId),
-    index("idx_post_site_thread_live_created")
-      .on(table.siteId, table.threadId, table.createdAt, table.id)
-      .where(sql`${table.deletedAt} IS NULL`),
-    index("idx_post_site_status_deleted_published").on(
+    index("idx_post_site_thread_created").on(
+      table.siteId,
+      table.threadId,
+      table.createdAt,
+      table.id,
+    ),
+    index("idx_post_site_status_published").on(
       table.siteId,
       table.status,
-      table.deletedAt,
       table.publishedAt,
     ),
-    index("idx_post_site_status_deleted_activity").on(
+    index("idx_post_site_status_activity").on(
       table.siteId,
       table.status,
-      table.deletedAt,
       table.lastActivityAt,
     ),
-    index("idx_post_site_root_live_published_activity")
+    index("idx_post_site_root_published_activity")
       .on(table.siteId, table.lastActivityAt, table.id)
-      .where(
-        sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NULL AND ${table.status} = 'published'`,
-      ),
-    index("idx_post_site_root_live_draft_updated")
+      .where(sql`${table.replyToId} IS NULL AND ${table.status} = 'published'`),
+    index("idx_post_site_root_draft_updated")
       .on(table.siteId, table.updatedAt, table.id)
-      .where(
-        sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NULL AND ${table.status} = 'draft'`,
-      ),
-    index("idx_post_site_reply_live_thread_created")
+      .where(sql`${table.replyToId} IS NULL AND ${table.status} = 'draft'`),
+    index("idx_post_site_reply_thread_created")
       .on(table.siteId, table.threadId, table.createdAt, table.id)
       .where(
-        sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NOT NULL AND ${table.status} = 'published'`,
+        sql`${table.replyToId} IS NOT NULL AND ${table.status} = 'published'`,
       ),
-    index("idx_post_site_featured_live_featured_at")
+    index("idx_post_site_featured_featured_at")
       .on(table.siteId, table.featuredAt, table.threadId, table.id)
       .where(
-        sql`${table.deletedAt} IS NULL AND ${table.status} = 'published' AND ${table.featuredAt} IS NOT NULL`,
+        sql`${table.status} = 'published' AND ${table.featuredAt} IS NOT NULL`,
       ),
   ],
 );

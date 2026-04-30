@@ -2,24 +2,42 @@
 
 This folder shows the shortest path for content automation in a generated Jant site.
 
-Prefer the local CLI when the agent is already on the site machine. Use MCP only when the caller already speaks MCP.
+All content operations go through the HTTP API. Use MCP (`/api/mcp`) only when the caller already speaks MCP.
+
+Set these once:
+
+```bash
+export JANT_URL="https://your-site.example"
+export JANT_API_TOKEN="jnt_..."
+```
+
+For local development, `JANT_URL=http://localhost:8787` and `JANT_API_TOKEN=$DEV_API_TOKEN`.
 
 ## Publish a note from JSON
 
 ```bash
-npx jant posts create --input ./examples/agent-content-automation/note.json
+curl -X POST "$JANT_URL/api/posts" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @./examples/agent-content-automation/note.json
 ```
 
 ## Publish a quote from JSON
 
 ```bash
-npx jant posts create --input ./examples/agent-content-automation/quote.json
+curl -X POST "$JANT_URL/api/posts" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @./examples/agent-content-automation/quote.json
 ```
 
 ## Update site settings from JSON
 
 ```bash
-npx jant settings update --input ./examples/agent-content-automation/site-settings.json
+curl -X PUT "$JANT_URL/api/settings" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @./examples/agent-content-automation/site-settings.json
 ```
 
 ## Upload an image, then attach it to a post
@@ -27,7 +45,10 @@ npx jant settings update --input ./examples/agent-content-automation/site-settin
 Upload the file:
 
 ```bash
-npx jant media upload ./path/to/photo.webp --alt "Cover image"
+curl -X POST "$JANT_URL/api/upload" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -F "file=@./path/to/photo.webp" \
+  -F "alt=Cover image"
 ```
 
 That returns a `med_*` ID. Use it in a post payload:
@@ -36,7 +57,7 @@ That returns a `med_*` ID. Use it in a post payload:
 {
   "format": "note",
   "title": "A post with media",
-  "bodyMarkdown": "Uploaded through the local CLI.",
+  "bodyMarkdown": "Uploaded through the HTTP API.",
   "status": "published",
   "visibility": "public",
   "attachments": [{ "type": "media", "mediaId": "med_..." }]
@@ -46,7 +67,10 @@ That returns a `med_*` ID. Use it in a post payload:
 Then publish it:
 
 ```bash
-npx jant posts create --json '{"format":"note","title":"A post with media","bodyMarkdown":"Uploaded through the local CLI.","status":"published","visibility":"public","attachments":[{"type":"media","mediaId":"med_..."}]}'
+curl -X POST "$JANT_URL/api/posts" \
+  -H "Authorization: Bearer $JANT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"format":"note","title":"A post with media","bodyMarkdown":"Uploaded through the HTTP API.","status":"published","visibility":"public","attachments":[{"type":"media","mediaId":"med_..."}]}'
 ```
 
 ## Inline text attachments stay in the post payload

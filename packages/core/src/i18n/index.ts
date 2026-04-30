@@ -43,6 +43,9 @@ export {
   locales,
   baseLocale,
   isLocale,
+  isValidContentLanguage,
+  normalizeContentLanguage,
+  resolveCatalogLocale,
   type Locale,
   type I18n,
 } from "./i18n.js";

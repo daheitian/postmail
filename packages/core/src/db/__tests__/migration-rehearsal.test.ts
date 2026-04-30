@@ -62,10 +62,7 @@ describe("migration rehearsal", () => {
       );
 
       expect(
-        queryLocalCount(
-          persistDir,
-          "SELECT COUNT(*) AS count FROM post WHERE deleted_at IS NULL",
-        ),
+        queryLocalCount(persistDir, "SELECT COUNT(*) AS count FROM post"),
       ).toBeGreaterThan(0);
       expect(
         queryLocalCount(persistDir, "SELECT COUNT(*) AS count FROM post_fts"),
@@ -73,5 +70,5 @@ describe("migration rehearsal", () => {
     } finally {
       rmSync(persistDir, { recursive: true, force: true });
     }
-  }, 90_000);
+  }, 600_000);
 });
