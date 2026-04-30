@@ -114,6 +114,23 @@ export function SettingsRootContent({
             }),
           )}
         />
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/github-sync", sitePathPrefix)}
+          icon={ICONS.gitBranch}
+          tone="subtle"
+          name={i18n._(
+            msg({
+              message: "GitHub Sync",
+              comment: "@context: Settings item — GitHub sync settings",
+            }),
+          )}
+          description={i18n._(
+            msg({
+              message: "Back up and sync content with a GitHub repository",
+              comment: "@context: Settings item description for GitHub sync",
+            }),
+          )}
+        />
       </SettingsDirectorySection>
 
       <SettingsDirectorySection
@@ -203,34 +220,6 @@ export function SettingsRootContent({
             msg({
               message: "Fine-grained styling overrides",
               comment: "@context: Settings item description for custom CSS",
-            }),
-          )}
-        />
-      </SettingsDirectorySection>
-
-      <SettingsDirectorySection
-        title={i18n._(
-          msg({
-            message: "Integrations",
-            comment:
-              "@context: Settings group label for third-party integrations",
-          }),
-        )}
-      >
-        <SettingsDirectoryLink
-          href={toPublicPath("/settings/github-sync", sitePathPrefix)}
-          icon={ICONS.gitBranch}
-          tone="subtle"
-          name={i18n._(
-            msg({
-              message: "GitHub Sync",
-              comment: "@context: Settings item — GitHub sync settings",
-            }),
-          )}
-          description={i18n._(
-            msg({
-              message: "Back up and sync content with a GitHub repository",
-              comment: "@context: Settings item description for GitHub sync",
             }),
           )}
         />

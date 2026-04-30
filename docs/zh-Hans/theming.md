@@ -106,6 +106,8 @@ Jant 给你三层视觉控制能力：
 
 字型主题（**Settings > Font Theme**）会覆盖 `--font-heading`、`--font-body`，以及一小组用于标题、标签和正文节奏的排版变量。`--font-ui` 不受字型主题影响，始终保持 sans-serif，以确保按钮、导航等界面元素的可读性。你仍然可以继续在 Custom CSS 里覆盖它们。
 
+如果想用 Google Fonts 这类外部字体源，需要先用 [代码注入](code-injection.md#配方自定义字体) 加载字体文件，再在 Custom CSS 里把变量指向新字体。
+
 ### 示例：更轻的字重
 
 ```css
@@ -230,4 +232,5 @@ Jant 会自动跟随访问者的系统偏好（浅色 / 深色）。如果你想
 
 ## 接下来
 
+- [代码注入](code-injection.md) —— 嵌入第三方脚本、外部字体、统计代码、评论组件
 - [导出与导入](export-and-import.md) —— 站点迁移和归档

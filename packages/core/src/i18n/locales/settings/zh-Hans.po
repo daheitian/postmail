@@ -796,11 +796,6 @@ msgstr "安装 GitHub App"
 msgid "Install the GitHub App to grant access without managing personal tokens. Permissions are scoped per repository and revocable from GitHub."
 msgstr "安装 GitHub App 以在无需管理个人令牌的情况下授予访问权限。权限按仓库范围授予，可在 GitHub 上撤销。"
 
-#. @context: Settings group label for third-party integrations
-#: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Integrations"
-msgstr "集成"
-
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Label"

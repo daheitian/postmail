@@ -156,8 +156,9 @@ Jant 使用可读 URL：
 Feeds：
 
 - `/feed` 使用你当前配置的主 feed
-- `/feed/latest` 永远返回最新公开帖子
-- `/feed/featured` 永远返回 featured 帖子
+- `/feed/latest` 返回出现在首页 Latest 流的帖子（不含 `Hidden from Latest`）
+- `/feed/featured` 返回 featured 帖子
+- `/archive/feed` 返回全量公开帖子（包含 `Hidden from Latest`），支持 `?year=`、`?format=`、`?collection=`、`?media=` 等过滤参数
 - `/{slug}/feed` 返回单个 collection 的 feed
 - `/collections/{slug1}+{slug2}/feed` 返回组合 collection 的 feed
 

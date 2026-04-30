@@ -65,4 +65,17 @@ describe("buildCspDirectives", () => {
     });
     expect(directives.connectSrc).toContain("ws:");
   });
+
+  it("omits 'unsafe-inline' from script-src by default", () => {
+    const directives = buildCspDirectives(defaults());
+    expect(directives.scriptSrc).not.toContain("'unsafe-inline'");
+  });
+
+  it("adds 'unsafe-inline' to script-src when allowInlineScript is set", () => {
+    const directives = buildCspDirectives({
+      ...defaults(),
+      allowInlineScript: true,
+    });
+    expect(directives.scriptSrc).toContain("'unsafe-inline'");
+  });
 });

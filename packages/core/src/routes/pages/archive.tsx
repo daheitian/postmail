@@ -521,13 +521,15 @@ async function buildArchiveFeedData(
     ? await services.collections.getBySlug(params.collectionSlug)
     : undefined;
 
-  // Feed always serves public-only content
+  // Feed mirrors the unauthenticated archive page: published + non-private,
+  // including Hidden-from-Latest. /archive is the canonical "all posts" view,
+  // so its feed must match.
   const filters: PostFilters = {
     format: params.format,
     status: "published",
     excludeReplies: true,
     excludePrivate: true,
-    excludeLatestHidden: true,
+    excludeLatestHidden: false,
     collectionId: collection?.id,
     mediaKinds: params.mediaKinds,
     hasMedia: params.hasMedia,

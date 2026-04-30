@@ -47,6 +47,20 @@ function shouldBlockFraming(path: string): boolean {
   );
 }
 
+/**
+ * Paths whose responses are not HTML rendered by `BaseLayout` and therefore
+ * never carry author-pasted `customHeadHtml` / `customBodyEndHtml`. Skipping
+ * the settings lookup for these avoids two DB roundtrips on every static
+ * asset request.
+ */
+function couldRenderCodeInjection(path: string): boolean {
+  if (shouldBlockFraming(path)) return false;
+  if (path === "/favicon.ico" || path === "/apple-touch-icon.png") return false;
+  if (path === "/healthz" || path === "/readyz") return false;
+  if (path.startsWith("/media/") || path.startsWith("/sites/")) return false;
+  return true;
+}
+
 function tryGetOrigin(value: string | undefined): string | null {
   if (!value) return null;
   try {
@@ -109,6 +123,7 @@ function toHonoCspOptions(
 function buildSecureHeadersOptions(
   path: string,
   env: Bindings,
+  allowInlineScript: boolean,
 ): SecureHeadersOptions {
   const directives = buildCspDirectives({
     path,
@@ -116,6 +131,7 @@ function buildSecureHeadersOptions(
     assetOrigin: tryGetOrigin(getEnvString(env, "ASSET_BASE_URL")),
     uploadConnectSources: getDirectUploadConnectSources(env),
     isDev: IS_VITE_DEV,
+    allowInlineScript,
   });
 
   return {
@@ -134,8 +150,38 @@ function buildSecureHeadersOptions(
   };
 }
 
+/**
+ * Probe the settings service for any author-saved code injection. Resolves to
+ * `false` whenever the lookup is unavailable (e.g. in unit tests that skip the
+ * runtime middleware) or the path can't render `BaseLayout`.
+ *
+ * Costs two settings reads on public HTML routes; static asset and
+ * frame-protected paths are short-circuited above.
+ */
+async function detectInlineScriptOptIn(
+  path: string,
+  settings: { get(key: string): Promise<string | null> } | undefined,
+): Promise<boolean> {
+  if (!settings) return false;
+  if (!couldRenderCodeInjection(path)) return false;
+  const [head, bodyEnd] = await Promise.all([
+    settings.get("CUSTOM_HEAD_HTML"),
+    settings.get("CUSTOM_BODY_END_HTML"),
+  ]);
+  return Boolean(head?.trim() || bodyEnd?.trim());
+}
+
 export function secureHeadersMiddleware(): MiddlewareHandler<Env> {
   return async (c, next) => {
-    return secureHeaders(buildSecureHeadersOptions(c.req.path, c.env))(c, next);
+    // `services` is set by the runtime bootstrap middleware. Cast through
+    // `undefined` so unit tests that skip that middleware still work.
+    const services = c.var.services as AppVariables["services"] | undefined;
+    const allowInlineScript = await detectInlineScriptOptIn(
+      c.req.path,
+      services?.settings,
+    );
+    return secureHeaders(
+      buildSecureHeadersOptions(c.req.path, c.env, allowInlineScript),
+    )(c, next);
   };
 }

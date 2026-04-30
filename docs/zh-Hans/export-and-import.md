@@ -13,6 +13,47 @@
 
 `site export` 面向可移植性，`site snapshot` 面向可恢复性。两者用途不同，请勿混用。
 
+## 运行环境
+
+本文档涉及的命令分为两类，所需环境差异显著。运行前需确认所处类别与对应配置。
+
+### HTTP API 类
+
+`site export <url>`、`site import <url>`、`site pull-media`
+
+通过站点公开 URL 调用 HTTP API，**不直接访问数据库或对象存储**，因此可在任意机器上对任意可达的 Jant 站点运行，无须站点的 `wrangler.toml` 或 `DATABASE_URL`。
+
+需要一个 API token：
+
+```bash
+export JANT_API_TOKEN=jnt_your_token
+```
+
+Token 在站点的 **Settings → API Tokens** 中生成，亦可通过 `--token` 直接传入。
+
+### 直连数据存储类
+
+`site snapshot export/import`、`db export`
+
+直接读写 Jant 的数据库与媒体存储，因此必须在站点对应的部署环境中运行（持有该站点的 `wrangler.toml`，或与该站点共享 `DATABASE_URL`、`LOCAL_STORAGE_PATH`、`S3_*` 等运行时变量）。
+
+运行目标按以下规则解析：
+
+| 标志       | 目标                  | 所需环境                                               |
+| ---------- | --------------------- | ------------------------------------------------------ |
+| `--remote` | 远端 Cloudflare D1/R2 | `wrangler.toml`，wrangler 已认证                       |
+| `--local`  | 本地 D1（wrangler）   | `wrangler.toml`                                        |
+| `--node`   | Node runtime          | `DATABASE_URL`，对应 storage 配置变量                  |
+| 不传标志   | 自动推导              | 有 `DATABASE_URL` 或 `DATA_DIR` → Node；否则 → 本地 D1 |
+
+`--remote` 经由本地 `wrangler` CLI 调用，需先 `wrangler login` 或设置 `CLOUDFLARE_API_TOKEN`；`--config` 用于指定非默认的 wrangler 配置文件路径。
+
+CLI 启动时会输出一行 `[jant] target = ...` banner，用于核对实际选中的目标。
+
+CLI 在执行前会从 `<cwd>/.env.node` 自动加载环境变量，仅赋值尚未存在的键（已 export 的 shell 变量优先），项目目录下放置 `.env.node` 即可，不必每次手动 source。
+
+完整的环境变量列表见 [配置](configuration.md)。
+
 ## Site Export
 
 `site export` 生成兼容 Hugo 的站点导出，输出格式为 ZIP 归档或目录。典型用途包括跨 Jant 站点迁移内容、在本地使用 Hugo 构建预览、长期保留可移植的已发布结构归档。
@@ -68,7 +109,7 @@ static/                   用户自有静态文件 + 下载的媒体
 
 ### 导出站点
 
-首先在 **Settings > API Tokens** 中创建 API token，然后运行：
+需要 `JANT_API_TOKEN` 环境变量（或 `--token`），见 [运行环境 § HTTP API 类](#http-api-类)。
 
 ```bash
 JANT_API_TOKEN=jnt_your_token npx jant site export https://your-site.example --output ./jant-site-export.zip
@@ -80,8 +121,6 @@ JANT_API_TOKEN=jnt_your_token npx jant site export https://your-site.example --o
 npx jant site export https://your-site.example --directory ./jant-site
 cd ./jant-site && hugo serve
 ```
-
-亦可通过 `--token` 显式传入 token；在频繁使用的场景下，`JANT_API_TOKEN` 更为方便。
 
 ### 单独拉取媒体
 
@@ -133,6 +172,8 @@ npx jant site import https://your-site.example --path ./jant-site-export.zip --d
 ```
 
 ### 导入到站点
+
+与 `site export` 同样需要 `JANT_API_TOKEN`（或 `--token`）：
 
 ```bash
 JANT_API_TOKEN=jnt_your_token npx jant site import https://your-site.example --path ./jant-site-export.zip
@@ -186,10 +227,16 @@ jant-site-snapshot.zip
 
 ### 导出 Snapshot
 
-本地：
+默认目标（按 [运行环境](#运行环境) 自动推导，本地 D1 或 Node）：
 
 ```bash
 npx jant site snapshot export --output ./jant-site-snapshot.zip
+```
+
+显式 Node runtime（如 SQLite 或 Postgres 部署）：
+
+```bash
+DATABASE_URL=postgres://... npx jant site snapshot export --node --output ./jant-site-snapshot.zip
 ```
 
 远端 Cloudflare D1：
@@ -216,7 +263,7 @@ npx jant site snapshot export --output ./jant-site-snapshot.zip --skip-objects
 
 当前 snapshot import 必须显式传入 `--replace`。
 
-本地：
+默认目标：
 
 ```bash
 npx jant site snapshot import --path ./jant-site-snapshot.zip --replace
@@ -247,19 +294,25 @@ npx jant site snapshot import \
 
 `db export` 将当前数据库导出为原始 SQL。典型用途包括检查数据库内容、与其他备份一同留存 SQL dump、以及接入自有运维工具链。
 
-本地：
+默认目标（按 [运行环境](#运行环境) 自动推导）：
 
 ```bash
 npx jant db export --output ./jant-export.sql
 ```
 
+显式 Node runtime：
+
+```bash
+DATABASE_URL=postgres://... npx jant db export --node --output ./jant-export.sql
+```
+
 远端 Cloudflare D1：
 
 ```bash
-npx jant db export --remote --output ./jant-remote.sql
+npx jant db export --remote --config ./wrangler.toml --output ./jant-remote.sql
 ```
 
-原始 SQL 导出本身并非完整的 Jant 备份，仍需另行处理媒体文件。
+原始 SQL 导出本身并非完整的 Jant 备份，仍需另行处理媒体文件。Postgres 部署亦可直接使用 `pg_dump`（详见 [备份与恢复 § Node + Postgres](backups.md#node--postgres)）。
 
 ## 延伸阅读
 

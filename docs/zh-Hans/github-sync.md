@@ -39,7 +39,7 @@ Jant 自己产生的 commit 会带上 `[jant-sync]` 标记。带这个标记的 
 在 [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) 创建 token。最小权限原则：把 token 限定到单个仓库，添加 `Contents`, `Webhooks` permissions.
 
 1. 在 GitHub 上创建一个仓库（公开私有都行）
-2. 在 Jant dashboard 里打开 **Settings > Integrations > GitHub Sync**
+2. 在 Jant dashboard 里打开 **Settings > Site > GitHub Sync**
 3. 粘贴 token，输入仓库 `owner/repo`
 4. 点击 **Connect**
 
@@ -49,7 +49,7 @@ Jant 会校验 token、保存配置，并在仓库里创建 webhook。不需要�
 
 在部署配置了 GitHub App 时可用。你无需接触任何长期 token——Jant 按需签发短期凭证。
 
-1. 在 Jant dashboard 里打开 **Settings > Integrations > GitHub Sync**
+1. 在 Jant dashboard 里打开 **Settings > Site > GitHub Sync**
 2. 点击 **Install GitHub App**。你会被跳转到 GitHub 选择 App 可访问的仓库
 3. 安装完成后，GitHub 把你跳转回来。选要同步的仓库，点 **Connect**
 
@@ -101,7 +101,7 @@ Jant 会校验 token、保存配置，并在仓库里创建 webhook。不需要�
 
 ## 断开连接
 
-打开 **Settings > Data > GitHub Sync**，点 **Disconnect**。Jant 会从 GitHub 移除 webhook，并清除同步配置。仓库和它的内容不会被删除。
+打开 **Settings > Site > GitHub Sync**，点 **Disconnect**。Jant 会从 GitHub 移除 webhook，并清除同步配置。仓库和它的内容不会被删除。
 
 ## 文件格式
 

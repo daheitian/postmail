@@ -29,6 +29,13 @@ export interface CspBuildInput {
   uploadConnectSources: string[];
   /** True in `vite dev` so we add `ws:` to connect-src. */
   isDev: boolean;
+  /**
+   * Add `'unsafe-inline'` to script-src so author-pasted inline `<script>`
+   * blocks in customHeadHtml / customBodyEndHtml can execute. Should only be
+   * set on public (non-frame-protected) pages, and only when the author has
+   * actually configured code injection — see `secureHeadersMiddleware`.
+   */
+  allowInlineScript?: boolean;
 }
 
 export interface ContentSecurityPolicyDirectives {
@@ -54,11 +61,18 @@ function appendUnique(sources: string[], value: string | null): void {
 export function buildCspDirectives(
   input: CspBuildInput,
 ): ContentSecurityPolicyDirectives {
-  const { isFrameProtected, assetOrigin, uploadConnectSources, isDev } = input;
+  const {
+    isFrameProtected,
+    assetOrigin,
+    uploadConnectSources,
+    isDev,
+    allowInlineScript,
+  } = input;
 
   // Base script-src: same-origin, Datastar's `unsafe-eval` for data-on-* /
   // data-signals expressions, blob: for media workers (heic-to, mediabunny).
   const scriptSrc = ["'self'", "'unsafe-eval'", "blob:"];
+  if (allowInlineScript) scriptSrc.push("'unsafe-inline'");
   appendUnique(scriptSrc, assetOrigin);
 
   const styleSrc = ["'self'", "'unsafe-inline'"];

@@ -23,6 +23,7 @@
 - [写作与内容组织](writing-and-organizing.md)
 - [GitHub 同步](github-sync.md)
 - [主题定制](theming.md)
+- [代码注入](code-injection.md)
 
 ## 数据与集成
 
