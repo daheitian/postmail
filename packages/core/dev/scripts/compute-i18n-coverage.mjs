@@ -115,6 +115,12 @@ for (const file of files) {
   }
 }
 
+const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+const formatKey = (key) => (IDENT_RE.test(key) ? key : JSON.stringify(key));
+const entries = Object.entries(coverage)
+  .map(([locale, ratio]) => `  ${formatKey(locale)}: ${ratio},`)
+  .join("\n");
+
 const output = `/**
  * AUTO-GENERATED. Do not edit by hand.
  *
@@ -127,7 +133,9 @@ const output = `/**
 
 import type { Locale } from "./locales.js";
 
-export const SETTINGS_TRANSLATION_COVERAGE: Record<Locale, number> = ${JSON.stringify(coverage, null, 2)} as const;
+export const SETTINGS_TRANSLATION_COVERAGE: Record<Locale, number> = {
+${entries}
+} as const;
 `;
 
 writeFileSync(OUT_FILE, output);
