@@ -1,9 +1,13 @@
 # 自动化与 API
 
-Jant 给站点自动化提供两种入口：
+如果你想让脚本、定时任务或 agent 操作自己的 Jant 站点，这是入口。读完你应该知道：怎么签发 token、调哪些接口、出错怎么排查。
 
-- HTTP JSON API
-- 认证后的 MCP endpoint：`/api/mcp`
+Jant 提供两条通道：
+
+- **HTTP JSON API**：通用，curl 就能用。
+- **MCP 接口**（`/api/mcp`）：给已经支持工具调用协议的 agent 用。
+
+完整字段、请求体见 [API 参考（英文）](../API.md)。
 
 如果你是用 `create-jant` 新建的站点，脚手架默认还会带上这些文件：
 
@@ -12,45 +16,74 @@ Jant 给站点自动化提供两种入口：
 - `.claude/skills/`
 - `examples/agent-content-automation/README.md`
 
-这意味着，一个 agent 或脚本在生成项目里拿到的不只是 API token，还能直接看到项目约定和现成样例。
-
-> 历史说明：早期版本里有一组 `npx jant posts/media/collections/settings/search` CLI 命令，本质上是 HTTP API 的薄包装。在 pre-1.0 阶段已经移除——内容自动化统一走 HTTP 或 MCP，CLI 只保留本机操作类命令（`migrate`、`deploy`、`reset-password`、`site snapshot`、`export`、`import-site` 等）。
+也就是说，agent 在生成项目里拿到的不只是 API token，还能直接看到项目约定和现成样例。
 
 ## 先选哪条路
 
-- 写脚本、跑定时任务、做迁移、接外部系统：用 **HTTP API**
-- 你的调用方本身就是 MCP client：用 **MCP**
+- 写脚本、跑定时任务、做迁移、接外部系统：用 **HTTP API**。
+- 调用方本身就是 MCP client：用 **MCP**。
 
-简单说：默认走 HTTP，MCP 只在调用方已经支持工具调用协议时才更顺手。
+默认走 HTTP，MCP 只在调用方已经支持工具调用协议时才更顺手。
+
+## 本机 CLI
+
+涉及本机环境和数据库的操作仍然走 CLI：`migrate`、`deploy`、`reset-password`、`site snapshot`、`site export`、`site import`、`db export` 等。这些命令直接读写数据库或站点部署，不走 HTTP，也不需要 API token。详见 [导出与导入](export-and-import.md)。
+
+内容自动化（发帖、上传、改设置）一律走 HTTP 或 MCP。
 
 ## HTTP API
 
-认证方式：
+### 签发 token
 
-- 请求头带 `Authorization: Bearer jnt_...`（在 Settings → API Tokens 里签发）
-- 本地开发可以用 `.dev.vars` 里的 `DEV_API_TOKEN`，发法相同
-- 少量公开读接口（`GET /api/collections`、`GET /api/collections/:slug`、`GET /api/search`）不需要 token
+1. 登录站点，进入 **Settings → API Tokens**。
+2. 点 **New Token**，给它起一个有辨识度的名字——撤销时找得到谁在用。
+3. 复制以 `jnt_` 开头的字符串。**只会显示一次**，丢了只能重新签发。
 
-常用入口：
+撤销在同一页删除即可，立即生效。当前所有 token 都是站点级、读写完整权限，没有作用域和过期时间——这两项后续可能补上，本文档会同步更新。
 
-- `/api/posts`
-- `/api/uploads`（推荐的分片上传流程）
-- `/api/upload`（一次性 multipart 上传，简单脚本更方便）
-- `/api/attachments`
-- `/api/collections`
-- `/api/settings`
-- `/api/search`
+本地开发可以用 `packages/core/.dev.vars` 里的 `DEV_API_TOKEN`，用法相同。
 
-最短示例（发一条 note）：
+### 认证
+
+请求头带：
+
+```
+Authorization: Bearer jnt_...
+```
+
+少量公开读接口不需要 token：`GET /api/collections`、`GET /api/collections/:id`、`GET /api/search`、`GET /api/public/posts`、`GET /api/public/posts/:slug`。
+
+### 常用端点
+
+| 端点                | 方法                        | 用途                                           |
+| ------------------- | --------------------------- | ---------------------------------------------- |
+| `/api/posts`        | GET / POST / PUT / DELETE   | 帖子的列表、读取、创建、更新、删除             |
+| `/api/public/posts` | GET                         | 公开读取已发布的帖子（无需 token）             |
+| `/api/upload`       | POST / GET / PATCH / DELETE | 一次性 multipart 上传，单次一文件，脚本首选    |
+| `/api/uploads`      | POST → PUT → POST           | 分片上传会话，大文件或不稳定网络用             |
+| `/api/attachments`  | GET                         | 按 id 读取附件原始内容                         |
+| `/api/collections`  | GET / POST / PUT / DELETE   | 合集（GET 不需要 token）                       |
+| `/api/settings`     | GET / PUT                   | 站点设置                                       |
+| `/api/search`       | GET                         | 全文搜索（公开，按 IP 限速）                   |
+| `/api/mcp`          | POST                        | MCP JSON-RPC（`initialize` / `tools/list` 等） |
+
+`/api/upload` 与 `/api/uploads` 只差一个 s，但语义完全不同——前者是单文件 multipart 一次完成，后者是 init/part/complete 三步分片会话。脚本首选 `/api/upload`，遇到大文件或不稳定连接再换 `/api/uploads`。
+
+### 最短示例：发一条 note
 
 ```bash
 curl -X POST "$JANT_URL/api/posts" \
   -H "Authorization: Bearer $JANT_API_TOKEN" \
   -H "Content-Type: application/json" \
-  -d @./examples/agent-content-automation/note.json
+  -d '{
+    "format": "note",
+    "body": "Hello from curl."
+  }'
 ```
 
-上传一张图：
+更多 format（`link`、`quote`）和高级字段（`collections`、`publishedAt`、`slug`、`pinned`、`featured`）见 `examples/agent-content-automation/`。
+
+### 上传一张图
 
 ```bash
 curl -X POST "$JANT_URL/api/upload" \
@@ -59,7 +92,7 @@ curl -X POST "$JANT_URL/api/upload" \
   -F "alt=封面图"
 ```
 
-更新设置：
+### 更新设置
 
 ```bash
 curl -X PUT "$JANT_URL/api/settings" \
@@ -68,44 +101,44 @@ curl -X PUT "$JANT_URL/api/settings" \
   -d @./examples/agent-content-automation/site-settings.json
 ```
 
-完整字段、请求体和错误格式见英文 API 文档：
+### 错误响应
 
-- [API 参考（英文）](../API.md)
+API 路径下所有失败都返回 JSON，结构固定：
 
-完整可执行样例见生成项目里的：
-
-```text
-examples/agent-content-automation/README.md
+```json
+{
+  "error": "human readable message",
+  "code": "ERROR_CODE",
+  "details": "..."
+}
 ```
 
-## MCP
+`details` 仅在 400 校验失败时出现，包含具体字段信息。常见状态码：
 
-Jant 的 MCP endpoint 是一个很窄的 HTTP JSON-RPC 接口：
+| 状态 | `code`                      | 含义与处理                                    |
+| ---- | --------------------------- | --------------------------------------------- |
+| 400  | `VALIDATION_ERROR`          | 请求体校验失败，看 `details` 修正             |
+| 401  | `UNAUTHORIZED`              | token 缺失或失效，重新签发并替换环境变量      |
+| 403  | `FORBIDDEN`                 | token 有效但无权访问该资源                    |
+| 404  | `NOT_FOUND`                 | 资源不存在                                    |
+| 409  | `CONFLICT` 等               | 状态冲突（如 slug 重复、托管媒体配额超限）    |
+| 429  | `RATE_LIMIT`                | 触发速率限制，见下节                          |
+| 500  | `EXTERNAL_SERVICE_ERROR` 等 | 服务端错误，重试，仍失败请带 request 信息反馈 |
 
-- 路径：`/api/mcp`
-- 认证：session cookie 或 Bearer API token
-- 请求头需要带：`MCP-Protocol-Version: 2025-06-18`
-- 当前支持：`initialize`、`ping`、`tools/list`、`tools/call`
+### 速率限制
 
-当前工具分组：
+目前只有 `/api/search` 设了按 IP 的每分钟上限（值由部署侧 `appConfig.rateLimit.searchPerMinute` 控制，默认值见 [配置](configuration.md)）。其他接口暂未做硬性限速，但 Cloudflare Workers 单实例并发有限——批量写入请保持顺序调用，必要时在两次写操作之间留一点间隔。如果未来引入更多限速，会通过 `429` 加 `Retry-After` 返回，本节同步更新。
 
-- posts
-- media
-- attachments
-- collections
-- settings
-- search
+## MCP 接口
 
-适合 MCP 的场景：
+给已经支持 MCP 的 agent 用，底层是 HTTP JSON-RPC：
 
-- agent 已经有 MCP client
-- 你希望把 Jant 暴露成一组工具，而不是手写 fetch
+- **路径**：`/api/mcp`
+- **认证**：脚本/agent 用 `Authorization: Bearer jnt_...`；同源浏览器扩展可复用 session cookie。
+- **协议头**：`MCP-Protocol-Version: 2025-06-18`。版本升级时本文档同步更新。
+- **方法**：`initialize`、`ping`、`tools/list`、`tools/call`。
 
-不适合 MCP 的场景：
-
-- 简单 shell 脚本
-- 本地内容批量导入
-- 你并不需要工具发现或工具调用协议
+工具按资源分组：`posts`、`media`、`attachments`、`collections`、`settings`、`search`。具体工具名和入参用 `tools/list` 拿到，和 HTTP 端点一一对应。
 
 最小初始化请求：
 
@@ -117,17 +150,22 @@ curl -X POST "$JANT_URL/api/mcp" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}'
 ```
 
-## 一条现实建议
+适合走 MCP 的场景：调用方已经有 MCP client；想把 Jant 暴露成一组工具，而不是手写 fetch。
 
-如果你的目标只是"让 agent 能稳定发帖、传图、改设置"，先把这三个 HTTP 调用跑通就够了：
+不适合走 MCP 的场景：简单 shell 脚本；本地内容批量导入；不需要工具发现或工具调用协议。
+
+## 推荐起点：先跑通这三个调用
+
+如果目标只是"让 agent 能稳定发帖、传图、改设置"，先把这三个 HTTP 调用跑通就够了：
 
 1. `POST /api/posts`
 2. `POST /api/upload`
 3. `PUT /api/settings`
 
-等这三条稳定了，再考虑 MCP、多工具编排，或者更复杂的内容工作流。
+这三条稳定后，再考虑 MCP、多工具编排，或更复杂的内容工作流。
 
 ## 接下来
 
-- [API 参考（英文）](../API.md) —— 完整字段、请求体和错误格式
-- [常见问题](faq.md) —— 包括"能用 AI agent 发帖吗？"
+- [API 参考（英文）](../API.md) —— 完整字段、请求体、错误格式
+- [常见问题](faq.md)
+- 生成项目里的 `examples/agent-content-automation/README.md` —— 可直接运行的端到端样例

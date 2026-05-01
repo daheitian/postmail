@@ -1374,7 +1374,7 @@ msgstr "网站页脚"
 #. @context: Code Injection field group label for <head>
 #: src/ui/dash/appearance/CodeInjectionContent.tsx
 msgid "Site Header"
-msgstr "站点头部"
+msgstr "网站头部"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx

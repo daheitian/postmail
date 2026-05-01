@@ -1,42 +1,39 @@
 # GitHub 同步
 
-GitHub 同步把你的帖子以 Markdown 文件备份到一个 GitHub 仓库，并且可以把 GitHub 上的修改同步回来。每次帖子变动都会产生一个 commit，让你的内容拥有完整的 Git 版本历史。
+GitHub 同步把你的帖子以 Markdown 文件备份到一个 GitHub 仓库，并把 GitHub 上的修改同步回来。每次帖子变动产生一个 commit，让你的内容拥有完整的 Git 版本历史。
 
-你照常在 Jant 里写。GitHub 是备份和版本控制层。
-
-GitHub 仓库同时也是一个对 AI 工具友好的文件接口。Jant 提供了 [API](../API.md) 和 MCP server，但许多 AI agent 和 coding 助手在面对纯文件时最自然。一个同步好的仓库给它们一个 Markdown 目录，可读、可改、可提交——不需要 API 客户端。
+仓库本身也是一个给 AI agent 用的接口。Jant 有 [HTTP API](../API.md) 和 MCP server，但很多 coding agent 直接读写 Markdown 文件比调 API 顺手——同步好的仓库就是一份它们能直接编辑、提交的内容副本。
 
 ## 工作原理
 
-**Jant → GitHub**：当你创建、编辑或删除一篇帖子，Jant 把这次变更以带 YAML front matter 的 Markdown 文件推送到你的仓库。Thread 回复各自成为独立文件，嵌套在根帖目录下。媒体不会被复制进仓库，仅以 URL 引用。
+Jant 是 source of truth。GitHub 仓库是 Jant 内容的镜像，外加一个有限的回流通道：你可以在 GitHub 上编辑现有帖子的内容字段，但创建和删除只能在 Jant 里完成。
 
-**GitHub → Jant**：当你在 GitHub 上编辑一个 Markdown 文件并 push，webhook 会通知 Jant。Jant 解析文件，按 slug 匹配到已有帖子，然后更新内容。在 GitHub 上删除文件不会产生任何效果——文件删除操作被故意忽略，删帖必须通过 Jant UI 操作。
+**Jant → GitHub**：当你创建、编辑或删除一篇帖子，Jant 把这次变更以带 YAML front matter 的 Markdown 文件推送到你的仓库。Thread 回复各自成为独立文件，嵌套在根帖目录下。媒体不进入仓库，仅以 URL 引用。
+
+**GitHub → Jant**：当你在 GitHub 上编辑一个 Markdown 文件并 push，webhook 通知 Jant，Jant 按 front matter 里的 `slug` 字段匹配到已有帖子，更新内容。**webhook 只更新已存在帖子的内容字段——在 GitHub 上新增或删除 `.md` 文件不会在 Jant 里创建或删除帖子。** 这是为了避免误删（仓库被清空也不会拖垮站点）。
 
 Jant 自己产生的 commit 会带上 `[jant-sync]` 标记。带这个标记的 webhook 会被忽略，所以变更不会来回反弹。
 
-### 哪些东西会同步
+### 哪些字段会同步
 
-- 帖子正文（Markdown）
+- 帖子正文（front matter 下方的 Markdown）
 - 标题、URL、来源信息、引文文本、评分等 front matter 字段
 - Thread 回复（各自作为独立文件嵌套在根帖目录下）
 
-### 哪些东西不会从 GitHub 同步过来
-
-- 在 GitHub 上新增一个 `.md` 文件**不会**创建一篇新帖子。你只能通过修改 Git 仓库中现有的文件来更新 Post。
-- 设置、导航、collections、主题不会被 webhook 影响
+设置、导航、Collections、主题不会被 webhook 影响。
 
 ## 连接
 
 ### Personal Access Token
 
-自托管用户的默认连接方式。你需要一个 GitHub **fine-grained Personal Access Token**，对目标仓库授予以下权限：
+没有配置 GitHub App 的部署采用这种方式。你需要一个 GitHub 的 **fine-grained personal access token**，对目标仓库授予以下权限：
 
-| 权限         | 访问级别   | 用途                     |
-| ------------ | ---------- | ------------------------ |
-| **Contents** | Read/Write | 推送和读取 Markdown 文件 |
-| **Webhooks** | Read/Write | 自动创建 push webhook    |
+| 权限         | 访问级别   | 用途                  |
+| ------------ | ---------- | --------------------- |
+| **Contents** | Read/Write | 读写 Markdown 文件    |
+| **Webhooks** | Read/Write | 自动注册 push webhook |
 
-在 [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) 创建 token。最小权限原则：把 token 限定到单个仓库，添加 `Contents`, `Webhooks` permissions.
+在 [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta) 创建 token，建议把作用范围限定到单个仓库，只勾选 Contents 和 Webhooks 两项权限。
 
 1. 在 GitHub 上创建一个仓库（公开私有都行）
 2. 在 Jant 里打开 **Settings > Site > GitHub Sync**
@@ -47,15 +44,15 @@ Jant 会校验 token、保存配置，并在仓库里创建 webhook。不需要�
 
 ### GitHub App
 
-在部署配置了 GitHub App 时可用。你无需接触任何长期 token——Jant 按需签发短期凭证。
+部署配置了 GitHub App 时可用。你不需要接触任何长期 token——Jant 按需签发短期凭证。
 
 1. 在 Jant 里打开 **Settings > Site > GitHub Sync**
-2. 点击 **Install GitHub App**。你会被跳转到 GitHub 选择 App 可访问的仓库
-3. 安装完成后，GitHub 把你跳转回来。选要同步的仓库，点 **Connect**
+2. 点击 **Install GitHub App**，跳转到 GitHub 选择 App 可访问的仓库
+3. 安装完成后回到 Jant，选要同步的仓库，点 **Connect**
 
-## 推送一次完整同步
+## 完整同步
 
-连接之后，Jant 会自动推送一次完整同步。需要时你也可以随时手动重新执行。
+首次连接后，Jant 会自动把全部内容推送一次。之后也可以在 **Settings > Site > GitHub Sync** 里点 **Sync Now** 重新执行。
 
 ### Jant 在仓库里管理哪些路径
 
@@ -70,11 +67,17 @@ Jant 会校验 token、保存配置，并在仓库里创建 webhook。不需要�
 
 这些路径里 Jant 不再生成的文件会在下一次 push 时被删除。例如，在 Jant 里删除一篇帖子，下一次同步时 GitHub 上对应的 bundle 也会被删掉。
 
-其他一切都是你的。Jant 不会跨 push 修改它们。如果你想自定义站点，编辑根目录下的 `layouts/<name>.html` 或 `static/<name>`——Hugo 会优先选用它们而不是主题里的版本。`data/` 下其他位置也归你自由使用（`menu.toml`、`authors.toml` 等）。不要直接编辑 `themes/jant/**`，下一次 push 会覆盖你的改动。详见 [导出与导入](export-and-import.md)。
+仓库里其他文件 Jant 不会动。要自定义站点：
+
+- 在根目录加 `layouts/<name>.html` 或 `static/<name>` 覆盖主题里同名文件——Hugo 会优先用根目录版本。
+- `data/` 下除 `data/jant.toml` 之外的位置可以放自定义文件（`menu.toml`、`authors.toml` 等）。
+- 不要直接改 `themes/jant/**`——下一次 push 会覆盖。
+
+详见 [导出与导入](export-and-import.md)。
 
 ## 增量同步
 
-连接之后，每次在 Jant 里创建、编辑或删除帖子，都会自动把变更推送到 GitHub。每次变动产生独立的 commit。
+连接之后，每次在 Jant 里创建、编辑或删除帖子，都会自动把变更推送到 GitHub。每次变动产生独立的 commit：
 
 - **创建或更新根帖**：写 `content/{slug}/_index.md`
 - **创建或更新回复**：写 `content/{root-slug}/{reply-slug}/index.md`
@@ -84,11 +87,11 @@ Jant 会校验 token、保存配置，并在仓库里创建 webhook。不需要�
 
 ## 在 GitHub 上编辑
 
-你可以直接在 GitHub 上编辑任何 Jant 管理的 Markdown 文件（或者本地修改后 push）。当 push 到达 GitHub，webhook 触发，Jant 更新对应的帖子。
+你可以直接在 GitHub 上编辑任何 Jant 管理的 Markdown 文件，或者本地修改后 push。push 到达 GitHub，webhook 触发，Jant 更新对应的帖子。
 
 匹配规则按 slug 进行：Jant 读取 YAML front matter 里的 `slug` 字段，找到对应帖子。匹配不到的文件会被跳过。
 
-以下字段会被 GitHub 编辑更新：
+会被 GitHub 编辑更新的字段：
 
 - `body`（front matter 下方的 Markdown 内容）
 - `title`
@@ -97,7 +100,21 @@ Jant 会校验 token、保存配置，并在仓库里创建 webhook。不需要�
 - `quote_text`（quote 帖子）
 - `rating`
 
-在 GitHub 上删除文件不会有任何效果——文件删除操作被忽略，以防止意外数据丢失。
+### 冲突处理
+
+webhook 处理是后写覆盖：webhook 到达时 Jant 直接用文件内容更新帖子，不和 Jant 当前状态做合并。如果你在 Jant UI 编辑的同时又在 GitHub 上改了同一篇帖子，最后到达的那次会赢。后续的 Jant push 也会把 GitHub 上未回流的中间状态覆盖掉。两边同时编辑同一篇帖子请避免。
+
+**不要改 `slug` 字段**：slug 是匹配键，改了之后这个文件会被当成"匹配不到的新文件"跳过，编辑不会落到 Jant 里。要改 URL 请在 Jant UI 里改。
+
+## 后台处理
+
+同步在后台运行，UI 永远不会卡在等 GitHub 响应——你点保存就立刻返回，push 在响应之后完成。
+
+push 进行中时 settings 页会显示 **Syncing…**，完成后切换为 **Last synced**。push 失败时错误会直接显示在状态卡上，不用翻日志。
+
+短时间内连续编辑会被合并：上一次 push 还没结束就来了新改动，新改动会被记成"待处理编辑"；当前 push 落地后再跑一轮，把最新状态推上去。不会丢内容、也不会出现并发 push。
+
+实现备注：基于 Cloudflare Workers 的 `executionCtx.waitUntil`，不需要 queue binding 或独立的 consumer worker。
 
 ## 断开连接
 
@@ -142,20 +159,11 @@ visibility: public
 回复内容写在这里。
 ```
 
-## 后台处理
-
-同步操作在后台运行，编辑和发布永远不会等 GitHub。当帖子变动时，同步通过 Worker 的 `waitUntil` 生命周期内联调度——HTTP 响应立即返回，push 在响应之后完成。不需要 queue binding，也不需要单独的 consumer worker。
-
-push 进行中时，settings 页会显示一个实时的 "Syncing…" 指示器，push 完成后切换回 "Last synced"。如果 push 失败，错误信息会显示在状态卡片上，你不必翻日志就能知道出了什么问题。
-
-快速连续编辑会被合并：如果一次 push 进行中又来了新的变更，它会被记录为待处理编辑，当前 push 落地之后立即接力——既不会丢内容，也不会引发并发 push。
-
 ## 限制
 
-- **每个站点一个仓库**：不支持多仓库同步
-- **不能从 GitHub 创建或删除帖子**：在 GitHub 上新增或删除 `.md` 文件在 Jant 里不会产生任何效果，只能通过编辑文件内容来更新已有帖子
-- **文本附件不同步**：媒体和文本附件内容仅以 URL 引用
-- **速率限制**：GitHub 对认证用户每小时允许 5,000 次 API 请求。一次 1,000 篇帖子的完整同步大约用掉 1,000 次请求（每个文件一个 blob）。增量同步每次用 1-2 次
+- 每个站点只能连接一个仓库。
+- 媒体附件和文本附件不进入仓库——媒体在 Markdown 里以 URL 形式引用，文本附件不参与 GitHub 同步。
+- GitHub 对认证用户限速 5,000 次/小时。一次 1,000 篇帖子的完整同步用掉约 1,000 次请求，增量同步每次 1-2 次。
 
 ## 自部署：配置 GitHub App
 

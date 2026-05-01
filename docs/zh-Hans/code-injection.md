@@ -1,21 +1,19 @@
 # 代码注入
 
-代码注入用于把第三方脚本、统计代码、字体、评论组件这类外部 HTML 嵌进站点。位置在 **Settings → 外观 → 代码注入**。
+代码注入用来把统计、字体、评论、widget 这类外部资源嵌进站点，路径 **Settings → 高级 → 代码注入**。
 
 两个注入槽，按用途选：
 
 | 槽位     | 注入位置       | 适合放什么                                                |
 | -------- | -------------- | --------------------------------------------------------- |
-| 站点头部 | `</head>` 之前 | 必须早加载的内容：网站统计、自定义 meta 标签、字体、CSS   |
+| 网站头部 | `</head>` 之前 | 必须早加载的内容：网站统计、自定义 meta 标签、字体、CSS   |
 | 网站页脚 | `</body>` 之前 | 不能阻塞渲染的内容：聊天 widget、评论组件、延迟加载的脚本 |
 
-注入的内容会出现在站点的**每个公开页面**，也就是 settings 之外的所有路由。它直接以原样写入 HTML——这意味着：
+注入的内容会出现在**每个公开页面**，也就是 settings 之外的所有路由。它直接以原样写入 HTML——这意味着：
 
-- 任何脚本都拥有访客浏览器的完整访问权限。只放你信任来源的代码。
+- 注入的脚本能读写访客浏览器里的一切——cookie、localStorage、表单输入。只贴你信得过的来源。
 - 错写的标签会破坏页面结构。改完后建议在浏览器里看一眼控制台。
 - 注入的脚本会影响首屏性能。能延迟加载的就别放头部。
-
-> Jant 默认对公开页面设置严格的 Content Security Policy，禁止内联 `<script>` 执行。当你保存了非空的代码注入内容后，公开页面 CSP 的 `script-src` 会自动加上 `'unsafe-inline'`，让你贴的内联脚本能跑；清空两个注入框后会自动恢复到严格策略。Settings、API 和静态资源路径不受这条放宽影响。
 
 ## Jant 与第三方组件的几个关键事实
 
@@ -30,7 +28,7 @@
 
 ## 配方：giscus（GitHub Discussions 评论）
 
-在 [giscus.app](https://giscus.app) 配置时，**Page ↔ Discussions Mapping** 选 **"Discussion title contains a specific term"**，term 框随便填一个占位符——下面的脚本会动态覆盖它。记下 giscus 给的 `data-repo`、`data-repo-id`、`data-category`、`data-category-id`。
+在 [giscus.app](https://giscus.app) 配置时，**Page ↔ Discussions Mapping** 选 "Discussion title contains a specific term"，term 框随便填一个占位符——下面的脚本会动态覆盖它。记下 giscus 给的 `data-repo`、`data-repo-id`、`data-category`、`data-category-id`。
 
 把下面的代码贴进 **网站页脚**：
 
@@ -70,7 +68,7 @@
 - 通过 `[data-post-end]` 插槽挂载，自动跟正文列宽和左边对齐；非帖子页面没有这个元素，等于内置的页面守卫。
 - `data-mapping="specific"` 配合动态 term，把 giscus 的"按术语搜讨论"模式当成精确匹配用。
 - `data-strict="1"` 关闭 GitHub 模糊搜索，避免把不同 thread 误匹配到一起。
-- `data-theme="preferred_color_scheme"` 跟随 Jant 的浅/深色模式自动切换。
+- `data-theme="preferred_color_scheme"` 跟随 Jant 的浅 / 深色模式自动切换。
 
 第一次访问某条 thread 时，giscus 找不到匹配的 Discussion，会显示 "This post has no discussions yet"。第一个评论提交后 GitHub 自动创建一条 Discussion，标题就是 canonical 路径，之后访问命中。
 
@@ -110,7 +108,7 @@
 
 ## 配方：网站统计
 
-统计代码通常对加载时机敏感，放 **站点头部**。
+统计代码通常对加载时机敏感，放 **网站头部**。
 
 **Plausible**：
 
@@ -149,7 +147,7 @@
 </script>
 ```
 
-把 `G-XXXXXXXXXX` 换成 GA4 后台 → 管理 → 数据流里的 Measurement ID。GA4 比 Plausible / Umami 重一些，并且会在访客浏览器里设置第三方 Cookie——如果你的站点在欧盟可访问，需要自己再加一层 cookie consent。
+把 `G-XXXXXXXXXX` 换成 GA4 后台 → 管理 → 数据流里的 Measurement ID。GA4 比 Plausible / Umami 重一些，并且会写入用于跨会话识别的 Cookie；如果不希望用 Cookie，建议用 Plausible 或 Umami。
 
 上面这些都不需要单独配置事件——`pageview` 在每次完整页面加载时自动上报，Jant 是服务端渲染的多页站，默认就工作。
 
@@ -169,7 +167,7 @@
 
 ## 配方：自定义字体
 
-如果内建字型主题不够用，可以从 Google Fonts 或自托管字体加载。**站点头部** 放字体声明：
+如果内建字型主题不够用，可以从 Google Fonts 或自托管字体加载。**网站头部** 放字体声明：
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -193,5 +191,5 @@
 
 ## 接下来
 
-- [主题定制](theming.md) —— CSS 变量与样式系统
-- [常见问题](faq.md) —— 包括评论、多语言等常被问到的话题
+- [主题定制](theming.md) —— CSS 变量、字体变量列表
+- [常见问题](faq.md) —— 评论方案对比、多语言、SEO
