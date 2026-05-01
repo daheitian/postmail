@@ -1,116 +1,130 @@
 # GitHub Sync
 
-GitHub Sync backs up your posts to a GitHub repository as Markdown files and optionally pulls edits back. Every post change creates a commit, giving you a full Git history of your content.
+GitHub Sync backs up your posts as Markdown files in a GitHub repository and syncs edits made on GitHub back into Jant. Every post change produces one commit, giving your content full Git version history.
 
-You keep writing in Jant as usual. GitHub is the backup and version-control layer.
+The repository also acts as an interface for AI agents. Jant has an [HTTP API](API.md) and an MCP server, but many coding agents work more naturally with Markdown files than with API calls — a synced repository is a copy of your content they can read, edit, and commit directly.
 
-A GitHub repository also serves as a file-based interface for AI tools. Jant provides an [API](API.md) and an [MCP server](https://github.com/jant-me/jant/blob/main/docs/internal/coding-standards.md) for programmatic access, but many AI agents and coding assistants work most naturally with plain files. A synced repository gives them a directory of Markdown files they can read, edit, and commit — no API client required.
+## How it works
 
-## How It Works
+Jant is the source of truth. The GitHub repository mirrors Jant's content with a limited write-back channel: you can edit the content fields of existing posts on GitHub, but creation and deletion happen only in Jant.
 
-**Jant to GitHub** — When you create, edit, or delete a post, Jant pushes the change to your repository as a Markdown file with YAML front matter. Thread replies each become their own file nested under the root post's directory. Media stays where it is (referenced by URL, not copied into the repo).
+**Jant → GitHub**: when you create, edit, or delete a post, Jant pushes the change to your repository as a Markdown file with YAML front matter. Thread replies become individual files nested under the root post directory. Media is not copied into the repository — it stays at its URL.
 
-**GitHub to Jant** — When you edit a Markdown file on GitHub and push, a webhook notifies Jant. Jant parses the file, matches it to an existing post by slug, and updates the content. File deletions on GitHub are intentionally ignored — deleting posts must go through Jant's UI.
+**GitHub → Jant**: when you edit a Markdown file on GitHub and push, a webhook notifies Jant. Jant matches the file to an existing post by the `slug` field in front matter and updates its content. **The webhook only updates content fields on existing posts — adding or deleting `.md` files on GitHub does not create or delete posts in Jant.** This avoids accidental loss (clearing the repository will not take down the site).
 
-Jant marks its own commits with `[jant-sync]` in the commit message. Incoming webhooks with that marker are skipped, so changes never bounce back and forth.
+Jant's own commits are tagged with `[jant-sync]`. Webhooks carrying that marker are ignored, so changes never bounce back and forth.
 
-### What Syncs
+### What fields are synced
 
-- Post body (Markdown)
+- Post body (Markdown below the front matter)
 - Title, URL, source attribution, quote text, rating, and other front matter fields
-- Thread replies (each stored as a separate nested file under the root post directory)
+- Thread replies (each as a separate file nested under the root post directory)
 
-### What Does Not Sync from GitHub
-
-- New posts cannot be created by adding files on GitHub. Only existing posts are updated.
-- Media attachments are not modified. They remain at their original URLs.
-- Settings, navigation, collections, and themes are not affected by incoming webhooks.
+Settings, navigation, Collections, and themes are not affected by webhooks.
 
 ## Connecting
 
 ### Personal Access Token
 
-The default for self-hosted users. You need a GitHub **fine-grained Personal Access Token** with these permissions on the target repository:
+The method for deployments without a configured GitHub App. You need a GitHub **fine-grained personal access token** with these permissions on the target repository:
 
-| Permission   | Access     | Why                          |
-| ------------ | ---------- | ---------------------------- |
-| **Contents** | Read/Write | Push and read Markdown files |
-| **Webhooks** | Read/Write | Auto-create the push webhook |
+| Permission   | Access     | Why                            |
+| ------------ | ---------- | ------------------------------ |
+| **Contents** | Read/Write | Read and write Markdown files  |
+| **Webhooks** | Read/Write | Auto-register the push webhook |
 
-Create the token at [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta). Scope it to a single repository for least privilege.
+Create the token at [github.com/settings/tokens?type=beta](https://github.com/settings/tokens?type=beta). Scope it to a single repository and grant only the Contents and Webhooks permissions.
 
-1. Create a repository on GitHub (public or private, either works).
-2. Open **Settings > Data > GitHub Sync** in Jant.
-3. Paste your token and enter the repository as `owner/repo`.
+1. Create a repository on GitHub (public or private — both work).
+2. Open **Settings > Site > GitHub Sync** in Jant.
+3. Paste the token and enter the repository as `owner/repo`.
 4. Click **Connect**.
 
-Jant validates the token, saves the configuration, and creates a webhook on the repository. No manual webhook setup required.
+Jant validates the token, saves the configuration, and creates the webhook on the repository. No manual webhook setup required.
 
 ### GitHub App
 
 Available when the deployment has a GitHub App configured. You never touch a long-lived token — Jant issues short-lived credentials on demand.
 
-1. Open **Settings > Data > GitHub Sync** in Jant.
-2. Click **Install GitHub App**. You will be redirected to GitHub to pick which repositories the App can access.
-3. After installing, GitHub redirects you back. Pick the repository you want to sync and click **Connect**.
+1. Open **Settings > Site > GitHub Sync** in Jant.
+2. Click **Install GitHub App**. You're redirected to GitHub to pick which repositories the App can access.
+3. After installing, return to Jant, choose the repository to sync, and click **Connect**.
 
-## Push a Full Sync
+## Full sync
 
-After connecting, click **Push Full Sync** to populate the repository with all your posts. This creates a single commit containing every thread as a Hugo branch bundle under `content/`, plus the theme and config needed to build the site with [Hugo](https://gohugo.io).
+After the first connect, Jant pushes everything once automatically. You can re-run it anytime from **Settings > Site > GitHub Sync** by clicking **Sync Now**.
 
-You can re-run a full sync at any time. It replaces the repository content in one atomic commit. Git treats unchanged files as no-ops, so your blame history is preserved for files that did not change.
+### Paths Jant manages in the repository
 
-### What Jant Owns in the Repo
-
-Jant fully manages these paths and overwrites them on every push:
+These paths are managed entirely by Jant and overwritten on every push:
 
 - `content/**` — posts, collections, sections
 - `themes/jant/**` — the packaged Jant theme (layouts and static assets)
-- `data/jant.toml` — nav, branding, and the collections directory
+- `data/jant.toml` — navigation, branding, collections directory
 - `hugo.toml` — site configuration, including the `theme = "jant"` line
-- `.gitignore`, `README.md` — scaffolded by Jant
+- `.gitignore`, `README.md` — Jant-generated scaffolding
 - `.jant-sync` — ownership marker
 
-Files inside these managed paths that Jant no longer generates are removed on the next push. For example, deleting a post in Jant deletes the corresponding bundle from GitHub on the next sync.
+Files inside these paths that Jant no longer generates are removed on the next push. For example, deleting a post in Jant deletes the corresponding bundle from GitHub on the next sync.
 
-Everything else is yours. Jant preserves it across pushes. If you want to customize the site, edit root-level `layouts/<name>.html` or `static/<name>` — Hugo picks those over the theme's versions. The rest of `data/` is also free for your own Hugo data files (`menu.toml`, `authors.toml`, etc.). Do not edit under `themes/jant/**` directly; the next push will revert your changes. See [Customizing an Export](export-and-import.md#customizing-an-export) for details.
+Everything else in the repository is left alone. To customize the site:
 
-## Incremental Sync
+- Add `layouts/<name>.html` or `static/<name>` at the repository root to override files of the same name in the theme — Hugo prefers root-level versions.
+- The rest of `data/` (anything other than `data/jant.toml`) is free for your own files (`menu.toml`, `authors.toml`, etc.).
+- Don't edit `themes/jant/**` directly — the next push overwrites it.
 
-Once connected, every post create, edit, or delete in Jant automatically pushes the change to GitHub. Each mutation produces its own commit.
+See [Export and import](export-and-import.md) for details.
 
-- **Create or update root**: writes `content/{slug}/_index.md`
+## Incremental sync
+
+Once connected, every create, edit, or delete in Jant pushes the change to GitHub automatically. Each mutation produces its own commit:
+
+- **Create or update root post**: writes `content/{slug}/_index.md`
 - **Create or update reply**: writes `content/{root-slug}/{reply-slug}/index.md`
 - **Delete**: removes the matching bundle from the repository
 
-Incremental syncs run in the background and do not block the Jant UI.
+Incremental syncs run in the background and never block the Jant UI.
 
 ## Editing on GitHub
 
-You can edit any managed Markdown file directly on GitHub (or locally and push). When the push reaches GitHub, the webhook fires and Jant updates the matching post.
+You can edit any Jant-managed Markdown file directly on GitHub, or edit locally and push. When the push reaches GitHub, the webhook fires and Jant updates the matching post.
 
-Matching works by slug: Jant reads the `slug` field from the YAML front matter and looks up the corresponding post. If no match is found, the file is skipped.
+Matching is by slug: Jant reads the `slug` field from the YAML front matter and looks up the corresponding post. Files that don't match are skipped.
 
-The following fields are updated from GitHub edits:
+Fields that GitHub edits update:
 
 - `body` (the Markdown content below the front matter)
 - `title`
-- `link_url` (for link posts)
+- `link_url` (link posts)
 - `source_name`, `source_url` (attribution for link and quote posts)
-- `quote_text` (for quote posts)
+- `quote_text` (quote posts)
 - `rating`
 
-Deleting a file on GitHub has no effect — file deletions from GitHub are ignored to prevent accidental data loss.
+### Conflict handling
 
-## Disconnect
+Webhook processing is last-write-wins: when a webhook arrives, Jant updates the post with the file's content directly, with no merge against Jant's current state. If you edit the same post in the Jant UI and on GitHub at the same time, whichever write lands last wins. A subsequent push from Jant will also overwrite any intermediate state on GitHub that hasn't flowed back. Avoid editing the same post in both places at once.
 
-Open **Settings > Data > GitHub Sync** and click **Disconnect**. Jant removes the webhook from GitHub and clears the sync configuration. The repository and its content are not deleted.
+**Don't change the `slug` field**: slug is the matching key. If you change it, the file is treated as "an unmatched new file" and skipped — your edit won't reach Jant. To change a URL, do it in the Jant UI.
 
-## File Format
+## Background processing
 
-Posts are stored as Hugo-compatible Markdown with flat YAML front matter, the same format used by [Site Export](export-and-import.md).
+Sync runs in the background, so the UI never waits on GitHub — your save returns immediately and the push completes after the response.
 
-Root post at `content/{slug}/_index.md`:
+While a push is in flight, the settings page shows **Syncing…**, switching to **Last synced** when it finishes. If a push fails, the error appears on the status card directly — no need to dig through logs.
+
+Rapid edits coalesce: when a new change arrives before the previous push has finished, it's recorded as a "pending edit". Once the current push lands, another runs to push the latest state. Nothing is lost, and there are no concurrent pushes.
+
+Implementation note: built on Cloudflare Workers' `executionCtx.waitUntil`, with no queue binding or separate consumer worker required.
+
+## Disconnecting
+
+Open **Settings > Site > GitHub Sync** and click **Disconnect**. Jant removes the webhook from GitHub and clears the sync configuration. The repository and its content are not deleted.
+
+## File format
+
+Posts are stored as Hugo-compatible Markdown with flat YAML front matter — the same format used by [Site Export](export-and-import.md).
+
+Root posts live at `content/{slug}/_index.md`:
 
 ```markdown
 ---
@@ -123,10 +137,10 @@ status: published
 visibility: public
 ---
 
-Post content here.
+Post body goes here.
 ```
 
-Thread replies live as nested leaf bundles at `content/{root-slug}/{reply-slug}/index.md`:
+Thread replies are nested leaf bundles at `content/{root-slug}/{reply-slug}/index.md`:
 
 ```markdown
 ---
@@ -142,74 +156,47 @@ status: published
 visibility: public
 ---
 
-Reply content here.
+Reply content goes here.
 ```
 
-## Background Processing
+## Limits
 
-Sync operations run in the background so editing and publishing never wait on GitHub. When a post changes, the sync is scheduled inline through the Worker's `waitUntil` lifecycle — the HTTP response returns immediately and the push completes right after. No queue binding or separate consumer worker is needed.
+- One repository per site.
+- Media attachments and text attachments are not stored in the repository — media is referenced by URL inside the Markdown, and text attachments don't participate in GitHub Sync.
+- GitHub rate-limits authenticated users at 5,000 requests per hour. A full sync of 1,000 posts uses about 1,000 requests; an incremental sync uses 1–2 each.
 
-While a push is in flight the settings page shows a live "Syncing…" indicator; it switches back to "Last synced" when the push finishes. If a push fails, the error message appears on the status card so you know what went wrong without digging through logs.
+## Self-hosting: configure a GitHub App
 
-Rapid edits coalesce: if a second change arrives during an in-flight push, it's recorded as a pending edit and picked up immediately after the current push lands, so nothing is lost without causing concurrent pushes.
+This section is for administrators configuring a GitHub App on their own Jant deployment. End users connecting through a GitHub App only need the [Connecting](#connecting) steps above.
 
-## Limitations
+Set the following environment variables on the Jant deployment to enable the GitHub App connect flow:
 
-- **One repository per site.** Multi-repo sync is not supported.
-- **No post creation or deletion from GitHub.** Adding or deleting `.md` files on GitHub has no effect in Jant. Only existing posts can be updated by editing their content.
-- **Text attachments are not synced.** Media and text attachment content are referenced by URL only.
-- **Rate limits.** GitHub allows 5,000 API requests per hour for authenticated users. A full sync of 1,000 posts uses roughly 1,000 requests (one blob per file). Incremental syncs use 1-2 requests each.
+| Variable                    | Required | What it is                                                                                                                                                                                                                    |
+| --------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_APP_ID`             | Yes      | Numeric App ID from the GitHub App settings page                                                                                                                                                                              |
+| `GITHUB_APP_PRIVATE_KEY`    | Yes      | PKCS#8 PEM private key generated in the GitHub App settings. `\n` escapes are expanded automatically, so you can store it on a single line                                                                                    |
+| `GITHUB_APP_SLUG`           | Yes      | App slug (the last segment of `github.com/apps/<slug>`). Used to build install URLs                                                                                                                                           |
+| `GITHUB_APP_WEBHOOK_SECRET` | No       | Shared secret for GitHub App webhooks. Used by two endpoints: the per-repo push webhook (takes precedence over the per-site secret) and the App-level webhook at `/api/github-sync/app-webhook` (handles installation events) |
 
-## Self-hosted: Configuring the GitHub App
+### Create the GitHub App
 
-This section is for administrators setting up a GitHub App on their own Jant deployment. End users connecting via GitHub App only need the steps in [Connecting](#connecting) above.
+Go to **Settings > Developer settings > GitHub Apps > New GitHub App** (on either a user or organization).
 
-Set these environment variables on the Jant deployment to enable the GitHub App connect flow:
+> **Setup URL vs Callback URL**: GitHub Apps have two confusingly similar fields. The install flow uses **Setup URL** — once the user finishes installing, GitHub sends the browser there with `installation_id` and `state`. **Callback URL** is for OAuth user-to-server identification ("Sign in with GitHub"), which Jant does not use. Always set **Setup URL**, leave Callback URL blank.
 
-| Variable                    | Required | What it is                                                                                                                                                                                                                                                        |
-| --------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_APP_ID`             | Yes      | Numeric App ID from the GitHub App settings page.                                                                                                                                                                                                                 |
-| `GITHUB_APP_PRIVATE_KEY`    | Yes      | PKCS#8 PEM private key generated in the GitHub App settings. `\n` escapes are expanded automatically, so you can store it on a single line.                                                                                                                       |
-| `GITHUB_APP_SLUG`           | Yes      | App slug (the last segment of `github.com/apps/<slug>`). Used to build install URLs.                                                                                                                                                                              |
-| `GITHUB_APP_WEBHOOK_SECRET` | No       | Shared secret for GitHub App webhooks. Used by two endpoints: the per-repo push webhook (takes precedence over the per-site secret) and the App-level webhook at `/api/github-sync/app-webhook`, which reacts to installation and installation-repository events. |
+1. **Homepage URL**: your Jant site
+2. **Setup URL (optional)**: `https://<your-jant-site>/settings/github-sync/app/callback`
+3. **Redirect on update**: checked
+4. **Callback URL**: leave blank
+5. **Webhook**: check **Active**, set the URL to `https://<your-jant-site>/api/github-sync/app-webhook`, and put the same value as `GITHUB_APP_WEBHOOK_SECRET` into **Secret**. This keeps Jant's installation state in sync when the App is uninstalled, suspended, or has repositories removed. Per-repo push webhooks are still registered automatically at the site host
+6. **Repository permissions**: `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`
+7. **Subscribe to events**: `Push`, `Installation`, `Installation repositories`
+8. **Where can this GitHub App be installed**: "Only on this account"
+9. Generate a private key (PKCS#8 PEM) and copy the App ID
 
-### Creating the GitHub App
+## What's next
 
-Go to **Settings > Developer settings > GitHub Apps > New GitHub App** (on your user or org). Two configurations are documented — pick the one that matches your deployment.
-
-> **Setup URL vs Callback URL.** GitHub Apps expose two confusingly similar fields. The install flow uses **Setup URL** — that's where GitHub sends the browser after the user finishes installing, with `installation_id` and `state`. **Callback URL** is for OAuth user-to-server identification ("Sign in with GitHub"), which Jant does not use. Always set **Setup URL**, leave Callback URL blank.
-
-#### Self-hosted (single site, one host)
-
-1. **Homepage URL**: your Jant site.
-2. **Setup URL (optional)**: `https://<your-jant-site>/settings/github-sync/app/callback`.
-3. **Redirect on update**: ✅ checked.
-4. **Callback URL**: leave blank.
-5. **Webhook**: check **Active** and set the URL to `https://<your-jant-site>/api/github-sync/app-webhook`. Paste the same value used for `GITHUB_APP_WEBHOOK_SECRET` into **Secret**. This keeps Jant's installation state in sync when the App is uninstalled, suspended, or repositories are removed. Per-repo push webhooks are still registered automatically at the site host.
-6. **Repository permissions**: `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
-7. **Subscribe to events**: `Push`, `Installation`, `Installation repositories`.
-8. **Where can this GitHub App be installed**: "Only on this account".
-9. Generate a private key (PKCS#8 PEM) and copy the App ID.
-
-#### Hosted / multi-site (one control plane, many site hosts)
-
-A GitHub App only supports one Setup URL, but hosted sites live on different hosts. The control plane (`jant-cloud`) ships a dispatcher at `/api/github/install-callback` that verifies the signed install state and 302s the browser to the originating site.
-
-1. **Homepage URL**: your control plane URL.
-2. **Setup URL (optional)**: `https://<your-control-plane>/api/github/install-callback`.
-3. **Redirect on update**: ✅ checked.
-4. **Callback URL**: leave blank.
-5. **Webhook**: check **Active** and set the URL to `https://<your-control-plane>/api/github-app-webhook`. The control plane forwards the delivery to every affected site's `/api/github-sync/app-webhook`. Paste the same value used for `GITHUB_APP_WEBHOOK_SECRET` into **Secret**. Each site still registers its own repo-level push webhook at its own host.
-6. **Repository permissions**: same as self-hosted — `Contents: Read & write`, `Metadata: Read-only`, `Webhooks: Read & write`.
-7. **Subscribe to events**: `Push`, `Installation`, `Installation repositories`.
-8. **Where can this GitHub App be installed**: "Any account".
-9. Generate a private key (PKCS#8 PEM) and copy the App ID.
-
-In this mode the install `state` is signed with `HOSTED_CONTROL_PLANE_SSO_SECRET` — the same secret hosted deployments already share between core and control plane. Both services must see the same value; no extra env var is needed.
-
-## Related Reading
-
-- [Export and Import](export-and-import.md)
-- [Backups and Recovery](backups.md)
-- [Configuration](configuration.md)
-- [API Reference](API.md)
+- [Theming](theming.md) — adjust the look of your site
+- [Export and import](export-and-import.md) — Hugo export and site migration
+- [Backups and recovery](backups.md) — full backup strategy
+- [Configuration](configuration.md) — related environment variables

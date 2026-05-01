@@ -2,61 +2,81 @@
 
 > **Pre-1.0**: Jant is still early. Expect rough edges, breaking changes, and docs that keep moving while the product settles.
 >
-> Live demo: [demo.jant.me](https://demo.jant.me)
+> Live demo: [demo.jant.me](https://demo.jant.me) (demo credentials are pre-filled, data resets daily)
 >
-> Demo login: `demo@jant.me` / `jantdemodemojant`
+> You can also look at the author's blog as a real-world example: [owen.jant.blog](https://owen.jant.blog/)
 
-Jant is a small blog system for one author. It treats notes, links, quotes, threads, and collections as normal parts of writing, with a publishing flow that feels closer to posting than opening an admin panel.
+Jant is a small blog system for one author. It supports three post formats — **Note, Link, Quote** — that you can connect into a Thread or group into a Collection. Publishing feels closer to Twitter or Threads than to a WordPress or Ghost dashboard.
 
-No followers. No likes. No algorithmic feed.
+![Jant Home](https://jant-me-media.jant.me/assets/jant-home.png)
 
-The name comes from _Jantelagen_, a Nordic social concept often associated with humility. I liked the word, so I used it as the inspiration for the name.
+The name comes from _Jantelagen_ — a concept from a 1933 Nordic satirical novel, often summarized as "don't show off, don't compare."
 
-## Why Jant Exists
+If you're still on the fence about whether to start a blog, [this essay](docs/why-blog.md) might give you a reason.
 
-Maybe the honest answer is: because I couldn't find what I wanted.
+## Features
 
-Most blog systems treat "published" and "broadcast" as the same decision. Post something, and it goes to your RSS feed, your subscribers, and your timeline all at once. I wanted a quieter model. A post should be able to live on the site, have its own URL, belong to a collection, or continue a thread without automatically becoming an announcement. In Jant, `/feed` defaults to `Featured`, not `Latest`, and `Hidden from Latest` exists for exactly that middle ground.
+### Publishing and broadcasting are separate
 
-I also wanted publishing to feel modern. Not another WordPress or Ghost-style dashboard, but something closer to posting. Threads matter here. A lot of writing happens as one note, then a follow-up, then a correction, then one more addition. Very few blog systems treat that as a first-class shape.
+Most blog systems treat "published" and "broadcast" as a single decision — you post something, and it lands in your RSS feed, your subscribers' readers, and your homepage timeline at the same moment. Jant wants a quieter model: a piece of content can live on the site, have its own URL, sit inside a Collection, or extend a Thread, without every publish becoming an announcement.
 
-And I have always liked Tumblr's core instinct: note, link, and quote should be first-class formats. Those three cover most of what I have wanted from blogging for years. Open-source alternatives in that space still seem surprisingly rare, so I built the one I wanted.
+- **Quiet logging**: when you publish, you can hide the post from your homepage (Latest) and keep it only inside specific collections and `/archive`.
+- **Non-intrusive updates**: even when a post does appear on Latest, it doesn't automatically push to RSS.
+- **Curated syndication**: only posts marked Featured enter `/feed` and reach RSS subscribers. `/feed` defaults to Featured.
 
-## What Jant Includes
+### Writing experience
 
-- Three post formats: note, link, and quote
-- Threads for connected thoughts and self-replies
-- Collections for curated topics and ongoing series
-- Rich attachments for images, video, audio, documents, and pasted code
-- Ratings for books, films, articles, and other posts you want to keep a record of
-- Featured-first feeds, so publishing and syndication stay separate by default
-- Search, archive pages, and RSS feeds
-- Theme customization with built-in themes, fonts, and custom CSS
-- GitHub Sync for automatic content backup, bidirectional editing, and a file-based interface for AI tools
-- Full API, import tools, and Hugo export for portability
+A traditional blog gives you a form: title, body, category, tags, excerpt, SEO, cover image. That's an interface for managing content, not for writing. Jant takes the cue from Twitter and Threads instead — title is optional, you can extend any post into a Thread later, and publishing is a single action.
 
-## How It Runs
+![Jant compose screen](https://jant-me-media.jant.me/assets/new.png)
 
-| Option             | Best for                                         | Default stack                                        |
-| ------------------ | ------------------------------------------------ | ---------------------------------------------------- |
-| Cloudflare Workers | Cheap global hosting with minimal infrastructure | D1 + R2                                              |
-| Docker / Node.js   | Self-hosting on your own server                  | SQLite or Postgres + S3 (recommended) or local media |
+Jant also borrows one of Tumblr's instincts: Note, Link, and Quote are three native formats, not subtypes wedged into a single article template.
 
-Cloudflare Workers is a first-class target because it can keep a personal site online for a long time at very low cost.
+### GitHub Sync
 
-If you prefer to run Jant yourself on a more traditional server, that works too. Docker and bare Node are both supported.
+Every edit in Jant commits as Markdown to your own GitHub repo, and edits made on GitHub flow back to the site. Each post carries a full Git history.
 
-## Quick Start
+More importantly, **the repo itself is a complete Hugo site** — with theme, config, and navigation — that you can `hugo build` independently. One sync gives you all of these at once:
+
+- **An AI-friendly file interface**: a directory of plain Markdown is more natural than an API or MCP for an AI agent — read, edit, commit, no API client required.
+- **A full backup**: detached from Jant, the repo still builds into the same site.
+- **A static-hosting fallback**: hook it up to GitHub Actions, Cloudflare Pages, or Netlify and host it as a static site.
+
+See [GitHub Sync](docs/github-sync.md) and [Export and import](docs/export-and-import.md).
+
+### Full list
+
+- Three formats: Note, Link, Quote
+- Threads: a continuous train of thought can keep going, with no need to pad it into an essay
+- Collections: curated by topic — closer to a bookshelf than to tags
+- Media attachments: images, video, audio, Markdown, documents, code snippets
+- Ratings: rate books, films, podcasts, and articles
+- Featured / Latest split: publishing is not the same as broadcasting
+- Search, archive page, RSS
+- Built-in themes, font themes, custom CSS
+- Bidirectional GitHub Sync: content auto-commits to your repo, and the repo itself is a Hugo site
+- API and MCP: automate publishing, imports, and maintenance — built for [AI agents](docs/automation-and-api.md)
+- Hugo static site export: you can [leave with your content](docs/export-and-import.md) anytime
+
+## How to deploy
+
+| Option                                                 | Best for                               | Cost                         |
+| ------------------------------------------------------ | -------------------------------------- | ---------------------------- |
+| **[Self-host on Cloudflare](docs/deployment.md)**      | Running with very low maintenance cost | Usually within the free tier |
+| **[Self-host with Docker](docs/deployment-docker.md)** | You already have a server              | Whatever your server costs   |
+| **[Hosted Jant](docs/hosted.md)**                      | You don't want to deal with deployment | $10.46/year and up           |
+
+All three run the same open-source code. You can move content between them via [export and import](docs/export-and-import.md) or [GitHub Sync](docs/github-sync.md).
+
+## Quick start
 
 ### Deploy on Cloudflare
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
 
-Use the Cloudflare deploy button for the fastest path. It starts from the Jant starter repo and walks you through the required Cloudflare fields.
+The fastest path is the Cloudflare one-click deploy button — it starts from the Jant starter repo and walks you through the required fields. Full instructions in [Deploy on Cloudflare](docs/deployment.md).
 
-See [Deploy on Cloudflare](docs/deployment.md) for the full one-click and manual guide.
-
-### Create with CLI
+### Create with the CLI
 
 ```bash
 npm create jant@latest my-site
@@ -66,34 +86,51 @@ npm run dev
 
 Open `http://localhost:3000` and complete the first-run setup in the browser.
 
-### Run with Docker
-
-Use the official image when you want a traditional server deployment:
+### Deploy with Docker
 
 - Docker image: [`owenyoung/jant`](https://hub.docker.com/r/owenyoung/jant)
 - Guide: [Deploy with Docker](docs/deployment-docker.md)
 
-### Hosted Option
+### Use Hosted Jant
 
-If you would rather not self-host, there is also a small hosted option. Access opens gradually. Write to `owen#jant.me` if you want help getting set up.
+The official hosted service [jant.me](https://jant.me) runs the same code as the self-hosted versions, with automatic HTTPS, custom domains, and media storage on top. See [Use Hosted Jant](docs/hosted.md).
 
 ## Documentation
 
-- [Introduction to Jant](docs/overview.md)
-- [Getting Started](docs/getting-started.md)
-- [Writing and Organizing Posts](docs/writing-and-organizing.md)
+### Get started
+
+- [Why blog today?](docs/why-blog.md)
+- [Introduction](docs/overview.md)
+- [Getting started](docs/getting-started.md)
+
+### Run your site
+
 - [Deploy on Cloudflare](docs/deployment.md)
 - [Deploy with Docker](docs/deployment-docker.md)
+- [Use Hosted Jant](docs/hosted.md)
 - [Configuration](docs/configuration.md)
+
+### Use your site
+
+- [Writing and organizing](docs/writing-and-organizing.md)
 - [GitHub Sync](docs/github-sync.md)
-- [Export and Import](docs/export-and-import.md)
-- [Backups and Recovery](docs/backups.md)
 - [Theming](docs/theming.md)
+- [Code injection](docs/code-injection.md)
+
+### Data and integration
+
+- [Export and import](docs/export-and-import.md)
+- [Backups and recovery](docs/backups.md)
+- [Automation and API](docs/automation-and-api.md)
+
+### Reference
+
+- [FAQ](docs/faq.md)
 - [API Reference](docs/API.md)
 
 ## Development
 
-Jant's own repo uses [mise](https://mise.jdx.dev/) to manage Node.js and pnpm.
+The Jant repo uses [mise](https://mise.jdx.dev/) to manage development dependencies and tasks.
 
 ```bash
 git clone https://github.com/jant-me/jant.git
@@ -103,7 +140,7 @@ pnpm install
 mise run dev
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the contributor workflow.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
 
 ## License
 

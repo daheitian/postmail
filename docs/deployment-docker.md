@@ -1,38 +1,28 @@
 # Deploy with Docker
 
-The official Docker image is `owenyoung/jant`.
+The official image [`owenyoung/jant`](https://hub.docker.com/r/owenyoung/jant) runs the Node version of Jant and applies database migrations automatically before the app starts.
 
-It runs the Node runtime and starts Jant. Database migrations run automatically before the app starts.
-
-Docker Hub: <https://hub.docker.com/r/owenyoung/jant>
-
-## Before You Begin
+## Before you begin
 
 You need:
 
-- Docker Engine 27 or newer, or another recent Docker release
-- Docker Compose v2
-- a long random `AUTH_SECRET`
+- [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
+- A long, random `AUTH_SECRET`. Generate one with `openssl rand -base64 32`.
 
-## Quick Start with Docker Compose
+## Quick start with Docker Compose
 
-Download the official Compose files:
+Create a directory for your site's config and data, then download the official Compose file:
 
 ```bash
+mkdir jant-site && cd jant-site
 curl -O https://raw.githubusercontent.com/jant-me/jant/main/compose.yml
 curl -o .env https://raw.githubusercontent.com/jant-me/jant/main/.env.example
 ```
 
-Edit `.env` and set at least:
+Edit `.env` and set `AUTH_SECRET` to the secret you generated:
 
 ```env
-AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me
-```
-
-Generate a secret with:
-
-```bash
-openssl rand -base64 32
+AUTH_SECRET=<auth-secret>
 ```
 
 Start the stack:
@@ -41,138 +31,104 @@ Start the stack:
 docker compose up -d
 ```
 
-Open `http://127.0.0.1:3000`.
+Open `http://127.0.0.1:3000`. The first visit walks you through creating the admin account. If the port is taken, set `HOST_PORT=8080` (or another value) in `.env`.
 
-## What the Default Compose Setup Gives You
+## What the default Compose includes
 
-The bundled `compose.yml` uses a simple single-node layout:
+`compose.yml` starts two services that share the same `./data:/var/lib/jant` volume:
 
-- the official image `owenyoung/jant:latest`
-- a migration init service that runs automatically before the app starts — if migration fails, the app does not start
-- SQLite stored at `./data/jant.sqlite`
-- uploaded media stored at `./data/media/`
-- container data mounted at `/var/lib/jant`
-- `TRUST_PROXY=true`, which is appropriate when the container sits behind a reverse proxy you control
-- log rotation capped at 10 MB × 3 files to prevent disk exhaustion
-- timezone configurable via `TZ` (defaults to UTC)
+- **`jant-migrate`** — runs `jant migrate` once on every `docker compose up`. If migrations fail, `jant` doesn't start.
+- **`jant`** — the long-running app container, listening on port `3000`.
 
-This is the easiest way to self-host Jant on a VPS or home server.
+After it's running, the host's `./data/` will contain:
 
-The default Compose setup uses local media because it is the quickest way to get a site running. For a longer-lived deployment, S3-compatible storage is usually the better choice.
+- `jant.sqlite` — the SQLite database
+- `media/` — uploaded media files
 
-## Important Environment Variables
+The image and Compose file ship with a few defaults. Normally you don't need to change them:
 
-Set these in `.env`:
+| Variable      | Default         | Source  | Purpose                               |
+| ------------- | --------------- | ------- | ------------------------------------- |
+| `HOST`        | `0.0.0.0`       | image   | In-container listen address           |
+| `PORT`        | `3000`          | image   | In-container listen port              |
+| `HOST_PORT`   | `3000`          | Compose | Port mapped to the host               |
+| `DATA_DIR`    | `/var/lib/jant` | image   | Root for the database and local media |
+| `TRUST_PROXY` | `true`          | Compose | Trust `X-Forwarded-*` headers         |
+| `TZ`          | `UTC`           | Compose | Container time zone                   |
 
-| Variable           | Required          | Purpose                                                                                   |
-| ------------------ | ----------------- | ----------------------------------------------------------------------------------------- |
-| `AUTH_SECRET`      | Yes               | Session signing and authentication                                                        |
-| `SITE_ORIGIN`      | Usually           | Canonical URLs for RSS, sitemaps, exports, and auth callbacks                             |
-| `SITE_PATH_PREFIX` | Only for subpaths | Public mount path such as `/blog`                                                         |
-| `TRUST_PROXY`      | Depends           | Set to `true` when running behind Caddy, Nginx, Traefik, or another trusted reverse proxy |
+To override any of them, set the value in `.env`.
 
-Example:
+## Database
+
+Jant chooses the database driver from the `DATABASE_URL` scheme:
+
+- `file:` — SQLite (default)
+- `postgres:` or `postgresql:` — Postgres
+
+### SQLite (default)
+
+The image already sets `DATA_DIR=/var/lib/jant`. If `DATABASE_URL` is empty, Jant derives the SQLite path from `DATA_DIR`. That's equivalent to:
 
 ```env
-AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me
-SITE_ORIGIN=https://your-jant.example
-# SITE_PATH_PREFIX=/blog
-TRUST_PROXY=true
+DATA_DIR=/var/lib/jant
+DATABASE_URL=file:/var/lib/jant/jant.sqlite
 ```
 
-For the full list of Node and Docker variables, see [Configuration](configuration.md).
+Because these defaults are already wired together, the default Compose setup doesn't need any database variables in `.env` — `/var/lib/jant` inside the container maps to `./data/` on the host through the volume, so the file ends up at `./data/jant.sqlite`.
 
-## Local Media or S3?
-
-Use local media when you want the simplest possible setup or are testing on one machine.
-
-Use S3-compatible storage when you want the recommended long-term setup for Docker or Node. It keeps media outside the app host and makes it easier to move or rebuild the app later without treating uploaded files as container-local state.
-
-## CDN Static Assets
-
-This is an **optional** feature for deployments where zero asset 404s during updates matter. Without it, Jant works normally — assets are served from the container itself. The only downside is a brief window during a deploy where a user who already has an old page open might get a 404 on a stale asset reference. For most personal sites this is acceptable.
-
-If you want to eliminate that window, upload assets to S3-compatible object storage before deploying the new container. Assets accumulate there indefinitely — old versions are never deleted — so stale pages can always find the files they reference.
-
-### Setup
-
-**1. Add S3 credentials and `ASSET_BASE_URL` to your environment.**
-
-In your `docker-compose.yml` (or `.env` file):
+Set the variable explicitly only when you want a different path:
 
 ```env
-ASSET_BASE_URL=https://cdn.example.com
+DATABASE_URL=file:/var/lib/jant/custom.sqlite
+```
 
+### Switching to Postgres
+
+Override with a `postgres:` URL:
+
+```env
+DATABASE_URL=postgres://<user>:<password>@<host>:5432/<db>
+```
+
+After switching, the SQLite file is no longer read or written, but the local media directory (`./data/media/`) still belongs to the local storage driver unless you also switch to S3.
+
+## Media storage
+
+The default is local storage, with files under `./data/media/`. Good enough and quick to start. The downside: media is tied to the app host, so migrating or rebuilding the container means dragging those files along.
+
+For longer-running setups, S3-compatible storage (AWS S3, Backblaze B2, MinIO, DigitalOcean Spaces, etc.) is the better choice:
+
+```env
+STORAGE_DRIVER=s3
 S3_ENDPOINT=https://s3.us-east-1.amazonaws.com
 S3_BUCKET=my-bucket
 S3_REGION=us-east-1
-S3_ACCESS_KEY_ID=...
-S3_SECRET_ACCESS_KEY=...
+S3_PUBLIC_URL=https://cdn.example.com
+S3_ACCESS_KEY_ID=<access-key-id>
+S3_SECRET_ACCESS_KEY=<secret-access-key>
 ```
 
-`ASSET_BASE_URL` is the public root URL of your CDN/bucket — Jant appends `/_assets` internally.
+For each field's meaning and CORS setup, see [Configuration § Storage](configuration.md#storage).
 
-**2. Add an `upload-assets` service to your `docker-compose.yml`.**
+## Reverse proxy and public URL
 
-Add a one-off service and wire it to your app with `depends_on`:
+Putting Jant behind a reverse proxy like Caddy, Nginx, or Traefik is common. Compose already sets `TRUST_PROXY=true`, so forwarded headers are honored — under the standard setup you don't need to touch any variable.
 
-```yaml
-services:
-  upload-assets:
-    image: owenyoung/jant:latest # same image as your app
-    env_file: .env
-    command: ["node", "bin/jant.js", "assets", "upload"]
-    restart: "no"
+Two cases need explicit settings:
 
-  app:
-    image: owenyoung/jant:latest
-    depends_on:
-      upload-assets:
-        condition: service_completed_successfully
-    # ... rest of your app config
-```
+- **The reverse proxy doesn't forward `X-Forwarded-Host` / `X-Forwarded-Proto` correctly**: absolute URLs in RSS, sitemap, exports, and auth callbacks will use the wrong host. Pin it with `SITE_ORIGIN=https://<your-domain>` in `.env`.
+- **Mounted under a subpath** (e.g. `example.com/blog`): set `SITE_PATH_PREFIX=/blog`. `SITE_ORIGIN` is a separate variable that only accepts an origin (scheme + host + port); the path part is ignored — decide whether you also need it based on the previous bullet.
 
-**3. Deploy as usual.**
+For the full list of variables, see [Configuration](configuration.md).
 
-```bash
-docker compose pull
-docker compose up -d
-```
+## Running without Compose
 
-`docker compose up -d` automatically runs the upload first and starts the app only after it completes. If S3 is not configured, the upload step exits cleanly and the app starts normally — no manual step, no extra commands to remember.
-
-### If you build from source (CI/CD)
-
-```bash
-mise run build
-mise run upload-assets   # reads S3_* from packages/core/.env.node
-docker build .
-docker compose up -d
-```
-
-### Sharing a bucket with media storage
-
-You can reuse the same S3 bucket as your media storage. Assets land under the `_assets/` prefix, media under its own keys — they don't conflict.
-
-If you need to namespace assets (e.g. multiple sites sharing one bucket), use a sub-path prefix that ends with `_assets`:
-
-```bash
-docker compose run --rm --no-deps app node bin/jant.js assets upload --prefix mysite/_assets
-# then set ASSET_BASE_URL=https://cdn.example.com/mysite
-```
-
-### Bucket permissions
-
-The asset bucket (or prefix) must be publicly readable — browsers fetch JS and CSS directly. CORS configuration is not required for static `<link>` and `<script>` fetches.
-
-## Running Without Compose
-
-Use `docker run` when you want one container and will manage the rest yourself:
+To start a single container, run migrations manually first, then start the app:
 
 ```bash
 # Run migrations first
 docker run --rm \
-  -e AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me \
+  -e AUTH_SECRET=<auth-secret> \
   -v "$(pwd)/data:/var/lib/jant" \
   owenyoung/jant:latest \
   node bin/jant.js migrate
@@ -181,54 +137,50 @@ docker run --rm \
 docker run -d \
   --name jant \
   -p 3000:3000 \
-  -e AUTH_SECRET=replace-me-replace-me-replace-me-replace-me-replace-me \
+  -e AUTH_SECRET=<auth-secret> \
   -e TRUST_PROXY=false \
   -v "$(pwd)/data:/var/lib/jant" \
   owenyoung/jant:latest
 ```
 
-Set `TRUST_PROXY=true` if the container sits behind your own reverse proxy.
+If the container sits behind your own reverse proxy, set `TRUST_PROXY=true`.
 
-## Updating the Site
+## Updating the site
 
-Pull the latest image and restart. Migrations run automatically before the app starts:
+Pull the latest image and restart:
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
-Pin a specific version when you want repeatable deploys:
+Every `up` runs `jant-migrate` first and only starts `jant` after migrations succeed. New migrations bundled in the image apply automatically. If migrations fail, `jant` won't start, so the database never sits in a schema-mismatched state.
+
+For repeatable deploys, pin the image tag:
 
 ```env
 IMAGE=owenyoung/jant:<version>
 ```
 
-## Common Commands
-
-Show logs:
+## Common commands
 
 ```bash
-docker compose logs -f
-```
-
-Stop the stack:
-
-```bash
-docker compose down
-```
-
-Change the public host port:
-
-```env
-HOST_PORT=8080
+docker compose logs -f       # follow logs
+docker compose ps            # show service status
+docker compose down          # stop the whole stack
 ```
 
 ## Backups
 
-With the default Docker setup, a full backup includes both:
+Under the default Docker setup, a complete backup must include at least:
 
-- `data/jant.sqlite`
-- `data/media/`
+- `./data/jant.sqlite` — the database
+- `./data/media/` — uploaded media
 
-If you switch to Postgres or S3-compatible storage, your backup plan changes too. See [Backups and Recovery](backups.md) for the recovery model.
+For details, see [Backups and recovery](backups.md).
+
+## What's next
+
+- [Configuration](configuration.md) — every environment variable and site behavior
+- [Writing and organizing](writing-and-organizing.md) — start writing once the site is up
+- [Backups and recovery](backups.md) — recovery planning for long-running setups

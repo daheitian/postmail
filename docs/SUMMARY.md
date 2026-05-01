@@ -1,27 +1,37 @@
 # Summary
 
-## Overview
+## Preface
+
+- [Why blog today?](why-blog.md)
+
+---
+
+## Get started
 
 - [Introduction](overview.md)
 - [Getting started](getting-started.md)
-- [Writing and organizing posts](writing-and-organizing.md)
 
-## Self-hosting
+## Run your site
 
 - [Deploy on Cloudflare](deployment.md)
 - [Deploy with Docker](deployment-docker.md)
+- [Use Hosted Jant](hosted.md)
 - [Configuration](configuration.md)
 
-## Operations
+## Use your site
 
+- [Writing and organizing](writing-and-organizing.md)
 - [GitHub Sync](github-sync.md)
+- [Theming](theming.md)
+- [Code injection](code-injection.md)
+
+## Data and integration
+
 - [Export and import](export-and-import.md)
 - [Backups and recovery](backups.md)
-
-## Customization
-
-- [Theming](theming.md)
+- [Automation and API](automation-and-api.md)
 
 ## Reference
 
-- [API reference](API.md)
+- [FAQ](faq.md)
+- [API Reference](API.md)

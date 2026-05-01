@@ -1,72 +1,30 @@
-# Getting Started
+# Getting started
 
-The fastest way to start a new Jant site is `create-jant`. It scaffolds a Cloudflare-ready project, generates a local `AUTH_SECRET`, installs dependencies by default, and gives you a working local development setup.
+There are three ways to get a Jant site.
 
-If you want to evaluate Jant without creating a project first, skip to [Deploy with Docker](deployment-docker.md).
+| Option                                            | Best for                                  | Cost                            |
+| ------------------------------------------------- | ----------------------------------------- | ------------------------------- |
+| **[Self-host on Cloudflare](deployment.md)**      | Long-running site with low maintenance    | Usually $0 within the free tier |
+| **[Self-host with Docker](deployment-docker.md)** | You already have a server                 | Whatever your server costs      |
+| **[Hosted Jant](hosted.md)**                      | You don't want to deal with configuration | $10.46/year                     |
 
-## Prerequisites
+All three run the same Jant. You can [export](export-and-import.md) your content or move it via [GitHub Sync](github-sync.md) at any time.
 
-- [Node.js](https://nodejs.org/) 24 or newer
-- A Cloudflare account if you plan to deploy on Workers
+## Not sure which to pick
 
-## Create a New Site
+**Pick [Self-host on Cloudflare](deployment.md)** if:
 
-```bash
-npm create jant@latest my-site
-cd my-site
-```
+- You want it to be free (Cloudflare's free tier is usually more than enough)
+- You're willing to spend 15 minutes on a one-time setup
+- You don't have your own server, but you do have a Cloudflare account
 
-If you prefer `pnpm` or `yarn`, use their `create` command instead. Jant adapts the scaffolded scripts to the package manager you used.
+**Pick [Self-host with Docker](deployment-docker.md)** if:
 
-## Start Local Development
+- You already have a server of your own
+- You're comfortable with Docker
 
-```bash
-npm run dev
-```
+**Pick [Hosted Jant](hosted.md)** if:
 
-Open [http://localhost:3000](http://localhost:3000).
-
-To use a different local port:
-
-```bash
-PORT=3030 npm run dev
-```
-
-## Complete Setup in the Browser
-
-On first launch, Jant walks you through the initial site setup.
-
-1. Create your admin account
-2. Set your site name
-3. Choose your language
-
-After that, you can start publishing immediately.
-
-## Understand the Default Publishing Model
-
-Before you write the first few posts, one default is worth knowing:
-
-- `/feed` points to `Featured` by default
-- `/feed/latest` exists separately for the latest public posts
-- `Hidden from Latest` lets a post stay public on your site without entering that stream
-
-That split is intentional. In Jant, publishing something and broadcasting it are not automatically the same action.
-
-## What the Scaffold Already Did
-
-By default, `create-jant` also:
-
-- generated `.dev.vars` with a secure local `AUTH_SECRET`
-- installed dependencies
-- initialized a git repository
-- created a Cloudflare Workers project with D1 and R2 bindings ready to configure
-- included `examples/agent-content-automation/README.md` plus site-level agent guidance for scripted publishing
-
-If you passed `--no-install` or `--no-git`, do those steps yourself.
-
-## What to Read Next
-
-- [Writing and Organizing Posts](writing-and-organizing.md) to understand notes, links, quotes, threads, and collections
-- [Deploy on Cloudflare](deployment.md) to publish the site you just created
-- [Configuration](configuration.md) to tune URLs, storage, feeds, and uploads
-- [Theming](theming.md) to change how the site looks
+- You don't want to handle any configuration
+- You want to start writing right now, sign up and go
+- $10.46 a year fits your budget

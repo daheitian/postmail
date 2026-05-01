@@ -1,216 +1,201 @@
-# Writing and Organizing Posts
+# Writing and organizing
 
-Jant keeps the publishing model intentionally small. You write posts, connect them into threads when needed, and group them into collections when that helps readers browse.
+Jant's publishing model has just one primitive: the post. A post comes in one of three formats (Note, Link, Quote), can carry attachments, and can carry a rating. If a few posts were written as a continuous train of thought, you can string them into a Thread. If a few posts share a topic, you can group them into a Collection. Everything else is an extension of those two ideas.
 
-## Post Formats
+## Post formats
 
 ### Note
 
-Use a note for original writing.
+Use Note when the body of the post is your own writing. Journal entries, essays, status updates, quick thoughts — all Notes.
 
-- A note can be short or long
-- A title is optional
-- If a note has a title, Jant uses it to generate the URL slug
-- If it does not have a title, Jant generates a short random slug
-
-Use notes for journal entries, essays, status updates, or image-led posts.
+The title is optional. If you give a Note a title, Jant uses it to generate the URL slug; otherwise it generates a short random one.
 
 ### Link
 
-Use a link post when the destination matters as much as your commentary.
+Use Link when you're sharing someone else's content along with your own take. Examples: a blog post a friend wrote, a fun tool you just discovered, a podcast episode worth listening to, a good article you read.
 
-- `url` is the key field
-- `title` is optional
-- Your own text can live in the body
-
-Use link posts for articles, videos, tools, podcasts, or anything else you want to point people toward.
+The URL is required. You'll need to fill in a title, and you can add your own commentary.
 
 ### Quote
 
-Use a quote post for cited text.
+Use Quote when you're citing someone else's words. Examples: a passage from a book, a sentence in an article that made you stop, a line from a film.
 
-- `quoteText` stores the quoted passage
-- `sourceName` stores the attribution
-- `sourceUrl` is optional but useful when a source exists online
-
-Use quote posts for book notes, interview excerpts, or references you want to keep separate from your own prose.
+The quoted text is required; the author and source link are both optional. Quotes are typeset in their own dedicated style.
 
 ## Attachments
 
-Posts can include attachments in a fixed order.
+A post can carry attachments, and you can drag to reorder them. Two kinds:
 
-- Media attachments for images, video, audio, and documents such as PDFs
-- Text attachments for additional markdown content blocks, including pasted code and notes that should stay attached to the post
-
-The attachment list belongs to the post. Reordering attachments changes how the post is presented everywhere.
+- **Media attachments**: images, video, audio, and documents like PDFs.
+- **Text attachments**: extra Markdown blocks. Good for content that doesn't belong in the same flow as the body — a full code listing, a raw AI conversation, a long quote.
 
 ## Ratings
 
-Posts can carry an optional 1 to 5 rating.
-
-Use ratings when you want to keep a lightweight record of how you felt about:
-
-- books
-- films
-- articles
-- albums
-- anything else you review on your own site
-
-Ratings stay attached to the post instead of disappearing into a third-party service.
+A post can carry an optional rating from 1 to 5, typically used for things with a clear object of judgment — books, films, albums, restaurants. The rating shows up on the post page and in lists.
 
 ## Threads
 
-Threads are self-replies. Each reply belongs to the same thread as the root post.
+A Thread is a structure that strings multiple posts together in chronological order — you write a root post, and each subsequent post is a "reply" attached to it.
 
-Key rules:
+Good for the kind of content where you think as you write and update across several sittings: you might not know exactly where it's going at the start, but you want readers to follow it in order.
 
-- Visibility follows the root post
-- You cannot pin a reply directly
-- Featured state is independent, so a reply can be featured even if the root post is not
+The whole Thread shares the visibility of the root post (Public / Hidden / Private), but Featured state is independent — a single reply can be featured on its own, with no need for the root post to be featured too.
 
-Use threads when you want to keep a sequence of thoughts together without collapsing everything into one post.
+To extend a Thread, click "Reply" at the bottom of the post detail page.
 
 ## Collections
 
-Collections are curated groupings of posts under `/{slug}`.
+A Collection is a curated grouping organized under `/{slug}`. The same post can belong to multiple Collections.
 
-Use them for:
+Good for:
 
-- Ongoing topics
-- Reading lists
-- Travel logs
-- Project journals
-- Themed selections from older posts
+- Long-running topics (for example, reading notes on a particular book)
+- Reading, watching, and listening lists
+- Site-status pages like `/now` (in the spirit of [nownownow](https://nownownow.com/), a "what I'm doing now" page — basically a slow, continuously updated story)
 
-Collections have their own pages and feeds. They are better than tags when you want editorial control.
+Each Collection has its own page and feed.
 
-You can also combine collections in the URL. For example:
+You can also combine multiple Collections in the URL:
 
 - `/collections/reading+movies`
 - `/collections/notes+links+quotes`
 
-Jant treats that as one combined view across multiple collections.
+Jant treats this as a combined view across multiple Collections:
 
-- It shows the union of posts from all included collections
-- Shared threads are deduped, so the same thread does not appear twice
-- The same pattern works for feeds at `/collections/{slug1}+{slug2}/feed`
+- Shows the union of posts across the listed Collections
+- A Thread that belongs to more than one of those Collections shows up only once
+- The same pattern works for feeds: `/collections/{slug1}+{slug2}/feed`
 
-## Visibility and Curation
+## Visibility and curation
 
-### Publishing States
+### Publishing states
 
-| State              | Appears on Latest | Appears in collections | Needs login |
-| ------------------ | ----------------- | ---------------------- | ----------- |
-| Public             | Yes               | Yes                    | No          |
-| Hidden from Latest | No                | Yes                    | No          |
-| Private            | No                | No for public visitors | Yes         |
-| Draft              | No                | No                     | Yes         |
+A post has four publishing states:
+
+- **`Public`**: public, appears on the homepage Latest, visible to anonymous visitors.
+- **`Hidden from Latest`**: hidden from the homepage, but still public — direct links work, it can belong to a Collection, and it appears in `/archive`.
+- **`Private`**: visible only after sign-in.
+- **`Draft`**: unpublished, visible only to you.
+
+`/archive` is a complete index of every public post on the site.
 
 ### Featured
 
-Featured is a separate curation flag.
+Marking a post as Featured does two things at once: it adds the post to the `/featured` page, and it pushes the post into the default `/feed` that goes to your subscribers.
 
 - Featured posts appear on the Featured page
-- Featured feeds live at `/feed/featured`
-- The main `/feed` URL can point to either Featured or Latest
-- By default, `/feed` points to Featured, not Latest
+- The Featured feed lives at `/feed/featured`
+- The main `/feed` can point at Featured or Latest, and defaults to Featured
 
-Use Featured for your best work, an editor's pick, or the small set of posts you want subscribers to receive by default.
+### Why the default feed is Featured
 
-### Why the Default Feed Is Featured
+One of Jant's core design choices is to separate "publishing" from "broadcasting."
 
-Jant is built around the idea that publishing a post and broadcasting a post are not the same action.
+**Publish** means the content appears on your site — accessible by direct link, eligible for a Collection, available to extend into a Thread.
 
-In the default setup:
+**Broadcast** means the content gets pushed into subscribers' RSS feeds.
 
-- **Featured** posts go into `/feed`
-- **Public** posts can still appear on the site and in `/feed/latest`
-- **Hidden from Latest** posts stay published, but do not appear in Latest
+In Jant these two are independent:
 
-This gives you a useful middle ground:
+- A post marked `Hidden from Latest` is hidden from the homepage, but the content itself stays public: direct links work, it can belong to a Collection, and it appears in `/archive`.
+- A `Public` post appears on the homepage Latest, but **does not** enter the default `/feed`.
+- Only posts marked `Featured` enter `/feed` and reach subscribers.
 
-- publish something on your site
-- keep it visible by direct link
-- place it in a collection
-- continue a thread
-- avoid pushing it into the default subscriber feed
+This means you can publish small fragments without weight — they appear on your site but don't disturb your subscribers — and only the things you actually want to syndicate end up in the feed.
 
-That is one of Jant's core editorial choices, not a secondary settings trick.
+### Default behavior at a glance
 
-### Default Behavior at a Glance
+The table below assumes the default `MAIN_RSS_FEED=featured`.
 
-This table assumes the default configuration where `MAIN_RSS_FEED=featured`.
+| Post state            | Direct URL | Latest | `/archive` | Default `/feed` | Collection |
+| --------------------- | ---------- | ------ | ---------- | --------------- | ---------- |
+| `Public` and Featured | Yes        | Yes    | Yes        | Yes             | Yes        |
+| `Public`              | Yes        | Yes    | Yes        | No              | Yes        |
+| `Hidden from Latest`  | Yes        | No     | Yes        | No              | Yes        |
+| `Private`             | Login only | No     | Login only | No              | Login only |
+| `Draft`               | No         | No     | No         | No              | No         |
 
-| Post state          | Direct URL | Latest | Default `/feed` | Collections |
-| ------------------- | ---------- | ------ | --------------- | ----------- |
-| Public and featured | Yes        | Yes    | Yes             | Yes         |
-| Public              | Yes        | Yes    | No              | Yes         |
-| Hidden from Latest  | Yes        | No     | No              | Yes         |
-| Private             | Login only | No     | No              | Login only  |
-| Draft               | No         | No     | No              | No          |
+If you switch `MAIN_RSS_FEED` to `latest`, the default `/feed` behavior shifts accordingly, but `Hidden from Latest` still keeps those posts out of that stream.
 
-If you later switch `MAIN_RSS_FEED` to `latest`, the default `/feed` behavior changes, but `Hidden from Latest` still keeps those posts out of that stream.
-
-## URLs and Browse Pages
+## URLs and browse pages
 
 Jant uses readable URLs:
 
-- Posts use `/{slug}`
-- Collections use `/{slug}`
-- Combined collection views use `/collections/{slug1}+{slug2}+{slug3}`
-- Search lives at `/search`
-- Archive lives at `/archive`
-- Featured lives at `/featured`
+- Post: `/{slug}`
+- Collection: `/{slug}`
+- Combined Collection view: `/collections/{slug1}+{slug2}+{slug3}`
+- Search: `/search`
+- Archive: `/archive`
+- Featured page: `/featured`
 
 Feeds:
 
-- `/feed` uses your configured main feed
-- `/feed/latest` always returns the latest public posts
-- `/feed/featured` always returns featured posts
-- `/{slug}/feed` returns a collection feed
-- `/collections/{slug1}+{slug2}/feed` returns a combined collection feed
+- `/feed` uses your currently configured main feed
+- `/feed/latest` returns posts that appear on the homepage Latest (excludes `Hidden from Latest`)
+- `/feed/featured` returns Featured posts
+- `/archive/feed` returns every public post (including `Hidden from Latest`), and supports filters like `?year=`, `?format=`, `?collection=`, `?media=`
+- `/{slug}/feed` returns the feed for a single Collection
+- `/collections/{slug1}+{slug2}/feed` returns the feed for a combined Collection view
 
-## Keyboard Shortcuts
+## Custom URLs
 
-Shortcuts are available on any page when the cursor is not inside an input field, editor, or open dialog.
+In addition to the default slug, Jant lets you set custom paths for posts, Collections, and archive pages, and lets you configure redirects. Manage all of them in the admin under **Settings → Advanced → Custom URLs** (the route is `/settings/custom-urls`).
 
-### Creating Posts
+There are four types:
 
-| Key | Action         |
-| --- | -------------- |
-| `N` | New note       |
-| `L` | New link post  |
-| `Q` | New quote post |
+- **Post**: assign a new primary path to a specific post; the original slug auto-redirects with a 301.
+- **Collection**: assign a new primary path to a specific Collection; the original slug auto-redirects with a 301.
+- **Archive**: pin a set of archive filters to a fixed path — for example, `/quotes` actually renders `/archive?format=quote&visibility=public&view=list`.
+- **Redirect**: redirect any path to another path or to an external URL.
 
-If you are viewing a collection page, the new post is automatically added to that collection.
+### Setting a custom path for a post or Collection
 
-### Working with Posts
+Go to **Settings → Advanced → Custom URLs**, then click **New Custom URL** in the top right:
 
-These shortcuts apply to the post you are viewing or hovering over.
+- **Path**: the new public path you want — for example, `blog/my-post` (no leading `/`)
+- **Type**: choose `Post` or `Collection`
+- **Target Slug**: the slug of the post or Collection to point at
 
-| Key | Action                |
-| --- | --------------------- |
-| `R` | Reply (add to thread) |
-| `E` | Edit post             |
-| `C` | Add to collection     |
-| `F` | Toggle featured       |
+Once set, the new path becomes the canonical URL for that piece of content (permalink, feed, `og:url` all use the new path), and the original slug auto-redirects with a 301 — old links already in circulation keep working.
 
-### Command Palette
+Useful when you want to graft content imported from another platform back onto its original URLs.
 
-| Key                | Action               |
-| ------------------ | -------------------- |
-| `Cmd+K` / `Ctrl+K` | Open command palette |
+### Custom archive views
 
-Inside the palette:
+If you frequently browse "a particular kind of post," you can save the matching archive filters under a short, memorable entry point:
 
-- Type to filter pages and posts
-- Prefix with `>` to run a command
-- Prefix with `?` to search
+- **Path**: for example, `notes`
+- **Type**: choose `Archive`
+- **Query Parameters**: any filters the archive supports — for example, `format=note&view=list` or `format=link&visibility=public`
 
-## Choosing Between Thread, Collection, and Featured
+### Redirect rules
 
-Use a thread when posts are part of one conversation.
+- **Path**: an old or external path that's already in circulation
+- **Type**: choose `Redirect`
+- **Destination**: the target path (`/new-path`) or a full external URL (`https://...`)
+- **Redirect Type**:
+  - `301 (Permanent)` — for permanent moves; search engines update their index
+  - `302 (Temporary)` — for temporary changes; search engines keep the original path
 
-Use a collection when posts share a topic but were not written as a sequence.
+### A note on editing the slug directly
 
-Use featured when you want extra visibility and default feed distribution.
+If you only want to change the public-facing path, **prefer the Post / Collection custom URL above** — the original slug redirects automatically and there's nothing else to do.
+
+If you really do edit the slug field directly in the editor, note that Jant won't preserve the old address, and the old path becomes a 404. In that case, also go to **Settings → Advanced → Custom URLs** and add a manual 301 from the old path to the new slug.
+
+### Reserved paths
+
+The following top-level paths are used by Jant itself and can't be used as custom URLs:
+
+`featured`, `latest`, `signin`, `signout`, `setup`, `settings`, `dash`, `api`, `feed`, `search`, `archive`, `media`, `pages`, `reset`, `collections`, `compose`, `new`, `static`, `assets`, `_assets`, `healthz`, `readyz`
+
+Custom paths can only contain lowercase letters, digits, hyphens (`-`), and slashes (`/`).
+
+## Quick entry point
+
+When you're signed in, visiting `/new` takes you straight to the compose page — handy as a browser bookmark. If you're not signed in, you'll go through the sign-in page first and land on `/new` afterward.
+
+## What's next
+
+- [GitHub Sync](github-sync.md) — keep your content synced to a GitHub repo
+- [Theming](theming.md) — adjust how your site looks

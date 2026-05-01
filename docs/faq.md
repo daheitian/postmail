@@ -1,0 +1,141 @@
+# FAQ
+
+## Is Jant open source?
+
+Yes. The full source is on [GitHub](https://github.com/jant-me/jant). Hosted and self-hosted run the same code — there are no "hosted-only" features.
+
+## Self-hosted or hosted — which should I choose?
+
+| Your situation                                             | Pick                                        |
+| ---------------------------------------------------------- | ------------------------------------------- |
+| Want near-zero cost and can follow a 15-minute setup guide | [Cloudflare self-hosting](deployment.md)    |
+| Already run your own server with Docker experience         | [Docker self-hosting](deployment-docker.md) |
+| Don't want to handle any deployment details                | [Hosted Jant](hosted.md)                    |
+
+All three paths run the same code. Going from hosted to self-hosted (or back) is done through [Export and import](export-and-import.md).
+
+## How do I set up a custom domain?
+
+- **Hosted**: Dashboard → select your site → **Domains** → Add, then follow the DNS prompts. Certificates are provisioned and renewed automatically.
+- **Cloudflare self-hosting**: Workers & Pages → your Worker → Settings → Domains & Routes → Add. See "Bind a custom domain" in [Deploy to Cloudflare](deployment.md#1-bind-a-custom-domain).
+- **Docker self-hosting**: point your reverse proxy at it.
+
+## Are comments supported?
+
+Not built-in. May come later. For now you can embed third-party systems like giscus or Disqus through [code injection](code-injection.md).
+
+## Can I customize the theme/appearance?
+
+Three layers of control: built-in color themes, built-in type styles, and Custom CSS. Custom CSS overrides CSS variables directly — no theme fork, no restart. For the full variable list, see [Theming](theming.md).
+
+## How do I upgrade to a new version?
+
+- **Hosted**: automatic, nothing to do.
+- **Cloudflare**: `npm install @jant/core@latest && npm run deploy`. Migrations run automatically as part of deploy.
+- **Docker**: `docker compose pull && docker compose up -d`. The command runs database migrations first, then starts the app.
+
+Take a full backup before upgrading. See [Backups and recovery](backups.md).
+
+## Is the Cloudflare free tier really enough?
+
+For a typical personal blog, usually yes. Workers free tier gives you 100,000 requests per day, and R2 free tier gives you 10 GB of storage and one million Class A operations per month. One trap: if you don't configure `R2_PUBLIC_URL`, every image load goes through the Worker, which burns through the free tier much faster. See "Post-deploy checklist" in [Deploy to Cloudflare](deployment.md#before-going-live).
+
+## Can I take my content with me?
+
+Yes, two ways:
+
+- [`site export`](export-and-import.md#site-export-site-export) — one-shot export to a standard Hugo site directory (ZIP or directory) that you can preview with `hugo serve`.
+- [GitHub sync](github-sync.md) — content stays continuously synced as Markdown to your own Git repository. The repo itself is a complete Hugo site.
+
+## Cloudflare or Docker — which should I choose?
+
+Both run the same code. Cloudflare suits personal sites that want near-zero ops on the free tier. Docker suits people who already have a server and Docker experience, or who want Postgres or local storage. If both options feel new, pick Cloudflare. See [Deploy to Cloudflare](deployment.md) and [Docker self-hosting](deployment-docker.md).
+
+## Is there a media upload size limit?
+
+Non-images default to 500 MB; tune it with `UPLOAD_MAX_FILE_SIZE_MB`. See [Configuration § Upload size limits](configuration.md#upload-size-limits-optional).
+
+## Can deleted posts be recovered?
+
+No. Deletion is permanent — the post row, its paths, its Collection memberships, and its attachment media are all cleaned up together (inline media embedded in the body is left alone). The UI asks for explicit confirmation before deleting.
+
+## Is multi-language supported?
+
+Site content can be in any language. **Settings → General → Language** sets the language. That setting drives two things:
+
+- **Content metadata**: `<html lang>` and the `<language>` field in the RSS feed use the tag you set verbatim — this is what search engines, screen readers, and feed readers consume.
+- **Settings UI language**: today only English, Simplified Chinese, and Traditional Chinese are supported. Other values fall back to English.
+
+Public-facing pages (home, Featured, Latest, navigation copy) are currently fixed to English.
+
+## Is multi-author supported?
+
+No. Multi-author needs roles, review, attribution, notifications — a full set of mechanics that would push the product toward a CMS. If you need those, look at WordPress or Ghost.
+
+## Why does `/feed` default to Featured instead of Latest?
+
+Jant treats "publish to the site" and "broadcast to subscribers" as two separate things. The default `/feed` points at Featured so you can write small everyday notes without spamming subscribers. To switch back to traditional behavior, change **Settings → General → Feeds → Main RSS feed** to Latest. The three feeds (`/feed/featured`, `/feed/latest`, `/archive/feed`) each cover a different slice. See [Writing and organizing § Why the default feed is Featured](writing-and-organizing.md#why-the-default-feed-is-featured).
+
+## Can I host under a subpath (e.g., `example.com/blog`)?
+
+Yes. Set `SITE_PATH_PREFIX=/blog`. On Cloudflare you also need to point Workers Routes for `yourdomain.com/blog*` at the Worker. See [Deployment § Deploying under a subpath](deployment.md#deploying-under-a-subpath).
+
+## Feedback channels?
+
+- [GitHub Issues](https://github.com/jant-me/jant/issues) — bugs and feature requests
+- Email `support#jant.me` (replace `#` with `@`) — hosted account questions
+
+## Can AI agents publish posts?
+
+Yes. Two entry points, pick by use case:
+
+- **HTTP JSON API**: the default — `POST /api/posts` with a Bearer token. Used by external scripts, scheduled jobs, and third-party integrations.
+- **MCP interface** (`/api/mcp`): when the caller is itself an MCP client.
+
+Projects scaffolded with `create-jant` ship `AGENTS.md`, `.claude/skills/`, and `examples/agent-content-automation/` with copy-pasteable curl examples. See [Automation and API](automation-and-api.md).
+
+With [GitHub sync](github-sync.md) enabled, agents can also read and write Markdown directly through the Git repo — for many coding agents this feels more natural than the API.
+
+## Can I migrate between hosted and self-hosted?
+
+Yes, both directions are supported. The recommended flow is `site export` → `site import`: export the source to a ZIP, then import into the target with an empty account. Everything goes over the HTTP API and works on both hosted and self-hosted; slugs and URLs are preserved as-is. See [Export and import](export-and-import.md).
+
+`site snapshot` is not the right tool for this case. It needs direct access to the database and object storage, which hosted doesn't expose. Use it only when both ends are self-hosted and you need to preserve internal IDs and storage keys as well.
+
+## SQLite or Postgres — which should I choose (Docker deployment)?
+
+For single-machine deployments, SQLite is fine — performance is plenty, and the backup is just one file. If you already have Postgres infrastructure, switching to Postgres makes sense. The choice is controlled by the scheme of `DATABASE_URL` (`file:` or `postgres:`). See [Configuration § Node and Docker](configuration.md#node-and-docker).
+
+## I deleted a file on GitHub, why isn't it deleted in Jant?
+
+That's intentional. File deletions on GitHub are ignored by the sync layer to prevent accidental data loss. Posts can only be deleted from the Jant UI; the next sync will then remove the corresponding bundle from the repo. See [GitHub sync § Editing on GitHub](github-sync.md#editing-on-github).
+
+## Can I create a new post by adding a `.md` file on GitHub?
+
+No. The GitHub → Jant direction only supports updating existing posts, matched by `slug` in front matter. New posts and deletions go through the Jant UI.
+
+## What happens if I change `AUTH_SECRET`?
+
+Every active session is invalidated immediately and everyone has to sign in again. **Don't rotate this casually** in production unless you suspect a leak. Generate a new value with `openssl rand -base64 32`.
+
+## Pre-1.0 — will there be a lot of breaking changes?
+
+Possibly, but only when warranted. Every breaking change is documented in the commit and changelog. Skim the changelog before upgrading and keep a recent backup.
+
+## Can I migrate back to WordPress / Ghost?
+
+There's no built-in path, but `site export` produces standard Markdown + YAML front matter, so an AI can write a one-off conversion script to WordPress WXR or Ghost JSON.
+
+## Why the name Jant?
+
+From _Jantelagen_ (the Law of Jante), a Nordic cultural concept of "don't think you're anything special." For the design rationale, see [Introduction](overview.md#a-quieter-way-to-write-in-public).
+
+## Why is hosted priced at $10.46/year?
+
+It's the cost price of a `.com` domain — a price band that feels approachable but not flippant. See [Hosted](hosted.md#pricing-and-limits).
+
+## What's next
+
+- [Introduction](overview.md) — what Jant is for
+- [Getting started](getting-started.md) — pick a deployment path
+- [Writing and organizing](writing-and-organizing.md) — once the site is up
