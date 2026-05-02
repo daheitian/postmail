@@ -260,7 +260,7 @@ describe("timeline cards", () => {
     expect(detailHtml).toContain('class="u-url post-header-meta-link"');
     expect(detailHtml.match(/class="dt-published"/g)).toHaveLength(1);
     expect(detailHtml).toContain("data-reply-trigger");
-    expect(detailHtml.match(/data-post-menu-trigger/g)).toHaveLength(2);
+    expect(detailHtml.match(/data-post-menu-trigger/g)).toHaveLength(1);
     expect(detailHtml.indexOf('class="post-header-meta-row"')).toBeLessThan(
       detailHtml.indexOf("data-post-body"),
     );
