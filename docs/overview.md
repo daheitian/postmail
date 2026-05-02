@@ -4,7 +4,7 @@
 
 Jant is a small blog system for one author. It supports three post formats — **Note, Link, Quote** — that you can connect into a Thread or group into a Collection. Publishing feels closer to Twitter or Threads than to a WordPress or Ghost dashboard.
 
-![Jant Home](https://jant-me-media.jant.me/assets/jant-home.png)
+![Jant Home](https://jant-me-media.jant.me/assets/jant-home-800.png)
 
 Live demo: [demo.jant.me](https://demo.jant.me). Click [Sign in](https://demo.jant.me/signin) under the `More` menu — demo credentials are pre-filled, and the data resets daily.
 
@@ -31,7 +31,7 @@ If you're still on the fence about whether to start a blog, [this essay](why-blo
 
 A traditional blog gives you a form: title, body, category, tags, excerpt, SEO, cover image. That's an interface for managing content, not for writing. Jant takes the cue from Twitter and Threads instead — title is optional, you can extend any post into a Thread later, and publishing is a single action.
 
-![Jant compose screen](https://jant-me-media.jant.me/assets/new.png)
+![Jant compose screen](https://jant-me-media.jant.me/assets/jant-compose.png)
 
 ## What Jant has
 

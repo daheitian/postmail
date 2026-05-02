@@ -2,9 +2,13 @@
 
 > This is the thinking behind Jant. If you just want to get something running, jump to [Getting started](getting-started.md).
 
-[Jant](https://jant.me) is a small blog system for one author. It exists on the premise that personal blogs still deserve to be taken seriously — not as a replacement for social media, but as a place that genuinely belongs to you.
+[Jant](https://jant.me) is a small blog system for one author.
 
-Before you set one up, though, it might be worth asking the prior question: why blog at all today?
+It rests on a fairly plain conviction: personal blogs are still worth keeping around. Not as a replacement for social media, but as a place that genuinely belongs to you.
+
+So before getting into Jant itself, it's worth going back to the question underneath it all:
+
+Why is it still worth blogging today?
 
 ## Honestly, most of the time, no one is reading your blog
 
