@@ -10,11 +10,13 @@ If you'd rather not deal with deployment, upgrades, and backups, the official ho
 | Each additional site               | $5 / year     |
 | Media storage (shared per account) | 10 GB         |
 
-The $10.46 figure comes from Cloudflare's at-cost (no markup) `.com` domain renewal price. Years ago I wrote on my blog that I liked the feel of a `.com` domain price — slightly above free, low enough that it felt like a steal. Cloudflare now sells them at cost, so I anchored the first site to that number.
-
-Bandwidth is fair-use. Normal personal-blog traffic won't hit any limit.
-
 Billed annually. After you cancel, the site keeps running until the end of the current paid period. Then it enters a 90-day retention window during which data can still be recovered. After 90 days, the site is permanently deleted.
+
+## About the price
+
+I've always liked the feel of a `.com` price: $10.46 / year.
+
+That's what Cloudflare charges to register and renew a `.com` domain. Slightly above free, but still official. Low enough that starting doesn't feel like a commitment, high enough that it isn't free either — enough to make you take it seriously.
 
 ## What's included
 

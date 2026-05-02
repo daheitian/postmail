@@ -132,7 +132,9 @@ From _Jantelagen_ (the Law of Jante), a Nordic cultural concept of "don't think 
 
 ## Why is hosted priced at $10.46/year?
 
-It's the cost price of a `.com` domain — a price band that feels approachable but not flippant. See [Hosted](hosted.md#pricing-and-limits).
+I've always liked `.com` pricing: $10.46/year.
+
+That's what Cloudflare charges to register and renew a `.com`. It sits just above free, and just formal enough — low enough not to add friction at the start, but not so trivial that you don't take it seriously.
 
 ## What's next
 
