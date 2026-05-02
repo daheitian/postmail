@@ -4392,6 +4392,7 @@
   .compose-dialog jant-compose-dialog {
     display: block;
     position: relative;
+    border-radius: inherit;
   }
 
   .compose-dialog:has(.compose-dialog-inner-suspended) {
@@ -4500,6 +4501,8 @@
     min-height: 3.6rem;
     padding: 12px 14px;
     background-color: var(--compose-paper-bg);
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
     position: relative;
     z-index: 4;
   }
@@ -5355,6 +5358,13 @@
     position: relative;
     z-index: 3;
     background-color: var(--compose-paper-bg);
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+  }
+
+  .compose-action-row:has(+ .compose-quick-actions-row) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
   }
 
   .compose-action-row-overlay-open {
@@ -5778,6 +5788,8 @@
     justify-content: flex-end;
     padding: 2px 12px 12px;
     background-color: var(--compose-paper-bg);
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
   }
 
   .compose-action-row:has(+ .compose-quick-actions-row) {
