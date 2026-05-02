@@ -42,13 +42,15 @@ export function toApiAttachment(
     };
   }
 
-  const previewUrl = getImageUrl(url, imageTransformUrl, {
-    width: 1200,
-    height: 768,
-    quality: 80,
-    format: "auto",
-    fit: "scale-down",
-  });
+  const previewUrl = media.mimeType.startsWith("image/")
+    ? getImageUrl(url, imageTransformUrl, {
+        width: 1200,
+        height: 768,
+        quality: 80,
+        format: "auto",
+        fit: "scale-down",
+      })
+    : url;
   const posterUrl = media.posterKey
     ? getMediaUrl(media.posterKey, publicUrl, sitePathPrefix)
     : null;

@@ -6832,7 +6832,7 @@
   .compose-attachment-img {
     display: block;
     border-radius: var(--media-radius, 0.5rem);
-    max-height: 320px;
+    max-height: min(320px, 28dvh);
     object-fit: contain;
   }
 
@@ -6869,7 +6869,7 @@
   /* Single image: constrain to container width */
   .compose-attachment:only-child .compose-attachment-img {
     max-width: 100%;
-    max-height: 384px;
+    max-height: min(384px, 32dvh);
   }
 
   .compose-attachment:only-child .compose-attachment-preview-fallback {
