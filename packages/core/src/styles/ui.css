@@ -2285,17 +2285,6 @@
     text-decoration: underline;
   }
 
-  .post-header-actions {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    margin-left: auto;
-  }
-
-  .post-header-menu-trigger {
-    margin-right: -0.1rem;
-  }
-
   /*
    * Detail pages get a denser reading ladder than the surrounding UI chrome.
    * This keeps long-form text feeling grounded without making global UI copy
@@ -2346,18 +2335,6 @@
   [data-page="post"] .post-header-meta-link:hover,
   [data-page="post"] [data-post-meta] a:hover,
   [data-page="post"] [data-post-meta] .post-footer-external-link:hover {
-    color: var(--site-reading-body);
-  }
-
-  [data-page="post"] .post-header-actions .post-menu-trigger {
-    color: var(--site-reading-meta);
-  }
-
-  [data-page="post"] .post-header-actions .post-menu-trigger:hover,
-  [data-page="post"] .post-header-actions .post-menu-trigger:focus-visible,
-  [data-page="post"]
-    .post-header-actions
-    .post-menu-trigger[aria-expanded="true"] {
     color: var(--site-reading-body);
   }
 

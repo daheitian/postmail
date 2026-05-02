@@ -9,11 +9,7 @@ import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "../../types.js";
 import { MediaGallery } from "../shared/MediaGallery.js";
 import { StarRating } from "../shared/StarRating.js";
-import {
-  PostFooter,
-  PostMenuTriggerButton,
-  PostPublishedLink,
-} from "../shared/PostFooter.js";
+import { PostFooter, PostPublishedLink } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 
 function stripContinueAnchor(html?: string): string | undefined {
@@ -44,7 +40,6 @@ export const NoteCard: FC<TimelineCardProps> = ({
   const hasVisibleRating =
     !!post.rating && post.rating > 0 && !display?.hideRating;
   const showHeaderRating = isDetail && isArticle && hasVisibleRating;
-  const showHeaderActions = !display?.footer?.hideActions;
   const footerDisplay =
     isDetail && isArticle && display?.footer?.hideTimestamp === undefined
       ? { ...display?.footer, hideTimestamp: true }
@@ -77,11 +72,6 @@ export const NoteCard: FC<TimelineCardProps> = ({
                 post={post}
                 className="u-url post-header-meta-link"
               />
-              {showHeaderActions && (
-                <div class="post-header-actions">
-                  <PostMenuTriggerButton className="post-menu-trigger post-header-menu-trigger" />
-                </div>
-              )}
             </div>
             {showHeaderRating && <StarRating rating={post.rating} />}
           </div>

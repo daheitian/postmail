@@ -28,3 +28,7 @@
 - 不想处理任何技术配置
 - 想现在就开始写，注册即用
 - 每年 $10.46 在你的预算内
+
+## 接下来
+
+从 [Cloudflare 自托管](deployment.md)、[Docker 自托管](deployment-docker.md) 或 [Jant 托管](hosted.md) 中选一种托管方式继续。

@@ -28,3 +28,7 @@ All three run the same Jant. You can [export](export-and-import.md) your content
 - You don't want to handle any configuration
 - You want to start writing right now, sign up and go
 - $10.46 a year fits your budget
+
+## Next
+
+Pick a hosting option to continue: [Self-host on Cloudflare](deployment.md), [Self-host with Docker](deployment-docker.md), or [Hosted Jant](hosted.md).

@@ -128,6 +128,12 @@ signinRoutes.get("/signin", async (c) => {
     ? rawRedirect
     : undefined;
 
+  if (c.var.isAuthenticated) {
+    return c.redirect(
+      toPublicPath(redirect ?? "/", c.var.appConfig.sitePathPrefix),
+    );
+  }
+
   const hostedSigninUrl = getHostedControlPlaneSigninUrl(
     c.env,
     c.var.publicRequestUrl,
