@@ -1,5 +1,7 @@
 # Jant
 
+[English](README.md) · [简体中文](README.zh-Hans.md)
+
 > **Pre-1.0**: Jant is still early. Expect rough edges, breaking changes, and docs that keep moving while the product settles.
 >
 > Live demo: [demo.jant.me](https://demo.jant.me) (demo credentials are pre-filled, data resets daily)
