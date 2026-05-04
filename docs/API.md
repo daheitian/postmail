@@ -18,6 +18,7 @@ For static export and round-trip import, also see [Export and Import](export-and
 | Area                    | Base path                              | Auth                 |
 | ----------------------- | -------------------------------------- | -------------------- |
 | Public posts            | `/api/public/posts`                    | Public               |
+| Public archive          | `/api/public/archive`                  | Public               |
 | Posts                   | `/api/posts`                           | API token or session |
 | Uploads (recommended)   | `/api/uploads`                         | API token or session |
 | Uploads (legacy)        | `/api/upload`, `/api/upload/multipart` | API token or session |
@@ -351,37 +352,37 @@ These endpoints expose the public reading view, not the editing view used in Set
 
 Public post responses include these fields:
 
-| Field             | Type                        | Notes                                                          |
-| ----------------- | --------------------------- | -------------------------------------------------------------- |
-| `id`              | `pst_*` string              | Post ID                                                        |
-| `format`          | `note` \| `link` \| `quote` | Post format                                                    |
-| `status`          | `published`                 | Public endpoints only return published posts                   |
-| `visibility`      | `public` \| `latest_hidden` | List excludes `latest_hidden`; single-post reads may return it |
-| `slug`            | string                      | Canonical slug                                                 |
-| `permalink`       | string                      | Public post URL                                                |
-| `title`           | string \| `null`            | Returned for `note` and `link` posts                           |
-| `url`             | string \| `null`            | Returned for `link` posts                                      |
-| `sourceName`      | string \| `null`            | Returned instead of `title` for `quote`                        |
-| `sourceUrl`       | string \| `null`            | Returned instead of `url` for `quote`                          |
-| `bodyHtml`        | string \| `null`            | Rendered HTML; omitted when `content=markdown`                 |
-| `bodyText`        | string \| `null`            | Plain-text rendering; omitted when `content=markdown`          |
-| `bodyMarkdown`    | string \| `null`            | Markdown source; only returned when `content=markdown`         |
-| `quoteText`       | string \| `null`            | Quote content                                                  |
-| `summary`         | string \| `null`            | Optional summary                                               |
-| `rating`          | integer \| `null`           | `1` to `5` when set                                            |
-| `previewKind`     | string \| `null`            | Link preview kind                                              |
-| `previewProvider` | string \| `null`            | Link preview provider                                          |
-| `previewImageUrl` | string \| `null`            | Public preview image URL                                       |
-| `replyToId`       | `pst_*` string \| `null`    | Parent reply/post ID                                           |
-| `threadId`        | `pst_*` string              | Thread root ID                                                 |
-| `pinnedAt`        | integer \| `null`           | Pin timestamp                                                  |
-| `featuredAt`      | integer \| `null`           | Feature timestamp                                              |
-| `publishedAt`     | integer \| `null`           | Publish timestamp                                              |
-| `lastActivityAt`  | integer                     | Last activity timestamp                                        |
-| `createdAt`       | integer                     | Unix seconds                                                   |
-| `updatedAt`       | integer                     | Unix seconds                                                   |
-| `attachments`     | array                       | Ordered media/text attachment objects                          |
-| `collections`     | object[]                    | Public collection refs with `id`, `slug`, `title`, and `url`   |
+| Field             | Type                        | Notes                                                                                                        |
+| ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `id`              | `pst_*` string              | Post ID                                                                                                      |
+| `format`          | `note` \| `link` \| `quote` | Post format                                                                                                  |
+| `status`          | `published`                 | Public endpoints only return published posts                                                                 |
+| `visibility`      | `public` \| `latest_hidden` | `/api/public/posts` list excludes `latest_hidden`; single-post reads and `/api/public/archive` may return it |
+| `slug`            | string                      | Canonical slug                                                                                               |
+| `permalink`       | string                      | Public post URL                                                                                              |
+| `title`           | string \| `null`            | Returned for `note` and `link` posts                                                                         |
+| `url`             | string \| `null`            | Returned for `link` posts                                                                                    |
+| `sourceName`      | string \| `null`            | Returned instead of `title` for `quote`                                                                      |
+| `sourceUrl`       | string \| `null`            | Returned instead of `url` for `quote`                                                                        |
+| `bodyHtml`        | string \| `null`            | Rendered HTML; omitted when `content=markdown`                                                               |
+| `bodyText`        | string \| `null`            | Plain-text rendering; omitted when `content=markdown`                                                        |
+| `bodyMarkdown`    | string \| `null`            | Markdown source; only returned when `content=markdown`                                                       |
+| `quoteText`       | string \| `null`            | Quote content                                                                                                |
+| `summary`         | string \| `null`            | Optional summary                                                                                             |
+| `rating`          | integer \| `null`           | `1` to `5` when set                                                                                          |
+| `previewKind`     | string \| `null`            | Link preview kind                                                                                            |
+| `previewProvider` | string \| `null`            | Link preview provider                                                                                        |
+| `previewImageUrl` | string \| `null`            | Public preview image URL                                                                                     |
+| `replyToId`       | `pst_*` string \| `null`    | Parent reply/post ID                                                                                         |
+| `threadId`        | `pst_*` string              | Thread root ID                                                                                               |
+| `pinnedAt`        | integer \| `null`           | Pin timestamp                                                                                                |
+| `featuredAt`      | integer \| `null`           | Feature timestamp                                                                                            |
+| `publishedAt`     | integer \| `null`           | Publish timestamp                                                                                            |
+| `lastActivityAt`  | integer                     | Last activity timestamp                                                                                      |
+| `createdAt`       | integer                     | Unix seconds                                                                                                 |
+| `updatedAt`       | integer                     | Unix seconds                                                                                                 |
+| `attachments`     | array                       | Ordered media/text attachment objects                                                                        |
+| `collections`     | object[]                    | Public collection refs with `id`, `slug`, `title`, and `url`                                                 |
 
 ### List public posts
 
@@ -454,6 +455,38 @@ Notes:
 
 - `latest_hidden` posts remain readable by direct slug.
 - Draft and private posts return `404`.
+- `content=markdown` returns `bodyMarkdown` and omits `bodyHtml/bodyText`.
+
+### List archive posts
+
+`GET /api/public/archive`
+
+Auth: `Public`
+
+The archive endpoint mirrors the `/archive` page: it returns every public thread root, **including `latest_hidden` posts**, with archive-style filters (year, media kind, presence of media or title). Use this when you want a complete corpus instead of the curated Latest feed.
+
+Query parameters:
+
+| Parameter    | Type                        | Required | Default | Notes                                                                                                               |
+| ------------ | --------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `format`     | `note` \| `link` \| `quote` | no       | all     | Format filter                                                                                                       |
+| `collection` | string                      | no       | none    | Filter by collection slug(s). Single slug (`design`) or multiple comma-separated (`tech,art`)                       |
+| `year`       | integer                     | no       | none    | Only posts whose `publishedAt` falls in this calendar year (UTC)                                                    |
+| `media`      | comma-separated `MediaKind` | no       | none    | Only posts that have at least one attachment with one of these kinds: `image`, `video`, `audio`, `text`, `document` |
+| `hasMedia`   | `0` \| `1`                  | no       | none    | `1` = posts with attachments, `0` = posts without                                                                   |
+| `hasTitle`   | `0` \| `1`                  | no       | none    | `1` = posts with a title, `0` = posts without                                                                       |
+| `cursor`     | string                      | no       | none    | Pass the previous `nextCursor` back unchanged                                                                       |
+| `limit`      | integer                     | no       | `20`    | `1` to `100`                                                                                                        |
+| `content`    | `markdown`                  | no       | none    | Return `bodyMarkdown` instead of rendered body fields                                                               |
+
+Response shape matches `GET /api/public/posts`: `{ posts: PublicPost[], nextCursor: string | null }`.
+
+Notes:
+
+- Returns published public thread roots **and** `latest_hidden` posts.
+- Drafts, private posts, and replies are excluded.
+- Posts are returned in newest-first order. Cursor pagination is keyed off the post `id`.
+- An invalid `media` value returns `400`. An unknown `collection` slug returns an empty result set.
 - `content=markdown` returns `bodyMarkdown` and omits `bodyHtml/bodyText`.
 
 ### List posts

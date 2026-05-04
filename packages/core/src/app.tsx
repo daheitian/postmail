@@ -55,6 +55,7 @@ import {
 import { internalTextAttachmentsRoutes } from "./routes/api/internal/text-attachments.js";
 import { internalSearchReindexRoutes } from "./routes/api/internal/search-reindex.js";
 import { internalUploadsRoutes } from "./routes/api/internal/uploads.js";
+import { publicArchiveApiRoutes } from "./routes/api/public/archive.js";
 import { publicPostsApiRoutes } from "./routes/api/public/posts.js";
 // Routes - Compose
 import { composeRoutes } from "./routes/compose.js";
@@ -504,6 +505,7 @@ export function createApp(): App {
 
   // API Routes
   app.route("/api/public/posts", publicPostsApiRoutes);
+  app.route("/api/public/archive", publicArchiveApiRoutes);
   app.route("/api/posts", postsApiRoutes);
   app.route("/api/nav-items", navItemsApiRoutes);
   app.route("/api/collections", collectionsApiRoutes);

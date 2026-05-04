@@ -39,7 +39,7 @@ const PublicPostContentQuerySchema = z.object({
   content: z.enum(["markdown"]).optional(),
 });
 
-type PublicPostBaseResponse = {
+export type PublicPostBaseResponse = {
   id: string;
   format: Post["format"];
   status: "published";
@@ -73,16 +73,16 @@ type PublicPostBaseResponse = {
   }[];
 };
 
-type PublicPostRenderedResponse = PublicPostBaseResponse & {
+export type PublicPostRenderedResponse = PublicPostBaseResponse & {
   bodyHtml: string | null;
   bodyText: string | null;
 };
 
-type PublicPostMarkdownResponse = PublicPostBaseResponse & {
+export type PublicPostMarkdownResponse = PublicPostBaseResponse & {
   bodyMarkdown: string | null;
 };
 
-type PublicPostResponse =
+export type PublicPostResponse =
   | PublicPostRenderedResponse
   | PublicPostMarkdownResponse;
 
@@ -94,7 +94,7 @@ function isPublicDetailVisible(post: Post | null): post is Post {
   );
 }
 
-function toPublicPost(
+export function toPublicPost(
   post: Post,
   mediaList: Media[],
   postCollections: Collection[],
