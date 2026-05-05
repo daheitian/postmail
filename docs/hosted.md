@@ -12,11 +12,7 @@ If you'd rather not deal with deployment, upgrades, and backups, the official ho
 
 Billed annually. After you cancel, the site keeps running until the end of the current paid period. Then it enters a 90-day retention window during which data can still be recovered. After 90 days, the site is permanently deleted.
 
-## About the price
-
-I've always liked the feel of a `.com` price: $10.46 / year.
-
-That's what Cloudflare charges to register and renew a `.com` domain. Slightly above free, but still official. Low enough that starting doesn't feel like a commitment, high enough that it isn't free either — enough to make you take it seriously.
+Your data can be carried out at any time via [Hugo export](export-and-import.md) or [GitHub Sync](github-sync.md) into your own environment.
 
 ## What's included
 
@@ -50,6 +46,12 @@ You can switch from hosted to self-hosted at any time, or back the other directi
 | Cost             | From $10.46 / year | Usually within Cloudflare's free tier                                         |
 
 Both paths run the same code. Self-hosting trades configuration and upgrade work for full control. Hosted trades $10.46 a year for sign-up-and-go.
+
+## Why $10.46
+
+I've always liked the feel of a `.com` price: $10.46 / year.
+
+That's what Cloudflare charges to register and renew a `.com` domain. Slightly above free, but still official. Low enough that starting doesn't feel like a commitment, high enough that it isn't free either — enough to make you take it seriously.
 
 ## Contact
 
