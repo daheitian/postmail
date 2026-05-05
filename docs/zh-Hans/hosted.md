@@ -2,6 +2,8 @@
 
 如果你不想处理部署、升级、备份这些事，可以直接使用官方在 [jant.me](https://jant.me) 提供的托管服务。它和自托管运行的是同一份开源代码。
 
+→ [前往 jant.me/signup 注册](https://jant.me/signup)（已有账号:[登录](https://jant.me/signin)）
+
 ## 价格与配额
 
 | 项目                 | 额度        |
@@ -23,7 +25,7 @@
 
 ## 开始使用
 
-1. 在 [jant.me](https://jant.me) 注册账号。
+1. 在 [jant.me/signup](https://jant.me/signup) 注册账号。
 2. 创建站点。新站点会拿到一个 `*.jant.blog` 子域名，立刻可用。
 3. （可选）绑定自己的域名：dashboard → 选中站点 → **域名** → 添加域名，按提示在你的注册商处配置 DNS。证书自动签发与续期。
 

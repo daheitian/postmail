@@ -2,6 +2,8 @@
 
 If you'd rather not deal with deployment, upgrades, and backups, the official hosted service at [jant.me](https://jant.me) runs Jant for you. It runs the same open-source code as a self-hosted install.
 
+→ [Sign up at jant.me/signup](https://jant.me/signup) (already have an account? [sign in](https://jant.me/signin))
+
 ## Pricing and limits
 
 | Item                               | Limit         |
@@ -23,7 +25,7 @@ Your data can be carried out at any time via [Hugo export](export-and-import.md)
 
 ## Getting started
 
-1. Sign up at [jant.me](https://jant.me).
+1. Sign up at [jant.me/signup](https://jant.me/signup).
 2. Create a site. Each new site gets a `*.jant.blog` subdomain that works immediately.
 3. (Optional) Bind your own domain: dashboard → select the site → **Domains** → add a domain, then configure DNS at your registrar as instructed. Certificates are issued and renewed automatically.
 
