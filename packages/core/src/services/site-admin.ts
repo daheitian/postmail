@@ -115,6 +115,11 @@ export interface SiteAdminService {
     siteId: string,
     domainId: string,
   ): Promise<SiteDomain[]>;
+  setManagedSiteDomainRedirect(
+    siteId: string,
+    domainId: string,
+    redirectToPrimary: boolean,
+  ): Promise<SiteDomain[]>;
 }
 
 export interface SiteAdminServiceConfig {
@@ -819,11 +824,16 @@ export function createSiteAdminService(
 
         const timestamp = now();
         if (input.makePrimary) {
+          // Newly-added primaries (e.g. custom domains) are unverified at this
+          // point. Leave any demoted alias serving directly so the site stays
+          // reachable while the new primary's DNS propagates. The caller is
+          // expected to flip redirectToPrimary back on once the new primary is
+          // confirmed to work.
           await targetDb
             .update(siteDomains)
             .set({
               kind: "alias",
-              redirectToPrimary: true,
+              redirectToPrimary: false,
               updatedAt: timestamp,
             })
             .where(eq(siteDomains.siteId, normalizedSiteId));
@@ -839,6 +849,33 @@ export function createSiteAdminService(
           createdAt: timestamp,
           updatedAt: timestamp,
         });
+      });
+    },
+    async setManagedSiteDomainRedirect(siteId, domainId, redirectToPrimary) {
+      assertManagedSiteOperationsEnabled();
+      return mutateSiteDomains(siteId, async (targetDb, normalizedSiteId) => {
+        await requireSite(targetDb, normalizedSiteId);
+
+        const normalizedDomainId = domainId.trim();
+        const current = await targetDb
+          .select({ id: siteDomains.id })
+          .from(siteDomains)
+          .where(
+            sql`${siteDomains.id} = ${normalizedDomainId} AND ${siteDomains.siteId} = ${normalizedSiteId}`,
+          )
+          .limit(1);
+        if (!current[0]) {
+          throw new NotFoundError("Site domain");
+        }
+
+        const timestamp = now();
+        await targetDb
+          .update(siteDomains)
+          .set({
+            redirectToPrimary,
+            updatedAt: timestamp,
+          })
+          .where(eq(siteDomains.id, normalizedDomainId));
       });
     },
     async setManagedSitePrimaryDomain(siteId, domainId) {

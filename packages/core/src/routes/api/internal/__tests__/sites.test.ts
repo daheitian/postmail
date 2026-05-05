@@ -512,4 +512,90 @@ describe("Internal site admin routes", () => {
       ],
     });
   });
+
+  it("leaves the demoted alias serving directly when adding a new primary", async () => {
+    const { app } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const createRes = await app.request("/api/internal/sites", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer internal-secret",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        key: "redirect-demo",
+        primaryHost: "redirect-demo.jant.blog",
+        siteName: "Redirect Demo",
+      }),
+    });
+
+    expect(createRes.status).toBe(201);
+    const created = (await createRes.json()) as { siteId: string };
+
+    const addRes = await app.request(
+      `/api/internal/sites/${created.siteId}/domains`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer internal-secret",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          host: "blog.example.com",
+          makePrimary: true,
+        }),
+      },
+    );
+
+    expect(addRes.status).toBe(201);
+    const addedBody = (await addRes.json()) as {
+      domains: Array<{
+        host: string;
+        id: string;
+        kind: string;
+        redirectToPrimary: boolean;
+      }>;
+    };
+    const newPrimary = addedBody.domains.find(
+      (domain) => domain.host === "blog.example.com",
+    );
+    const demotedAlias = addedBody.domains.find(
+      (domain) => domain.host === "redirect-demo.jant.blog",
+    );
+    expect(newPrimary?.kind).toBe("primary");
+    expect(demotedAlias?.kind).toBe("alias");
+    // The demoted managed host must keep serving its own content while the
+    // newly-added custom primary's DNS is still propagating.
+    expect(demotedAlias?.redirectToPrimary).toBe(false);
+
+    const flipRes = await app.request(
+      `/api/internal/sites/${created.siteId}/domains/${demotedAlias?.id}/redirect`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer internal-secret",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ redirectToPrimary: true }),
+      },
+    );
+
+    expect(flipRes.status).toBe(200);
+    const flipBody = (await flipRes.json()) as {
+      domains: Array<{
+        host: string;
+        id: string;
+        redirectToPrimary: boolean;
+      }>;
+    };
+    const aliasAfterFlip = flipBody.domains.find(
+      (domain) => domain.id === demotedAlias?.id,
+    );
+    expect(aliasAfterFlip?.redirectToPrimary).toBe(true);
+  });
 });

@@ -222,6 +222,36 @@ internalSitesRoutes.post(
   },
 );
 
+const ManagedSiteDomainRedirectSchema = z.object({
+  redirectToPrimary: z.boolean(),
+});
+
+internalSitesRoutes.post(
+  "/:siteId/domains/:domainId/redirect",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+    const body = parseValidated(
+      ManagedSiteDomainRedirectSchema,
+      await c.req.json(),
+    );
+    const domains = await c.var.services.siteAdmin.setManagedSiteDomainRedirect(
+      c.req.param("siteId"),
+      c.req.param("domainId"),
+      body.redirectToPrimary,
+    );
+
+    return c.json({
+      domains: domains.map((domain) => ({
+        host: domain.host,
+        id: domain.id,
+        kind: domain.kind,
+        redirectToPrimary: domain.redirectToPrimary,
+      })),
+    });
+  },
+);
+
 internalSitesRoutes.delete(
   "/:siteId/domains/:domainId",
   requireInternalAdminApi(),
