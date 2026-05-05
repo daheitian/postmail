@@ -64,7 +64,7 @@ export function getMediaPlaceholderDataUrl(
 }
 
 function getSingleVisualWidth(ratio: number): string {
-  return `min(100%, calc(24rem * ${ratio}))`;
+  return `min(100%, calc(24rem * ${ratio}), var(--layout-content-width))`;
 }
 
 /**
