@@ -20,11 +20,7 @@ If you're still on the fence about whether to start a blog, [this essay](docs/wh
 
 ### Publishing and broadcasting are separate
 
-Most blog systems treat "published" and "broadcast" as a single decision — you post something, and it lands in your RSS feed, your subscribers' readers, and your homepage timeline at the same moment. Jant wants a quieter model: a piece of content can live on the site, have its own URL, sit inside a Collection, or extend a Thread, without every publish becoming an announcement.
-
-- **Quiet logging**: when you publish, you can hide the post from your homepage (Latest) and keep it only inside specific collections and `/archive`.
-- **Non-intrusive updates**: even when a post does appear on Latest, it doesn't automatically push to RSS.
-- **Curated syndication**: only posts marked Featured enter `/feed` and reach RSS subscribers. `/feed` defaults to Featured.
+Most blog systems treat "published" and "broadcast" as a single decision — you post something, and it lands in your RSS feed, your subscribers' readers, and your homepage timeline at the same moment. Jant separates publishing from broadcasting: each post chooses its distribution — hidden from Latest, shown on Latest, or marked Featured to enter `/feed` and push to RSS.
 
 ### Writing experience
 

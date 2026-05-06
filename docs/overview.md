@@ -21,11 +21,7 @@ Today's social networks push in exactly the opposite direction:
 - One pressure comes from watching others — constant performance and comparison, which feeds anxiety.
 - The other comes from being watched — every post is force-pushed to all your followers, until the weight of it kills the urge to say anything at all.
 
-Most blog systems inherited the same logic, treating "published" and "broadcast" as a single decision. You post something, and it lands in your RSS feed, your subscribers' readers, and your homepage timeline at the same moment. Jant wants a quieter model:
-
-- **Quiet logging**: when you publish, you can hide the post from your homepage (Latest) and keep it only inside specific collections and `/archive`.
-- **Non-intrusive updates**: even when a post does appear on Latest, it doesn't automatically push to RSS.
-- **Curated syndication**: only posts marked Featured enter `/feed` and reach RSS subscribers. `/feed` defaults to Featured.
+Most blog systems inherited the same logic, treating "published" and "broadcast" as a single decision — you post something, and it lands in your RSS feed, your subscribers' readers, and your homepage timeline at the same moment. Jant separates publishing from broadcasting: each post chooses its distribution — hidden from Latest, shown on Latest, or marked Featured to enter `/feed` and push to RSS.
 
 If you're still on the fence about whether to start a blog, [this essay](why-blog.md) might give you a reason.
 
