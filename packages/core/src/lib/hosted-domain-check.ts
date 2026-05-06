@@ -1,47 +1,28 @@
-import { timingSafeEqualBytes } from "./crypto.js";
-
+const VERIFICATION_HMAC_VERSION = "v1";
 const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder();
 
-export interface HostedDomainCheckClaims {
-  aud: "jant-cloud";
-  domainId: string;
-  host: string;
-  iat: number;
-  iss: "jant-core";
-  nonce: string;
-}
-
-function toBase64Url(bytes: Uint8Array): string {
-  let binary = "";
+function bytesToHex(bytes: Uint8Array): string {
+  let out = "";
   for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
+    out += byte.toString(16).padStart(2, "0");
   }
-
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
+  return out;
 }
 
-function fromBase64Url(value: string): Uint8Array {
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padding =
-    normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
-  const binary = atob(`${normalized}${padding}`);
-  const bytes = new Uint8Array(binary.length);
-
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
-  }
-
-  return bytes;
-}
-
-async function createHmacSignature(
+/**
+ * Compute the plaintext HMAC token returned from
+ * `/.well-known/jant-verification`.
+ *
+ * The control plane sends a nonce in the query string; the site replies with
+ * `jant-verification=<hex>` where `<hex>` is `HMAC-SHA256(secret, payload)`
+ * over `payload = "v1:" + host + ":" + nonce`. The shared secret is
+ * `HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET`.
+ */
+export async function computeHostedVerificationToken(
   secret: string,
-  payload: string,
-): Promise<Uint8Array> {
+  host: string,
+  nonce: string,
+): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
     textEncoder.encode(secret),
@@ -50,49 +31,9 @@ async function createHmacSignature(
     ["sign"],
   );
 
-  return new Uint8Array(
+  const payload = `${VERIFICATION_HMAC_VERSION}:${host.trim().toLowerCase()}:${nonce}`;
+  const signature = new Uint8Array(
     await crypto.subtle.sign("HMAC", key, textEncoder.encode(payload)),
   );
-}
-
-export async function signHostedDomainCheckToken(
-  secret: string,
-  claims: HostedDomainCheckClaims,
-): Promise<string> {
-  const payload = toBase64Url(textEncoder.encode(JSON.stringify(claims)));
-  const signature = await createHmacSignature(secret, payload);
-  return `${payload}.${toBase64Url(signature)}`;
-}
-
-export async function verifyHostedDomainCheckToken(
-  secret: string,
-  token: string,
-): Promise<HostedDomainCheckClaims> {
-  const [payloadPart, signaturePart, ...rest] = token.split(".");
-  if (!payloadPart || !signaturePart || rest.length > 0) {
-    throw new Error("Malformed hosted domain check token.");
-  }
-
-  const expectedSignature = await createHmacSignature(secret, payloadPart);
-  const providedSignature = fromBase64Url(signaturePart);
-  if (!timingSafeEqualBytes(expectedSignature, providedSignature)) {
-    throw new Error("Invalid hosted domain check token signature.");
-  }
-
-  const claims = JSON.parse(
-    textDecoder.decode(fromBase64Url(payloadPart)),
-  ) as Partial<HostedDomainCheckClaims>;
-
-  if (
-    claims.iss !== "jant-core" ||
-    claims.aud !== "jant-cloud" ||
-    typeof claims.host !== "string" ||
-    typeof claims.domainId !== "string" ||
-    typeof claims.nonce !== "string" ||
-    typeof claims.iat !== "number"
-  ) {
-    throw new Error("Invalid hosted domain check token payload.");
-  }
-
-  return claims as HostedDomainCheckClaims;
+  return bytesToHex(signature);
 }

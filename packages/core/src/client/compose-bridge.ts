@@ -961,6 +961,11 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
           `[data-post-view][data-post-view-id="${editPostId}"]`,
         );
         if (postView) {
+          if (newPath && newPath !== globalThis.location.pathname) {
+            queueSuccessToast("Post updated.");
+            globalThis.location.assign(newPath);
+            return;
+          }
           const refreshed = await refreshPostPageView(editPostId);
           if (refreshed) {
             toastMsg("Post updated.");

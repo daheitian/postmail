@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Hono } from "hono";
 import { errorHandler } from "../../../middleware/error-handler.js";
-import { verifyHostedDomainCheckToken } from "../../../lib/hosted-domain-check.js";
+import { computeHostedVerificationToken } from "../../../lib/hosted-domain-check.js";
 import { hostedDomainCheckRoutes } from "../domain-check.js";
 import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
@@ -42,12 +42,12 @@ function createHostedDomainCheckTestApp(options?: {
   return app;
 }
 
-describe("hostedDomainCheckRoutes", () => {
+describe("hostedDomainCheckRoutes (jant-verification)", () => {
   it("returns 404 when the domain check secret is not configured", async () => {
     const app = createHostedDomainCheckTestApp();
 
     const response = await app.request(
-      "/.well-known/jant-domain-check?nonce=test-nonce",
+      "/.well-known/jant-verification?nonce=test-nonce",
     );
 
     expect(response.status).toBe(404);
@@ -59,36 +59,47 @@ describe("hostedDomainCheckRoutes", () => {
       secret: "cloud-domain-check-secret-cloud-domain-check-secret",
     });
 
-    const response = await app.request("/.well-known/jant-domain-check");
+    const response = await app.request("/.well-known/jant-verification");
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toEqual({
-      error: "Missing nonce.",
-    });
+    await expect(response.text()).resolves.toBe("Missing nonce.");
   });
 
-  it("returns a signed token for the current hosted domain", async () => {
+  it("returns the plaintext HMAC token for the current hosted domain", async () => {
     const secret = "cloud-domain-check-secret-cloud-domain-check-secret";
+    const host = "blog.example.com";
+    const nonce = "test-nonce";
     const app = createHostedDomainCheckTestApp({
       domainId: "sdom_custom",
-      host: "blog.example.com",
+      host,
       secret,
     });
 
     const response = await app.request(
-      "/.well-known/jant-domain-check?nonce=test-nonce",
+      `/.well-known/jant-verification?nonce=${nonce}`,
     );
-    const body = (await response.json()) as { token: string };
-    const claims = await verifyHostedDomainCheckToken(secret, body.token);
+    const body = (await response.text()).trim();
+    const expected = await computeHostedVerificationToken(secret, host, nonce);
 
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(claims).toMatchObject({
-      aud: "jant-cloud",
-      domainId: "sdom_custom",
-      host: "blog.example.com",
-      iss: "jant-core",
-      nonce: "test-nonce",
-    });
+    expect(response.headers.get("content-type")).toMatch(/^text\/plain/);
+    expect(body).toBe(`jant-verification=${expected}`);
+  });
+
+  it("normalizes host casing when computing the token", async () => {
+    const secret = "cloud-domain-check-secret-cloud-domain-check-secret";
+    const nonce = "abc";
+    const lower = await computeHostedVerificationToken(
+      secret,
+      "blog.example.com",
+      nonce,
+    );
+    const mixed = await computeHostedVerificationToken(
+      secret,
+      "Blog.Example.COM",
+      nonce,
+    );
+    expect(lower).toBe(mixed);
   });
 });
