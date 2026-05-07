@@ -53,7 +53,7 @@ Both paths run the same code. Self-hosting trades configuration and upgrade work
 
 I've always liked the feel of a `.com` price: $10.46 / year.
 
-That's what Cloudflare charges to register and renew a `.com` domain. Slightly above free, but still official. Low enough that starting doesn't feel like a commitment, high enough that it isn't free either — enough to make you take it seriously.
+That's what Cloudflare charges to register and renew a `.com` domain. Slightly above free, but still official. Low enough that starting doesn't feel like a commitment, high enough that it isn't free either.
 
 ## Contact
 

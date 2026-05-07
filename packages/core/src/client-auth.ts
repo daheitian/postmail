@@ -31,6 +31,7 @@ import "./client/collection-page-actions.js";
 import "./client/custom-url-menu.js";
 import "./client/components/jant-command-palette.js";
 import "./client/palette-shortcuts.js";
+import "./client/palette-search-trigger.js";
 
 // Mount fullscreen overlay at body level to escape the dialog's containing
 // block (dialog animation creates a containing block that traps fixed children).

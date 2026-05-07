@@ -2,7 +2,7 @@
 
 代码注入用来把统计、字体、评论、widget 这类外部资源嵌进站点，路径 **Settings → 高级 → 代码注入**。
 
-两个注入槽，按用途选：
+两个注入槽：
 
 | 槽位     | 注入位置       | 适合放什么                                                |
 | -------- | -------------- | --------------------------------------------------------- |
@@ -15,18 +15,7 @@
 - 错写的标签会破坏页面结构。改完后建议在浏览器里看一眼控制台。
 - 注入的脚本会影响首屏性能。能延迟加载的就别放头部。
 
-## Jant 与第三方组件的几个关键事实
-
-写注入脚本前，先了解 Jant 的页面模型——这会直接影响 giscus、Disqus 这类组件的配置选择。
-
-- **Thread 内每个 child post 都有独立 URL**。`/parent-slug` 和 `/child-slug` 渲染同一条 thread 的完整内容，但浏览器地址栏不同。
-- **每个 URL 的 `<title>` / `og:title` 不同**，按当前 post 计算。
-- **`<link rel="canonical">` 始终指向 thread 根帖**。Thread 内任意 child URL 的 canonical 都是 `/{root-slug}`。
-- **每个帖子详情页底部都有一个 `<div data-post-end>` 插槽**，专门用来挂载评论、Webmentions、相关帖等"帖子尾部"内容。它已经按正文列宽（桌面 55%、760-1024px 收紧到 35rem、移动端 100%）和正文左对齐，注入的内容直接 `appendChild` 进去就和帖子正文对齐，不需要自己写媒体查询。在非帖子页面这个元素不存在，可以同时当页面守卫用（`if (!slot) return`）。
-
-也就是说：如果你直接复制第三方平台官方生成器给的代码，多数情况下 thread 的每个 child URL 会被识别成不同页面，各自起一份独立讨论。要让一条 thread 共用一份讨论，需要让组件读 `<link rel="canonical">` 而不是 `location.pathname`。
-
-## 配方：giscus（GitHub Discussions 评论）
+## giscus（GitHub Discussions 评论）
 
 在 [giscus.app](https://giscus.app) 配置时，**Page ↔ Discussions Mapping** 选 "Discussion title contains a specific term"，term 框随便填一个占位符——下面的脚本会动态覆盖它。记下 giscus 给的 `data-repo`、`data-repo-id`、`data-category`、`data-category-id`。
 
@@ -67,12 +56,13 @@
 
 - 通过 `[data-post-end]` 插槽挂载，自动跟正文列宽和左边对齐；非帖子页面没有这个元素，等于内置的页面守卫。
 - `data-mapping="specific"` 配合动态 term，把 giscus 的"按术语搜讨论"模式当成精确匹配用。
+- term 取自 `<link rel="canonical">` 的路径，而不是 `location.pathname`。Jant 中同一条 thread 的所有 child URL 共用一个 canonical（指向根帖），这样整条 thread 落到同一份讨论上。
 - `data-strict="1"` 关闭 GitHub 模糊搜索，避免把不同 thread 误匹配到一起。
 - `data-theme="preferred_color_scheme"` 跟随 Jant 的浅 / 深色模式自动切换。
 
 第一次访问某条 thread 时，giscus 找不到匹配的 Discussion，会显示 "This post has no discussions yet"。第一个评论提交后 GitHub 自动创建一条 Discussion，标题就是 canonical 路径，之后访问命中。
 
-## 配方：Disqus
+## Disqus
 
 把下面的代码贴进 **网站页脚**，把 `YOUR-SHORTNAME` 换成你的 Disqus shortname：
 
@@ -106,7 +96,7 @@
 
 `page.identifier` 用 canonical 路径而不是 `location.pathname`，让 thread 内的所有 child URL 共享同一份评论。
 
-## 配方：网站统计
+## 网站统计
 
 统计代码通常对加载时机敏感，放 **网站头部**。
 
@@ -165,7 +155,7 @@
 </script>
 ```
 
-## 配方：自定义字体
+## 自定义字体
 
 如果内建字型主题不够用，可以从 Google Fonts 或自托管字体加载。**网站头部** 放字体声明：
 
