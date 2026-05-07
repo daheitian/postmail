@@ -9,17 +9,23 @@ import type { AppVariables } from "../../../types/app-context.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
+const ManagedSiteKeySchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3)
+  .max(40)
+  .regex(
+    /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/,
+    "Site key must use lowercase letters, numbers, or hyphens.",
+  );
+
+const SiteKeyAvailabilityQuerySchema = z.object({
+  key: ManagedSiteKeySchema,
+});
+
 const CreateManagedSiteSchema = z.object({
-  key: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .min(3)
-    .max(40)
-    .regex(
-      /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/,
-      "Site key must use lowercase letters, numbers, or hyphens.",
-    ),
+  key: ManagedSiteKeySchema,
   primaryHost: z
     .string()
     .trim()
@@ -75,6 +81,23 @@ internalSitesRoutes.post("/", requireInternalAdminApi(), async (c) => {
     201,
   );
 });
+
+internalSitesRoutes.get(
+  "/availability",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+
+    const query = parseValidated(SiteKeyAvailabilityQuerySchema, {
+      key: c.req.query("key") ?? "",
+    });
+    const result = await c.var.services.siteAdmin.isManagedSiteKeyAvailable(
+      query.key,
+    );
+
+    return c.json(result);
+  },
+);
 
 internalSitesRoutes.delete("/:siteId", requireInternalAdminApi(), async (c) => {
   assertHostBasedMode(c.env);

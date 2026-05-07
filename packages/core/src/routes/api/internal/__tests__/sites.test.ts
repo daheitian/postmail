@@ -143,6 +143,88 @@ describe("Internal site admin routes", () => {
     ]);
   });
 
+  it("reports an unused key as available", async () => {
+    const { app } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const res = await app.request(
+      "/api/internal/sites/availability?key=Fresh-Key",
+      {
+        headers: { Authorization: "Bearer internal-secret" },
+      },
+    );
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ available: true, key: "fresh-key" });
+  });
+
+  it("reports an existing key as unavailable", async () => {
+    const { app } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const createRes = await app.request("/api/internal/sites", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer internal-secret",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        key: "taken-key",
+        primaryHost: "taken-key.example.com",
+        siteName: "Taken Key",
+      }),
+    });
+    expect(createRes.status).toBe(201);
+
+    const res = await app.request(
+      "/api/internal/sites/availability?key=taken-key",
+      {
+        headers: { Authorization: "Bearer internal-secret" },
+      },
+    );
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ available: false, key: "taken-key" });
+  });
+
+  it("rejects availability checks without an admin token", async () => {
+    const { app } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const res = await app.request(
+      "/api/internal/sites/availability?key=any-key",
+    );
+
+    expect(res.status).toBe(401);
+  });
+
+  it("rejects availability checks with an invalid key", async () => {
+    const { app } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const res = await app.request("/api/internal/sites/availability?key=ab", {
+      headers: { Authorization: "Bearer internal-secret" },
+    });
+
+    expect(res.status).toBe(400);
+  });
+
   it("returns managed site media usage in host-based mode", async () => {
     const { app, services } = createTestApp({
       authenticated: false,

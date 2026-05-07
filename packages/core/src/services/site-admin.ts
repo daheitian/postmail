@@ -87,12 +87,26 @@ export interface ManagedSiteMediaUsageResult {
   siteId: string;
 }
 
+export interface ManagedSiteKeyAvailabilityResult {
+  available: boolean;
+  key: string;
+}
+
 export interface SiteAdminService {
   addManagedSiteDomain(
     siteId: string,
     input: ManageManagedSiteDomainInput,
   ): Promise<SiteDomain[]>;
   createManagedSite(input: CreateManagedSiteInput): Promise<ManagedSiteResult>;
+  /**
+   * Lookup whether the given site key is free in `site`. Returns the
+   * normalized key so the caller can confirm what was checked. Used by the
+   * control plane before reserving a cloud_site row, so the user sees a
+   * conflict on the form instead of after provisioning.
+   */
+  isManagedSiteKeyAvailable(
+    key: string,
+  ): Promise<ManagedSiteKeyAvailabilityResult>;
   exportManagedSite(
     siteId: string,
     deps: ExportManagedSiteDeps,
@@ -608,6 +622,16 @@ export function createSiteAdminService(
       }
 
       return createWithDatabase(db, input);
+    },
+    async isManagedSiteKeyAvailable(key) {
+      assertManagedSiteOperationsEnabled();
+      const normalizedKey = key.trim();
+      const existing = await db
+        .select({ id: sites.id })
+        .from(sites)
+        .where(eq(sites.key, normalizedKey))
+        .limit(1);
+      return { available: !existing[0], key: normalizedKey };
     },
     async getManagedSiteMediaUsage(siteId) {
       assertManagedSiteOperationsEnabled();
