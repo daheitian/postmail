@@ -62,7 +62,7 @@ See [GitHub Sync](docs/github-sync.md) and [Export and import](docs/export-and-i
 | ------------------------------------------------------ | -------------------------------------- | ---------------------------- |
 | **[Self-host on Cloudflare](docs/deployment.md)**      | Running with very low maintenance cost | Usually within the free tier |
 | **[Self-host with Docker](docs/deployment-docker.md)** | You already have a server              | Whatever your server costs   |
-| **[Hosted Jant](docs/hosted.md)**                      | You don't want to deal with deployment | $10.46/year and up           |
+| **[Hosted Jant](docs/hosted.md)**                      | You don't want to deal with deployment | $10.46/year                  |
 
 All three run the same open-source code. You can move content between them via [export and import](docs/export-and-import.md) or [GitHub Sync](docs/github-sync.md).
 

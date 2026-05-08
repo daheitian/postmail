@@ -6,11 +6,15 @@ If you'd rather not deal with deployment, upgrades, and backups, the official ho
 
 ## Pricing and limits
 
-| Item                               | Limit         |
-| ---------------------------------- | ------------- |
-| First site                         | $10.46 / year |
-| Each additional site               | $5 / year     |
-| Media storage (shared per account) | 10 GB         |
+There's a single Jant Hosted plan:
+
+| Item          | Included      |
+| ------------- | ------------- |
+| Price         | $10.46 / year |
+| Sites         | 3             |
+| Media storage | 10 GB         |
+
+Need more storage? Email [support@jant.me](mailto:support@jant.me) and we'll work something out.
 
 Billed annually. After you cancel, the site keeps running until the end of the current paid period. Then it enters a 90-day retention window during which data can still be recovered. After 90 days, the site is permanently deleted.
 
@@ -21,7 +25,7 @@ Your data can be carried out at any time via [Hugo export](export-and-import.md)
 - **Full Jant feature set**: Threads, Collections, GitHub Sync, API/MCP, Hugo export — every feature works the same as on a self-hosted install.
 - **Automatic HTTPS**: certificates are issued and renewed automatically for the default subdomain and any custom domain you bind.
 - **Custom domain**: bind your own domain from the dashboard.
-- **Database and media storage**: D1, R2, Postgres, S3 are all configured and operated by the hosted side. From your view it's just a site in the dashboard.
+- **Database and media storage**: configured and operated by the hosted side. From your view it's just a site in the dashboard.
 
 ## Getting started
 
@@ -45,19 +49,15 @@ You can switch from hosted to self-hosted at any time, or back the other directi
 | Setup cost       | Sign up and go     | Follow the [Cloudflare](deployment.md) or [Docker](deployment-docker.md) docs |
 | Upgrades and ops | Automatic          | You run them                                                                  |
 | Where data lives | Hosted environment | Your own environment                                                          |
-| Cost             | From $10.46 / year | Usually within Cloudflare's free tier                                         |
-
-Both paths run the same code. Self-hosting trades configuration and upgrade work for full control. Hosted trades $10.46 a year for sign-up-and-go.
+| Cost             | $10.46 / year      | Usually within Cloudflare's free tier                                         |
 
 ## Why $10.46
 
-I've always liked the feel of a `.com` price: $10.46 / year.
-
-That's what Cloudflare charges to register and renew a `.com` domain. Slightly above free, but still official. Low enough that starting doesn't feel like a commitment, high enough that it isn't free either.
+It's what Cloudflare charges to register and renew a `.com` domain. Slightly above free, but still official. Low enough that starting doesn't feel like a commitment, high enough that it isn't free either.
 
 ## Contact
 
-For technical or account questions, email `support#jant.me` (replace `#` with `@`).
+For technical or account questions, email [support@jant.me](mailto:support@jant.me).
 
 ## What's next
 
