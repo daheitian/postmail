@@ -19,3 +19,4 @@
 - Do not over-compress a conclusion into a neat slogan. When the previous paragraph already explains the mechanism, close with a precise boundary or implication.
 - Do not narrow a broad essay conclusion to a single mechanism if the article developed multiple themes. Synthesize the actual scope without turning it into a generic uplift.
 - When a nearby paragraph already enumerates channels, a conclusion should name the underlying distinction instead of repeating the examples.
+- When a conclusion keeps one strong operational point, add a compact bridge for the other major arguments so the ending does not appear to ignore the rest of the essay.
