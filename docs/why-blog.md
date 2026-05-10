@@ -1,14 +1,16 @@
 # Why blog today?
 
-> This is the thinking behind Jant. If you just want to get something running, jump to [Getting started](getting-started.md).
+> This article explains the design background behind Jant. If you want to install and configure it first, start with [Getting started](getting-started.md).
 
-[Jant](https://jant.me) is a small blog system for one author.
+Today, most personal writing happens inside platform feeds. Short posts, images, links, and long-form pieces can all be published quickly, then immediately enter ranking, recommendation, and engagement systems.
 
-It rests on a fairly plain conviction: personal blogs are still worth keeping around. Not as a replacement for social media, but as a place that genuinely belongs to you.
+Feeds are good at distribution, but they are built around immediacy. Ongoing maintenance, long-term search, structured archives, and stable references are usually not their primary goals.
 
-So before getting into Jant itself, it's worth going back to the question underneath it all:
+A personal blog solves a different problem: it gives the author a stable, indexable, long-term publishing space. Each piece has its own URL, the structure is decided by the author, and the archive does not have to be reorganized around changes in platform formats or recommendation systems.
 
-Why is it still worth blogging today?
+[Jant](https://jant.me) is a lightweight blog system for a single author. It starts from a more specific assumption: a blog is first a place to collect and maintain personal writing; distribution is only one optional action. Jant therefore does not treat "publish" as synonymous with "broadcast". A piece can first exist as a record on the site, then later appear on the homepage, enter RSS, or move through other distribution channels. Source content is synced as Markdown to your own GitHub repository, serving as both backup and portable source. The goal is not to create another feed, but to make personal writing maintainable over time and portable when needed.
+
+So this article starts not with Jant's feature set, but with blogging itself: when feeds are the default publishing environment, what problems can a personal blog still solve?
 
 ## Honestly, most of the time, no one is reading your blog
 
