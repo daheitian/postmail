@@ -200,12 +200,17 @@ function refreshUploadToast() {
     sum += Math.min(1, Math.max(0, p));
     if (p >= 1) done += 1;
   }
-  const pct = Math.floor((sum / clientIds.length) * 100);
+  const total = clientIds.length;
+  const pct = Math.floor((sum / total) * 100);
+  // Show "currently on item N of M" rather than "N completed of M": while any
+  // work is in flight we report the next-in-progress index (capped at total),
+  // so 2 files with neither done shows "1/2" instead of the confusing "0/2".
+  const current = Math.min(done + 1, total);
 
   const message =
-    clientIds.length === 1
+    total === 1
       ? `${baseMsg} ${pct}%`
-      : `${baseMsg} ${pct}% ${done}/${clientIds.length}`;
+      : `${baseMsg} ${pct}% ${current}/${total}`;
   updateToast("compose-deferred", message);
 }
 
