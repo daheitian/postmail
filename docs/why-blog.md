@@ -84,9 +84,11 @@ He also notes:
 
 ---
 
-This is what [Jant](https://jant.me) is trying to do: take as much friction as possible out of writing and shipping, and then split "publishing" from "broadcasting" — so you can keep a record without having to broadcast every time. Note, Link, and Quote cover almost any shape your writing wants to take, with attachments for images, video, audio, and any other format. Everything syncs automatically to your own GitHub repo as plain Markdown — yours to take with you, anytime.
+In the early web, publishing your writing mostly happened on your own site. Platforms later made publishing much easier, but they also gave writers less control over how a piece appears, whether it can be found, and how long it remains available. A blog gives those decisions back to the author: the links, structure, archive, edits, and deletions are all yours to maintain. Whether a piece enters the feed, when it appears, and whether it appears as an excerpt or a link can also be handled separately, instead of being tied to the act of publishing itself.
 
-You just need a place to write down what you want to remember. That place should be yours.
+This does not mean rejecting platforms. Social media, newsletters, and RSS can still be used for distribution, as long as the original stays on your own site. If a platform changes its rules, shifts direction, or shuts down, your work does not disappear with it. A blog is not only about preservation, either. It also moves writing out of the environment of immediate feedback, giving each piece room to be revised, organized, and found over time. Readers come to know the author through a specific piece of writing, not as something briefly passing through a timeline.
+
+I hope this piece gives you one reason to start a blog, or to keep writing one.
 
 ## What's next
 

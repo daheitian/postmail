@@ -20,3 +20,5 @@
 - Do not narrow a broad essay conclusion to a single mechanism if the article developed multiple themes. Synthesize the actual scope without turning it into a generic uplift.
 - When a nearby paragraph already enumerates channels, a conclusion should name the underlying distinction instead of repeating the examples.
 - When a conclusion keeps one strong operational point, add a compact bridge for the other major arguments so the ending does not appear to ignore the rest of the essay.
+- For CTA-style endings in argument-driven docs, avoid button copy and marketing uplift. The final sentence should sound like the article's own conclusion first, with navigation doing the explicit conversion work.
+- When the user rejects a CTA for an essay conclusion, close by reframing the article's central question or implication instead of nudging the reader toward setup, action, or conversion.
