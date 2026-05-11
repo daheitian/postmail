@@ -301,6 +301,13 @@ async function uploadFile(
   clientId: string,
   editor: JantComposeEditor | null,
 ): Promise<string | null> {
+  // Capture cheap metadata up-front so we can release `file` (the original
+  // potentially-huge blob) as soon as transcoding finishes. On iOS Safari
+  // holding a 300MB+ source blob alongside the transcoded output, upload
+  // chunks, and decoder buffers can push the tab past the per-process
+  // memory cap and get it silently reloaded mid-publish.
+  const fileType = file.type;
+  const fileName = file.name;
   try {
     let toUpload: File;
     let width: number | undefined;
@@ -310,7 +317,7 @@ async function uploadFile(
     let waveform: string | undefined;
     let poster: Blob | undefined;
 
-    if (file.type.startsWith("video/")) {
+    if (fileType.startsWith("video/")) {
       // Video: transcode with mediabunny (requires WebCodecs)
       if (!VideoProcessor.isSupported()) {
         editor?.updateAttachmentStatus(
@@ -334,6 +341,8 @@ async function uploadFile(
         editor?.updateAttachmentProgress(clientId, progress);
       });
       toUpload = result.file;
+      // Drop the original blob ref now that we have the transcoded output.
+      file = null as unknown as File;
       width = result.width;
       height = result.height;
       durationSeconds = result.durationSeconds;
@@ -342,7 +351,7 @@ async function uploadFile(
       if (poster) {
         editor?.updateAttachmentPoster(clientId, poster);
       }
-    } else if (file.type.startsWith("audio/")) {
+    } else if (fileType.startsWith("audio/")) {
       // Audio: transcode to AAC (.m4a) (requires WebCodecs)
       if (!AudioProcessor.isSupported()) {
         editor?.updateAttachmentStatus(
@@ -366,23 +375,24 @@ async function uploadFile(
         editor?.updateAttachmentProgress(clientId, progress);
       });
       toUpload = result.file;
+      file = null as unknown as File;
     } else if (
-      file.type.startsWith("image/") ||
-      /\.heic$/i.test(file.name) ||
-      /\.heif$/i.test(file.name)
+      fileType.startsWith("image/") ||
+      /\.heic$/i.test(fileName) ||
+      /\.heif$/i.test(fileName)
     ) {
       // Image: convert HEIC/HEIF if needed, then resize + convert to WebP
       let imageFile = file;
       try {
         const { isHeic, heicTo } = await import("heic-to");
-        if (await isHeic(file)) {
+        if (await isHeic(imageFile)) {
           editor?.updateAttachmentStatus(clientId, "processing", null, null);
           const blob = await heicTo({
-            blob: file,
+            blob: imageFile,
             type: "image/jpeg",
             quality: 0.92,
           });
-          imageFile = new File([blob], file.name.replace(/\.heic$/i, ".jpg"), {
+          imageFile = new File([blob], fileName.replace(/\.heic$/i, ".jpg"), {
             type: "image/jpeg",
           });
           editor?.updateAttachmentPreview(clientId, imageFile);
@@ -391,6 +401,8 @@ async function uploadFile(
         toUpload = result.file;
         width = result.width;
         height = result.height;
+        file = null as unknown as File;
+        imageFile = null as unknown as File;
       } catch {
         editor?.removeAttachment(clientId);
         showToast("Image format not supported.", "error");
@@ -405,7 +417,7 @@ async function uploadFile(
 
     // Extract metadata for non-video files (video metadata comes from VideoProcessor)
     // Audio waveform is already extracted above (before AudioProcessor runs).
-    if (!file.type.startsWith("video/")) {
+    if (!fileType.startsWith("video/")) {
       const meta = await extractMediaMetadata(toUpload);
       width ??= meta.width;
       height ??= meta.height;
@@ -423,7 +435,7 @@ async function uploadFile(
     // markdown via the compose API and materialized by `createTextAttachment`.
     let summary: string | undefined;
     let chars: number | undefined;
-    const category = getMediaCategory(file.type);
+    const category = getMediaCategory(fileType);
     if (category === "text") {
       try {
         const textContent = await toUpload.text();

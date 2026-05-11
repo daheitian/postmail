@@ -139,20 +139,11 @@ function parseJsonObjectFromText(text: string): Record<string, unknown> | null {
   }
 }
 
-async function sha256Base64(file: File): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    await file.arrayBuffer(),
-  );
-  const bytes = new Uint8Array(digest);
-  let ascii = "";
-  for (const byte of bytes) {
-    ascii += String.fromCharCode(byte);
-  }
-  return btoa(ascii);
-}
-
 async function initiateUpload(file: File): Promise<InitiateResponse> {
+  // Note: no client-side SHA-256 here. Hashing the whole file would force a
+  // full File.arrayBuffer() read, which on mobile Safari pushes peak memory
+  // past the per-tab cap for large videos and gets the page killed.
+  // Server-side size + storage ETag are sufficient integrity checks.
   const res = await fetch(publicPath("/api/uploads/init"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -160,7 +151,6 @@ async function initiateUpload(file: File): Promise<InitiateResponse> {
       filename: file.name,
       contentType: file.type || "application/octet-stream",
       size: file.size,
-      checksumSha256: await sha256Base64(file),
     }),
   });
 
