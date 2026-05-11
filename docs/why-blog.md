@@ -84,11 +84,9 @@ He also notes:
 
 ---
 
-In the early web, publishing your writing mostly happened on your own site. Platforms later made publishing much easier, but they also gave writers less control over how a piece appears, whether it can be found, and how long it remains available. A blog gives those decisions back to the author: the links, structure, archive, edits, and deletions are all yours to maintain. Whether a piece enters the feed, when it appears, and whether it appears as an excerpt or a link can also be handled separately, instead of being tied to the act of publishing itself.
+In the early web, publishing your writing mostly happened on your own site. Platforms later made publishing much easier, but they also gave writers less control over how a piece appears, whether it can be found, and how long it remains available. A blog gives those decisions back to the author: the links, structure, archive, edits, and deletions are all yours to maintain. Whether a piece enters the feed, when it appears, and whether it appears as an excerpt or a link can also be handled separately, instead of being tied to the act of publishing itself. This does not mean rejecting platforms: social media, newsletters, and RSS can still handle distribution, as long as the original stays on your own site. Even if a platform later changes its rules, shifts direction, or shuts down, your work doesn't disappear with it.
 
-This does not mean rejecting platforms. Social media, newsletters, and RSS can still be used for distribution, as long as the original stays on your own site. If a platform changes its rules, shifts direction, or shuts down, your work does not disappear with it.
-
-Blogging won't make you visible to many people overnight, but it puts the pace of your writing, the way it's archived, and the path by which readers find you back in your own hands. If you've hesitated to start, or stepped away somewhere along the way, I hope this piece is a reason to begin again.
+Blogging probably won't make you visible to many people overnight, but every piece you write will stay there at your own pace — open to revision, indexed by search, waiting for the people who actually care about it to find it at some point. If you've hesitated to start, or stepped away somewhere along the way, I hope this piece is a reason to begin again.
 
 ## What's next
 
