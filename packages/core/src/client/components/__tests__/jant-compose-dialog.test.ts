@@ -1915,7 +1915,7 @@ describe("JantComposeDialog", () => {
     expect(detail.replyRefreshId).toBe("019ce8cf-19a1-7d16-9a75-017a9ac7299d");
   });
 
-  it("uses the replied post format as the initial compose format", async () => {
+  it("honors an explicit initialFormat option when opening a reply", async () => {
     const el = await createElement();
 
     await el.openReply(
