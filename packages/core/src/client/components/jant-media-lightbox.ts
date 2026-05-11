@@ -285,18 +285,41 @@ export class JantMediaLightbox extends LitElement {
     if (ke.key === "Escape") {
       e.preventDefault();
       this.close();
-    } else if (
-      target?.classList.contains("media-lightbox-short-progress") &&
-      (ke.key === "ArrowLeft" || ke.key === "ArrowRight")
-    ) {
       return;
-    } else if (ke.key === "ArrowLeft") {
-      e.preventDefault();
-      this.#prev();
-    } else if (ke.key === "ArrowRight") {
-      e.preventDefault();
-      this.#next();
     }
+    if (ke.key !== "ArrowLeft" && ke.key !== "ArrowRight") return;
+
+    // Let the progress slider's native arrow-key seeking through.
+    if (target?.classList.contains("media-lightbox-short-progress")) return;
+
+    // On videos, arrow keys scrub the playhead. Item switching happens via
+    // the on-screen prev/next buttons — matches YouTube/native player conventions.
+    const currentImage = this._images[this._currentIndex];
+    if (currentImage?.mimeType?.startsWith("video/")) {
+      const video = this.querySelector<HTMLVideoElement>(
+        ".media-lightbox-video",
+      );
+      if (video) {
+        e.preventDefault();
+        const step = 5;
+        const delta = ke.key === "ArrowLeft" ? -step : step;
+        const duration =
+          Number.isFinite(video.duration) && video.duration > 0
+            ? video.duration
+            : null;
+        const nextTime =
+          duration != null
+            ? Math.max(0, Math.min(video.currentTime + delta, duration))
+            : Math.max(0, video.currentTime + delta);
+        video.currentTime = nextTime;
+        this._videoCurrentTime = nextTime;
+      }
+      return;
+    }
+
+    e.preventDefault();
+    if (ke.key === "ArrowLeft") this.#prev();
+    else this.#next();
   };
 
   #handleDialogClick = (e: Event) => {
