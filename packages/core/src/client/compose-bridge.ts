@@ -21,6 +21,7 @@ import {
 import {
   showToast,
   showPersistentToast,
+  updateToast,
   replaceWithAutoClose,
   queueToastForNextPage,
 } from "./toast.js";
@@ -172,6 +173,41 @@ const uploadPromises = new Map<string, Promise<string | null>>();
 
 /** Track attachments removed while their upload is still in flight */
 const removedClientIds = new Set<string>();
+
+/**
+ * Track upload-phase progress (0..1) per clientId for live toast aggregation.
+ * Populated only during the actual byte-upload phase — processing/transcoding
+ * progress is intentionally excluded so the percentage doesn't reset mid-flight.
+ */
+const uploadProgress = new Map<string, number>();
+
+interface ActiveUploadToast {
+  clientIds: string[];
+  baseMsg: string;
+}
+
+let activeUploadToast: ActiveUploadToast | null = null;
+
+function refreshUploadToast() {
+  if (!activeUploadToast) return;
+  const { clientIds, baseMsg } = activeUploadToast;
+  if (clientIds.length === 0) return;
+
+  let sum = 0;
+  let done = 0;
+  for (const id of clientIds) {
+    const p = uploadProgress.get(id) ?? 0;
+    sum += Math.min(1, Math.max(0, p));
+    if (p >= 1) done += 1;
+  }
+  const pct = Math.floor((sum / clientIds.length) * 100);
+
+  const message =
+    clientIds.length === 1
+      ? `${baseMsg} ${pct}%`
+      : `${baseMsg} ${pct}% ${done}/${clientIds.length}`;
+  updateToast("compose-deferred", message);
+}
 
 /**
  * Track completed upload mediaIds by clientId.
@@ -400,6 +436,9 @@ async function uploadFile(
       }
     }
 
+    uploadProgress.set(clientId, 0);
+    refreshUploadToast();
+
     const result = await uploadViaSession(
       toUpload,
       {
@@ -414,13 +453,19 @@ async function uploadFile(
       },
       (progress) => {
         editor?.updateAttachmentProgress(clientId, progress);
+        uploadProgress.set(clientId, progress);
+        refreshUploadToast();
       },
     );
 
+    uploadProgress.set(clientId, 1);
+    refreshUploadToast();
     editor?.updateAttachmentStatus(clientId, "done", result.id, null);
     completedMediaIds.set(clientId, result.id);
     return result.id;
   } catch (error) {
+    uploadProgress.delete(clientId);
+    refreshUploadToast();
     const message = error instanceof Error ? error.message : "Upload failed";
     editor?.updateAttachmentStatus(clientId, "error", null, message);
     // Error is shown on the attachment thumbnail; only toast when there's no editor context.
@@ -625,10 +670,21 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
   // Show persistent toast only when uploads are still in flight
   if (hasPending) {
     showPersistentToast("compose-deferred", uploadingMsg);
+    if (detail.pendingAttachments.length > 0) {
+      activeUploadToast = {
+        clientIds: detail.pendingAttachments.map((a) => a.clientId),
+        baseMsg: uploadingMsg,
+      };
+      refreshUploadToast();
+    }
   }
 
   /** Show result toast — replaces persistent toast if one exists, otherwise shows a new one */
   const toastMsg = (msg: string, type: "success" | "error" = "success") => {
+    if (activeUploadToast) {
+      for (const id of activeUploadToast.clientIds) uploadProgress.delete(id);
+      activeUploadToast = null;
+    }
     if (hasPending) {
       replaceWithAutoClose("compose-deferred", msg, type);
     } else {
