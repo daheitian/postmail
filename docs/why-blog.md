@@ -2,15 +2,11 @@
 
 > This article explains the design background behind Jant. If you want to install and configure it first, start with [Getting started](getting-started.md).
 
-Today, most personal writing happens inside platform feeds. Short posts, images, links, and long-form pieces can all be published quickly, then immediately enter ranking, recommendation, and engagement systems.
+Today, most personal writing happens in the feeds of various social platforms. Anyone can publish quickly and immediately enter some kind of algorithmic system. Unfortunately, that system is good at distributing content, but it is built around immediacy — ongoing maintenance, long-term search, structured archives, and stable references are usually not its priorities. What's more uncomfortable: these platforms are typically driven by advertising incentives, which naturally pushes their users toward more exaggerated and emotional content as a way to maximize time spent on the platform.
 
-Feeds are good at distribution, but they are built around immediacy. Ongoing maintenance, long-term search, structured archives, and stable references are usually not their primary goals.
+Meanwhile, personal blogs are trying to solve this problem: they give the author a stable, indexable, long-term publishing space. Each piece has its own URL, the structure is decided by the author, and the archive does not have to be reorganized around changes in platform formats or recommendation systems.
 
-A personal blog solves a different problem: it gives the author a stable, indexable, long-term publishing space. Each piece has its own URL, the structure is decided by the author, and the archive does not have to be reorganized around changes in platform formats or recommendation systems.
-
-[Jant](https://jant.me) is a lightweight blog system for a single author. It starts from a more specific assumption: a blog is first a place to collect and maintain personal writing; distribution is only one optional action. Jant therefore does not treat "publish" as synonymous with "broadcast". A piece can first exist as a record on the site, then later appear on the homepage, enter RSS, or move through other distribution channels. Source content is synced as Markdown to your own GitHub repository, serving as both backup and portable source. The goal is not to create another feed, but to make personal writing maintainable over time and portable when needed.
-
-So this article starts not with Jant's feature set, but with blogging itself: when feeds are the default publishing environment, what problems can a personal blog still solve?
+This article starts not with Jant's feature set, but with blogging itself: when social platforms are the default publishing environment, what problems can a personal blog still solve?
 
 ## Honestly, most of the time, no one is reading your blog
 
@@ -84,7 +80,7 @@ He also notes:
 
 ---
 
-In the early web, publishing your writing mostly happened on your own site. Platforms later made publishing much easier, but they also gave writers less control over how a piece appears, whether it can be found, and how long it remains available. A blog gives those decisions back to the author: the links, structure, archive, edits, and deletions are all yours to maintain. Whether a piece enters the feed, when it appears, and whether it appears as an excerpt or a link can also be handled separately, instead of being tied to the act of publishing itself. This does not mean rejecting platforms: social media, newsletters, and RSS can still handle distribution, as long as the original stays on your own site. Even if a platform later changes its rules, shifts direction, or shuts down, your work doesn't disappear with it.
+In the early web, publishing your writing mostly happened on your own site. Platforms later made publishing much easier, but they also gave writers less control over how a piece appears, whether it can be found, and how long it remains available. A blog gives those decisions back to the author: the links, structure, archive, edits, and deletions are all yours to decide. Whether a piece enters the feed, when it appears, and whether it appears as an excerpt or a link can be handled separately, instead of being tied to the act of publishing itself. This does not mean rejecting platforms: social media, newsletters, and RSS can still handle distribution, while the original always remains the source of truth.
 
 Blogging probably won't make you visible to many people overnight, but every piece you write will stay there at your own pace — open to revision, indexed by search, waiting for the people who actually care about it to find it at some point. If you've hesitated to start, or stepped away somewhere along the way, I hope this piece is a reason to begin again.
 
