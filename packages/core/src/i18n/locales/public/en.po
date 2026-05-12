@@ -1809,8 +1809,8 @@ msgstr "Sign In"
 
 #. @context: Sign-in nudge shown to visitors on an empty home page, hinting that the site owner can sign in to start writing
 #: src/ui/pages/HomePage.tsx
-msgid "Sign in if this is your space."
-msgstr "Sign in if this is your space."
+msgid "Sign in to start writing."
+msgstr "Sign in to start writing."
 
 #. @context: Token label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2313,6 +2313,11 @@ msgstr "without title"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Won't move the thread to the top of latest."
 msgstr "Won't move the thread to the top of latest."
+
+#. @context: Nudge shown to the signed-in site owner on an empty home page, pointing to the compose prompt above the feed
+#: src/ui/pages/HomePage.tsx
+msgid "Write your first post to get started."
+msgstr "Write your first post to get started."
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx
