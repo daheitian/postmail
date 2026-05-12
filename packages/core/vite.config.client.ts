@@ -10,7 +10,7 @@
 
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
-import { clientBuildOptions } from "./vite.shared";
+import { buildVersion, clientBuildOptions } from "./vite.shared";
 
 export default defineConfig({
   // Keep Vite's base at `/`. Asset URLs already include the reserved
@@ -25,6 +25,10 @@ export default defineConfig({
     // Manifest maps entry source paths → hashed output filenames so the
     // Worker build can embed the correct content-addressed paths.
     manifest: true,
+  },
+
+  define: {
+    __JANT_VERSION__: JSON.stringify(buildVersion),
   },
 
   plugins: [tailwindcss()],
