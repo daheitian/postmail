@@ -197,9 +197,7 @@ export class JantMediaLightbox extends LitElement {
     this.updateComplete.then(() => {
       const dialog = this.querySelector<HTMLDialogElement>(".media-lightbox");
       dialog?.showModal();
-      // Focus the content wrapper instead of letting the browser auto-focus
-      // the close button, which would show a focus ring on arrow-key nav.
-      this.querySelector<HTMLElement>(".media-lightbox-content")?.focus();
+      this.#focusCurrentMedia();
     });
   }
 
@@ -367,6 +365,24 @@ export class JantMediaLightbox extends LitElement {
     this.querySelector<HTMLVideoElement>(".media-lightbox-video")?.pause();
   }
 
+  // Focus the active video so space/native shortcuts work without an extra
+  // click. Falls back to the content wrapper for images — focusing the close
+  // button would show a focus ring during arrow-key nav.
+  #focusCurrentMedia() {
+    const currentImage = this._images[this._currentIndex];
+    const isVideo = currentImage?.mimeType?.startsWith("video/");
+    if (isVideo) {
+      const video = this.querySelector<HTMLVideoElement>(
+        ".media-lightbox-video",
+      );
+      if (video) {
+        video.focus();
+        return;
+      }
+    }
+    this.querySelector<HTMLElement>(".media-lightbox-content")?.focus();
+  }
+
   #resetShortVideoState(image?: LightboxImage) {
     this._videoCurrentTime = 0;
     this._videoDuration =
@@ -439,6 +455,7 @@ export class JantMediaLightbox extends LitElement {
     stage.scrollTop = 0;
     stage.scrollLeft = 0;
     this.#syncCurrentVideo();
+    this.#focusCurrentMedia();
   }
 
   render() {
