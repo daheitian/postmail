@@ -29,7 +29,6 @@ import { openReplyForArticle } from "./compose-launch.js";
 import { getJsonString, readJsonObject } from "./json.js";
 import { uploadViaSession } from "./upload-session.js";
 import { publicPath } from "./runtime-paths.js";
-import { setupThreadContexts } from "./thread-context.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import { getMediaCategory } from "../lib/upload.js";
 import { resolveInlineImageUrls } from "./tiptap/inline-image-upload.js";
@@ -76,7 +75,6 @@ async function refreshTimelineThreadView(
     if (!html) return false;
 
     content.innerHTML = html;
-    setupThreadContexts(content);
     return true;
   } catch {
     return false;
@@ -99,7 +97,6 @@ async function refreshPostCardView(postId: string): Promise<boolean> {
       );
       if (!content) return false;
       content.innerHTML = html;
-      setupThreadContexts(content);
       return true;
     }
 
@@ -109,12 +106,6 @@ async function refreshPostCardView(postId: string): Promise<boolean> {
     if (!article) return false;
 
     article.outerHTML = html;
-    const refreshed = document.querySelector<HTMLElement>(
-      `article[data-post-id="${postId}"]`,
-    );
-    if (refreshed) {
-      setupThreadContexts(refreshed);
-    }
     return true;
   } catch {
     return false;
@@ -134,12 +125,6 @@ async function refreshPostPageView(postId: string): Promise<boolean> {
     if (!html) return false;
 
     container.outerHTML = html;
-    const refreshed = document.querySelector<HTMLElement>(
-      `[data-post-view][data-post-view-id="${postId}"]`,
-    );
-    if (refreshed) {
-      setupThreadContexts(refreshed);
-    }
     return true;
   } catch {
     return false;

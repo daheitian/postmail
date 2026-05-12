@@ -2615,13 +2615,6 @@
       var(--site-thread-dot-ring);
   }
 
-  .thread-context-shell {
-    position: relative;
-    display: grid;
-    gap: 0.7rem;
-    padding-bottom: 0.35rem;
-  }
-
   .thread-item-gap {
     padding-top: 0.15rem;
     padding-bottom: 0.35rem;
@@ -2692,70 +2685,6 @@
   /* Compact text for thread replies */
   .feed-compact {
     @apply text-sm;
-  }
-
-  /* Faded thread ancestor context */
-  .thread-context-collapsed {
-    position: relative;
-    max-height: var(--site-thread-context-max-height);
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-  }
-
-  .thread-context-collapsed.expanded {
-    max-height: none;
-    overflow: visible;
-  }
-
-  .thread-context-fade {
-    display: none;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 52px;
-    background: linear-gradient(
-      transparent,
-      color-mix(in srgb, var(--site-page-bg) 76%, var(--site-feed-card-bg))
-    );
-    pointer-events: none;
-  }
-
-  .thread-context-faded .thread-context-fade {
-    display: block;
-  }
-
-  .thread-context-collapsed.expanded .thread-context-fade {
-    display: none;
-  }
-
-  .thread-context-toggle {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.38rem 0.78rem;
-    font-size: var(--type-thread-context-meta);
-    margin-bottom: 4px;
-    cursor: pointer;
-    background: var(--site-thread-gap-bg);
-    border: 1px solid var(--site-thread-context-border);
-    border-radius: 999px;
-    line-height: 1.1;
-    transition:
-      border-color 0.18s ease,
-      color 0.18s ease,
-      background-color 0.18s ease;
-  }
-
-  .thread-context-toggle.hidden {
-    display: none;
-  }
-
-  .thread-context-toggle:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--site-accent) 22%,
-      var(--site-divider)
-    );
   }
 
   /* Thread detail: current post anchor + dot-only highlight */
