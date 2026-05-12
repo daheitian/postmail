@@ -235,6 +235,87 @@ Or, when images are still proxied through the site domain:
 IMAGE_TRANSFORM_URL = "https://yourdomain.com/cdn-cgi/image"
 ```
 
+### Static asset CDN (optional)
+
+| Variable         | Description                                                    |
+| ---------------- | -------------------------------------------------------------- |
+| `ASSET_BASE_URL` | Absolute URL serving built JS/CSS assets (e.g. a separate CDN) |
+
+By default Jant serves bundled assets from the same origin as the site under `/_assets/`. Set `ASSET_BASE_URL` only when you want those assets to live on a different domain.
+
+```toml
+[vars]
+ASSET_BASE_URL = "https://cdn.yourdomain.com"
+```
+
+**The CDN must allow cross-origin requests.** Jant ships its client bundle as ES modules (`<script type="module">`), and browsers enforce CORS on cross-origin module scripts — even though they look like ordinary JS. If the CDN doesn't return `Access-Control-Allow-Origin`, the browser drops the response and the site won't boot.
+
+Two ways to configure the asset host — pick whichever fits your setup:
+
+**Option A — allow any origin (simplest):**
+
+```
+Access-Control-Allow-Origin: *
+```
+
+Bundle files are content-hashed and publicly cacheable, so `*` is safe. The CDN can cache a single response and serve it to every visitor.
+
+**Option B — restrict to your site origin:**
+
+```
+Access-Control-Allow-Origin: https://yourdomain.com
+Vary: Origin
+```
+
+Use this when the same CDN serves several sites and you want each one isolated. `Vary: Origin` is required so the CDN doesn't return the wrong allow-origin header to a different caller. If your CDN doesn't support varying on `Origin`, prefer Option A.
+
+Same-origin deployments (no `ASSET_BASE_URL` set) don't need any CORS configuration.
+
+#### Cloudflare R2 / S3 (JSON CORS rules)
+
+If the CDN is a bucket exposed directly to the public (R2 with a public bucket, or S3 + CloudFront), set the bucket's CORS rules to:
+
+```json
+[
+  {
+    "AllowedOrigins": ["*"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "MaxAgeSeconds": 86400
+  }
+]
+```
+
+Or, to restrict to your site origin:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://yourdomain.com"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "MaxAgeSeconds": 86400
+  }
+]
+```
+
+- R2: Dashboard → your bucket → Settings → CORS policy → paste JSON
+- S3: AWS Console → bucket → Permissions → Cross-origin resource sharing (CORS), or `aws s3api put-bucket-cors`
+
+#### Caddy / nginx (reverse-proxied CDN)
+
+```caddy
+# Caddy
+header /_assets/* Access-Control-Allow-Origin "*"
+```
+
+```nginx
+# nginx
+location /_assets/ {
+    add_header Access-Control-Allow-Origin "*" always;
+}
+```
+
 ### Slug (optional)
 
 | Variable         | Default | Description                                                 |

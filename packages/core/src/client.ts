@@ -7,6 +7,7 @@
 
 import "./vendor/datastar.js";
 import { installPrefixedFetch } from "./client/runtime-paths.js";
+import { CORE_VERSION } from "./lib/version.js";
 import "./client/audio-player.js";
 import "./client/feed-video-player.js";
 import "./client/media-scroll-hint.js";
@@ -20,3 +21,4 @@ import "./client/site-header-nav.js";
 import "./client/collection-sort-menu.js";
 
 installPrefixedFetch();
+document.documentElement.dataset.jantVersion = CORE_VERSION;
