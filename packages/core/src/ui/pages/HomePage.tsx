@@ -39,26 +39,31 @@ export const HomePage: FC<HomePageProps> = ({
         <div data-feed>
           <div id="timeline-feed">
             <div id="timeline-items" class="flex flex-col">
-              <p id="empty-timeline" class="py-8 text-muted-foreground">
+              <p id="empty-timeline" class="pt-0 pb-8 text-muted-foreground">
                 {i18n._(
                   msg({
                     message: "Quiet here for now.",
                     comment: "@context: Empty state message on home page",
                   }),
-                )}
-                {!isAuthenticated && (
-                  <>
-                    {" "}
-                    <a href={signinUrl} class="underline underline-offset-2">
-                      {i18n._(
-                        msg({
-                          message: "Sign in if this is your space.",
-                          comment:
-                            "@context: Sign-in nudge shown to visitors on an empty home page, hinting that the site owner can sign in to start writing",
-                        }),
-                      )}
-                    </a>
-                  </>
+                )}{" "}
+                {isAuthenticated ? (
+                  i18n._(
+                    msg({
+                      message: "Write your first post to get started.",
+                      comment:
+                        "@context: Nudge shown to the signed-in site owner on an empty home page, pointing to the compose prompt above the feed",
+                    }),
+                  )
+                ) : (
+                  <a href={signinUrl} class="underline underline-offset-2">
+                    {i18n._(
+                      msg({
+                        message: "Sign in to start writing.",
+                        comment:
+                          "@context: Sign-in nudge shown to visitors on an empty home page, hinting that the site owner can sign in to start writing",
+                      }),
+                    )}
+                  </a>
                 )}
               </p>
             </div>

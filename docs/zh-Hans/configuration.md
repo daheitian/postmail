@@ -235,6 +235,87 @@ IMAGE_TRANSFORM_URL = "https://media.yourdomain.com/cdn-cgi/image"
 IMAGE_TRANSFORM_URL = "https://yourdomain.com/cdn-cgi/image"
 ```
 
+### 静态资源 CDN（可选）
+
+| 变量             | 说明                                              |
+| ---------------- | ------------------------------------------------- |
+| `ASSET_BASE_URL` | 构建产物 JS/CSS 的对外基础 URL（例如独立 CDN 域） |
+
+默认情况下，Jant 把打包后的资源放在站点同源的 `/_assets/` 下。只有当你想把这些资源部署到独立域名时，才需要设置 `ASSET_BASE_URL`。
+
+```toml
+[vars]
+ASSET_BASE_URL = "https://cdn.yourdomain.com"
+```
+
+**该 CDN 必须允许跨域。** Jant 的客户端代码以 ES module 形式加载（`<script type="module">`），浏览器对跨源 module 脚本会强制执行 CORS——虽然看起来和普通 JS 没区别，但规则不一样。如果 CDN 不返回 `Access-Control-Allow-Origin`，浏览器会丢弃响应，站点直接加载失败。
+
+资源服务器有两种配置方式，根据你的部署情况二选一：
+
+**方案 A：允许任意来源（最简单）**
+
+```
+Access-Control-Allow-Origin: *
+```
+
+打包产物都是内容哈希文件、可公开缓存，因此用 `*` 是安全的。CDN 可以为所有访问者复用同一个缓存响应。
+
+**方案 B：限定为你的站点域名**
+
+```
+Access-Control-Allow-Origin: https://yourdomain.com
+Vary: Origin
+```
+
+适合同一个 CDN 给多个站点服务、希望按站点隔离的场景。`Vary: Origin` 必须加上，否则 CDN 可能把上一次的 `Allow-Origin` 头返回给另一个来源的请求。如果你的 CDN 不支持按 `Origin` 分缓存键，请使用方案 A。
+
+如果是同源部署（未设置 `ASSET_BASE_URL`），则不涉及任何 CORS 配置。
+
+#### Cloudflare R2 / S3（JSON 格式的 CORS 规则）
+
+如果 CDN 是直接对外暴露的存储桶（R2 公开桶，或 S3 + CloudFront），把桶的 CORS 规则设置为：
+
+```json
+[
+  {
+    "AllowedOrigins": ["*"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "MaxAgeSeconds": 86400
+  }
+]
+```
+
+或限定到你的站点域名：
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://yourdomain.com"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "MaxAgeSeconds": 86400
+  }
+]
+```
+
+- R2：控制台 → 对应桶 → Settings → CORS policy → 粘贴 JSON
+- S3：AWS 控制台 → 桶 → Permissions → Cross-origin resource sharing (CORS)，或用 `aws s3api put-bucket-cors`
+
+#### Caddy / nginx（反向代理的 CDN）
+
+```caddy
+# Caddy
+header /_assets/* Access-Control-Allow-Origin "*"
+```
+
+```nginx
+# nginx
+location /_assets/ {
+    add_header Access-Control-Allow-Origin "*" always;
+}
+```
+
 ### Slug（可选）
 
 | 变量             | 默认值 | 说明                                       |

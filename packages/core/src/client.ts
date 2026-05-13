@@ -19,4 +19,7 @@ import "./client/archive-nav.js";
 import "./client/site-header-nav.js";
 import "./client/collection-sort-menu.js";
 
+declare const __JANT_VERSION__: string;
+
 installPrefixedFetch();
+document.documentElement.dataset.jantVersion = __JANT_VERSION__;
