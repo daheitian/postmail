@@ -6761,7 +6761,7 @@
   .compose-attachment-img {
     display: block;
     border-radius: var(--media-radius, 0.5rem);
-    max-height: min(320px, 28dvh);
+    max-height: min(160px, 18dvh);
     object-fit: contain;
   }
 
@@ -6798,7 +6798,7 @@
   /* Single image: constrain to container width */
   .compose-attachment:only-child .compose-attachment-img {
     max-width: 100%;
-    max-height: min(384px, 32dvh);
+    max-height: min(200px, 22dvh);
   }
 
   .compose-attachment:only-child .compose-attachment-preview-fallback {
@@ -7234,7 +7234,7 @@
   }
 
   .compose-reply-context.expanded {
-    max-height: 400px;
+    max-height: min(400px, 35dvh);
     overflow-y: auto;
   }
 
