@@ -1,5 +1,6 @@
 # Lessons
 
+- In happy-dom component tests, avoid reading repo files with `import.meta.url`; Vitest may transform the module URL away from `file:`. Use a stable project-root or package-root path with `resolve()` instead.
 - Product copy in argument-driven docs should support the article's thesis, not compress the product overview into a feature list. Select only the capabilities that advance the current argument.
 - Do not present category defaults as product differentiators. In product copy, only name capabilities when they explain a real design choice or trade-off.
 - When connecting a product premise to a concrete feature, include the missing reasoning step. Avoid jumping from an abstract claim to an implementation detail without explaining the relationship.

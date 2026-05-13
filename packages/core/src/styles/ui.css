@@ -5167,6 +5167,7 @@
     padding: 6px 10px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     gap: 4px;
     background-color: var(--compose-paper-bg);
   }
@@ -7181,6 +7182,7 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    align-self: stretch;
     overflow: hidden;
     position: relative;
   }
@@ -7191,6 +7193,10 @@
   }
 
   .compose-editor-row .compose-attachments-dock {
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: min(240px, 34dvh);
+    overflow-y: auto;
     padding-inline: 0;
     background: transparent;
   }
