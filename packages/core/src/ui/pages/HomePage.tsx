@@ -39,7 +39,7 @@ export const HomePage: FC<HomePageProps> = ({
         <div data-feed>
           <div id="timeline-feed">
             <div id="timeline-items" class="flex flex-col">
-              <p id="empty-timeline" class="py-8 text-muted-foreground">
+              <p id="empty-timeline" class="pt-16 pb-8 text-muted-foreground">
                 {i18n._(
                   msg({
                     message: "Quiet here for now.",

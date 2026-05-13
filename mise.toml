@@ -286,7 +286,7 @@ run = 'bash scripts/site/import.sh "http://localhost:3000"'
 # =============================================================================
 # i18n (Lingui)
 # =============================================================================
-[tasks.i18n-refresh]
+[tasks.i18n]
 description = "Extract, translate with AI, and compile (requires OPENAI_API_KEY)"
 run = "mise run i18n-extract && mise run i18n-translate && mise run i18n-compile"
 
