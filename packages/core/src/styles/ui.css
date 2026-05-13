@@ -2439,7 +2439,7 @@
   .link-preview {
     display: block;
     position: relative;
-    width: min(100%, calc(24rem * 16 / 9));
+    width: min(100%, calc(24rem * 16 / 9), var(--layout-content-width));
     max-width: 100%;
     margin-top: 0.55rem;
     border-radius: var(--radius-lg, 0.5rem);
