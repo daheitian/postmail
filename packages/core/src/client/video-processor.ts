@@ -7,6 +7,8 @@
  * - Strips spurious rotation metadata from the output (mediabunny may
  *   bake rotation into pixels AND write a display matrix, causing the
  *   browser to double-rotate)
+ * - Clears the alternate_group track flag (mediabunny sets it non-zero,
+ *   which stops Safari's native video controls from auto-hiding)
  * - Extracts poster frame + blurhash during processing
  *
  * Requires WebCodecs API support — check `isSupported()` before use.
@@ -25,6 +27,7 @@ import {
 } from "mediabunny";
 import { encode } from "blurhash";
 import { normalizeDurationSeconds } from "../lib/video-playback.js";
+import { zeroTrackAlternateGroups } from "../lib/mp4-track-flags.js";
 
 /** Maximum pixels for the long edge of the output video. */
 const MAX_LONG_EDGE = 1920;
@@ -221,6 +224,12 @@ async function processToFile(
 
     const buffer = target.buffer;
     if (!buffer) throw new Error("Video processing produced no output");
+
+    // Mediabunny tags each track with a non-zero alternate_group, which makes
+    // Safari treat tracks as mutually exclusive alternates and never auto-hide
+    // the native <video> control bar during playback. Zero it so the controls
+    // behave like any other MP4.
+    zeroTrackAlternateGroups(buffer);
 
     // Detect whether this browser double-rotates.  Chrome's WebCodecs
     // bakes rotation into the pixel data AND mediabunny writes a display

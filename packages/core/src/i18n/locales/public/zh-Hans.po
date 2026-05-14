@@ -1770,17 +1770,13 @@ msgstr ""
 msgid "Shared links"
 msgstr ""
 
-#. @context: Button to collapse expanded thread context
 #. @context: Collapse reply context
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/feed/ThreadPreview.tsx
 msgid "Show less"
 msgstr ""
 
-#. @context: Button to expand faded thread context
 #. @context: Expand reply context
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/feed/ThreadPreview.tsx
 msgid "Show more"
 msgstr ""
 
@@ -2130,6 +2126,11 @@ msgstr ""
 #. @context: Title on the public theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Tune color in a real reading context"
+msgstr ""
+
+#. @context: First-use hint shown over the compose editor to surface the slash command menu
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Type / for commands"
 msgstr ""
 
 #. @context: Compose quote text placeholder

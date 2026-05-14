@@ -8,6 +8,7 @@ import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { getI18n } from "../../i18n/index.js";
 import { ComposePage } from "../../ui/pages/ComposePage.js";
+import { SETTINGS_KEYS } from "../../lib/constants.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -18,6 +19,10 @@ newPostRoutes.use("/new", requireAuth());
 newPostRoutes.get("/new", async (c) => {
   const navData = await getNavigationData(c);
   const i18n = getI18n(c);
+  const allSettings = c.get("allSettings") as Record<string, string>;
+  const slashCommandDiscovered = Boolean(
+    allSettings[SETTINGS_KEYS.DISCOVERY_SLASH_COMMAND_AT],
+  );
 
   return renderPublicPage(c, {
     title: buildPageTitle(
@@ -37,6 +42,7 @@ newPostRoutes.get("/new", async (c) => {
         collections={navData.collections}
         uploadMaxFileSize={c.var.appConfig.uploadMaxFileSize}
         closeHref="/"
+        slashCommandDiscovered={slashCommandDiscovered}
       />
     ),
   });

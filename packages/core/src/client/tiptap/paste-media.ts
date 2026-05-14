@@ -76,6 +76,47 @@ export const PasteMedia = Extension.create<PasteMediaOptions>({
   addProseMirrorPlugins() {
     const extension = this;
 
+    /**
+     * Routes dropped/pasted files into inline images or attachments using the
+     * same decision as the host (`shouldInsertInline`). Returns false when
+     * there is nothing this extension can handle, so the caller leaves the
+     * event to the editor's default behavior.
+     */
+    const routeFiles = (files: File[]): boolean => {
+      const inlineFiles = files.filter(
+        (file) => extension.options.shouldInsertInline?.(file) === true,
+      );
+      const attachmentFiles = files.filter(
+        (file) => !inlineFiles.includes(file),
+      );
+
+      if (
+        inlineFiles.length === 0 &&
+        (attachmentFiles.length === 0 ||
+          extension.options.onPasteFiles === undefined)
+      ) {
+        return false;
+      }
+
+      for (const file of inlineFiles) {
+        const uploadInlineImage = extension.options.uploadInlineImage;
+        if (uploadInlineImage) {
+          void uploadInlineImage(file);
+          continue;
+        }
+        void uploadAndInsertInlineImage(extension.editor, file);
+      }
+
+      if (
+        attachmentFiles.length > 0 &&
+        extension.options.onPasteFiles !== undefined
+      ) {
+        extension.options.onPasteFiles(attachmentFiles);
+      }
+
+      return true;
+    };
+
     return [
       new Plugin({
         key: pasteMediaPluginKey,
@@ -83,40 +124,15 @@ export const PasteMedia = Extension.create<PasteMediaOptions>({
           handlePaste(_view, event) {
             const files = getClipboardFiles(event.clipboardData);
             if (files.length === 0) return false;
-
-            const inlineFiles = files.filter(
-              (file) => extension.options.shouldInsertInline?.(file) === true,
-            );
-            const attachmentFiles = files.filter(
-              (file) => !inlineFiles.includes(file),
-            );
-
-            if (
-              inlineFiles.length === 0 &&
-              (attachmentFiles.length === 0 ||
-                extension.options.onPasteFiles === undefined)
-            ) {
-              return false;
-            }
-
+            if (!routeFiles(files)) return false;
             event.preventDefault();
-
-            for (const file of inlineFiles) {
-              const uploadInlineImage = extension.options.uploadInlineImage;
-              if (uploadInlineImage) {
-                void uploadInlineImage(file);
-                continue;
-              }
-              void uploadAndInsertInlineImage(extension.editor, file);
-            }
-
-            if (
-              attachmentFiles.length > 0 &&
-              extension.options.onPasteFiles !== undefined
-            ) {
-              extension.options.onPasteFiles(attachmentFiles);
-            }
-
+            return true;
+          },
+          handleDrop(_view, event) {
+            const files = getClipboardFiles(event.dataTransfer);
+            if (files.length === 0) return false;
+            if (!routeFiles(files)) return false;
+            event.preventDefault();
             return true;
           },
         },

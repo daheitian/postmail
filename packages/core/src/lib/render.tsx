@@ -110,6 +110,9 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     composeOpenShortcutDiscovered: Boolean(
       allSettings[SETTINGS_KEYS.DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT],
     ),
+    slashCommandDiscovered: Boolean(
+      allSettings[SETTINGS_KEYS.DISCOVERY_SLASH_COMMAND_AT],
+    ),
     composeCollectionId,
   };
   const faviconUrl = appConfig.siteAvatarUrl || undefined;

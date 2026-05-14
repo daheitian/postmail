@@ -765,6 +765,12 @@ button.media-gallery-card {
   border-radius: 4px;
   animation: lightbox-scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   background-color: black;
+  outline: none;
+}
+
+.media-lightbox-video:focus,
+.media-lightbox-video:focus-visible {
+  outline: none;
 }
 
 .media-lightbox-video-short {

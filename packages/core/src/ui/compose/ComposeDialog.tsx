@@ -17,6 +17,7 @@ import { getCollectionFormLabels } from "../shared/collection-management-labels.
 export interface ComposeDialogProps {
   collections?: Collection[];
   uploadMaxFileSize?: number;
+  slashCommandDiscovered?: boolean;
 }
 
 export interface ComposeFormProps extends ComposeDialogProps {
@@ -28,6 +29,7 @@ export interface ComposeFormProps extends ComposeDialogProps {
 export const ComposeForm: FC<ComposeFormProps> = ({
   collections,
   uploadMaxFileSize,
+  slashCommandDiscovered = false,
   pageMode = false,
   closeHref,
   autoRestoreDraft = false,
@@ -741,6 +743,13 @@ export const ComposeForm: FC<ComposeFormProps> = ({
           "@context: Compose dialog header title when composing a thread",
       }),
     ),
+    slashHint: i18n._(
+      msg({
+        message: "Type / for commands",
+        comment:
+          "@context: First-use hint shown over the compose editor to surface the slash command menu",
+      }),
+    ),
     collectionFormLabels: getCollectionFormLabels(i18n),
   }).replace(/</g, "\\u003c");
 
@@ -760,6 +769,7 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       {...(pageMode ? { "page-mode": "" } : {})}
       {...(closeHref ? { "close-href": closeHref } : {})}
       {...(autoRestoreDraft ? { "auto-restore-draft": "" } : {})}
+      {...(slashCommandDiscovered ? { "slash-command-discovered": "" } : {})}
     >
       {/* SSR fallback skeleton */}
       <div class="compose-dialog-inner">
@@ -773,12 +783,14 @@ export const ComposeForm: FC<ComposeFormProps> = ({
 export const ComposeDialog: FC<ComposeDialogProps> = ({
   collections,
   uploadMaxFileSize,
+  slashCommandDiscovered = false,
 }) => {
   return (
     <dialog id="compose-dialog" class="compose-dialog">
       <ComposeForm
         collections={collections}
         uploadMaxFileSize={uploadMaxFileSize}
+        slashCommandDiscovered={slashCommandDiscovered}
       />
     </dialog>
   );

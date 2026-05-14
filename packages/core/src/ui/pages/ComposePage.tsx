@@ -8,12 +8,14 @@ export interface ComposePageProps {
   collections?: Collection[];
   uploadMaxFileSize?: number;
   closeHref?: string;
+  slashCommandDiscovered?: boolean;
 }
 
 export const ComposePage: FC<ComposePageProps> = ({
   collections,
   uploadMaxFileSize,
   closeHref = "/",
+  slashCommandDiscovered = false,
 }) => {
   const { i18n } = useLingui();
   const backLabel = i18n._(
@@ -52,6 +54,7 @@ export const ComposePage: FC<ComposePageProps> = ({
           pageMode
           closeHref={closeHref}
           autoRestoreDraft
+          slashCommandDiscovered={slashCommandDiscovered}
         />
       </div>
     </section>

@@ -66,6 +66,7 @@ interface ApiMediaAttachment {
   type: "media";
   id: string;
   previewUrl: string;
+  posterUrl?: string | null;
   alt?: string;
   mimeType: string;
   url?: string;
@@ -429,6 +430,7 @@ async function resolveApiAttachments(allAttachments: ApiAttachment[]) {
   const media = mediaItems.map((m) => ({
     id: m.id,
     previewUrl: m.previewUrl,
+    posterUrl: m.posterUrl ?? null,
     alt: m.alt,
     mimeType: m.mimeType,
     originalName: m.originalName,
@@ -532,6 +534,10 @@ export class JantComposeDialog extends LitElement {
     pageMode: { type: Boolean, attribute: "page-mode" },
     closeHref: { type: String, attribute: "close-href" },
     autoRestoreDraft: { type: Boolean, attribute: "auto-restore-draft" },
+    slashCommandDiscovered: {
+      type: Boolean,
+      attribute: "slash-command-discovered",
+    },
     _format: { state: true },
     _status: { state: true },
     _loading: { state: true },
@@ -576,6 +582,7 @@ export class JantComposeDialog extends LitElement {
   declare pageMode: boolean;
   declare closeHref: string;
   declare autoRestoreDraft: boolean;
+  declare slashCommandDiscovered: boolean;
   declare _format: ComposeFormat;
   declare _status: "published" | "draft";
   declare _loading: boolean;
@@ -663,6 +670,7 @@ export class JantComposeDialog extends LitElement {
     this.pageMode = false;
     this.closeHref = "/";
     this.autoRestoreDraft = false;
+    this.slashCommandDiscovered = false;
     this._format = "note";
     this._status = "published";
     this._loading = false;
@@ -4119,7 +4127,9 @@ export class JantComposeDialog extends LitElement {
 
   private _getSubmitLabel(): string {
     if (this._editPostId) return this.labels.update;
-    if (this._replyToId) return this.labels.reply;
+    if (this._replyToId) {
+      return this._quietReply ? this.labels.quietReplyLabel : this.labels.reply;
+    }
     if (this._visibility === "latest_hidden") {
       return this.labels.postHiddenFromLatest;
     }
@@ -5007,13 +5017,32 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
-  private _renderHideFromLatestQuickToggleRow() {
-    if (this._visibilityLocked) return nothing;
-    if (this._visibility === "private") return nothing;
+  private _renderQuickActionsRow() {
+    const hideFromLatest = this._renderHideFromLatestQuickToggle();
+    const quietReply = this._renderQuietReplyQuickToggle();
+    if (hideFromLatest === nothing && quietReply === nothing) return nothing;
     return html`
       <div class="compose-quick-actions-row">
-        ${this._renderHideFromLatestQuickToggle()}
+        ${hideFromLatest} ${quietReply}
       </div>
+    `;
+  }
+
+  private _renderQuietReplyQuickToggle() {
+    if (!this._replyToId) return nothing;
+    return html`
+      <label class="compose-publish-quick-toggle">
+        <input
+          type="checkbox"
+          class="input compose-publish-quick-toggle-input"
+          .checked=${this._quietReply}
+          ?disabled=${this._loading}
+          @change=${(e: Event) => {
+            this._quietReply = (e.target as HTMLInputElement).checked;
+          }}
+        />
+        <span>${this.labels.quietReplyLabel}</span>
+      </label>
     `;
   }
 
@@ -5281,6 +5310,7 @@ export class JantComposeDialog extends LitElement {
           .uploadMaxFileSize=${this.uploadMaxFileSize}
           .threadItem=${true}
           .removable=${showRemove}
+          .slashCommandDiscovered=${this.slashCommandDiscovered}
           data-thread-id=${item.id}
         ></jant-compose-editor>
       </div>
@@ -5385,6 +5415,7 @@ export class JantComposeDialog extends LitElement {
       .format=${this._format}
       .labels=${this.labels}
       .uploadMaxFileSize=${this.uploadMaxFileSize}
+      .slashCommandDiscovered=${this.slashCommandDiscovered}
     ></jant-compose-editor>`;
 
     return html`
@@ -5429,7 +5460,7 @@ export class JantComposeDialog extends LitElement {
                 ${this._renderCollectionSelector()}
                 ${this._renderPublishButton()}
               </div>
-              ${this._renderHideFromLatestQuickToggleRow()}`}
+              ${this._renderQuickActionsRow()}`}
         ${this._renderMobilePublishPanel()} ${this._renderAttachedPanel()}
         ${this._renderAltPanel()} ${this._renderDraftsPanel()}
         ${this._renderConfirmPanel()}

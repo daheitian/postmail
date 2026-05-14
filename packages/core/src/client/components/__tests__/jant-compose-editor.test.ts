@@ -264,6 +264,7 @@ const labels: ComposeLabels = {
   showMore: "Show more",
   showLess: "Show less",
   newThread: "New Thread",
+  slashHint: "Type / for commands",
   collectionFormLabels: {
     titleLabel: "Title",
     titlePlaceholder: "My Collection",
@@ -1180,7 +1181,12 @@ describe("JantComposeEditor", () => {
     ).toEqual(["clipboard.png", "clipboard.mp4"]);
   });
 
-  it("pastes all media as attachments even when a title is present", async () => {
+  it("pastes images inline and other media as attachments when a title is present", async () => {
+    const uploadWithMetadataMock = vi.mocked(uploadWithMetadata);
+    uploadWithMetadataMock.mockResolvedValue({
+      url: "https://example.test/clipboard.webp",
+      id: "med_test",
+    });
     const el = await createElement("note");
     el._showTitle = true;
     el._title = "Essay";
@@ -1195,9 +1201,48 @@ describe("JantComposeEditor", () => {
 
     expect(handled).toBe(true);
     expect(event.defaultPrevented).toBe(true);
+    expect(uploadWithMetadataMock).toHaveBeenCalledTimes(1);
+    expect(uploadWithMetadataMock.mock.calls[0]?.[0]).toBe(image);
+    expect(el._attachments.map((attachment) => attachment.file.name)).toEqual([
+      "clipboard.mp4",
+    ]);
+  });
+
+  it("pastes images as attachments when the title row was toggled off after typing", async () => {
+    const uploadWithMetadataMock = vi.mocked(uploadWithMetadata);
+    const el = await createElement("note");
+    el._showTitle = true;
+    el._title = "Essay";
+    await el.updateComplete;
+    el._showTitle = false;
+    await el.updateComplete;
+
+    const image = new File(["image"], "clipboard.png", { type: "image/png" });
+    const { handled } = triggerEditorPaste(el, [image]);
+    await el.updateComplete;
+
+    expect(handled).toBe(true);
+    expect(uploadWithMetadataMock).not.toHaveBeenCalled();
     expect(el._attachments.map((attachment) => attachment.file.name)).toEqual([
       "clipboard.png",
-      "clipboard.mp4",
+    ]);
+  });
+
+  it("pastes images as attachments when only whitespace is in the title", async () => {
+    const uploadWithMetadataMock = vi.mocked(uploadWithMetadata);
+    const el = await createElement("note");
+    el._showTitle = true;
+    el._title = "   ";
+    await el.updateComplete;
+
+    const image = new File(["image"], "clipboard.png", { type: "image/png" });
+    const { handled } = triggerEditorPaste(el, [image]);
+    await el.updateComplete;
+
+    expect(handled).toBe(true);
+    expect(uploadWithMetadataMock).not.toHaveBeenCalled();
+    expect(el._attachments.map((attachment) => attachment.file.name)).toEqual([
+      "clipboard.png",
     ]);
   });
 });

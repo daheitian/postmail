@@ -129,6 +129,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   showComposeDialog = true,
   showHeader = true,
   composeOpenShortcutDiscovered = false,
+  slashCommandDiscovered = false,
   composeCollectionId,
   children,
 }) => {
@@ -567,6 +568,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         <ComposeDialog
           collections={collections}
           uploadMaxFileSize={uploadMaxFileSize}
+          slashCommandDiscovered={slashCommandDiscovered}
         />
       )}
     </div>

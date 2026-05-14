@@ -954,11 +954,15 @@
 
   /* --- Home header wrapper (compose-prompt + browse-nav) ------------------ */
 
+  /* Owns both the gap between the site description and its separator
+     (hairline / compose prompt) and the gap from that separator down to the
+     first post. Both use --site-feed-rhythm so the home page keeps one
+     uniform cadence regardless of how the site intro is customized. */
   .site-home-header {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    margin-bottom: var(--space-xl);
+    gap: var(--site-feed-rhythm);
+    margin-bottom: var(--site-feed-rhythm);
   }
 
   .site-description :where(p) {
@@ -2099,7 +2103,12 @@
     border: none;
     width: 30px;
     height: 9px;
-    margin: 4rem 0;
+    /* Inter-post gap. The top margin subtracts --post-footer-overshoot so the
+       VISIBLE gap (last footer content → divider) equals --site-feed-rhythm,
+       matching the header spacing; the bottom margin is the full rhythm since
+       the next post has no leading dead space. */
+    margin: calc(var(--site-feed-rhythm) - var(--post-footer-overshoot)) 0
+      var(--site-feed-rhythm);
     /* Center over the post-body column. On desktop the body column is
        `var(--layout-content-width)` (55%). Between 760-1024px it switches
        to `min(100%, 35rem)` via preset.css, so the hr must track that
@@ -2439,7 +2448,7 @@
   .link-preview {
     display: block;
     position: relative;
-    width: min(100%, calc(24rem * 16 / 9));
+    width: min(100%, calc(24rem * 16 / 9), var(--layout-content-width));
     max-width: 100%;
     margin-top: 0.55rem;
     border-radius: var(--radius-lg, 0.5rem);
@@ -2615,13 +2624,6 @@
       var(--site-thread-dot-ring);
   }
 
-  .thread-context-shell {
-    position: relative;
-    display: grid;
-    gap: 0.7rem;
-    padding-bottom: 0.35rem;
-  }
-
   .thread-item-gap {
     padding-top: 0.15rem;
     padding-bottom: 0.35rem;
@@ -2694,70 +2696,6 @@
     @apply text-sm;
   }
 
-  /* Faded thread ancestor context */
-  .thread-context-collapsed {
-    position: relative;
-    max-height: var(--site-thread-context-max-height);
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-  }
-
-  .thread-context-collapsed.expanded {
-    max-height: none;
-    overflow: visible;
-  }
-
-  .thread-context-fade {
-    display: none;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 52px;
-    background: linear-gradient(
-      transparent,
-      color-mix(in srgb, var(--site-page-bg) 76%, var(--site-feed-card-bg))
-    );
-    pointer-events: none;
-  }
-
-  .thread-context-faded .thread-context-fade {
-    display: block;
-  }
-
-  .thread-context-collapsed.expanded .thread-context-fade {
-    display: none;
-  }
-
-  .thread-context-toggle {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.38rem 0.78rem;
-    font-size: var(--type-thread-context-meta);
-    margin-bottom: 4px;
-    cursor: pointer;
-    background: var(--site-thread-gap-bg);
-    border: 1px solid var(--site-thread-context-border);
-    border-radius: 999px;
-    line-height: 1.1;
-    transition:
-      border-color 0.18s ease,
-      color 0.18s ease,
-      background-color 0.18s ease;
-  }
-
-  .thread-context-toggle.hidden {
-    display: none;
-  }
-
-  .thread-context-toggle:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--site-accent) 22%,
-      var(--site-divider)
-    );
-  }
-
   /* Thread detail: current post anchor + dot-only highlight */
   .thread-detail-item {
     scroll-margin-top: 80px;
@@ -2788,8 +2726,9 @@
   }
 
   .feed-quote-post {
+    /* No vertical padding: like every other feed card, the quote article hugs
+       its content so the inter-post gap stays on --site-feed-rhythm. */
     position: relative;
-    padding: 0.45rem 0 0.35rem;
   }
 
   .feed-quote-post .post-status-badges {
@@ -4015,14 +3954,29 @@
    * ========================================================================= */
 
   .compose-prompt {
+    /* Vertical click-target padding on the inner trigger button. Tokenized
+       so the rhythm compensation below stays in sync if it changes. */
+    --compose-trigger-pad: 24px;
     position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 0;
-    margin-bottom: 10px;
+    /* No rhythm margin — .site-home-header owns the gap below this. */
     border-bottom: 0.5px solid oklch(from var(--site-divider) l c h / 0.5);
     transition: border-color 0.15s;
+  }
+
+  /* When a site description sits above the prompt, pull the prompt up so the
+     trigger text lands --site-intro-gap-bottom below the description. The
+     negative margin cancels both the home rhythm gap (--site-feed-rhythm)
+     inherited from .site-home-header and the trigger's own top click-target
+     padding. */
+  .site-description + .compose-prompt {
+    margin-top: calc(
+      var(--site-intro-gap-bottom) - var(--site-feed-rhythm) -
+        var(--compose-trigger-pad)
+    );
   }
 
   .compose-prompt:hover {
@@ -4037,7 +3991,7 @@
     min-width: 0;
     width: 100%;
     min-height: 64px;
-    padding: 24px 0;
+    padding: var(--compose-trigger-pad) 0;
     border: none;
     outline: none;
     background: none;
@@ -4114,6 +4068,46 @@
       .compose-prompt-discovery-hint {
       opacity: 1;
       transform: translate3d(0, -50%, 0);
+    }
+  }
+
+  /* =========================================================================
+   * Slash Command Discovery Hint (second-line placeholder for the editor)
+   * ========================================================================= */
+
+  .compose-tiptap-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .compose-slash-discovery-hint {
+    display: none;
+  }
+
+  @media (min-width: 700px) {
+    .compose-slash-discovery-hint {
+      position: absolute;
+      top: calc(1.4rem + 1.7lh);
+      left: 0;
+      display: block;
+      pointer-events: none;
+      opacity: 0;
+      color: var(--site-text-secondary);
+      font-family: var(--font-body);
+      font-size: var(--type-content-body);
+      line-height: var(--type-body-leading);
+      letter-spacing: var(--type-body-tracking);
+      white-space: nowrap;
+      user-select: none;
+      transition: opacity 0.2s ease;
+    }
+
+    jant-compose-editor.compose-slash-discovery-visible
+      .compose-slash-discovery-hint {
+      opacity: 0.35;
     }
   }
 
@@ -4436,6 +4430,24 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
+  }
+
+  jant-compose-editor.compose-editor-dragover {
+    position: relative;
+  }
+
+  jant-compose-editor.compose-editor-dragover::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    z-index: 5;
+    pointer-events: none;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--site-accent) 4%, transparent);
+    box-shadow:
+      inset 0 0 0 1.5px color-mix(in srgb, var(--site-accent) 45%, transparent),
+      inset 0 0 28px -12px
+        color-mix(in srgb, var(--site-accent) 45%, transparent);
   }
 
   .compose-edit-loading {
@@ -5238,6 +5250,7 @@
     padding: 6px 10px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     gap: 4px;
     background-color: var(--compose-paper-bg);
   }
@@ -5786,6 +5799,7 @@
   .compose-quick-actions-row {
     display: flex;
     justify-content: flex-end;
+    gap: 0.5rem;
     padding: 2px 12px 12px;
     background-color: var(--compose-paper-bg);
     border-bottom-left-radius: inherit;
@@ -6832,7 +6846,7 @@
   .compose-attachment-img {
     display: block;
     border-radius: var(--media-radius, 0.5rem);
-    max-height: min(320px, 28dvh);
+    max-height: min(160px, 18dvh);
     object-fit: contain;
   }
 
@@ -6869,7 +6883,7 @@
   /* Single image: constrain to container width */
   .compose-attachment:only-child .compose-attachment-img {
     max-width: 100%;
-    max-height: min(384px, 32dvh);
+    max-height: min(200px, 22dvh);
   }
 
   .compose-attachment:only-child .compose-attachment-preview-fallback {
@@ -7252,6 +7266,7 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    align-self: stretch;
     overflow: hidden;
     position: relative;
   }
@@ -7262,6 +7277,10 @@
   }
 
   .compose-editor-row .compose-attachments-dock {
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: min(240px, 34dvh);
+    overflow-y: auto;
     padding-inline: 0;
     background: transparent;
   }
@@ -7305,7 +7324,7 @@
   }
 
   .compose-reply-context.expanded {
-    max-height: 400px;
+    max-height: min(400px, 35dvh);
     overflow-y: auto;
   }
 
@@ -11521,7 +11540,7 @@
  * ------------------------------------------------------------------------- */
 
 .site-description {
-  margin-top: 2.5rem;
+  margin-top: var(--site-intro-gap-top);
   font-family: var(--font-serif);
   font-size: var(--type-body);
   line-height: 1.55;
@@ -11541,6 +11560,16 @@
   height: 0;
   width: 100%;
   margin: 0;
+}
+
+/*
+ * Tighten the intro → hairline gap to --site-intro-gap-bottom, mirroring the
+ * logged-in .site-description + .compose-prompt rule. The negative margin
+ * cancels the home rhythm gap (--site-feed-rhythm) inherited from
+ * .site-home-header down to the intended intro spacing.
+ */
+.site-description + .site-description-divider {
+  margin-top: calc(var(--site-intro-gap-bottom) - var(--site-feed-rhythm));
 }
 
 /*

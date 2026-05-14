@@ -46,8 +46,14 @@ import {
   uploadAndInsertInlineImage,
   adoptPendingInlineImageUploads,
 } from "../tiptap/inline-image-upload.js";
+import { getClipboardFiles } from "../tiptap/paste-media.js";
 import { isSafeAbsoluteUrl } from "../../lib/url.js";
 import { randomUUID } from "../random-uuid.js";
+import {
+  hideSlashCommandHint,
+  markSlashCommandDiscovered,
+  scheduleSlashCommandHint,
+} from "../slash-discovery.js";
 
 interface ComposeFilePickerCloseDetail {
   cancelled: boolean;
@@ -172,6 +178,7 @@ export class JantComposeEditor extends LitElement {
     uploadMaxFileSize: { type: Number },
     threadItem: { type: Boolean, attribute: "thread-item" },
     removable: { type: Boolean },
+    slashCommandDiscovered: { type: Boolean },
     _title: { state: true },
     _bodyJson: { state: true },
     _url: { state: true },
@@ -196,6 +203,7 @@ export class JantComposeEditor extends LitElement {
   declare uploadMaxFileSize: number;
   declare threadItem: boolean;
   declare removable: boolean;
+  declare slashCommandDiscovered: boolean;
   declare _title: string;
   declare _bodyJson: JSONContent | null;
   declare _url: string;
@@ -242,6 +250,7 @@ export class JantComposeEditor extends LitElement {
     this.uploadMaxFileSize = 500;
     this.threadItem = false;
     this.removable = false;
+    this.slashCommandDiscovered = false;
     this._title = "";
     this._bodyJson = null;
     this._url = "";
@@ -264,6 +273,17 @@ export class JantComposeEditor extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener("jant:slash-image", this._onSlashImage);
+    document.addEventListener(
+      "jant:slash-command-discovered",
+      this._onSlashCommandDiscovered,
+    );
+    this.addEventListener("dragenter", this._onDragEnter);
+    // Capture phase: a file dragover is stopped here before ProseMirror sees
+    // it, so its drop cursor never appears for file drags (the drop position
+    // is decided by _shouldPasteInlineImage, not the cursor).
+    this.addEventListener("dragover", this._onDragOver, true);
+    this.addEventListener("dragleave", this._onDragLeave);
+    this.addEventListener("drop", this._onDrop);
   }
 
   disconnectedCallback() {
@@ -274,12 +294,85 @@ export class JantComposeEditor extends LitElement {
     this.#sortable?.destroy();
     this.#sortable = null;
     document.removeEventListener("jant:slash-image", this._onSlashImage);
+    document.removeEventListener(
+      "jant:slash-command-discovered",
+      this._onSlashCommandDiscovered,
+    );
     document.removeEventListener("click", this._onDocClickBound);
+    this.removeEventListener("dragenter", this._onDragEnter);
+    this.removeEventListener("dragover", this._onDragOver, true);
+    this.removeEventListener("dragleave", this._onDragLeave);
+    this.removeEventListener("drop", this._onDrop);
+    hideSlashCommandHint(this);
     this._emojiContainer?.remove();
     this._emojiPickerEl = null;
     this._filePickerCleanup?.();
     this._filePickerCleanup = null;
   }
+
+  // Tracks dragenter/dragleave nesting so the highlight only clears when the
+  // pointer actually leaves the editor, not when it crosses a child element.
+  #dragDepth = 0;
+
+  #dragHasFiles(event: DragEvent): boolean {
+    const types = event.dataTransfer?.types;
+    return types ? Array.from(types).includes("Files") : false;
+  }
+
+  private _onDragEnter = (event: DragEvent) => {
+    if (!this.#dragHasFiles(event)) return;
+    this.#dragDepth += 1;
+    this.classList.add("compose-editor-dragover");
+  };
+
+  private _onDragOver = (event: DragEvent) => {
+    if (!this.#dragHasFiles(event)) return;
+    // Keep the file dragover away from ProseMirror so its drop cursor stays
+    // hidden; internal content drags still bubble through untouched.
+    event.stopPropagation();
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+  };
+
+  private _onDragLeave = (event: DragEvent) => {
+    if (!this.#dragHasFiles(event)) return;
+    this.#dragDepth = Math.max(0, this.#dragDepth - 1);
+    if (this.#dragDepth === 0) {
+      this.classList.remove("compose-editor-dragover");
+    }
+  };
+
+  private _onDrop = (event: DragEvent) => {
+    this.#dragDepth = 0;
+    this.classList.remove("compose-editor-dragover");
+    // Drops onto the TipTap body are claimed by the pasteMedia plugin's
+    // handleDrop, which calls preventDefault — skip those to avoid handling
+    // the same files twice.
+    if (event.defaultPrevented) return;
+    const files = getClipboardFiles(event.dataTransfer);
+    if (files.length === 0) return;
+    event.preventDefault();
+
+    const inlineFiles: File[] = [];
+    const attachmentFiles: File[] = [];
+    for (const file of files) {
+      if (this._editor && this._shouldPasteInlineImage(file)) {
+        inlineFiles.push(file);
+      } else {
+        attachmentFiles.push(file);
+      }
+    }
+    for (const file of inlineFiles) {
+      this._uploadAndInsertImage(file);
+    }
+    if (attachmentFiles.length > 0) {
+      this.addFiles(attachmentFiles);
+    }
+  };
+
+  private _onSlashCommandDiscovered = () => {
+    markSlashCommandDiscovered();
+  };
 
   private _onSlashImage = () => {
     // Skip when fullscreen is open — it has its own handler
@@ -686,6 +779,10 @@ export class JantComposeEditor extends LitElement {
     const container = this.querySelector<HTMLElement>(".compose-tiptap-body");
     if (!container || this._editor) return;
 
+    this.dataset.slashCommandDiscovered = this.slashCommandDiscovered
+      ? "true"
+      : "false";
+
     this._editor = createTiptapEditor({
       element: container,
       placeholder:
@@ -697,9 +794,13 @@ export class JantComposeEditor extends LitElement {
       onUpdate: (json) => {
         this._bodyJson = json;
         this._ensureScrollBuffer();
+        hideSlashCommandHint(this);
       },
       onFocus: () => {
         this._lastFocusedField = null;
+        if (this._editor?.isEmpty) {
+          scheduleSlashCommandHint(this);
+        }
       },
       onSelectionUpdate: (selection) => {
         this._lastEditorSelection = selection;
@@ -837,6 +938,7 @@ export class JantComposeEditor extends LitElement {
     media?: Array<{
       id: string;
       previewUrl: string;
+      posterUrl?: string | null;
       alt?: string;
       mimeType: string;
       originalName?: string;
@@ -884,7 +986,7 @@ export class JantComposeEditor extends LitElement {
         clientId: randomUUID(),
         file: new File([], m.originalName ?? "existing", { type: m.mimeType }),
         previewUrl: m.previewUrl,
-        posterUrl: null,
+        posterUrl: m.posterUrl ?? null,
         status: "done" as const,
         progress: null,
         mediaId: m.id,
@@ -1196,11 +1298,10 @@ export class JantComposeEditor extends LitElement {
     this._rating = this._rating === star ? 0 : star;
   }
 
-  private _shouldPasteInlineImage(_file: File): boolean {
-    // Always route pasted images to attachments in compose editor.
-    // Inline images are inserted via /media slash command instead.
-    // Fullscreen editor has its own handler that allows inline paste.
-    return false;
+  private _shouldPasteInlineImage(file: File): boolean {
+    if (!file.type.startsWith("image/")) return false;
+    if (this.format === "note" && !this._showTitle) return false;
+    return this._title.trim().length > 0;
   }
 
   private _openFilePicker() {
@@ -1655,7 +1756,12 @@ export class JantComposeEditor extends LitElement {
               </div>
             `
           : nothing}
-        <div class="compose-tiptap-body"></div>
+        <div class="compose-tiptap-wrap">
+          <div class="compose-tiptap-body"></div>
+          <span class="compose-slash-discovery-hint" aria-hidden="true">
+            ${this.labels.slashHint}
+          </span>
+        </div>
       </div>
     `;
   }
@@ -1723,9 +1829,14 @@ export class JantComposeEditor extends LitElement {
             </p>`
           : nothing}
         <div class="compose-divider"></div>
-        <div
-          class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-link"
-        ></div>
+        <div class="compose-tiptap-wrap">
+          <div
+            class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-link"
+          ></div>
+          <span class="compose-slash-discovery-hint" aria-hidden="true">
+            ${this.labels.slashHint}
+          </span>
+        </div>
       </div>
     `;
   }
@@ -1789,9 +1900,14 @@ export class JantComposeEditor extends LitElement {
           class="compose-divider compose-divider-quote"
           aria-hidden="true"
         ></div>
-        <div
-          class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-thoughts-quote"
-        ></div>
+        <div class="compose-tiptap-wrap">
+          <div
+            class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-thoughts-quote"
+          ></div>
+          <span class="compose-slash-discovery-hint" aria-hidden="true">
+            ${this.labels.slashHint}
+          </span>
+        </div>
       </div>
     `;
   }
