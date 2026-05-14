@@ -46,6 +46,7 @@ import {
   uploadAndInsertInlineImage,
   adoptPendingInlineImageUploads,
 } from "../tiptap/inline-image-upload.js";
+import { getClipboardFiles } from "../tiptap/paste-media.js";
 import { isSafeAbsoluteUrl } from "../../lib/url.js";
 import { randomUUID } from "../random-uuid.js";
 import {
@@ -276,6 +277,13 @@ export class JantComposeEditor extends LitElement {
       "jant:slash-command-discovered",
       this._onSlashCommandDiscovered,
     );
+    this.addEventListener("dragenter", this._onDragEnter);
+    // Capture phase: a file dragover is stopped here before ProseMirror sees
+    // it, so its drop cursor never appears for file drags (the drop position
+    // is decided by _shouldPasteInlineImage, not the cursor).
+    this.addEventListener("dragover", this._onDragOver, true);
+    this.addEventListener("dragleave", this._onDragLeave);
+    this.addEventListener("drop", this._onDrop);
   }
 
   disconnectedCallback() {
@@ -291,12 +299,76 @@ export class JantComposeEditor extends LitElement {
       this._onSlashCommandDiscovered,
     );
     document.removeEventListener("click", this._onDocClickBound);
+    this.removeEventListener("dragenter", this._onDragEnter);
+    this.removeEventListener("dragover", this._onDragOver, true);
+    this.removeEventListener("dragleave", this._onDragLeave);
+    this.removeEventListener("drop", this._onDrop);
     hideSlashCommandHint(this);
     this._emojiContainer?.remove();
     this._emojiPickerEl = null;
     this._filePickerCleanup?.();
     this._filePickerCleanup = null;
   }
+
+  // Tracks dragenter/dragleave nesting so the highlight only clears when the
+  // pointer actually leaves the editor, not when it crosses a child element.
+  #dragDepth = 0;
+
+  #dragHasFiles(event: DragEvent): boolean {
+    const types = event.dataTransfer?.types;
+    return types ? Array.from(types).includes("Files") : false;
+  }
+
+  private _onDragEnter = (event: DragEvent) => {
+    if (!this.#dragHasFiles(event)) return;
+    this.#dragDepth += 1;
+    this.classList.add("compose-editor-dragover");
+  };
+
+  private _onDragOver = (event: DragEvent) => {
+    if (!this.#dragHasFiles(event)) return;
+    // Keep the file dragover away from ProseMirror so its drop cursor stays
+    // hidden; internal content drags still bubble through untouched.
+    event.stopPropagation();
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+  };
+
+  private _onDragLeave = (event: DragEvent) => {
+    if (!this.#dragHasFiles(event)) return;
+    this.#dragDepth = Math.max(0, this.#dragDepth - 1);
+    if (this.#dragDepth === 0) {
+      this.classList.remove("compose-editor-dragover");
+    }
+  };
+
+  private _onDrop = (event: DragEvent) => {
+    this.#dragDepth = 0;
+    this.classList.remove("compose-editor-dragover");
+    // Drops onto the TipTap body are claimed by the pasteMedia plugin's
+    // handleDrop, which calls preventDefault — skip those to avoid handling
+    // the same files twice.
+    if (event.defaultPrevented) return;
+    const files = getClipboardFiles(event.dataTransfer);
+    if (files.length === 0) return;
+    event.preventDefault();
+
+    const inlineFiles: File[] = [];
+    const attachmentFiles: File[] = [];
+    for (const file of files) {
+      if (this._editor && this._shouldPasteInlineImage(file)) {
+        inlineFiles.push(file);
+      } else {
+        attachmentFiles.push(file);
+      }
+    }
+    for (const file of inlineFiles) {
+      this._uploadAndInsertImage(file);
+    }
+    if (attachmentFiles.length > 0) {
+      this.addFiles(attachmentFiles);
+    }
+  };
 
   private _onSlashCommandDiscovered = () => {
     markSlashCommandDiscovered();

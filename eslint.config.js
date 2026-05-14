@@ -74,6 +74,7 @@ export default [
         MouseEvent: "readonly",
         PointerEvent: "readonly",
         TouchEvent: "readonly",
+        DragEvent: "readonly",
         Node: "readonly",
         DataTransfer: "readonly",
         Request: "readonly",

@@ -4432,6 +4432,24 @@
     position: relative;
   }
 
+  jant-compose-editor.compose-editor-dragover {
+    position: relative;
+  }
+
+  jant-compose-editor.compose-editor-dragover::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    z-index: 5;
+    pointer-events: none;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--site-accent) 4%, transparent);
+    box-shadow:
+      inset 0 0 0 1.5px color-mix(in srgb, var(--site-accent) 45%, transparent),
+      inset 0 0 28px -12px
+        color-mix(in srgb, var(--site-accent) 45%, transparent);
+  }
+
   .compose-edit-loading {
     display: flex;
     flex: 1;
