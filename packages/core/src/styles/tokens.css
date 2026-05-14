@@ -130,6 +130,46 @@
   --site-padding: 1.5rem;
   --content-gap: 1rem;
   --space-xl: 2rem;
+  --space-2xl: 4rem;
+  /*
+   * Home timeline vertical rhythm — the single source of truth for the gaps
+   * between stacked sections on the home page:
+   *
+   *   site description → separator → first post → divider → post → ...
+   *
+   * where "separator" is the description hairline (logged out) or the compose
+   * prompt (logged in). Every one of those gaps derives from this token, and
+   * the individual pieces (compose prompt, description hairline, post cards)
+   * carry no rhythm margin of their own — the structural wrappers
+   * (.site-home-header, hr.feed-divider) own the spacing. Retune the whole
+   * feed cadence by changing this one value.
+   *
+   * Note: per-format card padding (.feed-quote-post, thread previews) is the
+   * card's own internal spacing and is intentionally NOT part of this rhythm.
+   *
+   * Kept as a free-standing value (not pinned to the --space-* scale) so the
+   * feed cadence can be tuned independently.
+   */
+  --site-feed-rhythm: 4.4rem;
+  /*
+   * The post footer's action row (reply / menu buttons) is a taller tap
+   * target than its visible content, leaving a few px of dead space below
+   * the last visible element of every post (~5.9px logged out from the
+   * footer min-height, ~6.8px logged in from the menu button). hr.feed-divider
+   * subtracts this from its top margin so the VISIBLE gap between posts equals
+   * --site-feed-rhythm — the same as the header spacing. Re-measure if the
+   * footer button size or meta font changes.
+   */
+  --post-footer-overshoot: 6px;
+  /*
+   * The site intro (description) block is deliberately tighter than
+   * --site-feed-rhythm so it reads as a compact header unit rather than a
+   * full feed section. -top: gap from the header nav down to the intro.
+   * -bottom: gap from the intro down to its separator — the hairline (logged
+   * out) or the compose prompt text (logged in). Same values in both states.
+   */
+  --site-intro-gap-top: 24px;
+  --site-intro-gap-bottom: 36px;
 
   /* Sidebar layout (admin + site sidebar pages) */
   --sidebar-width: 12rem;
