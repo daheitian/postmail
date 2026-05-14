@@ -5756,6 +5756,7 @@
   .compose-quick-actions-row {
     display: flex;
     justify-content: flex-end;
+    gap: 0.5rem;
     padding: 2px 12px 12px;
     background-color: var(--compose-paper-bg);
     border-bottom-left-radius: inherit;

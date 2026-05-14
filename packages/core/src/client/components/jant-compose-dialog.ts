@@ -4127,7 +4127,9 @@ export class JantComposeDialog extends LitElement {
 
   private _getSubmitLabel(): string {
     if (this._editPostId) return this.labels.update;
-    if (this._replyToId) return this.labels.reply;
+    if (this._replyToId) {
+      return this._quietReply ? this.labels.quietReplyLabel : this.labels.reply;
+    }
     if (this._visibility === "latest_hidden") {
       return this.labels.postHiddenFromLatest;
     }
@@ -5015,13 +5017,32 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
-  private _renderHideFromLatestQuickToggleRow() {
-    if (this._visibilityLocked) return nothing;
-    if (this._visibility === "private") return nothing;
+  private _renderQuickActionsRow() {
+    const hideFromLatest = this._renderHideFromLatestQuickToggle();
+    const quietReply = this._renderQuietReplyQuickToggle();
+    if (hideFromLatest === nothing && quietReply === nothing) return nothing;
     return html`
       <div class="compose-quick-actions-row">
-        ${this._renderHideFromLatestQuickToggle()}
+        ${hideFromLatest} ${quietReply}
       </div>
+    `;
+  }
+
+  private _renderQuietReplyQuickToggle() {
+    if (!this._replyToId) return nothing;
+    return html`
+      <label class="compose-publish-quick-toggle">
+        <input
+          type="checkbox"
+          class="input compose-publish-quick-toggle-input"
+          .checked=${this._quietReply}
+          ?disabled=${this._loading}
+          @change=${(e: Event) => {
+            this._quietReply = (e.target as HTMLInputElement).checked;
+          }}
+        />
+        <span>${this.labels.quietReplyLabel}</span>
+      </label>
     `;
   }
 
@@ -5439,7 +5460,7 @@ export class JantComposeDialog extends LitElement {
                 ${this._renderCollectionSelector()}
                 ${this._renderPublishButton()}
               </div>
-              ${this._renderHideFromLatestQuickToggleRow()}`}
+              ${this._renderQuickActionsRow()}`}
         ${this._renderMobilePublishPanel()} ${this._renderAttachedPanel()}
         ${this._renderAltPanel()} ${this._renderDraftsPanel()}
         ${this._renderConfirmPanel()}
