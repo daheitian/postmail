@@ -160,6 +160,20 @@ export async function deleteWebhook(token: string): Promise<void> {
 }
 
 /**
+ * Returns the bot's currently registered webhook URL (empty when none).
+ *
+ * Lets callers skip a redundant `setWebhook` write when the webhook is
+ * already pointed at the right place.
+ *
+ * @param token - Bot token
+ * @returns The current webhook URL, or `""` when no webhook is set
+ */
+export async function getWebhookUrl(token: string): Promise<string> {
+  const result = await callTelegram<{ url?: string }>(token, "getWebhookInfo");
+  return result.url ?? "";
+}
+
+/**
  * Sends a text message, optionally with an inline keyboard.
  *
  * @param token - Bot token

@@ -7,6 +7,7 @@ import {
   resolveHost,
   resolvePort,
 } from "./request-handler.js";
+import { registerTelegramPoolWebhooks } from "../lib/telegram-pool-webhooks.js";
 
 export {
   applyNodeRuntimeEnvDefaults,
@@ -46,6 +47,11 @@ export async function start(
       (info: AddressInfo) => {
         didResolve = true;
         server.off("error", onError);
+
+        // Fire-and-forget: self-register managed-pool Telegram webhooks once
+        // the server is listening. Never awaited — it must not delay readiness
+        // or fail startup. No-ops unless this is a hosted deployment.
+        void registerTelegramPoolWebhooks(env);
 
         let closed = false;
         resolvePromise({
