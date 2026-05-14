@@ -280,45 +280,129 @@ export class JantMediaLightbox extends LitElement {
   #handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
     const target = e.target as HTMLElement | null;
+
     if (ke.key === "Escape") {
       e.preventDefault();
       this.close();
       return;
     }
-    if (ke.key !== "ArrowLeft" && ke.key !== "ArrowRight") return;
 
-    // Let the progress slider's native arrow-key seeking through.
-    if (target?.classList.contains("media-lightbox-short-progress")) return;
+    // Don't hijack keys aimed at a focused control — the short-video progress
+    // slider, the mute/close/nav buttons, or the <video> itself (when focused,
+    // its native shortcuts already handle these keys). Let their native
+    // behavior run instead of double-handling.
+    if (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLButtonElement ||
+      target instanceof HTMLVideoElement
+    ) {
+      return;
+    }
 
-    // On videos, arrow keys scrub the playhead. Item switching happens via
-    // the on-screen prev/next buttons — matches YouTube/native player conventions.
     const currentImage = this._images[this._currentIndex];
-    if (currentImage?.mimeType?.startsWith("video/")) {
-      const video = this.querySelector<HTMLVideoElement>(
-        ".media-lightbox-video",
-      );
-      if (video) {
+    if (!currentImage?.mimeType?.startsWith("video/")) {
+      // Image galleries: arrow keys switch items.
+      if (ke.key === "ArrowLeft") {
         e.preventDefault();
-        const step = 5;
-        const delta = ke.key === "ArrowLeft" ? -step : step;
-        const duration =
-          Number.isFinite(video.duration) && video.duration > 0
-            ? video.duration
-            : null;
-        const nextTime =
-          duration != null
-            ? Math.max(0, Math.min(video.currentTime + delta, duration))
-            : Math.max(0, video.currentTime + delta);
-        video.currentTime = nextTime;
-        this._videoCurrentTime = nextTime;
+        this.#prev();
+      } else if (ke.key === "ArrowRight") {
+        e.preventDefault();
+        this.#next();
       }
       return;
     }
 
-    e.preventDefault();
-    if (ke.key === "ArrowLeft") this.#prev();
-    else this.#next();
+    const video = this.querySelector<HTMLVideoElement>(".media-lightbox-video");
+    if (video) this.#handleVideoKeydown(ke, video);
   };
+
+  // Video shortcuts — play/pause, seek, volume, mute, fullscreen — handled at
+  // the dialog level so they work regardless of what's focused. Item switching
+  // happens via the on-screen prev/next buttons, matching YouTube/native
+  // player conventions.
+  #handleVideoKeydown(ke: globalThis.KeyboardEvent, video: HTMLVideoElement) {
+    const duration =
+      Number.isFinite(video.duration) && video.duration > 0
+        ? video.duration
+        : null;
+    const seekTo = (time: number) => {
+      const next =
+        duration != null
+          ? Math.max(0, Math.min(time, duration))
+          : Math.max(0, time);
+      video.currentTime = next;
+      this._videoCurrentTime = next;
+    };
+    const key = ke.key;
+    const lower = key.toLowerCase();
+
+    if (key === " " || lower === "k") {
+      ke.preventDefault();
+      if (video.paused) void video.play().catch(() => {});
+      else video.pause();
+    } else if (key === "ArrowLeft") {
+      ke.preventDefault();
+      seekTo(video.currentTime - 5);
+    } else if (key === "ArrowRight") {
+      ke.preventDefault();
+      seekTo(video.currentTime + 5);
+    } else if (key === "Home") {
+      ke.preventDefault();
+      seekTo(0);
+    } else if (key === "End") {
+      if (duration != null) {
+        ke.preventDefault();
+        seekTo(duration);
+      }
+    } else if (key.length === 1 && key >= "0" && key <= "9") {
+      if (duration != null) {
+        ke.preventDefault();
+        seekTo((Number(key) / 10) * duration);
+      }
+    } else if (key === "ArrowUp") {
+      ke.preventDefault();
+      video.volume = Math.min(1, video.volume + 0.05);
+    } else if (key === "ArrowDown") {
+      ke.preventDefault();
+      video.volume = Math.max(0, video.volume - 0.05);
+    } else if (lower === "m") {
+      ke.preventDefault();
+      const muted = !video.muted;
+      video.muted = muted;
+      this._videoMuted = muted;
+    } else if (lower === "f") {
+      ke.preventDefault();
+      this.#toggleVideoFullscreen(video);
+    }
+  }
+
+  #toggleVideoFullscreen(video: HTMLVideoElement) {
+    const doc = document as globalThis.Document & {
+      webkitFullscreenElement?: globalThis.Element | null;
+      webkitExitFullscreen?: () => void;
+    };
+    const el = video as HTMLVideoElement & {
+      webkitRequestFullscreen?: () => void;
+      webkitEnterFullscreen?: () => void;
+    };
+
+    if (document.fullscreenElement ?? doc.webkitFullscreenElement) {
+      if (document.exitFullscreen) {
+        void document.exitFullscreen().catch(() => {});
+      } else {
+        doc.webkitExitFullscreen?.();
+      }
+      return;
+    }
+
+    if (video.requestFullscreen) {
+      void video.requestFullscreen().catch(() => {});
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    } else if (el.webkitEnterFullscreen) {
+      el.webkitEnterFullscreen();
+    }
+  }
 
   #handleDialogClick = (e: Event) => {
     const target = e.target as HTMLElement;
@@ -365,23 +449,22 @@ export class JantMediaLightbox extends LitElement {
     this.querySelector<HTMLVideoElement>(".media-lightbox-video")?.pause();
   }
 
-  // Focus the active video so space/native shortcuts work without an extra
-  // click. Falls back to the content wrapper for images — focusing the close
-  // button would show a focus ring during arrow-key nav.
+  // Move focus to the content wrapper on open / item change — not the close
+  // button (its focus ring would show during arrow-key nav) and not the
+  // <video> (a focused <video> routes keydown to its own native handler,
+  // bypassing the dialog-level shortcuts in #handleVideoKeydown).
   #focusCurrentMedia() {
-    const currentImage = this._images[this._currentIndex];
-    const isVideo = currentImage?.mimeType?.startsWith("video/");
-    if (isVideo) {
-      const video = this.querySelector<HTMLVideoElement>(
-        ".media-lightbox-video",
-      );
-      if (video) {
-        video.focus();
-        return;
-      }
-    }
     this.querySelector<HTMLElement>(".media-lightbox-content")?.focus();
   }
+
+  // Browsers focus a <video> when it's clicked. Bounce focus back to the
+  // content wrapper so keydown keeps reaching the dialog-level shortcut
+  // handler instead of the video's native key handling.
+  #handleVideoFocus = () => {
+    this.querySelector<HTMLElement>(".media-lightbox-content")?.focus({
+      preventScroll: true,
+    });
+  };
 
   #resetShortVideoState(image?: LightboxImage) {
     this._videoCurrentTime = 0;
@@ -543,6 +626,7 @@ export class JantMediaLightbox extends LitElement {
                       playsinline
                       loop
                       ?muted=${this._videoMuted}
+                      @focus=${this.#handleVideoFocus}
                       @loadedmetadata=${this.#handleShortVideoLoadedMetadata}
                       @timeupdate=${this.#handleShortVideoTimeUpdate}
                     ></video>
@@ -596,6 +680,7 @@ export class JantMediaLightbox extends LitElement {
                     controls
                     autoplay
                     playsinline
+                    @focus=${this.#handleVideoFocus}
                   ></video>`
               : html`<img
                   class=${`media-lightbox-img${isScrollableImage ? " media-lightbox-img-scroll" : ""}`}
