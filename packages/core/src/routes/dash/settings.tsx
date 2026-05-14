@@ -44,6 +44,10 @@ import {
   GitHubSyncContent,
   type GitHubSyncStatus,
 } from "../../ui/dash/settings/GitHubSyncContent.js";
+import {
+  TelegramContent,
+  type TelegramSettingsView,
+} from "../../ui/dash/settings/TelegramContent.js";
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import { parseValidated, UpdateSiteSettingsSchema } from "../../lib/schemas.js";
 import {
@@ -56,7 +60,10 @@ import { syncHostedControlPlaneSiteAvatar } from "../../lib/hosted-control-plane
 import {
   getGitHubAppConfig,
   getHostedControlPlaneSsoSecret,
+  getTelegramBotPool,
 } from "../../lib/env.js";
+import { buildDeepLink, getMe } from "../../lib/telegram.js";
+import { renderSVG } from "uqr";
 import {
   buildInstallUrl,
   getInstallation,
@@ -131,7 +138,8 @@ function breadcrumbLabel(
     | "password"
     | "deleteAccount"
     | "apiTokens"
-    | "githubSync",
+    | "githubSync"
+    | "telegram",
 ): string {
   const i18n = getI18n(c);
   switch (key) {
@@ -196,6 +204,10 @@ function breadcrumbLabel(
     case "githubSync":
       return i18n._(
         msg({ message: "GitHub Sync", comment: "@context: Breadcrumb label" }),
+      );
+    case "telegram":
+      return i18n._(
+        msg({ message: "Telegram", comment: "@context: Breadcrumb label" }),
       );
   }
 }
@@ -2296,4 +2308,110 @@ settingsRoutes.get("/github-sync", async (c) => {
       </>
     ),
   });
+});
+
+// ===========================================================================
+// Telegram
+// ===========================================================================
+
+settingsRoutes.get("/telegram", async (c) => {
+  const pool = getTelegramBotPool(c.env);
+  const managed = pool.length > 0;
+  const status = await c.var.services.telegram.getStatus();
+
+  // Public-facing bot username for the deep link / QR code. The managed
+  // pool's first bot is the public face; a bring-your-own bot already has
+  // its username cached from setup.
+  let botUsername = "";
+  const firstBot = pool[0];
+  if (firstBot) {
+    try {
+      const identity = await getMe(firstBot.token);
+      botUsername = identity.username;
+    } catch {
+      botUsername = "";
+    }
+  } else if (status.userBot) {
+    botUsername = status.userBot.username;
+  }
+
+  let connect: TelegramSettingsView["connect"] = null;
+  if (!status.binding && botUsername) {
+    const code = await c.var.services.telegram.getOrCreateCode();
+    const deepLink = buildDeepLink(botUsername, code);
+    connect = { code, deepLink, qrSvg: renderSVG(deepLink), botUsername };
+  }
+
+  const view: TelegramSettingsView = {
+    managed,
+    binding: status.binding
+      ? {
+          telegramUsername: status.binding.telegramUsername,
+          boundAt: status.binding.boundAt,
+        }
+      : null,
+    userBotConfigured: status.userBot !== null,
+    connect,
+  };
+
+  const navData = await getNavigationData(c);
+  return renderPublicPage(c, {
+    title: buildPageTitle("Telegram", navData.siteName),
+    navData,
+    content: (
+      <>
+        <AdminBreadcrumb
+          parent={breadcrumbLabel(c, "settings")}
+          parentHref={publicPath(c, "/settings")}
+          current={breadcrumbLabel(c, "telegram")}
+        />
+        <TelegramContent
+          view={view}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
+        />
+      </>
+    ),
+  });
+});
+
+settingsRoutes.post("/telegram/connect", async (c) => {
+  // Token entry is for bring-your-own deployments only. When a managed pool
+  // is configured the bot is platform-owned and users connect via a code.
+  if (getTelegramBotPool(c.env).length > 0) {
+    return dsToast(
+      "This deployment uses a managed Telegram bot. Connect with the binding code instead.",
+      "error",
+    );
+  }
+
+  const body = await c.req.json<{ token?: string }>();
+  const token = body.token?.trim();
+  if (!token) {
+    return dsToast("Paste your bot token to continue.", "error");
+  }
+
+  const siteUrl = c.var.appConfig.siteUrl.replace(/\/+$/, "");
+  try {
+    await c.var.services.telegram.connectUserBot(token, siteUrl);
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    return dsToast(`Could not set up the bot: ${detail}`, "error");
+  }
+
+  return dsRedirect(publicPath(c, "/settings/telegram"));
+});
+
+settingsRoutes.post("/telegram/remove-bot", async (c) => {
+  await c.var.services.telegram.removeUserBot();
+  return dsRedirect(publicPath(c, "/settings/telegram"));
+});
+
+settingsRoutes.post("/telegram/regenerate-code", async (c) => {
+  await c.var.services.telegram.generateCode();
+  return dsRedirect(publicPath(c, "/settings/telegram"));
+});
+
+settingsRoutes.post("/telegram/disconnect", async (c) => {
+  await c.var.services.telegram.disconnect();
+  return dsRedirect(publicPath(c, "/settings/telegram"));
 });

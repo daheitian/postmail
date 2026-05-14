@@ -53,6 +53,9 @@ export interface Bindings {
   HOSTED_CONTROL_PLANE_PROVIDER_NAME?: EnvBindingValue;
   HOSTED_CONTROL_PLANE_SSO_SECRET?: EnvBindingValue;
   HOSTED_CONTROL_PLANE_INTERNAL_TOKEN?: EnvBindingValue;
+  // Telegram bot integration
+  TELEGRAM_BOT_TOKENS?: EnvBindingValue;
+  TELEGRAM_WEBHOOK_SECRET?: EnvBindingValue;
   // Timeline
   PAGE_SIZE?: EnvBindingValue;
   SEARCH_PAGE_SIZE?: EnvBindingValue;

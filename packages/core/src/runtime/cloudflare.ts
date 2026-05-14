@@ -34,6 +34,12 @@ export interface CloudflareRequestRuntime {
   hostedHandoff: HostedHandoffService;
   rateLimiter: RateLimiter;
   services: Services;
+  /**
+   * Builds a `Services` object scoped to an arbitrary site. Used by
+   * host-agnostic handlers (e.g. the Telegram webhook) that resolve the
+   * target site from request data rather than the hostname.
+   */
+  servicesForSite: (siteId: string) => Services;
   storage: StorageDriver | null;
 }
 
@@ -81,6 +87,18 @@ export async function createCloudflareRequestRuntime(
     useSecureCookies: shouldUseSecureCookies(env, publicRequestUrl),
   });
 
+  const servicesConfig = {
+    databaseDialect: "sqlite" as const,
+    bootstrapSite: getSingleSiteBootstrapOptions(env),
+    enforceHostedMediaQuota: getSiteResolutionMode(env) === "host-based",
+    hostedControlPlane: createHostedControlPlaneClient(env),
+    siteResolutionMode: getSiteResolutionMode(env),
+    slugIdLength,
+    schema: sqliteSchemaBundle,
+  };
+  const servicesForSite = (siteId: string): Services =>
+    createServices(db, session, siteId, servicesConfig);
+
   return {
     auth,
     currentSite: siteLookup.site,
@@ -92,15 +110,8 @@ export async function createCloudflareRequestRuntime(
       secret: hostedControlPlaneSsoSecret,
     }),
     rateLimiter: createD1RateLimiter(db, sqliteSchemaBundle),
-    services: createServices(db, session, siteLookup.site.id, {
-      databaseDialect: "sqlite",
-      bootstrapSite: getSingleSiteBootstrapOptions(env),
-      enforceHostedMediaQuota: getSiteResolutionMode(env) === "host-based",
-      hostedControlPlane: createHostedControlPlaneClient(env),
-      siteResolutionMode: getSiteResolutionMode(env),
-      slugIdLength,
-      schema: sqliteSchemaBundle,
-    }),
+    services: servicesForSite(siteLookup.site.id),
+    servicesForSite,
     storage: createStorageDriver(env),
   };
 }

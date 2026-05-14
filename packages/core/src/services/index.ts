@@ -43,6 +43,7 @@ import {
   createGitHubAppInstallationsService,
   type GitHubAppInstallationsService,
 } from "./github-app-installations.js";
+import { createTelegramService, type TelegramService } from "./telegram.js";
 import type { HostedControlPlaneClient } from "../lib/hosted-control-plane.js";
 import type { EnsureSingleSiteOptions } from "./site.js";
 
@@ -64,6 +65,7 @@ export interface Services {
   siteMembers: SiteMemberService;
   siteProfile: SiteProfileService;
   githubAppInstallations: GitHubAppInstallationsService;
+  telegram: TelegramService;
 }
 
 export function createServices(
@@ -150,6 +152,7 @@ export function createServices(
       db,
       databaseSchema,
     ),
+    telegram: createTelegramService(db, siteId, databaseSchema),
   };
 }
 
@@ -182,3 +185,9 @@ export type {
   GitHubAccountType,
   StoredGitHubAppInstallation,
 } from "./github-app-installations.js";
+export type {
+  TelegramService,
+  TelegramBinding,
+  TelegramStatus,
+  TelegramUserBot,
+} from "./telegram.js";
