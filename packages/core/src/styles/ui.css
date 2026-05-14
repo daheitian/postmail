@@ -954,11 +954,15 @@
 
   /* --- Home header wrapper (compose-prompt + browse-nav) ------------------ */
 
+  /* Owns both the gap between the site description and its separator
+     (hairline / compose prompt) and the gap from that separator down to the
+     first post. Both use --site-feed-rhythm so the home page keeps one
+     uniform cadence regardless of how the site intro is customized. */
   .site-home-header {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    margin-bottom: var(--space-xl);
+    gap: var(--site-feed-rhythm);
+    margin-bottom: var(--site-feed-rhythm);
   }
 
   .site-description :where(p) {
@@ -2099,7 +2103,12 @@
     border: none;
     width: 30px;
     height: 9px;
-    margin: 4rem 0;
+    /* Inter-post gap. The top margin subtracts --post-footer-overshoot so the
+       VISIBLE gap (last footer content → divider) equals --site-feed-rhythm,
+       matching the header spacing; the bottom margin is the full rhythm since
+       the next post has no leading dead space. */
+    margin: calc(var(--site-feed-rhythm) - var(--post-footer-overshoot)) 0
+      var(--site-feed-rhythm);
     /* Center over the post-body column. On desktop the body column is
        `var(--layout-content-width)` (55%). Between 760-1024px it switches
        to `min(100%, 35rem)` via preset.css, so the hr must track that
@@ -2717,8 +2726,9 @@
   }
 
   .feed-quote-post {
+    /* No vertical padding: like every other feed card, the quote article hugs
+       its content so the inter-post gap stays on --site-feed-rhythm. */
     position: relative;
-    padding: 0.45rem 0 0.35rem;
   }
 
   .feed-quote-post .post-status-badges {
@@ -3944,14 +3954,29 @@
    * ========================================================================= */
 
   .compose-prompt {
+    /* Vertical click-target padding on the inner trigger button. Tokenized
+       so the rhythm compensation below stays in sync if it changes. */
+    --compose-trigger-pad: 24px;
     position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 0;
-    margin-bottom: 10px;
+    /* No rhythm margin — .site-home-header owns the gap below this. */
     border-bottom: 0.5px solid oklch(from var(--site-divider) l c h / 0.5);
     transition: border-color 0.15s;
+  }
+
+  /* When a site description sits above the prompt, pull the prompt up so the
+     trigger text lands --site-intro-gap-bottom below the description. The
+     negative margin cancels both the home rhythm gap (--site-feed-rhythm)
+     inherited from .site-home-header and the trigger's own top click-target
+     padding. */
+  .site-description + .compose-prompt {
+    margin-top: calc(
+      var(--site-intro-gap-bottom) - var(--site-feed-rhythm) -
+        var(--compose-trigger-pad)
+    );
   }
 
   .compose-prompt:hover {
@@ -3966,7 +3991,7 @@
     min-width: 0;
     width: 100%;
     min-height: 64px;
-    padding: 24px 0;
+    padding: var(--compose-trigger-pad) 0;
     border: none;
     outline: none;
     background: none;
@@ -11497,7 +11522,7 @@
  * ------------------------------------------------------------------------- */
 
 .site-description {
-  margin-top: 2.5rem;
+  margin-top: var(--site-intro-gap-top);
   font-family: var(--font-serif);
   font-size: var(--type-body);
   line-height: 1.55;
@@ -11517,6 +11542,16 @@
   height: 0;
   width: 100%;
   margin: 0;
+}
+
+/*
+ * Tighten the intro → hairline gap to --site-intro-gap-bottom, mirroring the
+ * logged-in .site-description + .compose-prompt rule. The negative margin
+ * cancels the home rhythm gap (--site-feed-rhythm) inherited from
+ * .site-home-header down to the intended intro spacing.
+ */
+.site-description + .site-description-divider {
+  margin-top: calc(var(--site-intro-gap-bottom) - var(--site-feed-rhythm));
 }
 
 /*
