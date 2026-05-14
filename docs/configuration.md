@@ -354,7 +354,15 @@ token field, and Jant registers the webhook for you when you save the token.
 Set them to run a managed pool (the hosted setup, or a self-hoster who prefers
 one fixed bot): the token field is hidden and users connect via a binding code.
 The first token is the public-facing bot; extra tokens let one Telegram account
-connect to more than one site. After setting these, register the webhooks once:
+connect to more than one site.
+
+In hosted mode (`HOSTED_CONTROL_PLANE_BASE_URL` set), the Node server
+registers the pool's webhooks on startup — pointed at the control-plane host —
+so no extra step is needed. The check is idempotent: a restart only re-registers
+a bot whose webhook drifted or was newly added.
+
+Otherwise (e.g. a Workers deployment, or to register against a custom URL),
+register them manually:
 
 ```sh
 jant telegram register-webhooks --base-url https://your-site.example
