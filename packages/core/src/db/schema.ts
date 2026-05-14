@@ -775,6 +775,49 @@ export const githubAppInstallation = sqliteTable(
   ],
 );
 
+// ---------------------------------------------------------------------------
+// Telegram bindings (connect a Telegram account to post Notes via a bot)
+// ---------------------------------------------------------------------------
+
+export const telegramPendingBindings = sqliteTable(
+  "telegram_pending_binding",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    createdAt: integer("created_at").notNull(),
+    expiresAt: integer("expires_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("uq_telegram_pending_binding_site_id").on(table.siteId),
+    uniqueIndex("uq_telegram_pending_binding_code").on(table.code),
+  ],
+);
+
+export const telegramBindings = sqliteTable(
+  "telegram_binding",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    botId: text("bot_id").notNull(),
+    telegramUserId: text("telegram_user_id").notNull(),
+    telegramUsername: text("telegram_username"),
+    lastUpdateId: integer("last_update_id"),
+    boundAt: integer("bound_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("uq_telegram_binding_site_id").on(table.siteId),
+    uniqueIndex("uq_telegram_binding_bot_user").on(
+      table.botId,
+      table.telegramUserId,
+    ),
+  ],
+);
+
 // =============================================================================
 // Rate Limit
 // =============================================================================

@@ -52,6 +52,7 @@ import {
   githubSyncWebhookRoutes,
   githubSyncAdminRoutes,
 } from "./routes/api/github-sync.js";
+import { telegramWebhookRoutes } from "./routes/api/telegram.js";
 import { internalTextAttachmentsRoutes } from "./routes/api/internal/text-attachments.js";
 import { internalSearchReindexRoutes } from "./routes/api/internal/search-reindex.js";
 import { internalUploadsRoutes } from "./routes/api/internal/uploads.js";
@@ -304,6 +305,7 @@ export function createApp(): App {
     }
     const runtime = await createRequestRuntime(c.env, publicRequestUrl);
     c.set("services", runtime.services);
+    c.set("servicesForSite", runtime.servicesForSite);
     c.set("hostedHandoff", runtime.hostedHandoff);
     c.set("storage", runtime.storage);
     c.set("auth", runtime.auth);
@@ -348,6 +350,7 @@ export function createApp(): App {
   app.route("/api/internal/search/reindex", internalSearchReindexRoutes);
   app.route("/api/internal/uploads", internalUploadsRoutes);
   app.route("/api/github-sync", githubSyncWebhookRoutes);
+  app.route("/api/telegram", telegramWebhookRoutes);
 
   // Fetch text media content by ID (same-origin proxy to avoid CORS with CDN URLs)
   app.get("/api/media/:id/content", async (c) => {

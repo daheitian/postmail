@@ -338,6 +338,28 @@ Images have their own tighter limits. This setting mainly affects video, audio, 
 | `SUMMARY_MAX_CHARS`      | `500`   | Maximum characters in auto-generated summaries |
 | `RSS_FEED_LIMIT`         | `50`    | Maximum number of posts included in RSS feeds  |
 
+### Telegram bot (optional)
+
+Lets you publish Notes by messaging a Telegram bot. Connect an account on the
+**Settings → Telegram** page, then any text you send the bot is published.
+
+| Variable                  | Default | Description                                                                    |
+| ------------------------- | ------- | ------------------------------------------------------------------------------ |
+| `TELEGRAM_BOT_TOKENS`     | _none_  | Comma-separated `<bot_id>:<secret>` bot tokens for a platform-managed bot pool |
+| `TELEGRAM_WEBHOOK_SECRET` | _none_  | Shared `secret_token` used when registering each pool bot's webhook            |
+
+Leave both unset to run your own bot: the Telegram settings page then shows a
+token field, and Jant registers the webhook for you when you save the token.
+
+Set them to run a managed pool (the hosted setup, or a self-hoster who prefers
+one fixed bot): the token field is hidden and users connect via a binding code.
+The first token is the public-facing bot; extra tokens let one Telegram account
+connect to more than one site. After setting these, register the webhooks once:
+
+```sh
+jant telegram register-webhooks --base-url https://your-site.example
+```
+
 ## Settings page options
 
 These settings can be changed on Jant's Settings page after setup. Each one can also be seeded from an environment variable of the same name — values changed in Settings take precedence over the environment variable.

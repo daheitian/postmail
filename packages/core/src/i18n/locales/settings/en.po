@@ -221,11 +221,18 @@ msgstr "Before deleting, download a site export. You won't be able to recover th
 msgid "Blog Avatar"
 msgstr "Blog Avatar"
 
+#. @context: Label for the Telegram bot token input
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Bot token"
+msgstr "Bot token"
+
 #. @context: Section heading for built-in nav items
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Built-in links"
 msgstr "Built-in links"
 
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
@@ -250,6 +257,8 @@ msgstr "Built-in links"
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/SessionsContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -343,10 +352,25 @@ msgstr "Connect"
 msgid "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
 msgstr "Connect a GitHub repository to automatically back up your posts as Markdown files. Edits on GitHub sync back to your site."
 
+#. @context: Intro text on the Telegram settings page when no bot is set up
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Connect a Telegram bot, then anything you message it gets published as a note."
+msgstr "Connect a Telegram bot, then anything you message it gets published as a note."
+
+#. @context: Heading on the Telegram settings page when ready to connect
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Connect Telegram"
+msgstr "Connect Telegram"
+
 #. @context: Heading for the GitHub App connect option on GitHub Sync setup
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Connect with GitHub App"
 msgstr "Connect with GitHub App"
+
+#. @context: Status label when Telegram is connected, with the account name
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Connected as {account}"
+msgstr "Connected as {account}"
 
 #. @context: Status label when GitHub Sync is active using the GitHub App
 #: src/ui/dash/settings/GitHubSyncContent.tsx
@@ -409,6 +433,11 @@ msgstr "Couldn't delete. Try again in a moment."
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Couldn't save. Try again in a moment."
 msgstr "Couldn't save. Try again in a moment."
+
+#. @context: Help text explaining where to get a Telegram bot token
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Create a bot by messaging @BotFather on Telegram, then paste the token it gives you."
+msgstr "Create a bot by messaging @BotFather on Telegram, then paste the token it gives you."
 
 #. @context: Link text pointing to GitHub's new repository page
 #: src/ui/dash/settings/GitHubSyncContent.tsx
@@ -571,9 +600,13 @@ msgid "Destination"
 msgstr "Destination"
 
 #. @context: Button to disconnect GitHub repository on GitHub Sync settings
+#. @context: Button to disconnect Telegram
 #. @context: Section heading for disconnect action on GitHub Sync settings
+#. @context: Section heading for disconnecting Telegram
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/GitHubSyncContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
 msgid "Disconnect"
 msgstr "Disconnect"
 
@@ -581,6 +614,11 @@ msgstr "Disconnect"
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Disconnect from GitHub? The webhook will be removed. Your repository content will not be deleted."
 msgstr "Disconnect from GitHub? The webhook will be removed. Your repository content will not be deleted."
+
+#. @context: Confirmation message when disconnecting Telegram
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Disconnect Telegram? You can reconnect any time with a new binding code."
+msgstr "Disconnect Telegram? You can reconnect any time with a new binding code."
 
 #. @context: Checkbox to show avatar in the site header
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -718,6 +756,11 @@ msgstr "Font theme"
 msgid "Font Theme"
 msgstr "Font Theme"
 
+#. @context: Description for removing the saved Telegram bot token
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Forget the saved bot token and remove its webhook. Use this to switch to a different bot."
+msgstr "Forget the saved bot token and remove its webhook. Use this to switch to a different bot."
+
 #. @context: Breadcrumb label
 #. @context: Settings item — general settings
 #. @context: Settings section heading
@@ -731,6 +774,11 @@ msgstr "General"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Generate Token"
 msgstr "Generate Token"
+
+#. @context: Button to regenerate the Telegram binding code
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Get a new code"
+msgstr "Get a new code"
 
 #. @context: Breadcrumb label
 #. @context: Settings item — GitHub sync settings
@@ -943,6 +991,11 @@ msgstr "March 14"
 msgid "Markdown supported"
 msgstr "Markdown supported"
 
+#. @context: Hint shown when Telegram is connected
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Message the bot any text and it's published as a note."
+msgstr "Message the bot any text and it's published as a note."
+
 #. @context: Section label for nav items hidden under More dropdown
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "More"
@@ -1056,6 +1109,21 @@ msgstr "Not synced yet"
 msgid "Note"
 msgstr "Note"
 
+#. @context: Help text above the manual Telegram binding code
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "On a computer? Scan the QR code with your phone. Or message @{botUsername} the code below:"
+msgstr "On a computer? Scan the QR code with your phone. Or message @{botUsername} the code below:"
+
+#. @context: Button that opens the Telegram bot via a deep link
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Open Telegram to connect"
+msgstr "Open Telegram to connect"
+
+#. @context: Instructions on the Telegram settings page for connecting an account
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Open the bot and send the binding code, then anything you message it becomes a note."
+msgstr "Open the bot and send the binding code, then anything you message it becomes a note."
+
 #. @context: Settings item description for the hosted delete-site entry in the account menu
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
@@ -1135,6 +1203,11 @@ msgstr "Pinned"
 msgid "Post"
 msgstr "Post"
 
+#. @context: Settings item description for Telegram integration
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Post notes by messaging a Telegram bot"
+msgstr "Post notes by messaging a Telegram bot"
+
 #. @context: GitHub sync picker — badge next to private repos
 #: src/routes/dash/settings.tsx
 msgid "Private"
@@ -1154,6 +1227,11 @@ msgstr "Published"
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Push all posts to GitHub right now instead of waiting for the next automatic sync."
 msgstr "Push all posts to GitHub right now instead of waiting for the next automatic sync."
+
+#. @context: Accessible label for the Telegram connect QR code
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "QR code linking to the Telegram bot"
+msgstr "QR code linking to the Telegram bot"
 
 #. @context: Archive custom URL query params field
 #: src/routes/dash/custom-urls.tsx
@@ -1203,6 +1281,16 @@ msgstr "Refresh repository list"
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Remove"
 msgstr "Remove"
+
+#. @context: Button to remove the saved Telegram bot token
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Remove bot"
+msgstr "Remove bot"
+
+#. @context: Confirmation message when removing the Telegram bot token
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Remove the saved bot token? Its webhook is deleted and any connected account is disconnected."
+msgstr "Remove the saved bot token? Its webhook is deleted and any connected account is disconnected."
 
 #. @context: Description for disconnect action on GitHub Sync settings
 #: src/ui/dash/settings/GitHubSyncContent.tsx
@@ -1260,6 +1348,11 @@ msgstr "Safe to leave this page — syncing continues in the background."
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Save"
 msgstr "Save"
+
+#. @context: Button to save the Telegram bot token
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Save bot token"
+msgstr "Save bot token"
 
 #. @context: Button to save custom CSS
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -1406,6 +1499,11 @@ msgstr "Site-wide HTML for analytics and widgets"
 msgid "Soft color should still carry a clear reading rhythm."
 msgstr "Soft color should still carry a clear reading rhythm."
 
+#. @context: Description for the Telegram disconnect action
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Stop accepting posts from Telegram. Your existing notes stay published."
+msgstr "Stop accepting posts from Telegram. Your existing notes stay published."
+
 #. @context: Button to trigger a full content push to GitHub on GitHub Sync settings
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Sync Now"
@@ -1425,6 +1523,20 @@ msgstr "system"
 #: src/routes/dash/custom-urls.tsx
 msgid "Target Slug"
 msgstr "Target Slug"
+
+#. @context: Breadcrumb label
+#. @context: Settings item — Telegram integration settings
+#. @context: Settings section heading for Telegram setup
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Telegram"
+msgstr "Telegram"
+
+#. @context: Error shown on the Telegram settings page when the bot can't be reached
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Telegram is set up, but the bot couldn't be reached. Check the bot token and try again."
+msgstr "Telegram is set up, but the bot couldn't be reached. Check the bot token and try again."
 
 #. @context: Error toast when selected font theme is not valid
 #: src/routes/dash/settings.tsx
@@ -1635,3 +1747,8 @@ msgstr "We'll prefill the name {name}. The list refreshes on return."
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "When to use site export, database backups, and recovery drills."
 msgstr "When to use site export, database backups, and recovery drills."
+
+#. @context: Fallback name when a connected Telegram account has no username
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "your Telegram account"
+msgstr "your Telegram account"

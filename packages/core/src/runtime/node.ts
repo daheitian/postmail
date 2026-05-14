@@ -37,6 +37,12 @@ export interface NodeRequestRuntime {
   hostedHandoff: HostedHandoffService;
   rateLimiter: RateLimiter;
   services: Services;
+  /**
+   * Builds a `Services` object scoped to an arbitrary site. Used by
+   * host-agnostic handlers (e.g. the Telegram webhook) that resolve the
+   * target site from request data rather than the hostname.
+   */
+  servicesForSite: (siteId: string) => Services;
   storage: StorageDriver | null;
 }
 
@@ -136,6 +142,18 @@ export async function createNodeRequestRuntime(
     useSecureCookies: shouldUseSecureCookies(env, publicRequestUrl),
   });
 
+  const servicesConfig = {
+    databaseDialect,
+    bootstrapSite: getSingleSiteBootstrapOptions(env),
+    enforceHostedMediaQuota: getSiteResolutionMode(env) === "host-based",
+    hostedControlPlane: createHostedControlPlaneClient(env),
+    siteResolutionMode: getSiteResolutionMode(env),
+    slugIdLength,
+    schema: databaseSchema,
+  };
+  const servicesForSite = (siteId: string): Services =>
+    createServices(db, rawQuery, siteId, servicesConfig);
+
   return {
     auth,
     currentSite: siteLookup.site,
@@ -147,15 +165,8 @@ export async function createNodeRequestRuntime(
       secret: hostedControlPlaneSsoSecret,
     }),
     rateLimiter: getNodeRateLimiter(),
-    services: createServices(db, rawQuery, siteLookup.site.id, {
-      databaseDialect,
-      bootstrapSite: getSingleSiteBootstrapOptions(env),
-      enforceHostedMediaQuota: getSiteResolutionMode(env) === "host-based",
-      hostedControlPlane: createHostedControlPlaneClient(env),
-      siteResolutionMode: getSiteResolutionMode(env),
-      slugIdLength,
-      schema: databaseSchema,
-    }),
+    services: servicesForSite(siteLookup.site.id),
+    servicesForSite,
     storage: createStorageDriver(env),
   };
 }
