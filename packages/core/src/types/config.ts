@@ -269,6 +269,11 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  DISCOVERY_SLASH_COMMAND_AT: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
   ONBOARDING_STATUS: {
     defaultValue: "pending",
     envOnly: false,

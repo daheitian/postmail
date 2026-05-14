@@ -2131,6 +2131,11 @@ msgstr "Transparent square"
 msgid "Tune color in a real reading context"
 msgstr "Tune color in a real reading context"
 
+#. @context: First-use hint shown over the compose editor to surface the slash command menu
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Type / for commands"
+msgstr "Type / for commands"
+
 #. @context: Compose quote text placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Type the quote..."

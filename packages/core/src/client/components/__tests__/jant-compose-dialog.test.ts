@@ -230,6 +230,7 @@ const labels: ComposeLabels = {
   showMore: "Show more",
   showLess: "Show less",
   newThread: "New Thread",
+  slashHint: "Type / for commands",
   collectionFormLabels: {
     titleLabel: "Title",
     titlePlaceholder: "My Collection",

@@ -214,6 +214,7 @@ export interface ComposeLabels {
   showMore: string;
   showLess: string;
   newThread: string;
+  slashHint: string;
   collectionFormLabels: CollectionFormLabels;
 }
 

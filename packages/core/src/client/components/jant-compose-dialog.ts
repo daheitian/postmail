@@ -534,6 +534,10 @@ export class JantComposeDialog extends LitElement {
     pageMode: { type: Boolean, attribute: "page-mode" },
     closeHref: { type: String, attribute: "close-href" },
     autoRestoreDraft: { type: Boolean, attribute: "auto-restore-draft" },
+    slashCommandDiscovered: {
+      type: Boolean,
+      attribute: "slash-command-discovered",
+    },
     _format: { state: true },
     _status: { state: true },
     _loading: { state: true },
@@ -578,6 +582,7 @@ export class JantComposeDialog extends LitElement {
   declare pageMode: boolean;
   declare closeHref: string;
   declare autoRestoreDraft: boolean;
+  declare slashCommandDiscovered: boolean;
   declare _format: ComposeFormat;
   declare _status: "published" | "draft";
   declare _loading: boolean;
@@ -665,6 +670,7 @@ export class JantComposeDialog extends LitElement {
     this.pageMode = false;
     this.closeHref = "/";
     this.autoRestoreDraft = false;
+    this.slashCommandDiscovered = false;
     this._format = "note";
     this._status = "published";
     this._loading = false;
@@ -5283,6 +5289,7 @@ export class JantComposeDialog extends LitElement {
           .uploadMaxFileSize=${this.uploadMaxFileSize}
           .threadItem=${true}
           .removable=${showRemove}
+          .slashCommandDiscovered=${this.slashCommandDiscovered}
           data-thread-id=${item.id}
         ></jant-compose-editor>
       </div>
@@ -5387,6 +5394,7 @@ export class JantComposeDialog extends LitElement {
       .format=${this._format}
       .labels=${this.labels}
       .uploadMaxFileSize=${this.uploadMaxFileSize}
+      .slashCommandDiscovered=${this.slashCommandDiscovered}
     ></jant-compose-editor>`;
 
     return html`

@@ -48,6 +48,11 @@ import {
 } from "../tiptap/inline-image-upload.js";
 import { isSafeAbsoluteUrl } from "../../lib/url.js";
 import { randomUUID } from "../random-uuid.js";
+import {
+  hideSlashCommandHint,
+  markSlashCommandDiscovered,
+  scheduleSlashCommandHint,
+} from "../slash-discovery.js";
 
 interface ComposeFilePickerCloseDetail {
   cancelled: boolean;
@@ -172,6 +177,7 @@ export class JantComposeEditor extends LitElement {
     uploadMaxFileSize: { type: Number },
     threadItem: { type: Boolean, attribute: "thread-item" },
     removable: { type: Boolean },
+    slashCommandDiscovered: { type: Boolean },
     _title: { state: true },
     _bodyJson: { state: true },
     _url: { state: true },
@@ -196,6 +202,7 @@ export class JantComposeEditor extends LitElement {
   declare uploadMaxFileSize: number;
   declare threadItem: boolean;
   declare removable: boolean;
+  declare slashCommandDiscovered: boolean;
   declare _title: string;
   declare _bodyJson: JSONContent | null;
   declare _url: string;
@@ -242,6 +249,7 @@ export class JantComposeEditor extends LitElement {
     this.uploadMaxFileSize = 500;
     this.threadItem = false;
     this.removable = false;
+    this.slashCommandDiscovered = false;
     this._title = "";
     this._bodyJson = null;
     this._url = "";
@@ -264,6 +272,10 @@ export class JantComposeEditor extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener("jant:slash-image", this._onSlashImage);
+    document.addEventListener(
+      "jant:slash-command-discovered",
+      this._onSlashCommandDiscovered,
+    );
   }
 
   disconnectedCallback() {
@@ -274,12 +286,21 @@ export class JantComposeEditor extends LitElement {
     this.#sortable?.destroy();
     this.#sortable = null;
     document.removeEventListener("jant:slash-image", this._onSlashImage);
+    document.removeEventListener(
+      "jant:slash-command-discovered",
+      this._onSlashCommandDiscovered,
+    );
     document.removeEventListener("click", this._onDocClickBound);
+    hideSlashCommandHint(this);
     this._emojiContainer?.remove();
     this._emojiPickerEl = null;
     this._filePickerCleanup?.();
     this._filePickerCleanup = null;
   }
+
+  private _onSlashCommandDiscovered = () => {
+    markSlashCommandDiscovered();
+  };
 
   private _onSlashImage = () => {
     // Skip when fullscreen is open — it has its own handler
@@ -686,6 +707,10 @@ export class JantComposeEditor extends LitElement {
     const container = this.querySelector<HTMLElement>(".compose-tiptap-body");
     if (!container || this._editor) return;
 
+    this.dataset.slashCommandDiscovered = this.slashCommandDiscovered
+      ? "true"
+      : "false";
+
     this._editor = createTiptapEditor({
       element: container,
       placeholder:
@@ -697,9 +722,13 @@ export class JantComposeEditor extends LitElement {
       onUpdate: (json) => {
         this._bodyJson = json;
         this._ensureScrollBuffer();
+        hideSlashCommandHint(this);
       },
       onFocus: () => {
         this._lastFocusedField = null;
+        if (this._editor?.isEmpty) {
+          scheduleSlashCommandHint(this);
+        }
       },
       onSelectionUpdate: (selection) => {
         this._lastEditorSelection = selection;
@@ -1655,7 +1684,12 @@ export class JantComposeEditor extends LitElement {
               </div>
             `
           : nothing}
-        <div class="compose-tiptap-body"></div>
+        <div class="compose-tiptap-wrap">
+          <div class="compose-tiptap-body"></div>
+          <span class="compose-slash-discovery-hint" aria-hidden="true">
+            ${this.labels.slashHint}
+          </span>
+        </div>
       </div>
     `;
   }
@@ -1723,9 +1757,14 @@ export class JantComposeEditor extends LitElement {
             </p>`
           : nothing}
         <div class="compose-divider"></div>
-        <div
-          class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-link"
-        ></div>
+        <div class="compose-tiptap-wrap">
+          <div
+            class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-link"
+          ></div>
+          <span class="compose-slash-discovery-hint" aria-hidden="true">
+            ${this.labels.slashHint}
+          </span>
+        </div>
       </div>
     `;
   }
@@ -1789,9 +1828,14 @@ export class JantComposeEditor extends LitElement {
           class="compose-divider compose-divider-quote"
           aria-hidden="true"
         ></div>
-        <div
-          class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-thoughts-quote"
-        ></div>
+        <div class="compose-tiptap-wrap">
+          <div
+            class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-thoughts-quote"
+          ></div>
+          <span class="compose-slash-discovery-hint" aria-hidden="true">
+            ${this.labels.slashHint}
+          </span>
+        </div>
       </div>
     `;
   }

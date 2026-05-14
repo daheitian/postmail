@@ -434,6 +434,65 @@ describe("Settings API Routes", () => {
     });
   });
 
+  describe("POST /api/settings/discovery/slash-command", () => {
+    it("returns 401 when not authenticated", async () => {
+      const { app } = createTestApp({ authenticated: false });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings/discovery/slash-command", {
+        method: "POST",
+      });
+
+      expect(res.status).toBe(401);
+    });
+
+    it("stores the completion timestamp once", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-03-20T00:00:00Z"));
+
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const first = await app.request("/api/settings/discovery/slash-command", {
+        method: "POST",
+      });
+
+      expect(first.status).toBe(201);
+      expect(
+        await services.settings.get(SETTINGS_KEYS.DISCOVERY_SLASH_COMMAND_AT),
+      ).toBe("1773964800");
+
+      vi.setSystemTime(new Date("2026-03-21T00:00:00Z"));
+
+      const second = await app.request(
+        "/api/settings/discovery/slash-command",
+        {
+          method: "POST",
+        },
+      );
+
+      expect(second.status).toBe(200);
+      expect(
+        await services.settings.get(SETTINGS_KEYS.DISCOVERY_SLASH_COMMAND_AT),
+      ).toBe("1773964800");
+    });
+
+    it("is not exposed through GET /api/settings", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      await services.settings.set(
+        SETTINGS_KEYS.DISCOVERY_SLASH_COMMAND_AT,
+        "1773964800",
+      );
+
+      const res = await app.request("/api/settings");
+      const body = await res.json();
+
+      expect(body.settings.DISCOVERY_SLASH_COMMAND_AT).toBeUndefined();
+    });
+  });
+
   describe("POST /api/settings/avatar", () => {
     it("returns 401 when not authenticated", async () => {
       const storage = createMockStorage();

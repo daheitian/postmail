@@ -641,6 +641,11 @@ export const SlashCommands = Extension.create({
               editorRef = props.editor;
               currentRange = props.range;
               renderPopup(props.items, (index) => props.command({ index }));
+              document.dispatchEvent(
+                new CustomEvent("jant:slash-command-discovered", {
+                  bubbles: true,
+                }),
+              );
 
               // Append inside the closest dialog (top-layer) or body
               const editorEl = getEditorElement(props.editor);

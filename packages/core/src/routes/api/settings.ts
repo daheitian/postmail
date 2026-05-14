@@ -112,6 +112,25 @@ settingsApiRoutes.post(
   },
 );
 
+settingsApiRoutes.post(
+  "/discovery/slash-command",
+  requireAuthApi(),
+  async (c) => {
+    const existing = await c.var.services.settings.get(
+      SETTINGS_KEYS.DISCOVERY_SLASH_COMMAND_AT,
+    );
+
+    if (!existing) {
+      await c.var.services.settings.set(
+        SETTINGS_KEYS.DISCOVERY_SLASH_COMMAND_AT,
+        String(now()),
+      );
+    }
+
+    return c.json({ learned: true }, existing ? 200 : 201);
+  },
+);
+
 // Upload site avatar (requires auth)
 settingsApiRoutes.post("/avatar", requireAuthApi(), async (c) => {
   const storage = c.var.storage;

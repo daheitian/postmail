@@ -4046,6 +4046,46 @@
     }
   }
 
+  /* =========================================================================
+   * Slash Command Discovery Hint (second-line placeholder for the editor)
+   * ========================================================================= */
+
+  .compose-tiptap-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .compose-slash-discovery-hint {
+    display: none;
+  }
+
+  @media (min-width: 700px) {
+    .compose-slash-discovery-hint {
+      position: absolute;
+      top: calc(1.4rem + 1.7lh);
+      left: 0;
+      display: block;
+      pointer-events: none;
+      opacity: 0;
+      color: var(--site-text-secondary);
+      font-family: var(--font-body);
+      font-size: var(--type-content-body);
+      line-height: var(--type-body-leading);
+      letter-spacing: var(--type-body-tracking);
+      white-space: nowrap;
+      user-select: none;
+      transition: opacity 0.2s ease;
+    }
+
+    jant-compose-editor.compose-slash-discovery-visible
+      .compose-slash-discovery-hint {
+      opacity: 0.35;
+    }
+  }
+
   @media (max-width: 699px) {
     .site-content-mobile-compose-enabled {
       padding-bottom: max(
