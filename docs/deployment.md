@@ -261,12 +261,17 @@ To mount Jant under a subpath like `<your-domain>/blog` and leave the root for o
 
 `SITE_PATH_PREFIX` and `SITE_ORIGIN` are independent. `SITE_ORIGIN` only accepts an origin (scheme + host + port); the path part is ignored — the subpath has to come from `SITE_PATH_PREFIX`. Details in [Configuration § Public URL and subpath](configuration.md#public-url-and-subpath).
 
-### Upgrade
+## Upgrade
+
+Check the [release notes](https://github.com/jant-me/jant/releases) for breaking changes, then update `@jant/core` and deploy:
 
 ```bash
 npm install @jant/core@latest
-npm run deploy
+npm run dev      # verify locally; applies new migrations to your local D1
+npm run deploy   # deploy to Cloudflare; applies remote migrations
 ```
+
+If your repo auto-deploys on push (via one-click deploy or the GitHub Actions workflow above), you can skip the local commands: commit the updated `package.json` and lockfile and push to `main`. Remote migrations run as part of the deploy.
 
 ## Common errors
 
