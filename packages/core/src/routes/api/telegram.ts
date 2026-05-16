@@ -28,6 +28,7 @@ import {
   type TelegramInlineButton,
   type TelegramUpdate,
 } from "../../lib/telegram.js";
+import { entitiesToMarkdown } from "../../lib/telegram-entities.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -238,9 +239,17 @@ async function processUpdate(
     return;
   }
 
+  // Fold Telegram's rich-text entities back into markdown so bold/italic/
+  // code/links typed in the Telegram client survive into the published note.
+  // Entity offsets index into the raw `message.text`, so convert first and
+  // trim the resulting markdown only at the very end.
+  const bodyMarkdown = entitiesToMarkdown(
+    message.text ?? "",
+    message.entities,
+  ).trim();
   await c.var.servicesForSite(binding.siteId).posts.create({
     format: "note",
-    bodyMarkdown: text,
+    bodyMarkdown,
     status: "published",
     visibility: "public",
   });

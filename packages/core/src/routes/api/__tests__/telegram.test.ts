@@ -115,6 +115,44 @@ describe("Telegram webhook route", () => {
     expect(calls.some((c) => c.method === "sendMessage")).toBe(true);
   });
 
+  it("folds telegram entities into markdown on the saved post body", async () => {
+    const { app, services, sqlite } = setup();
+    await services.telegram.bindAccount({
+      siteId: DEFAULT_TEST_SITE_ID,
+      botId: BOT_ID,
+      telegramUserId: String(USER_ID),
+      telegramUsername: "al",
+    });
+
+    const res = await post(app, BOT_ID, SECRET, {
+      update_id: 11,
+      message: {
+        message_id: 11,
+        from: { id: USER_ID, is_bot: false, first_name: "Al", username: "al" },
+        chat: { id: USER_ID },
+        text: "hello bold world",
+        entities: [{ type: "bold", offset: 6, length: 4 }],
+      },
+    });
+    expect(res.status).toBe(200);
+    // The post body is stored as the parsed ProseMirror JSON, so the
+    // round-trip proof is that the word "bold" carries a `bold` mark — that
+    // can only happen if entitiesToMarkdown emitted `**bold**` for the
+    // markdown parser to pick up.
+    const row = sqlite
+      .prepare("SELECT body FROM post ORDER BY rowid DESC LIMIT 1")
+      .get() as { body: string };
+    const doc = JSON.parse(row.body) as {
+      content: Array<{
+        content: Array<{ text: string; marks?: Array<{ type: string }> }>;
+      }>;
+    };
+    const spans = doc.content[0].content;
+    expect(spans.find((s) => s.text === "bold")?.marks).toEqual([
+      { type: "bold" },
+    ]);
+  });
+
   it("skips a duplicate update id", async () => {
     const { app, services, sqlite } = setup();
     await services.telegram.bindAccount({

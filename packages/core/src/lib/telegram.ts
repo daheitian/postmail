@@ -16,12 +16,31 @@ export interface TelegramUser {
   username?: string;
 }
 
+/**
+ * One styled span within a Telegram message.
+ *
+ * `offset` and `length` are measured in UTF-16 code units, which matches
+ * JavaScript string indexing — `text.slice(offset, offset + length)` returns
+ * the entity's visible text directly. See
+ * https://core.telegram.org/bots/api#messageentity for the full type list.
+ */
+export interface TelegramMessageEntity {
+  type: string;
+  offset: number;
+  length: number;
+  /** Present on `text_link` entities. */
+  url?: string;
+  /** Present on `pre` entities when the user picked a language. */
+  language?: string;
+}
+
 /** Subset of the Telegram `Message` object the integration consumes. */
 export interface TelegramMessage {
   message_id: number;
   from?: TelegramUser;
   chat: { id: number };
   text?: string;
+  entities?: TelegramMessageEntity[];
 }
 
 /** Subset of the Telegram `CallbackQuery` object the integration consumes. */
