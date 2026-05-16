@@ -471,7 +471,7 @@ function TelegramConnected({
             }),
           )}
         </p>
-        <div class="flex flex-wrap items-center gap-4 mt-1 -ml-4">
+        <div class="flex flex-wrap items-center gap-4 mt-1">
           <button
             type="button"
             class="btn-ghost text-destructive"
