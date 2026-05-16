@@ -138,7 +138,7 @@ pnpm install
 mise run dev
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow
 
 ## License
 
