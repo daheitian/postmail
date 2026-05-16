@@ -196,7 +196,7 @@ describe("getThreadPreviewState", () => {
     expect(html).not.toContain('id="continue"');
   });
 
-  it("renders ancestor context fully without collapse affordances", () => {
+  it("wraps ancestor context in a collapsible shell with a show-more toggle when 2+ extra items precede the latest reply", () => {
     const html = renderWithI18n(() =>
       ThreadPreview({
         rootPost: createPostView({
@@ -227,10 +227,72 @@ describe("getThreadPreviewState", () => {
       }),
     );
 
-    expect(html).not.toContain("data-thread-context");
-    expect(html).not.toContain("data-thread-context-toggle");
-    expect(html).not.toContain("thread-context-collapsed");
-    expect(html).not.toContain("thread-context-fade");
+    expect(html).toContain("thread-context-shell");
+    expect(html).toContain("data-thread-context");
+    expect(html).toContain("data-collapsed");
+    expect(html).toContain("thread-context-fade");
+    expect(html).toContain("data-thread-context-toggle");
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toMatch(/data-label-more="[^"]+"/);
+    expect(html).toMatch(/data-label-less="[^"]+"/);
+  });
+
+  it("still wraps a root-only preview in the shell so the cap applies to long single posts", () => {
+    // root + hero — no second/penultimate/gap. The server can't know the
+    // root's rendered height, so it always renders the shell + toggle and
+    // lets client-side measurement strip them when the root actually fits.
+    const html = renderWithI18n(() =>
+      ThreadPreview({
+        rootPost: createPostView({ bodyHtml: "<p>Root</p>" }),
+        latestReply: createPostView({
+          id: "post-2",
+          permalink: "/post-2",
+          slug: "post-2",
+          bodyHtml: "<p>Latest</p>",
+          isLastInThread: true,
+        }),
+        totalReplyCount: 1,
+      }),
+    );
+
+    expect(html).toContain("thread-context-shell");
+    expect(html).toContain("data-collapsed");
+    expect(html).toContain("data-thread-context-toggle");
+    expect(html).toContain("<p>Root</p>");
+    expect(html).toContain("<p>Latest</p>");
+  });
+
+  it("renders the collapsible shell even when just one extra item precedes the latest reply", () => {
+    // root + secondReply + hero — one extra context item. The server can't
+    // measure actual height, so it renders the shell assuming overflow (the
+    // common case). Client-side JS then removes the cap + hides the toggle
+    // if the rendered content actually fits without cropping.
+    const html = renderWithI18n(() =>
+      ThreadPreview({
+        rootPost: createPostView({ bodyHtml: "<p>Root</p>" }),
+        secondReply: createPostView({
+          id: "post-2",
+          permalink: "/post-2",
+          slug: "post-2",
+          bodyHtml: "<p>Second</p>",
+        }),
+        latestReply: createPostView({
+          id: "post-3",
+          permalink: "/post-3",
+          slug: "post-3",
+          bodyHtml: "<p>Latest</p>",
+          isLastInThread: true,
+        }),
+        totalReplyCount: 2,
+      }),
+    );
+
+    expect(html).toContain("thread-context-shell");
+    expect(html).toContain("data-collapsed");
+    expect(html).toContain("data-thread-context-toggle");
+    expect(html).toContain("<p>Root</p>");
+    expect(html).toContain("<p>Second</p>");
+    expect(html).toContain("<p>Latest</p>");
   });
 
   it("points the hidden-posts gap link to the second reply so the detail page opens just above the hidden range", () => {

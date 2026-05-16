@@ -2624,6 +2624,89 @@
       var(--site-thread-dot-ring);
   }
 
+  /* Collapsible ancestor context wrapper.
+     Server-rendered with `data-collapsed` whenever the thread has any extra
+     context (the common case overflows the cap). JS post-load removes the
+     attribute and hides the toggle for the rarer short-content case where
+     the cap wouldn't actually crop anything. Common path = no first-paint
+     reflow; short-content path = brief flash then cleanup. */
+  .thread-context-shell {
+    position: relative;
+    transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .thread-context-shell[data-collapsed] {
+    max-height: var(--site-thread-context-max-height);
+    overflow: hidden;
+  }
+
+  .thread-context-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 88px;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--site-page-bg) 92%
+    );
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+
+  .thread-context-shell[data-collapsed] .thread-context-fade {
+    opacity: 1;
+  }
+
+  .thread-context-toggle[hidden] {
+    display: none;
+  }
+
+  .thread-context-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 8px 0 4px;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--site-thread-context-border);
+    border-radius: 999px;
+    background: var(--site-thread-gap-bg);
+    color: var(--site-text-secondary);
+    font-size: var(--type-thread-context-meta);
+    line-height: 1.2;
+    cursor: pointer;
+    transition:
+      border-color 0.18s ease,
+      color 0.18s ease,
+      background-color 0.18s ease;
+  }
+
+  .thread-context-toggle:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--site-accent) 22%,
+      var(--site-divider)
+    );
+    color: var(--site-text-primary);
+  }
+
+  .thread-context-toggle:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
+  }
+
+  .thread-context-toggle-chevron {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+  }
+
+  .thread-context-toggle[aria-expanded="true"] .thread-context-toggle-chevron {
+    transform: rotate(180deg);
+  }
+
   .thread-item-gap {
     padding-top: 0.15rem;
     padding-bottom: 0.35rem;

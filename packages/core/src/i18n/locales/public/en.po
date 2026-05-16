@@ -1773,13 +1773,21 @@ msgstr "Settings"
 msgid "Shared links"
 msgstr "Shared links"
 
+#. @context: Collapse expanded thread ancestor context in the feed
+#. @context: Collapse expanded thread ancestor context in the feed
 #. @context: Collapse reply context
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/feed/ThreadPreview.tsx
+#: src/ui/pages/PostPage.tsx
 msgid "Show less"
 msgstr "Show less"
 
+#. @context: Expand faded thread ancestor context in the feed
+#. @context: Expand faded thread ancestor context in the feed
 #. @context: Expand reply context
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/feed/ThreadPreview.tsx
+#: src/ui/pages/PostPage.tsx
 msgid "Show more"
 msgstr "Show more"
 
