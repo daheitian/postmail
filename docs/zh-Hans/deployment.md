@@ -261,12 +261,17 @@ PORT=8787 npm run dev
 
 `SITE_PATH_PREFIX` 与 `SITE_ORIGIN` 是两个独立变量。`SITE_ORIGIN` 只接受 origin（scheme + host + port），路径部分会被忽略——子路径必须通过 `SITE_PATH_PREFIX` 设置。详细说明见 [配置 § 公开 URL 和子路径](configuration.md#公开-url-和子路径)。
 
-### 升级
+## 升级
+
+升级前先看一下 [发布说明](https://github.com/jant-me/jant/releases)，留意是否有破坏性变更。然后更新 `@jant/core` 并部署：
 
 ```bash
 npm install @jant/core@latest
-npm run deploy
+npm run dev      # 本地验证；新迁移会应用到本地 D1
+npm run deploy   # 部署到 Cloudflare；远端迁移在部署时应用
 ```
+
+如果你的仓库已配置 push 自动部署（一键部署，或上面的 GitHub Actions 工作流），可以跳过本地命令：提交更新后的 `package.json` 与 lockfile，推送到 `main` 即可。远端迁移会作为部署的一部分自动执行。
 
 ## 常见错误
 
