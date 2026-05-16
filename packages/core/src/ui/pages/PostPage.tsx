@@ -3,36 +3,99 @@
  *
  * Single post view — clean, no card border, with divider footer.
  * When `threadPosts` is provided, renders the full thread with the current
- * post highlighted and scroll-targeted.
+ * post highlighted and scroll-targeted. Ancestors above the current post are
+ * wrapped in the same collapsible shell used on the home feed
+ * (`.thread-context-shell`), driven by the shared `thread-context.ts`
+ * client logic.
  */
 
+import { msg } from "@lingui/core/macro";
 import type { FC } from "hono/jsx";
+import { useLingui } from "../../i18n/context.js";
 import type { PostPageProps, PostView } from "../../types.js";
 import { TimelineItemFromPost } from "../feed/TimelineItem.js";
+
+const renderThreadItem = (tp: PostView, currentId: string) => {
+  const isCurrent = tp.id === currentId;
+  return (
+    <div
+      key={tp.id}
+      id={`post-${tp.id}`}
+      class={`thread-item thread-detail-item${isCurrent ? " thread-item-current" : ""}`}
+      {...(isCurrent ? { "data-post-current": "" } : {})}
+    >
+      <TimelineItemFromPost
+        post={tp}
+        mode="detail"
+        display={{ footer: { hideTimestamp: false } }}
+      />
+    </div>
+  );
+};
 
 const ThreadDetail: FC<{ post: PostView; threadPosts: PostView[] }> = ({
   post,
   threadPosts,
 }) => {
+  const { i18n } = useLingui();
+  const showMoreLabel = i18n._(
+    msg({
+      message: "Show more",
+      comment: "@context: Expand faded thread ancestor context in the feed",
+    }),
+  );
+  const showLessLabel = i18n._(
+    msg({
+      message: "Show less",
+      comment:
+        "@context: Collapse expanded thread ancestor context in the feed",
+    }),
+  );
+
+  const currentIndex = threadPosts.findIndex((tp) => tp.id === post.id);
+  const ancestors = currentIndex > 0 ? threadPosts.slice(0, currentIndex) : [];
+  const currentAndAfter =
+    currentIndex >= 0 ? threadPosts.slice(currentIndex) : threadPosts;
+
   return (
     <div class="thread-group thread-group-detail" data-page="post">
-      {threadPosts.map((tp) => {
-        const isCurrent = tp.id === post.id;
-        return (
+      {ancestors.length > 0 && (
+        <>
           <div
-            key={tp.id}
-            id={`post-${tp.id}`}
-            class={`thread-item thread-detail-item${isCurrent ? " thread-item-current" : ""}`}
-            {...(isCurrent ? { "data-post-current": "" } : {})}
+            class="thread-context-shell"
+            data-thread-context
+            data-collapsed=""
           >
-            <TimelineItemFromPost
-              post={tp}
-              mode="detail"
-              display={{ footer: { hideTimestamp: false } }}
-            />
+            {ancestors.map((tp) => renderThreadItem(tp, post.id))}
+            <div class="thread-context-fade" aria-hidden="true" />
           </div>
-        );
-      })}
+          <button
+            type="button"
+            class="thread-context-toggle"
+            data-thread-context-toggle
+            data-label-more={showMoreLabel}
+            data-label-less={showLessLabel}
+            aria-expanded="false"
+          >
+            <span class="thread-context-toggle-label">{showMoreLabel}</span>
+            <svg
+              class="thread-context-toggle-chevron"
+              viewBox="0 0 16 16"
+              aria-hidden="true"
+            >
+              <path
+                d="M4 6l4 4 4-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </>
+      )}
+      {currentAndAfter.map((tp) => renderThreadItem(tp, post.id))}
     </div>
   );
 };
