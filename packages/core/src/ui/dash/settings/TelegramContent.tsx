@@ -63,19 +63,42 @@ const STATUS_DOT = `<svg width="10" height="10" viewBox="0 0 10 10" fill="none" 
 export function TelegramContent({
   view,
   sitePathPrefix = "",
+  streamUrl,
 }: {
   view: TelegramSettingsView;
   sitePathPrefix?: string;
+  /**
+   * When set and the page is in its "waiting for the user to bind" state,
+   * mounts a Datastar SSE subscription so the panel auto-swaps to the
+   * connected view the moment a binding lands. The patched-in connected
+   * view has no `data-init`, so the stream closes naturally.
+   */
+  streamUrl?: string;
 }) {
   const settingsBase = toPublicPath("/settings/telegram", sitePathPrefix);
 
+  let inner;
   if (view.binding) {
-    return <TelegramConnected view={view} settingsBase={settingsBase} />;
+    inner = <TelegramConnected view={view} settingsBase={settingsBase} />;
+  } else if (!view.managed && !view.userBotConfigured) {
+    inner = <TelegramSetupForm settingsBase={settingsBase} />;
+  } else {
+    inner = <TelegramConnect view={view} settingsBase={settingsBase} />;
   }
-  if (!view.managed && !view.userBotConfigured) {
-    return <TelegramSetupForm settingsBase={settingsBase} />;
-  }
-  return <TelegramConnect view={view} settingsBase={settingsBase} />;
+
+  // Only the "ready to connect" state subscribes — that's the only time
+  // we're actively waiting for an external event (the user messaging the
+  // bot). Connected and setup-form states have nothing to poll for.
+  const subscribe = !view.binding && view.connect && streamUrl;
+
+  return (
+    <div
+      id="telegram-status"
+      data-init={subscribe ? `@get('${streamUrl}')` : undefined}
+    >
+      {inner}
+    </div>
+  );
 }
 
 function TelegramSetupForm({ settingsBase }: { settingsBase: string }) {
