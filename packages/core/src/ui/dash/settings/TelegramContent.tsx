@@ -474,7 +474,7 @@ function TelegramConnected({
         <div class="flex flex-wrap items-center gap-4 mt-1">
           <button
             type="button"
-            class="btn-ghost text-destructive"
+            class="cursor-pointer text-sm text-destructive/80 hover:text-destructive hover:underline underline-offset-4 transition-colors inline-flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             data-indicator="_disconnecting"
             data-attr:disabled="$_disconnecting"
             data-on:click__prevent={buildConfirmActionExpression(
