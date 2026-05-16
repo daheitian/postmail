@@ -12,6 +12,7 @@
 
 import { msg } from "@lingui/core/macro";
 import { buildConfirmActionExpression } from "../../../lib/confirm.js";
+import { escapeHtml } from "../../../lib/html.js";
 import { toPublicPath } from "../../../lib/url.js";
 import { useLingui } from "../../../i18n/context.js";
 
@@ -38,12 +39,18 @@ export interface TelegramSettingsView {
   } | null;
 }
 
-function Spinner({ signal }: { signal: string }) {
+function Spinner({
+  signal,
+  size = "size-4",
+}: {
+  signal: string;
+  size?: string;
+}) {
   return (
     <svg
       data-show={`$${signal}`}
       style="display:none"
-      class="animate-spin size-4"
+      class={`animate-spin ${size}`}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
@@ -229,12 +236,22 @@ function TelegramConnect({
         </p>
       </div>
 
-      <div class="rounded-xl border border-border/70 bg-muted/30 p-5 flex flex-col items-center gap-4">
+      <div
+        class="flex flex-col items-center gap-4 py-2"
+        data-signals="{_codeCopied: false}"
+      >
+        {/*
+         * Mobile: deep-link button is the only sensible affordance — you
+         * can't scan your own screen. QR is hidden on small viewports.
+         * Desktop: QR leads; the @bot username in the caption below is a
+         * t.me link so power users on Telegram Desktop can still jump
+         * straight in.
+         */}
         <a
           href={connect.deepLink}
           target="_blank"
           rel="noopener noreferrer"
-          class="btn"
+          class="btn sm:hidden"
         >
           {i18n._(
             msg({
@@ -245,7 +262,7 @@ function TelegramConnect({
           )}
         </a>
         <div
-          class="bg-white p-3 rounded-lg"
+          class="hidden sm:block bg-white p-3 rounded-lg shadow-sm"
           style="width:180px;height:180px"
           aria-label={i18n._(
             msg({
@@ -256,28 +273,67 @@ function TelegramConnect({
           )}
           dangerouslySetInnerHTML={{ __html: connect.qrSvg }}
         />
-        <p class="text-sm text-muted-foreground text-center">
-          {i18n._(
-            msg({
-              message:
-                "On a computer? Scan the QR code with your phone. Or message @{botUsername} the code below:",
-              comment:
-                "@context: Help text above the manual Telegram binding code",
-            }),
-            { botUsername: connect.botUsername },
-          )}
-        </p>
-        <code class="text-sm bg-muted px-3 py-1.5 rounded font-mono select-all">
-          {connect.code}
-        </code>
+
+        <p
+          class="text-sm text-muted-foreground text-center"
+          dangerouslySetInnerHTML={{
+            __html: i18n._(
+              msg({
+                message: "Or message {linkOpen}@{botUsername}{linkClose} with:",
+                comment:
+                  "@context: Caption above the manual Telegram binding code. {linkOpen}/{linkClose} wrap the bot username as a t.me link — keep them around the @username token in translations.",
+              }),
+              {
+                botUsername: escapeHtml(connect.botUsername),
+                linkOpen: `<a href="${escapeHtml(`https://t.me/${connect.botUsername}`)}" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-foreground">`,
+                linkClose: "</a>",
+              },
+            ),
+          }}
+        />
+        <div class="flex items-center gap-2">
+          <code class="text-sm bg-muted px-3 py-1.5 rounded font-mono select-all">
+            /start {connect.code}
+          </code>
+          <button
+            type="button"
+            class="btn-sm-outline shrink-0"
+            aria-label={i18n._(
+              msg({
+                message: "Copy",
+                comment: "@context: Button to copy the Telegram binding code",
+              }),
+            )}
+            data-on:click={`navigator.clipboard.writeText('/start ${connect.code}'); $_codeCopied = true`}
+            data-text={`$_codeCopied ? '${i18n._(
+              msg({
+                message: "Copied",
+                comment: "@context: Feedback after copying to clipboard",
+              }),
+            )}' : '${i18n._(
+              msg({
+                message: "Copy",
+                comment: "@context: Button to copy the Telegram binding code",
+              }),
+            )}'`}
+          >
+            {i18n._(
+              msg({
+                message: "Copy",
+                comment: "@context: Button to copy the Telegram binding code",
+              }),
+            )}
+          </button>
+        </div>
+
         <button
           type="button"
-          class="btn-ghost text-sm"
+          class="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 decoration-dotted inline-flex items-center gap-1.5"
           data-on:click__prevent={`@post('${settingsBase}/regenerate-code')`}
           data-indicator="_regenerating"
           data-attr:disabled="$_regenerating"
         >
-          <Spinner signal="_regenerating" />
+          <Spinner signal="_regenerating" size="size-3" />
           {i18n._(
             msg({
               message: "Get a new code",
@@ -288,7 +344,11 @@ function TelegramConnect({
         </button>
       </div>
 
-      {!view.managed ? <RemoveBotSection settingsBase={settingsBase} /> : null}
+      {!view.managed ? (
+        <div class="flex justify-center pt-2">
+          <RemoveBotLink settingsBase={settingsBase} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -325,20 +385,30 @@ function TelegramConnected({
 
   return (
     <div class="flex flex-col gap-8 max-w-form">
-      <div class="rounded-xl border border-border/70 bg-muted/30 p-5">
-        <div class="flex items-center gap-2 text-sm font-medium">
+      <div>
+        <h2 class="text-lg font-medium mb-1">
+          {i18n._(
+            msg({
+              message: "Telegram",
+              comment: "@context: Settings section heading for Telegram setup",
+            }),
+          )}
+        </h2>
+        <div class="flex items-center gap-2 text-sm">
           <span
             class="text-green-600 dark:text-green-500"
             dangerouslySetInnerHTML={{ __html: STATUS_DOT }}
           />
-          {i18n._(
-            msg({
-              message: "Connected as {account}",
-              comment:
-                "@context: Status label when Telegram is connected, with the account name",
-            }),
-            { account },
-          )}
+          <span>
+            {i18n._(
+              msg({
+                message: "Connected as {account}",
+                comment:
+                  "@context: Status label when Telegram is connected, with the account name",
+              }),
+              { account },
+            )}
+          </span>
         </div>
         <p class="text-sm text-muted-foreground mt-2">
           {i18n._(
@@ -352,12 +422,7 @@ function TelegramConnected({
 
       <section class="flex flex-col gap-3 border-t pt-8">
         <h3 class="text-sm font-semibold tracking-[0.01em] text-destructive">
-          {i18n._(
-            msg({
-              message: "Disconnect",
-              comment: "@context: Section heading for disconnecting Telegram",
-            }),
-          )}
+          {disconnectLabel}
         </h3>
         <p class="text-sm text-muted-foreground">
           {i18n._(
@@ -369,7 +434,7 @@ function TelegramConnected({
             }),
           )}
         </p>
-        <div class="flex mt-1">
+        <div class="flex flex-wrap items-center gap-4 mt-1">
           <button
             type="button"
             class="btn-ghost text-destructive"
@@ -395,15 +460,14 @@ function TelegramConnected({
             <Spinner signal="_disconnecting" />
             {disconnectLabel}
           </button>
+          {!view.managed ? <RemoveBotLink settingsBase={settingsBase} /> : null}
         </div>
       </section>
-
-      {!view.managed ? <RemoveBotSection settingsBase={settingsBase} /> : null}
     </div>
   );
 }
 
-function RemoveBotSection({ settingsBase }: { settingsBase: string }) {
+function RemoveBotLink({ settingsBase }: { settingsBase: string }) {
   const { i18n } = useLingui();
   const removeLabel = i18n._(
     msg({
@@ -419,47 +483,30 @@ function RemoveBotSection({ settingsBase }: { settingsBase: string }) {
   );
 
   return (
-    <section class="flex flex-col gap-3 border-t pt-8">
-      <h3 class="text-sm font-semibold tracking-[0.01em] text-destructive">
-        {removeLabel}
-      </h3>
-      <p class="text-sm text-muted-foreground">
-        {i18n._(
-          msg({
-            message:
-              "Forget the saved bot token and remove its webhook. Use this to switch to a different bot.",
-            comment:
-              "@context: Description for removing the saved Telegram bot token",
-          }),
-        )}
-      </p>
-      <div class="flex mt-1">
-        <button
-          type="button"
-          class="btn-ghost text-destructive"
-          data-indicator="_removing"
-          data-attr:disabled="$_removing"
-          data-on:click__prevent={buildConfirmActionExpression(
-            `@post('${settingsBase}/remove-bot')`,
-            {
-              message: i18n._(
-                msg({
-                  message:
-                    "Remove the saved bot token? Its webhook is deleted and any connected account is disconnected.",
-                  comment:
-                    "@context: Confirmation message when removing the Telegram bot token",
-                }),
-              ),
-              confirmLabel: removeLabel,
-              cancelLabel,
-              tone: "danger",
-            },
-          )}
-        >
-          <Spinner signal="_removing" />
-          {removeLabel}
-        </button>
-      </div>
-    </section>
+    <button
+      type="button"
+      class="text-xs text-muted-foreground hover:text-destructive underline underline-offset-4 decoration-dotted inline-flex items-center gap-1.5"
+      data-indicator="_removing"
+      data-attr:disabled="$_removing"
+      data-on:click__prevent={buildConfirmActionExpression(
+        `@post('${settingsBase}/remove-bot')`,
+        {
+          message: i18n._(
+            msg({
+              message:
+                "Remove the saved bot token? Its webhook is deleted and any connected account is disconnected.",
+              comment:
+                "@context: Confirmation message when removing the Telegram bot token",
+            }),
+          ),
+          confirmLabel: removeLabel,
+          cancelLabel,
+          tone: "danger",
+        },
+      )}
+    >
+      <Spinner signal="_removing" size="size-3" />
+      {removeLabel}
+    </button>
   );
 }

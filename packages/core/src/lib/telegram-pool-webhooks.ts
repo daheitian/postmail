@@ -20,7 +20,7 @@ import {
   getTelegramBotPool,
   getTelegramWebhookSecret,
 } from "./env.js";
-import { getWebhookUrl, setWebhook } from "./telegram.js";
+import { getWebhookUrl, setMyCommands, setWebhook } from "./telegram.js";
 
 /**
  * Registers webhooks for every managed-pool bot, skipping those already
@@ -56,15 +56,30 @@ export async function registerTelegramPoolWebhooks(
     const webhookUrl = `${origin}/api/telegram/webhook/${bot.botId}`;
     try {
       const current = await getWebhookUrl(bot.token);
-      if (current === webhookUrl) continue;
-      await setWebhook(bot.token, webhookUrl, secret);
-      // eslint-disable-next-line no-console -- One-line audit trail for a rare write.
-      console.log(`[Jant] Telegram webhook registered: bot=${bot.botId}`);
+      if (current !== webhookUrl) {
+        await setWebhook(bot.token, webhookUrl, secret);
+        // eslint-disable-next-line no-console -- One-line audit trail for a rare write.
+        console.log(`[Jant] Telegram webhook registered: bot=${bot.botId}`);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       // eslint-disable-next-line no-console -- Registration failures must be visible.
       console.error(
         `[Jant] Telegram webhook registration failed: bot=${bot.botId} error=${message}`,
+      );
+      // Webhook failed — skip command sync too; the bot isn't usable anyway.
+      continue;
+    }
+    // Command list is independent of the webhook URL. Re-run unconditionally
+    // so existing deployments pick up command changes without a re-register,
+    // and so the `/` autocomplete reflects the latest list.
+    try {
+      await setMyCommands(bot.token);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      // eslint-disable-next-line no-console -- Polish failure — visible but non-fatal.
+      console.error(
+        `[Jant] Telegram setMyCommands failed: bot=${bot.botId} error=${message}`,
       );
     }
   }

@@ -30,6 +30,7 @@ import {
   deleteWebhook,
   getMe,
   parseBotId,
+  setMyCommands,
   setWebhook,
 } from "../lib/telegram.js";
 
@@ -297,6 +298,12 @@ export function createTelegramService(
       const secret = generateRandomId(32);
       const webhookUrl = `${webhookBaseUrl.replace(/\/+$/, "")}/api/telegram/webhook/${botId}`;
       await setWebhook(token, webhookUrl, secret);
+      try {
+        await setMyCommands(token);
+      } catch {
+        // `/` autocomplete is a polish feature — never fail the connect
+        // flow over it. The webhook is set, the bot works.
+      }
       await writeSetting("TELEGRAM_BOT_TOKEN", token);
       await writeSetting("TELEGRAM_BOT_ID", botId);
       await writeSetting("TELEGRAM_BOT_USERNAME", identity.username);

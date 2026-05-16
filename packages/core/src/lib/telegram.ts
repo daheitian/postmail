@@ -160,6 +160,44 @@ export async function deleteWebhook(token: string): Promise<void> {
 }
 
 /**
+ * Canonical bot command list. Telegram shows these in the `/` autocomplete
+ * popup and on the bot's profile. The list is persisted per-bot on Telegram's
+ * servers via `setMyCommands` — we only register commands the bot actually
+ * responds to. Anything else the user sends is treated as note content.
+ */
+export const JANT_BOT_COMMANDS: ReadonlyArray<{
+  command: string;
+  description: string;
+}> = [
+  {
+    command: "start",
+    description: "Connect this chat to a Jant site",
+  },
+];
+
+/**
+ * Registers the bot's command list with Telegram so typing `/` in the chat
+ * shows autocomplete suggestions. Idempotent — safe to call on every boot.
+ *
+ * @param token - Bot token
+ * @param commands - Commands to register. Defaults to `JANT_BOT_COMMANDS`.
+ */
+export async function setMyCommands(
+  token: string,
+  commands: ReadonlyArray<{
+    command: string;
+    description: string;
+  }> = JANT_BOT_COMMANDS,
+): Promise<void> {
+  await callTelegram(token, "setMyCommands", {
+    commands: commands.map((c) => ({
+      command: c.command,
+      description: c.description,
+    })),
+  });
+}
+
+/**
  * Returns the bot's currently registered webhook URL (empty when none).
  *
  * Lets callers skip a redundant `setWebhook` write when the webhook is

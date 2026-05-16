@@ -196,6 +196,25 @@ async function processUpdate(
   // Plain message — publish as a note.
   const binding = await telegram.findBindingByUser(botId, telegramUserId);
   if (!binding) {
+    // Defensive: users who copy the binding code without the `/start `
+    // prefix still get bound. The settings page formats the code as
+    // `/start CODE`, but a fraction of users will paste only the trailing
+    // token. Codes are lowercase alphanumeric (see lib/nanoid.ts) and
+    // short, so the false-positive surface is tiny.
+    if (/^[0-9a-z]+$/.test(text) && text.length <= 24) {
+      const pending = await telegram.resolvePendingCode(text);
+      if (pending) {
+        await handleStart(c, {
+          botId,
+          botToken,
+          chatId,
+          code: text,
+          telegramUserId,
+          telegramUsername: message.from.username ?? null,
+        });
+        return;
+      }
+    }
     await sendMessage(
       botToken,
       chatId,

@@ -199,7 +199,7 @@ msgstr "頭像顯示已更新."
 #. @context: Settings item description for GitHub sync
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Back up and sync content with a GitHub repository"
-msgstr "將內容備份並與 GitHub 儲存庫同步"
+msgstr ""
 
 #. @context: Link to backup and restore documentation from account settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -393,12 +393,20 @@ msgid "Connecting…"
 msgstr "連線中…"
 
 #. @context: Feedback after copying API token
+#. @context: Feedback after copying to clipboard
 #: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
 msgid "Copied"
 msgstr "已複製"
 
 #. @context: Button to copy a URL to the clipboard
+#. @context: Button to copy the Telegram binding code
+#. @context: Button to copy the Telegram binding code
+#. @context: Button to copy the Telegram binding code
 #: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
 msgid "Copy"
 msgstr "複製"
 
@@ -602,10 +610,8 @@ msgstr "目標網址"
 #. @context: Button to disconnect GitHub repository on GitHub Sync settings
 #. @context: Button to disconnect Telegram
 #. @context: Section heading for disconnect action on GitHub Sync settings
-#. @context: Section heading for disconnecting Telegram
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/GitHubSyncContent.tsx
-#: src/ui/dash/settings/TelegramContent.tsx
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Disconnect"
 msgstr "解除連線"
@@ -756,11 +762,6 @@ msgstr "字型主題"
 msgid "Font Theme"
 msgstr "字型主題"
 
-#. @context: Description for removing the saved Telegram bot token
-#: src/ui/dash/settings/TelegramContent.tsx
-msgid "Forget the saved bot token and remove its webhook. Use this to switch to a different bot."
-msgstr ""
-
 #. @context: Breadcrumb label
 #. @context: Settings item — general settings
 #. @context: Settings section heading
@@ -848,6 +849,11 @@ msgstr "安裝 GitHub App"
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Install the GitHub App to grant access without managing personal tokens. Permissions are scoped per repository and revocable from GitHub."
 msgstr "安裝 GitHub App，以授予存取權而無需管理個人權杖。權限以每個儲存庫為範圍，並可在 GitHub 上撤銷。"
+
+#. @context: Settings group label for third-party integrations
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Integrations"
+msgstr ""
 
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1109,11 +1115,6 @@ msgstr "尚未同步"
 msgid "Note"
 msgstr "筆記"
 
-#. @context: Help text above the manual Telegram binding code
-#: src/ui/dash/settings/TelegramContent.tsx
-msgid "On a computer? Scan the QR code with your phone. Or message @{botUsername} the code below:"
-msgstr ""
-
 #. @context: Button that opens the Telegram bot via a deep link
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Open Telegram to connect"
@@ -1128,6 +1129,11 @@ msgstr ""
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
 msgstr "在 {providerLabel} 開啟託管站點控制項以取消計費或永久刪除此站點。"
+
+#. @context: Caption above the manual Telegram binding code. {linkOpen}/{linkClose} wrap the bot username as a t.me link — keep them around the @username token in translations.
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Or message {linkOpen}@{botUsername}{linkClose} with:"
+msgstr ""
 
 #. @context: GitHub sync picker — placeholder text showing the expected input shape
 #: src/routes/dash/settings.tsx
@@ -1527,8 +1533,10 @@ msgstr "目標 slug"
 #. @context: Breadcrumb label
 #. @context: Settings item — Telegram integration settings
 #. @context: Settings section heading for Telegram setup
+#. @context: Settings section heading for Telegram setup
 #: src/routes/dash/settings.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Telegram"
 msgstr ""

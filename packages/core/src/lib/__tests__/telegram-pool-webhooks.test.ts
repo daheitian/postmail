@@ -73,6 +73,7 @@ describe("registerTelegramPoolWebhooks", () => {
     expect(calls.map((c) => c.method)).toEqual([
       "getWebhookInfo",
       "setWebhook",
+      "setMyCommands",
     ]);
     expect(calls[1]?.body).toMatchObject({
       url: EXPECTED_URL,
@@ -80,14 +81,17 @@ describe("registerTelegramPoolWebhooks", () => {
     });
   });
 
-  it("skips setWebhook when already pointed at the right URL", async () => {
+  it("skips setWebhook when already pointed at the right URL but still syncs commands", async () => {
     const calls = mockFetch(EXPECTED_URL);
     await registerTelegramPoolWebhooks({
       TELEGRAM_BOT_TOKENS: TOKEN,
       TELEGRAM_WEBHOOK_SECRET: SECRET,
       HOSTED_CONTROL_PLANE_BASE_URL: BASE_URL,
     });
-    expect(calls.map((c) => c.method)).toEqual(["getWebhookInfo"]);
+    expect(calls.map((c) => c.method)).toEqual([
+      "getWebhookInfo",
+      "setMyCommands",
+    ]);
   });
 
   it("re-registers when the webhook points elsewhere", async () => {
@@ -103,6 +107,21 @@ describe("registerTelegramPoolWebhooks", () => {
     expect(calls.map((c) => c.method)).toEqual([
       "getWebhookInfo",
       "setWebhook",
+      "setMyCommands",
     ]);
+  });
+
+  it("registers /start in the command list so Telegram autocomplete works", async () => {
+    const calls = mockFetch("");
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    await registerTelegramPoolWebhooks({
+      TELEGRAM_BOT_TOKENS: TOKEN,
+      TELEGRAM_WEBHOOK_SECRET: SECRET,
+      HOSTED_CONTROL_PLANE_BASE_URL: BASE_URL,
+    });
+    const setCommands = calls.find((c) => c.method === "setMyCommands");
+    expect(setCommands?.body).toMatchObject({
+      commands: [{ command: "start" }],
+    });
   });
 });

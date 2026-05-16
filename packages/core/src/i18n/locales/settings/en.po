@@ -393,12 +393,20 @@ msgid "Connecting…"
 msgstr "Connecting…"
 
 #. @context: Feedback after copying API token
+#. @context: Feedback after copying to clipboard
 #: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
 msgid "Copied"
 msgstr "Copied"
 
 #. @context: Button to copy a URL to the clipboard
+#. @context: Button to copy the Telegram binding code
+#. @context: Button to copy the Telegram binding code
+#. @context: Button to copy the Telegram binding code
 #: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
 msgid "Copy"
 msgstr "Copy"
 
@@ -602,10 +610,8 @@ msgstr "Destination"
 #. @context: Button to disconnect GitHub repository on GitHub Sync settings
 #. @context: Button to disconnect Telegram
 #. @context: Section heading for disconnect action on GitHub Sync settings
-#. @context: Section heading for disconnecting Telegram
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 #: src/ui/dash/settings/GitHubSyncContent.tsx
-#: src/ui/dash/settings/TelegramContent.tsx
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Disconnect"
 msgstr "Disconnect"
@@ -756,11 +762,6 @@ msgstr "Font theme"
 msgid "Font Theme"
 msgstr "Font Theme"
 
-#. @context: Description for removing the saved Telegram bot token
-#: src/ui/dash/settings/TelegramContent.tsx
-msgid "Forget the saved bot token and remove its webhook. Use this to switch to a different bot."
-msgstr "Forget the saved bot token and remove its webhook. Use this to switch to a different bot."
-
 #. @context: Breadcrumb label
 #. @context: Settings item — general settings
 #. @context: Settings section heading
@@ -848,6 +849,11 @@ msgstr "Install GitHub App"
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Install the GitHub App to grant access without managing personal tokens. Permissions are scoped per repository and revocable from GitHub."
 msgstr "Install the GitHub App to grant access without managing personal tokens. Permissions are scoped per repository and revocable from GitHub."
+
+#. @context: Settings group label for third-party integrations
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Integrations"
+msgstr "Integrations"
 
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1109,11 +1115,6 @@ msgstr "Not synced yet"
 msgid "Note"
 msgstr "Note"
 
-#. @context: Help text above the manual Telegram binding code
-#: src/ui/dash/settings/TelegramContent.tsx
-msgid "On a computer? Scan the QR code with your phone. Or message @{botUsername} the code below:"
-msgstr "On a computer? Scan the QR code with your phone. Or message @{botUsername} the code below:"
-
 #. @context: Button that opens the Telegram bot via a deep link
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Open Telegram to connect"
@@ -1128,6 +1129,11 @@ msgstr "Open the bot and send the binding code, then anything you message it bec
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
 msgstr "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
+
+#. @context: Caption above the manual Telegram binding code. {linkOpen}/{linkClose} wrap the bot username as a t.me link — keep them around the @username token in translations.
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Or message {linkOpen}@{botUsername}{linkClose} with:"
+msgstr "Or message {linkOpen}@{botUsername}{linkClose} with:"
 
 #. @context: GitHub sync picker — placeholder text showing the expected input shape
 #: src/routes/dash/settings.tsx
@@ -1527,8 +1533,10 @@ msgstr "Target Slug"
 #. @context: Breadcrumb label
 #. @context: Settings item — Telegram integration settings
 #. @context: Settings section heading for Telegram setup
+#. @context: Settings section heading for Telegram setup
 #: src/routes/dash/settings.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/dash/settings/TelegramContent.tsx
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Telegram"
 msgstr "Telegram"

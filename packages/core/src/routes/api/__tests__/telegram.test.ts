@@ -176,4 +176,18 @@ describe("Telegram webhook route", () => {
     );
     expect(binding?.siteId).toBe(DEFAULT_TEST_SITE_ID);
   });
+
+  it("binds an account when an unbound user sends just the bare code", async () => {
+    const { app, services } = setup();
+    const code = await services.telegram.getOrCreateCode();
+
+    const res = await post(app, BOT_ID, SECRET, textUpdate(4, code));
+    expect(res.status).toBe(200);
+
+    const binding = await services.telegram.findBindingByUser(
+      BOT_ID,
+      String(USER_ID),
+    );
+    expect(binding?.siteId).toBe(DEFAULT_TEST_SITE_ID);
+  });
 });
