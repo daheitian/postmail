@@ -26,9 +26,29 @@ import {
   getMe,
   sendMessage,
   type TelegramInlineButton,
+  type TelegramMessage,
   type TelegramUpdate,
 } from "../../lib/telegram.js";
 import { entitiesToMarkdown } from "../../lib/telegram-entities.js";
+import type { MediaKind, PostAttachmentInput } from "../../types.js";
+import type {
+  IngestTelegramMediaInput,
+  TelegramMediaGroupKind,
+} from "../../services/telegram.js";
+
+/** Message-derived ingest payload; the bot token is added at the call site. */
+type MessageMedia = Omit<IngestTelegramMediaInput, "botToken">;
+
+/**
+ * How long to hold each album item in the buffer before claiming the group.
+ *
+ * Telegram delivers album webhook updates within tens of milliseconds of one
+ * another, so 2 s is generous enough to collect every item without making the
+ * publish noticeably slow. The wait runs in-line on the webhook handler, so a
+ * shorter value risks splitting an album into multiple posts and a longer one
+ * delays the bot's "Posted." reply.
+ */
+const ALBUM_BUFFER_DELAY_MS = 2_000;
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -230,31 +250,352 @@ async function processUpdate(
   ) {
     return;
   }
-  if (!text) {
-    await sendMessage(
+
+  const media = extractMediaIngestInput(message);
+
+  // --- Album item: buffer and let the last arrival publish the whole group. ---
+  if (message.media_group_id && media) {
+    await telegram.bufferAlbumItem({
+      siteId: binding.siteId,
+      botId,
+      telegramUserId,
+      mediaGroupId: message.media_group_id,
+      chatId,
+      messageId: message.message_id,
+      updateId: update.update_id,
+      fileId: media.fileId,
+      mediaKind: mediaKindToAlbumKind(media.mediaKind),
+      mimeType: media.mimeType,
+      originalName: media.originalName,
+      captionMarkdown: captionMarkdown(message),
+    });
+
+    // Sleep so siblings have time to land in the buffer, then race for the
+    // group. Whoever wins the atomic claim publishes; the others see an empty
+    // claim result and exit.
+    await sleep(ALBUM_BUFFER_DELAY_MS);
+    const claimed = await telegram.claimAlbumGroup(
+      botId,
+      message.media_group_id,
+    );
+    if (claimed.length === 0) return;
+
+    await publishAlbum(c, {
       botToken,
       chatId,
-      "I can only post text notes right now.",
+      binding,
+      items: claimed,
+    });
+    return;
+  }
+
+  // --- Single media item (no album). ---
+  if (media) {
+    await publishSingleMedia(c, {
+      botToken,
+      chatId,
+      binding,
+      media,
+      captionMarkdown: captionMarkdown(message),
+      updateId: update.update_id,
+    });
+    return;
+  }
+
+  // --- Plain text note. ---
+  if (text) {
+    // Fold Telegram's rich-text entities back into markdown so bold/italic/
+    // code/links typed in the Telegram client survive into the published note.
+    // Entity offsets index into the raw `message.text`, so convert first and
+    // trim the resulting markdown only at the very end.
+    const bodyMarkdown = entitiesToMarkdown(
+      message.text ?? "",
+      message.entities,
+    ).trim();
+    await c.var.servicesForSite(binding.siteId).posts.create({
+      format: "note",
+      bodyMarkdown,
+      status: "published",
+      visibility: "public",
+    });
+    await telegram.markUpdateProcessed(binding.id, update.update_id);
+    await sendMessage(botToken, chatId, "Posted.");
+    return;
+  }
+
+  // Unsupported attachment kind (voice, sticker, animation, …).
+  await sendMessage(
+    botToken,
+    chatId,
+    "I can post text, photos, videos, and documents. Other message types aren't supported yet.",
+  );
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Convert a message's caption + caption_entities into markdown, returning
+ * `null` when there's nothing to record. Centralized so single-media and album
+ * code paths can't drift apart on entity handling.
+ */
+function captionMarkdown(message: TelegramMessage): string | null {
+  if (!message.caption) return null;
+  const md = entitiesToMarkdown(
+    message.caption,
+    message.caption_entities,
+  ).trim();
+  return md || null;
+}
+
+/**
+ * Pick the single ingestable media payload from a Telegram message, if any.
+ *
+ * Telegram never sends multiple media kinds on one message, so a `switch`-like
+ * waterfall is sufficient — albums duplicate the message N times rather than
+ * stuffing arrays into one message.
+ */
+function extractMediaIngestInput(
+  message: TelegramMessage,
+): MessageMedia | null {
+  // Photos arrive as an array of sizes ordered low → high; the last entry is
+  // the highest-resolution rendition Telegram chose for the recipient.
+  if (message.photo && message.photo.length > 0) {
+    const largest = message.photo[message.photo.length - 1];
+    if (!largest) return null;
+    return {
+      fileId: largest.file_id,
+      originalName: `telegram-photo-${message.message_id}.jpg`,
+      mimeType: "image/jpeg",
+      mediaKind: "image",
+    };
+  }
+  if (message.video) {
+    const v = message.video;
+    return {
+      fileId: v.file_id,
+      originalName: v.file_name ?? `telegram-video-${message.message_id}.mp4`,
+      mimeType: v.mime_type ?? "video/mp4",
+      mediaKind: "video",
+    };
+  }
+  if (message.document) {
+    const d = message.document;
+    return {
+      fileId: d.file_id,
+      originalName:
+        d.file_name ?? `telegram-document-${message.message_id}.bin`,
+      mimeType: d.mime_type ?? "application/octet-stream",
+      mediaKind: documentMediaKind(d.mime_type),
+    };
+  }
+  return null;
+}
+
+/**
+ * Decide which `mediaKind` slot a document belongs in. Telegram lets users
+ * send a photo as a "file" to skip compression, in which case the document's
+ * mime_type is still `image/*`; classify those as images so they render in the
+ * site's image flow rather than the attachment list.
+ */
+function documentMediaKind(mime: string | undefined): MediaKind {
+  if (!mime) return "document";
+  if (mime.startsWith("image/")) return "image";
+  if (mime.startsWith("video/")) return "video";
+  if (mime.startsWith("audio/")) return "audio";
+  if (mime.startsWith("text/")) return "text";
+  return "document";
+}
+
+async function publishSingleMedia(
+  c: { env: Bindings; var: AppVariables },
+  input: {
+    botToken: string;
+    chatId: number;
+    binding: { id: string; siteId: string };
+    media: MessageMedia;
+    captionMarkdown: string | null;
+    updateId: number;
+  },
+): Promise<void> {
+  const siteSvcs = c.var.servicesForSite(input.binding.siteId);
+  const storage = c.var.storage;
+  if (!storage) {
+    await sendMessage(
+      input.botToken,
+      input.chatId,
+      "File storage isn't set up on this site, so I can't accept attachments.",
     );
     return;
   }
 
-  // Fold Telegram's rich-text entities back into markdown so bold/italic/
-  // code/links typed in the Telegram client survive into the published note.
-  // Entity offsets index into the raw `message.text`, so convert first and
-  // trim the resulting markdown only at the very end.
-  const bodyMarkdown = entitiesToMarkdown(
-    message.text ?? "",
-    message.entities,
-  ).trim();
-  await c.var.servicesForSite(binding.siteId).posts.create({
-    format: "note",
-    bodyMarkdown,
-    status: "published",
-    visibility: "public",
-  });
-  await telegram.markUpdateProcessed(binding.id, update.update_id);
-  await sendMessage(botToken, chatId, "Posted.");
+  const ingested = await siteSvcs.telegram.ingestMediaFile(
+    { ...input.media, botToken: input.botToken },
+    {
+      storage,
+      storageDriver: c.var.appConfig.storageDriver,
+      maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+      media: siteSvcs.media,
+    },
+  );
+
+  const attachments: PostAttachmentInput[] = [
+    { type: "media", mediaId: ingested.id },
+  ];
+
+  await siteSvcs.posts.createWithAttachments(
+    {
+      format: "note",
+      bodyMarkdown: input.captionMarkdown ?? "",
+      status: "published",
+      visibility: "public",
+    },
+    attachments,
+    {
+      media: siteSvcs.media,
+      storage,
+      storageDriver: c.var.appConfig.storageDriver,
+      maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+    },
+  );
+
+  await c.var.services.telegram.markUpdateProcessed(
+    input.binding.id,
+    input.updateId,
+  );
+  await sendMessage(input.botToken, input.chatId, "Posted.");
+}
+
+async function publishAlbum(
+  c: { env: Bindings; var: AppVariables },
+  input: {
+    botToken: string;
+    chatId: number;
+    binding: { id: string; siteId: string };
+    items: Array<{
+      messageId: number;
+      updateId: number;
+      fileId: string;
+      mediaKind: TelegramMediaGroupKind;
+      mimeType: string | null;
+      originalName: string | null;
+      captionMarkdown: string | null;
+    }>;
+  },
+): Promise<void> {
+  const siteSvcs = c.var.servicesForSite(input.binding.siteId);
+  const storage = c.var.storage;
+  if (!storage) {
+    await sendMessage(
+      input.botToken,
+      input.chatId,
+      "File storage isn't set up on this site, so I can't accept attachments.",
+    );
+    return;
+  }
+
+  // Telegram only carries one caption per album (typically on the first item).
+  // Take the first non-empty one in message order so the post body reflects
+  // what the user actually typed.
+  const bodyMarkdown =
+    input.items.find((i) => i.captionMarkdown)?.captionMarkdown ?? "";
+
+  // Run downloads in parallel — they're independent and disk/network bound;
+  // serializing would multiply the publish latency by the album size.
+  const mediaRecords = await Promise.all(
+    input.items.map((item) =>
+      siteSvcs.telegram.ingestMediaFile(
+        {
+          botToken: input.botToken,
+          fileId: item.fileId,
+          originalName:
+            item.originalName ??
+            defaultAlbumName(item.messageId, item.mediaKind),
+          mimeType: item.mimeType ?? defaultAlbumMime(item.mediaKind),
+          mediaKind: albumKindToMediaKind(item.mediaKind),
+        },
+        {
+          storage,
+          storageDriver: c.var.appConfig.storageDriver,
+          maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+          media: siteSvcs.media,
+        },
+      ),
+    ),
+  );
+
+  const attachments: PostAttachmentInput[] = mediaRecords.map((m) => ({
+    type: "media",
+    mediaId: m.id,
+  }));
+
+  await siteSvcs.posts.createWithAttachments(
+    {
+      format: "note",
+      bodyMarkdown,
+      status: "published",
+      visibility: "public",
+    },
+    attachments,
+    {
+      media: siteSvcs.media,
+      storage,
+      storageDriver: c.var.appConfig.storageDriver,
+      maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+    },
+  );
+
+  // Mark the latest update_id as processed so a Telegram retry of any one
+  // item in the group is a no-op.
+  const maxUpdateId = Math.max(...input.items.map((i) => i.updateId));
+  await c.var.services.telegram.markUpdateProcessed(
+    input.binding.id,
+    maxUpdateId,
+  );
+  await sendMessage(input.botToken, input.chatId, "Posted.");
+}
+
+function defaultAlbumName(
+  messageId: number,
+  kind: TelegramMediaGroupKind,
+): string {
+  switch (kind) {
+    case "image":
+      return `telegram-photo-${messageId}.jpg`;
+    case "video":
+      return `telegram-video-${messageId}.mp4`;
+    default:
+      return `telegram-document-${messageId}.bin`;
+  }
+}
+
+function defaultAlbumMime(kind: TelegramMediaGroupKind): string {
+  switch (kind) {
+    case "image":
+      return "image/jpeg";
+    case "video":
+      return "video/mp4";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+function albumKindToMediaKind(kind: TelegramMediaGroupKind): MediaKind {
+  // The buffered `media_kind` mirrors what we recorded at intake; documents
+  // have already been classified by mime by then, so the mapping is direct.
+  return kind === "image" ? "image" : kind === "video" ? "video" : "document";
+}
+
+/**
+ * Reduce a fine-grained `MediaKind` to the coarse `TelegramMediaGroupKind`
+ * the buffer table understands. `audio` and `text` documents both fold into
+ * `document` because the buffer only cares about which download path applies.
+ */
+function mediaKindToAlbumKind(kind: MediaKind): TelegramMediaGroupKind {
+  if (kind === "image") return "image";
+  if (kind === "video") return "video";
+  return "document";
 }
 
 async function handleStart(

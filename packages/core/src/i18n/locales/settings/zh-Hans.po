@@ -357,6 +357,11 @@ msgstr "将 GitHub 仓库连接以自动将您的文章备份为 Markdown 文件
 msgid "Connect a Telegram bot, then anything you message it gets published as a note."
 msgstr ""
 
+#. @context: Toggle that reveals manual Telegram binding instructions when the deep link can't be used
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Connect manually"
+msgstr ""
+
 #. @context: Heading on the Telegram settings page when ready to connect
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Connect Telegram"
@@ -1115,6 +1120,11 @@ msgstr "尚未同步"
 msgid "Note"
 msgstr "笔记"
 
+#. @context: Caption inside the manual Telegram binding fallback. {linkOpen}/{linkClose} wrap the bot username as a t.me link — keep them around the @username token in translations.
+#: src/ui/dash/settings/TelegramContent.tsx
+msgid "Open {linkOpen}@{botUsername}{linkClose} and send:"
+msgstr ""
+
 #. @context: Button that opens the Telegram bot via a deep link
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Open Telegram to connect"
@@ -1130,9 +1140,9 @@ msgstr ""
 msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
 msgstr "在 {providerLabel} 打开托管站点控制以取消计费或永久删除此站点。"
 
-#. @context: Caption above the manual Telegram binding code. {linkOpen}/{linkClose} wrap the bot username as a t.me link — keep them around the @username token in translations.
+#. @context: Separator between the QR code and the deep-link button on the Telegram connect page
 #: src/ui/dash/settings/TelegramContent.tsx
-msgid "Or message {linkOpen}@{botUsername}{linkClose} with:"
+msgid "or"
 msgstr ""
 
 #. @context: GitHub sync picker — placeholder text showing the expected input shape

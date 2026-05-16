@@ -238,29 +238,17 @@ function TelegramConnect({
 
       <div
         class="flex flex-col items-center gap-4 py-2"
-        data-signals="{_codeCopied: false}"
+        data-signals="{_codeCopied: false, _manualOpen: false}"
       >
         {/*
-         * Mobile: deep-link button is the only sensible affordance — you
-         * can't scan your own screen. QR is hidden on small viewports.
-         * Desktop: QR leads; the @bot username in the caption below is a
-         * t.me link so power users on Telegram Desktop can still jump
-         * straight in.
+         * Primary affordances. The button is the fastest path on any
+         * device that has a Telegram client installed — one click and
+         * Telegram resolves `?start=CODE` into a bound chat. The QR is
+         * only meaningful on desktop (you can't scan your own phone
+         * screen), where it covers the "Jant open on this machine but
+         * Telegram only on my phone" case. Both routes deliver the
+         * same deep link URL; only the carrier differs.
          */}
-        <a
-          href={connect.deepLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn sm:hidden"
-        >
-          {i18n._(
-            msg({
-              message: "Open Telegram to connect",
-              comment:
-                "@context: Button that opens the Telegram bot via a deep link",
-            }),
-          )}
-        </a>
         <div
           class="hidden sm:block bg-white p-3 rounded-lg shadow-sm"
           style="width:180px;height:180px"
@@ -273,75 +261,127 @@ function TelegramConnect({
           )}
           dangerouslySetInnerHTML={{ __html: connect.qrSvg }}
         />
+        <span
+          class="hidden sm:block text-xs text-muted-foreground"
+          aria-hidden="true"
+        >
+          {i18n._(
+            msg({
+              message: "or",
+              comment:
+                "@context: Separator between the QR code and the deep-link button on the Telegram connect page",
+            }),
+          )}
+        </span>
+        <a
+          href={connect.deepLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn"
+        >
+          {i18n._(
+            msg({
+              message: "Open Telegram to connect",
+              comment:
+                "@context: Button that opens the Telegram bot via a deep link",
+            }),
+          )}
+        </a>
 
-        <p
-          class="text-sm text-muted-foreground text-center"
-          dangerouslySetInnerHTML={{
-            __html: i18n._(
-              msg({
-                message: "Or message {linkOpen}@{botUsername}{linkClose} with:",
-                comment:
-                  "@context: Caption above the manual Telegram binding code. {linkOpen}/{linkClose} wrap the bot username as a t.me link — keep them around the @username token in translations.",
-              }),
-              {
-                botUsername: escapeHtml(connect.botUsername),
-                linkOpen: `<a href="${escapeHtml(`https://t.me/${connect.botUsername}`)}" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-foreground">`,
-                linkClose: "</a>",
-              },
-            ),
-          }}
-        />
-        <div class="flex items-center gap-2">
-          <code class="text-sm bg-muted px-3 py-1.5 rounded font-mono select-all">
-            /start {connect.code}
-          </code>
+        <div class="flex items-center gap-3 text-xs text-muted-foreground">
           <button
             type="button"
-            class="btn-sm-outline shrink-0"
-            aria-label={i18n._(
-              msg({
-                message: "Copy",
-                comment: "@context: Button to copy the Telegram binding code",
-              }),
-            )}
-            data-on:click={`navigator.clipboard.writeText('/start ${connect.code}'); $_codeCopied = true`}
-            data-text={`$_codeCopied ? '${i18n._(
-              msg({
-                message: "Copied",
-                comment: "@context: Feedback after copying to clipboard",
-              }),
-            )}' : '${i18n._(
-              msg({
-                message: "Copy",
-                comment: "@context: Button to copy the Telegram binding code",
-              }),
-            )}'`}
+            class="cursor-pointer hover:text-foreground underline-offset-4 hover:underline inline-flex items-center gap-1"
+            aria-controls="telegram-manual-fallback"
+            data-attr:aria-expanded="$_manualOpen"
+            data-on:click="$_manualOpen = !$_manualOpen"
           >
             {i18n._(
               msg({
-                message: "Copy",
-                comment: "@context: Button to copy the Telegram binding code",
+                message: "Connect manually",
+                comment:
+                  "@context: Toggle that reveals manual Telegram binding instructions when the deep link can't be used",
+              }),
+            )}
+            <span data-text="$_manualOpen ? '↑' : '↓'">↓</span>
+          </button>
+          <span aria-hidden="true">·</span>
+          <button
+            type="button"
+            class="cursor-pointer hover:text-foreground underline underline-offset-4 decoration-dotted inline-flex items-center gap-1.5"
+            data-on:click__prevent={`@post('${settingsBase}/regenerate-code')`}
+            data-indicator="_regenerating"
+            data-attr:disabled="$_regenerating"
+          >
+            <Spinner signal="_regenerating" size="size-3" />
+            {i18n._(
+              msg({
+                message: "Get a new code",
+                comment:
+                  "@context: Button to regenerate the Telegram binding code",
               }),
             )}
           </button>
         </div>
 
-        <button
-          type="button"
-          class="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 decoration-dotted inline-flex items-center gap-1.5"
-          data-on:click__prevent={`@post('${settingsBase}/regenerate-code')`}
-          data-indicator="_regenerating"
-          data-attr:disabled="$_regenerating"
+        <div
+          id="telegram-manual-fallback"
+          data-show="$_manualOpen"
+          style="display:none"
+          class="flex flex-col items-center gap-3 w-full pt-1"
         >
-          <Spinner signal="_regenerating" size="size-3" />
-          {i18n._(
-            msg({
-              message: "Get a new code",
-              comment:
-                "@context: Button to regenerate the Telegram binding code",
-            }),
-          )}
-        </button>
+          <p
+            class="text-sm text-muted-foreground text-center"
+            dangerouslySetInnerHTML={{
+              __html: i18n._(
+                msg({
+                  message: "Open {linkOpen}@{botUsername}{linkClose} and send:",
+                  comment:
+                    "@context: Caption inside the manual Telegram binding fallback. {linkOpen}/{linkClose} wrap the bot username as a t.me link — keep them around the @username token in translations.",
+                }),
+                {
+                  botUsername: escapeHtml(connect.botUsername),
+                  linkOpen: `<a href="${escapeHtml(`https://t.me/${connect.botUsername}`)}" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-foreground">`,
+                  linkClose: "</a>",
+                },
+              ),
+            }}
+          />
+          <div class="flex items-center gap-2">
+            <code class="text-sm bg-muted px-3 py-1.5 rounded font-mono select-all">
+              /start {connect.code}
+            </code>
+            <button
+              type="button"
+              class="btn-sm-outline shrink-0"
+              aria-label={i18n._(
+                msg({
+                  message: "Copy",
+                  comment: "@context: Button to copy the Telegram binding code",
+                }),
+              )}
+              data-on:click={`navigator.clipboard.writeText('/start ${connect.code}'); $_codeCopied = true`}
+              data-text={`$_codeCopied ? '${i18n._(
+                msg({
+                  message: "Copied",
+                  comment: "@context: Feedback after copying to clipboard",
+                }),
+              )}' : '${i18n._(
+                msg({
+                  message: "Copy",
+                  comment: "@context: Button to copy the Telegram binding code",
+                }),
+              )}'`}
+            >
+              {i18n._(
+                msg({
+                  message: "Copy",
+                  comment: "@context: Button to copy the Telegram binding code",
+                }),
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
       {!view.managed ? (
@@ -421,9 +461,6 @@ function TelegramConnected({
       </div>
 
       <section class="flex flex-col gap-3 border-t pt-8">
-        <h3 class="text-sm font-semibold tracking-[0.01em] text-destructive">
-          {disconnectLabel}
-        </h3>
         <p class="text-sm text-muted-foreground">
           {i18n._(
             msg({
@@ -434,7 +471,7 @@ function TelegramConnected({
             }),
           )}
         </p>
-        <div class="flex flex-wrap items-center gap-4 mt-1">
+        <div class="flex flex-wrap items-center gap-4 mt-1 -ml-4">
           <button
             type="button"
             class="btn-ghost text-destructive"
@@ -485,7 +522,7 @@ function RemoveBotLink({ settingsBase }: { settingsBase: string }) {
   return (
     <button
       type="button"
-      class="text-xs text-muted-foreground hover:text-destructive underline underline-offset-4 decoration-dotted inline-flex items-center gap-1.5"
+      class="cursor-pointer text-xs text-muted-foreground hover:text-destructive underline underline-offset-4 decoration-dotted inline-flex items-center gap-1.5"
       data-indicator="_removing"
       data-attr:disabled="$_removing"
       data-on:click__prevent={buildConfirmActionExpression(

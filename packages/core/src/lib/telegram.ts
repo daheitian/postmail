@@ -34,6 +34,36 @@ export interface TelegramMessageEntity {
   language?: string;
 }
 
+/** One rendered size of a Telegram photo. */
+export interface TelegramPhotoSize {
+  file_id: string;
+  file_unique_id: string;
+  width: number;
+  height: number;
+  file_size?: number;
+}
+
+/** A Telegram video message attachment. */
+export interface TelegramVideo {
+  file_id: string;
+  file_unique_id: string;
+  width: number;
+  height: number;
+  duration: number;
+  mime_type?: string;
+  file_name?: string;
+  file_size?: number;
+}
+
+/** A Telegram document message attachment (arbitrary file). */
+export interface TelegramDocument {
+  file_id: string;
+  file_unique_id: string;
+  mime_type?: string;
+  file_name?: string;
+  file_size?: number;
+}
+
 /** Subset of the Telegram `Message` object the integration consumes. */
 export interface TelegramMessage {
   message_id: number;
@@ -41,6 +71,15 @@ export interface TelegramMessage {
   chat: { id: number };
   text?: string;
   entities?: TelegramMessageEntity[];
+  /** Album grouping key — present on every item in a multi-attachment send. */
+  media_group_id?: string;
+  /** Caption supplied with a photo/video/document; same entity grammar as `text`. */
+  caption?: string;
+  caption_entities?: TelegramMessageEntity[];
+  /** Ordered list of rendered sizes; the last entry is the highest resolution. */
+  photo?: TelegramPhotoSize[];
+  video?: TelegramVideo;
+  document?: TelegramDocument;
 }
 
 /** Subset of the Telegram `CallbackQuery` object the integration consumes. */
@@ -249,6 +288,58 @@ export async function sendMessage(
     text,
     ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
   });
+}
+
+/**
+ * Metadata returned by Telegram's `getFile`. The `file_path` is relative and
+ * must be appended to `/file/bot<token>/` to download the bytes.
+ */
+export interface TelegramFile {
+  file_id: string;
+  file_unique_id: string;
+  file_size?: number;
+  file_path?: string;
+}
+
+/**
+ * Resolves a `file_id` to its downloadable path and size.
+ *
+ * Telegram's Bot API supports downloads up to 20 MB; the caller is expected to
+ * enforce its own limit using `file_size` before calling `downloadFile`.
+ *
+ * @param token - Bot token
+ * @param fileId - Identifier from a photo/video/document field
+ */
+export async function getFile(
+  token: string,
+  fileId: string,
+): Promise<TelegramFile> {
+  return callTelegram<TelegramFile>(token, "getFile", { file_id: fileId });
+}
+
+/**
+ * Downloads the raw bytes for a `file_path` returned by `getFile`.
+ *
+ * Returns the underlying `Response` so callers can stream large bodies into
+ * storage without first materializing them in memory.
+ *
+ * @param token - Bot token
+ * @param filePath - The `file_path` from `getFile`
+ */
+export async function downloadFile(
+  token: string,
+  filePath: string,
+): Promise<Response> {
+  const response = await fetch(
+    `${TELEGRAM_API_BASE}/file/bot${token}/${filePath}`,
+  );
+  if (!response.ok) {
+    throw new TelegramApiError(
+      "downloadFile",
+      `HTTP ${response.status} fetching ${filePath}`,
+    );
+  }
+  return response;
 }
 
 /**

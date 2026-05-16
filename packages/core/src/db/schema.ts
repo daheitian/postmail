@@ -818,6 +818,48 @@ export const telegramBindings = sqliteTable(
   ],
 );
 
+/**
+ * Short-lived buffer for Telegram album (media_group_id) messages.
+ *
+ * Telegram splits an album into one webhook update per item, sharing a
+ * `media_group_id`. The webhook handler inserts one row per item, sleeps a
+ * short window for the rest of the group to arrive, then atomically claims
+ * the whole group with `DELETE ... RETURNING` to publish a single post with
+ * all attachments. Rows are deleted on flush, so the table stays small.
+ */
+export const telegramMediaGroupItems = sqliteTable(
+  "telegram_media_group_item",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    botId: text("bot_id").notNull(),
+    telegramUserId: text("telegram_user_id").notNull(),
+    mediaGroupId: text("media_group_id").notNull(),
+    chatId: integer("chat_id").notNull(),
+    messageId: integer("message_id").notNull(),
+    updateId: integer("update_id").notNull(),
+    fileId: text("file_id").notNull(),
+    mediaKind: text("media_kind").notNull(),
+    mimeType: text("mime_type"),
+    originalName: text("original_name"),
+    captionMarkdown: text("caption_markdown"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    index("idx_telegram_media_group_item_group").on(
+      table.botId,
+      table.mediaGroupId,
+    ),
+    uniqueIndex("uq_telegram_media_group_item_message").on(
+      table.botId,
+      table.mediaGroupId,
+      table.messageId,
+    ),
+  ],
+);
+
 // =============================================================================
 // Rate Limit
 // =============================================================================

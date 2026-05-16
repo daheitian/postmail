@@ -28,11 +28,18 @@ import { generateRandomId } from "../lib/nanoid.js";
 import { now } from "../lib/time.js";
 import {
   deleteWebhook,
+  downloadFile,
+  getFile,
   getMe,
   parseBotId,
   setMyCommands,
   setWebhook,
 } from "../lib/telegram.js";
+import { generateStorageKey } from "../lib/upload.js";
+import type { StorageDriver } from "../lib/storage.js";
+import type { Media, MediaKind } from "../types.js";
+import { ValidationError } from "../lib/errors.js";
+import type { MediaService } from "./media.js";
 
 /** How long a freshly generated binding code stays valid (seconds). */
 const BINDING_CODE_TTL = 30 * 60;
@@ -46,6 +53,62 @@ export interface TelegramBinding {
   telegramUsername: string | null;
   lastUpdateId: number | null;
   boundAt: number;
+}
+
+/** Kind of media held in a buffered album item. */
+export type TelegramMediaGroupKind = "image" | "video" | "document";
+
+/** A single buffered album item awaiting the rest of its group. */
+export interface TelegramMediaGroupItem {
+  id: string;
+  siteId: string;
+  botId: string;
+  telegramUserId: string;
+  mediaGroupId: string;
+  chatId: number;
+  messageId: number;
+  updateId: number;
+  fileId: string;
+  mediaKind: TelegramMediaGroupKind;
+  mimeType: string | null;
+  originalName: string | null;
+  captionMarkdown: string | null;
+  createdAt: number;
+}
+
+export interface IngestTelegramMediaInput {
+  /** Bot token used to fetch the file. */
+  botToken: string;
+  /** Identifier returned by Telegram for the file to download. */
+  fileId: string;
+  /** Human-readable name to record on the media row. */
+  originalName: string;
+  /** Effective MIME type; `image/jpeg` for compressed photos, falls back to `application/octet-stream`. */
+  mimeType: string;
+  /** Coarse classification for filtering and rendering. */
+  mediaKind: MediaKind;
+}
+
+export interface IngestTelegramMediaDeps {
+  storage: StorageDriver;
+  storageDriver: string;
+  maxFileSizeMB: number;
+  media: MediaService;
+}
+
+export interface BufferAlbumItemInput {
+  siteId: string;
+  botId: string;
+  telegramUserId: string;
+  mediaGroupId: string;
+  chatId: number;
+  messageId: number;
+  updateId: number;
+  fileId: string;
+  mediaKind: TelegramMediaGroupKind;
+  mimeType: string | null;
+  originalName: string | null;
+  captionMarkdown: string | null;
 }
 
 /** Bring-your-own-bot config stored per site (single-site, no env pool). */
@@ -121,6 +184,35 @@ export interface TelegramService {
   connectUserBot(token: string, webhookBaseUrl: string): Promise<void>;
   /** Bring-your-own-bot: delete the webhook and clear the stored token. */
   removeUserBot(): Promise<void>;
+  /**
+   * Buffer one album item so the rest of its `media_group_id` can join it
+   * before the post is published. Idempotent on `(botId, mediaGroupId,
+   * messageId)` — duplicate Telegram retries are ignored.
+   */
+  bufferAlbumItem(input: BufferAlbumItemInput): Promise<void>;
+  /**
+   * Atomically remove every buffered row for `(botId, mediaGroupId)`. The
+   * caller that wins the `DELETE ... RETURNING` race owns the group and
+   * publishes the post; concurrent waking handlers see an empty result and
+   * exit silently. Returns rows ordered by `messageId` so attachment order
+   * matches the order the user typed in Telegram.
+   */
+  claimAlbumGroup(
+    botId: string,
+    mediaGroupId: string,
+  ): Promise<TelegramMediaGroupItem[]>;
+  /**
+   * Download a Telegram-hosted file into Jant's media storage and create the
+   * corresponding `media` row. The caller is responsible for attaching the
+   * returned media to a post.
+   *
+   * Throws `ValidationError` when the file exceeds `deps.maxFileSizeMB`, and
+   * propagates any `TelegramApiError` from `getFile`/`downloadFile`.
+   */
+  ingestMediaFile(
+    input: IngestTelegramMediaInput,
+    deps: IngestTelegramMediaDeps,
+  ): Promise<Media>;
 }
 
 export function createTelegramService(
@@ -128,8 +220,12 @@ export function createTelegramService(
   siteId: string,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): TelegramService {
-  const { telegramBindings, telegramPendingBindings, settings } =
-    databaseSchema;
+  const {
+    telegramBindings,
+    telegramPendingBindings,
+    telegramMediaGroupItems,
+    settings,
+  } = databaseSchema;
 
   async function readSetting(key: string): Promise<string | null> {
     const rows = await db
@@ -308,6 +404,124 @@ export function createTelegramService(
       await writeSetting("TELEGRAM_BOT_ID", botId);
       await writeSetting("TELEGRAM_BOT_USERNAME", identity.username);
       await writeSetting("TELEGRAM_BOT_WEBHOOK_SECRET", secret);
+    },
+
+    async bufferAlbumItem(input) {
+      // ON CONFLICT DO NOTHING keeps Telegram's retry semantics safe: the
+      // same `(botId, mediaGroupId, messageId)` can arrive twice if the
+      // first webhook response was lost, and we want the second one to be a
+      // no-op rather than a duplicate row.
+      await db
+        .insert(telegramMediaGroupItems)
+        .values({
+          id: createEntityId("telegramMediaGroupItem"),
+          siteId: input.siteId,
+          botId: input.botId,
+          telegramUserId: input.telegramUserId,
+          mediaGroupId: input.mediaGroupId,
+          chatId: input.chatId,
+          messageId: input.messageId,
+          updateId: input.updateId,
+          fileId: input.fileId,
+          mediaKind: input.mediaKind,
+          mimeType: input.mimeType,
+          originalName: input.originalName,
+          captionMarkdown: input.captionMarkdown,
+          createdAt: now(),
+        })
+        .onConflictDoNothing({
+          target: [
+            telegramMediaGroupItems.botId,
+            telegramMediaGroupItems.mediaGroupId,
+            telegramMediaGroupItems.messageId,
+          ],
+        });
+    },
+
+    async claimAlbumGroup(botId, mediaGroupId) {
+      // `DELETE ... RETURNING` is atomic on both SQLite and Postgres, so two
+      // handlers waking up at the same instant cannot both win the group —
+      // whoever runs second gets an empty result and exits.
+      const rows = await db
+        .delete(telegramMediaGroupItems)
+        .where(
+          and(
+            eq(telegramMediaGroupItems.botId, botId),
+            eq(telegramMediaGroupItems.mediaGroupId, mediaGroupId),
+          ),
+        )
+        .returning();
+      return rows
+        .map(
+          (row): TelegramMediaGroupItem => ({
+            id: row.id,
+            siteId: row.siteId,
+            botId: row.botId,
+            telegramUserId: row.telegramUserId,
+            mediaGroupId: row.mediaGroupId,
+            chatId: row.chatId,
+            messageId: row.messageId,
+            updateId: row.updateId,
+            fileId: row.fileId,
+            mediaKind: row.mediaKind as TelegramMediaGroupKind,
+            mimeType: row.mimeType,
+            originalName: row.originalName,
+            captionMarkdown: row.captionMarkdown,
+            createdAt: row.createdAt,
+          }),
+        )
+        .sort((a, b) => a.messageId - b.messageId);
+    },
+
+    async ingestMediaFile(input, deps) {
+      const fileInfo = await getFile(input.botToken, input.fileId);
+      if (!fileInfo.file_path) {
+        throw new ValidationError(
+          "Telegram returned no file path for the attachment.",
+        );
+      }
+      const maxBytes = deps.maxFileSizeMB * 1024 * 1024;
+      if (fileInfo.file_size !== undefined && fileInfo.file_size > maxBytes) {
+        throw new ValidationError(
+          `Attachment exceeds the ${deps.maxFileSizeMB} MB upload limit.`,
+        );
+      }
+
+      const response = await downloadFile(input.botToken, fileInfo.file_path);
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      if (bytes.byteLength > maxBytes) {
+        throw new ValidationError(
+          `Attachment exceeds the ${deps.maxFileSizeMB} MB upload limit.`,
+        );
+      }
+
+      await deps.media.assertCanWriteBytes(bytes.byteLength);
+
+      const { id, filename, storageKey } = generateStorageKey(
+        siteId,
+        input.originalName,
+      );
+
+      // Telegram's CDN serves trusted bytes already validated on their side,
+      // so we skip the signature peek that browser uploads need and just
+      // pass the bytes straight through to storage.
+      await deps.storage.put(storageKey, bytes, {
+        contentType: input.mimeType,
+        contentDisposition:
+          input.mediaKind === "document" ? "attachment" : "inline",
+        cacheControl: "public, max-age=31536000, immutable",
+      });
+
+      return deps.media.create({
+        id,
+        filename,
+        originalName: input.originalName,
+        mimeType: input.mimeType,
+        size: bytes.byteLength,
+        storageKey,
+        provider: deps.storageDriver,
+        mediaKind: input.mediaKind,
+      });
     },
 
     async removeUserBot() {

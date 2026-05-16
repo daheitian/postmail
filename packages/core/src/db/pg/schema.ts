@@ -868,6 +868,40 @@ export const telegramBindings = pgTable(
   ],
 );
 
+/** Mirror of `telegram_media_group_item` in the SQLite schema. */
+export const telegramMediaGroupItems = pgTable(
+  "telegram_media_group_item",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    botId: text("bot_id").notNull(),
+    telegramUserId: text("telegram_user_id").notNull(),
+    mediaGroupId: text("media_group_id").notNull(),
+    chatId: integer("chat_id").notNull(),
+    messageId: integer("message_id").notNull(),
+    updateId: integer("update_id").notNull(),
+    fileId: text("file_id").notNull(),
+    mediaKind: text("media_kind").notNull(),
+    mimeType: text("mime_type"),
+    originalName: text("original_name"),
+    captionMarkdown: text("caption_markdown"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    index("idx_telegram_media_group_item_group").on(
+      table.botId,
+      table.mediaGroupId,
+    ),
+    uniqueIndex("uq_telegram_media_group_item_message").on(
+      table.botId,
+      table.mediaGroupId,
+      table.messageId,
+    ),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Rate Limit
 // ---------------------------------------------------------------------------

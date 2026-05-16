@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { DEFAULT_TEST_SITE_ID } from "../../../__tests__/helpers/db.js";
 import { telegramWebhookRoutes } from "../telegram.js";
+import type { StorageDriver } from "../../../lib/storage.js";
 
 const BOT_ID = "111111";
 const BOT_TOKEN = `${BOT_ID}:AA-test-token`;
@@ -14,18 +15,48 @@ interface TelegramCall {
   body: Record<string, unknown>;
 }
 
-function mockTelegramFetch(): TelegramCall[] {
+interface MockTelegramOptions {
+  /**
+   * Map of `file_id` → bytes returned by the file CDN. `getFile` resolves a
+   * `file_id` to a synthetic `file_path` of the form `mock/<file_id>` so the
+   * download stub can locate the matching bytes by inspecting the URL.
+   */
+  files?: Map<string, Uint8Array>;
+}
+
+function mockTelegramFetch(opts: MockTelegramOptions = {}): TelegramCall[] {
   const calls: TelegramCall[] = [];
+  const files = opts.files ?? new Map<string, Uint8Array>();
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string, init?: { body?: unknown }) => {
-      const method = String(url).split("/").pop() ?? "";
+      const urlStr = String(url);
+      // File download: /file/bot<token>/<file_path>
+      if (urlStr.includes("/file/bot")) {
+        const filePath =
+          urlStr.split("/file/bot")[1]?.split("/").slice(1).join("/") ?? "";
+        const fileId = filePath.replace(/^mock\//, "");
+        const bytes =
+          files.get(fileId) ?? new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);
+        return new Response(bytes);
+      }
+      // Method call: /bot<token>/<method>
+      const method = urlStr.split("/").pop() ?? "";
       const body = init?.body ? JSON.parse(String(init.body)) : {};
       calls.push({ method, body });
-      const result =
-        method === "getMe"
-          ? { id: Number(BOT_ID), username: "JantTestBot" }
-          : true;
+      let result: unknown = true;
+      if (method === "getMe") {
+        result = { id: Number(BOT_ID), username: "JantTestBot" };
+      } else if (method === "getFile") {
+        const fileId = String((body as { file_id?: string }).file_id ?? "");
+        const bytes = files.get(fileId);
+        result = {
+          file_id: fileId,
+          file_unique_id: fileId,
+          file_path: `mock/${fileId}`,
+          file_size: bytes?.byteLength,
+        };
+      }
       return new Response(JSON.stringify({ ok: true, result }), {
         headers: { "content-type": "application/json" },
       });
@@ -34,10 +65,54 @@ function mockTelegramFetch(): TelegramCall[] {
   return calls;
 }
 
-function setup() {
+/** Minimal in-memory storage so the webhook can persist downloaded files. */
+function createMockStorage(): StorageDriver & {
+  files: Map<string, { body: Uint8Array; contentType?: string }>;
+} {
+  const files = new Map<string, { body: Uint8Array; contentType?: string }>();
+  return {
+    files,
+    async put(key, body, opts) {
+      const bytes =
+        body instanceof Uint8Array
+          ? body
+          : new Uint8Array(await new Response(body).arrayBuffer());
+      files.set(key, { body: bytes, contentType: opts?.contentType });
+    },
+    async get(key) {
+      const file = files.get(key);
+      if (!file) return null;
+      return {
+        body: new Response(file.body).body as ReadableStream,
+        size: file.body.byteLength,
+        contentType: file.contentType,
+        etag: "",
+        uploaded: new Date(),
+      };
+    },
+    async head(key) {
+      const file = files.get(key);
+      if (!file) return null;
+      return {
+        size: file.body.byteLength,
+        contentType: file.contentType,
+        etag: "",
+        uploaded: new Date(),
+      };
+    },
+    async delete(key) {
+      files.delete(key);
+    },
+  };
+}
+
+function setup(
+  options: { storage?: ReturnType<typeof createMockStorage> | null } = {},
+) {
   const ctx = createTestApp({
     telegramBotTokens: BOT_TOKEN,
     telegramWebhookSecret: SECRET,
+    storage: options.storage ?? null,
   });
   ctx.app.route("/api/telegram", telegramWebhookRoutes);
   return ctx;
@@ -167,7 +242,7 @@ describe("Telegram webhook route", () => {
     expect(countPosts(sqlite)).toBe(1);
   });
 
-  it("declines a non-text message without posting", async () => {
+  it("declines an unsupported message type without posting", async () => {
     const { app, services, sqlite } = setup();
     await services.telegram.bindAccount({
       siteId: DEFAULT_TEST_SITE_ID,
@@ -182,10 +257,244 @@ describe("Telegram webhook route", () => {
         message_id: 9,
         from: { id: USER_ID, is_bot: false, first_name: "Al" },
         chat: { id: USER_ID },
+        // Voice notes aren't on the supported list; the handler should reply
+        // explaining what it accepts instead of posting anything.
+        voice: { file_id: "vf", file_unique_id: "vu", duration: 3 },
       },
     });
     expect(res.status).toBe(200);
     expect(countPosts(sqlite)).toBe(0);
+    const reply = calls.find((c) => c.method === "sendMessage");
+    expect(String(reply?.body.text)).toMatch(/photos, videos, and documents/);
+  });
+
+  it("posts a photo as a note with the photo attached", async () => {
+    const photoBytes = new Uint8Array([1, 2, 3, 4, 5]);
+    calls = mockTelegramFetch({
+      files: new Map([["photo-file-id", photoBytes]]),
+    });
+    const storage = createMockStorage();
+    const { app, services, sqlite } = setup({ storage });
+    await services.telegram.bindAccount({
+      siteId: DEFAULT_TEST_SITE_ID,
+      botId: BOT_ID,
+      telegramUserId: String(USER_ID),
+      telegramUsername: "al",
+    });
+
+    const res = await post(app, BOT_ID, SECRET, {
+      update_id: 50,
+      message: {
+        message_id: 50,
+        from: { id: USER_ID, is_bot: false, first_name: "Al" },
+        chat: { id: USER_ID },
+        photo: [
+          { file_id: "small", file_unique_id: "su", width: 90, height: 90 },
+          {
+            file_id: "photo-file-id",
+            file_unique_id: "pu",
+            width: 1280,
+            height: 720,
+          },
+        ],
+      },
+    });
+
+    expect(res.status).toBe(200);
+    expect(countPosts(sqlite)).toBe(1);
+
+    // The media row points at the stored object, and the post is wired to it
+    // via the post_id column.
+    const mediaRows = sqlite
+      .prepare("SELECT id, mime_type, media_kind, size, post_id FROM media")
+      .all() as Array<{
+      id: string;
+      mime_type: string;
+      media_kind: string;
+      size: number;
+      post_id: string | null;
+    }>;
+    expect(mediaRows.length).toBe(1);
+    expect(mediaRows[0]?.mime_type).toBe("image/jpeg");
+    expect(mediaRows[0]?.media_kind).toBe("image");
+    expect(mediaRows[0]?.size).toBe(photoBytes.byteLength);
+    expect(mediaRows[0]?.post_id).not.toBeNull();
+    expect(storage.files.size).toBe(1);
+
+    // `getFile` was called with the highest-resolution `file_id` from the
+    // photo array, never the smaller thumbnails.
+    const getFileCall = calls.find((c) => c.method === "getFile");
+    expect(getFileCall?.body.file_id).toBe("photo-file-id");
+  });
+
+  it("uses the caption as the note body and folds caption entities to markdown", async () => {
+    calls = mockTelegramFetch({
+      files: new Map([["photo-file-id", new Uint8Array([9, 8, 7])]]),
+    });
+    const storage = createMockStorage();
+    const { app, services, sqlite } = setup({ storage });
+    await services.telegram.bindAccount({
+      siteId: DEFAULT_TEST_SITE_ID,
+      botId: BOT_ID,
+      telegramUserId: String(USER_ID),
+      telegramUsername: "al",
+    });
+
+    const res = await post(app, BOT_ID, SECRET, {
+      update_id: 60,
+      message: {
+        message_id: 60,
+        from: { id: USER_ID, is_bot: false, first_name: "Al" },
+        chat: { id: USER_ID },
+        photo: [
+          {
+            file_id: "photo-file-id",
+            file_unique_id: "pu",
+            width: 800,
+            height: 600,
+          },
+        ],
+        caption: "look bold here",
+        caption_entities: [{ type: "bold", offset: 5, length: 4 }],
+      },
+    });
+    expect(res.status).toBe(200);
+
+    const row = sqlite
+      .prepare("SELECT body FROM post ORDER BY rowid DESC LIMIT 1")
+      .get() as { body: string };
+    const doc = JSON.parse(row.body) as {
+      content: Array<{
+        content: Array<{ text: string; marks?: Array<{ type: string }> }>;
+      }>;
+    };
+    expect(
+      doc.content[0]?.content.find((s) => s.text === "bold")?.marks,
+    ).toEqual([{ type: "bold" }]);
+  });
+
+  it("posts a video document with mime + filename preserved", async () => {
+    const docBytes = new Uint8Array([10, 20, 30, 40]);
+    calls = mockTelegramFetch({ files: new Map([["doc-id", docBytes]]) });
+    const storage = createMockStorage();
+    const { app, services, sqlite } = setup({ storage });
+    await services.telegram.bindAccount({
+      siteId: DEFAULT_TEST_SITE_ID,
+      botId: BOT_ID,
+      telegramUserId: String(USER_ID),
+      telegramUsername: "al",
+    });
+
+    const res = await post(app, BOT_ID, SECRET, {
+      update_id: 70,
+      message: {
+        message_id: 70,
+        from: { id: USER_ID, is_bot: false, first_name: "Al" },
+        chat: { id: USER_ID },
+        document: {
+          file_id: "doc-id",
+          file_unique_id: "du",
+          file_name: "notes.pdf",
+          mime_type: "application/pdf",
+          file_size: docBytes.byteLength,
+        },
+      },
+    });
+    expect(res.status).toBe(200);
+
+    const mediaRow = sqlite
+      .prepare(
+        "SELECT mime_type, media_kind, original_name FROM media ORDER BY rowid DESC LIMIT 1",
+      )
+      .get() as {
+      mime_type: string;
+      media_kind: string;
+      original_name: string;
+    };
+    expect(mediaRow.mime_type).toBe("application/pdf");
+    expect(mediaRow.media_kind).toBe("document");
+    expect(mediaRow.original_name).toBe("notes.pdf");
+  });
+
+  it("merges an album (media_group_id) into a single post with both photos", async () => {
+    vi.useFakeTimers();
+    const a = new Uint8Array([1, 1, 1]);
+    const b = new Uint8Array([2, 2, 2]);
+    calls = mockTelegramFetch({
+      files: new Map([
+        ["file-a", a],
+        ["file-b", b],
+      ]),
+    });
+    const storage = createMockStorage();
+    const { app, services, sqlite } = setup({ storage });
+    await services.telegram.bindAccount({
+      siteId: DEFAULT_TEST_SITE_ID,
+      botId: BOT_ID,
+      telegramUserId: String(USER_ID),
+      telegramUsername: "al",
+    });
+
+    // Both webhook deliveries land in the buffer, then both wait. After
+    // advancing past the buffer window, one handler wins the atomic claim and
+    // publishes a single post with both attachments; the other handler sees
+    // an empty claim result and exits silently.
+    const p1 = post(app, BOT_ID, SECRET, {
+      update_id: 100,
+      message: {
+        message_id: 100,
+        from: { id: USER_ID, is_bot: false, first_name: "Al" },
+        chat: { id: USER_ID },
+        media_group_id: "group-1",
+        photo: [
+          { file_id: "file-a", file_unique_id: "ua", width: 800, height: 600 },
+        ],
+        caption: "album caption",
+      },
+    });
+    const p2 = post(app, BOT_ID, SECRET, {
+      update_id: 101,
+      message: {
+        message_id: 101,
+        from: { id: USER_ID, is_bot: false, first_name: "Al" },
+        chat: { id: USER_ID },
+        media_group_id: "group-1",
+        photo: [
+          { file_id: "file-b", file_unique_id: "ub", width: 800, height: 600 },
+        ],
+      },
+    });
+
+    await vi.advanceTimersByTimeAsync(3_000);
+    const [r1, r2] = await Promise.all([p1, p2]);
+    expect(r1.status).toBe(200);
+    expect(r2.status).toBe(200);
+    vi.useRealTimers();
+
+    expect(countPosts(sqlite)).toBe(1);
+    expect(
+      (
+        sqlite.prepare("SELECT COUNT(*) AS n FROM media").get() as {
+          n: number;
+        }
+      ).n,
+    ).toBe(2);
+    expect(
+      (
+        sqlite
+          .prepare("SELECT COUNT(*) AS n FROM telegram_media_group_item")
+          .get() as { n: number }
+      ).n,
+    ).toBe(0);
+
+    const post1 = sqlite.prepare("SELECT body FROM post LIMIT 1").get() as {
+      body: string;
+    };
+    const doc = JSON.parse(post1.body) as {
+      content: Array<{ content?: Array<{ text?: string }> }>;
+    };
+    const text = doc.content[0]?.content?.[0]?.text ?? "";
+    expect(text).toBe("album caption");
   });
 
   it("prompts an unbound user instead of posting", async () => {

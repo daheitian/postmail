@@ -148,6 +148,13 @@
       "when": 1778796689691,
       "tag": "0020_bizarre_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1778971491254,
+      "tag": "0021_sharp_puppet_master",
+      "breakpoints": true
     }
   ]
 }
