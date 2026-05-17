@@ -10,11 +10,7 @@ import { Extension, type Editor } from "@tiptap/core";
 import { Plugin, PluginKey, Selection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import { isLinkToolbarInputActive } from "./link-toolbar.js";
-import {
-  applyDockedToolbarOffset,
-  isComposeDockedToolbar,
-  type FormattingToolbarMode,
-} from "./toolbar-mode.js";
+import type { FormattingToolbarMode } from "./toolbar-mode.js";
 import {
   getFixedFloatingContainerRect,
   getFloatingPosition,
@@ -206,18 +202,7 @@ export const BubbleMenu = Extension.create({
 
     function show(view: EditorView) {
       if (!el) return;
-      const docked = isComposeDockedToolbar(toolbarMode);
-
-      el.classList.toggle("tiptap-bubble-menu-docked", docked);
       el.style.display = "flex";
-
-      if (docked) {
-        applyDockedToolbarOffset(el, view);
-        el.style.removeProperty("left");
-        el.style.removeProperty("top");
-        syncActive();
-        return;
-      }
 
       // Position above selection center
       const { from, to } = view.state.selection;
