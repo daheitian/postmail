@@ -18,7 +18,12 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import { getTelegramBotPool, getTelegramWebhookSecret } from "../../lib/env.js";
+import {
+  getConfiguredStorageDriver,
+  getEnvString,
+  getTelegramBotPool,
+  getTelegramWebhookSecret,
+} from "../../lib/env.js";
 import { timingSafeEqualText } from "../../lib/crypto.js";
 import {
   answerCallbackQuery,
@@ -49,6 +54,24 @@ type MessageMedia = Omit<IngestTelegramMediaInput, "botToken">;
  * delays the bot's "Posted." reply.
  */
 const ALBUM_BUFFER_DELAY_MS = 2_000;
+
+/**
+ * The Telegram webhook intentionally bypasses the site-resolution middleware
+ * chain, so `c.var.appConfig` is not populated here. The two upload settings
+ * the media flow needs are env-driven anyway, so read them straight from the
+ * bindings without rebuilding the full appConfig.
+ */
+function uploadConfigFromEnv(env: Bindings): {
+  storageDriver: string;
+  maxFileSizeMB: number;
+} {
+  const maxFileSizeMB =
+    parseInt(getEnvString(env, "UPLOAD_MAX_FILE_SIZE_MB") ?? "500", 10) || 500;
+  return {
+    storageDriver: getConfiguredStorageDriver(env),
+    maxFileSizeMB,
+  };
+}
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -132,13 +155,23 @@ telegramWebhookRoutes.post("/webhook/:botId", async (c) => {
   // Telegram retries failed deliveries; a slow handler causes duplicate
   // posts. Process inline (posting a note is fast) but never let an error
   // escape — Telegram only needs a 200, and the user-facing error goes back
-  // as a chat message.
+  // as a chat message so the sender knows something went wrong instead of
+  // staring at a silent client.
   try {
     await processUpdate(c, update, botId, bot.token);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     // eslint-disable-next-line no-console -- Webhook failures must be visible in server logs.
     console.error(`[Jant] Telegram webhook error: ${message}`);
+    const chatId =
+      update.message?.chat.id ?? update.callback_query?.message?.chat.id;
+    if (chatId) {
+      await sendMessage(
+        bot.token,
+        chatId,
+        `Couldn't process that message: ${message}`,
+      ).catch(() => undefined);
+    }
   }
 
   return c.json({ ok: true });
@@ -430,12 +463,12 @@ async function publishSingleMedia(
     return;
   }
 
+  const uploadConfig = uploadConfigFromEnv(c.env);
   const ingested = await siteSvcs.telegram.ingestMediaFile(
     { ...input.media, botToken: input.botToken },
     {
       storage,
-      storageDriver: c.var.appConfig.storageDriver,
-      maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+      ...uploadConfig,
       media: siteSvcs.media,
     },
   );
@@ -455,8 +488,7 @@ async function publishSingleMedia(
     {
       media: siteSvcs.media,
       storage,
-      storageDriver: c.var.appConfig.storageDriver,
-      maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+      ...uploadConfig,
     },
   );
 
@@ -501,6 +533,8 @@ async function publishAlbum(
   const bodyMarkdown =
     input.items.find((i) => i.captionMarkdown)?.captionMarkdown ?? "";
 
+  const uploadConfig = uploadConfigFromEnv(c.env);
+
   // Run downloads in parallel — they're independent and disk/network bound;
   // serializing would multiply the publish latency by the album size.
   const mediaRecords = await Promise.all(
@@ -517,8 +551,7 @@ async function publishAlbum(
         },
         {
           storage,
-          storageDriver: c.var.appConfig.storageDriver,
-          maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+          ...uploadConfig,
           media: siteSvcs.media,
         },
       ),
@@ -541,8 +574,7 @@ async function publishAlbum(
     {
       media: siteSvcs.media,
       storage,
-      storageDriver: c.var.appConfig.storageDriver,
-      maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+      ...uploadConfig,
     },
   );
 
