@@ -114,8 +114,20 @@ function setup(
     telegramWebhookSecret: SECRET,
     storage: options.storage ?? null,
   });
+
+  // The webhook ACKs Telegram immediately and runs the album flush in
+  // detached promises so subsequent webhooks on the same chat aren't
+  // serialized behind it. Tests have no `executionCtx.waitUntil`, so the
+  // route falls back to writing each promise into `env.__telegramPending`
+  // — collect them here so tests can await the flush before asserting.
+  const pending: Promise<unknown>[] = [];
+  ctx.app.use("/api/telegram/*", async (c, next) => {
+    (c.env as { __telegramPending?: Promise<unknown>[] }).__telegramPending =
+      pending;
+    return next();
+  });
   ctx.app.route("/api/telegram", telegramWebhookRoutes);
-  return ctx;
+  return { ...ctx, pending };
 }
 
 function post(
@@ -373,6 +385,62 @@ describe("Telegram webhook route", () => {
     ).toEqual([{ type: "bold" }]);
   });
 
+  it("downloads the video thumbnail as the media poster", async () => {
+    const videoBytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+    const thumbBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 9, 9, 9]);
+    calls = mockTelegramFetch({
+      files: new Map([
+        ["video-file-id", videoBytes],
+        ["video-thumb-id", thumbBytes],
+      ]),
+    });
+    const storage = createMockStorage();
+    const { app, services, sqlite } = setup({ storage });
+    await services.telegram.bindAccount({
+      siteId: DEFAULT_TEST_SITE_ID,
+      botId: BOT_ID,
+      telegramUserId: String(USER_ID),
+      telegramUsername: "al",
+    });
+
+    const res = await post(app, BOT_ID, SECRET, {
+      update_id: 80,
+      message: {
+        message_id: 80,
+        from: { id: USER_ID, is_bot: false, first_name: "Al" },
+        chat: { id: USER_ID },
+        video: {
+          file_id: "video-file-id",
+          file_unique_id: "vu",
+          width: 1920,
+          height: 1080,
+          duration: 12,
+          mime_type: "video/mp4",
+          thumbnail: {
+            file_id: "video-thumb-id",
+            file_unique_id: "tu",
+            width: 320,
+            height: 180,
+            file_size: thumbBytes.byteLength,
+          },
+        },
+      },
+    });
+    expect(res.status).toBe(200);
+
+    const row = sqlite
+      .prepare(
+        "SELECT poster_key, media_kind FROM media ORDER BY rowid DESC LIMIT 1",
+      )
+      .get() as { poster_key: string | null; media_kind: string };
+    expect(row.media_kind).toBe("video");
+    expect(row.poster_key).toBeTruthy();
+    expect(row.poster_key).toMatch(/\.jpg$/);
+    // The poster bytes actually landed in storage at the recorded key.
+    const stored = storage.files.get(row.poster_key as string);
+    expect(stored?.body).toEqual(thumbBytes);
+  });
+
   it("posts a video document with mime + filename preserved", async () => {
     const docBytes = new Uint8Array([10, 20, 30, 40]);
     calls = mockTelegramFetch({ files: new Map([["doc-id", docBytes]]) });
@@ -427,7 +495,7 @@ describe("Telegram webhook route", () => {
       ]),
     });
     const storage = createMockStorage();
-    const { app, services, sqlite } = setup({ storage });
+    const { app, services, sqlite, pending } = setup({ storage });
     await services.telegram.bindAccount({
       siteId: DEFAULT_TEST_SITE_ID,
       botId: BOT_ID,
@@ -435,11 +503,12 @@ describe("Telegram webhook route", () => {
       telegramUsername: "al",
     });
 
-    // Both webhook deliveries land in the buffer, then both wait. After
-    // advancing past the buffer window, one handler wins the atomic claim and
-    // publishes a single post with both attachments; the other handler sees
-    // an empty claim result and exits silently.
-    const p1 = post(app, BOT_ID, SECRET, {
+    // Each webhook ACKs Telegram before its background flush starts. Send
+    // both messages SEQUENTIALLY here to match Telegram's per-chat ordering
+    // in production — if the route serialized inline on the buffer wait,
+    // the second message would queue behind the first 2-second sleep and
+    // become its own post.
+    const r1 = await post(app, BOT_ID, SECRET, {
       update_id: 100,
       message: {
         message_id: 100,
@@ -452,7 +521,7 @@ describe("Telegram webhook route", () => {
         caption: "album caption",
       },
     });
-    const p2 = post(app, BOT_ID, SECRET, {
+    const r2 = await post(app, BOT_ID, SECRET, {
       update_id: 101,
       message: {
         message_id: 101,
@@ -464,11 +533,14 @@ describe("Telegram webhook route", () => {
         ],
       },
     });
-
-    await vi.advanceTimersByTimeAsync(3_000);
-    const [r1, r2] = await Promise.all([p1, p2]);
     expect(r1.status).toBe(200);
     expect(r2.status).toBe(200);
+
+    // Advance past the deferred buffer window; both backgrounds wake and
+    // race for the group claim. Drain the deferred promises so we observe
+    // the final DB state before asserting.
+    await vi.advanceTimersByTimeAsync(3_000);
+    await Promise.all(pending);
     vi.useRealTimers();
 
     expect(countPosts(sqlite)).toBe(1);

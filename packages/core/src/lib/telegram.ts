@@ -53,6 +53,8 @@ export interface TelegramVideo {
   mime_type?: string;
   file_name?: string;
   file_size?: number;
+  /** Auto-generated preview frame; downloadable as a normal PhotoSize. */
+  thumbnail?: TelegramPhotoSize;
 }
 
 /** A Telegram document message attachment (arbitrary file). */
@@ -62,6 +64,8 @@ export interface TelegramDocument {
   mime_type?: string;
   file_name?: string;
   file_size?: number;
+  /** Mime-appropriate preview, when one was generated. */
+  thumbnail?: TelegramPhotoSize;
 }
 
 /** Subset of the Telegram `Message` object the integration consumes. */

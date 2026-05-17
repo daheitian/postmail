@@ -176,6 +176,13 @@
       "when": 1779056636782,
       "tag": "0024_red_the_twelve",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1779059129849,
+      "tag": "0025_exotic_wendell_rand",
+      "breakpoints": true
     }
   ]
 }

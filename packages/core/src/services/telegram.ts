@@ -35,7 +35,7 @@ import {
   setMyCommands,
   setWebhook,
 } from "../lib/telegram.js";
-import { generateStorageKey } from "../lib/upload.js";
+import { generateStorageKey, getPosterStorageKey } from "../lib/upload.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { Media, MediaKind } from "../types.js";
 import { ValidationError } from "../lib/errors.js";
@@ -78,6 +78,8 @@ export interface TelegramMediaGroupItem {
   height: number | null;
   /** Video duration in seconds, when applicable. */
   durationSeconds: number | null;
+  /** Telegram thumbnail `file_id` for poster extraction at flush time. */
+  posterFileId: string | null;
   createdAt: number;
 }
 
@@ -101,6 +103,13 @@ export interface IngestTelegramMediaInput {
   height?: number;
   /** Optional video duration in seconds. */
   durationSeconds?: number;
+  /**
+   * Optional Telegram `thumbnail.file_id` to download alongside the main file
+   * and store as the media row's `posterKey`. Used for videos and previewable
+   * documents so timeline thumbnails have a static frame to render before the
+   * full asset loads.
+   */
+  posterFileId?: string;
 }
 
 export interface IngestTelegramMediaDeps {
@@ -126,6 +135,7 @@ export interface BufferAlbumItemInput {
   width: number | null;
   height: number | null;
   durationSeconds: number | null;
+  posterFileId: string | null;
 }
 
 /** Bring-your-own-bot config stored per site (single-site, no env pool). */
@@ -447,6 +457,7 @@ export function createTelegramService(
           width: input.width,
           height: input.height,
           durationSeconds: input.durationSeconds,
+          posterFileId: input.posterFileId,
           createdAt: now(),
         })
         .onConflictDoNothing({
@@ -490,6 +501,7 @@ export function createTelegramService(
             width: row.width,
             height: row.height,
             durationSeconds: row.durationSeconds,
+            posterFileId: row.posterFileId,
             createdAt: row.createdAt,
           }),
         )
@@ -535,6 +547,34 @@ export function createTelegramService(
         cacheControl: "public, max-age=31536000, immutable",
       });
 
+      // Telegram videos and previewable documents carry a `thumbnail`
+      // PhotoSize alongside the main file. It's already a small JPEG, so we
+      // can store it directly as the media poster without any server-side
+      // image decoding.
+      let posterKey: string | undefined;
+      if (input.posterFileId) {
+        try {
+          const posterFile = await getFile(input.botToken, input.posterFileId);
+          if (posterFile.file_path) {
+            const posterResp = await downloadFile(
+              input.botToken,
+              posterFile.file_path,
+            );
+            const posterBytes = new Uint8Array(await posterResp.arrayBuffer());
+            posterKey = getPosterStorageKey(siteId, id, "jpg");
+            await deps.storage.put(posterKey, posterBytes, {
+              contentType: "image/jpeg",
+              cacheControl: "public, max-age=31536000, immutable",
+            });
+          }
+        } catch {
+          // Posters are a nice-to-have; never fail the whole ingest if the
+          // thumbnail download stumbles. The media row still publishes with
+          // no posterKey and the timeline falls back to its default.
+          posterKey = undefined;
+        }
+      }
+
       return deps.media.create({
         id,
         filename,
@@ -547,6 +587,7 @@ export function createTelegramService(
         width: input.width,
         height: input.height,
         durationSeconds: input.durationSeconds,
+        posterKey,
       });
     },
 

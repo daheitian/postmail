@@ -286,13 +286,21 @@ async function processUpdate(
 
   const media = extractMediaIngestInput(message);
 
-  // --- Album item: buffer and let the last arrival publish the whole group. ---
+  // --- Album item: buffer, ACK Telegram, then claim+publish in background. ---
+  //
+  // Telegram delivers webhooks for the SAME chat strictly sequentially — the
+  // next update isn't sent until the previous one's 200 lands. If we waited
+  // inline for the buffer window, the second album item couldn't arrive
+  // during the wait and we'd publish each item as its own post. Returning
+  // 200 immediately lets sibling items queue into the buffer while the first
+  // arrival's background job sleeps.
   if (message.media_group_id && media) {
+    const mediaGroupId = message.media_group_id;
     await telegram.bufferAlbumItem({
       siteId: binding.siteId,
       botId,
       telegramUserId,
-      mediaGroupId: message.media_group_id,
+      mediaGroupId,
       chatId,
       messageId: message.message_id,
       updateId: update.update_id,
@@ -304,23 +312,14 @@ async function processUpdate(
       width: media.width ?? null,
       height: media.height ?? null,
       durationSeconds: media.durationSeconds ?? null,
+      posterFileId: media.posterFileId ?? null,
     });
 
-    // Sleep so siblings have time to land in the buffer, then race for the
-    // group. Whoever wins the atomic claim publishes; the others see an empty
-    // claim result and exit.
-    await sleep(ALBUM_BUFFER_DELAY_MS);
-    const claimed = await telegram.claimAlbumGroup(
-      botId,
-      message.media_group_id,
-    );
-    if (claimed.length === 0) return;
-
-    await publishAlbum(c, {
-      botToken,
-      chatId,
-      binding,
-      items: claimed,
+    runDeferred(c, async () => {
+      await sleep(ALBUM_BUFFER_DELAY_MS);
+      const claimed = await telegram.claimAlbumGroup(botId, mediaGroupId);
+      if (claimed.length === 0) return;
+      await publishAlbum(c, { botToken, chatId, binding, items: claimed });
     });
     return;
   }
@@ -372,6 +371,45 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
+ * Schedules background work that must outlive the current HTTP response so
+ * Telegram can deliver the next webhook in this chat without waiting.
+ *
+ * On Cloudflare Workers `c.executionCtx.waitUntil` keeps the worker alive
+ * until the promise settles. In Node / tests there's no such API, so we just
+ * let the promise float — Node's event loop keeps running it. Either way the
+ * promise has its own try/catch so unhandled rejections never bubble up.
+ *
+ * Background work also tracks the pending-promises array we register on the
+ * env binding for tests so a vitest can `await` them after advancing timers.
+ */
+function runDeferred(
+  c: {
+    env: Bindings;
+    executionCtx?: { waitUntil: (promise: Promise<unknown>) => void };
+  },
+  work: () => Promise<void>,
+): void {
+  const promise = work().catch((err) => {
+    const message = err instanceof Error ? err.message : String(err);
+    // eslint-disable-next-line no-console -- Background failures must be visible.
+    console.error(`[Jant] Telegram background error: ${message}`);
+  });
+  try {
+    c.executionCtx?.waitUntil(promise);
+  } catch {
+    // executionCtx not available (e.g. Node, tests) — promise still runs.
+  }
+  const pending = (
+    c.env as Bindings & {
+      __telegramPending?: Promise<unknown>[];
+    }
+  ).__telegramPending;
+  if (Array.isArray(pending)) {
+    pending.push(promise);
+  }
+}
+
+/**
  * Convert a message's caption + caption_entities into markdown, returning
  * `null` when there's nothing to record. Centralized so single-media and album
  * code paths can't drift apart on entity handling.
@@ -419,16 +457,25 @@ function extractMediaIngestInput(
       width: v.width,
       height: v.height,
       durationSeconds: v.duration,
+      // Telegram pre-renders a small JPEG thumbnail for every video. Saving
+      // it as the media poster gives the timeline a static frame to show
+      // before the full video element loads.
+      posterFileId: v.thumbnail?.file_id,
     };
   }
   if (message.document) {
     const d = message.document;
+    const docKind = documentMediaKind(d.mime_type);
     return {
       fileId: d.file_id,
       originalName:
         d.file_name ?? `telegram-document-${message.message_id}.bin`,
       mimeType: d.mime_type ?? "application/octet-stream",
-      mediaKind: documentMediaKind(d.mime_type),
+      mediaKind: docKind,
+      // Telegram only ships thumbnails for media-shaped documents (videos
+      // sent as files, large images). Documents like PDFs may not include
+      // one; the optional chain handles both cases.
+      posterFileId: docKind === "video" ? d.thumbnail?.file_id : undefined,
     };
   }
   return null;
@@ -524,6 +571,7 @@ async function publishAlbum(
       width: number | null;
       height: number | null;
       durationSeconds: number | null;
+      posterFileId: string | null;
     }>;
   },
 ): Promise<void> {
@@ -562,6 +610,7 @@ async function publishAlbum(
           width: item.width ?? undefined,
           height: item.height ?? undefined,
           durationSeconds: item.durationSeconds ?? undefined,
+          posterFileId: item.posterFileId ?? undefined,
         },
         {
           storage,

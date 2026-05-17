@@ -1,0 +1,1 @@
+ALTER TABLE "telegram_media_group_item" ADD COLUMN "poster_file_id" text;

@@ -848,6 +848,8 @@ export const telegramMediaGroupItems = sqliteTable(
     width: integer("width"),
     height: integer("height"),
     durationSeconds: integer("duration_seconds"),
+    /** Telegram `thumbnail.file_id` for videos / previewable documents. */
+    posterFileId: text("poster_file_id"),
     createdAt: integer("created_at").notNull(),
   },
   (table) => [
