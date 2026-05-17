@@ -155,6 +155,13 @@
       "when": 1778971491254,
       "tag": "0021_sharp_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1779056638164,
+      "tag": "0022_blushing_blue_shield",
+      "breakpoints": true
     }
   ]
 }

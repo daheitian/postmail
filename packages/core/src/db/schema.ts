@@ -845,6 +845,9 @@ export const telegramMediaGroupItems = sqliteTable(
     mimeType: text("mime_type"),
     originalName: text("original_name"),
     captionMarkdown: text("caption_markdown"),
+    width: integer("width"),
+    height: integer("height"),
+    durationSeconds: integer("duration_seconds"),
     createdAt: integer("created_at").notNull(),
   },
   (table) => [

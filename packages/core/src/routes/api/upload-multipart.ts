@@ -29,6 +29,10 @@ import {
   validateStoredUploadMetadata,
   validateStoredUploadSignature,
 } from "../../lib/upload.js";
+import {
+  IMAGE_DIMENSION_PEEK_BYTES,
+  parseImageDimensions,
+} from "../../lib/image-dimensions.js";
 import { supportsMultipart } from "../../lib/storage.js";
 import {
   MediaQuotaExceededError,
@@ -230,7 +234,16 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
     data.parts,
   );
 
-  const peekLength = getStoredUploadSignaturePeekLength(data.contentType);
+  const signaturePeekLength = getStoredUploadSignaturePeekLength(
+    data.contentType,
+  );
+  let width = data.width && data.width > 0 ? data.width : undefined;
+  let height = data.height && data.height > 0 ? data.height : undefined;
+  const needsDimensionSniff =
+    (!width || !height) && data.contentType.startsWith("image/");
+  const peekLength = needsDimensionSniff
+    ? Math.max(signaturePeekLength, IMAGE_DIMENSION_PEEK_BYTES)
+    : signaturePeekLength;
   if (peekLength > 0) {
     const object = await storage.get(data.storageKey, {
       range: { offset: 0, length: peekLength },
@@ -239,16 +252,25 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
       throw new ValidationError("The uploaded file could not be found.");
     }
     const bytes = new Uint8Array(await new Response(object.body).arrayBuffer());
-    const signatureError = validateStoredUploadSignature(
-      data.contentType,
-      bytes,
-    );
-    if (signatureError) {
-      await storage.delete(data.storageKey).catch(() => {});
-      if (data.posterKey) {
-        await storage.delete(data.posterKey).catch(() => {});
+    if (signaturePeekLength > 0) {
+      const signatureError = validateStoredUploadSignature(
+        data.contentType,
+        bytes.subarray(0, signaturePeekLength),
+      );
+      if (signatureError) {
+        await storage.delete(data.storageKey).catch(() => {});
+        if (data.posterKey) {
+          await storage.delete(data.posterKey).catch(() => {});
+        }
+        throw new ValidationError(signatureError);
       }
-      throw new ValidationError(signatureError);
+    }
+    if (needsDimensionSniff) {
+      const dimensions = parseImageDimensions(data.contentType, bytes);
+      if (dimensions) {
+        width ??= dimensions.width;
+        height ??= dimensions.height;
+      }
     }
   }
 
@@ -261,8 +283,8 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
     size: data.size,
     storageKey: data.storageKey,
     provider: c.var.appConfig.storageDriver,
-    width: data.width && data.width > 0 ? data.width : undefined,
-    height: data.height && data.height > 0 ? data.height : undefined,
+    width,
+    height,
     durationSeconds:
       data.durationSeconds && data.durationSeconds > 0
         ? data.durationSeconds

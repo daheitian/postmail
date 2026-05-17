@@ -73,6 +73,11 @@ export interface TelegramMediaGroupItem {
   mimeType: string | null;
   originalName: string | null;
   captionMarkdown: string | null;
+  /** Photo/video pixel dimensions from the original Telegram message. */
+  width: number | null;
+  height: number | null;
+  /** Video duration in seconds, when applicable. */
+  durationSeconds: number | null;
   createdAt: number;
 }
 
@@ -87,6 +92,15 @@ export interface IngestTelegramMediaInput {
   mimeType: string;
   /** Coarse classification for filtering and rendering. */
   mediaKind: MediaKind;
+  /**
+   * Optional pixel dimensions. Telegram always supplies these for photos and
+   * videos, so passing them through lets timeline thumbnails reserve the
+   * right aspect ratio instead of falling back to a default box.
+   */
+  width?: number;
+  height?: number;
+  /** Optional video duration in seconds. */
+  durationSeconds?: number;
 }
 
 export interface IngestTelegramMediaDeps {
@@ -109,6 +123,9 @@ export interface BufferAlbumItemInput {
   mimeType: string | null;
   originalName: string | null;
   captionMarkdown: string | null;
+  width: number | null;
+  height: number | null;
+  durationSeconds: number | null;
 }
 
 /** Bring-your-own-bot config stored per site (single-site, no env pool). */
@@ -427,6 +444,9 @@ export function createTelegramService(
           mimeType: input.mimeType,
           originalName: input.originalName,
           captionMarkdown: input.captionMarkdown,
+          width: input.width,
+          height: input.height,
+          durationSeconds: input.durationSeconds,
           createdAt: now(),
         })
         .onConflictDoNothing({
@@ -467,6 +487,9 @@ export function createTelegramService(
             mimeType: row.mimeType,
             originalName: row.originalName,
             captionMarkdown: row.captionMarkdown,
+            width: row.width,
+            height: row.height,
+            durationSeconds: row.durationSeconds,
             createdAt: row.createdAt,
           }),
         )
@@ -521,6 +544,9 @@ export function createTelegramService(
         storageKey,
         provider: deps.storageDriver,
         mediaKind: input.mediaKind,
+        width: input.width,
+        height: input.height,
+        durationSeconds: input.durationSeconds,
       });
     },
 

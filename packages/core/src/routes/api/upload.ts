@@ -29,6 +29,10 @@ import {
   validateStoredUploadSignature,
 } from "../../lib/upload.js";
 import {
+  IMAGE_DIMENSION_PEEK_BYTES,
+  parseImageDimensions,
+} from "../../lib/image-dimensions.js";
+import {
   assertFound,
   MediaQuotaExceededError,
   parseIdParam,
@@ -284,6 +288,23 @@ uploadApiRoutes.post("/", async (c) => {
     const blurhashRaw = (formData.get("blurhash") as string) || undefined;
     const waveformRaw = (formData.get("waveform") as string) || undefined;
 
+    let width = widthRaw && widthRaw > 0 ? widthRaw : undefined;
+    let height = heightRaw && heightRaw > 0 ? heightRaw : undefined;
+    if ((!width || !height) && file.type.startsWith("image/")) {
+      try {
+        const headerBytes = new Uint8Array(
+          await file.slice(0, IMAGE_DIMENSION_PEEK_BYTES).arrayBuffer(),
+        );
+        const dimensions = parseImageDimensions(file.type, headerBytes);
+        if (dimensions) {
+          width ??= dimensions.width;
+          height ??= dimensions.height;
+        }
+      } catch {
+        // Dimensions are optional — fall through with whatever the client sent.
+      }
+    }
+
     // Upload poster frame for videos (if provided by client)
     let posterKey: string | undefined;
     const posterFile = formData.get("poster") as File | null;
@@ -308,8 +329,8 @@ uploadApiRoutes.post("/", async (c) => {
       size: file.size,
       storageKey,
       provider: c.var.appConfig.storageDriver,
-      width: widthRaw && widthRaw > 0 ? widthRaw : undefined,
-      height: heightRaw && heightRaw > 0 ? heightRaw : undefined,
+      width,
+      height,
       durationSeconds:
         durationSecondsRaw && durationSecondsRaw > 0
           ? durationSecondsRaw

@@ -301,6 +301,9 @@ async function processUpdate(
       mimeType: media.mimeType,
       originalName: media.originalName,
       captionMarkdown: captionMarkdown(message),
+      width: media.width ?? null,
+      height: media.height ?? null,
+      durationSeconds: media.durationSeconds ?? null,
     });
 
     // Sleep so siblings have time to land in the buffer, then race for the
@@ -402,6 +405,8 @@ function extractMediaIngestInput(
       originalName: `telegram-photo-${message.message_id}.jpg`,
       mimeType: "image/jpeg",
       mediaKind: "image",
+      width: largest.width,
+      height: largest.height,
     };
   }
   if (message.video) {
@@ -411,6 +416,9 @@ function extractMediaIngestInput(
       originalName: v.file_name ?? `telegram-video-${message.message_id}.mp4`,
       mimeType: v.mime_type ?? "video/mp4",
       mediaKind: "video",
+      width: v.width,
+      height: v.height,
+      durationSeconds: v.duration,
     };
   }
   if (message.document) {
@@ -513,6 +521,9 @@ async function publishAlbum(
       mimeType: string | null;
       originalName: string | null;
       captionMarkdown: string | null;
+      width: number | null;
+      height: number | null;
+      durationSeconds: number | null;
     }>;
   },
 ): Promise<void> {
@@ -548,6 +559,9 @@ async function publishAlbum(
             defaultAlbumName(item.messageId, item.mediaKind),
           mimeType: item.mimeType ?? defaultAlbumMime(item.mediaKind),
           mediaKind: albumKindToMediaKind(item.mediaKind),
+          width: item.width ?? undefined,
+          height: item.height ?? undefined,
+          durationSeconds: item.durationSeconds ?? undefined,
         },
         {
           storage,
