@@ -85,9 +85,7 @@ export function createSettingsEditorExtensions(
     BubbleMenu.configure({
       toolbarMode: "compose",
     }),
-    LinkToolbar.configure({
-      toolbarMode: "compose",
-    }),
+    LinkToolbar,
   ];
 }
 
@@ -118,9 +116,7 @@ export function createEditorExtensions(
     BubbleMenu.configure({
       toolbarMode: options.toolbarMode ?? "default",
     }),
-    LinkToolbar.configure({
-      toolbarMode: options.toolbarMode ?? "default",
-    }),
+    LinkToolbar,
     ExitableMarks,
     InsertParagraphAround,
     TabIndent,

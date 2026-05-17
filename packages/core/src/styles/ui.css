@@ -9681,19 +9681,6 @@
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   }
 
-  .tiptap-bubble-menu-docked {
-    left: 50% !important;
-    top: auto !important;
-    bottom: calc(
-      env(safe-area-inset-bottom) + var(--tiptap-docked-offset, 16px)
-    );
-    transform: translateX(-50%);
-    gap: 4px;
-    padding: 6px;
-    border-radius: 12px;
-    max-width: calc(100vw - 24px);
-  }
-
   .tiptap-bubble-menu::after {
     content: "";
     position: absolute;
@@ -9703,10 +9690,6 @@
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 5px solid var(--color-foreground);
-  }
-
-  .tiptap-bubble-menu-docked::after {
-    display: none;
   }
 
   .tiptap-bubble-btn {
@@ -9765,11 +9748,6 @@
     flex: 1;
   }
 
-  .tiptap-link-input-docked .tiptap-link-input-fields {
-    min-width: 0;
-    width: 100%;
-  }
-
   .tiptap-link-input-text {
     border: none;
     outline: none;
@@ -9783,17 +9761,6 @@
 
   .tiptap-link-input-text::placeholder {
     color: var(--color-muted-foreground);
-  }
-
-  .tiptap-link-input-docked {
-    left: 50% !important;
-    top: auto !important;
-    bottom: calc(
-      env(safe-area-inset-bottom) + var(--tiptap-docked-offset, 16px)
-    );
-    transform: translateX(-50%);
-    width: min(calc(100vw - 24px), 420px);
-    max-width: calc(100vw - 24px);
   }
 
   .tiptap-link-input::before {
@@ -9816,11 +9783,6 @@
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 5px solid var(--color-background);
-  }
-
-  .tiptap-link-input-docked::before,
-  .tiptap-link-input-docked::after {
-    display: none;
   }
 
   .tiptap-link-input-field {

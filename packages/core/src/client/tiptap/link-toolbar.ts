@@ -14,11 +14,6 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import type { EditorState } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import {
-  applyDockedToolbarOffset,
-  isComposeDockedToolbar,
-  type FormattingToolbarMode,
-} from "./toolbar-mode.js";
-import {
   getFixedFloatingContainerRect,
   getFloatingPosition,
 } from "./floating-position.js";
@@ -96,15 +91,8 @@ function getLinkRange(state: EditorState): LinkRange | null {
 export const LinkToolbar = Extension.create({
   name: "linkToolbar",
 
-  addOptions() {
-    return {
-      toolbarMode: "default" as FormattingToolbarMode,
-    };
-  },
-
   addProseMirrorPlugins() {
     const editor = this.editor;
-    const toolbarMode = this.options.toolbarMode as FormattingToolbarMode;
 
     // DOM elements
     let inputEl: HTMLElement | null = null;
@@ -204,16 +192,7 @@ export const LinkToolbar = Extension.create({
       from: number,
       to: number,
     ) {
-      const docked = isComposeDockedToolbar(toolbarMode);
-      el.classList.toggle("tiptap-link-input-docked", docked);
       el.style.display = "flex";
-
-      if (docked) {
-        applyDockedToolbarOffset(el, view);
-        el.style.removeProperty("left");
-        el.style.removeProperty("top");
-        return;
-      }
 
       const dialog = view.dom.closest("dialog");
       const start = view.coordsAtPos(from);
