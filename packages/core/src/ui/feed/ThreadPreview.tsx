@@ -130,7 +130,6 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
         {secondReplyItem}
         {gapItem}
         {penultimateItem}
-        <div class="thread-context-fade" aria-hidden="true" />
       </div>
       <button
         type="button"

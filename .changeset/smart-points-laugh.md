@@ -3,4 +3,4 @@
 "create-jant": patch
 ---
 
-fix video upload in Safari
+Fix UI

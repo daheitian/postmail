@@ -1,5 +1,17 @@
 # create-jant
 
+## 0.6.0
+
+### Minor Changes
+
+- [`66d9b40`](https://github.com/jant-me/jant/commit/66d9b40d34e9c61781e341bea38dd083cba55b4f) Thanks [@theowenyoung](https://github.com/theowenyoung)! - Add Telegram Bot support & fade for Threads
+
+## 0.5.4
+
+### Patch Changes
+
+- [`4c96373`](https://github.com/jant-me/jant/commit/4c9637318b988d69ec0d81286753683d870a78a7) Thanks [@theowenyoung](https://github.com/theowenyoung)! - fix video upload in Safari
+
 ## 0.5.3
 
 ### Patch Changes
