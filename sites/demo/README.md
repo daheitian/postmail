@@ -112,6 +112,18 @@ Open `http://localhost:3000`.
 | `npm run reset-password`                                                         | Generate a password reset token       |
 | `npx jant site export https://your-site.example --output ./jant-site-export.zip` | Export the site as a portable archive |
 
+## Upgrade
+
+Check the [release notes](https://github.com/jant-me/jant/releases) for breaking changes, then:
+
+```bash
+npm install @jant/core@latest
+npm run dev      # verify locally; applies new migrations to your local D1
+npm run deploy   # deploy to Cloudflare; applies remote migrations
+```
+
+If you used one-click deploy, you can skip the local steps: commit the updated `package.json` and lockfile and push to `main`. Cloudflare rebuilds and applies remote migrations automatically.
+
 ## Configuration
 
 The most common values live in two files:

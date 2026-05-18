@@ -24,6 +24,12 @@ export type AppSession = Awaited<ReturnType<Auth["api"]["getSession"]>>;
 
 export interface AppVariables {
   services: Services;
+  /**
+   * Builds a `Services` object scoped to an arbitrary site. Used by
+   * host-agnostic handlers (e.g. the Telegram webhook) that resolve the
+   * target site from request data rather than the hostname.
+   */
+  servicesForSite: (siteId: string) => Services;
   hostedHandoff: HostedHandoffService;
   auth: Auth;
   currentSite: Site;

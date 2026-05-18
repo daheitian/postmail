@@ -32,6 +32,10 @@ import {
   generateStorageKeyForId,
 } from "../lib/upload.js";
 import {
+  IMAGE_DIMENSION_PEEK_BYTES,
+  parseImageDimensions,
+} from "../lib/image-dimensions.js";
+import {
   supportsCopy,
   supportsMultipart,
   supportsPresignedPut,
@@ -294,7 +298,8 @@ export function createUploadSessionService(
   async function validateStoredObject(
     storage: StorageDriver,
     session: UploadSessionRow,
-  ): Promise<void> {
+    sniffDimensions: boolean,
+  ): Promise<{ width: number; height: number } | null> {
     const head = await storage.head(session.tempStorageKey);
     if (!head) {
       throw new ValidationError("The uploaded file could not be found.");
@@ -308,23 +313,32 @@ export function createUploadSessionService(
       throw new ValidationError("The uploaded file type does not match.");
     }
 
-    const peekLength = getStoredUploadSignaturePeekLength(
+    const signaturePeekLength = getStoredUploadSignaturePeekLength(
       session.expectedContentType,
     );
-    if (peekLength > 0) {
-      const bytes = await readBytes(
-        storage,
-        session.tempStorageKey,
-        peekLength,
-      );
+    const peekLength = sniffDimensions
+      ? Math.max(signaturePeekLength, IMAGE_DIMENSION_PEEK_BYTES)
+      : signaturePeekLength;
+
+    if (peekLength === 0) return null;
+
+    const bytes = await readBytes(storage, session.tempStorageKey, peekLength);
+
+    if (signaturePeekLength > 0) {
       const signatureError = validateStoredUploadSignature(
         session.expectedContentType,
-        bytes,
+        bytes.subarray(0, signaturePeekLength),
       );
       if (signatureError) {
         throw new ValidationError(signatureError);
       }
     }
+
+    if (sniffDimensions) {
+      return parseImageDimensions(session.expectedContentType, bytes);
+    }
+
+    return null;
   }
 
   async function validatePoster(
@@ -585,7 +599,20 @@ export function createUploadSessionService(
         if (session.multipartUploadId) {
           await validateStoredChecksum(deps.storage, session);
         }
-        await validateStoredObject(deps.storage, session);
+        let width = data.width;
+        let height = data.height;
+        const needsDimensionSniff =
+          (!width || !height) &&
+          session.expectedContentType.startsWith("image/");
+        const sniffed = await validateStoredObject(
+          deps.storage,
+          session,
+          needsDimensionSniff,
+        );
+        if (sniffed) {
+          width ??= sniffed.width;
+          height ??= sniffed.height;
+        }
         const posterInfo = await validatePoster(deps.storage, id);
 
         const objectOptions = getObjectOptions(session);
@@ -622,8 +649,8 @@ export function createUploadSessionService(
           size: session.expectedSize,
           storageKey: session.finalStorageKey,
           provider: deps.storageDriver,
-          width: data.width,
-          height: data.height,
+          width,
+          height,
           durationSeconds: data.durationSeconds,
           blurhash: data.blurhash,
           waveform: data.waveform,

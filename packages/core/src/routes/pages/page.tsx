@@ -11,6 +11,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { PostPage } from "../../ui/pages/PostPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { buildPostMeta } from "../../lib/post-meta.js";
 import { assemblePostPageDisplay } from "../../lib/post-display.js";
 import { toPublicHref, toPublicPath } from "../../lib/url.js";
@@ -93,7 +94,7 @@ async function renderPostWithTextPreview(
     .replace(/>/g, "\\u003e");
 
   return renderPublicPage(c, {
-    title: pageTitle,
+    title: buildPageTitle(pageTitle, navData.siteName),
     description: meta.description,
     canonicalHref,
     navData,
@@ -162,7 +163,7 @@ async function renderPost(c: Context<Env>, post: Post) {
   );
 
   return renderPublicPage(c, {
-    title: meta.title,
+    title: buildPageTitle(meta.title, navData.siteName),
     description: meta.description,
     canonicalHref,
     navData,

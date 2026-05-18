@@ -30,7 +30,7 @@ function createEditor() {
         link: { openOnClick: false, autolink: false },
       }),
       BubbleMenu.configure({ toolbarMode: "compose" }),
-      LinkToolbar.configure({ toolbarMode: "compose" }),
+      LinkToolbar,
     ],
     content: "<p>Hello world</p>",
   });

@@ -141,6 +141,34 @@
       "when": 1777545080191,
       "tag": "0019_gray_natasha_romanoff",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1778796689691,
+      "tag": "0020_bizarre_smasher",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1778971491254,
+      "tag": "0021_sharp_puppet_master",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1779056638164,
+      "tag": "0022_blushing_blue_shield",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1779059130438,
+      "tag": "0023_organic_zemo",
+      "breakpoints": true
     }
   ]
 }

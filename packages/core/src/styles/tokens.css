@@ -321,6 +321,7 @@
     transparent
   );
   --site-thread-item-spacing: 32px;
+  --site-thread-context-max-height: 160px;
   --site-thread-dot-ring: color-mix(
     in srgb,
     var(--site-accent) 16%,

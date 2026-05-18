@@ -775,6 +775,96 @@ export const githubAppInstallation = sqliteTable(
   ],
 );
 
+// ---------------------------------------------------------------------------
+// Telegram bindings (connect a Telegram account to post Notes via a bot)
+// ---------------------------------------------------------------------------
+
+export const telegramPendingBindings = sqliteTable(
+  "telegram_pending_binding",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    createdAt: integer("created_at").notNull(),
+    expiresAt: integer("expires_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("uq_telegram_pending_binding_site_id").on(table.siteId),
+    uniqueIndex("uq_telegram_pending_binding_code").on(table.code),
+  ],
+);
+
+export const telegramBindings = sqliteTable(
+  "telegram_binding",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    botId: text("bot_id").notNull(),
+    telegramUserId: text("telegram_user_id").notNull(),
+    telegramUsername: text("telegram_username"),
+    lastUpdateId: integer("last_update_id"),
+    boundAt: integer("bound_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("uq_telegram_binding_site_id").on(table.siteId),
+    uniqueIndex("uq_telegram_binding_bot_user").on(
+      table.botId,
+      table.telegramUserId,
+    ),
+  ],
+);
+
+/**
+ * Short-lived buffer for Telegram album (media_group_id) messages.
+ *
+ * Telegram splits an album into one webhook update per item, sharing a
+ * `media_group_id`. The webhook handler inserts one row per item, sleeps a
+ * short window for the rest of the group to arrive, then atomically claims
+ * the whole group with `DELETE ... RETURNING` to publish a single post with
+ * all attachments. Rows are deleted on flush, so the table stays small.
+ */
+export const telegramMediaGroupItems = sqliteTable(
+  "telegram_media_group_item",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    botId: text("bot_id").notNull(),
+    telegramUserId: text("telegram_user_id").notNull(),
+    mediaGroupId: text("media_group_id").notNull(),
+    chatId: integer("chat_id").notNull(),
+    messageId: integer("message_id").notNull(),
+    updateId: integer("update_id").notNull(),
+    fileId: text("file_id").notNull(),
+    mediaKind: text("media_kind").notNull(),
+    mimeType: text("mime_type"),
+    originalName: text("original_name"),
+    captionMarkdown: text("caption_markdown"),
+    width: integer("width"),
+    height: integer("height"),
+    durationSeconds: integer("duration_seconds"),
+    /** Telegram `thumbnail.file_id` for videos / previewable documents. */
+    posterFileId: text("poster_file_id"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    index("idx_telegram_media_group_item_group").on(
+      table.botId,
+      table.mediaGroupId,
+    ),
+    uniqueIndex("uq_telegram_media_group_item_message").on(
+      table.botId,
+      table.mediaGroupId,
+      table.messageId,
+    ),
+  ],
+);
+
 // =============================================================================
 // Rate Limit
 // =============================================================================

@@ -16,6 +16,9 @@ export const ID_PREFIX = {
   session: "ses",
   account: "acc",
   verification: "vrf",
+  telegramBinding: "tgb",
+  telegramBindingCode: "tgc",
+  telegramMediaGroupItem: "tmg",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIX)[keyof typeof ID_PREFIX];

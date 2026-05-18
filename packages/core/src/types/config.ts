@@ -396,6 +396,46 @@ export const CONFIG_FIELDS = {
     envOnly: true,
     envKeys: ["GITHUB_APP_WEBHOOK_SECRET"],
   },
+
+  // Telegram bot pool (env-only). When TELEGRAM_BOT_TOKENS is set the bot
+  // tokens are platform-managed (hosted, or a single-site operator who opts
+  // in) and the settings UI hides the token field. Comma-separated list of
+  // `<bot_id>:<secret>` tokens; TELEGRAM_WEBHOOK_SECRET is the shared
+  // `secret_token` used when registering every pool bot's webhook.
+  TELEGRAM_BOT_TOKENS: {
+    defaultValue: "",
+    envOnly: true,
+    envKeys: ["TELEGRAM_BOT_TOKENS"],
+  },
+  TELEGRAM_WEBHOOK_SECRET: {
+    defaultValue: "",
+    envOnly: true,
+    envKeys: ["TELEGRAM_WEBHOOK_SECRET"],
+  },
+
+  // Telegram bring-your-own bot (DB-only, single-site, managed via the
+  // Telegram settings page when TELEGRAM_BOT_TOKENS is not set).
+  TELEGRAM_BOT_TOKEN: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  TELEGRAM_BOT_ID: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  TELEGRAM_BOT_USERNAME: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  /** Per-site `secret_token` for a bring-your-own bot's webhook. */
+  TELEGRAM_BOT_WEBHOOK_SECRET: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
 } as const satisfies Record<string, ConfigField>;
 
 export type ConfigKey = keyof typeof CONFIG_FIELDS;

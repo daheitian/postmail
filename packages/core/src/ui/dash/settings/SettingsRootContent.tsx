@@ -24,6 +24,7 @@ const ICONS = {
   key: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>`,
   shield: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>`,
   gitBranch: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>`,
+  send: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>`,
 };
 
 export function SettingsRootContent({
@@ -111,23 +112,6 @@ export function SettingsRootContent({
             msg({
               message: "Redirects, vanity paths, and URL control",
               comment: "@context: Settings item description for custom URLs",
-            }),
-          )}
-        />
-        <SettingsDirectoryLink
-          href={toPublicPath("/settings/github-sync", sitePathPrefix)}
-          icon={ICONS.gitBranch}
-          tone="subtle"
-          name={i18n._(
-            msg({
-              message: "GitHub Sync",
-              comment: "@context: Settings item — GitHub sync settings",
-            }),
-          )}
-          description={i18n._(
-            msg({
-              message: "Back up and sync content with a GitHub repository",
-              comment: "@context: Settings item description for GitHub sync",
             }),
           )}
         />
@@ -220,6 +204,53 @@ export function SettingsRootContent({
             msg({
               message: "Fine-grained styling overrides",
               comment: "@context: Settings item description for custom CSS",
+            }),
+          )}
+        />
+      </SettingsDirectorySection>
+
+      <SettingsDirectorySection
+        title={i18n._(
+          msg({
+            message: "Integrations",
+            comment:
+              "@context: Settings group label for third-party integrations",
+          }),
+        )}
+      >
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/github-sync", sitePathPrefix)}
+          icon={ICONS.gitBranch}
+          tone="subtle"
+          name={i18n._(
+            msg({
+              message: "GitHub Sync",
+              comment: "@context: Settings item — GitHub sync settings",
+            }),
+          )}
+          description={i18n._(
+            msg({
+              message: "Back up and sync content with a GitHub repository",
+              comment: "@context: Settings item description for GitHub sync",
+            }),
+          )}
+        />
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/telegram", sitePathPrefix)}
+          icon={ICONS.send}
+          tone="subtle"
+          name={i18n._(
+            msg({
+              message: "Telegram",
+              comment:
+                "@context: Settings item — Telegram integration settings",
+            }),
+          )}
+          description={i18n._(
+            msg({
+              message: "Post notes by messaging a Telegram bot",
+              comment:
+                "@context: Settings item description for Telegram integration",
             }),
           )}
         />

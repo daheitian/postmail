@@ -155,6 +155,34 @@
       "when": 1777545055083,
       "tag": "0021_thankful_phalanx",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1778796687132,
+      "tag": "0022_old_gressill",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1778971484117,
+      "tag": "0023_broad_terror",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1779056636782,
+      "tag": "0024_red_the_twelve",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1779059129849,
+      "tag": "0025_exotic_wendell_rand",
+      "breakpoints": true
     }
   ]
 }

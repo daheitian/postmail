@@ -91,7 +91,8 @@ export async function resolveRequestSite(
     // payload's installation id) instead of relying on `currentSite`.
     if (
       requestUrl.pathname.startsWith("/api/internal/") ||
-      requestUrl.pathname === "/api/github-sync/app-webhook"
+      requestUrl.pathname === "/api/github-sync/app-webhook" ||
+      requestUrl.pathname.startsWith("/api/telegram/webhook/")
     ) {
       return {
         site: createTransientSite("internal"),

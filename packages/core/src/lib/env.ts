@@ -301,6 +301,51 @@ export function shouldTrustProxy(env: EnvSource): boolean {
   return getEnvString(env, "TRUST_PROXY") === "true";
 }
 
+/** A single platform-managed Telegram bot from `TELEGRAM_BOT_TOKENS`. */
+export interface TelegramPoolBot {
+  /** Numeric bot id — the part before `:` in the token. */
+  botId: string;
+  /** Full `<bot_id>:<secret>` bot token. */
+  token: string;
+}
+
+/**
+ * Parses the platform-managed Telegram bot pool from `TELEGRAM_BOT_TOKENS`.
+ *
+ * The env value is a comma-separated list of `<bot_id>:<secret>` tokens. The
+ * first entry is the public-facing bot (`bot1`); the rest are surfaced only
+ * contextually when a binding code reaches an already-bound bot slot.
+ *
+ * @param env - Runtime environment bindings
+ * @returns Parsed pool bots in declared order; empty when unset/invalid
+ * @example
+ * getTelegramBotPool({ TELEGRAM_BOT_TOKENS: "111:aaa,222:bbb" });
+ */
+export function getTelegramBotPool(env: EnvSource): TelegramPoolBot[] {
+  const raw = getEnvString(env, "TELEGRAM_BOT_TOKENS");
+  if (!raw) {
+    return [];
+  }
+
+  return raw
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0)
+    .map((token) => {
+      const botId = token.split(":")[0]?.trim() ?? "";
+      return { botId, token };
+    })
+    .filter((bot) => bot.botId.length > 0);
+}
+
+/**
+ * Returns the shared `secret_token` used when registering every pool bot's
+ * webhook. Only meaningful alongside `TELEGRAM_BOT_TOKENS`.
+ */
+export function getTelegramWebhookSecret(env: EnvSource): string | undefined {
+  return getEnvString(env, "TELEGRAM_WEBHOOK_SECRET");
+}
+
 export function shouldUseSecureCookies(
   env: EnvSource,
   publicRequestUrl: string,

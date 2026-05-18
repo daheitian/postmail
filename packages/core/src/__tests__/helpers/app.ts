@@ -39,6 +39,10 @@ interface TestAppOptions {
   hostedControlPlaneSsoSecret?: string;
   /** Optional hosted handoff service override */
   hostedHandoff?: HostedHandoffService;
+  /** Optional `TELEGRAM_BOT_TOKENS` env binding for Telegram webhook tests */
+  telegramBotTokens?: string;
+  /** Optional `TELEGRAM_WEBHOOK_SECRET` env binding for Telegram webhook tests */
+  telegramWebhookSecret?: string;
 }
 
 /**
@@ -53,10 +57,13 @@ export function createTestApp(options: TestAppOptions = {}) {
   // Create a mock D1 for search service
   const mockD1 = createMockD1(sqlite);
 
-  const services = createServices(db, mockD1, DEFAULT_TEST_SITE_ID, {
+  const servicesConfig = {
     slugIdLength: 5,
     siteResolutionMode: options.siteResolutionMode ?? "single-site",
-  });
+  };
+  const servicesForSite = (siteId: string) =>
+    createServices(db, mockD1, siteId, servicesConfig);
+  const services = servicesForSite(DEFAULT_TEST_SITE_ID);
 
   // Fresh limiter per test app so counters don't leak between tests.
   const rateLimiter = createMemoryRateLimiter();
@@ -75,6 +82,8 @@ export function createTestApp(options: TestAppOptions = {}) {
       DEMO_MODE: options.demoMode ? "true" : "false",
       INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
       HOSTED_CONTROL_PLANE_SSO_SECRET: options.hostedControlPlaneSsoSecret,
+      TELEGRAM_BOT_TOKENS: options.telegramBotTokens,
+      TELEGRAM_WEBHOOK_SECRET: options.telegramWebhookSecret,
       NODE_DATABASE: {
         db,
         dialect: "sqlite",
@@ -85,6 +94,10 @@ export function createTestApp(options: TestAppOptions = {}) {
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);
+    c.set(
+      "servicesForSite",
+      servicesForSite as AppVariables["servicesForSite"],
+    );
     c.set(
       "hostedHandoff",
       options.hostedHandoff ??

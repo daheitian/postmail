@@ -2624,6 +2624,113 @@
       var(--site-thread-dot-ring);
   }
 
+  /* Collapsible ancestor context wrapper.
+     Server-rendered with `data-collapsed`. Crop and fade are always active
+     while data-collapsed is set; JS only toggles the Show more/less button
+     visibility based on real overflow. Negative left margin + matching
+     padding extends the shell's box past the content edge so the dot
+     markers (which live at left:-31.5px on desktop) survive
+     `overflow: hidden`. `box-sizing: content-box` keeps the inner content
+     width identical to before. */
+  .thread-context-shell {
+    position: relative;
+    box-sizing: content-box;
+    margin-left: -40px;
+    padding-left: 40px;
+    transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .thread-context-shell[data-collapsed] {
+    max-height: var(--site-thread-context-max-height);
+    overflow: hidden;
+    /* Soft fade at the bottom edge so the cap doesn't make a hard cut
+       through text when content barely overflows. Combined with the
+       shell's opacity:0.5 this produces a smooth "context drifts off"
+       look instead of a guillotine slice right above the toggle. */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 60%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 60%,
+      transparent 100%
+    );
+  }
+
+  /* Push ancestor context into the visual background so the focused post
+     below the shell (latest reply on the home feed, anchor post on the
+     detail page) reads as the primary content. Opacity works on both real
+     painted content AND empty space, sidestepping the gradient-on-empty
+     visibility problem. The dots inside the shell get muted along with
+     the content, which actually reinforces the "this is background" feel
+     — the rail line itself lives on `.thread-group::before` and stays at
+     full strength. */
+  .thread-context-shell {
+    opacity: 0.5;
+    transition: opacity 0.22s ease;
+  }
+
+  /* When the user expands the shell, restore full strength — they've
+     opted in to reading the context. */
+  .thread-context-shell:not([data-collapsed]) {
+    opacity: 1;
+  }
+
+  /* Hide the legacy gradient-overlay element — opacity replaces it. */
+  .thread-context-fade {
+    display: none;
+  }
+
+  .thread-context-toggle[hidden] {
+    display: none;
+  }
+
+  .thread-context-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0 0 6px;
+    padding: 0.3rem 0;
+    border: 0;
+    background: transparent;
+    color: var(--site-text-secondary);
+    font-size: var(--type-thread-context-meta);
+    line-height: 1.2;
+    cursor: pointer;
+    transition: color 0.18s ease;
+  }
+
+  .thread-context-toggle:hover {
+    color: var(--site-text-primary);
+  }
+
+  .thread-context-toggle:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  .thread-context-toggle-chevron {
+    width: 10px;
+    height: 10px;
+    opacity: 0.7;
+    transition:
+      transform 0.2s ease,
+      opacity 0.18s ease;
+  }
+
+  .thread-context-toggle:hover .thread-context-toggle-chevron {
+    opacity: 1;
+  }
+
+  .thread-context-toggle[aria-expanded="true"] .thread-context-toggle-chevron {
+    transform: rotate(180deg);
+  }
+
   .thread-item-gap {
     padding-top: 0.15rem;
     padding-bottom: 0.35rem;
@@ -2699,6 +2806,15 @@
   /* Thread detail: current post anchor + dot-only highlight */
   .thread-detail-item {
     scroll-margin-top: 80px;
+  }
+
+  /* When a child post has an ancestor shell above it (toggle button sits
+     directly before the current post), leave enough room above the scroll
+     landing so the user can see the Show more button + a peek of the
+     faded shell on initial load. Otherwise everything above is hidden in
+     the viewport and the user has to discover it by scrolling up. */
+  .thread-context-toggle + .thread-detail-item {
+    scroll-margin-top: 152px;
   }
 
   .thread-group-detail .thread-item-current::before {
@@ -9681,19 +9797,6 @@
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   }
 
-  .tiptap-bubble-menu-docked {
-    left: 50% !important;
-    top: auto !important;
-    bottom: calc(
-      env(safe-area-inset-bottom) + var(--tiptap-docked-offset, 16px)
-    );
-    transform: translateX(-50%);
-    gap: 4px;
-    padding: 6px;
-    border-radius: 12px;
-    max-width: calc(100vw - 24px);
-  }
-
   .tiptap-bubble-menu::after {
     content: "";
     position: absolute;
@@ -9703,10 +9806,6 @@
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 5px solid var(--color-foreground);
-  }
-
-  .tiptap-bubble-menu-docked::after {
-    display: none;
   }
 
   .tiptap-bubble-btn {
@@ -9765,11 +9864,6 @@
     flex: 1;
   }
 
-  .tiptap-link-input-docked .tiptap-link-input-fields {
-    min-width: 0;
-    width: 100%;
-  }
-
   .tiptap-link-input-text {
     border: none;
     outline: none;
@@ -9783,17 +9877,6 @@
 
   .tiptap-link-input-text::placeholder {
     color: var(--color-muted-foreground);
-  }
-
-  .tiptap-link-input-docked {
-    left: 50% !important;
-    top: auto !important;
-    bottom: calc(
-      env(safe-area-inset-bottom) + var(--tiptap-docked-offset, 16px)
-    );
-    transform: translateX(-50%);
-    width: min(calc(100vw - 24px), 420px);
-    max-width: calc(100vw - 24px);
   }
 
   .tiptap-link-input::before {
@@ -9816,11 +9899,6 @@
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 5px solid var(--color-background);
-  }
-
-  .tiptap-link-input-docked::before,
-  .tiptap-link-input-docked::after {
-    display: none;
   }
 
   .tiptap-link-input-field {
