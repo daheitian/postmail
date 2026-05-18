@@ -2661,28 +2661,28 @@
     );
   }
 
-  /* Push ancestor context into the visual background so the focused post
-     below the shell (latest reply on the home feed, anchor post on the
-     detail page) reads as the primary content. Opacity works on both real
-     painted content AND empty space, sidestepping the gradient-on-empty
-     visibility problem. The dots inside the shell get muted along with
-     the content, which actually reinforces the "this is background" feel
-     — the rail line itself lives on `.thread-group::before` and stays at
-     full strength. */
+  /* Push ancestor context slightly into the background — enough to feel
+     secondary to the focused post but not so much that text becomes gray
+     and hard to read. Combined with the mask-image bottom fade this gives
+     a "context drifts into the background" effect without dimming the
+     whole shell to the point of illegibility. */
   .thread-context-shell {
-    opacity: 0.5;
+    opacity: 0.6;
     transition: opacity 0.22s ease;
   }
 
-  /* When the user expands the shell, restore full strength — they've
-     opted in to reading the context. */
   .thread-context-shell:not([data-collapsed]) {
     opacity: 1;
   }
 
-  /* Hide the legacy gradient-overlay element — opacity replaces it. */
-  .thread-context-fade {
-    display: none;
+  /* Tighter padding for context items inside the shell so a single-line
+     root post doesn't leave 64px of empty padding pushing the toggle
+     button far below the visible text. Items outside the shell (hero,
+     descendants on detail pages) keep the default --site-thread-item-spacing
+     so the focused post still gets generous breathing room. */
+  .thread-context-shell .thread-item {
+    padding-top: 16px;
+    padding-bottom: 16px;
   }
 
   .thread-context-toggle[hidden] {
@@ -2812,9 +2812,10 @@
      directly before the current post), leave enough room above the scroll
      landing so the user can see the Show more button + a peek of the
      faded shell on initial load. Otherwise everything above is hidden in
-     the viewport and the user has to discover it by scrolling up. */
+     the viewport and the user has to discover it by scrolling up. Sized
+     for the ghost-style toggle (~28px) + a glimpse of the faded shell. */
   .thread-context-toggle + .thread-detail-item {
-    scroll-margin-top: 152px;
+    scroll-margin-top: 120px;
   }
 
   .thread-group-detail .thread-item-current::before {

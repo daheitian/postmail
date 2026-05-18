@@ -67,7 +67,6 @@ const ThreadDetail: FC<{ post: PostView; threadPosts: PostView[] }> = ({
             data-collapsed=""
           >
             {ancestors.map((tp) => renderThreadItem(tp, post.id))}
-            <div class="thread-context-fade" aria-hidden="true" />
           </div>
           <button
             type="button"

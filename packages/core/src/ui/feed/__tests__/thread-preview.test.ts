@@ -230,7 +230,6 @@ describe("getThreadPreviewState", () => {
     expect(html).toContain("thread-context-shell");
     expect(html).toContain("data-thread-context");
     expect(html).toContain("data-collapsed");
-    expect(html).toContain("thread-context-fade");
     expect(html).toContain("data-thread-context-toggle");
     expect(html).toContain('aria-expanded="false"');
     expect(html).toMatch(/data-label-more="[^"]+"/);
