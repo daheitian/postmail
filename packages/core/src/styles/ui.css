@@ -2625,39 +2625,64 @@
   }
 
   /* Collapsible ancestor context wrapper.
-     Server-rendered with `data-collapsed` whenever the thread has any extra
-     context (the common case overflows the cap). JS post-load removes the
-     attribute and hides the toggle for the rarer short-content case where
-     the cap wouldn't actually crop anything. Common path = no first-paint
-     reflow; short-content path = brief flash then cleanup. */
+     Server-rendered with `data-collapsed`. Crop and fade are always active
+     while data-collapsed is set; JS only toggles the Show more/less button
+     visibility based on real overflow. Negative left margin + matching
+     padding extends the shell's box past the content edge so the dot
+     markers (which live at left:-31.5px on desktop) survive
+     `overflow: hidden`. `box-sizing: content-box` keeps the inner content
+     width identical to before. */
   .thread-context-shell {
     position: relative;
+    box-sizing: content-box;
+    margin-left: -40px;
+    padding-left: 40px;
     transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .thread-context-shell[data-collapsed] {
     max-height: var(--site-thread-context-max-height);
     overflow: hidden;
+    /* Soft fade at the bottom edge so the cap doesn't make a hard cut
+       through text when content barely overflows. Combined with the
+       shell's opacity:0.5 this produces a smooth "context drifts off"
+       look instead of a guillotine slice right above the toggle. */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 60%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 60%,
+      transparent 100%
+    );
   }
 
-  .thread-context-fade {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 88px;
-    pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      transparent 0%,
-      var(--site-page-bg) 92%
-    );
-    opacity: 0;
+  /* Push ancestor context into the visual background so the focused post
+     below the shell (latest reply on the home feed, anchor post on the
+     detail page) reads as the primary content. Opacity works on both real
+     painted content AND empty space, sidestepping the gradient-on-empty
+     visibility problem. The dots inside the shell get muted along with
+     the content, which actually reinforces the "this is background" feel
+     — the rail line itself lives on `.thread-group::before` and stays at
+     full strength. */
+  .thread-context-shell {
+    opacity: 0.5;
     transition: opacity 0.22s ease;
   }
 
-  .thread-context-shell[data-collapsed] .thread-context-fade {
+  /* When the user expands the shell, restore full strength — they've
+     opted in to reading the context. */
+  .thread-context-shell:not([data-collapsed]) {
     opacity: 1;
+  }
+
+  /* Hide the legacy gradient-overlay element — opacity replaces it. */
+  .thread-context-fade {
+    display: none;
   }
 
   .thread-context-toggle[hidden] {
@@ -2667,40 +2692,39 @@
   .thread-context-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    margin: 8px 0 4px;
-    padding: 0.4rem 0.85rem;
-    border: 1px solid var(--site-thread-context-border);
-    border-radius: 999px;
-    background: var(--site-thread-gap-bg);
+    gap: 0.3rem;
+    margin: 0 0 6px;
+    padding: 0.3rem 0;
+    border: 0;
+    background: transparent;
     color: var(--site-text-secondary);
     font-size: var(--type-thread-context-meta);
     line-height: 1.2;
     cursor: pointer;
-    transition:
-      border-color 0.18s ease,
-      color 0.18s ease,
-      background-color 0.18s ease;
+    transition: color 0.18s ease;
   }
 
   .thread-context-toggle:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--site-accent) 22%,
-      var(--site-divider)
-    );
     color: var(--site-text-primary);
   }
 
   .thread-context-toggle:focus-visible {
     outline: 2px solid var(--site-accent);
-    outline-offset: 2px;
+    outline-offset: 4px;
+    border-radius: 2px;
   }
 
   .thread-context-toggle-chevron {
-    width: 12px;
-    height: 12px;
-    transition: transform 0.2s ease;
+    width: 10px;
+    height: 10px;
+    opacity: 0.7;
+    transition:
+      transform 0.2s ease,
+      opacity 0.18s ease;
+  }
+
+  .thread-context-toggle:hover .thread-context-toggle-chevron {
+    opacity: 1;
   }
 
   .thread-context-toggle[aria-expanded="true"] .thread-context-toggle-chevron {
@@ -2782,6 +2806,15 @@
   /* Thread detail: current post anchor + dot-only highlight */
   .thread-detail-item {
     scroll-margin-top: 80px;
+  }
+
+  /* When a child post has an ancestor shell above it (toggle button sits
+     directly before the current post), leave enough room above the scroll
+     landing so the user can see the Show more button + a peek of the
+     faded shell on initial load. Otherwise everything above is hidden in
+     the viewport and the user has to discover it by scrolling up. */
+  .thread-context-toggle + .thread-detail-item {
+    scroll-margin-top: 152px;
   }
 
   .thread-group-detail .thread-item-current::before {

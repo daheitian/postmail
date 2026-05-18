@@ -62,17 +62,19 @@ function setupShell(toggle: HTMLElement): void {
     // overflow is currently clipped — valid in collapsed and expanded states.
     const overflows = shell.scrollHeight > cap + OVERFLOW_THRESHOLD_PX;
 
+    // We always keep `data-collapsed` set so the fade overlay stays visible
+    // as a "this is context" hint, regardless of whether the cap actually
+    // clips anything. Only the toggle button depends on real overflow —
+    // showing it for content that already fits would let the user click a
+    // no-op control.
+    if (shell.dataset.collapsed === undefined) shell.dataset.collapsed = "";
     if (overflows) {
-      // Common case: server state was already correct (cap + fade + button).
-      // Restore in case a prior evaluation had hidden anything.
-      if (shell.dataset.collapsed === undefined) shell.dataset.collapsed = "";
       toggle.hidden = false;
       setExpandedLabel(false);
     } else if (allImagesSettled()) {
       // Only hide once we're sure nothing pending will grow the shell.
       // Hiding while an image is mid-download would briefly remove the
       // button, and the user could click the spot where it just was.
-      delete shell.dataset.collapsed;
       toggle.hidden = true;
     }
   };
