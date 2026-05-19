@@ -94,7 +94,7 @@ describe("JantMediaLightbox", () => {
     ).toBe(false);
   });
 
-  it("renders tall images in a scrollable stage", async () => {
+  it("previews tall images contained, then expands to a scrollable stage on click", async () => {
     const el = await createElement();
 
     el.open(
@@ -110,14 +110,67 @@ describe("JantMediaLightbox", () => {
     );
     await flush(el);
 
-    const stage = el.querySelector(".media-lightbox-stage");
-    const img = el.querySelector(".media-lightbox-img");
+    const initialStage = el.querySelector(".media-lightbox-stage");
+    const initialImg = el.querySelector<HTMLImageElement>(
+      ".media-lightbox-img",
+    );
 
-    expect(stage?.classList.contains("media-lightbox-stage-scroll")).toBe(true);
-    expect(img?.classList.contains("media-lightbox-img-scroll")).toBe(true);
+    expect(
+      initialStage?.classList.contains("media-lightbox-stage-scroll"),
+    ).toBe(false);
+    expect(initialImg?.classList.contains("media-lightbox-img-scroll")).toBe(
+      false,
+    );
+    expect(initialImg?.classList.contains("media-lightbox-img-zoomable")).toBe(
+      true,
+    );
+
+    initialImg?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+    await flush(el);
+
+    const zoomedStage = el.querySelector(".media-lightbox-stage");
+    const zoomedImg = el.querySelector(".media-lightbox-img");
+    expect(zoomedStage?.classList.contains("media-lightbox-stage-scroll")).toBe(
+      true,
+    );
+    expect(zoomedImg?.classList.contains("media-lightbox-img-scroll")).toBe(
+      true,
+    );
+
+    zoomedImg?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+    await flush(el);
+
+    const collapsedStage = el.querySelector(".media-lightbox-stage");
+    expect(
+      collapsedStage?.classList.contains("media-lightbox-stage-scroll"),
+    ).toBe(false);
   });
 
-  it("resets stage scroll when navigating between images", async () => {
+  it("does not show the zoom affordance for regular-aspect images", async () => {
+    const el = await createElement();
+
+    el.open(
+      [
+        {
+          url: "https://example.com/wide.jpg",
+          alt: "",
+          width: 1600,
+          height: 900,
+        },
+      ],
+      0,
+    );
+    await flush(el);
+
+    const img = el.querySelector(".media-lightbox-img");
+    expect(img?.classList.contains("media-lightbox-img-zoomable")).toBe(false);
+  });
+
+  it("resets zoom and stage scroll when navigating between images", async () => {
     const el = await createElement();
 
     el.open(
@@ -139,10 +192,18 @@ describe("JantMediaLightbox", () => {
     );
     await flush(el);
 
+    el.querySelector<HTMLImageElement>(".media-lightbox-img")?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+    await flush(el);
+
     const initialStage = el.querySelector<HTMLElement>(".media-lightbox-stage");
     if (!initialStage) {
       throw new Error("expected lightbox stage");
     }
+    expect(initialStage.classList.contains("media-lightbox-stage-scroll")).toBe(
+      true,
+    );
     initialStage.scrollTop = 180;
 
     el.querySelector<HTMLButtonElement>(".media-lightbox-nav-next")?.click();
@@ -150,6 +211,9 @@ describe("JantMediaLightbox", () => {
 
     const nextStage = el.querySelector<HTMLElement>(".media-lightbox-stage");
     expect(nextStage?.scrollTop).toBe(0);
+    expect(nextStage?.classList.contains("media-lightbox-stage-scroll")).toBe(
+      false,
+    );
   });
 
   it("uses natural image dimensions for inline post-body images", async () => {
@@ -179,8 +243,15 @@ describe("JantMediaLightbox", () => {
     );
     await flush(el);
 
-    const stage = el.querySelector(".media-lightbox-stage");
-    expect(stage?.classList.contains("media-lightbox-stage-scroll")).toBe(true);
+    const lightboxImg = el.querySelector<HTMLImageElement>(
+      ".media-lightbox-img",
+    );
+    expect(lightboxImg?.classList.contains("media-lightbox-img-zoomable")).toBe(
+      true,
+    );
+    expect(lightboxImg?.classList.contains("media-lightbox-img-scroll")).toBe(
+      false,
+    );
   });
 
   it("renders custom controls for short videos", async () => {
