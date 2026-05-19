@@ -24,7 +24,8 @@ import {
   assembleFeaturedTimeline,
   assembleTimeline,
 } from "../../lib/timeline.js";
-import { toPublicPath } from "../../lib/url.js";
+import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
+import { buildWebSiteJsonLd } from "../../lib/structured-data.js";
 import { HomePage } from "../../ui/pages/HomePage.js";
 import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
 
@@ -56,6 +57,23 @@ homeRoutes.get("/", async (c) => {
 
   const { items, currentPage, totalPages } = timeline;
 
+  // WebSite + SearchAction structured data, emitted only on the first page
+  // (the canonical site entry point) and only when a site URL is configured
+  // so the search-box action resolves to an absolute URL.
+  const { siteUrl } = c.var.appConfig;
+  const websiteJsonLd =
+    page === 1 && siteUrl
+      ? buildWebSiteJsonLd({
+          name: navData.siteName,
+          url: toAbsoluteSiteUrl("/", siteUrl, navData.sitePathPrefix),
+          searchUrlTemplate: `${toAbsoluteSiteUrl(
+            "/search",
+            siteUrl,
+            navData.sitePathPrefix,
+          )}?q={search_term_string}`,
+        })
+      : undefined;
+
   if (homeDefaultView === "featured") {
     const featuredTitle = i18n._(
       msg({
@@ -69,6 +87,7 @@ homeRoutes.get("/", async (c) => {
         page > 1
           ? buildPageTitle(featuredTitle, paginatedPageTitle, navData.siteName)
           : navData.siteName,
+      jsonLd: websiteJsonLd,
       navData,
       showHomeBranding:
         c.var.appConfig.showJantBrandingOnHome && currentPage === 1,
@@ -95,6 +114,7 @@ homeRoutes.get("/", async (c) => {
       page > 1
         ? buildPageTitle(latestTitle, paginatedPageTitle, navData.siteName)
         : navData.siteName,
+    jsonLd: websiteJsonLd,
     navData,
     showHomeBranding:
       c.var.appConfig.showJantBrandingOnHome && currentPage === 1,

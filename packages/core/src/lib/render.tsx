@@ -24,6 +24,20 @@ export interface RenderPublicPageOptions {
   appleTouchHref?: string;
   /** Optional explicit social image href */
   socialImageUrl?: string;
+  /** Alt text describing an explicit `socialImageUrl`. */
+  socialImageAlt?: string;
+  /** Pixel width of an explicit `socialImageUrl`, when known. */
+  socialImageWidth?: number;
+  /** Pixel height of an explicit `socialImageUrl`, when known. */
+  socialImageHeight?: number;
+  /** Open Graph object type. Defaults to "website" in BaseLayout. */
+  ogType?: "website" | "article";
+  /** ISO 8601 publish time, rendered as `article:published_time` for articles. */
+  articlePublishedTime?: string;
+  /** ISO 8601 modified time, rendered as `article:modified_time` for articles. */
+  articleModifiedTime?: string;
+  /** JSON-LD structured data object (or array) for this page. */
+  jsonLd?: unknown;
   /**
    * Absolute canonical URL for this page. Forwarded to `BaseLayout` and
    * rendered as `<link rel="canonical">`. Only set when the page has a
@@ -73,6 +87,13 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     faviconHref,
     appleTouchHref,
     socialImageUrl,
+    socialImageAlt,
+    socialImageWidth,
+    socialImageHeight,
+    ogType,
+    articlePublishedTime,
+    articleModifiedTime,
+    jsonLd,
     canonicalHref,
     navData,
     content,
@@ -127,6 +148,13 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
       faviconHref={faviconHref}
       appleTouchHref={appleTouchHref}
       socialImageUrl={socialImageUrl}
+      socialImageAlt={socialImageAlt}
+      socialImageWidth={socialImageWidth}
+      socialImageHeight={socialImageHeight}
+      ogType={ogType}
+      articlePublishedTime={articlePublishedTime}
+      articleModifiedTime={articleModifiedTime}
+      jsonLd={jsonLd}
       canonicalHref={canonicalHref}
       faviconUrl={faviconUrl}
       faviconVersion={faviconVersion}
