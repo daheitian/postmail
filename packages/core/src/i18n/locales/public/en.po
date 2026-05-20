@@ -371,14 +371,8 @@ msgstr "Clear filter"
 msgid "Close menu"
 msgstr "Close menu"
 
-#. @context: Singular collection count label
-#. @context: Singular collection count label
-#. @context: Singular collection count label
 #. @context: Singular collection count label on an aggregate collection page
 #: src/ui/pages/CollectionPage.tsx
-#: src/ui/pages/CollectionsPage.tsx
-#: src/ui/shared/CollectionsManager.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "collection"
 msgstr "collection"
 
@@ -412,14 +406,8 @@ msgstr "Collection order updated."
 msgid "Collection saved."
 msgstr "Collection saved."
 
-#. @context: Plural collection count label
-#. @context: Plural collection count label
-#. @context: Plural collection count label
 #. @context: Plural collection count label on an aggregate collection page
 #: src/ui/pages/CollectionPage.tsx
-#: src/ui/pages/CollectionsPage.tsx
-#: src/ui/shared/CollectionsManager.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "collections"
 msgstr "collections"
 
