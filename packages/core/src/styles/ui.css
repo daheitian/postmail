@@ -6974,10 +6974,15 @@
     opacity: 0.82;
   }
 
-  /* Single image: constrain to container width */
+  /* Single image: constrain to container width. min-width keeps the preview
+     wide enough for the remove button; a very long image overflows it and is
+     cropped from the top (object-fit: cover) instead of shrinking to a sliver. */
   .compose-attachment:only-child .compose-attachment-img {
     max-width: 100%;
     max-height: min(200px, 22dvh);
+    min-width: 48px;
+    object-fit: cover;
+    object-position: center top;
   }
 
   .compose-attachment:only-child .compose-attachment-preview-fallback {
