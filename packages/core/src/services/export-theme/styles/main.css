@@ -379,11 +379,12 @@ time {
 }
 
 .site-logo-avatar {
-  width: calc(var(--avatar-size) + 2px);
-  height: calc(var(--avatar-size) + 2px);
+  box-sizing: border-box;
+  width: calc(var(--avatar-size) + 4px);
+  height: calc(var(--avatar-size) + 4px);
   border-radius: var(--avatar-radius);
   object-fit: cover;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--site-divider) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--site-divider) 82%, transparent);
   flex: none;
 }
 
