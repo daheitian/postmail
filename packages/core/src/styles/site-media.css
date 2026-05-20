@@ -79,12 +79,20 @@
   animation: lightbox-scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.media-lightbox-img-zoomable {
+  cursor: zoom-in;
+}
+
 .media-lightbox-img-scroll {
   width: min(100%, 44rem);
   max-width: none;
   max-height: none;
   height: auto;
   margin: 0 auto;
+}
+
+.media-lightbox-img-zoomable.media-lightbox-img-scroll {
+  cursor: zoom-out;
 }
 
 .media-lightbox-close {

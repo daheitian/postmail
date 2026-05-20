@@ -140,6 +140,7 @@ export class JantMediaLightbox extends LitElement {
     _videoCurrentTime: { state: true },
     _videoDuration: { state: true },
     _videoMuted: { state: true },
+    _imageZoomed: { state: true },
   };
 
   declare _images: LightboxImage[];
@@ -150,6 +151,7 @@ export class JantMediaLightbox extends LitElement {
   declare _videoCurrentTime: number;
   declare _videoDuration: number;
   declare _videoMuted: boolean;
+  declare _imageZoomed: boolean;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -167,6 +169,7 @@ export class JantMediaLightbox extends LitElement {
     this._videoCurrentTime = 0;
     this._videoDuration = 0;
     this._videoMuted = false;
+    this._imageZoomed = false;
   }
 
   connectedCallback() {
@@ -188,6 +191,7 @@ export class JantMediaLightbox extends LitElement {
     this._images = images;
     this._currentIndex = Math.max(0, Math.min(index, images.length - 1));
     this.#resetShortVideoState(this._images[this._currentIndex]);
+    this._imageZoomed = false;
     this._open = true;
     document.dispatchEvent(
       new CustomEvent(MEDIA_LIGHTBOX_TOGGLE_EVENT, {
@@ -267,6 +271,7 @@ export class JantMediaLightbox extends LitElement {
   #prev() {
     if (this._images.length <= 1) return;
     this.#pauseCurrentVideo();
+    this._imageZoomed = false;
     this._currentIndex =
       (this._currentIndex - 1 + this._images.length) % this._images.length;
   }
@@ -274,8 +279,21 @@ export class JantMediaLightbox extends LitElement {
   #next() {
     if (this._images.length <= 1) return;
     this.#pauseCurrentVideo();
+    this._imageZoomed = false;
     this._currentIndex = (this._currentIndex + 1) % this._images.length;
   }
+
+  #handleImageClick = (e: Event) => {
+    const img = this._images[this._currentIndex];
+    const eligible = shouldUseScrollableLightboxImage(
+      img,
+      this._viewportWidth,
+      this._viewportHeight,
+    );
+    if (!eligible) return;
+    e.stopPropagation();
+    this._imageZoomed = !this._imageZoomed;
+  };
 
   #handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
@@ -531,14 +549,22 @@ export class JantMediaLightbox extends LitElement {
     super.updated(changed);
 
     if (!this._open) return;
-    if (!changed.has("_currentIndex") && !changed.has("_open")) return;
+    if (
+      !changed.has("_currentIndex") &&
+      !changed.has("_open") &&
+      !changed.has("_imageZoomed")
+    ) {
+      return;
+    }
 
     const stage = this.querySelector<HTMLElement>(".media-lightbox-stage");
     if (!stage) return;
     stage.scrollTop = 0;
     stage.scrollLeft = 0;
-    this.#syncCurrentVideo();
-    this.#focusCurrentMedia();
+    if (changed.has("_currentIndex") || changed.has("_open")) {
+      this.#syncCurrentVideo();
+      this.#focusCurrentMedia();
+    }
   }
 
   render() {
@@ -548,11 +574,12 @@ export class JantMediaLightbox extends LitElement {
     const multiple = this._images.length > 1;
     const isVideo = img?.mimeType?.startsWith("video/");
     const usesShortVideoControls = shouldUseShortVideoExperience(img);
-    const isScrollableImage = shouldUseScrollableLightboxImage(
+    const isScrollableEligible = shouldUseScrollableLightboxImage(
       img,
       this._viewportWidth,
       this._viewportHeight,
     );
+    const isScrollableImage = isScrollableEligible && this._imageZoomed;
     const shortVideoFrameSize = usesShortVideoControls
       ? getContainedLightboxMediaSize(
           img,
@@ -683,9 +710,10 @@ export class JantMediaLightbox extends LitElement {
                     @focus=${this.#handleVideoFocus}
                   ></video>`
               : html`<img
-                  class=${`media-lightbox-img${isScrollableImage ? " media-lightbox-img-scroll" : ""}`}
+                  class=${`media-lightbox-img${isScrollableEligible ? " media-lightbox-img-zoomable" : ""}${isScrollableImage ? " media-lightbox-img-scroll" : ""}`}
                   src=${img?.url ?? ""}
                   alt=${img?.alt ?? ""}
+                  @click=${this.#handleImageClick}
                 />`}
           </div>
           ${multiple
