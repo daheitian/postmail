@@ -2524,9 +2524,9 @@ export class JantComposeEditor extends LitElement {
           : this.format === "link"
             ? this._renderLinkFields()
             : this._renderQuoteFields()}
-        ${this._renderStarRating()}
       </section>
-      ${this._renderAttachmentDock()} ${this._renderToolsRow()}
+      ${this._renderAttachmentDock()} ${this._renderStarRating()}
+      ${this._renderToolsRow()}
     `;
   }
 }

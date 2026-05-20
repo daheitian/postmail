@@ -13,8 +13,16 @@ import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { buildPostMeta } from "../../lib/post-meta.js";
-import { assemblePostPageDisplay } from "../../lib/post-display.js";
-import { toPublicHref, toPublicPath } from "../../lib/url.js";
+import {
+  assemblePostPageDisplay,
+  type PostPageDisplayData,
+} from "../../lib/post-display.js";
+import { buildArticleJsonLd } from "../../lib/structured-data.js";
+import {
+  toAbsoluteAssetUrl,
+  toPublicHref,
+  toPublicPath,
+} from "../../lib/url.js";
 import { isTextAttachment } from "../../services/media.js";
 import type { Post } from "../../types.js";
 import { renderArchivePage } from "./archive.js";
@@ -54,6 +62,33 @@ function buildPostCanonicalHref(
   const rootPermalink = threadPostViews?.[0]?.permalink ?? postView.permalink;
   if (!siteUrl) return rootPermalink;
   return new URL(rootPermalink, siteUrl).toString();
+}
+
+/**
+ * Build the `BlogPosting` JSON-LD for a post page. The post page renders the
+ * whole thread, so the structured data describes the thread as one article:
+ * canonical URL, root publish time, latest thread modification time.
+ */
+function buildPostJsonLd(
+  c: Context<Env>,
+  display: PostPageDisplayData,
+  meta: { title: string; description?: string },
+  canonicalHref: string,
+  siteName: string,
+): Record<string, unknown> {
+  const { siteUrl, sitePathPrefix } = c.var.appConfig;
+  const imageUrl = display.socialImage
+    ? toAbsoluteAssetUrl(display.socialImage.url, siteUrl, sitePathPrefix)
+    : undefined;
+  return buildArticleJsonLd({
+    headline: meta.title,
+    description: meta.description,
+    url: canonicalHref,
+    datePublished: display.articlePublishedTime,
+    dateModified: display.articleModifiedTime,
+    imageUrl,
+    authorName: siteName,
+  });
 }
 
 async function renderPostWithTextPreview(
@@ -97,6 +132,14 @@ async function renderPostWithTextPreview(
     title: buildPageTitle(pageTitle, navData.siteName),
     description: meta.description,
     canonicalHref,
+    socialImageUrl: display.socialImage?.url,
+    socialImageAlt: display.socialImage?.alt,
+    socialImageWidth: display.socialImage?.width,
+    socialImageHeight: display.socialImage?.height,
+    ogType: "article",
+    articlePublishedTime: display.articlePublishedTime,
+    articleModifiedTime: display.articleModifiedTime,
+    jsonLd: buildPostJsonLd(c, display, meta, canonicalHref, navData.siteName),
     navData,
     content: (
       <>
@@ -166,6 +209,14 @@ async function renderPost(c: Context<Env>, post: Post) {
     title: buildPageTitle(meta.title, navData.siteName),
     description: meta.description,
     canonicalHref,
+    socialImageUrl: display.socialImage?.url,
+    socialImageAlt: display.socialImage?.alt,
+    socialImageWidth: display.socialImage?.width,
+    socialImageHeight: display.socialImage?.height,
+    ogType: "article",
+    articlePublishedTime: display.articlePublishedTime,
+    articleModifiedTime: display.articleModifiedTime,
+    jsonLd: buildPostJsonLd(c, display, meta, canonicalHref, navData.siteName),
     navData,
     content: (
       <PostPage post={display.postView} threadPosts={display.threadPostViews} />

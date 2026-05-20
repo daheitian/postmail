@@ -19,7 +19,7 @@ import {
 } from "../../lib/asset-path.js";
 import { getJantIconHref } from "../../lib/jant-branding.js";
 import { getThemeBrowserColors, resolveBuiltinTheme } from "../../lib/theme.js";
-import { isFullUrl, toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
+import { toAbsoluteAssetUrl, toPublicPath } from "../../lib/url.js";
 import {
   CLIENT_AUTH_JS_FILE,
   CLIENT_CJK_CSS_FILE,
@@ -53,6 +53,26 @@ export interface BaseLayoutProps {
   faviconVersion?: string;
   socialImageUrl?: string;
   /**
+   * Alt text describing an explicitly provided `socialImageUrl`. Ignored when
+   * the social image falls back to the site avatar or the Jant default.
+   */
+  socialImageAlt?: string;
+  /** Pixel width of an explicitly provided `socialImageUrl`, when known. */
+  socialImageWidth?: number;
+  /** Pixel height of an explicitly provided `socialImageUrl`, when known. */
+  socialImageHeight?: number;
+  /**
+   * JSON-LD structured data object (or array of objects) rendered as a
+   * `<script type="application/ld+json">`. Skipped when the page is noindex.
+   */
+  jsonLd?: unknown;
+  /** Open Graph object type. Defaults to "website". */
+  ogType?: "website" | "article";
+  /** ISO 8601 publish time, rendered as `article:published_time` for articles. */
+  articlePublishedTime?: string;
+  /** ISO 8601 modified time, rendered as `article:modified_time` for articles. */
+  articleModifiedTime?: string;
+  /**
    * Absolute canonical URL for the current page. Rendered as
    * `<link rel="canonical">` when set. Use on pages whose primary content is
    * also reachable via another URL (e.g. reply posts, which render the full
@@ -75,6 +95,13 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   faviconUrl,
   faviconVersion,
   socialImageUrl,
+  socialImageAlt,
+  socialImageWidth,
+  socialImageHeight,
+  jsonLd,
+  ogType,
+  articlePublishedTime,
+  articleModifiedTime,
   canonicalHref,
   noindex,
   isAuthenticated = false,
@@ -91,10 +118,13 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
 
   // Read favicon/noindex from appConfig when not provided as prop
   const appConfig = c ? c.get("appConfig") : undefined;
+  // Use `||` instead of `??` so empty strings (the unset state for
+  // `appConfig.siteAvatarUrl`) fall through to the Jant default; otherwise
+  // sites without a custom avatar render no og:image / twitter:image at all.
   const resolvedSocialImagePath =
-    socialImageUrl ??
-    faviconUrl ??
-    appConfig?.siteAvatarUrl ??
+    socialImageUrl ||
+    faviconUrl ||
+    appConfig?.siteAvatarUrl ||
     getJantIconHref("socialImage", appConfig?.sitePathPrefix || "");
   const resolvedFaviconVersion =
     faviconVersion ?? (appConfig?.faviconVersion || undefined);
@@ -179,16 +209,34 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           sitePathPrefix,
         )
       : toPublicPath("/apple-touch-icon.png", sitePathPrefix));
-  const socialImageHref =
-    resolvedSocialImagePath &&
-    (isFullUrl(resolvedSocialImagePath) ||
-    resolvedSocialImagePath.startsWith("//")
-      ? resolvedSocialImagePath
-      : toAbsoluteSiteUrl(
-          resolvedSocialImagePath,
-          appConfig?.siteUrl || "",
-          sitePathPrefix,
-        ));
+  const socialImageHref = resolvedSocialImagePath
+    ? toAbsoluteAssetUrl(
+        resolvedSocialImagePath,
+        appConfig?.siteUrl || "",
+        sitePathPrefix,
+      )
+    : "";
+  // Dimensions / alt only describe an explicitly provided social image. The
+  // fallbacks (site avatar, Jant default) are square branding marks, so they
+  // keep the small `summary` card and a generic site-name alt.
+  const hasExplicitSocialImage = Boolean(socialImageUrl);
+  const socialImageAltText = hasExplicitSocialImage
+    ? socialImageAlt
+    : siteName || undefined;
+  const socialImageWidthValue = hasExplicitSocialImage
+    ? socialImageWidth
+    : undefined;
+  const socialImageHeightValue = hasExplicitSocialImage
+    ? socialImageHeight
+    : undefined;
+  // `summary_large_image` only looks good for genuine landscape content; a
+  // portrait or square image gets center-cropped into a thin banner.
+  const useLargeTwitterCard =
+    hasExplicitSocialImage &&
+    socialImageWidthValue !== undefined &&
+    socialImageHeightValue !== undefined &&
+    socialImageWidthValue > socialImageHeightValue &&
+    socialImageWidthValue >= 300;
   const mainFeedHref = appConfig ? toPublicPath("/feed", sitePathPrefix) : null;
   const latestFeedHref = appConfig
     ? toPublicPath("/feed/latest", sitePathPrefix)
@@ -261,16 +309,46 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           <title>{title}</title>
           {description && <meta name="description" content={description} />}
           <meta property="og:title" content={title} />
-          <meta property="og:type" content="website" />
+          <meta property="og:type" content={ogType ?? "website"} />
+          {ogType === "article" && articlePublishedTime && (
+            <meta
+              property="article:published_time"
+              content={articlePublishedTime}
+            />
+          )}
+          {ogType === "article" && articleModifiedTime && (
+            <meta
+              property="article:modified_time"
+              content={articleModifiedTime}
+            />
+          )}
           {description && (
             <meta property="og:description" content={description} />
           )}
           {socialImageHref && (
             <meta property="og:image" content={socialImageHref} />
           )}
+          {socialImageHref && socialImageWidthValue !== undefined && (
+            <meta
+              property="og:image:width"
+              content={String(socialImageWidthValue)}
+            />
+          )}
+          {socialImageHref && socialImageHeightValue !== undefined && (
+            <meta
+              property="og:image:height"
+              content={String(socialImageHeightValue)}
+            />
+          )}
+          {socialImageHref && socialImageAltText && (
+            <meta property="og:image:alt" content={socialImageAltText} />
+          )}
           {siteName && <meta property="og:site_name" content={siteName} />}
           {currentUrl && <meta property="og:url" content={currentUrl} />}
-          <meta name="twitter:card" content="summary" />
+          <meta
+            name="twitter:card"
+            content={useLargeTwitterCard ? "summary_large_image" : "summary"}
+          />
           <meta name="twitter:title" content={title} />
           {description && (
             <meta name="twitter:description" content={description} />
@@ -278,8 +356,24 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           {socialImageHref && (
             <meta name="twitter:image" content={socialImageHref} />
           )}
+          {socialImageHref && socialImageAltText && (
+            <meta name="twitter:image:alt" content={socialImageAltText} />
+          )}
           {resolvedNoindex && (
             <meta name="robots" content="noindex, nofollow" />
+          )}
+          {!resolvedNoindex && jsonLd != null && (
+            <script
+              type="application/ld+json"
+              // JSON.stringify output with `<` / `>` escaped to \u-sequences
+              // so a value containing `</script>` cannot break out of the tag.
+              // JSON parsers decode the escapes transparently.
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(jsonLd)
+                  .replace(/</g, "\\u003c")
+                  .replace(/>/g, "\\u003e"),
+              }}
+            />
           )}
           {canonicalHref && <link rel="canonical" href={canonicalHref} />}
           <link rel="icon" href={resolvedFaviconHref} sizes="16x16 32x32" />

@@ -12,6 +12,7 @@ function createContext(
     assetBasePath?: string;
     sitePathPrefix?: string;
     siteUrl?: string;
+    siteAvatarUrl?: string;
     themeMode?: "auto" | "light" | "dark";
     themeId?: string;
     defaultThemeId?: string;
@@ -22,6 +23,7 @@ function createContext(
       mainRssFeed,
       sitePathPrefix: overrides?.sitePathPrefix ?? "",
       siteUrl: overrides?.siteUrl ?? "https://example.com",
+      siteAvatarUrl: overrides?.siteAvatarUrl,
       siteLanguage: "en",
       noindex: false,
       customCSS: "",
@@ -101,6 +103,27 @@ describe("BaseLayout", () => {
     );
   });
 
+  it("falls back to the bundled social image when appConfig.siteAvatarUrl is an empty string", async () => {
+    // resolve-config initializes siteAvatarUrl to "" (not undefined) when no
+    // avatar is configured. Regression test: the fallback chain must skip
+    // empty strings so og:image / twitter:image are never blank.
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        c: createContext("featured", { siteAvatarUrl: "" }),
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain(
+      'meta property="og:image" content="https://example.com/_/brand/assets/jant-social-preview.png"',
+    );
+    expect(html).toContain(
+      'meta name="twitter:image" content="https://example.com/_/brand/assets/jant-social-preview.png"',
+    );
+  });
+
   it("uses an explicit social image when provided", async () => {
     const { BaseLayout } = await loadBaseLayout();
     const html = renderToString(
@@ -117,6 +140,129 @@ describe("BaseLayout", () => {
     expect(html).toContain(
       'meta name="twitter:image" content="https://cdn.example.com/jant-card.png"',
     );
+  });
+
+  it("defaults og:type to website without article timestamps", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain('meta property="og:type" content="website"');
+    expect(html).not.toContain("article:published_time");
+    expect(html).not.toContain("article:modified_time");
+  });
+
+  it("renders article og:type with published and modified timestamps", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "A post",
+        ogType: "article",
+        articlePublishedTime: "2026-01-02T03:04:05.000Z",
+        articleModifiedTime: "2026-03-04T05:06:07.000Z",
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain('meta property="og:type" content="article"');
+    expect(html).toContain(
+      'meta property="article:published_time" content="2026-01-02T03:04:05.000Z"',
+    );
+    expect(html).toContain(
+      'meta property="article:modified_time" content="2026-03-04T05:06:07.000Z"',
+    );
+  });
+
+  it("keeps the small twitter card and omits dimensions for the default social image", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain('meta name="twitter:card" content="summary"');
+    expect(html).not.toContain('content="summary_large_image"');
+    expect(html).not.toContain("og:image:width");
+  });
+
+  it("renders dimensions, alt, and a large twitter card for a landscape post image", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "A post",
+        socialImageUrl: "https://cdn.example.com/photo.jpg",
+        socialImageWidth: 1600,
+        socialImageHeight: 900,
+        socialImageAlt: "A wide landscape photo",
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain('meta property="og:image:width" content="1600"');
+    expect(html).toContain('meta property="og:image:height" content="900"');
+    expect(html).toContain(
+      'meta property="og:image:alt" content="A wide landscape photo"',
+    );
+    expect(html).toContain(
+      'meta name="twitter:image:alt" content="A wide landscape photo"',
+    );
+    expect(html).toContain(
+      'meta name="twitter:card" content="summary_large_image"',
+    );
+  });
+
+  it("keeps the small twitter card for a portrait post image", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "A post",
+        socialImageUrl: "https://cdn.example.com/tall.jpg",
+        socialImageWidth: 600,
+        socialImageHeight: 900,
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain('meta name="twitter:card" content="summary"');
+    expect(html).not.toContain('content="summary_large_image"');
+  });
+
+  it("renders JSON-LD structured data and escapes script-breaking characters", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "A post",
+        jsonLd: {
+          "@type": "BlogPosting",
+          headline: "Mind the </script> gap",
+        },
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain('<script type="application/ld+json">');
+    expect(html).toContain("\\u003c/script\\u003e");
+    expect(html).not.toContain("</script> gap");
+  });
+
+  it("skips JSON-LD when the page is noindex", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "A post",
+        noindex: true,
+        jsonLd: { "@type": "WebSite" },
+        children: "Test",
+      }),
+    );
+
+    expect(html).not.toContain("application/ld+json");
   });
 
   it("exposes the main and alternate feed links without duplicating featured", async () => {
