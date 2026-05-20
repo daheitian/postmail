@@ -6,7 +6,7 @@ If you'd rather not deal with deployment, upgrades, and backups, the official ho
 
 ## Pricing and limits
 
-There's a single Jant Hosted plan:
+Hosted Jant has simple pricing — just one plan:
 
 | Item          | Included      |
 | ------------- | ------------- |
