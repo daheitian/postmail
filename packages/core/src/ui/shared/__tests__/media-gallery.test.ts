@@ -108,4 +108,35 @@ describe("MediaGallery", () => {
     expect(html).not.toContain("media-video-play-overlay");
     expect(html).not.toContain("media-short-video-progress");
   });
+
+  it("adds scroll arrows and a focusable strip for multi-item galleries", () => {
+    const html = renderToString(
+      MediaGallery({
+        attachments: [
+          createMediaView({ id: "m-1", width: 1600, height: 900 }),
+          createMediaView({ id: "m-2", width: 1600, height: 900 }),
+          createMediaView({ id: "m-3", width: 1600, height: 900 }),
+        ],
+      }),
+    );
+
+    expect(html).toContain("media-gallery-nav-prev");
+    expect(html).toContain("media-gallery-nav-next");
+    expect(html).toContain('aria-label="Scroll to previous media"');
+    expect(html).toContain('aria-label="Scroll to next media"');
+    // The strip is a keyboard tab stop so Arrow keys can scroll it.
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain('role="group"');
+  });
+
+  it("omits scroll arrows and the tab stop for a single visual", () => {
+    const html = renderToString(
+      MediaGallery({
+        attachments: [createMediaView({ width: 1600, height: 900 })],
+      }),
+    );
+
+    expect(html).not.toContain("media-gallery-nav");
+    expect(html).not.toContain('tabindex="0"');
+  });
 });
