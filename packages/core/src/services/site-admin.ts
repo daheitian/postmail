@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   executeStatement,
   type Database,
@@ -87,6 +87,11 @@ export interface ManagedSiteMediaUsageResult {
   siteId: string;
 }
 
+export interface ManagedSitePostCountResult {
+  publishedPostCount: number;
+  siteId: string;
+}
+
 export interface ManagedSiteKeyAvailabilityResult {
   available: boolean;
   key: string;
@@ -114,6 +119,15 @@ export interface SiteAdminService {
   getManagedSiteMediaUsage(
     siteId: string,
   ): Promise<ManagedSiteMediaUsageResult>;
+  /**
+   * Batch published-post counts for hosted sites, keyed by site id. Used by the
+   * control-plane admin site list to show how much content each blog has.
+   * Unknown site ids resolve to a zero count instead of an error so a stale
+   * control-plane pointer never fails the whole lookup.
+   */
+  getManagedSitePostCounts(
+    siteIds: string[],
+  ): Promise<ManagedSitePostCountResult[]>;
   suspendManagedSite(siteId: string): Promise<Site>;
   resumeManagedSite(siteId: string): Promise<Site>;
   deleteManagedSite(
@@ -588,6 +602,40 @@ export function createSiteAdminService(
     };
   }
 
+  async function getManagedSitePostCounts(
+    siteIds: string[],
+  ): Promise<ManagedSitePostCountResult[]> {
+    const normalizedSiteIds = [
+      ...new Set(siteIds.map((siteId) => siteId.trim()).filter(Boolean)),
+    ];
+    if (normalizedSiteIds.length === 0) {
+      return [];
+    }
+
+    const rows = await db
+      .select({
+        publishedPostCount: sql<number>`cast(count(*) as integer)`,
+        siteId: posts.siteId,
+      })
+      .from(posts)
+      .where(
+        and(
+          inArray(posts.siteId, normalizedSiteIds),
+          eq(posts.status, "published"),
+        ),
+      )
+      .groupBy(posts.siteId);
+
+    const countBySiteId = new Map(
+      rows.map((row) => [row.siteId, Number(row.publishedPostCount ?? 0)]),
+    );
+
+    return normalizedSiteIds.map((siteId) => ({
+      publishedPostCount: countBySiteId.get(siteId) ?? 0,
+      siteId,
+    }));
+  }
+
   async function mutateSiteDomains(
     siteId: string,
     mutate: (targetDb: Database, normalizedSiteId: string) => Promise<void>,
@@ -636,6 +684,10 @@ export function createSiteAdminService(
     async getManagedSiteMediaUsage(siteId) {
       assertManagedSiteOperationsEnabled();
       return getManagedSiteMediaUsage(siteId);
+    },
+    async getManagedSitePostCounts(siteIds) {
+      assertManagedSiteOperationsEnabled();
+      return getManagedSitePostCounts(siteIds);
     },
     async exportManagedSite(siteId, deps) {
       assertManagedSiteOperationsEnabled();

@@ -264,6 +264,71 @@ describe("Internal site admin routes", () => {
     });
   });
 
+  it("returns published post counts for hosted sites", async () => {
+    const { app, sqlite } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const insertPost = sqlite.prepare(
+      `INSERT INTO "post" ("id", "site_id", "format", "status", "thread_id", "created_at", "updated_at")
+       VALUES (?, ?, 'note', ?, ?, 1774200002, 1774200002)`,
+    );
+    insertPost.run(
+      "pst_count_1",
+      DEFAULT_TEST_SITE_ID,
+      "published",
+      "pst_count_1",
+    );
+    insertPost.run(
+      "pst_count_2",
+      DEFAULT_TEST_SITE_ID,
+      "published",
+      "pst_count_2",
+    );
+    insertPost.run("pst_count_3", DEFAULT_TEST_SITE_ID, "draft", "pst_count_3");
+
+    const res = await app.request("/api/internal/sites/post-counts", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer internal-secret",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        siteIds: [DEFAULT_TEST_SITE_ID, "sit_does_not_exist"],
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    // Drafts are excluded, and an unknown site id resolves to 0 rather than
+    // failing the whole batch.
+    await expect(res.json()).resolves.toEqual({
+      counts: [
+        { publishedPostCount: 2, siteId: DEFAULT_TEST_SITE_ID },
+        { publishedPostCount: 0, siteId: "sit_does_not_exist" },
+      ],
+    });
+  });
+
+  it("rejects post-count lookups without an admin token", async () => {
+    const { app } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const res = await app.request("/api/internal/sites/post-counts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ siteIds: [DEFAULT_TEST_SITE_ID] }),
+    });
+
+    expect(res.status).toBe(401);
+  });
+
   it("deletes a managed site without clearing other sites", async () => {
     const { app, sqlite } = createTestApp({
       authenticated: false,
