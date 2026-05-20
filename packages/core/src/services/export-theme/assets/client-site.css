@@ -635,9 +635,14 @@ button.media-gallery-card {
 .media-lightbox-video {
   background-color: #000;
   border-radius: 4px;
+  outline: none;
   max-width: 100%;
   max-height: 100%;
   animation: 0.28s cubic-bezier(0.22, 1, 0.36, 1) both lightbox-scale-in;
+}
+.media-lightbox-video:focus,
+.media-lightbox-video:focus-visible {
+  outline: none;
 }
 .media-lightbox-video-short {
   object-fit: contain;
@@ -656,37 +661,56 @@ button.media-gallery-card {
   background: 0 0;
 }
 .media-gallery-scroll-wrap {
-  --_fade: 1.5rem;
-  --_mask-left: black;
-  --_mask-right: black;
+  position: relative;
 }
-.media-gallery-scroll-wrap > [data-post-media] {
-  -webkit-mask-image: linear-gradient(
-    to right,
-    var(--_mask-left) 0%,
-    black var(--_fade),
-    black calc(100% - var(--_fade)),
-    var(--_mask-right) 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    var(--_mask-left) 0%,
-    black var(--_fade),
-    black calc(100% - var(--_fade)),
-    var(--_mask-right) 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    var(--_mask-left) 0%,
-    black var(--_fade),
-    black calc(100% - var(--_fade)),
-    var(--_mask-right) 100%
-  );
+.media-gallery-nav {
+  z-index: 2;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  background-color: #00000080;
+  border: none;
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+  display: flex;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
 }
-.media-gallery-scroll-wrap.can-scroll-start {
-  --_mask-left: transparent;
+.media-gallery-nav:hover {
+  background-color: #000000b3;
 }
-.media-gallery-scroll-wrap.can-scroll-end {
-  --_mask-right: transparent;
+.media-gallery-nav svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.media-gallery-nav-prev {
+  left: 8px;
+}
+.media-gallery-nav-next {
+  right: 8px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .media-gallery-scroll-wrap.can-scroll-start:hover .media-gallery-nav-prev,
+  .media-gallery-scroll-wrap.can-scroll-end:hover .media-gallery-nav-next {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+.media-gallery-scroll-wrap > [data-post-media]:focus-visible {
+  outline: 2px solid var(--site-text-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 /*$vite$:1*/

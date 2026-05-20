@@ -13,9 +13,70 @@ import { createMediaContext, toPostView } from "./view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
+/** Social/preview image picked for a post page, with metadata when known. */
+export interface PostSocialImage {
+  /** Image URL — may be app-local or an already-absolute CDN URL. */
+  url: string;
+  /** Pixel width, when known (image attachments only, not link previews). */
+  width?: number;
+  /** Pixel height, when known. */
+  height?: number;
+  /** Alt text, when the source image attachment has one. */
+  alt?: string;
+}
+
 export interface PostPageDisplayData {
   postView: PostView;
   threadPostViews?: PostView[];
+  /**
+   * Image to use as og:image / twitter:image for this post page. Prefers an
+   * image attached to the current post, then its link-preview thumbnail, then
+   * any image found elsewhere in the thread. Undefined when the thread has no
+   * images — BaseLayout then falls back to the site avatar or the default
+   * Jant social image.
+   */
+  socialImage?: PostSocialImage;
+  /**
+   * ISO 8601 publish time for `article:published_time`. A post page renders
+   * the whole thread as one "article", so this is the thread root's publish
+   * time (the post itself when it is not part of a thread).
+   */
+  articlePublishedTime: string;
+  /**
+   * ISO 8601 last-modified time for `article:modified_time`: the most recent
+   * update across every post in the thread.
+   */
+  articleModifiedTime: string;
+}
+
+function findFirstImage(post: PostView): PostSocialImage | undefined {
+  const image = post.media.find((m) => m.mimeType.startsWith("image/"));
+  if (image) {
+    return {
+      url: image.url,
+      width: image.width,
+      height: image.height,
+      alt: image.altText,
+    };
+  }
+  // Link-preview thumbnails are transformed images with no known dimensions.
+  return post.previewImageUrl ? { url: post.previewImageUrl } : undefined;
+}
+
+function resolvePostSocialImage(
+  postView: PostView,
+  threadPostViews: PostView[] | undefined,
+): PostSocialImage | undefined {
+  const direct = findFirstImage(postView);
+  if (direct) return direct;
+
+  if (!threadPostViews) return undefined;
+  for (const p of threadPostViews) {
+    if (p.id === postView.id) continue;
+    const found = findFirstImage(p);
+    if (found) return found;
+  }
+  return undefined;
 }
 
 function canViewPost(post: Post, isAuthenticated: boolean): boolean {
@@ -146,5 +207,21 @@ export async function assemblePostPageDisplay(
         )
       : undefined;
 
-  return { postView, threadPostViews };
+  const socialImage = resolvePostSocialImage(postView, threadPostViews);
+
+  const rootView = threadPostViews?.[0] ?? postView;
+  const allViews = threadPostViews ?? [postView];
+  // ISO 8601 strings from toISOString() are all UTC and zero-padded, so
+  // lexical comparison matches chronological order.
+  const articleModifiedTime = allViews
+    .map((p) => p.updatedAt)
+    .reduce((latest, t) => (t > latest ? t : latest));
+
+  return {
+    postView,
+    threadPostViews,
+    socialImage,
+    articlePublishedTime: rootView.publishedAt,
+    articleModifiedTime,
+  };
 }

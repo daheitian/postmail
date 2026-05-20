@@ -5267,9 +5267,14 @@
     flex-shrink: 0;
     gap: 4px;
     align-items: center;
-    margin-top: 12px;
-    padding-left: 2px;
+    padding: 4px 20px 6px;
     animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @media (min-width: 700px) {
+    .compose-star-rating {
+      padding: 6px 24px 6px;
+    }
   }
 
   .compose-star {

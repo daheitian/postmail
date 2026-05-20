@@ -289,12 +289,15 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
                 ? JSON.stringify(lightboxItems)
                 : undefined
             }
-            class={`flex gap-2 ${singleVisual ? "" : "overflow-x-auto scroll-smooth snap-x snap-mandatory"}`}
+            class={`flex gap-2 ${singleVisual ? "" : "overflow-x-auto scroll-smooth"}`}
             style={
               singleVisual
                 ? undefined
                 : "scrollbar-width: none; -ms-overflow-style: none;"
             }
+            tabindex={singleVisual ? undefined : 0}
+            role={singleVisual ? undefined : "group"}
+            aria-label={singleVisual ? undefined : "Media gallery"}
           >
             {galleryItems.map((item) => {
               if (item._kind === "image") {
@@ -329,7 +332,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
                     key={item.id}
                     href={item.url}
                     data-lightbox-index={item._lbIdx}
-                    class={`${singleVisual ? "" : "shrink-0 snap-start"} media-visual-frame`}
+                    class={`${singleVisual ? "" : "shrink-0"} media-visual-frame`}
                     style={{
                       ...(singleVisual
                         ? {
@@ -391,7 +394,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
                   return (
                     <div
                       key={item.id}
-                      class={`${singleVisual ? "" : "shrink-0 snap-start"} media-video-wrap media-video-wrap-short`}
+                      class={`${singleVisual ? "" : "shrink-0"} media-video-wrap media-video-wrap-short`}
                       style={
                         singleVisual
                           ? {
@@ -464,7 +467,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
                     key={item.id}
                     href={item.url}
                     data-lightbox-index={item._lbIdx}
-                    class={`${singleVisual ? "" : "shrink-0 snap-start"} media-video-wrap media-visual-frame`}
+                    class={`${singleVisual ? "" : "shrink-0"} media-video-wrap media-visual-frame`}
                     style={
                       singleVisual
                         ? {
@@ -502,7 +505,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
                 return (
                   <div
                     key={item.id}
-                    class={`media-gallery-card media-audio-card shrink-0 snap-start${item.waveform ? " has-waveform" : ""}`}
+                    class={`media-gallery-card media-audio-card shrink-0${item.waveform ? " has-waveform" : ""}`}
                     style={{
                       width: `${docCardWidth}px`,
                       height: `${rowHeight}px`,
@@ -593,7 +596,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="media-gallery-card shrink-0 snap-start"
+                    class="media-gallery-card shrink-0"
                     style={{
                       width: `${docCardWidth}px`,
                       height: `${rowHeight}px`,
@@ -627,7 +630,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
                       ? `${postPermalink}/text/${item.id}`
                       : undefined
                   }
-                  class="media-gallery-card shrink-0 snap-start"
+                  class="media-gallery-card shrink-0"
                   style={{
                     width: `${docCardWidth}px`,
                     height: `${rowHeight}px`,
@@ -650,6 +653,46 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
               );
             })}
           </div>
+          {!singleVisual && (
+            <>
+              <button
+                type="button"
+                class="media-gallery-nav media-gallery-nav-prev"
+                tabindex={-1}
+                aria-label="Scroll to previous media"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="media-gallery-nav media-gallery-nav-next"
+                tabindex={-1}
+                aria-label="Scroll to next media"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
       )}
     </>

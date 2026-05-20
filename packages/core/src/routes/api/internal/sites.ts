@@ -42,6 +42,10 @@ const CreateManagedSiteSchema = z.object({
   idempotencyKey: z.string().trim().min(1).max(128).optional(),
 });
 
+const SitePostCountsSchema = z.object({
+  siteIds: z.array(z.string().trim().min(1)).max(200),
+});
+
 const ManagedSiteDomainSchema = z.object({
   host: z
     .string()
@@ -96,6 +100,21 @@ internalSitesRoutes.get(
     );
 
     return c.json(result);
+  },
+);
+
+internalSitesRoutes.post(
+  "/post-counts",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+
+    const body = parseValidated(SitePostCountsSchema, await c.req.json());
+    const counts = await c.var.services.siteAdmin.getManagedSitePostCounts(
+      body.siteIds,
+    );
+
+    return c.json({ counts });
   },
 );
 

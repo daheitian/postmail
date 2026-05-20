@@ -372,3 +372,29 @@ export function toAbsoluteSiteUrl(
   if (!siteUrl) return toPublicPath(path, sitePathPrefix);
   return new URL(toPublicPath(path, sitePathPrefix), siteUrl).toString();
 }
+
+/**
+ * Resolve a possibly-relative asset URL to an absolute URL, leaving
+ * already-absolute (`http(s):`) and protocol-relative (`//host`) URLs
+ * untouched. Use for assets — like media — whose stored URL may be either an
+ * app-local path or a full CDN URL.
+ *
+ * @param url - Asset URL: an internal path or an already-absolute URL
+ * @param siteUrl - Normalized site URL
+ * @param sitePathPrefix - Public site path prefix
+ * @returns Absolute URL, or the original value when it is already absolute
+ *
+ * @example
+ * ```ts
+ * toAbsoluteAssetUrl("/m/a.png", "https://site.com");   // "https://site.com/m/a.png"
+ * toAbsoluteAssetUrl("https://cdn.example/a.png", "x"); // "https://cdn.example/a.png"
+ * ```
+ */
+export function toAbsoluteAssetUrl(
+  url: string,
+  siteUrl: string,
+  sitePathPrefix = "",
+): string {
+  if (isFullUrl(url) || url.startsWith("//")) return url;
+  return toAbsoluteSiteUrl(url, siteUrl, sitePathPrefix);
+}

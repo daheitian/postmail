@@ -79,12 +79,20 @@
   animation: lightbox-scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.media-lightbox-img-zoomable {
+  cursor: zoom-in;
+}
+
 .media-lightbox-img-scroll {
   width: min(100%, 44rem);
   max-width: none;
   max-height: none;
   height: auto;
   margin: 0 auto;
+}
+
+.media-lightbox-img-zoomable.media-lightbox-img-scroll {
+  cursor: zoom-out;
 }
 
 .media-lightbox-close {
@@ -794,36 +802,74 @@ button.media-gallery-card {
   background: transparent;
 }
 
-/* --- Gallery horizontal scroll fade hints ------------------------------- */
+/* --- Gallery scroll arrows --------------------------------------------- */
 
 .media-gallery-scroll-wrap {
-  /* Default: no mask — full visibility */
-  --_fade: 1.5rem;
-  --_mask-left: black;
-  --_mask-right: black;
+  /* Positioning context for the prev/next scroll arrows. */
+  position: relative;
+}
+/* The strip is trackpad/touch-friendly, but a plain mouse has no visible way
+   to scroll it (the scrollbar is hidden). These buttons give mouse users an
+   affordance; they appear on hover over whichever side still has hidden
+   content. Keyboard users scroll the focusable strip with Arrow/Home/End keys
+   instead — wired up in media-scroll-hint.ts. */
+
+.media-gallery-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: #00000080;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease;
 }
 
-.media-gallery-scroll-wrap > [data-post-media] {
-  mask-image: linear-gradient(
-    to right,
-    var(--_mask-left) 0%,
-    black var(--_fade),
-    black calc(100% - var(--_fade)),
-    var(--_mask-right) 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    var(--_mask-left) 0%,
-    black var(--_fade),
-    black calc(100% - var(--_fade)),
-    var(--_mask-right) 100%
-  );
+.media-gallery-nav:hover {
+  background-color: #000000b3;
 }
 
-.media-gallery-scroll-wrap.can-scroll-start {
-  --_mask-left: transparent;
+.media-gallery-nav svg {
+  display: block;
+  width: 18px;
+  height: 18px;
 }
 
-.media-gallery-scroll-wrap.can-scroll-end {
-  --_mask-right: transparent;
+.media-gallery-nav-prev {
+  left: 8px;
+}
+
+.media-gallery-nav-next {
+  right: 8px;
+}
+
+/* Reveal only with a real mouse (not touch), and only for the side that can
+   actually scroll — mirrors the can-scroll-* state used by the edge fade. */
+@media (hover: hover) and (pointer: fine) {
+  .media-gallery-scroll-wrap.can-scroll-start:hover .media-gallery-nav-prev,
+  .media-gallery-scroll-wrap.can-scroll-end:hover .media-gallery-nav-next {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Visible focus ring when a keyboard user tabs onto the scrollable strip. */
+.media-gallery-scroll-wrap > [data-post-media]:focus-visible {
+  outline: 2px solid var(--site-text-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
