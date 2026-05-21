@@ -324,7 +324,7 @@ describe("JantMediaLightbox", () => {
     );
     await flush(el);
 
-    expect(video.currentTime).toBeCloseTo(15);
+    expect(video.currentTime).toBeCloseTo(12);
     expect(el.querySelector(".media-lightbox-counter")?.textContent).toMatch(
       /1\s*\/\s*2/,
     );

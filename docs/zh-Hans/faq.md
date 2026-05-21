@@ -24,6 +24,18 @@
 
 不内置，未来可能会加。现在可以通过 [代码注入](code-injection.md) 嵌入 giscus、Disqus 等第三方系统。
 
+## Jant 有独立页面吗（比如 About 页）？
+
+没有单独的「页面」类型——独立页面就是一篇 Hidden from Latest 的帖子。新建一篇标题为 `About` 的 Note 并设为 Hidden from Latest，它就在 `/about`，既不进首页 Latest，也不进默认 `/feed`。做法见 [写作与内容组织 § 创建独立页面](writing-and-organizing.md#创建独立页面about-页now-等)。
+
+## 怎么发布一篇日期是过去的帖子？
+
+撰写界面里 **发布** 按钮旁边有个 **Publish settings** 面板，把里面的 **Published on** 改成更早的日期即可——帖子会按那个时间排进时间线。常用于补录从别处搬来的旧文章。只能选今天或更早，Jant 不做定时发布。详见 [写作与内容组织 § 发布设置](writing-and-organizing.md#发布设置)。
+
+## 怎么给帖子设一个自己想要的网址？
+
+同一个 **Publish settings** 面板里展开 **Custom link**，发布前填入想要的 slug 即可。如果帖子已经发布、又想换网址，改用 **设置 → 高级 → 自定义 URL**——它会把旧地址自动 301 跳转，不会留下死链。详见 [写作与内容组织 § 自定义 URL](writing-and-organizing.md#自定义-url)。
+
 ## 能改主题/外观吗？
 
 三层控制：内建颜色主题、内建字型主题、Custom CSS。Custom CSS 直接覆盖 CSS 变量即可，不需要 fork 主题或重启站点。完整变量列表见 [主题定制](theming.md)。
@@ -121,6 +133,10 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。默认 `/feed`
 ## Pre-1.0，破坏性变更会很多吗？
 
 可能会有，但不到必要不会做。每次破坏性变更都会写在 commit 和 changelog 里。升级前扫一眼变更记录，留一份最近的备份。
+
+## 怎么把别的博客的内容迁进来（WordPress、Tumblr 等）？
+
+没有固定的导入器——每个平台的导出格式都不一样。最省事的办法是把 [`jant.me/skill.md`](https://jant.me/skill.md) 交给 AI 助手：这是一份专为 AI 写的导入指南，讲清楚了 Jant 的数据模型、常见来源格式怎么映射、该调哪些 API。把导出文件和站点的 API token 给它，让它来跑这次迁移。详见 [导出与导入](export-and-import.md#从别的博客或-cms-迁移过来)。
 
 ## 能迁回 WordPress / Ghost 吗？
 

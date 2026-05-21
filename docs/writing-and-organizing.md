@@ -33,6 +33,22 @@ A post can carry attachments, and you can drag to reorder them. Two kinds:
 
 A post can carry an optional rating from 1 to 5, typically used for things with a clear object of judgment — books, films, albums, restaurants. The rating shows up on the post page and in lists.
 
+## Publish settings
+
+In the composer, next to the main **Publish** button, there's a **Publish settings** panel. Open it and, besides choosing visibility, you'll find two options that are easy to miss.
+
+### Published on
+
+A post is published with the current time by default. If you're backfilling older content — articles brought over from another platform, things you wrote long ago — set **Published on** to an earlier date and the post drops into the timeline at that point (Latest and the archive are both ordered by publish time).
+
+Leave it blank to use the current time. You can only pick today or earlier: Jant doesn't schedule posts, so future dates are rejected.
+
+### Custom link
+
+A post's URL is generated from its title by default. Expand **Custom link** to set the slug you want before publishing — for example, turning `/my-first-blog-post` into a clean `/hello`. Leave it blank to generate one automatically.
+
+This is the simplest way to lock in a link when you first publish. Note: **changing this link after publishing makes the old address 404** — Jant won't redirect it. To change the URL of a post that's already published, use [Custom URLs](#custom-urls) below instead, which 301-redirects the old address to the new one.
+
 ## Threads
 
 A Thread is a structure that strings multiple posts together in chronological order — you write a root post, and each subsequent post is a "reply" attached to it.
@@ -65,6 +81,19 @@ Jant treats this as a combined view across multiple Collections:
 - Shows the union of posts across the listed Collections
 - A Thread that belongs to more than one of those Collections shows up only once
 - The same pattern works for feeds: `/collections/{slug1}+{slug2}/feed`
+
+## Make standalone pages (About, Now, etc.)
+
+Jant has no separate "page" type — a standalone page is just a Hidden from Latest post. To make an About page:
+
+1. Create a Note, title it `About`, and write your introduction in the body.
+2. Set the publishing state to **Hidden from Latest** — the page drops off the homepage Latest, but direct links still work and it stays out of the default `/feed`.
+
+Once published, the page lives at `/about` — Jant derives the slug from the title. To give visitors a way in, add a link to `/about` under **Settings → Appearance → Navigation**.
+
+If you want a path that doesn't match the title, use a [custom URL](#custom-urls): add a `Post` entry, set the Path to whatever you want, and point the Target Slug at this post.
+
+The same recipe works for `/now`, `/uses`, and other long-running status pages.
 
 ## Visibility and curation
 
@@ -189,7 +218,7 @@ The following top-level paths are used by Jant itself and can't be used as custo
 
 `featured`, `latest`, `signin`, `signout`, `setup`, `settings`, `dash`, `api`, `feed`, `search`, `archive`, `media`, `pages`, `reset`, `collections`, `compose`, `new`, `static`, `assets`, `_assets`, `healthz`, `readyz`
 
-Custom paths can only contain lowercase letters, digits, hyphens (`-`), and slashes (`/`).
+Custom paths can only contain lowercase letters, digits, hyphens (`-`), slashes (`/`), and dots (`.`). The first character must be a letter or digit.
 
 ## Quick entry point
 

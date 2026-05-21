@@ -20,8 +20,9 @@ So an agent working inside the generated project gets more than an API token —
 
 ## Which path first
 
-- Scripts, scheduled jobs, migrations, external integrations: use the **HTTP API**.
+- Scripts, scheduled jobs, external integrations: use the **HTTP API**.
 - The caller is itself an MCP client: use **MCP**.
+- A one-time content import from another blog or CMS: hand [`jant.me/skill.md`](https://jant.me/skill.md) to an AI assistant — an import guide built on the same HTTP API. See [Export and import](export-and-import.md#coming-from-another-blog-or-cms).
 
 Default to HTTP. MCP only beats it when the caller already speaks the tool-calling protocol.
 
