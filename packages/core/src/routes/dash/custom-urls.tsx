@@ -11,7 +11,7 @@ import type { Bindings, CustomUrl } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { EmptyState } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";
-import { parseIdParam } from "../../lib/errors.js";
+import { parseIdParam, NotFoundError } from "../../lib/errors.js";
 import { ID_PREFIX } from "../../lib/ids.js";
 import { CreateCustomUrlSchema, parseValidated } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
@@ -687,20 +687,14 @@ customUrlsRoutes.post("/", async (c) => {
   if (body.targetType === "post" && body.targetId) {
     const post = await c.var.services.posts.getBySlug(body.targetId);
     if (!post) {
-      return c.json(
-        { error: `Post with slug "${body.targetId}" not found` },
-        404,
-      );
+      throw new NotFoundError(`Post with slug "${body.targetId}"`);
     }
     targetId = post.id;
   }
   if (body.targetType === "collection" && body.targetId) {
     const col = await c.var.services.collections.getBySlug(body.targetId);
     if (!col) {
-      return c.json(
-        { error: `Collection with slug "${body.targetId}" not found` },
-        404,
-      );
+      throw new NotFoundError(`Collection with slug "${body.targetId}"`);
     }
     targetId = col.id;
   }
