@@ -69,6 +69,7 @@ import { manifestRoutes } from "./routes/feed/manifest.js";
 // Middleware
 import { requireAuth } from "./middleware/auth.js";
 import { attachSession } from "./middleware/session.js";
+import { defaultCacheControl } from "./middleware/cache-control.js";
 import { requireOnboarding } from "./middleware/onboarding.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { withConfig } from "./middleware/config.js";
@@ -319,6 +320,12 @@ export function createApp(): App {
   // Populate c.var.session / c.var.isAuthenticated once per request so
   // downstream handlers don't each call auth.api.getSession themselves.
   app.use("*", attachSession());
+
+  // Default every response without an explicit Cache-Control to
+  // `private, no-store`. Jant pages are auth-variant, so a shared/CDN cache
+  // must never store them; routes serving genuinely public resources (media,
+  // feeds, sitemaps, favicons) set their own Cache-Control and are untouched.
+  app.use("*", defaultCacheControl());
 
   app.use("*", async (c, next) => {
     const redirectUrl = await getHostedCanonicalRedirect({
