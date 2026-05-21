@@ -7,7 +7,10 @@ import { createI18n } from "../../../i18n/i18n.js";
 import type { PostView, TimelineItemView } from "../../../types.js";
 import { CuratedThreadPreview } from "../CuratedThreadPreview.js";
 import { ThreadPreview } from "../ThreadPreview.js";
-import { getThreadPreviewState } from "../thread-preview-state.js";
+import {
+  getThreadPreviewState,
+  threadContextAssumesOverflow,
+} from "../thread-preview-state.js";
 
 function createPostView(overrides: Partial<PostView> = {}): PostView {
   return {
@@ -46,6 +49,13 @@ function renderWithI18n(
 
   I18nProvider({ c, children: "" });
   return renderToString(render());
+}
+
+/** The opening tag of the show-more toggle button, for attribute assertions. */
+function toggleTag(html: string): string {
+  return (
+    html.match(/<button[^>]*\bdata-thread-context-toggle\b[^>]*>/)?.[0] ?? ""
+  );
 }
 
 describe("getThreadPreviewState", () => {
@@ -236,13 +246,17 @@ describe("getThreadPreviewState", () => {
     expect(html).toMatch(/data-label-less="[^"]+"/);
   });
 
-  it("still wraps a root-only preview in the shell so the cap applies to long single posts", () => {
-    // root + hero — no second/penultimate/gap. The server can't know the
-    // root's rendered height, so it always renders the shell + toggle and
-    // lets client-side measurement strip them when the root actually fits.
+  it("hides the show-more toggle on first paint for a short lone root that fits the cap", () => {
+    // 2-post thread: the shell holds only the root. A short root genuinely
+    // fits the height cap, so the toggle is rendered hidden to avoid flashing
+    // it in then out. Client-side measurement (thread-context.ts) re-reveals
+    // it if the rendered height actually overflows.
     const html = renderWithI18n(() =>
       ThreadPreview({
-        rootPost: createPostView({ bodyHtml: "<p>Root</p>" }),
+        rootPost: createPostView({
+          bodyHtml: "<p>Root</p>",
+          summary: "Root",
+        }),
         latestReply: createPostView({
           id: "post-2",
           permalink: "/post-2",
@@ -257,8 +271,33 @@ describe("getThreadPreviewState", () => {
     expect(html).toContain("thread-context-shell");
     expect(html).toContain("data-collapsed");
     expect(html).toContain("data-thread-context-toggle");
+    expect(toggleTag(html)).toContain("hidden");
     expect(html).toContain("<p>Root</p>");
     expect(html).toContain("<p>Latest</p>");
+  });
+
+  it("shows the show-more toggle on first paint for a long lone root", () => {
+    // 2-post thread with a long root — the shell almost certainly overflows
+    // the cap, so the toggle is rendered visible immediately (no flash).
+    const html = renderWithI18n(() =>
+      ThreadPreview({
+        rootPost: createPostView({
+          bodyHtml: "<p>Root</p>",
+          summary: "word ".repeat(60),
+        }),
+        latestReply: createPostView({
+          id: "post-2",
+          permalink: "/post-2",
+          slug: "post-2",
+          bodyHtml: "<p>Latest</p>",
+          isLastInThread: true,
+        }),
+        totalReplyCount: 1,
+      }),
+    );
+
+    expect(html).toContain("data-thread-context-toggle");
+    expect(toggleTag(html)).not.toContain("hidden");
   });
 
   it("renders the collapsible shell even when just one extra item precedes the latest reply", () => {
@@ -292,6 +331,9 @@ describe("getThreadPreviewState", () => {
     expect(html).toContain("<p>Root</p>");
     expect(html).toContain("<p>Second</p>");
     expect(html).toContain("<p>Latest</p>");
+    // 3-post thread (totalReplyCount 2): the shell stacks 2 cards, so the
+    // toggle is rendered visible on first paint.
+    expect(toggleTag(html)).not.toContain("hidden");
   });
 
   it("points the hidden-posts gap link to the second reply so the detail page opens just above the hidden range", () => {
@@ -352,6 +394,22 @@ describe("getThreadPreviewState", () => {
     );
   });
 
+  it("renders curated thread previews without a collapsible context shell", () => {
+    // Curated previews render each segment in flow — no shell, no toggle —
+    // so the overflow heuristic never applies to them.
+    const post = createPostView({ summary: "Curated note" });
+    const html = renderWithI18n(() =>
+      CuratedThreadPreview({
+        curatedThread: {
+          rootPost: post,
+          segments: [{ post, hiddenBeforeCount: 0, highlighted: true }],
+        },
+      }),
+    );
+
+    expect(html).not.toContain("data-thread-context-toggle");
+  });
+
   it("renders article summaries in curated thread previews", () => {
     const articlePost = createPostView({
       title: "Curated article",
@@ -379,5 +437,72 @@ describe("getThreadPreviewState", () => {
     expect(html).toContain("<p>Lead</p>");
     expect(html).not.toContain("<p>Body</p>");
     expect(html).not.toContain('id="continue"');
+  });
+});
+
+describe("threadContextAssumesOverflow", () => {
+  it("assumes overflow for 3+ post threads (the shell stacks 2+ cards)", () => {
+    expect(
+      threadContextAssumesOverflow({
+        rootPost: createPostView({ summary: "short" }),
+        totalReplyCount: 2,
+      }),
+    ).toBe(true);
+  });
+
+  it("assumes a short lone root fits the cap (2-post thread)", () => {
+    expect(
+      threadContextAssumesOverflow({
+        rootPost: createPostView({
+          summary: "Took the long way home because the light was good.",
+        }),
+        totalReplyCount: 1,
+      }),
+    ).toBe(false);
+  });
+
+  it("assumes overflow for a long lone root", () => {
+    expect(
+      threadContextAssumesOverflow({
+        rootPost: createPostView({ summary: "x".repeat(200) }),
+        totalReplyCount: 1,
+      }),
+    ).toBe(true);
+  });
+
+  it("assumes overflow for a short lone root that carries media", () => {
+    expect(
+      threadContextAssumesOverflow({
+        rootPost: createPostView({
+          summary: "short",
+          media: [{} as PostView["media"][number]],
+        }),
+        totalReplyCount: 1,
+      }),
+    ).toBe(true);
+  });
+
+  it("assumes overflow for a short lone root with a link preview image", () => {
+    expect(
+      threadContextAssumesOverflow({
+        rootPost: createPostView({
+          format: "link",
+          summary: "short",
+          previewImageUrl: "https://example.com/cover.jpg",
+        }),
+        totalReplyCount: 1,
+      }),
+    ).toBe(true);
+  });
+
+  it("counts plain-text code points, not UTF-16 units, against the limit", () => {
+    // 130 CJK code points — comfortably over the 120 limit even though each
+    // is a single BMP character. Confirms the threshold reads real length.
+    expect(
+      threadContextAssumesOverflow({
+        rootPost: createPostView({ summary: "字".repeat(130) }),
+        totalReplyCount: 1,
+      }),
+    ).toBe(true);
   });
 });
