@@ -56,7 +56,7 @@ function isSupported(): boolean {
 
 /**
  * Extract a poster frame, blurhash, and source dimensions from a video file.
- * Seeks to `min(duration × 0.1, 3s)` and captures the frame.
+ * Seeks to `min(duration × 0.1, 1s)` and captures the frame.
  * Also returns the original video dimensions so the caller can compute
  * the correct output size without opening a second Input instance.
  *
@@ -85,7 +85,7 @@ async function extractPoster(file: File): Promise<{
 
     const duration = await input.computeDuration();
     const durationSeconds = normalizeDurationSeconds(duration);
-    const seekTime = Math.min(duration * 0.1, 3);
+    const seekTime = Math.min(duration * 0.1, 1);
 
     const sink = new CanvasSink(videoTrack);
     const wrapped = await sink.getCanvas(seekTime);
