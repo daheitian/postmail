@@ -82,7 +82,7 @@ Jant 会把它当成跨多个 Collection 的组合视图：
 - 同一个 Thread 同时属于多个 Collection 时只显示一次
 - 同样的写法也适用于 feed：`/collections/{slug1}+{slug2}/feed`
 
-## 创建独立页面（About 页、Now 等）
+## 创建独立页面（About 页）
 
 Jant 没有单独的「页面」类型——独立页面就是一篇 Hidden from Latest 的帖子。以 About 页为例：
 
@@ -90,10 +90,6 @@ Jant 没有单独的「页面」类型——独立页面就是一篇 Hidden from
 2. 发布状态选 **Hidden from Latest**——页面从首页 Latest 隐去，但直链仍然有效，也不会进默认 `/feed` 打扰订阅者。
 
 发布后页面就在 `/about`——Jant 会用标题生成 slug。想让访客找到入口，到 **设置 → 外观 → 导航** 加一条指向 `/about` 的链接。
-
-如果想要一个和标题不一致的路径，再用[自定义 URL](#自定义-url)：新建一条 `Post` 类型，Path 填你想要的路径，Target Slug 指向这篇帖子。
-
-同样的做法适用于 `/now`、`/uses` 这类长期更新的站点状态页。
 
 ## 可见性与策展
 

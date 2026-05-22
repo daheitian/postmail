@@ -26,7 +26,7 @@ Not built-in. May come later. For now you can embed third-party systems like gis
 
 ## Does Jant have standalone pages (like an About page)?
 
-There's no separate "page" type — a standalone page is just a Hidden from Latest post. Create a Note titled `About`, set it to Hidden from Latest, and it lives at `/about`, off the homepage Latest and out of the default `/feed`. See [Writing and organizing § Make standalone pages](writing-and-organizing.md#make-standalone-pages-about-now-etc).
+There's no separate "page" type. Set a Note titled `About` to **Hidden from Latest** (off the homepage, direct link still works) and it becomes a standalone page. Jant builds the slug from the title, so the address defaults to `/about`; to use a different one, expand **Custom link** in the **Publish settings** panel next to the Publish button. See [Writing and organizing § Make a standalone page](writing-and-organizing.md#make-a-standalone-page-about).
 
 ## How do I publish a post with a past date?
 

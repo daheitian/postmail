@@ -82,7 +82,7 @@ Jant treats this as a combined view across multiple Collections:
 - A Thread that belongs to more than one of those Collections shows up only once
 - The same pattern works for feeds: `/collections/{slug1}+{slug2}/feed`
 
-## Make standalone pages (About, Now, etc.)
+## Make a standalone page (About)
 
 Jant has no separate "page" type — a standalone page is just a Hidden from Latest post. To make an About page:
 
@@ -90,10 +90,6 @@ Jant has no separate "page" type — a standalone page is just a Hidden from Lat
 2. Set the publishing state to **Hidden from Latest** — the page drops off the homepage Latest, but direct links still work and it stays out of the default `/feed`.
 
 Once published, the page lives at `/about` — Jant derives the slug from the title. To give visitors a way in, add a link to `/about` under **Settings → Appearance → Navigation**.
-
-If you want a path that doesn't match the title, use a [custom URL](#custom-urls): add a `Post` entry, set the Path to whatever you want, and point the Target Slug at this post.
-
-The same recipe works for `/now`, `/uses`, and other long-running status pages.
 
 ## Visibility and curation
 

@@ -26,7 +26,7 @@
 
 ## Jant 有独立页面吗（比如 About 页）？
 
-没有单独的「页面」类型——独立页面就是一篇 Hidden from Latest 的帖子。新建一篇标题为 `About` 的 Note 并设为 Hidden from Latest，它就在 `/about`，既不进首页 Latest，也不进默认 `/feed`。做法见 [写作与内容组织 § 创建独立页面](writing-and-organizing.md#创建独立页面about-页now-等)。
+没有单独的「页面」类型。把一篇标题为 `About` 的 Note 设为 **Hidden from Latest**（从首页隐去），它就是一个独立页面。Jant 用标题生成 slug，地址默认就是 `/about`；想用别的地址，在 **发布** 按钮旁边的 **Publish settings** 面板里展开 **Custom link** 手动填。详见 [写作与内容组织 § 创建独立页面](writing-and-organizing.md#创建独立页面about-页)。
 
 ## 怎么发布一篇日期是过去的帖子？
 
