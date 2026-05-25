@@ -6,7 +6,12 @@
  * when a file is larger than MULTIPART_THRESHOLD.
  */
 
-import { getJsonNumber, getJsonString, readJsonObject } from "./json.js";
+import {
+  getJsonNumber,
+  getJsonString,
+  readErrorMessage,
+  readJsonObject,
+} from "./json.js";
 
 /** Files at or above this size use multipart upload (95MB, below 100MB Worker limit) */
 export const MULTIPART_THRESHOLD = 95 * 1024 * 1024;
@@ -59,8 +64,7 @@ export async function uploadMultipart(
   });
 
   if (!initRes.ok) {
-    const data = await readJsonObject(initRes);
-    throw new Error(getJsonString(data, "error") ?? "Failed to start upload");
+    throw new Error(await readErrorMessage(initRes, "Failed to start upload"));
   }
 
   const initData = await readJsonObject(initRes);
@@ -87,7 +91,9 @@ export async function uploadMultipart(
       });
 
       if (!posterRes.ok) {
-        throw new Error("Failed to upload poster");
+        throw new Error(
+          await readErrorMessage(posterRes, "Failed to upload poster"),
+        );
       }
 
       const posterData = await readJsonObject(posterRes);
@@ -118,7 +124,12 @@ export async function uploadMultipart(
       );
 
       if (!partRes.ok) {
-        throw new Error(`Failed to upload part ${partNumber}`);
+        throw new Error(
+          await readErrorMessage(
+            partRes,
+            `Failed to upload part ${partNumber}`,
+          ),
+        );
       }
 
       const partData = await readJsonObject(partRes);
@@ -155,9 +166,8 @@ export async function uploadMultipart(
     });
 
     if (!completeRes.ok) {
-      const data = await readJsonObject(completeRes);
       throw new Error(
-        getJsonString(data, "error") ?? "Failed to complete upload",
+        await readErrorMessage(completeRes, "Failed to complete upload"),
       );
     }
 

@@ -60,6 +60,20 @@ const ManagedSiteDomainSchema = z.object({
   makePrimary: z.boolean().optional(),
 });
 
+const RenameManagedSiteSchema = z.object({
+  key: ManagedSiteKeySchema,
+  primaryHost: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1)
+    .max(255)
+    .regex(
+      /^(?=.{1,255}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
+      "Primary host must be a valid hostname.",
+    ),
+});
+
 export const internalSitesRoutes = new Hono<Env>();
 
 function assertHostBasedMode(env: Bindings) {
@@ -194,6 +208,25 @@ internalSitesRoutes.post(
     return c.json({
       siteId: site.id,
       status: site.status,
+    });
+  },
+);
+
+internalSitesRoutes.post(
+  "/:siteId/rename",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+    const body = parseValidated(RenameManagedSiteSchema, await c.req.json());
+    const result = await c.var.services.siteAdmin.renameManagedSite(
+      c.req.param("siteId"),
+      body,
+    );
+
+    return c.json({
+      primaryHost: result.domain.host,
+      siteId: result.site.id,
+      status: result.site.status,
     });
   },
 );

@@ -2,6 +2,8 @@ import {
   getJsonNumber,
   getJsonString,
   isJsonObject,
+  readErrorMessage,
+  readErrorMessageFromText,
   readJsonObject,
 } from "./json.js";
 import { publicPath } from "./runtime-paths.js";
@@ -155,8 +157,7 @@ async function initiateUpload(file: File): Promise<InitiateResponse> {
   });
 
   if (!res.ok) {
-    const data = await readJsonObject(res);
-    throw new Error(getJsonString(data, "error") ?? "Failed to start upload");
+    throw new Error(await readErrorMessage(res, "Failed to start upload"));
   }
 
   const data = await readJsonObject(res);
@@ -176,7 +177,9 @@ async function uploadPoster(uploadId: string, poster: Blob): Promise<void> {
     body: poster,
   });
   if (!response.ok) {
-    throw new Error("Failed to upload poster");
+    throw new Error(
+      await readErrorMessage(response, "Failed to upload poster"),
+    );
   }
 }
 
@@ -202,9 +205,8 @@ async function completeUpload(
   );
 
   if (!completeRes.ok) {
-    const data = await readJsonObject(completeRes);
     throw new Error(
-      getJsonString(data, "error") ?? "Failed to complete upload",
+      await readErrorMessage(completeRes, "Failed to complete upload"),
     );
   }
 
@@ -246,7 +248,12 @@ async function uploadMultipartRelay(
       },
     );
     if (!response.ok) {
-      throw new Error(`Failed to upload part ${partNumber}`);
+      throw new Error(
+        readErrorMessageFromText(
+          response.text,
+          `Failed to upload part ${partNumber}`,
+        ),
+      );
     }
     const data = parseJsonObjectFromText(response.text);
     const uploadedPart = data ? getJsonNumber(data, "partNumber") : null;
@@ -278,7 +285,9 @@ export async function uploadViaSession(
         onProgress,
       );
       if (!response.ok) {
-        throw new Error("Upload failed");
+        throw new Error(
+          readErrorMessageFromText(response.text, "Upload failed"),
+        );
       }
       onProgress?.(1);
     } else if (transport.kind === "relay") {
@@ -289,9 +298,8 @@ export async function uploadViaSession(
         onProgress,
       );
       if (!response.ok) {
-        const data = parseJsonObjectFromText(response.text);
         throw new Error(
-          (data && getJsonString(data, "error")) ?? "Upload failed",
+          readErrorMessageFromText(response.text, "Upload failed"),
         );
       }
       onProgress?.(1);
