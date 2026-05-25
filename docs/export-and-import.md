@@ -10,6 +10,7 @@ Run every command in this guide from a Jant project directory where `@jant/core`
 | Generate a portable static archive                   | `site export`                                     |
 | Restore the same internal IDs and storage keys as-is | `site snapshot export` and `site snapshot import` |
 | Export raw database SQL                              | `db export`                                       |
+| Import content from a non-Jant blog or CMS           | An AI assistant (see below)                       |
 
 The difference between `site export` and `site snapshot` is not what they're for — it's what they produce:
 
@@ -26,6 +27,12 @@ The difference between `site export` and `site snapshot` is not what they're for
 Rule of thumb: changing domains, switching hosts, building with Hugo yourself, or long-term archival — use `site export`. Restoring the same site, cloning to staging, or moving between deployments with the same shape — use `site snapshot`.
 
 This page covers one-shot commands. For ongoing backups, see [Backups and recovery](backups.md). For long-term sync to a GitHub repository, see [GitHub sync](github-sync.md), which reuses the same `site export` format.
+
+## Coming from another blog or CMS
+
+The tools above move content between Jant sites. There's no fixed importer for non-Jant sources — WordPress, Tumblr, Ghost, an RSS dump — because every platform exports differently.
+
+Instead, hand [`jant.me/skill.md`](https://jant.me/skill.md) to an AI assistant. It's an import guide written for AI: it covers Jant's data model, how to map common source formats onto it, and which HTTP API calls to make. Give the assistant your export file and an [API token](automation-and-api.md), and let it run the migration.
 
 ## Runtime targets
 

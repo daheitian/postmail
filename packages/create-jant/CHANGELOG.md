@@ -1,5 +1,35 @@
 # create-jant
 
+## 0.6.5
+
+### Patch Changes
+
+- [`e912c7b`](https://github.com/jant-me/jant/commit/e912c7b4af0414b3612d184e6806d45e80cd61d2) Thanks [@theowenyoung](https://github.com/theowenyoung)! - Fix UI and docs
+
+## 0.6.4
+
+### Patch Changes
+
+- [`d904f83`](https://github.com/jant-me/jant/commit/d904f836aa258e1d14a3c5d3390eab15fe9b2e25) Thanks [@theowenyoung](https://github.com/theowenyoung)! - better cache control
+
+## 0.6.3
+
+### Patch Changes
+
+- [`d8500cc`](https://github.com/jant-me/jant/commit/d8500ccff8de31d1095851f916581ee7f04ec4a0) Thanks [@theowenyoung](https://github.com/theowenyoung)! - Fix avatar UI and compose dialog long images
+
+## 0.6.2
+
+### Patch Changes
+
+- [`0f6b1b1`](https://github.com/jant-me/jant/commit/0f6b1b1d3166112a7b2dace485e7571705ac75da) Thanks [@theowenyoung](https://github.com/theowenyoung)! - for greate images gallery
+
+## 0.6.1
+
+### Patch Changes
+
+- [`a7d5a26`](https://github.com/jant-me/jant/commit/a7d5a265d07103ceabeb084259b726d9c2eb96fb) Thanks [@theowenyoung](https://github.com/theowenyoung)! - Fix UI
+
 ## 0.6.0
 
 ### Minor Changes

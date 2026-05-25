@@ -33,6 +33,22 @@ URL 是必填项；需要自己填标题，可以附上你的评论。
 
 帖子可以带一个 1 到 5 分的可选评分，常用于书、电影、专辑、餐厅这类有明确评价对象的内容。评分会显示在帖子页和列表里。
 
+## 发布设置
+
+撰写界面里，主 **发布** 按钮旁边有一个 **Publish settings** 面板。点开后，除了选可见性，还有两个容易被忽略的选项。
+
+### 发布日期（Published on）
+
+帖子默认用当前时间发布。如果你在补录旧内容——从别的平台搬过来的文章、很久以前写下的东西——把 **Published on** 改成更早的日期，帖子就会按那个时间排进时间线（首页 Latest 和归档都按发布时间排序）。
+
+留空就用当前时间。只能选今天或更早：Jant 不做定时发布，未来的日期会被拒绝。
+
+### 自定义链接（Custom link）
+
+帖子的 URL 默认由标题生成。展开 **Custom link** 可以在发布前直接指定想要的 slug，例如把 `/my-first-blog-post` 换成干净的 `/hello`。留空则自动生成。
+
+这是发帖时一次把链接定好的最简单方式。注意：**发布后再改这里的链接，旧地址会直接 404**——Jant 不会自动跳转。帖子已经发布、又想换 URL，请改用下面的[自定义 URL](#自定义-url)，它会把旧地址自动 301 跳到新地址。
+
 ## Threads
 
 Thread 是把多条帖子按时间顺序串在一起的结构——你写一条根帖，之后的每一条都"回复"到它下面。
@@ -65,6 +81,15 @@ Jant 会把它当成跨多个 Collection 的组合视图：
 - 展示这些 Collection 中帖子的并集
 - 同一个 Thread 同时属于多个 Collection 时只显示一次
 - 同样的写法也适用于 feed：`/collections/{slug1}+{slug2}/feed`
+
+## 创建独立页面（About 页）
+
+Jant 没有单独的「页面」类型——独立页面就是一篇 Hidden from Latest 的帖子。以 About 页为例：
+
+1. 新建一篇 Note，标题写 `About`，正文写你的介绍。
+2. 发布状态选 **Hidden from Latest**——页面从首页 Latest 隐去，但直链仍然有效，也不会进默认 `/feed` 打扰订阅者。
+
+发布后页面就在 `/about`——Jant 会用标题生成 slug。想让访客找到入口，到 **设置 → 外观 → 导航** 加一条指向 `/about` 的链接。
 
 ## 可见性与策展
 
@@ -189,7 +214,7 @@ Feed：
 
 `featured`、`latest`、`signin`、`signout`、`setup`、`settings`、`dash`、`api`、`feed`、`search`、`archive`、`media`、`pages`、`reset`、`collections`、`compose`、`new`、`static`、`assets`、`_assets`、`healthz`、`readyz`
 
-自定义路径只能包含小写字母、数字、连字符（`-`）和斜杠（`/`）。
+自定义路径只能包含小写字母、数字、连字符（`-`）、斜杠（`/`）和点（`.`）。首字符必须是字母或数字。
 
 ## 快速入口
 

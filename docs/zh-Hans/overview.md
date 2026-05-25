@@ -29,9 +29,11 @@ Jant 是一个为单作者设计的小型博客系统，支持 **Note、Link、Q
 
 传统博客给你一张表单：标题、正文、分类、标签、摘要、SEO、封面图。这是管理内容的界面，不是写东西的界面。Jant 的发布体验更接近 Tumblr, Twitter, 标题可选，随时追加成 Thread，发布只需要一个步骤。
 
+大多数博客平台把发布体验做成了一张表单：标题、正文、分类、标签、摘要、SEO、封面图，但是这是内容管理系统的逻辑，并不是写作本身。Jant 借鉴的是 Tumblr 和 Twitter——一打开发布界面就是正文，标题可选，想到补充就 Reply 一条 Thread。
+
 ![Jant 撰写界面](https://jant-me-media.jant.me/assets/jant-compose.png)
 
-## Jant 有什么
+## Jant 特性
 
 - 三种格式：Note、Link、Quote
 - Threads：连续的想法可以延续，不必凑成长文

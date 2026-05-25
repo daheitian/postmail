@@ -10,6 +10,7 @@
 | 生成可移植的静态归档       | `site export`                                    |
 | 按原样恢复内部 ID 与存储键 | `site snapshot export` 与 `site snapshot import` |
 | 导出原始数据库 SQL         | `db export`                                      |
+| 从别的博客或 CMS 迁入内容  | 交给 AI 助手（见下文）                           |
 
 `site export` 与 `site snapshot` 的差别不在于"用途"，而在于输出物本身：
 
@@ -26,6 +27,12 @@
 一句话决策：换域名、换托管、用 Hugo 自建、长期存档——`site export`。同站恢复、克隆到 staging、在结构相同的部署间迁移——`site snapshot`。
 
 本页只讲一次性命令；要持续备份，看 [备份与恢复](backups.md)；要把导出长期同步到 GitHub 仓库，看 [GitHub 同步](github-sync.md)，它复用同一份 `site export` 格式。
+
+## 从别的博客或 CMS 迁移过来
+
+上面这些工具是在 Jant 站点之间搬内容。从非 Jant 来源迁入——WordPress、Tumblr、Ghost、一份 RSS 导出——没有固定的导入器，因为每个平台的导出格式都不一样。
+
+这种情况把 [`jant.me/skill.md`](https://jant.me/skill.md) 交给 AI 助手即可。这是一份专为 AI 写的导入指南：讲清楚了 Jant 的数据模型、常见来源格式怎么映射、该调哪些 HTTP API。把导出文件和一个 [API token](automation-and-api.md) 给它，让它来跑这次迁移。
 
 ## 运行环境
 

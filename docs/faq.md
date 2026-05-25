@@ -24,6 +24,18 @@ All three paths run the same code. Going from hosted to self-hosted (or back) is
 
 Not built-in. May come later. For now you can embed third-party systems like giscus or Disqus through [code injection](code-injection.md).
 
+## Does Jant have standalone pages (like an About page)?
+
+There's no separate "page" type. Set a Note titled `About` to **Hidden from Latest** (off the homepage, direct link still works) and it becomes a standalone page. Jant builds the slug from the title, so the address defaults to `/about`; to use a different one, expand **Custom link** in the **Publish settings** panel next to the Publish button. See [Writing and organizing § Make a standalone page](writing-and-organizing.md#make-a-standalone-page-about).
+
+## How do I publish a post with a past date?
+
+Next to the **Publish** button in the composer there's a **Publish settings** panel — set **Published on** to an earlier date and the post drops into the timeline at that point. Handy for backfilling older posts brought over from elsewhere. You can only pick today or earlier; Jant doesn't schedule posts. See [Writing and organizing § Publish settings](writing-and-organizing.md#publish-settings).
+
+## How do I give a post a custom URL?
+
+In the same **Publish settings** panel, expand **Custom link** and enter the slug you want before publishing. If the post is already published and you want to change its URL, use **Settings → Advanced → Custom URLs** instead — it 301-redirects the old address so you don't leave a dead link. See [Writing and organizing § Custom URLs](writing-and-organizing.md#custom-urls).
+
 ## Can I customize the theme/appearance?
 
 Three layers of control: built-in color themes, built-in type styles, and Custom CSS. Custom CSS overrides CSS variables directly — no theme fork, no restart. For the full variable list, see [Theming](theming.md).
@@ -121,6 +133,10 @@ Every active session is invalidated immediately and everyone has to sign in agai
 ## Pre-1.0 — will there be a lot of breaking changes?
 
 Possibly, but only when warranted. Every breaking change is documented in the commit and changelog. Skim the changelog before upgrading and keep a recent backup.
+
+## How do I move my old blog into Jant (WordPress, Tumblr, etc.)?
+
+There's no fixed importer — every platform exports differently. The easiest path is to hand [`jant.me/skill.md`](https://jant.me/skill.md) to an AI assistant: it's an import guide written for AI, covering Jant's data model, how to map common source formats, and which API calls to make. Give the assistant your export file and a site API token, and let it run the migration. See [Export and import](export-and-import.md#coming-from-another-blog-or-cms).
 
 ## Can I migrate back to WordPress / Ghost?
 

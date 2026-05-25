@@ -20,8 +20,9 @@ Jant 提供两条通道：
 
 ## 先选哪条路
 
-- 写脚本、跑定时任务、做迁移、接外部系统：用 **HTTP API**。
+- 写脚本、跑定时任务、接外部系统：用 **HTTP API**。
 - 调用方本身就是 MCP client：用 **MCP**。
+- 一次性从别的博客或 CMS 导入内容：把 [`jant.me/skill.md`](https://jant.me/skill.md) 交给 AI 助手——一份基于同一套 HTTP API 的导入指南。详见 [导出与导入](export-and-import.md#从别的博客或-cms-迁移过来)。
 
 默认走 HTTP，MCP 只在调用方已经支持工具调用协议时才更顺手。
 

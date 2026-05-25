@@ -11,37 +11,18 @@ import type { CollectionsPageProps } from "../../types.js";
 import { CollectionDirectory } from "../shared/CollectionDirectory.js";
 import { CollectionsManager } from "../shared/CollectionsManager.js";
 
-const countCollections = (items: CollectionsPageProps["items"]) =>
-  items.filter((item) => item.type === "collection" && item.collection).length;
-
 export const CollectionsPage: FC<CollectionsPageProps> = ({
   items,
   isAuthenticated,
   sitePathPrefix = "",
 }) => {
   const { i18n } = useLingui();
-  const collectionCount = countCollections(items);
   const emptyMessage = i18n._(
     msg({
       message: "No collections yet. Start one to organize posts by topic.",
       comment: "@context: Empty state message on collections page",
     }),
   );
-  const collectionCountLabel = `${collectionCount} ${
-    collectionCount === 1
-      ? i18n._(
-          msg({
-            message: "collection",
-            comment: "@context: Singular collection count label",
-          }),
-        )
-      : i18n._(
-          msg({
-            message: "collections",
-            comment: "@context: Plural collection count label",
-          }),
-        )
-  }`;
 
   if (isAuthenticated) {
     return (
@@ -65,9 +46,6 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
                   }),
                 )}
               </h1>
-            </div>
-            <div class="page-intro-meta-row">
-              <p class="page-intro-meta">{collectionCountLabel}</p>
             </div>
           </div>
         </header>

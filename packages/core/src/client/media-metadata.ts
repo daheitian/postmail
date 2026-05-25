@@ -45,7 +45,7 @@ export async function extractImageMetadata(
 
 /**
  * Extract metadata from a video file.
- * Loads the video to get dimensions, then seeks to `min(duration * 0.1, 3)` and
+ * Loads the video to get dimensions, then seeks to `min(duration * 0.1, 1)` and
  * captures a frame for blurhash (32px canvas) and a poster image (640px WebP).
  * Uses an 8s timeout — returns only dimensions if capture times out.
  */
@@ -81,7 +81,7 @@ export async function extractVideoMetadata(file: File): Promise<{
     let blurhash: string | undefined;
     let poster: Blob | undefined;
     try {
-      const seekTime = Math.min(duration * 0.1, 3);
+      const seekTime = Math.min(duration * 0.1, 1);
       const result = await Promise.race([
         captureVideoFrameAndPoster(video, width, height, seekTime),
         timeout(8000),
