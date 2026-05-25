@@ -72,6 +72,11 @@ export interface ManageManagedSiteDomainInput {
   makePrimary?: boolean;
 }
 
+export interface RenameManagedSiteInput {
+  key: string;
+  primaryHost: string;
+}
+
 export interface ExportManagedSiteDeps {
   env: Bindings;
   storage?: StorageDriver | null;
@@ -130,6 +135,20 @@ export interface SiteAdminService {
   ): Promise<ManagedSitePostCountResult[]>;
   suspendManagedSite(siteId: string): Promise<Site>;
   resumeManagedSite(siteId: string): Promise<Site>;
+  /**
+   * Atomically rename a managed site: change `sites.key` and rewrite the
+   * existing primary domain's host. The primary domain row keeps its id, so
+   * downstream projections that key off the domain id (e.g. the control
+   * plane's `cloud_site_domain` projection) stay stable across the rename.
+   *
+   * Throws ConflictError if the new key or primary host collide with another
+   * site (or with a non-primary domain on the same site). No-ops when the new
+   * key and host both match the current values.
+   */
+  renameManagedSite(
+    siteId: string,
+    input: RenameManagedSiteInput,
+  ): Promise<ManagedSiteResult>;
   deleteManagedSite(
     siteId: string,
     deps?: DeleteManagedSiteDeps,
@@ -1023,6 +1042,108 @@ export function createSiteAdminService(
           .delete(siteDomains)
           .where(eq(siteDomains.id, normalizedDomainId));
       });
+    },
+    async renameManagedSite(siteId, input) {
+      assertManagedSiteOperationsEnabled();
+      const normalizedSiteId = siteId.trim();
+      if (!normalizedSiteId) {
+        throw new NotFoundError("Site");
+      }
+
+      const newKey = input.key.trim();
+      const newPrimaryHost = input.primaryHost.trim().toLowerCase();
+      if (!newKey) {
+        throw new ConflictError("Site key is required.");
+      }
+      if (!newPrimaryHost) {
+        throw new ConflictError("Primary host is required.");
+      }
+
+      async function performRename(
+        targetDb: Database,
+      ): Promise<ManagedSiteResult> {
+        const siteRow = await requireSiteRow(targetDb, normalizedSiteId);
+
+        const primaryRows = await targetDb
+          .select()
+          .from(siteDomains)
+          .where(
+            and(
+              eq(siteDomains.siteId, normalizedSiteId),
+              eq(siteDomains.kind, "primary"),
+            ),
+          )
+          .limit(1);
+        const primaryRow = primaryRows[0];
+        if (!primaryRow) {
+          throw new NotFoundError("Site primary domain");
+        }
+
+        if (siteRow.key === newKey && primaryRow.host === newPrimaryHost) {
+          return {
+            domain: toSiteDomain(primaryRow),
+            site: toSite(siteRow),
+          };
+        }
+
+        if (siteRow.key !== newKey) {
+          const conflictingSite = await targetDb
+            .select({ id: sites.id })
+            .from(sites)
+            .where(eq(sites.key, newKey))
+            .limit(1);
+          if (conflictingSite[0]) {
+            throw new ConflictError("Site key is already in use.");
+          }
+        }
+
+        if (primaryRow.host !== newPrimaryHost) {
+          const conflictingDomain = await targetDb
+            .select({ id: siteDomains.id, siteId: siteDomains.siteId })
+            .from(siteDomains)
+            .where(eq(siteDomains.host, newPrimaryHost))
+            .limit(1);
+          if (conflictingDomain[0]) {
+            throw new ConflictError("Primary host is already in use.");
+          }
+        }
+
+        const timestamp = now();
+        const updatedSiteRow = (
+          await targetDb
+            .update(sites)
+            .set({ key: newKey, updatedAt: timestamp })
+            .where(eq(sites.id, normalizedSiteId))
+            .returning()
+        )[0];
+        if (!updatedSiteRow) {
+          throw new NotFoundError("Site");
+        }
+
+        const updatedDomainRow = (
+          await targetDb
+            .update(siteDomains)
+            .set({ host: newPrimaryHost, updatedAt: timestamp })
+            .where(eq(siteDomains.id, primaryRow.id))
+            .returning()
+        )[0];
+        if (!updatedDomainRow) {
+          throw new NotFoundError("Site primary domain");
+        }
+
+        return {
+          domain: toSiteDomain(updatedDomainRow),
+          site: toSite(updatedSiteRow),
+        };
+      }
+
+      if (supportsDrizzleTransaction(db, databaseDialect)) {
+        return db.transaction(async (tx) =>
+          performRename(tx as unknown as Database),
+        );
+      }
+
+      return performRename(db);
     },
   };
 }
