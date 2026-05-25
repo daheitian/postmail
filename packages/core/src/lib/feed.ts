@@ -185,7 +185,10 @@ function renderMediaItem(item: MediaView, postPermalinkUrl?: string): string {
       item.width && item.height
         ? ` width="${item.width}" height="${item.height}"`
         : "";
-    const label = `Watch video${meta ? ` · ${meta}` : ""}`;
+    // Prefix the caption with a ▶ glyph as a video cue. A CSS overlay would
+    // be stripped by most feed-reader sanitizers, so a plain-text play
+    // character is the only marker that renders reliably everywhere.
+    const label = `▶ Watch video${meta ? ` · ${meta}` : ""}`;
     return `<figure><a href="${url}"><img src="${escapeXml(poster)}" alt="${escapeXml(altText || name)}"${dims}/></a><figcaption>${escapeXml(label)}</figcaption></figure>`;
   }
 

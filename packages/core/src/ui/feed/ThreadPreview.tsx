@@ -11,7 +11,10 @@ import { useLingui } from "../../i18n/context.js";
 import type { ThreadPreviewProps } from "../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
 import { TimelineItemFromPost } from "./TimelineItem.js";
-import { getThreadPreviewState } from "./thread-preview-state.js";
+import {
+  getThreadPreviewState,
+  threadContextAssumesOverflow,
+} from "./thread-preview-state.js";
 
 const ROOT_CONTEXT_DISPLAY = {
   footer: {
@@ -40,6 +43,10 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
     secondReply,
     penultimateReply,
     latestReply,
+    totalReplyCount,
+  });
+  const assumeOverflow = threadContextAssumesOverflow({
+    rootPost,
     totalReplyCount,
   });
   const hiddenPostsLabel = i18n._(
@@ -75,14 +82,14 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
       : undefined;
   const gapHref = renderedSecondReply?.permalink ?? latestReply.permalink;
 
-  // Always render the collapsible shell for thread previews. Structural
-  // signals (how many ancestor posts exist) aren't a reliable proxy for
-  // visual height — a single long root article will push the hero far
-  // off-screen just as much as several short replies would. The server
-  // assumes overflow (the common case) and renders the cap + fade + toggle
-  // immediately; client-side measurement removes the affordance when the
-  // content actually fits inside the cap, so users never see a no-op
-  // "Show more" button.
+  // Always render the collapsible shell + toggle: the cap and fade are a
+  // constant "this is context" affordance. The toggle's *initial* visibility
+  // is a server-side guess (threadContextAssumesOverflow) — the real rendered
+  // height is unknown until the client measures. Guessing matters because a
+  // 2-post thread's shell holds only the root, and a short root genuinely
+  // fits the cap; rendering the toggle visible anyway makes it flash in then
+  // out on load. Client-side measurement (thread-context.ts) re-measures and
+  // corrects, so the guess only ever affects that first paint.
 
   const rootItem = (
     <div class="thread-item thread-item-context">
@@ -138,6 +145,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
         data-label-more={showMoreLabel}
         data-label-less={showLessLabel}
         aria-expanded="false"
+        hidden={!assumeOverflow}
       >
         <span class="thread-context-toggle-label">{showMoreLabel}</span>
         <svg

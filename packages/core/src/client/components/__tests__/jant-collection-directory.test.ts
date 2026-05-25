@@ -24,8 +24,6 @@ import type { JantCollectionsManager } from "../jant-collection-directory.js";
 
 const labels: CollectionManagerLabels = {
   collectionsTitle: "Collections",
-  collectionSingular: "collection",
-  collectionPlural: "collections",
   organize: "Organize",
   done: "Done",
   organizeHint: "Drag to reorder.",
@@ -186,7 +184,6 @@ async function createElementWithManagerRoot(): Promise<JantCollectionsManager> {
   const root = document.createElement("div");
   root.setAttribute("data-collections-manager-root", "");
   root.innerHTML = `
-    <p data-collections-count></p>
     <div data-collections-reorder-actions hidden>
       <button type="button" data-collections-action="divider">New divider</button>
       <button type="button" data-collections-action="done">Done</button>
@@ -202,32 +199,6 @@ async function createElementWithManagerRoot(): Promise<JantCollectionsManager> {
   ) as JantCollectionsManager;
   el.labels = labels;
   el.items = items;
-  root.appendChild(el);
-  document.body.appendChild(root);
-  await el.updateComplete;
-  return el;
-}
-
-async function createEmptyElementWithManagerRoot(): Promise<JantCollectionsManager> {
-  const root = document.createElement("div");
-  root.setAttribute("data-collections-manager-root", "");
-  root.innerHTML = `
-    <p data-collections-count hidden></p>
-    <div data-collections-reorder-actions hidden>
-      <button type="button" data-collections-action="divider">New divider</button>
-      <button type="button" data-collections-action="done">Done</button>
-    </div>
-    <div data-collections-toolbar></div>
-    <p data-collections-hint hidden></p>
-    <div data-collections-more-menu hidden></div>
-    <button type="button" data-collections-action="toggle-menu"></button>
-  `;
-
-  const el = document.createElement(
-    "jant-collections-manager",
-  ) as JantCollectionsManager;
-  el.labels = labels;
-  el.items = [];
   root.appendChild(el);
   document.body.appendChild(root);
   await el.updateComplete;
@@ -306,19 +277,6 @@ describe("JantCollectionsManager", () => {
 
     expect(reorderActions?.hidden).toBe(false);
     expect(toolbar?.hidden).toBe(true);
-  });
-
-  it("keeps the collection count visible when the list is empty", async () => {
-    const el = await createEmptyElementWithManagerRoot();
-    const root = el.closest<HTMLElement>("[data-collections-manager-root]");
-
-    expect(root).not.toBeNull();
-    if (!root) throw new Error("Expected collections manager root");
-
-    const count = root.querySelector<HTMLElement>("[data-collections-count]");
-
-    expect(count?.hidden).toBe(false);
-    expect(count?.textContent).toBe("0 collections");
   });
 
   it("renders divider labels as aggregate links when followed by a grouped section", async () => {

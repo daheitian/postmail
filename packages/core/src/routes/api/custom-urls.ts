@@ -45,16 +45,14 @@ customUrlsApiRoutes.post("/", requireAuthApi(), async (c) => {
   if (body.targetType === "post" && body.targetId) {
     const post = await c.var.services.posts.getBySlug(body.targetId);
     if (!post) {
-      throw new NotFoundError(`Post with slug "${body.targetId}" not found`);
+      throw new NotFoundError(`Post with slug "${body.targetId}"`);
     }
     targetId = post.id;
   }
   if (body.targetType === "collection" && body.targetId) {
     const col = await c.var.services.collections.getBySlug(body.targetId);
     if (!col) {
-      throw new NotFoundError(
-        `Collection with slug "${body.targetId}" not found`,
-      );
+      throw new NotFoundError(`Collection with slug "${body.targetId}"`);
     }
     targetId = col.id;
   }

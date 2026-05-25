@@ -6,8 +6,6 @@ import type { CollectionFormLabels } from "./collection-types.js";
 
 export interface CollectionManagerLabels {
   collectionsTitle: string;
-  collectionSingular: string;
-  collectionPlural: string;
   organize: string;
   done: string;
   organizeHint: string;

@@ -360,10 +360,10 @@ export class JantMediaLightbox extends LitElement {
       else video.pause();
     } else if (key === "ArrowLeft") {
       ke.preventDefault();
-      seekTo(video.currentTime - 5);
+      seekTo(video.currentTime - 2);
     } else if (key === "ArrowRight") {
       ke.preventDefault();
-      seekTo(video.currentTime + 5);
+      seekTo(video.currentTime + 2);
     } else if (key === "Home") {
       ke.preventDefault();
       seekTo(0);

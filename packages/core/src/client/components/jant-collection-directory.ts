@@ -245,21 +245,6 @@ export class JantCollectionsManager extends LitElement {
     );
   }
 
-  #collectionCount() {
-    return this._items.filter(
-      (item) => item.type === "collection" && item.collection,
-    ).length;
-  }
-
-  #collectionCountLabel() {
-    const count = this.#collectionCount();
-    return `${count} ${
-      count === 1
-        ? this.labels.collectionSingular
-        : this.labels.collectionPlural
-    }`;
-  }
-
   #countLabel(count: number) {
     return `${count} ${
       count === 1 ? this.labels.entrySingular : this.labels.entryPlural
@@ -280,14 +265,6 @@ export class JantCollectionsManager extends LitElement {
   }
 
   #syncHeaderState() {
-    const countEl = this.#queryHeaderElement<HTMLElement>(
-      "[data-collections-count]",
-    );
-    if (countEl) {
-      countEl.textContent = this.#collectionCountLabel();
-      countEl.hidden = false;
-    }
-
     const doneButton = this.#queryHeaderElement<HTMLButtonElement>(
       '[data-collections-action="done"]',
     );

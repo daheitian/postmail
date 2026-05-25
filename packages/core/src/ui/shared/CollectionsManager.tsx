@@ -13,9 +13,6 @@ import { getCollectionMutationLabels } from "./collection-management-labels.js";
 const escapeJson = (data: unknown) =>
   JSON.stringify(data).replace(/</g, "\\u003c");
 
-const countCollections = (items: CollectionDirectoryItem[]) =>
-  items.filter((item) => item.type === "collection" && item.collection).length;
-
 export interface CollectionsManagerProps {
   items: CollectionDirectoryItem[];
   sitePathPrefix?: string;
@@ -34,22 +31,6 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
     `${getNewCollectionPath()}?returnTo=${encodeURIComponent(collectionsHref)}`,
     sitePathPrefix,
   );
-  const collectionCount = countCollections(items);
-  const collectionCountLabel = `${collectionCount} ${
-    collectionCount === 1
-      ? i18n._(
-          msg({
-            message: "collection",
-            comment: "@context: Singular collection count label",
-          }),
-        )
-      : i18n._(
-          msg({
-            message: "collections",
-            comment: "@context: Plural collection count label",
-          }),
-        )
-  }`;
   const mutationLabels = getCollectionMutationLabels(i18n);
 
   const labels = {
@@ -57,18 +38,6 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
       msg({
         message: "Collections",
         comment: "@context: Collections page heading",
-      }),
-    ),
-    collectionSingular: i18n._(
-      msg({
-        message: "collection",
-        comment: "@context: Singular collection count label",
-      }),
-    ),
-    collectionPlural: i18n._(
-      msg({
-        message: "collections",
-        comment: "@context: Plural collection count label",
       }),
     ),
     organize: i18n._(
@@ -164,11 +133,6 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
         <div class="collections-page-heading page-intro">
           <div class="page-intro-title-row">
             <h1 class="page-intro-title">{labels.collectionsTitle}</h1>
-          </div>
-          <div class="page-intro-meta-row">
-            <p class="page-intro-meta" data-collections-count>
-              {collectionCountLabel}
-            </p>
             <div class="collections-page-actions">
               <div
                 class="collections-page-action-group"
@@ -202,14 +166,15 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
+                    aria-hidden="true"
                   >
                     <path d="M12 5v14" />
                     <path d="M5 12h14" />
@@ -218,7 +183,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
                 <div class="relative">
                   <button
                     type="button"
-                    class="collections-page-toolbar-button collections-page-more-btn"
+                    class="collections-page-toolbar-button"
                     aria-label={labels.moreActions}
                     aria-expanded="false"
                     aria-haspopup="menu"
@@ -227,8 +192,8 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
+                      width="18"
+                      height="18"
                       viewBox="0 0 24 24"
                       fill="currentColor"
                     >
