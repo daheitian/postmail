@@ -450,6 +450,7 @@ export class JantSettingsGeneral extends LitElement {
   };
 
   private _onLocalePickerKeydown = (e: KeyboardEvent) => {
+    if (e.isComposing || e.keyCode === 229) return;
     if (e.key === "Escape" && this._localeOpen) {
       this._localeOpen = false;
       this._localeQuery = "";
@@ -614,6 +615,8 @@ export class JantSettingsGeneral extends LitElement {
     dirty: boolean,
     loading: boolean,
   ) {
+    // Pressing Enter to commit an IME candidate must not also submit the form.
+    if (e.isComposing || e.keyCode === 229) return;
     if (
       e.key === "Enter" &&
       !loading &&

@@ -1245,6 +1245,7 @@ export class JantCollectionsManager extends LitElement {
                   (e.currentTarget as HTMLInputElement).value,
                 )}
               @keydown=${(e: globalThis.KeyboardEvent) => {
+                if (e.isComposing || e.keyCode === 229) return;
                 const target = e.currentTarget as HTMLInputElement;
                 if (e.key === "Enter") {
                   e.preventDefault();

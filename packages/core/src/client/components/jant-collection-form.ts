@@ -102,6 +102,7 @@ export class JantCollectionForm extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.#boundKeydown = (e: KeyboardEvent) => {
+      if (e.isComposing || e.keyCode === 229) return;
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
         void this.#handleSubmit(e);

@@ -188,6 +188,8 @@ export class JantComposeFullscreen extends LitElement {
 
   private _onDocumentKeydown = (e: globalThis.KeyboardEvent) => {
     if (!this._open || e.key !== "Escape") return;
+    // Let IME consume Escape during composition (e.g. CJK candidate dismiss).
+    if (e.isComposing || e.keyCode === 229) return;
     if (this._hasActiveEscapeOverlay()) return;
 
     e.preventDefault();
@@ -273,6 +275,7 @@ export class JantComposeFullscreen extends LitElement {
                 this._title = (e.target as HTMLInputElement).value;
               }}
               @keydown=${(e: globalThis.KeyboardEvent) => {
+                if (e.isComposing || e.keyCode === 229) return;
                 if (e.key === "Enter") {
                   e.preventDefault();
                   this._editor?.commands.focus("start");

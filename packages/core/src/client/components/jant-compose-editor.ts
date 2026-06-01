@@ -1736,6 +1736,7 @@ export class JantComposeEditor extends LitElement {
                   @input=${(e: Event) => this._onInput("_title", e)}
                   @focus=${(e: Event) => this._onFieldFocus(e)}
                   @keydown=${(e: globalThis.KeyboardEvent) => {
+                    if (e.isComposing || e.keyCode === 229) return;
                     if (e.key === "Enter") {
                       e.preventDefault();
                       this._editor?.commands.focus("start");

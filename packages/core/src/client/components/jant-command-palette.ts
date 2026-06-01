@@ -386,6 +386,10 @@ export class JantCommandPalette extends LitElement {
   };
 
   #handleKeydown = (event: globalThis.KeyboardEvent) => {
+    // Let IME consume keys during composition — Enter commits the candidate,
+    // Escape dismisses the candidate popup, arrows pick candidates.
+    if (event.isComposing || event.keyCode === 229) return;
+
     const items = this.#displayItems;
 
     if (event.key === "ArrowDown") {

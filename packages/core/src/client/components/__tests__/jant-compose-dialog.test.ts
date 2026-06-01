@@ -3319,6 +3319,50 @@ describe("JantComposeDialog", () => {
     expect(el._confirmPanelOpen).toBe(false);
   });
 
+  it("ignores Escape while an IME is composing (e.g. CJK candidate popup)", async () => {
+    // Regression test for GitHub issue #120: when a user types pinyin and
+    // presses Escape to dismiss the IME candidate popup, the compose dialog
+    // must not interpret it as a close request.
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "已经写了一些内容" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    const requestCloseSpy = vi.spyOn(el, "requestClose");
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Escape",
+        isComposing: true,
+        bubbles: true,
+      }),
+    );
+    await el.updateComplete;
+
+    expect(requestCloseSpy).not.toHaveBeenCalled();
+    expect(el._confirmPanelOpen).toBe(false);
+
+    // Sanity: once composition ends, Escape works as before.
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+      }),
+    );
+    await el.updateComplete;
+    expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("still closes normally after file picker selection", async () => {
     const el = await createElement();
     const editor = requireElement(

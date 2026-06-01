@@ -169,6 +169,9 @@ export class JantPostMenu extends LitElement {
 
   #handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
+    // Let IME consume Escape during composition (e.g. dismissing the CJK
+    // candidate popup in the collection search input).
+    if (ke.isComposing || ke.keyCode === 229) return;
     if (ke.key === "Escape") {
       if (this._addCollectionPanelOpen) {
         this.#closeAddCollectionPanel();
