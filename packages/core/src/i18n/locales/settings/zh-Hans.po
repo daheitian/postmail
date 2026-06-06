@@ -527,9 +527,7 @@ msgstr "自定义 URL"
 
 #. @context: Section heading for dangerous/destructive actions
 #. @context: Settings group label for destructive account actions
-#. @context: Settings group label for destructive account actions
 #: src/ui/dash/DangerZone.tsx
-#: src/ui/dash/settings/AccountMenuContent.tsx
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Danger Zone"
 msgstr "危险操作"
@@ -566,11 +564,6 @@ msgstr "删除账号"
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Delete Account Permanently"
 msgstr "永久删除账号"
-
-#. @context: Settings item — open the hosted site danger zone in the control plane
-#: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Delete Hosted Site"
-msgstr "删除托管站点"
 
 #. @context: Final browser confirm dialog before account deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -640,6 +633,11 @@ msgstr "在我的站点页眉显示头像"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Displayed at the bottom of all posts and pages."
 msgstr "显示在所有文章和页面的底部。"
+
+#. @context: Settings item description for the hosted site management external link
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Domains, plan, and billing in {providerLabel}"
+msgstr "在 {providerLabel} 管理域名、套餐和计费"
 
 #. @context: Settings item description for static site export
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -826,7 +824,9 @@ msgid "Home settings updated."
 msgstr "主页设置已更新."
 
 #. @context: Generic hosted auth provider label when no explicit provider name is configured
+#. @context: Generic hosted auth provider label when no explicit provider name is configured
 #: src/ui/dash/settings/AccountMenuContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Hosted account"
 msgstr "托管账户"
 
@@ -971,6 +971,11 @@ msgstr "主 RSS 源"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage Account"
 msgstr "管理账户"
+
+#. @context: Settings item label for opening this site's hosted management page (domains, plan, billing) in the connected control plane
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Manage Hosting"
+msgstr "管理托管"
 
 #. @context: Settings item description for hosted account management in the connected provider
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1134,11 +1139,6 @@ msgstr "打开 Telegram 以连接"
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Open the bot and send the binding code, then anything you message it becomes a note."
 msgstr "打开机器人并发送绑定码, 然后你发送给它的任何消息都会变成一条笔记。"
-
-#. @context: Settings item description for the hosted delete-site entry in the account menu
-#: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
-msgstr "在 {providerLabel} 打开托管站点控制以取消计费或永久删除此站点。"
 
 #. @context: Separator between the QR code and the deep-link button on the Telegram connect page
 #: src/ui/dash/settings/TelegramContent.tsx
