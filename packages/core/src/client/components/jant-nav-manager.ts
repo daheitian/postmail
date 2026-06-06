@@ -103,6 +103,10 @@ export class JantNavManager extends LitElement {
     if (!("key" in event) || event.key !== "Escape" || !this._showPreviewMore) {
       return;
     }
+    // Defensive: nav editor has many text inputs; let IME swallow Escape
+    // when the user is dismissing a CJK candidate popup.
+    const ke = event as globalThis.KeyboardEvent;
+    if (ke.isComposing || ke.keyCode === 229) return;
 
     event.preventDefault();
     this.#closePreviewMore();

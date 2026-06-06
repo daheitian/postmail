@@ -2269,6 +2269,10 @@ export class JantComposeDialog extends LitElement {
 
   private _handleDialogCancel = (e: Event) => {
     e.preventDefault();
+    // Defensive: some browsers dispatch <dialog> `cancel` for Escape even
+    // when the IME consumed it. Mirror the guard from _handleKeydown.
+    const ke = e as Partial<globalThis.KeyboardEvent>;
+    if (ke.isComposing || ke.keyCode === 229) return;
     if (this._shouldIgnoreEscapeClose()) return;
     if (this._dismissEscapeOverlay()) return;
     this.requestClose();
@@ -2411,6 +2415,10 @@ export class JantComposeDialog extends LitElement {
 
   private _handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
+    // Let IME consume keys during composition (e.g. CJK candidate selection).
+    // Without this, pressing Escape to dismiss the IME popup would trigger the
+    // "Save to drafts?" prompt. See GitHub issue #120.
+    if (ke.isComposing || ke.keyCode === 229) return;
     if (ke.key !== "Escape") {
       this._clearFilePickerEscapeState();
     }

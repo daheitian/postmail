@@ -418,6 +418,9 @@ export class JantRepoPicker extends LitElement {
 
   #handleEscape = (e: KeyboardEvent) => {
     if (e.key !== "Escape") return;
+    // Let IME consume Escape during composition (e.g. dismissing the CJK
+    // candidate popup in the owner/repo search inputs).
+    if (e.isComposing || e.keyCode === 229) return;
     if (this._ownerOpen || this._repoOpen) {
       this._ownerOpen = false;
       this._repoOpen = false;
