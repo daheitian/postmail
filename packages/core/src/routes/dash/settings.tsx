@@ -57,6 +57,7 @@ import {
   getHostedControlPlaneAccountUrl,
   getHostedControlPlaneProviderLabel,
   getHostedControlPlaneSiteDeleteUrl,
+  getHostedControlPlaneSiteSettingsUrl,
 } from "../../lib/hosted-signin.js";
 import { syncHostedControlPlaneSiteAvatar } from "../../lib/hosted-control-plane-sync.js";
 import {
@@ -265,6 +266,11 @@ function demoRestrictionResponse(c: Context<Env>, message: string): Response {
 
 settingsRoutes.get("/", async (c) => {
   const navData = await getNavigationData(c);
+  const hostedControlPlaneSiteSettingsUrl =
+    getHostedControlPlaneSiteSettingsUrl(c.env, c.var.currentSite.id);
+  const hostedControlPlaneProviderLabel = getHostedControlPlaneProviderLabel(
+    c.env,
+  );
 
   return renderPublicPage(c, {
     title: buildPageTitle("Settings", navData.siteName),
@@ -274,6 +280,8 @@ settingsRoutes.get("/", async (c) => {
         <SettingsRootContent
           sitePathPrefix={c.var.appConfig.sitePathPrefix}
           demoMode={c.var.appConfig.demoMode}
+          hostedControlPlaneSiteSettingsUrl={hostedControlPlaneSiteSettingsUrl}
+          hostedControlPlaneProviderLabel={hostedControlPlaneProviderLabel}
         />
       </div>
     ),
@@ -990,10 +998,6 @@ settingsRoutes.get("/account", async (c) => {
   const hostedControlPlaneProviderLabel = getHostedControlPlaneProviderLabel(
     c.env,
   );
-  const hostedControlPlaneSiteDeleteUrl = getHostedControlPlaneSiteDeleteUrl(
-    c.env,
-    c.var.currentSite.id,
-  );
 
   return renderPublicPage(c, {
     title: buildPageTitle("Account", navData.siteName),
@@ -1010,7 +1014,6 @@ settingsRoutes.get("/account", async (c) => {
           demoMode={c.var.appConfig.demoMode}
           hostedControlPlaneAccountUrl={hostedControlPlaneAccountUrl}
           hostedControlPlaneProviderLabel={hostedControlPlaneProviderLabel}
-          hostedControlPlaneSiteDeleteUrl={hostedControlPlaneSiteDeleteUrl}
         />
       </>
     ),

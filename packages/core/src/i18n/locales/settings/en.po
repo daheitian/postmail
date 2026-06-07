@@ -527,9 +527,7 @@ msgstr "Custom URLs"
 
 #. @context: Section heading for dangerous/destructive actions
 #. @context: Settings group label for destructive account actions
-#. @context: Settings group label for destructive account actions
 #: src/ui/dash/DangerZone.tsx
-#: src/ui/dash/settings/AccountMenuContent.tsx
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Danger Zone"
 msgstr "Danger Zone"
@@ -566,11 +564,6 @@ msgstr "Delete Account"
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Delete Account Permanently"
 msgstr "Delete Account Permanently"
-
-#. @context: Settings item — open the hosted site danger zone in the control plane
-#: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Delete Hosted Site"
-msgstr "Delete Hosted Site"
 
 #. @context: Final browser confirm dialog before account deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -640,6 +633,11 @@ msgstr "Display avatar in my site header"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Displayed at the bottom of all posts and pages."
 msgstr "Displayed at the bottom of all posts and pages."
+
+#. @context: Settings item description for the hosted site management external link
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Domains, plan, and billing in {providerLabel}"
+msgstr "Domains, plan, and billing in {providerLabel}"
 
 #. @context: Settings item description for static site export
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -826,7 +824,9 @@ msgid "Home settings updated."
 msgstr "Home settings updated."
 
 #. @context: Generic hosted auth provider label when no explicit provider name is configured
+#. @context: Generic hosted auth provider label when no explicit provider name is configured
 #: src/ui/dash/settings/AccountMenuContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Hosted account"
 msgstr "Hosted account"
 
@@ -971,6 +971,11 @@ msgstr "Main RSS feed"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage Account"
 msgstr "Manage Account"
+
+#. @context: Settings item label for opening this site's hosted management page (domains, plan, billing) in the connected control plane
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Manage Hosting"
+msgstr "Manage Hosting"
 
 #. @context: Settings item description for hosted account management in the connected provider
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1134,11 +1139,6 @@ msgstr "Open Telegram to connect"
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Open the bot and send the binding code, then anything you message it becomes a note."
 msgstr "Open the bot and send the binding code, then anything you message it becomes a note."
-
-#. @context: Settings item description for the hosted delete-site entry in the account menu
-#: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
-msgstr "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
 
 #. @context: Separator between the QR code and the deep-link button on the Telegram connect page
 #: src/ui/dash/settings/TelegramContent.tsx
