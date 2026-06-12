@@ -493,9 +493,9 @@ const ViewToggle: FC<{
 
 const ARCHIVE_VISIBILITIES: ArchiveVisibility[] = [
   "public",
+  "featured",
   "latest_hidden",
   "private",
-  "featured",
 ];
 
 function getVisibilityLabel(v: ArchiveVisibility): string {
