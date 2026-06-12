@@ -143,6 +143,72 @@ describe("Public Archive API Routes", () => {
       expect(noMediaBody.posts).toHaveLength(2);
     });
 
+    it("filters by title and media presence words", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/public/archive", publicArchiveApiRoutes);
+
+      const titled = await services.posts.create({
+        format: "note",
+        title: "Has title",
+        bodyMarkdown: "body",
+      });
+      const untitled = await services.posts.create({
+        format: "note",
+        bodyMarkdown: "body without title",
+      });
+
+      const withTitle = await app.request("/api/public/archive?title=any");
+      const withTitleBody = await withTitle.json();
+      expect(withTitleBody.posts.map((p: { id: string }) => p.id)).toEqual([
+        titled.id,
+      ]);
+
+      const noTitle = await app.request("/api/public/archive?title=none");
+      const noTitleBody = await noTitle.json();
+      expect(noTitleBody.posts.map((p: { id: string }) => p.id)).toEqual([
+        untitled.id,
+      ]);
+
+      const noMedia = await app.request("/api/public/archive?media=none");
+      const noMediaBody = await noMedia.json();
+      expect(noMediaBody.posts).toHaveLength(2);
+
+      const anyMedia = await app.request("/api/public/archive?media=any");
+      const anyMediaBody = await anyMedia.json();
+      expect(anyMediaBody.posts).toHaveLength(0);
+    });
+
+    it("filters threads and single posts via replies", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/public/archive", publicArchiveApiRoutes);
+
+      const threadRoot = await services.posts.create({
+        format: "note",
+        bodyMarkdown: "thread root",
+      });
+      await services.posts.create({
+        format: "note",
+        bodyMarkdown: "reply",
+        replyToId: threadRoot.id,
+      });
+      const standalone = await services.posts.create({
+        format: "note",
+        bodyMarkdown: "standalone",
+      });
+
+      const threads = await app.request("/api/public/archive?replies=any");
+      const threadsBody = await threads.json();
+      expect(threadsBody.posts.map((p: { id: string }) => p.id)).toEqual([
+        threadRoot.id,
+      ]);
+
+      const singles = await app.request("/api/public/archive?replies=none");
+      const singlesBody = await singles.json();
+      expect(singlesBody.posts.map((p: { id: string }) => p.id)).toEqual([
+        standalone.id,
+      ]);
+    });
+
     it("filters by media kind", async () => {
       const { app, services } = createTestApp({ authenticated: false });
       app.route("/api/public/archive", publicArchiveApiRoutes);

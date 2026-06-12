@@ -463,21 +463,23 @@ Notes:
 
 Auth: `Public`
 
-The archive endpoint mirrors the `/archive` page: it returns every public thread root, **including `latest_hidden` posts**, with archive-style filters (year, media kind, presence of media or title). Use this when you want a complete corpus instead of the curated Latest feed.
+The archive endpoint mirrors the `/archive` page: it returns every public thread root, **including `latest_hidden` posts**, with archive-style filters (year, media kind, presence of media, title, or replies). Use this when you want a complete corpus instead of the curated Latest feed.
 
 Query parameters:
 
-| Parameter    | Type                        | Required | Default | Notes                                                                                                               |
-| ------------ | --------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `format`     | `note` \| `link` \| `quote` | no       | all     | Format filter                                                                                                       |
-| `collection` | string                      | no       | none    | Filter by collection slug(s). Single slug (`design`) or multiple comma-separated (`tech,art`)                       |
-| `year`       | integer                     | no       | none    | Only posts whose `publishedAt` falls in this calendar year (UTC)                                                    |
-| `media`      | comma-separated `MediaKind` | no       | none    | Only posts that have at least one attachment with one of these kinds: `image`, `video`, `audio`, `text`, `document` |
-| `hasMedia`   | `0` \| `1`                  | no       | none    | `1` = posts with attachments, `0` = posts without                                                                   |
-| `hasTitle`   | `0` \| `1`                  | no       | none    | `1` = posts with a title, `0` = posts without                                                                       |
-| `cursor`     | string                      | no       | none    | Pass the previous `nextCursor` back unchanged                                                                       |
-| `limit`      | integer                     | no       | `20`    | `1` to `100`                                                                                                        |
-| `content`    | `markdown`                  | no       | none    | Return `bodyMarkdown` instead of rendered body fields                                                               |
+| Parameter    | Type                                           | Required | Default | Notes                                                                                                                                                                                  |
+| ------------ | ---------------------------------------------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `format`     | `note` \| `link` \| `quote`                    | no       | all     | Format filter                                                                                                                                                                          |
+| `collection` | string                                         | no       | none    | Filter by collection slug(s). Single slug (`design`) or multiple comma-separated (`tech,art`)                                                                                          |
+| `year`       | integer                                        | no       | none    | Only posts whose `publishedAt` falls in this calendar year (UTC)                                                                                                                       |
+| `media`      | comma-separated `MediaKind` \| `any` \| `none` | no       | none    | Kinds (`image`, `video`, `audio`, `text`, `document`): posts with at least one attachment of one of these kinds. `any` = posts with any attachment, `none` = posts without attachments |
+| `title`      | `any` \| `none`                                | no       | none    | `any` = posts with a title, `none` = posts without                                                                                                                                     |
+| `replies`    | `any` \| `none`                                | no       | none    | `any` = thread roots with published replies (threads), `none` = single posts without replies                                                                                           |
+| `hasMedia`   | `0` \| `1`                                     | no       | none    | **Deprecated** — use `media=any` / `media=none`                                                                                                                                        |
+| `hasTitle`   | `0` \| `1`                                     | no       | none    | **Deprecated** — use `title=any` / `title=none`                                                                                                                                        |
+| `cursor`     | string                                         | no       | none    | Pass the previous `nextCursor` back unchanged                                                                                                                                          |
+| `limit`      | integer                                        | no       | `20`    | `1` to `100`                                                                                                                                                                           |
+| `content`    | `markdown`                                     | no       | none    | Return `bodyMarkdown` instead of rendered body fields                                                                                                                                  |
 
 Response shape matches `GET /api/public/posts`: `{ posts: PublicPost[], nextCursor: string | null }`.
 

@@ -45,14 +45,22 @@ function buildFilterUrl(
   if (merged.format) params.set("format", merged.format);
   if (merged.mediaKinds && merged.mediaKinds.length > 0) {
     params.set("media", merged.mediaKinds.join(","));
-  }
-  if (merged.hasMedia !== undefined) {
-    params.set("hasMedia", merged.hasMedia ? "1" : "0");
+  } else if (merged.hasMedia !== undefined) {
+    params.set("media", merged.hasMedia ? "any" : "none");
   }
   if (merged.hasTitle !== undefined) {
-    params.set("hasTitle", merged.hasTitle ? "1" : "0");
+    params.set("title", merged.hasTitle ? "any" : "none");
   }
-  if (merged.visibility) params.set("visibility", merged.visibility);
+  if (merged.hasReplies !== undefined) {
+    params.set("replies", merged.hasReplies ? "any" : "none");
+  }
+  if (merged.visibility) {
+    // "hidden" is the URL spelling of the internal latest_hidden value
+    params.set(
+      "visibility",
+      merged.visibility === "latest_hidden" ? "hidden" : merged.visibility,
+    );
+  }
   if (merged.view && merged.view !== "grid") params.set("view", merged.view);
 
   const qs = params.toString();
@@ -547,7 +555,14 @@ const FILTER_ICONS = {
   collection: "monitor",
   format: "shapes",
   media: "video",
+  thread: "git-branch",
   visibility: "scan-eye",
+} as const;
+
+/** Icons for the thread filter options. */
+const THREAD_ICONS = {
+  threads: "list-tree",
+  single: "git-commit-horizontal",
 } as const;
 
 const FilterBar: FC<{
@@ -756,6 +771,63 @@ const FilterBar: FC<{
     })),
   ];
 
+  // --- Thread options ---------------------------------------------------------
+
+  const threadClearUrl = buildFilterUrl(
+    { ...filters, hasReplies: undefined },
+    { hasReplies: undefined },
+    sitePathPrefix,
+  );
+
+  const threadsLabel = i18n._(
+    msg({
+      message: "Threads",
+      comment: "@context: Archive thread filter - thread roots with replies",
+    }),
+  );
+  const singlePostsLabel = i18n._(
+    msg({
+      message: "Single posts",
+      comment: "@context: Archive thread filter - posts without replies",
+    }),
+  );
+
+  const threadOptions: ChipSelectOption[] = [
+    {
+      label: i18n._(
+        msg({
+          message: "All posts",
+          comment: "@context: Archive thread filter - threads and single posts",
+        }),
+      ),
+      icon: FILTER_ICONS.thread,
+      value: threadClearUrl,
+    },
+    {
+      label: threadsLabel,
+      icon: THREAD_ICONS.threads,
+      value: buildFilterUrl(filters, { hasReplies: true }, sitePathPrefix),
+    },
+    {
+      label: singlePostsLabel,
+      icon: THREAD_ICONS.single,
+      value: buildFilterUrl(filters, { hasReplies: false }, sitePathPrefix),
+    },
+  ];
+
+  const threadActiveLabel =
+    filters.hasReplies === true
+      ? threadsLabel
+      : filters.hasReplies === false
+        ? singlePostsLabel
+        : undefined;
+  const threadActiveIcon =
+    filters.hasReplies === true
+      ? THREAD_ICONS.threads
+      : filters.hasReplies === false
+        ? THREAD_ICONS.single
+        : undefined;
+
   const activeKinds = filters.mediaKinds ?? [];
   const mediaActiveLabel =
     filters.hasMedia === false
@@ -826,6 +898,17 @@ const FilterBar: FC<{
           )}
           activeLabel={formatActiveLabel}
           activeIcon={formatActiveIcon}
+          iconOnly
+        />
+
+        <ChipSelect
+          id="af-thread"
+          icon={FILTER_ICONS.thread}
+          options={threadOptions}
+          currentValue={currentUrl}
+          clearUrl={threadClearUrl}
+          activeLabel={threadActiveLabel}
+          activeIcon={threadActiveIcon}
           iconOnly
         />
 

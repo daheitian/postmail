@@ -57,6 +57,7 @@ interface ParsedArchiveParams {
   mediaKinds?: MediaKind[];
   hasMedia?: boolean;
   hasTitle?: boolean;
+  hasReplies?: boolean;
   visibility?: ArchiveVisibility;
   visibilityAll: boolean;
   view?: ArchiveView;
@@ -87,25 +88,45 @@ function parseArchiveParams(
 
   const collectionSlug = q("collection") || undefined;
 
+  // Presence filters use single-word params with any/none values
+  // (media=any|none|<kinds>, title=any|none, replies=any|none). The legacy
+  // hasMedia/hasTitle/hasReplies=1/0 params are still accepted so old
+  // bookmarks, feed subscriptions, and stored custom archive URLs keep
+  // working; new URLs are always generated in the new style.
+  const parsePresence = (
+    param: string | undefined,
+    legacy: string | undefined,
+  ): boolean | undefined => {
+    if (param === "any") return true;
+    if (param === "none") return false;
+    if (legacy === "1") return true;
+    if (legacy === "0") return false;
+    return undefined;
+  };
+
   const mediaParam = q("media") || undefined;
-  const mediaKinds = mediaParam
-    ? (mediaParam
-        .split(",")
-        .filter((m): m is MediaKind =>
-          (MEDIA_KINDS as readonly string[]).includes(m),
-        ) as MediaKind[])
-    : undefined;
+  const mediaIsPresence = mediaParam === "any" || mediaParam === "none";
+  const mediaKinds =
+    mediaParam && !mediaIsPresence
+      ? (mediaParam
+          .split(",")
+          .filter((m): m is MediaKind =>
+            (MEDIA_KINDS as readonly string[]).includes(m),
+          ) as MediaKind[])
+      : undefined;
+  const hasMedia = parsePresence(
+    mediaIsPresence ? mediaParam : undefined,
+    q("hasMedia"),
+  );
 
-  const hasMediaParam = q("hasMedia");
-  const hasMedia =
-    hasMediaParam === "1" ? true : hasMediaParam === "0" ? false : undefined;
-
-  const hasTitleParam = q("hasTitle");
-  const hasTitle =
-    hasTitleParam === "1" ? true : hasTitleParam === "0" ? false : undefined;
+  const hasTitle = parsePresence(q("title"), q("hasTitle"));
+  const hasReplies = parsePresence(q("replies"), q("hasReplies"));
 
   const VALID_VISIBILITIES = ["public", "latest_hidden", "private", "featured"];
-  const visibilityParam = q("visibility");
+  const rawVisibilityParam = q("visibility");
+  // "hidden" is the URL spelling of the internal latest_hidden value
+  const visibilityParam =
+    rawVisibilityParam === "hidden" ? "latest_hidden" : rawVisibilityParam;
   const visibilityAll = visibilityParam === "all";
   const visibility =
     visibilityParam && VALID_VISIBILITIES.includes(visibilityParam)
@@ -129,6 +150,7 @@ function parseArchiveParams(
     mediaKinds: mediaKinds && mediaKinds.length > 0 ? mediaKinds : undefined,
     hasMedia,
     hasTitle,
+    hasReplies,
     visibility,
     visibilityAll,
     view,
@@ -184,6 +206,7 @@ function buildArchivePostFilters(
     mediaKinds: params.mediaKinds,
     hasMedia: params.hasMedia,
     hasTitle: params.hasTitle,
+    hasReplies: params.hasReplies,
   };
 }
 
@@ -198,18 +221,63 @@ function buildArchiveFeedQuery(params: ParsedArchiveParams): string {
   if (params.collectionSlug) qs.set("collection", params.collectionSlug);
   if (params.mediaKinds && params.mediaKinds.length > 0) {
     qs.set("media", params.mediaKinds.join(","));
-  }
-  if (params.hasMedia !== undefined) {
-    qs.set("hasMedia", params.hasMedia ? "1" : "0");
+  } else if (params.hasMedia !== undefined) {
+    qs.set("media", params.hasMedia ? "any" : "none");
   }
   if (params.hasTitle !== undefined) {
-    qs.set("hasTitle", params.hasTitle ? "1" : "0");
+    qs.set("title", params.hasTitle ? "any" : "none");
+  }
+  if (params.hasReplies !== undefined) {
+    qs.set("replies", params.hasReplies ? "any" : "none");
   }
   const str = qs.toString();
   return str ? `?${str}` : "";
 }
 
 export const archiveRoutes = new Hono<Env>();
+
+/**
+ * Build a canonical redirect target when a request uses legacy archive
+ * param spellings (hasMedia/hasTitle/hasReplies=1/0, visibility=latest_hidden).
+ *
+ * Only legacy params are rewritten; everything else (including unknown
+ * params) is preserved. Returns null when the URL is already canonical.
+ * Applies to the /archive page only — feeds and the public API accept
+ * legacy spellings silently, and custom archive URLs (path_registry
+ * query overrides) never reach this path.
+ *
+ * @param c - Hono context
+ * @returns Canonical path + query to redirect to, or null
+ */
+function legacyArchiveParamsRedirect(c: Context<Env>): string | null {
+  const url = new URL(c.req.url);
+  const params = url.searchParams;
+  let changed = false;
+
+  const rewrites = [
+    ["hasMedia", "media"],
+    ["hasTitle", "title"],
+    ["hasReplies", "replies"],
+  ] as const;
+  for (const [legacy, name] of rewrites) {
+    const value = params.get(legacy);
+    if (value === null) continue;
+    if (!params.has(name) && (value === "1" || value === "0")) {
+      params.set(name, value === "1" ? "any" : "none");
+    }
+    params.delete(legacy);
+    changed = true;
+  }
+
+  if (params.get("visibility") === "latest_hidden") {
+    params.set("visibility", "hidden");
+    changed = true;
+  }
+
+  if (!changed) return null;
+  const qs = params.toString();
+  return `${url.pathname}${qs ? `?${qs}` : ""}`;
+}
 
 // =============================================================================
 // Archive page — shared rendering
@@ -360,6 +428,7 @@ export async function renderArchivePage(
     mediaKinds: params.mediaKinds,
     hasMedia: params.hasMedia,
     hasTitle: params.hasTitle,
+    hasReplies: params.hasReplies,
     visibility: effectiveVisibility,
     view: params.view,
   };
@@ -397,7 +466,11 @@ export async function renderArchivePage(
 // Archive page route
 // =============================================================================
 
-archiveRoutes.get("/", (c) => renderArchivePage(c));
+archiveRoutes.get("/", (c) => {
+  const canonical = legacyArchiveParamsRedirect(c);
+  if (canonical) return c.redirect(canonical, 308);
+  return renderArchivePage(c);
+});
 
 // =============================================================================
 // Archive feed
@@ -492,6 +565,28 @@ function buildArchiveFeedTitle(
     );
   }
 
+  if (params.hasReplies === true) {
+    parts.push(
+      i18n._(
+        msg({
+          message: "threads",
+          comment:
+            "@context: Archive feed title segment for hasReplies=1 filter",
+        }),
+      ),
+    );
+  } else if (params.hasReplies === false) {
+    parts.push(
+      i18n._(
+        msg({
+          message: "single posts",
+          comment:
+            "@context: Archive feed title segment for hasReplies=0 filter",
+        }),
+      ),
+    );
+  }
+
   if (params.validYear) {
     parts.push(String(params.validYear));
   }
@@ -534,6 +629,7 @@ async function buildArchiveFeedData(
     mediaKinds: params.mediaKinds,
     hasMedia: params.hasMedia,
     hasTitle: params.hasTitle,
+    hasReplies: params.hasReplies,
     ...(params.validYear
       ? {
           publishedAfter: Date.UTC(params.validYear, 0, 1) / 1000,
