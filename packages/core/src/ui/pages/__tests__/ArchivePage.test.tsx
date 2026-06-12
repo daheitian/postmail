@@ -69,4 +69,41 @@ describe("ArchivePage", () => {
 
     expect(html).toContain('title="Published on Mar 30, 2026 at 20:00"');
   });
+
+  it("renders the collection filter alongside the thread filter", () => {
+    const html = renderArchivePage({
+      availableCollections: [{ slug: "tech", title: "Tech" }],
+    });
+
+    expect(html).toContain('id="af-collection"');
+    expect(html).toContain('id="af-thread"');
+  });
+
+  it("renders the thread filter with all options", () => {
+    const html = renderArchivePage();
+
+    expect(html).toContain('id="af-thread"');
+    expect(html).toContain("All posts");
+    expect(html).toContain("Threads");
+    expect(html).toContain("Single posts");
+    expect(html).toContain("replies=any");
+    expect(html).toContain("replies=none");
+  });
+
+  it("serializes visibility latest_hidden as the hidden URL alias", () => {
+    const html = renderArchivePage({
+      isAuthenticated: true,
+      filters: { visibility: "latest_hidden" },
+    });
+
+    expect(html).toContain("visibility=hidden");
+    expect(html).not.toContain("visibility=latest_hidden");
+  });
+
+  it("marks the thread filter active when filtering single posts", () => {
+    const html = renderArchivePage({ filters: { hasReplies: false } });
+
+    expect(html).toContain("archive-chip-active");
+    expect(html).toContain("Single posts");
+  });
 });

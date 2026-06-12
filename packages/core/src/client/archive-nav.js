@@ -65,7 +65,8 @@ document.querySelectorAll(".archive-chip-dropdown").forEach((chip) => {
         } else {
           url.searchParams.delete(filterKey);
         }
-        // Clear hasMedia when toggling kinds
+        // Kind toggles overwrite media=any/none via the shared param; also
+        // drop the legacy hasMedia param when acting on an old URL.
         url.searchParams.delete("hasMedia");
         url.searchParams.delete("page");
         window.location.href = url.pathname + (url.search || "");
