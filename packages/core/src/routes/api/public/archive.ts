@@ -12,20 +12,26 @@ export const publicArchiveApiRoutes = new Hono<Env>();
 
 const MediaKindSchema = z.enum(MEDIA_KINDS);
 const MEDIA_KIND_LIST = MEDIA_KINDS.join(", ");
-const INVALID_MEDIA_KIND_MESSAGE =
-  "Invalid media kind. Allowed: " + MEDIA_KIND_LIST;
+const INVALID_MEDIA_MESSAGE =
+  "Invalid media value. Allowed: any, none, or kinds: " + MEDIA_KIND_LIST;
 
 const BoolFlagSchema = z.enum(["0", "1"]).transform((value) => value === "1");
+const PresenceSchema = z
+  .enum(["any", "none"])
+  .transform((value) => value === "any");
 
 const ListPublicArchiveQuerySchema = z.object({
   format: FormatSchema.optional(),
   collection: z.string().optional(),
   year: z.coerce.number().int().min(1971).optional(),
+  // Kinds list (image,video,...) or presence words: any = posts with any
+  // attachment, none = posts without attachments.
   media: z
     .string()
     .optional()
     .transform((value, ctx) => {
       if (!value) return undefined;
+      if (value === "any" || value === "none") return value;
       const parts = value
         .split(",")
         .map((part) => part.trim())
@@ -35,12 +41,15 @@ const ListPublicArchiveQuerySchema = z.object({
       if (!result.success) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: INVALID_MEDIA_KIND_MESSAGE,
+          message: INVALID_MEDIA_MESSAGE,
         });
         return z.NEVER;
       }
       return result.data;
     }),
+  title: PresenceSchema.optional(),
+  replies: PresenceSchema.optional(),
+  // Deprecated: use media=any|none and title=any|none instead.
   hasMedia: BoolFlagSchema.optional(),
   hasTitle: BoolFlagSchema.optional(),
   cursor: z.string().optional(),
@@ -54,12 +63,18 @@ publicArchiveApiRoutes.get("/", async (c) => {
     collection,
     year,
     media,
+    title,
+    replies,
     hasMedia,
     hasTitle,
     cursor,
     limit,
     content,
   } = parseValidated(ListPublicArchiveQuerySchema, c.req.query());
+
+  const mediaKinds = Array.isArray(media) ? media : undefined;
+  const mediaPresence =
+    media === "any" ? true : media === "none" ? false : undefined;
 
   let collectionIds: string[] | undefined;
   if (collection) {
@@ -89,9 +104,10 @@ publicArchiveApiRoutes.get("/", async (c) => {
     excludeReplies: true,
     publishedAfter,
     publishedBefore,
-    mediaKinds: media,
-    hasMedia,
-    hasTitle,
+    mediaKinds,
+    hasMedia: mediaPresence ?? hasMedia,
+    hasTitle: title ?? hasTitle,
+    hasReplies: replies,
   });
 
   const postIds = posts.map((post) => post.id);

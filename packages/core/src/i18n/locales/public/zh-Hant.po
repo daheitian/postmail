@@ -173,6 +173,11 @@ msgstr ""
 msgid "All formats"
 msgstr ""
 
+#. @context: Archive thread filter - threads and single posts
+#: src/ui/pages/ArchivePage.tsx
+msgid "All posts"
+msgstr ""
+
 #. @context: Archive filter - all visibility select option
 #: src/ui/pages/ArchivePage.tsx
 msgid "All visibility"
@@ -1801,6 +1806,16 @@ msgstr ""
 msgid "Sign in to start writing."
 msgstr ""
 
+#. @context: Archive feed title segment for hasReplies=0 filter
+#: src/routes/pages/archive.tsx
+msgid "single posts"
+msgstr ""
+
+#. @context: Archive thread filter - posts without replies
+#: src/ui/pages/ArchivePage.tsx
+msgid "Single posts"
+msgstr ""
+
 #. @context: Token label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Site accent"
@@ -2077,13 +2092,20 @@ msgstr ""
 msgid "Thread accents"
 msgstr ""
 
+#. @context: Archive feed title segment for hasReplies=1 filter
 #. @context: Archive month header count unit for multiple threads
 #. @context: Archive page summary unit for multiple matching threads
 #. @context: Plural thread count label on collection detail page
+#: src/routes/pages/archive.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/CollectionPage.tsx
 msgid "threads"
+msgstr ""
+
+#. @context: Archive thread filter - thread roots with replies
+#: src/ui/pages/ArchivePage.tsx
+msgid "Threads"
 msgstr ""
 
 #. @context: Toast shown when compose reaches the maximum allowed thread length

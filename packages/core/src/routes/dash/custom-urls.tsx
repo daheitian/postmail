@@ -507,7 +507,7 @@ function NewCustomUrlContent({
             type="text"
             data-bind="archiveQuery"
             class="input"
-            placeholder="format=note&hasTitle=0&visibility=public&view=list"
+            placeholder="format=note&title=none&visibility=public&view=list"
           />
           <p class="text-xs text-muted-foreground mt-1">
             {i18n._(

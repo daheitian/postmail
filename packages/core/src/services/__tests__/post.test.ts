@@ -842,6 +842,59 @@ describe("PostService", () => {
       expect(posts[0]?.bodyText).toBe("root post");
     });
 
+    it("filters thread roots by reply presence", async () => {
+      const threadRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "thread root",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "reply",
+        replyToId: threadRoot.id,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "standalone",
+      });
+
+      const threads = await postService.list({
+        excludeReplies: true,
+        hasReplies: true,
+      });
+      expect(threads.map((p) => p.bodyText)).toEqual(["thread root"]);
+
+      const singles = await postService.list({
+        excludeReplies: true,
+        hasReplies: false,
+      });
+      expect(singles.map((p) => p.bodyText)).toEqual(["standalone"]);
+    });
+
+    it("ignores draft replies when filtering by reply presence", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root with draft reply",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "draft reply",
+        replyToId: root.id,
+        status: "draft",
+      });
+
+      const threads = await postService.list({
+        excludeReplies: true,
+        hasReplies: true,
+      });
+      expect(threads).toHaveLength(0);
+
+      const singles = await postService.list({
+        excludeReplies: true,
+        hasReplies: false,
+      });
+      expect(singles.map((p) => p.bodyText)).toEqual(["root with draft reply"]);
+    });
+
     it("supports offset pagination", async () => {
       for (let i = 0; i < 5; i++) {
         await postService.create({
@@ -942,6 +995,34 @@ describe("PostService", () => {
 
       const count = await postService.count({ excludeReplies: true });
       expect(count).toBe(1);
+    });
+
+    it("counts thread roots by reply presence", async () => {
+      const threadRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "thread root",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "reply",
+        replyToId: threadRoot.id,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "standalone",
+      });
+
+      const threadCount = await postService.count({
+        excludeReplies: true,
+        hasReplies: true,
+      });
+      expect(threadCount).toBe(1);
+
+      const singleCount = await postService.count({
+        excludeReplies: true,
+        hasReplies: false,
+      });
+      expect(singleCount).toBe(1);
     });
 
     it("can stop counting after a small limit", async () => {

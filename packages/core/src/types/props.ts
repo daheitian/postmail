@@ -59,6 +59,8 @@ export interface ArchiveFilters {
   mediaKinds?: MediaKind[];
   hasMedia?: boolean;
   hasTitle?: boolean;
+  /** true = threads (roots with replies), false = single posts (no replies) */
+  hasReplies?: boolean;
   visibility?: ArchiveVisibility;
   view?: ArchiveView;
 }

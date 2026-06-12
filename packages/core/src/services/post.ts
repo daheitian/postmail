@@ -112,6 +112,11 @@ export interface PostFilters {
   hasTitle?: boolean;
   /** Filter by rating presence */
   hasRating?: boolean;
+  /**
+   * Filter thread roots by whether their thread contains published replies.
+   * Only meaningful together with `excludeReplies` (replies never match).
+   */
+  hasReplies?: boolean;
   /** Explicit result sort order */
   sortOrder?: SortOrder;
   limit?: number;
@@ -798,6 +803,21 @@ export function createPostService(
     if (filters.hasRating !== undefined) {
       conditions.push(
         filters.hasRating ? isNotNull(posts.rating) : isNull(posts.rating),
+      );
+    }
+    if (filters.hasReplies !== undefined) {
+      // Same notion of "reply" as getReplyCounts: published posts in the
+      // thread with reply_to_id set.
+      const repliesExist = sql`EXISTS (
+        SELECT 1
+        FROM post AS reply
+        WHERE reply.site_id = ${siteId}
+          AND reply.thread_id = ${posts.id}
+          AND reply.reply_to_id IS NOT NULL
+          AND reply.status = 'published'
+      )`;
+      conditions.push(
+        filters.hasReplies ? repliesExist : sql`NOT ${repliesExist}`,
       );
     }
 
