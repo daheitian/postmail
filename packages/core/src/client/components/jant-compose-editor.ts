@@ -30,6 +30,7 @@ import type {
   ComposeEditorSelection,
   ComposeFullscreenOpenDetail,
 } from "./compose-types.js";
+import type { ComposeConvertFields } from "./compose-format-convert.js";
 import {
   UPLOAD_ACCEPT,
   getMediaCategory,
@@ -234,6 +235,14 @@ export class JantComposeEditor extends LitElement {
   private _scrollBufferApplied = false;
   private _filePickerCleanup: (() => void) | null = null;
   private _suppressAttachedTextOpenUntil = 0;
+  /**
+   * Set by {@link applyConvertedFields} so the format-conversion content writes
+   * don't emit a content-changed event (which would schedule a draft autosave).
+   * A bare format switch shouldn't persist a local draft — see `_switchFormat`.
+   * Always consumed: a switch also changes `format`, so `updated()` is guaranteed
+   * to run this cycle.
+   */
+  private _suppressContentChangedOnce = false;
   #inlineImageUploadGeneration = 0;
   #inlineImageUploadPromises = new Set<Promise<void>>();
   #sortable: { destroy(): void } | null = null;
@@ -903,13 +912,19 @@ export class JantComposeEditor extends LitElement {
       }
     }
 
-    // Notify parent dialog of content changes for draft auto-save
-    for (const key of changed.keys()) {
-      if (JantComposeEditor._CONTENT_PROPS.has(key as string)) {
-        this.dispatchEvent(
-          new Event("jant:compose-content-changed", { bubbles: true }),
-        );
-        break;
+    // Notify parent dialog of content changes for draft auto-save. A format
+    // conversion writes content fields too, but it's not a user edit, so skip
+    // the notification once when asked.
+    if (this._suppressContentChangedOnce) {
+      this._suppressContentChangedOnce = false;
+    } else {
+      for (const key of changed.keys()) {
+        if (JantComposeEditor._CONTENT_PROPS.has(key as string)) {
+          this.dispatchEvent(
+            new Event("jant:compose-content-changed", { bubbles: true }),
+          );
+          break;
+        }
       }
     }
   }
@@ -922,6 +937,39 @@ export class JantComposeEditor extends LitElement {
       showTitle: this._showTitle,
       selection: this.getEditorSelection(),
     };
+  }
+
+  /**
+   * Raw field values for format conversion. Unlike {@link getData}, this returns
+   * every field regardless of the current format (so a hidden quote/url survives
+   * a switch) plus the freshest, normalized body.
+   */
+  getConvertibleFields(): ComposeConvertFields {
+    return {
+      title: this._title,
+      url: this._url,
+      quoteText: this._quoteText,
+      quoteAuthor: this._quoteAuthor,
+      showTitle: this._showTitle,
+      bodyJson: this._normalizeDocJson(
+        this._editor?.getJSON() ?? this._bodyJson,
+      ),
+    };
+  }
+
+  /**
+   * Write back fields produced by `convertComposeFormat`. The body is applied via
+   * `_bodyJson` only — the imminent format change recreates the editor from it, so
+   * calling `setContent` here would be redundant.
+   */
+  applyConvertedFields(fields: ComposeConvertFields): void {
+    this._suppressContentChangedOnce = true;
+    this._title = fields.title;
+    this._url = fields.url;
+    this._quoteText = fields.quoteText;
+    this._quoteAuthor = fields.quoteAuthor;
+    this._showTitle = fields.showTitle;
+    this._bodyJson = fields.bodyJson;
   }
 
   /** Pre-fill all fields for edit mode or draft restore */

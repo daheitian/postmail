@@ -312,6 +312,79 @@ describe("timeline cards", () => {
 
     expect(html).toContain('href="/post-1"');
     expect(html).not.toContain("#continue");
+    // Titled articles link out; they do not expand in place.
+    expect(html).not.toContain("data-note-expand");
+  });
+
+  it("clamps the body and renders an expand control for truncated untitled notes", () => {
+    const post = createPostView({
+      format: "note",
+      title: undefined,
+      bodyHtml: "<p>Intro</p><span data-note-break></span><p>Rest</p>",
+      summaryHasMore: true,
+    });
+
+    const html = renderWithI18n(NoteCard({ post, mode: "feed" }));
+
+    expect(html).toContain("data-note-expand");
+    expect(html).toContain('href="/post-1"');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain('data-label-more="Read more"');
+    expect(html).toContain('data-label-less="Read less"');
+    // The full body is rendered (the marker + CSS clamp hide the tail), and the
+    // body carries the clamp flag.
+    expect(html).toContain("data-note-clamp");
+    expect(html).toContain("data-note-break");
+    expect(html).toContain("<p>Intro</p>");
+    expect(html).toContain("<p>Rest</p>");
+  });
+
+  it("renders untitled notes in full without a control when not truncated", () => {
+    const post = createPostView({
+      format: "note",
+      title: undefined,
+      bodyHtml: "<p>Whole note</p>",
+      summaryHasMore: undefined,
+    });
+
+    const html = renderWithI18n(NoteCard({ post, mode: "feed" }));
+
+    expect(html).toContain("<p>Whole note</p>");
+    expect(html).not.toContain("data-note-expand");
+    expect(html).not.toContain("data-note-clamp");
+    expect(html).not.toContain("feed-continue-link");
+  });
+
+  it("shows the full untitled note body without clamping on the detail page", () => {
+    const post = createPostView({
+      format: "note",
+      title: undefined,
+      bodyHtml: "<p>Intro</p><span data-note-break></span><p>Rest</p>",
+      summaryHasMore: true,
+    });
+
+    const html = renderWithI18n(NoteCard({ post, mode: "detail" }));
+
+    expect(html).toContain("<p>Rest</p>");
+    expect(html).not.toContain("data-note-expand");
+    expect(html).not.toContain("data-note-clamp");
+  });
+
+  it("renders the full untitled body with showFullBody and no clamp", () => {
+    const post = createPostView({
+      format: "note",
+      title: undefined,
+      bodyHtml: "<p>Intro</p><span data-note-break></span><p>Rest</p>",
+      summaryHasMore: true,
+    });
+
+    const html = renderWithI18n(
+      NoteCard({ post, mode: "feed", display: { showFullBody: true } }),
+    );
+
+    expect(html).toContain("<p>Rest</p>");
+    expect(html).not.toContain("data-note-expand");
+    expect(html).not.toContain("data-note-clamp");
   });
 
   it("moves rated link detail cards into the title block without changing feed ordering", () => {
