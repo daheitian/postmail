@@ -326,7 +326,7 @@ location /_assets/ {
 
 | Variable                  | Default | Description                             |
 | ------------------------- | ------- | --------------------------------------- |
-| `UPLOAD_MAX_FILE_SIZE_MB` | `500`   | Maximum size for non-image uploads (MB) |
+| `UPLOAD_MAX_FILE_SIZE_MB` | `1024`  | Maximum size for non-image uploads (MB) |
 
 Images have their own tighter limits. This setting mainly affects video, audio, and PDF uploads.
 

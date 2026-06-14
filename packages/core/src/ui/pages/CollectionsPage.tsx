@@ -15,6 +15,7 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
   items,
   isAuthenticated,
   sitePathPrefix = "",
+  siteOrigin = "",
 }) => {
   const { i18n } = useLingui();
   const emptyMessage = i18n._(
@@ -27,7 +28,11 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
   if (isAuthenticated) {
     return (
       <div class="py-6" data-page="collections">
-        <CollectionsManager items={items} sitePathPrefix={sitePathPrefix} />
+        <CollectionsManager
+          items={items}
+          sitePathPrefix={sitePathPrefix}
+          siteOrigin={siteOrigin}
+        />
       </div>
     );
   }
@@ -54,6 +59,7 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
           items={items}
           emptyMessage={emptyMessage}
           sitePathPrefix={sitePathPrefix}
+          siteOrigin={siteOrigin}
         />
       </div>
     </div>

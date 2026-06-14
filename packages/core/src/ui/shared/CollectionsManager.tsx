@@ -16,11 +16,13 @@ const escapeJson = (data: unknown) =>
 export interface CollectionsManagerProps {
   items: CollectionDirectoryItem[];
   sitePathPrefix?: string;
+  siteOrigin?: string;
 }
 
 export const CollectionsManager: FC<CollectionsManagerProps> = ({
   items,
   sitePathPrefix = "",
+  siteOrigin = "",
 }) => {
   const { i18n } = useLingui();
   const collectionsHref = toPublicPath(
@@ -315,6 +317,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
           items={items}
           emptyMessage={labels.emptyState}
           sitePathPrefix={sitePathPrefix}
+          siteOrigin={siteOrigin}
         />
       </jant-collections-manager>
     </div>

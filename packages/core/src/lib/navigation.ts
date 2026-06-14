@@ -116,6 +116,7 @@ export async function getNavigationData(
     isAuthenticated,
     appConfig.sitePathPrefix,
     collectionFreshness,
+    appConfig.siteOrigin,
   );
 
   // Only load collections when authenticated (for compose dialog)

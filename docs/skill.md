@@ -137,7 +137,7 @@ curl -X POST "$JANT_SITE/api/upload" \
 # → { "id": "med_...", "url": "/media/med_....jpg", "mimeType": "image/jpeg", "size": 1024000 }
 ```
 
-Use this for migrations unless the source has files large enough to need multipart (the upload size limit defaults to 500 MB, configurable via `UPLOAD_MAX_FILE_SIZE_MB`). For new application code, prefer `/api/uploads`.
+Use this for migrations unless the source has files large enough to need multipart (the upload size limit defaults to 1024 MB, configurable via `UPLOAD_MAX_FILE_SIZE_MB`). For new application code, prefer `/api/uploads`.
 
 Always set `alt` for images when the source has it (WordPress `_wp_attachment_image_alt`, Ghost `alt`, etc.). If the source has no alt text, do not invent one — leave it null.
 

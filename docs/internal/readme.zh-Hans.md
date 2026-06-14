@@ -388,7 +388,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `STORAGE_DRIVER`          | 存储驱动（r2 / s3）                |
 | `S3_*`                    | S3 兼容存储配置                    |
 | `SLUG_ID_LENGTH`          | 随机 slug 长度（默认 5）           |
-| `UPLOAD_MAX_FILE_SIZE_MB` | 上传文件大小上限（MB，默认 500）   |
+| `UPLOAD_MAX_FILE_SIZE_MB` | 上传文件大小上限（MB，默认 1024）  |
 
 ## 9. 技术选型
 

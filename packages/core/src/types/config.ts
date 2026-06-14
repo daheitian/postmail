@@ -163,7 +163,7 @@ export const CONFIG_FIELDS = {
     envKeys: ["ASSET_BASE_URL"],
   },
   UPLOAD_MAX_FILE_SIZE_MB: {
-    defaultValue: "500",
+    defaultValue: "1024",
     envOnly: true,
     envKeys: ["UPLOAD_MAX_FILE_SIZE_MB"],
   },

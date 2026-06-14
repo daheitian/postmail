@@ -7,6 +7,7 @@ import {
   normalizePath,
   stripSitePathPrefix,
   slugify,
+  toSameSitePath,
 } from "../url.js";
 
 describe("extractDomain", () => {
@@ -140,6 +141,49 @@ describe("isFullUrl", () => {
   it("returns false for other protocols", () => {
     expect(isFullUrl("ftp://example.com")).toBe(false);
     expect(isFullUrl("mailto:test@test.com")).toBe(false);
+  });
+});
+
+describe("toSameSitePath", () => {
+  it("returns the path for a same-host absolute URL", () => {
+    expect(
+      toSameSitePath("https://example.com/about", "https://example.com"),
+    ).toBe("/about");
+  });
+
+  it("preserves query and hash", () => {
+    expect(
+      toSameSitePath(
+        "https://example.com/about?x=1#top",
+        "https://example.com",
+      ),
+    ).toBe("/about?x=1#top");
+  });
+
+  it("ignores scheme and port differences (same host)", () => {
+    expect(
+      toSameSitePath("https://example.com/about", "http://example.com:8787"),
+    ).toBe("/about");
+  });
+
+  it("returns / for the bare same-host origin", () => {
+    expect(toSameSitePath("https://example.com", "https://example.com")).toBe(
+      "/",
+    );
+  });
+
+  it("returns null for a different host", () => {
+    expect(
+      toSameSitePath("https://other.com/about", "https://example.com"),
+    ).toBeNull();
+  });
+
+  it("returns null for relative paths", () => {
+    expect(toSameSitePath("/about", "https://example.com")).toBeNull();
+  });
+
+  it("returns null when no site origin is configured", () => {
+    expect(toSameSitePath("https://example.com/about", "")).toBeNull();
   });
 });
 

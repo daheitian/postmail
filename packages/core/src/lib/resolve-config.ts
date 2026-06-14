@@ -174,8 +174,8 @@ export function resolveConfig(
 
     // Upload (ENV only)
     uploadMaxFileSize:
-      parseInt(getEnvString(env, "UPLOAD_MAX_FILE_SIZE_MB") ?? "500", 10) ||
-      500,
+      parseInt(getEnvString(env, "UPLOAD_MAX_FILE_SIZE_MB") ?? "1024", 10) ||
+      1024,
 
     // Summary extraction (ENV only)
     summaryMaxParagraphs:
