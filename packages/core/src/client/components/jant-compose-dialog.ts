@@ -36,6 +36,7 @@ import {
   getSelectedFirstOrder,
 } from "../collection-picker-order.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
+import { convertComposeFormat } from "./compose-format-convert.js";
 import { getMediaCategory } from "../../lib/upload.js";
 import { getSlugValidationIssue } from "../../lib/slug-format.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
@@ -743,13 +744,14 @@ export class JantComposeDialog extends LitElement {
       this._scheduleCollectionPickerAutofocus();
     }
     if (
-      changed.has("_format") ||
       changed.has("_collectionIds") ||
       changed.has("_slug") ||
       changed.has("_publishedAtInput") ||
       changed.has("_visibility")
     ) {
-      // Schedule draft auto-save (new-post and edit modes, not draft-load)
+      // Schedule draft auto-save (new-post and edit modes, not draft-load).
+      // `_format` is intentionally excluded: a bare format switch is exploratory
+      // and shouldn't persist a draft on its own (see `_switchFormat`).
       if (!this._draftSourceId) {
         this._scheduleDraftSave();
       }
@@ -3052,6 +3054,14 @@ export class JantComposeDialog extends LitElement {
     const editor = this._editor;
     if (!editor) return;
 
+    // Only persist genuine unsaved changes. Without this, merely opening a post
+    // for edit (or restoring a draft) would write a local draft of the
+    // unchanged content, since loading fires content-change events.
+    if (!this._hasUnsavedChanges()) {
+      globalThis.localStorage.removeItem(this._currentDraftStorageKey());
+      return;
+    }
+
     const data = editor.getData();
     const hasContent =
       !!data.body ||
@@ -3063,7 +3073,7 @@ export class JantComposeDialog extends LitElement {
       data.attachedTexts.length > 0;
 
     if (!hasContent) {
-      globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
+      globalThis.localStorage.removeItem(this._currentDraftStorageKey());
       return;
     }
 
@@ -3098,7 +3108,7 @@ export class JantComposeDialog extends LitElement {
 
     try {
       globalThis.localStorage.setItem(
-        JantComposeDialog._DRAFT_KEY,
+        this._currentDraftStorageKey(),
         JSON.stringify(draft),
       );
     } catch {
@@ -3549,10 +3559,43 @@ export class JantComposeDialog extends LitElement {
 
   private static readonly _FORMATS: ComposeFormat[] = ["note", "link", "quote"];
 
+  /**
+   * Whether a format switch should convert fields (fold/extract). Only when
+   * editing an existing post or a server draft — for a brand-new post, switching
+   * just hides/shows fields and nothing is persisted yet, so conversion would
+   * pollute the body for no benefit.
+   */
+  private _shouldConvertOnFormatSwitch(): boolean {
+    return !!(this._editPostId || this._draftSourceId);
+  }
+
   private _switchFormat(target: ComposeFormat) {
     if (this._format === target) return;
-    if (this._editPostId) return;
+    const editor = this._editor;
+    if (editor && this._shouldConvertOnFormatSwitch()) {
+      // Fold fields the target can't hold into the body before the format
+      // change recreates the editor from `_bodyJson`. Synchronous, so the old
+      // Tiptap instance can't fire onUpdate and clobber what we just wrote.
+      // `applyConvertedFields` suppresses the one content-change event the
+      // conversion emits, so the switch itself never schedules a draft save.
+      editor.applyConvertedFields(
+        convertComposeFormat(
+          this._format,
+          target,
+          editor.getConvertibleFields(),
+        ),
+      );
+    }
+    // A bare format switch shouldn't persist a local draft, so drop any save
+    // already pending from loading the post.
+    this._cancelDraftSaveTimer();
     this._format = target;
+    // Sync the editor's format this tick. Lit commits the `.format` binding
+    // only after this render returns, so `_canPublish()` (which reads
+    // `editor.getData()`, keyed on the editor's format) would otherwise compute
+    // against the stale format for one render and leave the submit button
+    // wrongly disabled.
+    if (editor) editor.format = target;
     this._showPublishPanel = false;
     if (this._shouldAutofocusFormatInput()) {
       globalThis.requestAnimationFrame(() => this._editor?.focusInput());
@@ -3583,39 +3626,35 @@ export class JantComposeDialog extends LitElement {
         </button>
 
         <div class="compose-dialog-header-center">
-          ${this._editPostId
+          ${this._threadItems.length > 0
             ? html`<span class="compose-dialog-title"
-                >${this.labels.editPost}</span
+                >${this.labels.newThread}</span
               >`
-            : this._threadItems.length > 0
-              ? html`<span class="compose-dialog-title"
-                  >${this.labels.newThread}</span
-                >`
-              : html`
-                  <div class="compose-segmented">
-                    <div
-                      class=${classMap({
-                        "compose-format-pill": true,
-                        "compose-format-pill-link": this._format === "link",
-                        "compose-format-pill-quote": this._format === "quote",
-                      })}
-                    ></div>
-                    ${formats.map(
-                      (f) => html`
-                        <button
-                          type="button"
-                          class=${classMap({
-                            "compose-segmented-item": true,
-                            "compose-segmented-item-active": this._format === f,
-                          })}
-                          @click=${() => this._switchFormat(f)}
-                        >
-                          ${formatLabels[f]}
-                        </button>
-                      `,
-                    )}
-                  </div>
-                `}
+            : html`
+                <div class="compose-segmented">
+                  <div
+                    class=${classMap({
+                      "compose-format-pill": true,
+                      "compose-format-pill-link": this._format === "link",
+                      "compose-format-pill-quote": this._format === "quote",
+                    })}
+                  ></div>
+                  ${formats.map(
+                    (f) => html`
+                      <button
+                        type="button"
+                        class=${classMap({
+                          "compose-segmented-item": true,
+                          "compose-segmented-item-active": this._format === f,
+                        })}
+                        @click=${() => this._switchFormat(f)}
+                      >
+                        ${formatLabels[f]}
+                      </button>
+                    `,
+                  )}
+                </div>
+              `}
         </div>
 
         <div class="compose-dialog-header-actions">
