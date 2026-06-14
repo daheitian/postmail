@@ -65,7 +65,7 @@ Both run the same code. Cloudflare suits personal sites that want near-zero ops 
 
 ## Is there a media upload size limit?
 
-Non-images default to 500 MB; tune it with `UPLOAD_MAX_FILE_SIZE_MB`. See [Configuration § Upload size limits](configuration.md#upload-size-limits-optional).
+Non-images default to 1024 MB; tune it with `UPLOAD_MAX_FILE_SIZE_MB`. See [Configuration § Upload size limits](configuration.md#upload-size-limits-optional).
 
 ## Can deleted posts be recovered?
 

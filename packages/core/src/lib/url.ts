@@ -93,6 +93,47 @@ export function isFullUrl(str: string): boolean {
 }
 
 /**
+ * If a full URL points at the site's own host, return its same-site path
+ * (`pathname` + `search` + `hash`). Returns `null` when the input is not a full
+ * URL, is unparseable, or points at a different host.
+ *
+ * Self-referential absolute links — e.g. a nav item set to
+ * `https://example.com/about` on `example.com` — should behave like the
+ * internal path `/about`: no external-link icon, no `target="_blank"`.
+ *
+ * Matching is by **hostname**, not full origin: scheme and port differences are
+ * treated as same-site. This keeps the check intuitive ("same domain") and
+ * robust in dev, where the site is often served over `http://host:<port>` while
+ * a nav link stores the canonical `https://host` URL. In production (canonical
+ * https + default port) hostname match is equivalent to origin match.
+ *
+ * @param url - Candidate URL (full URL or relative path)
+ * @param siteOrigin - The site's own origin, e.g. `https://example.com`
+ * @returns The same-site path, or `null` when the URL is external/non-absolute
+ *
+ * @example
+ * ```ts
+ * toSameSitePath("https://example.com/about", "https://example.com");    // "/about"
+ * toSameSitePath("https://example.com/about", "http://example.com:8787"); // "/about"
+ * toSameSitePath("https://other.com/about", "https://example.com");      // null
+ * toSameSitePath("/about", "https://example.com");                       // null
+ * ```
+ */
+export function toSameSitePath(url: string, siteOrigin: string): string | null {
+  if (!siteOrigin || !isFullUrl(url)) return null;
+  let parsed: URL;
+  let reference: URL;
+  try {
+    parsed = new URL(url);
+    reference = new URL(siteOrigin);
+  } catch {
+    return null;
+  }
+  if (parsed.hostname !== reference.hostname) return null;
+  return `${parsed.pathname}${parsed.search}${parsed.hash}` || "/";
+}
+
+/**
  * Converts text to a URL-friendly slug.
  *
  * Transforms text into a lowercase, hyphen-separated slug using limax for

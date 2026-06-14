@@ -6,12 +6,13 @@ import { getCollectionSelectionPath } from "../../lib/collection-paths.js";
 import { getDividerCollectionGroup } from "../../lib/collection-groups.js";
 import { render as renderMarkdown } from "../../lib/markdown.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
-import { toPublicHref, toPublicPath } from "../../lib/url.js";
+import { toPublicHref, toPublicPath, toSameSitePath } from "../../lib/url.js";
 
 export interface CollectionDirectoryProps {
   items: CollectionDirectoryItem[];
   emptyMessage?: string;
   sitePathPrefix?: string;
+  siteOrigin?: string;
 }
 
 const hasDirectoryContent = (items: CollectionDirectoryItem[]) =>
@@ -112,6 +113,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
   items,
   emptyMessage,
   sitePathPrefix = "",
+  siteOrigin = "",
 }) => {
   const { i18n } = useLingui();
 
@@ -173,8 +175,16 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
 
         if (item.type === "link" && item.label && item.url) {
           const sequence = sequenceLabels[index];
+          // A full URL pointing at this site's own origin is really internal,
+          // so render it without external-link affordances.
+          const sameSitePath = toSameSitePath(item.url, siteOrigin);
+          const linkHref =
+            sameSitePath !== null
+              ? toPublicHref(sameSitePath, sitePathPrefix)
+              : toPublicHref(item.url, sitePathPrefix);
           const isExternal =
-            item.url.startsWith("http://") || item.url.startsWith("https://");
+            sameSitePath === null &&
+            (item.url.startsWith("http://") || item.url.startsWith("https://"));
 
           return (
             <div
@@ -187,7 +197,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                 </span>
                 <div class="collection-directory-title-row">
                   <a
-                    href={toPublicHref(item.url, sitePathPrefix)}
+                    href={linkHref}
                     class="collection-directory-title-link"
                     {...(isExternal
                       ? { target: "_blank", rel: "noopener noreferrer" }

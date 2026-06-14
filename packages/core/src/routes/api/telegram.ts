@@ -66,7 +66,8 @@ function uploadConfigFromEnv(env: Bindings): {
   maxFileSizeMB: number;
 } {
   const maxFileSizeMB =
-    parseInt(getEnvString(env, "UPLOAD_MAX_FILE_SIZE_MB") ?? "500", 10) || 500;
+    parseInt(getEnvString(env, "UPLOAD_MAX_FILE_SIZE_MB") ?? "1024", 10) ||
+    1024;
   return {
     storageDriver: getConfiguredStorageDriver(env),
     maxFileSizeMB,

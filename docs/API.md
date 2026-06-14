@@ -844,7 +844,7 @@ Jant currently exposes three upload APIs:
 2. `/api/upload`: legacy single-request upload API
 3. `/api/upload/multipart`: legacy explicit multipart relay API
 
-File size is limited by `UPLOAD_MAX_FILE_SIZE_MB` and defaults to `500 MB`.
+File size is limited by `UPLOAD_MAX_FILE_SIZE_MB` and defaults to `1024 MB`.
 
 Jant accepts a broad set of image, video, audio, document, text, archive, font, design, and code MIME types. Unsupported types return `400`.
 

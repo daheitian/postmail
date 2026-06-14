@@ -124,6 +124,7 @@ export interface CollectionsPageProps {
   items: CollectionDirectoryItem[];
   isAuthenticated: boolean;
   sitePathPrefix?: string;
+  siteOrigin?: string;
 }
 
 // =============================================================================

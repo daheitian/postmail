@@ -666,7 +666,7 @@ export class JantComposeDialog extends LitElement {
     super();
     this.collections = [];
     this.labels = {} as ComposeLabels;
-    this.uploadMaxFileSize = 500;
+    this.uploadMaxFileSize = 1024;
     this.pageMode = false;
     this.closeHref = "/";
     this.autoRestoreDraft = false;

@@ -38,7 +38,7 @@ import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
 import { extractSummaryHtml, extractBodyText } from "./summary.js";
 import { renderTiptapDocument } from "./tiptap-render.js";
 import { highlightText } from "./search-snippet.js";
-import { toPublicPath } from "./url.js";
+import { isFullUrl, toPublicPath, toSameSitePath } from "./url.js";
 
 // =============================================================================
 // Media Context
@@ -424,6 +424,7 @@ export function toNavItemView(
   isAuthenticated = false,
   sitePathPrefix = "",
   collectionFreshness?: Map<string, number>,
+  siteOrigin = "",
 ): NavItemView {
   let url = item.url;
   let label = item.label;
@@ -453,8 +454,13 @@ export function toNavItemView(
     }
   }
 
-  const isExternal = url.startsWith("http://") || url.startsWith("https://");
-  const publicUrl = isExternal ? url : toPublicPath(url, sitePathPrefix);
+  // A full URL pointing at this site's own origin is really an internal link,
+  // so strip it back to a path and skip external-link affordances.
+  const sameSitePath = toSameSitePath(url, siteOrigin);
+  const isExternal = sameSitePath === null && isFullUrl(url);
+  const publicUrl = isExternal
+    ? url
+    : toPublicPath(sameSitePath ?? url, sitePathPrefix);
 
   let isActive = false;
   if (!isExternal) {
@@ -501,6 +507,7 @@ export function toNavItemViews(
   isAuthenticated = false,
   sitePathPrefix = "",
   collectionFreshness?: Map<string, number>,
+  siteOrigin = "",
 ): NavItemView[] {
   return items.map((item) =>
     toNavItemView(
@@ -510,6 +517,7 @@ export function toNavItemViews(
       isAuthenticated,
       sitePathPrefix,
       collectionFreshness,
+      siteOrigin,
     ),
   );
 }

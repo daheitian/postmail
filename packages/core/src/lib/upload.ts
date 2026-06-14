@@ -278,7 +278,7 @@ export interface ValidateUploadOptions {
  * @returns null if valid, error message string if invalid
  * @example
  * ```ts
- * const error = validateUploadFile(file, { maxFileSizeMB: 500 });
+ * const error = validateUploadFile(file, { maxFileSizeMB: 1024 });
  * if (error) return dsToast(error, "error");
  * ```
  */
@@ -300,7 +300,7 @@ export function validateUploadFile(
  * @returns null if valid, error message string if invalid
  * @example
  * ```ts
- * const error = validateUploadFileMetadata("image/jpeg", 1024000, { maxFileSizeMB: 500 });
+ * const error = validateUploadFileMetadata("image/jpeg", 1024000, { maxFileSizeMB: 1024 });
  * ```
  */
 export function validateUploadFileMetadata(
