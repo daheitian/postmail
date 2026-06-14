@@ -601,6 +601,239 @@ describe("JantComposeDialog", () => {
     expect(focusSpy).not.toHaveBeenCalled();
   });
 
+  function mockEditPost(post: Record<string, unknown>) {
+    return vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ id: "pst_123", ...post }), {
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+  }
+
+  it("shows the format switcher instead of a title while editing", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    mockEditPost({ format: "note", title: "Hello", body: null });
+
+    const el = await createElement();
+    await el.openEdit("pst_123");
+    await flushUpdates(el);
+
+    expect(el.querySelector(".compose-segmented")).not.toBeNull();
+    // The "Edit post" title is gone — the switcher takes the center slot.
+    expect(el.querySelector(".compose-dialog-title")).toBeNull();
+  });
+
+  it("edit-mode format switch folds quote fields into the body", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    mockEditPost({
+      format: "quote",
+      quoteText: "Stay hungry",
+      sourceName: "Jobs",
+      body: null,
+    });
+
+    const el = await createElement();
+    await el.openEdit("pst_123");
+    await flushUpdates(el);
+
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    expect(editor._quoteText).toBe("Stay hungry");
+
+    // Click the Note segmented button.
+    el.querySelectorAll<HTMLButtonElement>(
+      ".compose-segmented-item",
+    )[0].click();
+    await flushUpdates(el);
+
+    expect(el._format).toBe("note");
+    expect(editor._quoteText).toBe("");
+    expect(editor._quoteAuthor).toBe("");
+    expect(editor._bodyJson?.content?.[0]?.type).toBe("blockquote");
+  });
+
+  it("edit-mode format switch marks the post as having unsaved changes", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    mockEditPost({ format: "note", title: "Hello", body: null });
+
+    const el = await createElement();
+    await el.openEdit("pst_123");
+    await flushUpdates(el);
+
+    const hasUnsaved = (el as unknown as { _hasUnsavedChanges(): boolean })
+      ._hasUnsavedChanges;
+    expect(hasUnsaved.call(el)).toBe(false);
+
+    el.querySelectorAll<HTMLButtonElement>(
+      ".compose-segmented-item",
+    )[2].click();
+    await flushUpdates(el);
+
+    expect(el._format).toBe("quote");
+    expect(hasUnsaved.call(el)).toBe(true);
+  });
+
+  it("edit-mode autosave writes to the edit-specific draft key", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+        cb(0);
+        return 1;
+      });
+      mockEditPost({ format: "note", title: "Hello", body: null });
+
+      const el = await createElement();
+      await el.openEdit("pst_123");
+      await el.updateComplete;
+
+      const editor = requireElement(
+        el.querySelector<JantComposeEditor>("jant-compose-editor"),
+        "expected compose editor",
+      );
+      editor._bodyJson = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Edited body" }],
+          },
+        ],
+      };
+      await editor.updateComplete;
+
+      vi.advanceTimersByTime(1000);
+
+      expect(
+        globalThis.localStorage.getItem("jant:compose-edit:pst_123"),
+      ).not.toBeNull();
+      expect(globalThis.localStorage.getItem("jant:compose-draft")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("autosaves only on a real edit, not on open or a bare format switch", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+        cb(0);
+        return 1;
+      });
+      mockEditPost({
+        format: "note",
+        title: null,
+        body: JSON.stringify({
+          type: "doc",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "hi" }] },
+          ],
+        }),
+      });
+
+      const el = await createElement();
+      await el.openEdit("pst_123");
+      await el.updateComplete;
+      const editor = requireElement(
+        el.querySelector<JantComposeEditor>("jant-compose-editor"),
+        "expected compose editor",
+      );
+      await editor.updateComplete;
+
+      // Opening a post for edit must not persist a local draft on its own.
+      vi.advanceTimersByTime(1000);
+      expect(
+        globalThis.localStorage.getItem("jant:compose-edit:pst_123"),
+      ).toBeNull();
+
+      // Switching format only must not persist either.
+      el.querySelectorAll<HTMLButtonElement>(
+        ".compose-segmented-item",
+      )[2].click();
+      await el.updateComplete;
+      await editor.updateComplete;
+      vi.advanceTimersByTime(1000);
+      expect(
+        globalThis.localStorage.getItem("jant:compose-edit:pst_123"),
+      ).toBeNull();
+
+      // A real edit afterwards persists as usual, with the switched format.
+      editor._quoteText = "now editing";
+      await editor.updateComplete;
+      vi.advanceTimersByTime(1000);
+
+      const saved = globalThis.localStorage.getItem(
+        "jant:compose-edit:pst_123",
+      );
+      expect(saved).not.toBeNull();
+      expect(JSON.parse(saved as string).format).toBe("quote");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("enables the publish button right after an edit-mode switch to quote", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    // A note whose body is a blockquote + paragraph — switching to quote
+    // extracts the blockquote into the quote-text field.
+    mockEditPost({
+      format: "note",
+      title: null,
+      body: JSON.stringify({
+        type: "doc",
+        content: [
+          {
+            type: "blockquote",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "quote2233" }],
+              },
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "— author1" }],
+              },
+            ],
+          },
+          { type: "paragraph", content: [{ type: "text", text: "这个22" }] },
+        ],
+      }),
+    });
+
+    const el = await createElement();
+    await el.openEdit("pst_123");
+    await flushUpdates(el);
+
+    el.querySelectorAll<HTMLButtonElement>(
+      ".compose-segmented-item",
+    )[2].click();
+    await flushUpdates(el);
+
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    expect(el._format).toBe("quote");
+    expect(editor._quoteText).toBe("quote2233");
+    // The submit button must reflect the now-valid quote, not the stale
+    // pre-switch format.
+    expect(
+      el.querySelector<HTMLButtonElement>(".compose-publish-main")?.disabled,
+    ).toBe(false);
+  });
+
   it("submit dispatches jant:compose-submit-deferred with correct payload", async () => {
     const el = await createElement();
     const editor = requireElement(
