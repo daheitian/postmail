@@ -2215,6 +2215,19 @@
     text-decoration: underline;
   }
 
+  /* Untitled note expand-in-place. The full body is rendered with a zero-width
+     `data-note-break` marker at the summary boundary; clamping hides only the
+     marker's following siblings, leaving the visible summary untouched so the
+     note grows in place without the page jumping. note-expand.ts toggles
+     `data-note-clamp` to reveal/hide the tail. */
+  [data-note-break] {
+    display: none;
+  }
+
+  [data-note-clamp] [data-note-break] ~ * {
+    display: none;
+  }
+
   .post-header-block {
     margin-bottom: 1rem;
   }

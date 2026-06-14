@@ -462,6 +462,11 @@ msgstr ""
 msgid "Confirm Password"
 msgstr ""
 
+#. @context: Feed link from a truncated article excerpt to its full page
+#: src/ui/feed/NoteCard.tsx
+msgid "Continue →"
+msgstr ""
+
 #. @context: Controls section heading on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Controls"
@@ -1574,6 +1579,16 @@ msgstr ""
 #. @context: Compose toolbar - rate tooltip
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Rate"
+msgstr ""
+
+#. @context: Collapse an expanded untitled note back to its preview in the feed
+#: src/ui/feed/NoteCard.tsx
+msgid "Read less"
+msgstr ""
+
+#. @context: Expand the rest of a truncated untitled note in place in the feed
+#: src/ui/feed/NoteCard.tsx
+msgid "Read more"
 msgstr ""
 
 #. @context: Ordered list item in the sample detail article
