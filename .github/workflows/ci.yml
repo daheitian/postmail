@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, preview]
   pull_request:
     branches: [main]
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/preview' }}
 
 jobs:
   changes:
@@ -192,11 +192,17 @@ jobs:
   deploy-studio-preview:
     name: Deploy Jant Preview via Build
     needs: [ci, pg-smoke]
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    # Pushes to the preview branch deploy directly; PR-based preview deploys
+    # skip the preview branch itself so one push never dispatches twice.
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/preview') ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref != 'preview')
     uses: ./.github/workflows/deploy-studio.yml
     with:
-      source_ref: ${{ github.event.pull_request.head.ref }}
-      source_sha: ${{ github.event.pull_request.head.sha }}
+      source_ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      source_sha: ${{ github.event.pull_request.head.sha || github.sha }}
       target_env: preview
       github_environment: jant-preview
     secrets:
@@ -222,6 +228,7 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           REPOSITORY: ${{ github.repository }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || '' }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref || '' }}
           CI_RESULT: ${{ needs.ci.result }}
           PG_SMOKE_RESULT: ${{ needs['pg-smoke'].result }}
           DEMO_SELECTED: ${{ needs.changes.outputs.demo || 'false' }}
@@ -255,9 +262,13 @@ jobs:
               write_row "demo-source.jant.me" "${DEMO_SOURCE_SELECTED:-false}" "$DEPLOY_DEMO_SOURCE_RESULT"
               write_row "content-lab.jant.me" "${CONTENT_LAB_SELECTED:-false}" "$DEPLOY_CONTENT_LAB_RESULT"
               write_row "jant prod build" "true" "$DEPLOY_STUDIO_PROD_RESULT"
+            elif [ "$EVENT_NAME" = "push" ] && [ "$REF_NAME" = "preview" ]; then
+              write_row "jant preview build" "true" "$DEPLOY_STUDIO_PREVIEW_RESULT"
             elif [ "$EVENT_NAME" = "pull_request" ]; then
               if [ "$PR_HEAD_REPO" != "$REPOSITORY" ]; then
                 write_row "jant preview build" "no (fork PR)" "$DEPLOY_STUDIO_PREVIEW_RESULT"
+              elif [ "$PR_HEAD_REF" = "preview" ]; then
+                write_row "jant preview build" "no (deploys on push to preview)" "$DEPLOY_STUDIO_PREVIEW_RESULT"
               else
                 write_row "jant preview build" "true" "$DEPLOY_STUDIO_PREVIEW_RESULT"
               fi

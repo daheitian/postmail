@@ -614,6 +614,68 @@ describe("toNavItemView", () => {
     expect(view.isActive).toBe(false);
   });
 
+  it("treats a self-referential absolute URL as an internal link", () => {
+    const view = toNavItemView(
+      makeNavItem({ url: "https://example.com/about" }),
+      "/about",
+      "latest",
+      false,
+      "",
+      undefined,
+      "https://example.com",
+    );
+    expect(view.isExternal).toBe(false);
+    expect(view.url).toBe("/about");
+    expect(view.isActive).toBe(true);
+  });
+
+  it("keeps absolute URLs on other origins external", () => {
+    const view = toNavItemView(
+      makeNavItem({ url: "https://other.com/about" }),
+      "/about",
+      "latest",
+      false,
+      "",
+      undefined,
+      "https://example.com",
+    );
+    expect(view.isExternal).toBe(true);
+    expect(view.url).toBe("https://other.com/about");
+    expect(view.isActive).toBe(false);
+  });
+
+  it("treats a same-host URL as internal despite scheme/port differences", () => {
+    // Dev serves over http://host:<port> while the nav stores the canonical
+    // https URL — same site to the user, so no external-link affordances.
+    const view = toNavItemView(
+      makeNavItem({ url: "https://jant.example/about" }),
+      "/about",
+      "latest",
+      false,
+      "",
+      undefined,
+      "http://jant.example:8787",
+    );
+    expect(view.isExternal).toBe(false);
+    expect(view.url).toBe("/about");
+    expect(view.isActive).toBe(true);
+  });
+
+  it("normalizes a same-origin absolute URL under a site path prefix", () => {
+    const view = toNavItemView(
+      makeNavItem({ url: "https://example.com/blog/about" }),
+      "/blog/about",
+      "latest",
+      false,
+      "/blog",
+      undefined,
+      "https://example.com",
+    );
+    expect(view.isExternal).toBe(false);
+    expect(view.url).toBe("/blog/about");
+    expect(view.isActive).toBe(true);
+  });
+
   it("includes type in view", () => {
     const view = toNavItemView(
       makeNavItem({ type: "system", systemKey: "rss", url: "/feed" }),

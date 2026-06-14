@@ -50,7 +50,7 @@
 # S3_SECRET_ACCESS_KEY=your-secret-key
 
 # Optional upload, summary, and slug tuning.
-# UPLOAD_MAX_FILE_SIZE_MB=500
+# UPLOAD_MAX_FILE_SIZE_MB=1024
 # SUMMARY_MAX_PARAGRAPHS=5
 # SUMMARY_MAX_CHARS=500
 # SLUG_ID_LENGTH=5

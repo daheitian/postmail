@@ -65,7 +65,7 @@
 
 ## 媒体上传有大小限制吗？
 
-非图片默认 500 MB，可通过 `UPLOAD_MAX_FILE_SIZE_MB` 调整。详见 [配置 § 上传大小限制](configuration.md#上传大小限制可选)。
+非图片默认 1024 MB，可通过 `UPLOAD_MAX_FILE_SIZE_MB` 调整。详见 [配置 § 上传大小限制](configuration.md#上传大小限制可选)。
 
 ## 删除的帖子能恢复吗？
 

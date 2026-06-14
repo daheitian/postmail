@@ -71,6 +71,7 @@ collectionsPageRoutes.get("/", async (c) => {
         items={directoryData.items}
         isAuthenticated={navData.isAuthenticated ?? false}
         sitePathPrefix={navData.sitePathPrefix}
+        siteOrigin={c.var.appConfig.siteOrigin}
       />
     ),
   });
