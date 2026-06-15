@@ -743,6 +743,19 @@ export const ComposeForm: FC<ComposeFormProps> = ({
           "@context: Compose dialog header title when composing a thread",
       }),
     ),
+    replyTitle: i18n._(
+      msg({
+        message: "Reply",
+        comment:
+          "@context: Compose dialog header title when replying to a post",
+      }),
+    ),
+    editTitle: i18n._(
+      msg({
+        message: "Edit",
+        comment: "@context: Compose dialog header title when editing a post",
+      }),
+    ),
     slashHint: i18n._(
       msg({
         message: "Type / for commands",

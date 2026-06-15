@@ -7752,9 +7752,12 @@
     min-height: 72px;
   }
 
-  /* Focused thread post gets a subtle left accent */
+  /* Focused thread post gets a subtle left accent. Use an inset box-shadow, not
+     a border: a border adds 2px of layout width only while focused, so switching
+     focus between thread posts shifted each one sideways ("jitter"). box-shadow
+     paints in the same spot without affecting layout. */
   .compose-thread-post:focus-within > jant-compose-editor {
-    border-left: 2px solid transparent;
+    box-shadow: inset 2px 0 0 transparent;
   }
 
   /* "Add to thread" row inside thread compose layout */
@@ -7863,6 +7866,22 @@
     align-items: center;
     justify-content: space-between;
     padding: 6px 0 4px;
+  }
+
+  /* Reply / edit-reply compose (a .compose-editor-row directly under
+     .compose-thread-layout — not the multi-post thread variant) needs clear
+     separation from the parent post shown above it. A thread post is meant to
+     sit tight on the rail, so this is scoped away from thread compose. Uses a
+     static :not() rather than :has() on purpose: a :has() here re-evaluates on
+     focus changes inside the row and caused a one-frame horizontal reflow
+     ("jitter") when clicking into the editor. */
+  .compose-thread-layout:not(.compose-thread-compose-layout)
+    .compose-editor-row {
+    padding-top: 14px;
+  }
+
+  .compose-thread-post-header + .compose-body {
+    padding-top: 8px;
   }
 
   /* Thread format selector: pill-tag style (lighter than the main segmented) */
@@ -8641,6 +8660,15 @@
   .compose-tiptap-body .tiptap p {
     margin-top: 1.4rem;
     margin-bottom: 1.4rem;
+  }
+
+  /* In inline-format compose (reply / edit-reply / thread — the editors wrapped
+     in .compose-editor-row), the format header sits right above the body, so the
+     first block's 1.4rem top margin reads as a gap between the format pills and
+     the input. Drop it there so the text hugs the header. Standalone new/edit
+     editors keep their natural lead-in. */
+  .compose-editor-row .compose-tiptap-body .tiptap > :first-child {
+    margin-top: 0;
   }
 
   .compose-tiptap-body .tiptap ul {

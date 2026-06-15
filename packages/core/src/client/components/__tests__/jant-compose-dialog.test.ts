@@ -230,6 +230,8 @@ const labels: ComposeLabels = {
   showMore: "Show more",
   showLess: "Show less",
   newThread: "New Thread",
+  replyTitle: "Reply",
+  editTitle: "Edit",
   slashHint: "Type / for commands",
   collectionFormLabels: {
     titleLabel: "Title",
@@ -623,6 +625,84 @@ describe("JantComposeDialog", () => {
     expect(el.querySelector(".compose-segmented")).not.toBeNull();
     // The "Edit post" title is gone — the switcher takes the center slot.
     expect(el.querySelector(".compose-dialog-title")).toBeNull();
+  });
+
+  it("shows a Reply title with the format selector above the post when replying", async () => {
+    const el = await createElement();
+    await el.openReply("019ce8ce-d6d8-7fda-a5df-c2da2bef5ade", {
+      contentHtml: "<p>Parent</p>",
+      dateText: "Mar 14",
+    });
+    await flushUpdates(el);
+
+    expect(el.querySelector(".compose-dialog-title")?.textContent?.trim()).toBe(
+      "Reply",
+    );
+    // The header center no longer hosts the format selector...
+    expect(
+      el.querySelector(".compose-dialog-header-center .compose-segmented"),
+    ).toBeNull();
+    // ...it sits inline above the reply editor instead.
+    expect(el.querySelector(".compose-thread-post-header")).not.toBeNull();
+  });
+
+  it("shows an Edit title with the format selector above the post when editing a reply", async () => {
+    vi.spyOn(globalThis, "requestAnimationFrame").mockImplementation((cb) => {
+      cb(0);
+      return 1;
+    });
+    const parentId = "019ce8ce-d6d8-7fda-a5df-c2da2bef5ade";
+    // A fresh Response per call: openEdit reads the edited post, then
+    // _fetchReplyContext reads the parent — a single shared Response body can
+    // only be consumed once.
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+      const url = String(input);
+      const json = url.includes(parentId)
+        ? { id: parentId, bodyHtml: "<p>Parent</p>", format: "note" }
+        : {
+            id: "pst_123",
+            format: "note",
+            title: "Hello",
+            body: null,
+            replyToId: parentId,
+          };
+      return Promise.resolve(
+        new Response(JSON.stringify(json), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    });
+
+    const el = await createElement();
+    await el.openEdit("pst_123");
+    await flushUpdates(el);
+
+    expect(el.querySelector(".compose-dialog-title")?.textContent?.trim()).toBe(
+      "Edit",
+    );
+    expect(
+      el.querySelector(".compose-dialog-header-center .compose-segmented"),
+    ).toBeNull();
+    expect(el.querySelector(".compose-thread-post-header")).not.toBeNull();
+  });
+
+  it("switches format from the inline selector when replying", async () => {
+    const el = await createElement();
+    await el.openReply("019ce8ce-d6d8-7fda-a5df-c2da2bef5ade", {
+      contentHtml: "<p>Parent</p>",
+      dateText: "Mar 14",
+    });
+    await flushUpdates(el);
+
+    const items = el.querySelectorAll<HTMLButtonElement>(
+      ".compose-thread-post-header .compose-segmented-item",
+    );
+    // note / link / quote
+    expect(items.length).toBe(3);
+    items[1].click(); // link
+    await flushUpdates(el);
+
+    expect(el._format).toBe("link");
   });
 
   it("edit-mode format switch folds quote fields into the body", async () => {

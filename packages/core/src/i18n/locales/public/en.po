@@ -710,9 +710,11 @@ msgstr "Drafts"
 msgid "Drag collections, links, and dividers into the order you want."
 msgstr "Drag collections, links, and dividers into the order you want."
 
+#. @context: Compose dialog header title when editing a post
 #. @context: Per-collection edit action
 #. @context: Per-collection edit action
 #. @context: Per-collection edit action
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/shared/collection-management-labels.ts
@@ -1646,7 +1648,9 @@ msgstr "Replies"
 
 #. @context: Archive tile label for a single thread reply
 #. @context: Compose button - reply to post
+#. @context: Compose dialog header title when replying to a post
 #. @context: Reply button label in the post footer
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/shared/PostFooter.tsx

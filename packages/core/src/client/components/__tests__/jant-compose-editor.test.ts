@@ -264,6 +264,8 @@ const labels: ComposeLabels = {
   showMore: "Show more",
   showLess: "Show less",
   newThread: "New Thread",
+  replyTitle: "Reply",
+  editTitle: "Edit",
   slashHint: "Type / for commands",
   collectionFormLabels: {
     titleLabel: "Title",

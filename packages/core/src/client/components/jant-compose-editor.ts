@@ -179,6 +179,7 @@ export class JantComposeEditor extends LitElement {
     uploadMaxFileSize: { type: Number },
     threadItem: { type: Boolean, attribute: "thread-item" },
     removable: { type: Boolean },
+    inlineFormat: { type: Boolean, attribute: "inline-format" },
     slashCommandDiscovered: { type: Boolean },
     _title: { state: true },
     _bodyJson: { state: true },
@@ -204,6 +205,7 @@ export class JantComposeEditor extends LitElement {
   declare uploadMaxFileSize: number;
   declare threadItem: boolean;
   declare removable: boolean;
+  declare inlineFormat: boolean;
   declare slashCommandDiscovered: boolean;
   declare _title: string;
   declare _bodyJson: JSONContent | null;
@@ -259,6 +261,7 @@ export class JantComposeEditor extends LitElement {
     this.uploadMaxFileSize = 1024;
     this.threadItem = false;
     this.removable = false;
+    this.inlineFormat = false;
     this.slashCommandDiscovered = false;
     this._title = "";
     this._bodyJson = null;
@@ -2481,7 +2484,7 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
-  private _renderThreadPostHeader() {
+  private _renderFormatHeader() {
     const formatLabels: Record<ComposeFormat, string> = {
       note: this.labels.note,
       link: this.labels.link,
@@ -2511,7 +2514,7 @@ export class JantComposeEditor extends LitElement {
                 @click=${() => {
                   if (this.format !== f) {
                     this.dispatchEvent(
-                      new CustomEvent("jant:thread-format-change", {
+                      new CustomEvent("jant:format-change", {
                         bubbles: true,
                         detail: { format: f },
                       }),
@@ -2566,7 +2569,9 @@ export class JantComposeEditor extends LitElement {
 
   render() {
     return html`
-      ${this.threadItem ? this._renderThreadPostHeader() : nothing}
+      ${this.threadItem || this.inlineFormat
+        ? this._renderFormatHeader()
+        : nothing}
       <section class="compose-body">
         ${this.format === "note"
           ? this._renderNoteFields()
