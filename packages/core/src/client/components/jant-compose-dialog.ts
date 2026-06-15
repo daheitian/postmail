@@ -2458,7 +2458,7 @@ export class JantComposeDialog extends LitElement {
           "jant-compose-editor",
         )[this._focusedThreadIndex];
         editor?.dispatchEvent(
-          new CustomEvent("jant:thread-format-change", {
+          new CustomEvent("jant:format-change", {
             detail: { format: target },
             bubbles: true,
           }),
@@ -3614,6 +3614,16 @@ export class JantComposeDialog extends LitElement {
     const draftButtonLabel = this._hasContent()
       ? this.labels.saveAsDraft
       : this.labels.drafts;
+    // Format selector sits inline (above each post) whenever more than one post
+    // is on screen — a reply (parent shown above) or a multi-post thread. The
+    // header then shows a plain title instead of the format selector.
+    const isReply = !!(this._replyToId && this._replyToData);
+    const showTitle = isReply || this._threadItems.length > 0;
+    const headerTitle = this._editPostId
+      ? this.labels.editTitle
+      : isReply
+        ? this.labels.replyTitle
+        : this.labels.newThread;
 
     return html`
       <header class="compose-dialog-header">
@@ -3626,10 +3636,8 @@ export class JantComposeDialog extends LitElement {
         </button>
 
         <div class="compose-dialog-header-center">
-          ${this._threadItems.length > 0
-            ? html`<span class="compose-dialog-title"
-                >${this.labels.newThread}</span
-              >`
+          ${showTitle
+            ? html`<span class="compose-dialog-title">${headerTitle}</span>`
             : html`
                 <div class="compose-segmented">
                   <div
@@ -5336,9 +5344,7 @@ export class JantComposeDialog extends LitElement {
         @focusin=${() => {
           this._focusedThreadIndex = index;
         }}
-        @jant:thread-format-change=${(
-          e: CustomEvent<{ format: ComposeFormat }>,
-        ) => {
+        @jant:format-change=${(e: CustomEvent<{ format: ComposeFormat }>) => {
           e.stopPropagation();
           this._threadItems = this._threadItems.map((it, i) =>
             i === index ? { ...it, format: e.detail.format } : it,
@@ -5462,6 +5468,7 @@ export class JantComposeDialog extends LitElement {
       .format=${this._format}
       .labels=${this.labels}
       .uploadMaxFileSize=${this.uploadMaxFileSize}
+      .inlineFormat=${isReply}
       .slashCommandDiscovered=${this.slashCommandDiscovered}
     ></jant-compose-editor>`;
 
@@ -5485,7 +5492,15 @@ export class JantComposeDialog extends LitElement {
               ? html`
                   <div class="compose-thread-layout">
                     ${this._renderReplyContext()}
-                    <div class="compose-editor-row">
+                    <div
+                      class="compose-editor-row"
+                      @jant:format-change=${(
+                        e: CustomEvent<{ format: ComposeFormat }>,
+                      ) => {
+                        e.stopPropagation();
+                        this._switchFormat(e.detail.format);
+                      }}
+                    >
                       <div class="compose-thread-dot"></div>
                       ${editor}
                     </div>

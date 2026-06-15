@@ -532,7 +532,7 @@ export function createPostService(
 
   const effectiveVisibilityExpr = sql<string>`coalesce(
     ${posts.visibility},
-    (SELECT root.visibility FROM post AS root WHERE root.id = ${posts.threadId})
+    (SELECT root.visibility FROM post AS root WHERE root.id = ${posts.threadId} AND root.site_id = ${siteId})
   )`;
 
   /** Check if a slug is available (not used by posts or path_registry) */
@@ -1092,7 +1092,7 @@ export function createPostService(
   }
 
   function buildThreadRootPageConditions(options?: ThreadRootPageOptions) {
-    const conditions: SQL[] = [];
+    const conditions: SQL[] = [eq(posts.siteId, siteId)];
     const status = options?.status;
 
     if (status) {
