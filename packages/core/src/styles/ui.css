@@ -2205,8 +2205,16 @@
   }
 
   .feed-continue-link {
-    display: inline-block;
-    margin-top: 0.5rem;
+    /* Block so the whole content-width row is the tap target, not just the few
+       characters of "Read more". On mobile the trailing link on the last
+       summary line sits just above this control, so taps aimed here used to
+       land on that link. The larger `margin-top` is a dead (non-clickable)
+       buffer that separates the prose's trailing link from the control, and
+       `padding-bottom` grows the tap area downward, away from the footer
+       links below. Appearance is unchanged — only the hit area and spacing. */
+    display: block;
+    margin-top: 1rem;
+    padding-bottom: 0.6rem;
     font-size: var(--type-ui-meta);
     color: var(--site-text-secondary);
   }
