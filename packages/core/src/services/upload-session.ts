@@ -52,6 +52,10 @@ const RELAY_MULTIPART_THRESHOLD = 95 * 1024 * 1024;
 const RELAY_MULTIPART_PART_SIZE = 50 * 1024 * 1024;
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const DEFAULT_EXPIRED_UPLOAD_CLEANUP_LIMIT = 20;
+// Grace window before a finalized-but-unattached media row (uploaded during
+// compose, `postId IS NULL`) is reaped. Generous enough that an in-progress
+// compose/edit is never affected; based on `createdAt`, no heartbeat needed.
+const ORPHAN_MEDIA_GRACE_SECONDS = 7 * 24 * 60 * 60;
 type CleanupableUploadSessionState = "pending" | "uploaded" | "failed";
 const CLEANUPABLE_UPLOAD_SESSION_STATES = [
   "pending",
@@ -143,6 +147,7 @@ export interface UploadSessionService {
   }): Promise<{
     abortedMultipartUploads: number;
     deletedSessions: number;
+    deletedOrphanMedia: number;
   }>;
   abort(id: string, deps: { storage: StorageDriver }): Promise<void>;
 }
@@ -760,9 +765,22 @@ export function createUploadSessionService(
         deletedSessions += 1;
       }
 
+      // Reap finalized media that was uploaded during compose but never
+      // attached to a post (`postId IS NULL`) past the grace window. Deletes
+      // the S3/R2 objects and DB rows (best-effort storage delete). Bounded by
+      // the same per-run `limit`; any backlog drains over subsequent runs.
+      const orphanIds = await media.listOrphanedMediaIds({
+        before: now() - ORPHAN_MEDIA_GRACE_SECONDS,
+        limit,
+      });
+      if (orphanIds.length > 0) {
+        await media.deleteByIds(orphanIds, deps.storage);
+      }
+
       return {
         abortedMultipartUploads,
         deletedSessions,
+        deletedOrphanMedia: orphanIds.length,
       };
     },
   };
