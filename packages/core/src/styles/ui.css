@@ -2205,8 +2205,16 @@
   }
 
   .feed-continue-link {
-    display: inline-block;
-    margin-top: 0.5rem;
+    /* Block so the whole content-width row is the tap target, not just the few
+       characters of "Read more". On mobile the trailing link on the last
+       summary line sits just above this control, so taps aimed here used to
+       land on that link. The larger `margin-top` is a dead (non-clickable)
+       buffer that separates the prose's trailing link from the control, and
+       `padding-bottom` grows the tap area downward, away from the footer
+       links below. Appearance is unchanged — only the hit area and spacing. */
+    display: block;
+    margin-top: 1rem;
+    padding-bottom: 0.6rem;
     font-size: var(--type-ui-meta);
     color: var(--site-text-secondary);
   }
@@ -2344,16 +2352,39 @@
 
   .sidenote,
   .marginnote {
+    /* Layout: float into the right margin. A floated note anchors to its containing
+       block's right *content* edge, so if a theme gives that block inline-end padding
+       (e.g. a padded blockquote card) the anchor is inset and the note drifts left.
+       Themes expose that inset via --sidenote-anchor-inset (default 0) — best derived
+       from the same token that sets the padding — so the note still reaches the gutter
+       no matter how the container is indented. Core's own blocks add no inset. */
     float: right;
     clear: right;
-    margin-right: var(--layout-sidenote-margin);
+    margin-right: calc(
+      var(--layout-sidenote-margin) - var(--sidenote-anchor-inset, 0px)
+    );
     width: var(--layout-sidenote-width);
     margin-top: 0.3rem;
-    margin-bottom: 0;
-    font-size: var(--type-secondary);
-    line-height: 1.3;
+    /* Breathing room so multiple notes from one paragraph don't touch when they stack. */
+    margin-bottom: 1.4rem;
     vertical-align: baseline;
     position: relative;
+
+    /* Typographic isolation. A footnote is an annotation, not part of the text it
+       hangs off of, so it must render identically no matter what its reference sits
+       inside. The body span is emitted at the reference position (see tiptap-render
+       renderSidenoteReference), so when the [^n] is inside a blockquote / bold run /
+       heading the span inherits that context. Pin every inheritable type property to
+       the canonical note look to cut every such leak — not just the blockquote
+       serif+italic case. */
+    font-family: var(--font-body);
+    font-size: var(--type-sm);
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    line-height: 1.3;
+    letter-spacing: var(--type-body-tracking, normal);
+    text-align: left;
     color: var(--site-reading-meta);
   }
 
@@ -2371,25 +2402,22 @@
     content: counter(sidenote-counter);
     font-size: var(--type-code);
     top: -0.5rem;
-    left: 0.1rem;
+    /* Real margins (not `left`, which reserves no space) so the superscript
+       number keeps a gap from the words on both sides — matters for CJK, which
+       has no inter-word spacing. */
+    margin-left: 0.1rem;
+    margin-right: 0.25rem;
   }
 
   .sidenote::before {
     content: counter(sidenote-counter) " ";
-    font-size: var(--type-code);
+    font-size: var(--type-xs);
     top: -0.5rem;
   }
 
   .sidenote > code,
   .marginnote > code {
     font-size: var(--type-code);
-  }
-
-  blockquote .sidenote,
-  blockquote .marginnote {
-    margin-right: -82%;
-    min-width: 59%;
-    text-align: left;
   }
 
   input.margin-toggle {
@@ -2650,13 +2678,28 @@
      secondary to the focused post but not so much that text becomes gray
      and hard to read. Combined with the mask-image bottom fade this gives
      a "context drifts into the background" effect without dimming the
-     whole shell to the point of illegibility. */
-  .thread-context-shell {
+     whole shell to the point of illegibility.
+
+     Fade per item, not the whole shell: a blanket `opacity` on the shell
+     makes it a stacking context that *caps* descendant opacity, so the gap
+     marker ("N more posts") could never read brighter than the faded
+     context around it. Fading each item individually leaves the gap — a
+     real route into the rest of the thread, not background context — at
+     full strength. The items cover everything inside the shell (feed:
+     context + gap; detail page: ancestor detail items), so nothing slips
+     through undimmed. */
+  .thread-context-shell .thread-item {
     opacity: 0.6;
     transition: opacity 0.22s ease;
   }
 
-  .thread-context-shell:not([data-collapsed]) {
+  .thread-context-shell:not([data-collapsed]) .thread-item {
+    opacity: 1;
+  }
+
+  /* The gap is a structural "thread continues here" marker — never faded,
+     collapsed or expanded. */
+  .thread-context-shell .thread-item.thread-item-gap {
     opacity: 1;
   }
 
@@ -2721,31 +2764,76 @@
     padding-bottom: 0.35rem;
   }
 
+  /* Gap marker on the rail: swap the single post dot for a short column of
+     small beads (a vertical "⋮") so the thread line visibly "skips" a run
+     of posts — the familiar threaded-conversation cue for collapsed
+     content. Smaller and quieter than the real post dots, sitting on the
+     same rail x-position. The continuous rail line still shows through
+     behind the beads, so thread continuity reads intact. */
+  .thread-group-preview .thread-item-gap::before,
+  .thread-group-detail .thread-item-gap::before {
+    top: 50%;
+    transform: translateY(-50%);
+    left: calc(
+      var(--site-thread-rail-line-left) + var(--site-thread-rail-line-width) /
+        2 - 2px - var(--site-thread-rail-indent)
+    );
+    width: 4px;
+    height: 24px;
+    border: 0;
+    border-radius: 0;
+    background: radial-gradient(
+      circle,
+      var(--site-threadline) 1.75px,
+      transparent 2px
+    );
+    background-size: 4px 8px;
+    background-repeat: repeat-y;
+    background-position: center top;
+    box-shadow: none;
+  }
+
+  /* "N more posts" — a calm route into the rest of the thread, styled as a
+     sibling of `.thread-context-toggle` (same muted colour + size) rather
+     than a pill or an underlined link. A small chevron does the "this is
+     tappable / leads somewhere" work an underline does poorly on a short
+     standalone label; it points right because the link navigates into the
+     thread rather than expanding in place. Full opacity keeps it from
+     fading into the context above. */
   .thread-gap-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.38rem 0.78rem;
-    border: 1px dashed var(--site-thread-context-border);
-    border-radius: 999px;
-    background: var(--site-thread-gap-bg);
+    gap: 0.4rem;
+    padding: 0.25rem 0;
     color: var(--site-text-secondary);
     font-size: var(--type-thread-context-meta);
-    line-height: 1.3;
+    font-weight: 500;
+    line-height: 1.2;
     text-decoration: none;
+    transition: color 0.18s ease;
+  }
+
+  .thread-gap-link::after {
+    content: "";
+    width: 0.36em;
+    height: 0.36em;
+    border: 1.5px solid currentColor;
+    border-left: 0;
+    border-bottom: 0;
+    opacity: 0.65;
+    transform: rotate(45deg);
     transition:
-      border-color 0.18s ease,
-      color 0.18s ease,
-      background-color 0.18s ease;
+      transform 0.18s ease,
+      opacity 0.18s ease;
   }
 
   .thread-gap-link:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--site-accent) 22%,
-      var(--site-divider)
-    );
     color: var(--site-text-primary);
+  }
+
+  .thread-gap-link:hover::after {
+    opacity: 1;
+    transform: translateX(2px) rotate(45deg);
   }
 
   .thread-item-hero {
