@@ -2344,16 +2344,39 @@
 
   .sidenote,
   .marginnote {
+    /* Layout: float into the right margin. A floated note anchors to its containing
+       block's right *content* edge, so if a theme gives that block inline-end padding
+       (e.g. a padded blockquote card) the anchor is inset and the note drifts left.
+       Themes expose that inset via --sidenote-anchor-inset (default 0) — best derived
+       from the same token that sets the padding — so the note still reaches the gutter
+       no matter how the container is indented. Core's own blocks add no inset. */
     float: right;
     clear: right;
-    margin-right: var(--layout-sidenote-margin);
+    margin-right: calc(
+      var(--layout-sidenote-margin) - var(--sidenote-anchor-inset, 0px)
+    );
     width: var(--layout-sidenote-width);
     margin-top: 0.3rem;
-    margin-bottom: 0;
-    font-size: var(--type-secondary);
-    line-height: 1.3;
+    /* Breathing room so multiple notes from one paragraph don't touch when they stack. */
+    margin-bottom: 1.4rem;
     vertical-align: baseline;
     position: relative;
+
+    /* Typographic isolation. A footnote is an annotation, not part of the text it
+       hangs off of, so it must render identically no matter what its reference sits
+       inside. The body span is emitted at the reference position (see tiptap-render
+       renderSidenoteReference), so when the [^n] is inside a blockquote / bold run /
+       heading the span inherits that context. Pin every inheritable type property to
+       the canonical note look to cut every such leak — not just the blockquote
+       serif+italic case. */
+    font-family: var(--font-body);
+    font-size: var(--type-sm);
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    line-height: 1.3;
+    letter-spacing: var(--type-body-tracking, normal);
+    text-align: left;
     color: var(--site-reading-meta);
   }
 
@@ -2371,25 +2394,22 @@
     content: counter(sidenote-counter);
     font-size: var(--type-code);
     top: -0.5rem;
-    left: 0.1rem;
+    /* Real margins (not `left`, which reserves no space) so the superscript
+       number keeps a gap from the words on both sides — matters for CJK, which
+       has no inter-word spacing. */
+    margin-left: 0.1rem;
+    margin-right: 0.25rem;
   }
 
   .sidenote::before {
     content: counter(sidenote-counter) " ";
-    font-size: var(--type-code);
+    font-size: var(--type-xs);
     top: -0.5rem;
   }
 
   .sidenote > code,
   .marginnote > code {
     font-size: var(--type-code);
-  }
-
-  blockquote .sidenote,
-  blockquote .marginnote {
-    margin-right: -82%;
-    min-width: 59%;
-    text-align: left;
   }
 
   input.margin-toggle {
