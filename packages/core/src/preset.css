@@ -315,9 +315,15 @@ html {
 
   /* Blockquotes — tinted background card with quote icon */
   blockquote {
+    --_blockquote-pad-x: 1rem;
     position: relative;
     margin: 1.4rem 0;
-    padding: 1.4rem 1rem 0.75rem;
+    padding: 1.4rem var(--_blockquote-pad-x) 0.75rem;
+    /* A footnote referenced inside a quote floats within this padded box, so its
+       gutter anchor is inset by the right padding and the note drifts left. Expose
+       that inset (same value as the padding, so the two can't drift) — the sidenote
+       rule in ui.css subtracts it to pull the note back out to the gutter. */
+    --sidenote-anchor-inset: var(--_blockquote-pad-x);
     border: none;
     background: var(--site-blockquote-bg);
     border-radius: 6px;

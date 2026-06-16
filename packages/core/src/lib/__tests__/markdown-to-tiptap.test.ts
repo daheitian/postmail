@@ -399,7 +399,7 @@ describe("end-to-end: Markdown → markdownToTiptapJson → renderTiptapJson", (
     const html = renderTiptapJson(json);
 
     expect(html).toContain(
-      '<label for="sn-1" class="margin-toggle sidenote-number">',
+      '<label for="sn-1" class="margin-toggle sidenote-number footref">',
     );
     expect(html).toContain('<span class="sidenote">Footnote body</span>');
     expect(html).not.toContain('<section class="footnotes"');
