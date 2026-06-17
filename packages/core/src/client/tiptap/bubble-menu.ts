@@ -37,6 +37,39 @@ interface BubbleBtn {
   isActive: (view: EditorView) => boolean;
 }
 
+/**
+ * Toggle an inline mark on the current selection, then drop out of it.
+ *
+ * The toolbar mark buttons (bold, italic) format the *selection* — the same
+ * intent as the `**x**` / `~~x~~` markdown shortcuts, which auto-exit once you
+ * type the closing delimiter. These marks are inclusive, so a collapsed cursor
+ * sitting at the end of the formatted word stays "inside" the mark and keeps
+ * extending as the user types, with no obvious way to stop (the bubble menu is
+ * hidden once the selection collapses). After toggling, we collapse the cursor
+ * to the end of the selection and remove the just-applied mark from the stored
+ * set so the next character is plain. Use the keyboard shortcuts (Mod-B /
+ * Mod-I) for mode-style "keep typing in this format".
+ */
+export function toggleMarkAndExit(editor: Editor, markName: string): void {
+  const { to, empty } = editor.state.selection;
+  if (empty) {
+    // No selection (e.g. shortcut-driven): behave as a plain mode toggle.
+    editor.chain().focus().toggleMark(markName).run();
+    return;
+  }
+  const markType = editor.schema.marks[markName];
+  editor
+    .chain()
+    .focus()
+    .toggleMark(markName)
+    .setTextSelection(to)
+    .command(({ tr }) => {
+      if (markType) tr.removeStoredMark(markType);
+      return true;
+    })
+    .run();
+}
+
 function getButtons(
   editor: Editor,
   toolbarMode: FormattingToolbarMode,
@@ -47,14 +80,14 @@ function getButtons(
         key: "bold",
         icon: ICONS.bold,
         title: "Bold",
-        action: () => editor.chain().focus().toggleBold().run(),
+        action: () => toggleMarkAndExit(editor, "bold"),
         isActive: () => editor.isActive("bold"),
       },
       {
         key: "italic",
         icon: ICONS.italic,
         title: "Italic",
-        action: () => editor.chain().focus().toggleItalic().run(),
+        action: () => toggleMarkAndExit(editor, "italic"),
         isActive: () => editor.isActive("italic"),
       },
       {
@@ -101,14 +134,14 @@ function getButtons(
       key: "bold",
       icon: ICONS.bold,
       title: "Bold",
-      action: () => editor.chain().focus().toggleBold().run(),
+      action: () => toggleMarkAndExit(editor, "bold"),
       isActive: () => editor.isActive("bold"),
     },
     {
       key: "italic",
       icon: ICONS.italic,
       title: "Italic",
-      action: () => editor.chain().focus().toggleItalic().run(),
+      action: () => toggleMarkAndExit(editor, "italic"),
       isActive: () => editor.isActive("italic"),
     },
     {
