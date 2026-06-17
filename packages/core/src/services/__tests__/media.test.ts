@@ -8,6 +8,7 @@ import { createMediaService } from "../media.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
 import { MediaQuotaExceededError } from "../../lib/errors.js";
+import { now } from "../../lib/time.js";
 
 interface MockStorageFile {
   body: Uint8Array;
@@ -958,6 +959,88 @@ describe("MediaService", () => {
       const postMedia = results.get(post.id)!;
       expect(postMedia[0]!.id).toBe(m2.id);
       expect(postMedia[1]!.id).toBe(m1.id);
+    });
+  });
+
+  describe("listOrphanedMediaIds", () => {
+    it("returns unattached media created before the cutoff", async () => {
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/b.jpg",
+      });
+
+      const ids = await mediaService.listOrphanedMediaIds({
+        before: now() + 1,
+        limit: 10,
+      });
+
+      expect(ids).toHaveLength(2);
+      expect(ids).toContain(m1.id);
+      expect(ids).toContain(m2.id);
+    });
+
+    it("excludes media attached to a post", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "p",
+      });
+      const attached = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/a.jpg",
+      });
+      const orphan = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/b.jpg",
+      });
+      await mediaService.attachToPost(post.id, [attached.id]);
+
+      const ids = await mediaService.listOrphanedMediaIds({
+        before: now() + 1,
+        limit: 10,
+      });
+
+      expect(ids).toEqual([orphan.id]);
+    });
+
+    it("excludes media created at or after the cutoff", async () => {
+      await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/a.jpg",
+      });
+
+      const ids = await mediaService.listOrphanedMediaIds({
+        before: 1,
+        limit: 10,
+      });
+
+      expect(ids).toEqual([]);
+    });
+
+    it("respects the batch limit", async () => {
+      await mediaService.create({ ...sampleMedia, storageKey: "media/a.jpg" });
+      await mediaService.create({ ...sampleMedia, storageKey: "media/b.jpg" });
+
+      const ids = await mediaService.listOrphanedMediaIds({
+        before: now() + 1,
+        limit: 1,
+      });
+
+      expect(ids).toHaveLength(1);
+    });
+
+    it("returns no IDs when the limit is zero", async () => {
+      await mediaService.create({ ...sampleMedia, storageKey: "media/a.jpg" });
+
+      const ids = await mediaService.listOrphanedMediaIds({
+        before: now() + 1,
+        limit: 0,
+      });
+
+      expect(ids).toEqual([]);
     });
   });
 

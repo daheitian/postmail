@@ -26,6 +26,7 @@ import {
   queueToastForNextPage,
 } from "./toast.js";
 import { openReplyForArticle } from "./compose-launch.js";
+import { hydratePartial } from "./hydrate-partial.js";
 import { getJsonString, readJsonObject } from "./json.js";
 import { uploadViaSession } from "./upload-session.js";
 import { publicPath } from "./runtime-paths.js";
@@ -75,6 +76,10 @@ async function refreshTimelineThreadView(
     if (!html) return false;
 
     content.innerHTML = html;
+    // Swapped-in markup carries interactions whose per-element setup only runs
+    // on DOMContentLoaded (thread "Show more" toggle, feed video autoplay, audio
+    // waveform); re-initialize them or they stay inert until a full reload.
+    hydratePartial(content);
     return true;
   } catch {
     return false;
@@ -97,6 +102,7 @@ async function refreshPostCardView(postId: string): Promise<boolean> {
       );
       if (!content) return false;
       content.innerHTML = html;
+      hydratePartial(content);
       return true;
     }
 
@@ -106,6 +112,11 @@ async function refreshPostCardView(postId: string): Promise<boolean> {
     if (!article) return false;
 
     article.outerHTML = html;
+    // outerHTML detaches `article`; re-query the replacement to hydrate it.
+    const nextArticle = document.querySelector<HTMLElement>(
+      `article[data-post-id="${postId}"]`,
+    );
+    if (nextArticle) hydratePartial(nextArticle);
     return true;
   } catch {
     return false;
@@ -125,6 +136,12 @@ async function refreshPostPageView(postId: string): Promise<boolean> {
     if (!html) return false;
 
     container.outerHTML = html;
+    // outerHTML detaches `container`; re-query the replacement to hydrate it
+    // (see refreshTimelineThreadView).
+    const next = document.querySelector<HTMLElement>(
+      `[data-post-view][data-post-view-id="${postId}"]`,
+    );
+    if (next) hydratePartial(next);
     return true;
   } catch {
     return false;

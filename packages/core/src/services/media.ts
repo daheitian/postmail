@@ -4,7 +4,7 @@
  * Handles media upload and management with pluggable storage backends.
  */
 
-import { eq, desc, inArray, asc, sql, and, or } from "drizzle-orm";
+import { eq, desc, inArray, asc, sql, and, or, isNull, lt } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
 import { type Database, supportsDrizzleTransaction } from "../db/index.js";
 import type { DatabaseDialect } from "../db/dialect.js";
@@ -198,6 +198,19 @@ export interface MediaService {
    */
   deleteByIds(ids: string[], storage?: StorageDriver | null): Promise<void>;
   getByStorageKey(storageKey: string, provider: string): Promise<Media | null>;
+  /**
+   * Return IDs of orphaned media — rows never attached to a post
+   * (`postId IS NULL`) created before the given cutoff. Used by the upload
+   * cleanup sweep to reap media uploaded during compose but never published.
+   *
+   * @param input.before - Unix-seconds cutoff; only rows with `createdAt < before` are returned
+   * @param input.limit - Maximum number of IDs to return (batch bound)
+   * @returns Orphaned media IDs, oldest first
+   */
+  listOrphanedMediaIds(input: {
+    before: number;
+    limit: number;
+  }): Promise<string[]>;
   createTextAttachment(
     data: CreateTextAttachmentData,
     deps: TextAttachmentDeps,
@@ -499,6 +512,23 @@ export function createMediaService(
         .from(media)
         .where(and(eq(media.siteId, siteId), inArray(media.id, ids)));
       return rows.map(toMedia);
+    },
+
+    async listOrphanedMediaIds({ before, limit }) {
+      if (limit <= 0) return [];
+      const rows = await db
+        .select({ id: media.id })
+        .from(media)
+        .where(
+          and(
+            eq(media.siteId, siteId),
+            isNull(media.postId),
+            lt(media.createdAt, before),
+          ),
+        )
+        .orderBy(asc(media.createdAt), asc(media.id))
+        .limit(limit);
+      return rows.map((r) => r.id);
     },
 
     async getByPostId(postId) {

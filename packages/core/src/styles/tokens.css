@@ -84,7 +84,7 @@
      mobile overrides below cap sizes for small screens.
      --type-content-scale uniformly scales all content sizes
      without affecting UI controls. */
-  --type-content-scale: 0.81;
+  --type-content-scale: 0.78;
   --type-content-display: calc(var(--type-display) * var(--type-content-scale));
   --type-content-title: calc(var(--type-title) * var(--type-content-scale));
   --type-content-subtitle: calc(
