@@ -117,4 +117,5 @@ export async function run(argv) {
   console.log(`Deleted sessions: ${result.deletedSessions}`);
   console.log(`Aborted multipart uploads: ${result.abortedMultipartUploads}`);
   console.log(`Orphaned media deleted: ${result.deletedOrphanMedia}`);
+  console.log(`Purged storage objects: ${result.purgedStorageObjects ?? 0}`);
 }

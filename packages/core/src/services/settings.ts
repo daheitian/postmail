@@ -131,15 +131,16 @@ export interface SettingsService {
    */
   uploadAvatar(data: AvatarUploadData, deps: AvatarUploadDeps): Promise<void>;
   /**
-   * Remove avatar and all favicon-related settings.
-   * Deletes the apple-touch-icon from storage if it exists.
-   *
-   * @param storage - Optional storage driver for deleting the apple-touch-icon file
+   * Remove avatar and all favicon-related settings. The apple-touch-icon's
+   * media row is deleted and its storage object is retired (moved to the
+   * recycle bin, or deleted) via the media service when supplied — so removal
+   * is recoverable rather than erasing the bytes with no trace.
    */
-  removeAvatar(
-    storage?: StorageDriver | null,
-    deps?: { media?: MediaService; storageProvider?: string },
-  ): Promise<void>;
+  removeAvatar(deps?: {
+    storage?: StorageDriver | null;
+    media?: MediaService;
+    storageProvider?: string;
+  }): Promise<void>;
 }
 
 export function createSettingsService(
@@ -469,19 +470,19 @@ export function createSettingsService(
       await this.set("SITE_FAVICON_VERSION", version);
     },
 
-    async removeAvatar(storage, deps) {
+    async removeAvatar(deps) {
       const appleTouchKey = await this.get("SITE_FAVICON_APPLE_TOUCH");
-      if (storage && appleTouchKey) {
-        await storage.delete(appleTouchKey);
-      }
 
+      // Retire the apple-touch-icon through the media service so its object goes
+      // to the recycle bin (recoverable) rather than being erased now. Also
+      // removes its media row.
       if (deps?.media && deps.storageProvider && appleTouchKey) {
         const existing = await deps.media.getByStorageKey(
           appleTouchKey,
           deps.storageProvider,
         );
         if (existing) {
-          await deps.media.delete(existing.id);
+          await deps.media.delete(existing.id, deps.storage);
         }
       }
 
