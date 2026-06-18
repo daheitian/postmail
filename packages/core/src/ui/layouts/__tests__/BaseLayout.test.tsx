@@ -320,6 +320,19 @@ describe("BaseLayout", () => {
     expect(html).toContain('data-asset-base-path="/blog/_assets"');
   });
 
+  it("exposes the active theme id on the root html element", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        c: createContext("featured", { themeId: "frost" }),
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain('data-theme="frost"');
+  });
+
   it("renders theme-color tags that follow the active theme in auto mode", async () => {
     const { BaseLayout } = await loadBaseLayout();
     const html = renderToString(

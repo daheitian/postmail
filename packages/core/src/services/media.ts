@@ -21,6 +21,7 @@ import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import {
   generateStorageKey,
+  SITE_ASSET_STORAGE_KEY_LIKE_PATTERN,
   toMediaKind,
   validateUploadFileMetadata,
 } from "../lib/upload.js";
@@ -524,6 +525,10 @@ export function createMediaService(
             eq(media.siteId, siteId),
             isNull(media.postId),
             lt(media.createdAt, before),
+            // Site assets (avatars, favicons) are stored with postId = null and
+            // referenced from site settings, not posts. Exclude them so the
+            // reaper never deletes them as abandoned compose uploads.
+            sql`${media.storageKey} NOT LIKE ${SITE_ASSET_STORAGE_KEY_LIKE_PATTERN}`,
           ),
         )
         .orderBy(asc(media.createdAt), asc(media.id))

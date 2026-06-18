@@ -277,6 +277,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
       {raw("<!DOCTYPE html>")}
       <html
         lang={resolvedLang}
+        data-theme={appConfig?.themeId}
         data-theme-mode={themeMode}
         data-site-path-prefix={sitePathPrefix}
         data-asset-base-path={assetBasePath}
