@@ -651,7 +651,11 @@ settingsRoutes.post("/avatar", async (c) => {
 });
 
 settingsRoutes.post("/avatar/remove", async (c) => {
-  await c.var.services.settings.removeAvatar(c.var.storage);
+  await c.var.services.settings.removeAvatar({
+    storage: c.var.storage,
+    media: c.var.services.media,
+    storageProvider: c.var.appConfig.storageDriver,
+  });
   try {
     await syncHostedControlPlaneSiteAvatar({
       appConfig: c.var.appConfig,

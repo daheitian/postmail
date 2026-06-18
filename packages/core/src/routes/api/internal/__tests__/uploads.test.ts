@@ -62,6 +62,11 @@ function createMockStorage(): StorageDriver & {
     async delete(key) {
       files.delete(key);
     },
+
+    async copy(sourceKey, destKey) {
+      const file = files.get(sourceKey);
+      if (file) files.set(destKey, { ...file });
+    },
   };
 }
 
@@ -121,6 +126,7 @@ describe("Internal upload admin routes", () => {
       abortedMultipartUploads: 0,
       deletedSessions: 1,
       deletedOrphanMedia: 0,
+      purgedStorageObjects: 0,
     });
 
     const remaining = sqlite
@@ -182,13 +188,25 @@ describe("Internal upload admin routes", () => {
       abortedMultipartUploads: 0,
       deletedSessions: 0,
       deletedOrphanMedia: 1,
+      // The reaped orphan's object is freshly enqueued (30 days out), so the
+      // same sweep purges nothing yet.
+      purgedStorageObjects: 0,
     });
 
-    // Old orphan: DB row and storage object both gone.
+    // Old orphan: DB row gone, original key freed immediately, bytes moved to
+    // a trash/ key recorded in storage_purge (recoverable within the window).
     expect(
       sqlite.prepare("select id from media where id = ?").get(oldOrphan.id),
     ).toBeUndefined();
     expect(storage.files.has(oldStorageKey)).toBe(false);
+    expect([...storage.files.keys()].some((k) => k.startsWith("trash/"))).toBe(
+      true,
+    );
+    expect(
+      sqlite
+        .prepare("select id from storage_purge where original_key = ?")
+        .get(oldStorageKey),
+    ).toBeDefined();
 
     // Fresh orphan: untouched.
     expect(
