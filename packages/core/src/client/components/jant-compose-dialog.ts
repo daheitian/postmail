@@ -5350,6 +5350,18 @@ export class JantComposeDialog extends LitElement {
             i === index ? { ...it, format: e.detail.format } : it,
           );
           this._format = e.detail.format;
+          // Move focus to the new format's input, mirroring the single-post
+          // composer's `_switchFormat`. The editor re-renders its fields only
+          // after both this dialog and the editor itself finish updating, so
+          // wait for both before routing focus to the now-visible control.
+          if (this._shouldAutofocusFormatInput()) {
+            this.updateComplete.then(() => {
+              const editor = this.querySelectorAll<JantComposeEditor>(
+                "jant-compose-editor",
+              )[index];
+              editor?.updateComplete.then(() => editor.focusInput());
+            });
+          }
         }}
         @jant:thread-remove=${(e: Event) => {
           e.stopPropagation();
