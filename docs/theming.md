@@ -180,6 +180,8 @@ You can target specific pages or elements with these data attributes when writin
 
 | Attribute            | Where it appears | Values                                                                       |
 | -------------------- | ---------------- | ---------------------------------------------------------------------------- |
+| `data-theme`         | `<html>`         | Active color theme id (`tufte`, `linen`, `frost`, …)                         |
+| `data-theme-mode`    | `<html>`         | `auto`, `light`, `dark`                                                      |
 | `data-page`          | Page wrapper     | `home`, `post`, `search`, `archive`, `collection`, `collections`, `featured` |
 | `data-post`          | `<article>`      | Present on every post                                                        |
 | `data-format`        | `<article>`      | `note`, `link`, `quote`                                                      |

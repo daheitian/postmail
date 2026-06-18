@@ -1006,6 +1006,30 @@ describe("MediaService", () => {
       expect(ids).toEqual([orphan.id]);
     });
 
+    it("excludes site asset media (avatars, favicons) referenced by settings", async () => {
+      const orphan = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/site/files/orphan.jpg",
+      });
+      const avatar = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/site/assets/avatar/avatar.png",
+      });
+      const favicon = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/site/assets/favicon/apple-touch-icon.png",
+      });
+
+      const ids = await mediaService.listOrphanedMediaIds({
+        before: now() + 1,
+        limit: 10,
+      });
+
+      expect(ids).toEqual([orphan.id]);
+      expect(ids).not.toContain(avatar.id);
+      expect(ids).not.toContain(favicon.id);
+    });
+
     it("excludes media created at or after the cutoff", async () => {
       await mediaService.create({
         ...sampleMedia,
