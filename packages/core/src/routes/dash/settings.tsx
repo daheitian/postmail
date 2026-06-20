@@ -13,7 +13,7 @@ import { z } from "zod";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
-import { getI18n } from "../../i18n/index.js";
+import { getI18n, isLocale, resolveCatalogLocale } from "../../i18n/index.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { buildPageTitle } from "../../lib/page-title.js";
@@ -94,6 +94,9 @@ export const settingsRoutes = new Hono<Env>();
 
 const UpdateLocaleSettingsSchema = z.object({
   siteLanguage: z.string(),
+  // Optional for back-compat: absent = leave the dashboard language untouched,
+  // "" = clear it (follow content language).
+  dashboardLanguage: z.string().optional(),
   cjkSerifFont: z.string(),
   timeZone: z.string(),
 });
@@ -318,6 +321,11 @@ settingsRoutes.get("/general", async (c) => {
           siteName={dbSiteName || ""}
           siteDescription={dbSiteDescription || ""}
           siteLanguage={appConfig.siteLanguage}
+          dashboardLanguage={
+            isLocale(appConfig.dashboardLanguage)
+              ? appConfig.dashboardLanguage
+              : resolveCatalogLocale(appConfig.siteLanguage)
+          }
           cjkSerifFont={appConfig.cjkSerifFont}
           siteNameFallback={appConfig.fallbacks.siteName}
           siteDescriptionFallback={appConfig.fallbacks.siteDescription}
@@ -427,6 +435,7 @@ settingsRoutes.post("/general/language-time", async (c) => {
     await c.var.services.settings.updateLocaleSettings(body, {
       oldLanguage: c.var.appConfig.siteLanguage,
       oldCjkSerifFont: c.var.appConfig.cjkSerifFont,
+      oldDashboardLanguage: c.var.appConfig.dashboardLanguage,
     });
 
   const wantsJson = c.req.header("accept")?.includes("application/json");

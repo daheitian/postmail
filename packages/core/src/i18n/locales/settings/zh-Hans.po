@@ -397,6 +397,11 @@ msgstr "连接后会将你的网站同步到 {repo} 的默认分支，并追加�
 msgid "Connecting…"
 msgstr "连接中…"
 
+#. @context: Settings form field for the public content language
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Content language"
+msgstr "内容语言"
+
 #. @context: Feedback after copying API token
 #. @context: Feedback after copying to clipboard
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -536,6 +541,11 @@ msgstr "危险操作"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Dark"
 msgstr "深色"
+
+#. @context: Settings form field for the admin interface language
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Dashboard language"
+msgstr "后台语言"
 
 #. @context: Settings group label for data export/import
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -874,11 +884,6 @@ msgstr "标签和 URL 为必填项"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Label is required"
 msgstr "标签为必填项"
-
-#. @context: Settings form field for site/admin language
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "Language"
-msgstr "语言"
 
 #. @context: Settings subsection heading for language and time zone fields
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1269,6 +1274,11 @@ msgstr "引用 (Jant 的帖子格式之一。)"
 msgid "Read why"
 msgstr "了解原因"
 
+#. @context: Lead text before a live <html lang> preview of the content language
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Readers and search engines see"
+msgstr "读者和搜索引擎看到的是"
+
 #. @context: Custom URL target type badge for a redirect
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
@@ -1444,11 +1454,6 @@ msgstr "会话"
 msgid "Sessions and password"
 msgstr "会话与密码"
 
-#. @context: Help text under the site language input
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "Sets the content language announced to readers (HTML lang, RSS) and the dashboard language. Any BCP 47 tag is accepted; tags without a dashboard translation fall back to English."
-msgstr "声明给读者的内容语言（HTML lang、RSS），同时驱动后台界面的语言。可填任意 BCP 47 标签；没有对应翻译时后台会回退为英文。"
-
 #. @context: Breadcrumb label
 #. @context: Page title for the settings home page
 #: src/routes/dash/settings.tsx
@@ -1565,6 +1570,16 @@ msgstr "该字体主题不可用。请选择另一个。"
 #: src/routes/dash/settings.tsx
 msgid "That theme isn't available. Pick another one."
 msgstr "该主题不可用。请选择其他主题。"
+
+#. @context: Help text under the dashboard language picker
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "The language this admin dashboard shows in. Available in English, 简体中文, and 繁體中文."
+msgstr "后台界面显示的语言。可选 English、简体中文 和 繁體中文。"
+
+#. @context: Help text under the content language picker
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "The language your posts are written in. Announced to readers and search engines through HTML lang and your RSS feed. Any BCP 47 tag works."
+msgstr "你撰写内容所用的语言。通过 HTML lang 和 RSS 向读者与搜索引擎声明。支持任意 BCP 47 标签。"
 
 #. @context: Custom URL target slug help text
 #: src/routes/dash/custom-urls.tsx
