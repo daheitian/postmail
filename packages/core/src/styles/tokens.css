@@ -381,6 +381,21 @@
 @media (max-width: 760px) {
   :root {
     --site-padding: 1.875rem;
+  }
+}
+
+/* Tufte two-column → single-column collapse.
+ *
+ * Below this width the post column is already narrowed to `min(100%, 35rem)`
+ * (preset.css) and there is no room for a 45% sidenote gutter, so all content
+ * goes full-width. Single images (MediaGallery getSingleVisualWidth) and link
+ * previews (.link-preview) read this token directly, so they collapse here too.
+ *
+ * Keep this breakpoint in sync with the post-column collapse (preset.css /
+ * ui.css feed-divider, both `max-width: 1024px`) and the sidenote float→inline
+ * collapse (ui.css). They are one layout switch; do not let them drift apart. */
+@media (max-width: 1024px) {
+  :root {
     --layout-content-width: 100%;
   }
 }

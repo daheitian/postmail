@@ -2433,7 +2433,12 @@
     display: none;
   }
 
-  @media (max-width: 760px) {
+  /* Collapse sidenotes from floated margin notes to inline tap-to-toggle at the
+     same width the post column drops to `min(100%, 35rem)` (preset.css) and the
+     Tufte gutter disappears — see --layout-content-width in tokens.css. Below
+     1024px a floated `width: 50%; margin-right: -60%` note has no gutter to land
+     in and overflows the right edge, so it must inline instead. */
+  @media (max-width: 1024px) {
     label.margin-toggle:not(.sidenote-number) {
       display: inline;
       cursor: pointer;
