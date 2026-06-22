@@ -33,15 +33,30 @@ msgstr "301 (永久)"
 msgid "302 (Temporary)"
 msgstr "302 (临时)"
 
+#. @context: Slate color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "A calm, cool backdrop."
+msgstr "沉静、偏冷的底色。"
+
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "A short intro shown on your home page."
 msgstr "在您的主页上显示的简短介绍."
 
+#. @context: Parchment color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "A warmer look, like slightly aged paper."
+msgstr "更暖一些，像略旧的纸。"
+
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "About this blog"
 msgstr "关于本博客"
+
+#. @context: Label next to the theme accent-color swatch in a color theme preview card
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Accent"
+msgstr "强调色"
 
 #. @context: Breadcrumb label
 #. @context: GitHub sync picker — owner dropdown label
@@ -130,6 +145,11 @@ msgstr "始终显示暗色主题."
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Always show the light version of the theme."
 msgstr "始终显示浅色主题。"
+
+#. @context: Clay color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "An earthier, warmer tone."
+msgstr "更偏暖、偏土的色调。"
 
 #. @context: Code Injection security warning body
 #: src/ui/dash/appearance/CodeInjectionContent.tsx
@@ -226,10 +246,25 @@ msgstr "博客头像"
 msgid "Bot token"
 msgstr "机器人令牌"
 
+#. @context: Paper color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Bright paper white"
+msgstr "亮纸白"
+
+#. @context: Paper color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Bright warm-white with a moss-green accent."
+msgstr "明亮的暖白底，配苔绿点缀。"
+
 #. @context: Section heading for built-in nav items
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Built-in links"
 msgstr "内置链接"
+
+#. @context: Sage color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Calm and natural, easy on the eyes."
+msgstr "平静自然，看着舒服。"
 
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
@@ -293,6 +328,11 @@ msgstr "选择要与此站点同步的 GitHub 账户和仓库。"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "CJK Font"
 msgstr "CJK 字体"
+
+#. @context: Paper color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Clean and high-contrast, close to white."
+msgstr "干净、高对比，接近纯白。"
 
 #. @context: Breadcrumb label
 #. @context: Settings item — code injection settings
@@ -402,6 +442,16 @@ msgstr "连接中…"
 msgid "Content language"
 msgstr "内容语言"
 
+#. @context: Slate color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Cool blue-gray"
+msgstr "冷蓝灰"
+
+#. @context: Frost color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Cool white"
+msgstr "冷白"
+
 #. @context: Feedback after copying API token
 #. @context: Feedback after copying to clipboard
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -451,6 +501,16 @@ msgstr "删除失败。请稍后再试。"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Couldn't save. Try again in a moment."
 msgstr "保存失败。请稍后再试。"
+
+#. @context: Ember color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Cozy and bold among the warm tones."
+msgstr "暖色里最浓的一档，温馨。"
+
+#. @context: Espresso color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Cream and coffee brown"
+msgstr "奶油配深咖"
 
 #. @context: Help text explaining where to get a Telegram bot token
 #: src/ui/dash/settings/TelegramContent.tsx
@@ -694,6 +754,11 @@ msgstr "编辑"
 msgid "Empty repository. Ready to connect."
 msgstr "仓库为空。准备连接。"
 
+#. @context: Placeholder link label shown in color theme preview cards
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Example link"
+msgstr "示例链接"
+
 #. @context: Confirmation text after downloading the site export in delete flow
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Export downloaded."
@@ -737,11 +802,6 @@ msgstr "订阅源 URL 已复制。"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Feeds"
 msgstr "订阅源"
-
-#. @context: Color theme preview card title
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Field notes on quiet design"
-msgstr "关于静谧设计的笔记"
 
 #. @context: Error toast when file storage is not set up
 #: src/routes/dash/settings.tsx
@@ -817,6 +877,11 @@ msgstr "页眉链接、首页信息流和溢出菜单"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Header RSS points to your {feed} feed (/feed). Change what /feed returns in General."
 msgstr "页眉 RSS 指向你的 {feed} 源 (/feed)。在 常规 中更改 /feed 返回的内容。"
+
+#. @context: Fallback color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Headings, body text, and links in this theme."
+msgstr "这个主题下的标题、正文和链接。"
 
 #. @context: Post badge for posts hidden from Latest
 #: src/ui/dash/StatusBadge.tsx
@@ -937,6 +1002,16 @@ msgstr "允许您覆盖任何主题变量."
 msgid "Light"
 msgstr "浅色"
 
+#. @context: Slate color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Light blue-gray background, cool and even."
+msgstr "浅蓝灰底，冷静而均匀。"
+
+#. @context: Sage color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Light sage-green with a matching green accent."
+msgstr "浅鼠尾草绿底，配同色系的绿。"
+
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "link"
@@ -1017,6 +1092,11 @@ msgstr "支持 Markdown"
 msgid "Message the bot any text and it's published as a note."
 msgstr "向机器人发送任意文本，它会作为笔记已发布。"
 
+#. @context: Ink color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Minimal color, low distraction."
+msgstr "色彩极少，干扰最小。"
+
 #. @context: Section label for nav items hidden under More dropdown
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "More"
@@ -1026,6 +1106,11 @@ msgstr "更多"
 #: src/routes/dash/custom-urls.tsx
 msgid "More actions"
 msgstr "更多操作"
+
+#. @context: Clay color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Muted red-brown background, earthy and warm."
+msgstr "低饱和的红棕底，温暖、有泥土感。"
 
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1059,10 +1144,25 @@ msgstr "导航位置已更新."
 msgid "Navigation Preview"
 msgstr "导航预览"
 
+#. @context: Ink color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Near-neutral light gray with a steel-blue accent."
+msgstr "近中性的浅灰，配钢蓝点缀。"
+
+#. @context: Cotton color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Nearly white, with a touch of warmth."
+msgstr "近乎纯白，带一点暖意。"
+
 #. @context: Help text for GitHub PAT input explaining required permissions
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Needs Contents (read/write) and Webhooks (read/write) on the target repository."
 msgstr "需要对目标仓库的 Contents（读/写）和 Webhooks（读/写）。"
+
+#. @context: Ink color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Neutral gray"
+msgstr "中性灰"
 
 #. @context: Button to create new custom URL
 #. @context: Button to create new custom URL
@@ -1130,6 +1230,11 @@ msgstr "尚未同步"
 msgid "Note"
 msgstr "笔记"
 
+#. @context: Tufte color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Off-white paper with a deep forest-green accent."
+msgstr "米白纸底，配深森绿。"
+
 #. @context: Caption inside the manual Telegram binding fallback. {linkOpen}/{linkClose} wrap the bot username as a t.me link — keep them around the @username token in translations.
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Open {linkOpen}@{botUsername}{linkClose} and send:"
@@ -1150,10 +1255,25 @@ msgstr "打开机器人并发送绑定码, 然后你发送给它的任何消息�
 msgid "or"
 msgstr "或"
 
+#. @context: Ember color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Orange-tinted background. The warmest palette."
+msgstr "带橘调的底色。最暖的一套。"
+
 #. @context: GitHub sync picker — placeholder text showing the expected input shape
 #: src/routes/dash/settings.tsx
 msgid "owner/repo"
 msgstr "owner/repo"
+
+#. @context: Bone color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pale bone-white with a muted green accent."
+msgstr "浅骨白底，配低饱和的绿。"
+
+#. @context: Frost color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pale cool-white with deep indigo text. High contrast."
+msgstr "偏冷的浅白底，配深靛蓝文字。高对比。"
 
 #. @context: Settings item description for color theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1207,6 +1327,11 @@ msgstr "选择仓库"
 msgid "Pick an account first"
 msgstr "请先选择一个账号"
 
+#. @context: Fallback color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pick the one that fits your writing."
+msgstr "选一个适合你文字的。"
+
 #. @context: Description in collection picker section
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Pin a collection to your navigation bar. An asterisk (*) appears next to collections updated in the last 48 hours."
@@ -1244,6 +1369,16 @@ msgstr "处理中..."
 msgid "Published"
 msgstr "已发布"
 
+#. @context: Snow color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pure white"
+msgstr "纯白"
+
+#. @context: Snow color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pure white with neutral grays. No color tint."
+msgstr "纯白底配中性灰。不带任何色偏。"
+
 #. @context: Description for manual push action on GitHub Sync settings
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Push all posts to GitHub right now instead of waiting for the next automatic sync."
@@ -1259,20 +1394,10 @@ msgstr "链接到 Telegram 机器人的二维码"
 msgid "Query Parameters"
 msgstr "查询参数"
 
-#. @context: Color theme preview card secondary sentence
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Quiet surfaces let writing lead."
-msgstr "低调的界面让写作成为焦点."
-
 #. @context: Post format badge - quote
 #: src/ui/dash/FormatBadge.tsx
 msgid "Quote"
 msgstr "引用 (Jant 的帖子格式之一。)"
-
-#. @context: Color theme preview inline link label
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Read why"
-msgstr "了解原因"
 
 #. @context: Lead text before a live <html lang> preview of the content language
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1363,6 +1488,11 @@ msgstr "撤销此令牌？任何使用它的脚本将停止工作。"
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Safe to leave this page — syncing continues in the background."
 msgstr "放心离开此页面 — 同步会在后台继续进行。"
+
+#. @context: Dune color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Sandy background with a green accent."
+msgstr "沙色底，配绿色点缀。"
 
 #. @context: Button to save Code Injection settings
 #. @context: Button to save settings
@@ -1515,10 +1645,20 @@ msgstr "站点设置已更新."
 msgid "Site-wide HTML for analytics and widgets"
 msgstr "用于分析和小部件的全站 HTML"
 
-#. @context: Color theme preview card body sentence
+#. @context: Linen color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Soft color should still carry a clear reading rhythm."
-msgstr "柔和的颜色仍应保持清晰的阅读节奏。"
+msgid "Soft cream background with a muted green accent."
+msgstr "柔和的奶油底，配低饱和的绿。"
+
+#. @context: Sage color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Soft green"
+msgstr "柔绿"
+
+#. @context: Cotton color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Soft ivory"
+msgstr "柔象牙白"
 
 #. @context: Description for the Telegram disconnect action
 #: src/ui/dash/settings/TelegramContent.tsx
@@ -1571,6 +1711,16 @@ msgstr "该字体主题不可用。请选择另一个。"
 msgid "That theme isn't available. Pick another one."
 msgstr "该主题不可用。请选择其他主题。"
 
+#. @context: Snow color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "The cleanest, most neutral option."
+msgstr "最干净、最中性的一档。"
+
+#. @context: Tufte color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "The default. Calm and easy for long reading."
+msgstr "默认主题。沉静，适合长时间阅读。"
+
 #. @context: Help text under the dashboard language picker
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "The language this admin dashboard shows in. Available in English, 简体中文, and 繁體中文."
@@ -1580,6 +1730,11 @@ msgstr "后台界面显示的语言。可选 English、简体中文 和 繁體�
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "The language your posts are written in. Announced to readers and search engines through HTML lang and your RSS feed. Any BCP 47 tag works."
 msgstr "你撰写内容所用的语言。通过 HTML lang 和 RSS 向读者与搜索引擎声明。支持任意 BCP 47 标签。"
+
+#. @context: Linen color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "The original Jant palette, and a solid everyday pick."
+msgstr "Jant 最初的配色，日常稳妥之选。"
 
 #. @context: Custom URL target slug help text
 #: src/routes/dash/custom-urls.tsx
@@ -1620,6 +1775,11 @@ msgstr "此托管站点通过 {providerLabel} 登录。请在那里管理密码�
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
 msgstr "此图用于您的 favicon 和 apple-touch-icon。为获得最佳效果，请上传至少 512×512 像素、纯色背景的方形 PNG。"
+
+#. @context: Fallback color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "This palette"
+msgstr "这套配色"
 
 #. @context: GitHub sync picker — confirmation card heading for foreign repos
 #: src/routes/dash/settings.tsx
@@ -1761,6 +1921,11 @@ msgstr "将精选文章用于 /feed。"
 msgid "Uses the latest public posts for /feed."
 msgstr "为 /feed 使用最新的公开帖子。"
 
+#. @context: Cotton color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Very light ivory with a faint tea-green accent."
+msgstr "极浅的象牙底，配淡淡的茶绿。"
+
 #. @context: Button to view item on public site
 #: src/ui/dash/ActionButtons.tsx
 msgid "View"
@@ -1771,6 +1936,61 @@ msgstr "查看"
 msgid "Want more control?"
 msgstr "想要更多控制？"
 
+#. @context: Dune color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm and earthy, but still light."
+msgstr "温暖、有泥土感，但不显暗。"
+
+#. @context: Espresso color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm and rich, with strong brown tones."
+msgstr "暖而厚重，棕调明显。"
+
+#. @context: Linen color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm cream"
+msgstr "暖奶油色"
+
+#. @context: Espresso color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm cream background with deep coffee-brown accents."
+msgstr "暖奶油底，配深咖啡棕点缀。"
+
+#. @context: Tufte color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm ivory"
+msgstr "暖象牙白"
+
+#. @context: Bone color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm off-white"
+msgstr "暖白"
+
+#. @context: Ember color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm orange"
+msgstr "暖橘"
+
+#. @context: Parchment color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm parchment"
+msgstr "暖羊皮纸"
+
+#. @context: Dune color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm sand"
+msgstr "暖沙色"
+
+#. @context: Clay color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm terracotta"
+msgstr "暖陶土色"
+
+#. @context: Bone color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm-neutral and easy for long reading."
+msgstr "暖中性，适合长读。"
+
 #. @context: GitHub sync picker — hint under the create-on-github entry. Placeholder {name} is the suggested repo name.
 #: src/routes/dash/settings.tsx
 msgid "We'll prefill the name {name}. The list refreshes on return."
@@ -1780,6 +2000,16 @@ msgstr "我们会预先填充名称 {name}。返回时列表会刷新。"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "When to use site export, database backups, and recovery drills."
 msgstr "何时使用站点导出、数据库备份和恢复演练。"
+
+#. @context: Frost color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "When you want a cooler, sharper look."
+msgstr "想要更冷、更利落的观感时。"
+
+#. @context: Parchment color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Yellow-tinted paper with an olive-green accent."
+msgstr "微黄的纸底，配橄榄绿。"
 
 #. @context: Fallback name when a connected Telegram account has no username
 #: src/ui/dash/settings/TelegramContent.tsx

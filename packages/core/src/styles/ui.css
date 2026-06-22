@@ -2433,7 +2433,12 @@
     display: none;
   }
 
-  @media (max-width: 760px) {
+  /* Collapse sidenotes from floated margin notes to inline tap-to-toggle at the
+     same width the post column drops to `min(100%, 35rem)` (preset.css) and the
+     Tufte gutter disappears — see --layout-content-width in tokens.css. Below
+     1024px a floated `width: 50%; margin-right: -60%` note has no gutter to land
+     in and overflows the right edge, so it must inline instead. */
+  @media (max-width: 1024px) {
     label.margin-toggle:not(.sidenote-number) {
       display: inline;
       cursor: pointer;
@@ -11110,6 +11115,24 @@
     line-height: 1.28;
   }
 
+  .theme-preview-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+    color: var(--preview-muted-light);
+  }
+
+  .theme-preview-swatch {
+    flex: none;
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 3px;
+    background: var(--preview-primary-light);
+    box-shadow: 0 0 0 1px
+      color-mix(in srgb, var(--preview-fg-light) 18%, transparent);
+  }
+
   .theme-preview-meta {
     color: var(--preview-muted-light);
     line-height: 1.55;
@@ -11141,6 +11164,16 @@
 
   .theme-preview-panel[data-theme-preview-mode="dark"] .theme-preview-meta {
     color: var(--preview-muted-dark);
+  }
+
+  .theme-preview-panel[data-theme-preview-mode="dark"] .theme-preview-accent {
+    color: var(--preview-muted-dark);
+  }
+
+  .theme-preview-panel[data-theme-preview-mode="dark"] .theme-preview-swatch {
+    background: var(--preview-primary-dark);
+    box-shadow: 0 0 0 1px
+      color-mix(in srgb, var(--preview-fg-dark) 18%, transparent);
   }
 
   .theme-preview-panel[data-theme-preview-mode="dark"] .theme-preview-divider {
@@ -11669,6 +11702,16 @@
   @media (prefers-color-scheme: dark) {
     .theme-preview-panel[data-theme-preview-mode="auto"] .theme-preview-meta {
       color: var(--preview-muted-dark);
+    }
+
+    .theme-preview-panel[data-theme-preview-mode="auto"] .theme-preview-accent {
+      color: var(--preview-muted-dark);
+    }
+
+    .theme-preview-panel[data-theme-preview-mode="auto"] .theme-preview-swatch {
+      background: var(--preview-primary-dark);
+      box-shadow: 0 0 0 1px
+        color-mix(in srgb, var(--preview-fg-dark) 18%, transparent);
     }
 
     .theme-preview-panel[data-theme-preview-mode="auto"]

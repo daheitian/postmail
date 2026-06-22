@@ -33,15 +33,30 @@ msgstr "301 (Permanent)"
 msgid "302 (Temporary)"
 msgstr "302 (Temporary)"
 
+#. @context: Slate color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "A calm, cool backdrop."
+msgstr "A calm, cool backdrop."
+
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "A short intro shown on your home page."
 msgstr "A short intro shown on your home page."
 
+#. @context: Parchment color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "A warmer look, like slightly aged paper."
+msgstr "A warmer look, like slightly aged paper."
+
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "About this blog"
 msgstr "About this blog"
+
+#. @context: Label next to the theme accent-color swatch in a color theme preview card
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Accent"
+msgstr "Accent"
 
 #. @context: Breadcrumb label
 #. @context: GitHub sync picker — owner dropdown label
@@ -130,6 +145,11 @@ msgstr "Always show the dark version of the theme."
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Always show the light version of the theme."
 msgstr "Always show the light version of the theme."
+
+#. @context: Clay color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "An earthier, warmer tone."
+msgstr "An earthier, warmer tone."
 
 #. @context: Code Injection security warning body
 #: src/ui/dash/appearance/CodeInjectionContent.tsx
@@ -226,10 +246,25 @@ msgstr "Blog Avatar"
 msgid "Bot token"
 msgstr "Bot token"
 
+#. @context: Paper color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Bright paper white"
+msgstr "Bright paper white"
+
+#. @context: Paper color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Bright warm-white with a moss-green accent."
+msgstr "Bright warm-white with a moss-green accent."
+
 #. @context: Section heading for built-in nav items
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Built-in links"
 msgstr "Built-in links"
+
+#. @context: Sage color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Calm and natural, easy on the eyes."
+msgstr "Calm and natural, easy on the eyes."
 
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
@@ -293,6 +328,11 @@ msgstr "Choose the GitHub account and repository to sync with this site."
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "CJK Font"
 msgstr "CJK Font"
+
+#. @context: Paper color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Clean and high-contrast, close to white."
+msgstr "Clean and high-contrast, close to white."
 
 #. @context: Breadcrumb label
 #. @context: Settings item — code injection settings
@@ -402,6 +442,16 @@ msgstr "Connecting…"
 msgid "Content language"
 msgstr "Content language"
 
+#. @context: Slate color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Cool blue-gray"
+msgstr "Cool blue-gray"
+
+#. @context: Frost color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Cool white"
+msgstr "Cool white"
+
 #. @context: Feedback after copying API token
 #. @context: Feedback after copying to clipboard
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -451,6 +501,16 @@ msgstr "Couldn't delete. Try again in a moment."
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Couldn't save. Try again in a moment."
 msgstr "Couldn't save. Try again in a moment."
+
+#. @context: Ember color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Cozy and bold among the warm tones."
+msgstr "Cozy and bold among the warm tones."
+
+#. @context: Espresso color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Cream and coffee brown"
+msgstr "Cream and coffee brown"
 
 #. @context: Help text explaining where to get a Telegram bot token
 #: src/ui/dash/settings/TelegramContent.tsx
@@ -694,6 +754,11 @@ msgstr "Edit"
 msgid "Empty repository. Ready to connect."
 msgstr "Empty repository. Ready to connect."
 
+#. @context: Placeholder link label shown in color theme preview cards
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Example link"
+msgstr "Example link"
+
 #. @context: Confirmation text after downloading the site export in delete flow
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Export downloaded."
@@ -737,11 +802,6 @@ msgstr "Feed URL copied."
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Feeds"
 msgstr "Feeds"
-
-#. @context: Color theme preview card title
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Field notes on quiet design"
-msgstr "Field notes on quiet design"
 
 #. @context: Error toast when file storage is not set up
 #: src/routes/dash/settings.tsx
@@ -817,6 +877,11 @@ msgstr "Header links, home feed, and overflow menu"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Header RSS points to your {feed} feed (/feed). Change what /feed returns in General."
 msgstr "Header RSS points to your {feed} feed (/feed). Change what /feed returns in General."
+
+#. @context: Fallback color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Headings, body text, and links in this theme."
+msgstr "Headings, body text, and links in this theme."
 
 #. @context: Post badge for posts hidden from Latest
 #: src/ui/dash/StatusBadge.tsx
@@ -937,6 +1002,16 @@ msgstr "lets you override any theme variable."
 msgid "Light"
 msgstr "Light"
 
+#. @context: Slate color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Light blue-gray background, cool and even."
+msgstr "Light blue-gray background, cool and even."
+
+#. @context: Sage color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Light sage-green with a matching green accent."
+msgstr "Light sage-green with a matching green accent."
+
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "link"
@@ -1017,6 +1092,11 @@ msgstr "Markdown supported"
 msgid "Message the bot any text and it's published as a note."
 msgstr "Message the bot any text and it's published as a note."
 
+#. @context: Ink color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Minimal color, low distraction."
+msgstr "Minimal color, low distraction."
+
 #. @context: Section label for nav items hidden under More dropdown
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "More"
@@ -1026,6 +1106,11 @@ msgstr "More"
 #: src/routes/dash/custom-urls.tsx
 msgid "More actions"
 msgstr "More actions"
+
+#. @context: Clay color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Muted red-brown background, earthy and warm."
+msgstr "Muted red-brown background, earthy and warm."
 
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1059,10 +1144,25 @@ msgstr "Navigation placement updated."
 msgid "Navigation Preview"
 msgstr "Navigation Preview"
 
+#. @context: Ink color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Near-neutral light gray with a steel-blue accent."
+msgstr "Near-neutral light gray with a steel-blue accent."
+
+#. @context: Cotton color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Nearly white, with a touch of warmth."
+msgstr "Nearly white, with a touch of warmth."
+
 #. @context: Help text for GitHub PAT input explaining required permissions
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Needs Contents (read/write) and Webhooks (read/write) on the target repository."
 msgstr "Needs Contents (read/write) and Webhooks (read/write) on the target repository."
+
+#. @context: Ink color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Neutral gray"
+msgstr "Neutral gray"
 
 #. @context: Button to create new custom URL
 #. @context: Button to create new custom URL
@@ -1130,6 +1230,11 @@ msgstr "Not synced yet"
 msgid "Note"
 msgstr "Note"
 
+#. @context: Tufte color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Off-white paper with a deep forest-green accent."
+msgstr "Off-white paper with a deep forest-green accent."
+
 #. @context: Caption inside the manual Telegram binding fallback. {linkOpen}/{linkClose} wrap the bot username as a t.me link — keep them around the @username token in translations.
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Open {linkOpen}@{botUsername}{linkClose} and send:"
@@ -1150,10 +1255,25 @@ msgstr "Open the bot and send the binding code, then anything you message it bec
 msgid "or"
 msgstr "or"
 
+#. @context: Ember color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Orange-tinted background. The warmest palette."
+msgstr "Orange-tinted background. The warmest palette."
+
 #. @context: GitHub sync picker — placeholder text showing the expected input shape
 #: src/routes/dash/settings.tsx
 msgid "owner/repo"
 msgstr "owner/repo"
+
+#. @context: Bone color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pale bone-white with a muted green accent."
+msgstr "Pale bone-white with a muted green accent."
+
+#. @context: Frost color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pale cool-white with deep indigo text. High contrast."
+msgstr "Pale cool-white with deep indigo text. High contrast."
 
 #. @context: Settings item description for color theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1207,6 +1327,11 @@ msgstr "Pick a repository"
 msgid "Pick an account first"
 msgstr "Pick an account first"
 
+#. @context: Fallback color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pick the one that fits your writing."
+msgstr "Pick the one that fits your writing."
+
 #. @context: Description in collection picker section
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Pin a collection to your navigation bar. An asterisk (*) appears next to collections updated in the last 48 hours."
@@ -1244,6 +1369,16 @@ msgstr "Processing..."
 msgid "Published"
 msgstr "Published"
 
+#. @context: Snow color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pure white"
+msgstr "Pure white"
+
+#. @context: Snow color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Pure white with neutral grays. No color tint."
+msgstr "Pure white with neutral grays. No color tint."
+
 #. @context: Description for manual push action on GitHub Sync settings
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Push all posts to GitHub right now instead of waiting for the next automatic sync."
@@ -1259,20 +1394,10 @@ msgstr "QR code linking to the Telegram bot"
 msgid "Query Parameters"
 msgstr "Query Parameters"
 
-#. @context: Color theme preview card secondary sentence
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Quiet surfaces let writing lead."
-msgstr "Quiet surfaces let writing lead."
-
 #. @context: Post format badge - quote
 #: src/ui/dash/FormatBadge.tsx
 msgid "Quote"
 msgstr "Quote"
-
-#. @context: Color theme preview inline link label
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Read why"
-msgstr "Read why"
 
 #. @context: Lead text before a live <html lang> preview of the content language
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1363,6 +1488,11 @@ msgstr "Revoke this token? Any scripts using it will stop working."
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Safe to leave this page — syncing continues in the background."
 msgstr "Safe to leave this page — syncing continues in the background."
+
+#. @context: Dune color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Sandy background with a green accent."
+msgstr "Sandy background with a green accent."
 
 #. @context: Button to save Code Injection settings
 #. @context: Button to save settings
@@ -1515,10 +1645,20 @@ msgstr "Site settings updated."
 msgid "Site-wide HTML for analytics and widgets"
 msgstr "Site-wide HTML for analytics and widgets"
 
-#. @context: Color theme preview card body sentence
+#. @context: Linen color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Soft color should still carry a clear reading rhythm."
-msgstr "Soft color should still carry a clear reading rhythm."
+msgid "Soft cream background with a muted green accent."
+msgstr "Soft cream background with a muted green accent."
+
+#. @context: Sage color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Soft green"
+msgstr "Soft green"
+
+#. @context: Cotton color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Soft ivory"
+msgstr "Soft ivory"
 
 #. @context: Description for the Telegram disconnect action
 #: src/ui/dash/settings/TelegramContent.tsx
@@ -1571,6 +1711,16 @@ msgstr "That font theme isn't available. Pick another one."
 msgid "That theme isn't available. Pick another one."
 msgstr "That theme isn't available. Pick another one."
 
+#. @context: Snow color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "The cleanest, most neutral option."
+msgstr "The cleanest, most neutral option."
+
+#. @context: Tufte color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "The default. Calm and easy for long reading."
+msgstr "The default. Calm and easy for long reading."
+
 #. @context: Help text under the dashboard language picker
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "The language this admin dashboard shows in. Available in English, 简体中文, and 繁體中文."
@@ -1580,6 +1730,11 @@ msgstr "The language this admin dashboard shows in. Available in English, 简体
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "The language your posts are written in. Announced to readers and search engines through HTML lang and your RSS feed. Any BCP 47 tag works."
 msgstr "The language your posts are written in. Announced to readers and search engines through HTML lang and your RSS feed. Any BCP 47 tag works."
+
+#. @context: Linen color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "The original Jant palette, and a solid everyday pick."
+msgstr "The original Jant palette, and a solid everyday pick."
 
 #. @context: Custom URL target slug help text
 #: src/routes/dash/custom-urls.tsx
@@ -1620,6 +1775,11 @@ msgstr "This hosted site signs in through {providerLabel}. Manage password and h
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
 msgstr "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
+
+#. @context: Fallback color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "This palette"
+msgstr "This palette"
 
 #. @context: GitHub sync picker — confirmation card heading for foreign repos
 #: src/routes/dash/settings.tsx
@@ -1761,6 +1921,11 @@ msgstr "Uses featured posts for /feed."
 msgid "Uses the latest public posts for /feed."
 msgstr "Uses the latest public posts for /feed."
 
+#. @context: Cotton color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Very light ivory with a faint tea-green accent."
+msgstr "Very light ivory with a faint tea-green accent."
+
 #. @context: Button to view item on public site
 #: src/ui/dash/ActionButtons.tsx
 msgid "View"
@@ -1771,6 +1936,61 @@ msgstr "View"
 msgid "Want more control?"
 msgstr "Want more control?"
 
+#. @context: Dune color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm and earthy, but still light."
+msgstr "Warm and earthy, but still light."
+
+#. @context: Espresso color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm and rich, with strong brown tones."
+msgstr "Warm and rich, with strong brown tones."
+
+#. @context: Linen color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm cream"
+msgstr "Warm cream"
+
+#. @context: Espresso color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm cream background with deep coffee-brown accents."
+msgstr "Warm cream background with deep coffee-brown accents."
+
+#. @context: Tufte color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm ivory"
+msgstr "Warm ivory"
+
+#. @context: Bone color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm off-white"
+msgstr "Warm off-white"
+
+#. @context: Ember color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm orange"
+msgstr "Warm orange"
+
+#. @context: Parchment color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm parchment"
+msgstr "Warm parchment"
+
+#. @context: Dune color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm sand"
+msgstr "Warm sand"
+
+#. @context: Clay color theme preview title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm terracotta"
+msgstr "Warm terracotta"
+
+#. @context: Bone color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm-neutral and easy for long reading."
+msgstr "Warm-neutral and easy for long reading."
+
 #. @context: GitHub sync picker — hint under the create-on-github entry. Placeholder {name} is the suggested repo name.
 #: src/routes/dash/settings.tsx
 msgid "We'll prefill the name {name}. The list refreshes on return."
@@ -1780,6 +2000,16 @@ msgstr "We'll prefill the name {name}. The list refreshes on return."
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "When to use site export, database backups, and recovery drills."
 msgstr "When to use site export, database backups, and recovery drills."
+
+#. @context: Frost color theme preview help line
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "When you want a cooler, sharper look."
+msgstr "When you want a cooler, sharper look."
+
+#. @context: Parchment color theme preview body
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Yellow-tinted paper with an olive-green accent."
+msgstr "Yellow-tinted paper with an olive-green accent."
 
 #. @context: Fallback name when a connected Telegram account has no username
 #: src/ui/dash/settings/TelegramContent.tsx

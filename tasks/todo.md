@@ -1,96 +1,102 @@
-# Split language into Content language + Dashboard language
+# Fix: unify the Tufte→single-column collapse breakpoint (iPad mini 768×1024)
 
-## Goal
+## Problem
 
-Today one setting `SITE_LANGUAGE` does two jobs (public `<html lang>`/RSS content
-language AND the admin dashboard UI locale). Split them:
+The reading layout collapses from the Tufte two-column model (55% text + 45% sidenote
+margin) to single-column at **two different, misaligned breakpoints**:
 
-- **Content language** = keep `SITE_LANGUAGE`. Any BCP 47 tag. Drives `<html lang>`
-  - RSS. Picker shows the full curated list again (no coverage filter, no tag chip,
-    no "% translated"). Adds a live `<html lang="...">` preview.
-- **Dashboard language** = new KV setting `DASHBOARD_LANGUAGE`. Restricted to the 3
-  translated catalog locales (en / zh-Hans / zh-Hant). Optional — when unset the
-  dashboard derives its locale from the content language exactly as today.
+- Post **text column** collapses to `min(100%, 35rem)` at `max-width: 1024px`
+  (`preset.css:526`, `ui.css:2106` for the feed divider).
+- `--layout-content-width: 100%`, the **sidenote** float→inline collapse, and page padding
+  flip at `max-width: 760px` (`tokens.css:381`, `ui.css:2436`).
 
-No DB migration (settings are key/value). No backfill (unset → derive = current
-behaviour, so existing sites are unchanged until the owner picks a dashboard
-language).
+iPad mini portrait (768px) falls in the **761–1024px dead band**: the column is already
+narrowed to 560px, but the token is still `55%` and sidenotes still float. Result:
 
-## Decisions
+- **Single image** (`MediaGallery` singleVisual) — width `min(100%, 24rem·ratio, 55%)`
+  → ~300px, much narrower than the 560px text column.
+- **YouTube link preview** (`.link-preview`) — same `55%` cap → ~308px wide, cropped 16:9.
+  Meanwhile an **inline YouTube embed** (`.tiptap-embed-figure`) is full column width
+  → the same video renders at two very different sizes.
+- **Footnotes/sidenotes** — still `float: right; width: 50%; margin-right: -60%` against a
+  560px left-aligned column → pushed into / off the right edge, clipping / horizontal scroll.
 
-- (a) Onboarding keeps silent browser auto-detection (no new visible field). Seeds
-  BOTH `SITE_LANGUAGE` and `DASHBOARD_LANGUAGE` from the detected catalog locale.
-  No "Dashboard language" wording at setup.
-- (b) Content picker drops tag + "% translated"; adds live `<html lang="...">`
-  preview (i18n prose + runtime tag rendered as escaped text in `<code>`).
-- Dashboard picker = native `<select>` with 3 options (English / 简体中文 / 繁體中文),
-  no "Auto" option. Route passes the EFFECTIVE (resolved) dashboard locale as the
-  selected value; saving materialises/pins it.
-- Keep the earlier visual dropdown fix (bordered box + chevron + w-fit) on the
-  content picker; only revert the coverage filter.
+Root cause = breakpoint drift. The post column's collapse point (1024px) is the correct one
+(below 1024 there is no room for a 45% sidenote gutter). The 760px values are stragglers.
+
+## Strategy (unify to 1024px)
+
+Move the **Tufte-collapse-related** breakpoints from 760px → 1024px so the whole single-column
+mode switches as one, matching where the text column already collapses. Leave genuinely
+mobile-only breakpoints (frame padding, touch/hover queries, `--site-padding`) at 760px.
+
+Because the image and link-preview widths already consume `--layout-content-width`, flipping
+the token at 1024px fixes both **for free** — no TS / component / test changes.
 
 ## Edits
 
-### Config / types
+- [ ] **`packages/core/src/styles/tokens.css`** — move `--layout-content-width: 100%` out of
+      the `@media (max-width: 760px)` block (line ~384) into a new `@media (max-width: 1024px)`
+      block. Keep `--site-padding: 1.875rem` at 760px (mobile spacing, unrelated).
 
-- [ ] `types/config.ts`: add `DASHBOARD_LANGUAGE` to `CONFIG_FIELDS`; add
-      `dashboardLanguage: string` to `AppConfig`.
-- [ ] `lib/resolve-config.ts`: `dashboardLanguage: resolve("DASHBOARD_LANGUAGE", …)`.
-- [ ] `types/bindings.ts`: `DASHBOARD_LANGUAGE?: EnvBindingValue`.
+- [ ] **`packages/core/src/styles/ui.css`** — change the sidenote collapse block
+      `@media (max-width: 760px)` (line ~2436) → `@media (max-width: 1024px)`. Moves the
+      float→inline tap-toggle (and `cursor: pointer` affordance) to the same breakpoint.
 
-### Behaviour
+That's it. Verified no other change is required:
 
-- [ ] `i18n/middleware.ts`: `dashboardLocale = isLocale(DASHBOARD_LANGUAGE) ?
-    DASHBOARD_LANGUAGE : resolveCatalogLocale(contentLang)`; `uiLang = isAdmin ?
-    dashboardLocale : baseLocale`.
-- [ ] `services/settings.ts`: extend `LocaleSettingsData` + `GeneralSettingsData`
-      with `dashboardLanguage`; in `updateLocaleSettings` validate via `isLocale`
-      (empty allowed → remove key), set/remove `DASHBOARD_LANGUAGE`, return a
-      combined `localeChanged` (language OR dashboard changed) for reload.
-- [ ] `routes/dash/settings.tsx`: extend `UpdateLocaleSettingsSchema` with
-      `dashboardLanguage`; thread `oldDashboardLanguage`; pass resolved
-      `dashboardLanguage` to GeneralContent.
-- [ ] `services/bootstrap.ts`: also `settings.set("DASHBOARD_LANGUAGE", catalog)`.
+- `MediaGallery.tsx` getSingleVisualWidth and `.link-preview` read the token → auto-fixed.
+- feed-divider hr already has its own `max-width: 1024px` override (`ui.css:2106`) → unaffected.
+- media-gallery.test.ts asserts the unchanged inline formula string → still passes.
 
-### Viewmodel + client
+## Side effects to verify (token is shared)
 
-- [ ] `ui/dash/settings/GeneralContent.tsx`: new prop + initial-data field + labels.
-- [ ] `client/components/settings-types.ts`: add to `SettingsInitialData` +
-      `SettingsLabels`.
-- [ ] `client/settings-bridge.ts`: parse `dashboardLanguage`.
-- [ ] `client/components/jant-settings-general.ts`: dashboard state/select; revert
-      content filter; drop tag + %; add html-lang preview.
+Flipping the token at 1024 also makes these go full-width in the 761–1024 band (previously
+55%). Confirm they look right at 768px (likely an improvement — same narrow-column bug class):
 
-### Tests
+- `.collections-page-shell` (`ui.css:1096`; its `≤760 → 100%` override at 1100 becomes redundant)
+- `.settings-root` (`components.css:360`; its `≤760 → 100%` override at 365 becomes redundant)
 
-- [ ] component, middleware, settings service, resolve-config, setup/bootstrap.
+Leave those redundant overrides in place (harmless) unless verification says otherwise.
 
-### Verify
+## Out of scope (flag, do not bundle)
 
-- [ ] `mise run check-tests` + `mise run check-lint`; screenshots desktop + mobile.
+- **Export theme** (`services/export-theme/styles/main.css` + demo mirror) is an independently
+  maintained static-export copy with its own breakpoint set, a `min-width: 768px` 2-col gallery
+  switch, and **no `.sidenote` rules at all**. The live-site complaint is fixed by the core
+  edits above. Ask whether to align the export theme in a separate pass.
+
+## Verification
+
+- [x] `mise run check-lint` — clean.
+- [x] media-gallery test (`npx vitest run …/media-gallery.test.ts`) — 6/6 pass; the inline
+      width-formula assertion is unchanged, confirming no MediaGallery regression.
+- [x] `mise run build` — clean. Inspected the compiled bundle
+      (`dist/client/_assets/client-OQ82miLJ.css`): - `--layout-content-width:100%` appears exactly once, inside `@media (max-width:1024px)`. - `--site-padding:1.875rem` stays inside `@media (max-width:760px)`. - sidenote inline-toggle block now under `@media (max-width:1024px)`.
+- [x] Breakpoint reasoning for no regression at the extremes: - `>1024px`: 1024 block inactive → token 55%, sidenotes float = Tufte, unchanged. - `≤760px`: 1024 block active (760<1024) → token 100% + sidenotes inline = same as before. - `761–1024px`: NEW → token 100% + sidenotes inline = the fix.
+- [ ] Pixel screenshot at 768×1024 NOT run — no browser automation (Playwright/Puppeteer) is
+      configured in this repo, and installing a browser stack felt out of proportion for a CSS
+      breakpoint relocation. Confirm on-device, or ask to wire up a Playwright check.
 
 ## Review
 
-Done. `SITE_LANGUAGE` is now the content language only; new optional KV setting
-`DASHBOARD_LANGUAGE` drives the admin UI (empty → derive from content, so
-existing sites are unchanged). No DB migration, no backfill.
+Done. Two CSS edits relocate the Tufte→single-column collapse from a split 760/1024 to a single
+1024px boundary:
 
-- Config: `DASHBOARD_LANGUAGE` in `CONFIG_FIELDS` + `AppConfig.dashboardLanguage`
-  - resolve-config + env binding.
-- Middleware: `uiLang = isLocale(DASHBOARD_LANGUAGE) ? it : resolveCatalogLocale(content)`.
-- Service: `updateLocaleSettings` validates (isLocale, empty=clear), folds change
-  into `languageChanged`. Bootstrap pins `DASHBOARD_LANGUAGE` from detected catalog.
-- UI: content picker restored to full list, dropped tag + "% translated", added a
-  live `<html lang="…">` preview; new 3-option Dashboard language `<select>`.
-- i18n: 5 new/changed settings strings, translated to zh-Hans/zh-Hant; catalogs
-  rebuilt, coverage 100%.
+- `styles/tokens.css` — `--layout-content-width: 100%` moved from `@media (max-width:760px)` to
+  a new `@media (max-width:1024px)` block (with a comment pinning it to the post-column +
+  sidenote breakpoints). `--site-padding: 1.875rem` left at 760px (mobile spacing).
+- `styles/ui.css` — sidenote float→inline-toggle block changed `max-width:760px` →
+  `max-width:1024px` (with a comment explaining why the gutter disappears below 1024).
 
-Verified: `check-types`, `check-tests` (2493), `check-lint` all green. Screenshots:
-content picker (full list, no tag/%), live html-lang preview, dashboard select.
-End-to-end: setting Dashboard = 简体中文 flips the admin UI to Chinese (`常规`…)
-while `html lang` stays `en` — content and dashboard are decoupled.
+No TS/component/test changes: single-image (`MediaGallery.getSingleVisualWidth`) and the
+`.link-preview` YouTube card already read `--layout-content-width`, so flipping the token fixes
+both for free. At 768px now: images + link cards fill the column, the inline YouTube embed
+matches the link card, and footnotes inline instead of clipping off the right edge.
 
-NOTE: `styles/tokens.css` + `services/export-theme/assets/{client-site.css,js}`
-show as modified but are NOT part of this work (pre-existing mobile-typography WIP
+Shared-token side effect (intended): `.collections-page-shell` and `.settings-root` also go
+full-width in 761–1024px (their `≤760 → 100%` overrides are now redundant but harmless). Same
+narrow-column-bug class — an improvement.
 
-- build regeneration). Left untouched — exclude from this change's commit.
+Out of scope: the export-theme static copy (own breakpoints, no sidenote rules) — left for a
+separate pass if wanted.
