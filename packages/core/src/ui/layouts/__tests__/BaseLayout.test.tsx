@@ -279,8 +279,8 @@ describe("BaseLayout", () => {
       html.match(/rel="alternate" type="application\/atom\+xml"/g) ?? [],
     ).toHaveLength(2);
     expect(html).toContain('href="/feed"');
-    expect(html).toContain('href="/feed/latest"');
-    expect(html).not.toContain('href="/feed/featured"');
+    expect(html).toContain('href="/latest/feed"');
+    expect(html).not.toContain('href="/featured/feed"');
   });
 
   it("switches the alternate feed link when latest is the main feed", async () => {
@@ -297,8 +297,8 @@ describe("BaseLayout", () => {
       html.match(/rel="alternate" type="application\/atom\+xml"/g) ?? [],
     ).toHaveLength(2);
     expect(html).toContain('href="/feed"');
-    expect(html).toContain('href="/feed/featured"');
-    expect(html).not.toContain('href="/feed/latest"');
+    expect(html).toContain('href="/featured/feed"');
+    expect(html).not.toContain('href="/latest/feed"');
   });
 
   it("uses the public asset base path from appConfig in production", async () => {

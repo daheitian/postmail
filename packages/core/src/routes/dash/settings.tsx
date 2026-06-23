@@ -336,12 +336,17 @@ settingsRoutes.get("/general", async (c) => {
             appConfig.sitePathPrefix,
           )}
           latestFeedUrl={toAbsoluteSiteUrl(
-            "/feed/latest",
+            "/latest/feed",
             siteUrlForDisplay,
             appConfig.sitePathPrefix,
           )}
           featuredFeedUrl={toAbsoluteSiteUrl(
-            "/feed/featured",
+            "/featured/feed",
+            siteUrlForDisplay,
+            appConfig.sitePathPrefix,
+          )}
+          archiveFeedUrl={toAbsoluteSiteUrl(
+            "/archive/feed",
             siteUrlForDisplay,
             appConfig.sitePathPrefix,
           )}

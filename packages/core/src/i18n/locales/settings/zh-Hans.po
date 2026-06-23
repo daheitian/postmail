@@ -187,6 +187,11 @@ msgstr "应用于整个站点，包括管理页面。选择一个调色板，然
 msgid "Archive"
 msgstr "归档"
 
+#. @context: Label for the full-archive RSS feed URL
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Archive feed"
+msgstr "归档订阅源"
+
 #. @context: Help text for archive custom URL query params
 #: src/routes/dash/custom-urls.tsx
 msgid "Archive filter parameters (e.g. format=note&view=list)"
@@ -753,6 +758,11 @@ msgstr "编辑"
 #: src/routes/dash/settings.tsx
 msgid "Empty repository. Ready to connect."
 msgstr "仓库为空。准备连接。"
+
+#. @context: Help text under the archive feed URL, explaining it is the complete feed
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Every published post, including ones hidden from Latest."
+msgstr "已发布的全部帖子，包括从 Latest 中隐藏的那些。"
 
 #. @context: Placeholder link label shown in color theme preview cards
 #: src/ui/dash/appearance/ColorThemeContent.tsx

@@ -15,6 +15,8 @@ import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleFeaturedTimeline } from "../../lib/timeline.js";
 import { toPublicPath } from "../../lib/url.js";
+import { defaultFeedRenderer } from "../../lib/feed.js";
+import { buildFeedData, renderFeed } from "../feed/feed.js";
 import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -57,4 +59,19 @@ featuredRoutes.get("/", async (c) => {
       />
     ),
   });
+});
+
+// Atom — /featured/feed (canonical featured feed)
+featuredRoutes.get("/feed", async (c) => {
+  const feedData = await buildFeedData(c, {
+    kind: "featured",
+    selfPath: "/featured/feed",
+  });
+  return renderFeed(defaultFeedRenderer(feedData));
+});
+
+// Legacy atom.xml suffix → canonical /featured/feed
+featuredRoutes.get("/feed/atom.xml", (c) => {
+  const sitePathPrefix = c.var.appConfig.sitePathPrefix;
+  return c.redirect(toPublicPath("/featured/feed", sitePathPrefix), 308);
 });

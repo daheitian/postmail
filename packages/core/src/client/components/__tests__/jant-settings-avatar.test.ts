@@ -59,6 +59,9 @@ const labels: SettingsLabels = {
   mainFeedUrl: "Main feed",
   latestFeedUrl: "Latest feed",
   featuredFeedUrl: "Featured feed",
+  archiveFeedUrl: "Archive feed",
+  archiveFeedUrlHelp:
+    "Every published post, including ones hidden from Latest.",
   latestFeedOption: "Latest",
   latestFeedOptionDescription: "Uses the latest public posts for /feed.",
   featuredFeedOption: "Featured",
