@@ -142,6 +142,7 @@ export function resolveConfig(
     siteDescription: resolve("SITE_DESCRIPTION", allSettings, env),
     siteDescriptionExplicit,
     siteLanguage: resolve("SITE_LANGUAGE", allSettings, env),
+    dashboardLanguage: resolve("DASHBOARD_LANGUAGE", allSettings, env),
     cjkSerifFont: resolve("CJK_SERIF_FONT", allSettings, env),
     homeDefaultView: resolve("HOME_DEFAULT_VIEW", allSettings, env),
     mainRssFeed: resolve("MAIN_RSS_FEED", allSettings, env),

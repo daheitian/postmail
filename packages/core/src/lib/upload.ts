@@ -13,6 +13,20 @@ const MEDIA_POSTERS_STORAGE_PREFIX = "posters";
 const MEDIA_ASSET_STORAGE_PREFIX = "assets";
 const MEDIA_PREVIEWS_STORAGE_PREFIX = "previews";
 
+/**
+ * SQL `LIKE` pattern matching site asset objects (avatars, favicons) stored
+ * under `media/<siteId>/assets/<kind>/...`.
+ *
+ * These assets are referenced from site settings (`SITE_AVATAR`,
+ * `SITE_FAVICON_*`), not from posts, so they are intentionally persisted with
+ * `postId = null`. The orphan-media reaper must exclude them — otherwise it
+ * deletes avatars and favicons as if they were abandoned compose uploads.
+ *
+ * @example
+ * media.storageKey LIKE this pattern → it is a site asset, never an orphan.
+ */
+export const SITE_ASSET_STORAGE_KEY_LIKE_PATTERN = `%/${MEDIA_ASSET_STORAGE_PREFIX}/%`;
+
 /** MIME types — images */
 const IMAGE_MIME_TYPES = [
   "image/jpeg",

@@ -279,10 +279,11 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `/search`                  | 搜索                                                                  |
 | `/feed`                    | RSS 2.0 站点主 Feed（默认精选，可在设置中切换为 Latest）              |
 | `/feed/atom.xml`           | Atom 站点主 Feed（默认精选，可在设置中切换为 Latest）                 |
-| `/feed/latest`             | RSS 2.0 Latest Feed（公开帖子，支持 `?format=` 筛选）                 |
-| `/feed/latest/atom.xml`    | Atom Latest Feed（公开帖子，支持 `?format=` 筛选）                    |
-| `/feed/featured`           | RSS 2.0 Featured Feed（仅精选帖子）                                   |
-| `/feed/featured/atom.xml`  | Atom Featured Feed（仅精选帖子）                                      |
+| `/latest/feed`             | RSS 2.0 Latest Feed（公开帖子，支持 `?format=` 筛选）                 |
+| `/featured/feed`           | RSS 2.0 Featured Feed（仅精选帖子）                                   |
+| `/archive/feed`            | RSS 2.0 全量归档 Feed（含 `Hidden from Latest`，支持归档筛选参数）    |
+| `/feed/latest`             | 旧地址，`308` 永久跳转到 `/latest/feed`（保留 query）                 |
+| `/feed/featured`           | 旧地址，`308` 永久跳转到 `/featured/feed`                             |
 | `/{slug}/feed`             | 单个合集的 RSS Feed                                                   |
 | `/collections/{slug}/feed` | 组合合集的 RSS Feed                                                   |
 | `/sitemap.xml`             | 自动生成的站点地图                                                    |
@@ -319,10 +320,10 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 - `/feed` — 站点主 Feed。默认输出精选帖子，也可以在设置中改为 Latest
 - `/feed/atom.xml` — 主 Feed 的 Atom 版本
-- `/feed/latest` — RSS 2.0，Latest 公开帖子（支持 `?format=note` 等格式筛选）
-- `/feed/latest/atom.xml` — Atom 格式，Latest 公开帖子
-- `/feed/featured` — RSS 2.0，仅精选帖子
-- `/feed/featured/atom.xml` — Atom 格式，仅精选帖子
+- `/latest/feed` — Latest 公开帖子（支持 `?format=note` 等格式筛选）
+- `/featured/feed` — 仅精选帖子
+- `/archive/feed` — 全量归档（含 `Hidden from Latest`，支持 `?year=`、`?format=`、`?collection=`、`?media=` 等归档筛选）
+- 旧地址 `/feed/latest`、`/feed/featured` 会 `308` 永久跳转到上面的规范地址，老订阅者不受影响
 - `/{slug}/feed` — 单个合集的 RSS Feed，按加入合集时间倒序
 - `/collections/{slug}/feed` — 组合合集的 RSS Feed，按加入合集时间倒序
 

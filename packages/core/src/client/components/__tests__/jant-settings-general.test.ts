@@ -5,6 +5,7 @@ import type {
   SettingsLabels,
   SettingsTimezone,
   SettingsCjkFont,
+  SettingsDashboardLanguage,
   SettingsSaveDetail,
 } from "../settings-types.js";
 import { MAX_SITE_NAME_LENGTH } from "../../../types.js";
@@ -81,10 +82,13 @@ const labels: SettingsLabels = {
   siteName: "Site Name",
   aboutBlog: "About this blog",
   aboutBlogHelp: "Displayed above your blog posts.",
-  siteLanguage: "Site Language",
-  siteLanguageHelp: "Language used for the site UI.",
+  siteLanguage: "Content language",
+  siteLanguageHelp: "The language your posts are written in.",
   siteLanguageSearchPlaceholder: "Search…",
   siteLanguageNoMatches: "No matches.",
+  contentLanguagePreview: "Readers and search engines see",
+  dashboardLanguage: "Dashboard language",
+  dashboardLanguageHelp: "The language this admin dashboard shows in.",
   cjkFont: "CJK Font",
   cjkFontHelp:
     "Load a serif font optimized for Chinese, Japanese, or Korean content.",
@@ -99,6 +103,9 @@ const labels: SettingsLabels = {
   mainFeedUrl: "Main feed",
   latestFeedUrl: "Latest feed",
   featuredFeedUrl: "Featured feed",
+  archiveFeedUrl: "Archive feed",
+  archiveFeedUrlHelp:
+    "Every published post, including ones hidden from Latest.",
   latestFeedOption: "Latest",
   latestFeedOptionDescription: "Uses the latest public posts for /feed.",
   featuredFeedOption: "Featured",
@@ -127,10 +134,17 @@ const cjkFonts: SettingsCjkFont[] = [
   { value: "zh-Hans", label: "简体中文 (Simplified Chinese)" },
 ];
 
+const dashboardLanguages: SettingsDashboardLanguage[] = [
+  { value: "en", label: "English" },
+  { value: "zh-Hans", label: "简体中文" },
+  { value: "zh-Hant", label: "繁體中文" },
+];
+
 const initialData = {
   siteName: "My Blog",
   siteDescription: "A test blog",
   siteLanguage: "en",
+  dashboardLanguage: "en",
   cjkSerifFont: "off",
   timeZone: "UTC",
   mainRssFeed: "featured",
@@ -161,11 +175,13 @@ async function createElement(
   el.labels = labels;
   el.timezones = timezones;
   el.cjkFonts = cjkFonts;
+  el.dashboardLanguages = dashboardLanguages;
   el.siteNameFallback = "Fallback Name";
   el.siteDescriptionFallback = "Fallback Description";
   el.mainFeedUrl = "/feed";
-  el.latestFeedUrl = "/feed/latest";
-  el.featuredFeedUrl = "/feed/featured";
+  el.latestFeedUrl = "/latest/feed";
+  el.featuredFeedUrl = "/featured/feed";
+  el.archiveFeedUrl = "/archive/feed";
   el.demoMode = opts.demoMode ?? false;
   document.body.appendChild(el);
   await el.updateComplete;
@@ -239,10 +255,11 @@ describe("JantSettingsGeneral", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
 
     const options = el.querySelectorAll<HTMLButtonElement>('[role="option"]');
+    // The content-language picker lists the full BCP 47 catalog so any public
+    // content language is reachable. Coverage / raw tags are not shown here.
     expect(options.length).toBeGreaterThanOrEqual(20);
-    // Each option carries the universal "translated" coverage suffix.
     for (const option of options) {
-      expect(option.textContent).toMatch(/% translated/);
+      expect(option.textContent).not.toMatch(/% translated/);
     }
 
     const search = requireElement(
@@ -258,7 +275,7 @@ describe("JantSettingsGeneral", () => {
     expect(filtered[0]?.textContent).toMatch(/Suomi|Finnish/);
   });
 
-  it("selects a non-catalog locale and reports 0% translated coverage on it", async () => {
+  it("selects a non-catalog content language and shows its native name", async () => {
     const el = await createElement();
     const trigger = requireElement(
       el.querySelector<HTMLButtonElement>(
@@ -285,9 +302,43 @@ describe("JantSettingsGeneral", () => {
 
     // Picker closes after selection.
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
-    // Trigger reflects the new tag and shows 0% coverage.
-    expect(trigger.textContent).toMatch(/fi/);
-    expect(trigger.textContent).toMatch(/0% translated/);
+    // Trigger shows the selected language's native name only — no raw BCP 47
+    // tag, no coverage metric.
+    expect(trigger.textContent).toMatch(/suomi|finnish/i);
+    expect(trigger.textContent).not.toMatch(/% translated/);
+    expect(trigger.textContent).not.toMatch(/\bfi\b/);
+  });
+
+  it("renders dashboard language options and saves the selection", async () => {
+    const el = await createElement();
+    const select = requireElement(
+      el.querySelector(
+        'select[aria-labelledby="dashboard-language-label"]',
+      ) as globalThis.HTMLSelectElement | null,
+      "expected dashboard language select",
+    );
+    const values = Array.from(select.options).map((o) => o.value);
+    expect(values).toEqual(["en", "zh-Hans", "zh-Hant"]);
+    expect(select.value).toBe("en");
+
+    const saves: SettingsSaveDetail[] = [];
+    el.addEventListener("jant:settings-save", (e) => {
+      saves.push((e as CustomEvent<SettingsSaveDetail>).detail);
+    });
+
+    select.value = "zh-Hant";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    await el.updateComplete;
+
+    const saveButton = requireElement(
+      findSaveButtonByHeading(el, labels.languageAndTime),
+      "expected language & time save button",
+    );
+    saveButton.click();
+
+    expect(saves).toHaveLength(1);
+    expect(saves[0]?.endpoint).toBe("/settings/general/language-time");
+    expect(saves[0]?.data.dashboardLanguage).toBe("zh-Hant");
   });
 
   it("renders CJK font options", async () => {
@@ -323,8 +374,9 @@ describe("JantSettingsGeneral", () => {
     expect(el.textContent).toContain(labels.latestFeedOptionDescription);
     expect(Array.from(feedUrlInputs, (input) => input.value)).toEqual([
       "/feed",
-      "/feed/latest",
-      "/feed/featured",
+      "/latest/feed",
+      "/featured/feed",
+      "/archive/feed",
     ]);
   });
 

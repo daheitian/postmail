@@ -239,10 +239,10 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     socialImageWidthValue >= 300;
   const mainFeedHref = appConfig ? toPublicPath("/feed", sitePathPrefix) : null;
   const latestFeedHref = appConfig
-    ? toPublicPath("/feed/latest", sitePathPrefix)
+    ? toPublicPath("/latest/feed", sitePathPrefix)
     : null;
   const featuredFeedHref = appConfig
-    ? toPublicPath("/feed/featured", sitePathPrefix)
+    ? toPublicPath("/featured/feed", sitePathPrefix)
     : null;
   const mainFeedTitle =
     i18n?._(
@@ -277,6 +277,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
       {raw("<!DOCTYPE html>")}
       <html
         lang={resolvedLang}
+        data-theme={appConfig?.themeId}
         data-theme-mode={themeMode}
         data-site-path-prefix={sitePathPrefix}
         data-asset-base-path={assetBasePath}

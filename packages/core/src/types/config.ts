@@ -41,6 +41,13 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     envKeys: ["SITE_LANGUAGE"],
   },
+  // Admin dashboard UI locale. Empty means "follow the content language"
+  // (resolved through the catalog fallback chain, i.e. today's behaviour).
+  DASHBOARD_LANGUAGE: {
+    defaultValue: "",
+    envOnly: false,
+    envKeys: ["DASHBOARD_LANGUAGE"],
+  },
   CJK_SERIF_FONT: {
     defaultValue: "off",
     envOnly: false,
@@ -455,6 +462,12 @@ export interface AppConfig {
   /** true only when description is set in DB or ENV (not just the default) */
   siteDescriptionExplicit: boolean;
   siteLanguage: string;
+  /**
+   * Admin dashboard UI locale. Empty string means "follow the content
+   * language" (derived via the catalog fallback chain). When set, it is one of
+   * the translated catalog locales ("en", "zh-Hans", "zh-Hant").
+   */
+  dashboardLanguage: string;
   /** CJK serif font locale: "off", "zh-Hans", "zh-Hant", "ja", or "ko" */
   cjkSerifFont: string;
   homeDefaultView: string;

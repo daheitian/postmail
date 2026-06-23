@@ -35,6 +35,8 @@ export interface SettingsLabels {
   mainFeedUrl: string;
   latestFeedUrl: string;
   featuredFeedUrl: string;
+  archiveFeedUrl: string;
+  archiveFeedUrlHelp: string;
   latestFeedOption: string;
   latestFeedOptionDescription: string;
   featuredFeedOption: string;
@@ -47,6 +49,10 @@ export interface SettingsLabels {
   siteLanguageSearchPlaceholder: string;
   /** Empty-state message when the search filters out every option. */
   siteLanguageNoMatches: string;
+  /** Lead text before the live `<html lang>` preview. */
+  contentLanguagePreview: string;
+  dashboardLanguage: string;
+  dashboardLanguageHelp: string;
   cjkFont: string;
   cjkFontHelp: string;
   timeZone: string;
@@ -75,10 +81,17 @@ export interface SettingsCjkFont {
   label: string;
 }
 
+/** Dashboard UI language option for the select dropdown */
+export interface SettingsDashboardLanguage {
+  value: string;
+  label: string;
+}
+
 export interface SettingsInitialData {
   siteName: string;
   siteDescription: string;
   siteLanguage: string;
+  dashboardLanguage: string;
   cjkSerifFont: string;
   mainRssFeed: string;
   timeZone: string;
