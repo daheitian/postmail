@@ -103,6 +103,9 @@ const labels: SettingsLabels = {
   mainFeedUrl: "Main feed",
   latestFeedUrl: "Latest feed",
   featuredFeedUrl: "Featured feed",
+  archiveFeedUrl: "Archive feed",
+  archiveFeedUrlHelp:
+    "Every published post, including ones hidden from Latest.",
   latestFeedOption: "Latest",
   latestFeedOptionDescription: "Uses the latest public posts for /feed.",
   featuredFeedOption: "Featured",
@@ -176,8 +179,9 @@ async function createElement(
   el.siteNameFallback = "Fallback Name";
   el.siteDescriptionFallback = "Fallback Description";
   el.mainFeedUrl = "/feed";
-  el.latestFeedUrl = "/feed/latest";
-  el.featuredFeedUrl = "/feed/featured";
+  el.latestFeedUrl = "/latest/feed";
+  el.featuredFeedUrl = "/featured/feed";
+  el.archiveFeedUrl = "/archive/feed";
   el.demoMode = opts.demoMode ?? false;
   document.body.appendChild(el);
   await el.updateComplete;
@@ -370,8 +374,9 @@ describe("JantSettingsGeneral", () => {
     expect(el.textContent).toContain(labels.latestFeedOptionDescription);
     expect(Array.from(feedUrlInputs, (input) => input.value)).toEqual([
       "/feed",
-      "/feed/latest",
-      "/feed/featured",
+      "/latest/feed",
+      "/featured/feed",
+      "/archive/feed",
     ]);
   });
 

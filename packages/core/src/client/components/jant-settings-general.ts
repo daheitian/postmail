@@ -43,6 +43,7 @@ export class JantSettingsGeneral extends LitElement {
     mainFeedUrl: { type: String, attribute: "main-feed-url" },
     latestFeedUrl: { type: String, attribute: "latest-feed-url" },
     featuredFeedUrl: { type: String, attribute: "featured-feed-url" },
+    archiveFeedUrl: { type: String, attribute: "archive-feed-url" },
 
     // Site group
     _siteName: { state: true },
@@ -90,6 +91,7 @@ export class JantSettingsGeneral extends LitElement {
   declare mainFeedUrl: string;
   declare latestFeedUrl: string;
   declare featuredFeedUrl: string;
+  declare archiveFeedUrl: string;
 
   // Site
   declare _siteName: string;
@@ -157,8 +159,9 @@ export class JantSettingsGeneral extends LitElement {
     this.siteDescriptionFallback = "";
     this.demoMode = false;
     this.mainFeedUrl = "/feed";
-    this.latestFeedUrl = "/feed/latest";
-    this.featuredFeedUrl = "/feed/featured";
+    this.latestFeedUrl = "/latest/feed";
+    this.featuredFeedUrl = "/featured/feed";
+    this.archiveFeedUrl = "/archive/feed";
 
     this._siteName = "";
     this._siteDescription = "";
@@ -718,10 +721,17 @@ export class JantSettingsGeneral extends LitElement {
     }
   }
 
-  private _renderFeedInfoRow(label: string, value: string) {
+  private _renderFeedInfoRow(
+    label: string,
+    value: string,
+    description?: string,
+  ) {
     return html`
       <div class="flex min-w-0 flex-col gap-1">
         <p class="text-sm font-medium">${label}</p>
+        ${description
+          ? html`<p class="text-sm text-muted-foreground">${description}</p>`
+          : ""}
         <div class="relative">
           <input
             type="text"
@@ -966,6 +976,11 @@ export class JantSettingsGeneral extends LitElement {
               ${this._renderFeedInfoRow(
                 this.labels.featuredFeedUrl,
                 this.featuredFeedUrl,
+              )}
+              ${this._renderFeedInfoRow(
+                this.labels.archiveFeedUrl,
+                this.archiveFeedUrl,
+                this.labels.archiveFeedUrlHelp,
               )}
             </div>
           </div>

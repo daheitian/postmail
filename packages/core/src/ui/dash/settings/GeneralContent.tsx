@@ -23,6 +23,7 @@ export function GeneralContent({
   mainFeedUrl,
   latestFeedUrl,
   featuredFeedUrl,
+  archiveFeedUrl,
   timeZone,
   siteFooter,
   showJantBrandingOnHome,
@@ -41,6 +42,7 @@ export function GeneralContent({
   mainFeedUrl: string;
   latestFeedUrl: string;
   featuredFeedUrl: string;
+  archiveFeedUrl: string;
   timeZone: string;
   siteFooter: string;
   showJantBrandingOnHome: boolean;
@@ -234,6 +236,19 @@ export function GeneralContent({
         comment: "@context: Label for the explicit featured RSS feed URL",
       }),
     ),
+    archiveFeedUrl: i18n._(
+      msg({
+        message: "Archive feed",
+        comment: "@context: Label for the full-archive RSS feed URL",
+      }),
+    ),
+    archiveFeedUrlHelp: i18n._(
+      msg({
+        message: "Every published post, including ones hidden from Latest.",
+        comment:
+          "@context: Help text under the archive feed URL, explaining it is the complete feed",
+      }),
+    ),
     latestFeedOption: i18n._(
       msg({
         message: "Latest",
@@ -380,6 +395,7 @@ export function GeneralContent({
           main-feed-url={mainFeedUrl}
           latest-feed-url={latestFeedUrl}
           featured-feed-url={featuredFeedUrl}
+          archive-feed-url={archiveFeedUrl}
           demo-mode={demoMode || undefined}
         >
           {/* SSR fallback skeleton */}

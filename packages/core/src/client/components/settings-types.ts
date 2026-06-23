@@ -35,6 +35,8 @@ export interface SettingsLabels {
   mainFeedUrl: string;
   latestFeedUrl: string;
   featuredFeedUrl: string;
+  archiveFeedUrl: string;
+  archiveFeedUrlHelp: string;
   latestFeedOption: string;
   latestFeedOptionDescription: string;
   featuredFeedOption: string;

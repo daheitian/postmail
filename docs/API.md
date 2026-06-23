@@ -2536,12 +2536,15 @@ These are not part of the JSON content-management API, but they are often useful
 | `GET /readyz`                 | Public | JSON     | Readiness check for startup config and database                 |
 | `GET /feed`                   | Public | RSS      | Canonical site feed (`latest` or `featured`, based on settings) |
 | `GET /feed/atom.xml`          | Public | Atom     | Canonical site feed in Atom format                              |
-| `GET /feed/latest`            | Public | RSS      | Latest public posts feed                                        |
-| `GET /feed/latest/atom.xml`   | Public | Atom     | Latest public posts feed                                        |
-| `GET /feed/featured`          | Public | RSS      | Featured posts feed                                             |
-| `GET /feed/featured/atom.xml` | Public | Atom     | Featured posts feed                                             |
-| `GET /feed/all`               | Public | Redirect | Legacy alias to `/feed/latest`                                  |
-| `GET /feed/all/atom.xml`      | Public | Redirect | Legacy Atom alias to `/feed/latest/atom.xml`                    |
+| `GET /latest/feed`            | Public | RSS      | Latest public posts feed (accepts `?format=`)                   |
+| `GET /featured/feed`          | Public | RSS      | Featured posts feed                                             |
+| `GET /archive/feed`           | Public | RSS      | Full archive feed incl. `latest_hidden` (archive filters apply) |
+| `GET /feed/latest`            | Public | Redirect | Legacy `308` → `/latest/feed` (preserves query string)          |
+| `GET /feed/latest/atom.xml`   | Public | Redirect | Legacy `308` → `/latest/feed`                                   |
+| `GET /feed/featured`          | Public | Redirect | Legacy `308` → `/featured/feed`                                 |
+| `GET /feed/featured/atom.xml` | Public | Redirect | Legacy `308` → `/featured/feed`                                 |
+| `GET /feed/all`               | Public | Redirect | Legacy alias → `/latest/feed`                                   |
+| `GET /feed/all/atom.xml`      | Public | Redirect | Legacy Atom alias → `/latest/feed`                              |
 | `GET /:slug/feed`             | Public | RSS      | Collection feed for one collection                              |
 | `GET /collections/:slug/feed` | Public | RSS      | Collection feed for a collection selection                      |
 | `GET /sitemap.xml`            | Public | XML      | Sitemap for published posts                                     |
@@ -2594,12 +2597,15 @@ All feed endpoints are public and return cached XML with `Cache-Control: public,
 
 Feed notes:
 
+- Feeds are resource-first: a feed lives at `{page}/feed`, the same shape as collection feeds (`/{slug}/feed`). The site root `/` is the only special case — its feed is `/feed`.
 - `GET /feed` and `GET /feed/atom.xml` use the configured `MAIN_RSS_FEED` to choose `latest` or `featured`.
-- `GET /feed/latest` and `GET /feed/latest/atom.xml` accept `?format=note|link|quote`.
+- `GET /latest/feed` accepts `?format=note|link|quote`.
 - Invalid `format` values are ignored rather than rejected.
 - Latest feeds include published root posts only, excluding private posts and `latest_hidden` posts.
 - Featured feeds include published featured root posts and exclude private posts.
-- `GET /feed/all` and `GET /feed/all/atom.xml` are legacy aliases that redirect to the `latest` feed with `308`, preserving the query string.
+- `GET /archive/feed` returns the complete published record (including `latest_hidden`) and accepts the archive filters `?year=`, `?format=`, `?collection=`, `?media=`.
+- `GET /feed/latest` and `GET /feed/featured` are kept indefinitely as `308` redirects to the canonical `/latest/feed` and `/featured/feed`, so existing subscribers never break.
+- `GET /feed/all` and `GET /feed/all/atom.xml` are legacy aliases that redirect to `/latest/feed` with `308`, preserving the query string.
 - `GET /:slug/feed` returns an RSS feed for a single collection.
 - `GET /collections/:slug/feed` returns an RSS feed for a collection selection and redirects normalized selections to the canonical path with `301`.
 
