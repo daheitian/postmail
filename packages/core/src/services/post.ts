@@ -2483,7 +2483,7 @@ export function createPostService(
         .select()
         .from(posts)
         .where(and(eq(posts.siteId, siteId), eq(posts.threadId, rootId)))
-        .orderBy(posts.createdAt);
+        .orderBy(posts.createdAt, posts.id);
 
       return hydratePosts(rows);
     },
