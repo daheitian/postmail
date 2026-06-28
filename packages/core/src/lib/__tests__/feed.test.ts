@@ -272,7 +272,11 @@ describe("feed renderers", () => {
     expect(xml).toContain(
       '<img src="https://example.com/media/clip-poster.jpg"',
     );
-    expect(xml).toContain("▶ Watch video · 0:42 · 1.1 MB");
+    // The action label is a link (not just the thumbnail); metadata sits
+    // outside the link in parens, matching the audio/text attachment style.
+    expect(xml).toContain(
+      '<figcaption><a href="https://example.com/media/clip.mp4">▶ Watch video</a> (0:42 · 1.1 MB)</figcaption>',
+    );
     expect(xml).toContain(
       '<link rel="enclosure" type="video/mp4" href="https://example.com/media/clip.mp4" length="1200000"',
     );

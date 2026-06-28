@@ -187,9 +187,12 @@ function renderMediaItem(item: MediaView, postPermalinkUrl?: string): string {
         : "";
     // Prefix the caption with a ▶ glyph as a video cue. A CSS overlay would
     // be stripped by most feed-reader sanitizers, so a plain-text play
-    // character is the only marker that renders reliably everywhere.
-    const label = `▶ Watch video${meta ? ` · ${meta}` : ""}`;
-    return `<figure><a href="${url}"><img src="${escapeXml(poster)}" alt="${escapeXml(altText || name)}"${dims}/></a><figcaption>${escapeXml(label)}</figcaption></figure>`;
+    // character is the only marker that renders reliably everywhere. Link
+    // only the "Watch video" action label (so it's clickable like the
+    // thumbnail and reads cleanly to screen readers); metadata stays outside
+    // the link in parens, matching the audio/text/document attachment style.
+    const metaSuffix = meta ? ` (${escapeXml(meta)})` : "";
+    return `<figure><a href="${url}"><img src="${escapeXml(poster)}" alt="${escapeXml(altText || name)}"${dims}/></a><figcaption><a href="${url}">▶ Watch video</a>${metaSuffix}</figcaption></figure>`;
   }
 
   if (category === "audio") {
