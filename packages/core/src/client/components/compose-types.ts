@@ -145,6 +145,10 @@ export interface ComposeLabels {
   addMore: string;
   removeAttachment: string;
   uploading: string;
+  /** Toast when exactly one pasted remote image couldn't be rehosted. */
+  imageNotRehosted?: string;
+  /** Toast when several pasted remote images couldn't be rehosted (uses a {count} placeholder). */
+  imagesNotRehosted?: string;
   loadingPost: string;
   loadPostFailed: string;
   published: string;

@@ -33,6 +33,11 @@ msgstr ""
 msgid "{count, plural, one {Found # result} other {Found # results}}"
 msgstr ""
 
+#. @context: Toast when several pasted remote images couldn't be rehosted; {count} is the number of images
+#: src/ui/compose/ComposeDialog.tsx
+msgid "{count} images couldn't be saved to your library — their original links were kept."
+msgstr "有 {count} 张图片无法转存到你的媒体库，已保留原链接。"
+
 #. @context: Placeholder for the custom collections link URL
 #: src/ui/shared/collection-management-labels.ts
 msgid "/archive?format=quote or https://example.com"
@@ -192,6 +197,11 @@ msgstr ""
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "An abstract editorial layout in warm paper colors"
 msgstr ""
+
+#. @context: Toast when a single pasted remote image couldn't be rehosted (e.g. blocked by the source's hotlink protection)
+#: src/ui/compose/ComposeDialog.tsx
+msgid "An image couldn't be saved to your library — its original link was kept."
+msgstr "有一张图片无法转存到你的媒体库，已保留原链接。"
 
 #. @context: Sample link post body suffix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx

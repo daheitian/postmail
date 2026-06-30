@@ -18,6 +18,7 @@ import {
   toPublicAssetPath,
 } from "../../lib/asset-path.js";
 import { getJantIconHref } from "../../lib/jant-branding.js";
+import { getPublicUrlForProvider } from "../../lib/image.js";
 import { getThemeBrowserColors, resolveBuiltinTheme } from "../../lib/theme.js";
 import { toAbsoluteAssetUrl, toPublicPath } from "../../lib/url.js";
 import {
@@ -133,6 +134,16 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   const assetBasePath = IS_VITE_DEV
     ? "/"
     : appConfig?.assetBasePath || getPublicAssetBasePath(sitePathPrefix);
+  // Public base URL for the active media provider, exposed so the client can
+  // tell which pasted images are already ours and skip rehosting them. Empty
+  // means media is served same-origin (the client's same-origin check covers it).
+  const mediaBase =
+    getPublicUrlForProvider(
+      appConfig?.storageDriver ?? "",
+      appConfig?.r2PublicUrl,
+      appConfig?.s3PublicUrl,
+      appConfig?.localPublicUrl,
+    ) ?? "";
   const currentUrl = c ? c.get("publicRequestUrl") : undefined;
   const rawPath = c?.req?.path ?? "/";
   const manifestStartPath = sitePathPrefix
@@ -281,6 +292,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         data-theme-mode={themeMode}
         data-site-path-prefix={sitePathPrefix}
         data-asset-base-path={assetBasePath}
+        data-media-base={mediaBase}
       >
         <head>
           <meta charset="UTF-8" />
