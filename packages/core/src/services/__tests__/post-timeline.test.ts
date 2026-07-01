@@ -464,8 +464,86 @@ describe("PostService - Timeline features", () => {
     });
   });
 
+  describe("listCollectionThreadRootIds", () => {
+    it("bumps a hidden collection thread when a non-quiet reply is published", async () => {
+      const collection = await collectionService.create({
+        slug: "thinking",
+        title: "Thinking",
+      });
+      const hiddenRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Hidden root",
+        visibility: "latest_hidden",
+        publishedAt: 1000,
+      });
+      const newerRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Newer root",
+        publishedAt: 2000,
+      });
+
+      await collectionService.addPost(collection.id, hiddenRoot.id);
+      await collectionService.addPost(collection.id, newerRoot.id);
+
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "Normal reply",
+        replyToId: hiddenRoot.id,
+        publishedAt: 3000,
+      });
+
+      const rootIds = await postService.listCollectionThreadRootIds(
+        collection.id,
+        {
+          status: "published",
+          sortOrder: "newest",
+        },
+      );
+
+      expect(rootIds).toEqual([hiddenRoot.id, newerRoot.id]);
+    });
+
+    it("does not bump a collection thread when a reply is quiet", async () => {
+      const collection = await collectionService.create({
+        slug: "quiet",
+        title: "Quiet",
+      });
+      const olderRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Older root",
+        publishedAt: 1000,
+      });
+      const newerRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Newer root",
+        publishedAt: 2000,
+      });
+
+      await collectionService.addPost(collection.id, olderRoot.id);
+      await collectionService.addPost(collection.id, newerRoot.id);
+
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "Quiet reply",
+        replyToId: olderRoot.id,
+        publishedAt: 3000,
+        quietReply: true,
+      });
+
+      const rootIds = await postService.listCollectionThreadRootIds(
+        collection.id,
+        {
+          status: "published",
+          sortOrder: "newest",
+        },
+      );
+
+      expect(rootIds).toEqual([newerRoot.id, olderRoot.id]);
+    });
+  });
+
   describe("listCollectionFeedEntries", () => {
-    it("orders collection feeds by publishedAt and returns thread roots", async () => {
+    it("orders collection feeds by thread activity and returns thread roots", async () => {
       const collection = await collectionService.create({
         slug: "reading",
         title: "Reading",
@@ -565,11 +643,50 @@ describe("PostService - Timeline features", () => {
       );
 
       expect(entries).toHaveLength(2);
-      // Sorted by publishedAt DESC: secondRoot created last has latest publishedAt
       expect(entries[0]?.post.id).toBe(secondRoot.id);
       expect(entries[0]?.collectedAt).toBe(200);
       expect(entries[1]?.post.id).toBe(sharedRoot.id);
       expect(entries[1]?.collectedAt).toBe(300);
+    });
+
+    it("orders collection feeds by thread activity from non-quiet replies", async () => {
+      const collection = await collectionService.create({
+        slug: "activity",
+        title: "Activity",
+      });
+      const hiddenRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Hidden root",
+        visibility: "latest_hidden",
+        publishedAt: 1000,
+      });
+      const newerRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Newer root",
+        publishedAt: 2000,
+      });
+
+      await collectionService.addPost(collection.id, hiddenRoot.id);
+      await collectionService.addPost(collection.id, newerRoot.id);
+
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "Normal reply",
+        replyToId: hiddenRoot.id,
+        publishedAt: 3000,
+      });
+
+      const entries = await postService.listCollectionFeedEntries(
+        collection.id,
+        {
+          status: "published",
+        },
+      );
+
+      expect(entries.map((entry) => entry.post.id)).toEqual([
+        hiddenRoot.id,
+        newerRoot.id,
+      ]);
     });
   });
 });

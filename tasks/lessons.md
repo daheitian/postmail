@@ -1,5 +1,10 @@
 # Lessons
 
+- Collection timelines and collection feeds must sort "newest" by thread-level
+  activity (`lastActivityAt` on the root), not only by the published timestamp
+  of collection-member posts. Otherwise replies to a collected root that are not
+  themselves collection members will not bump the thread; quiet replies should
+  remain non-bumping by leaving root activity unchanged.
 - In happy-dom tests for Lit custom elements, instantiate registered elements with `document.createElement("tag-name")` and use `globalThis.Element` / `globalThis.localStorage` in type or lint-visible positions.
 - In happy-dom component tests, avoid reading repo files with `import.meta.url`; Vitest may transform the module URL away from `file:`. Use a stable project-root or package-root path with `resolve()` instead.
 - Product copy in argument-driven docs should support the article's thesis, not compress the product overview into a feature list. Select only the capabilities that advance the current argument.

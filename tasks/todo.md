@@ -1,41 +1,42 @@
-# Fix: reply shortcut should target thread tail on root detail pages
+# Fix: Collection Thread Bumps From Non-Quiet Replies
 
 ## Problem
 
-On a thread detail page with replies, opening the root URL and pressing `r`
-opens a reply composer for the current/root post. Submitting then fails with:
-
-- `This post is no longer the end of the thread. Reply to the latest post instead.`
-
-The server-side guard is correct. The client shortcut should choose the latest
-rendered thread item as the reply target when no specific post is hovered.
+A `latest_hidden` thread root inside a collection does not move back to the top
+of that collection when a later non-quiet reply is published. Only quiet replies
+should avoid bumping the thread. Collection ordering should use thread activity
+for normal replies, even when the root is hidden from Latest.
 
 ## Plan
 
-- [x] Inspect the compose shortcut and compose-launch target selection.
-- [x] Change detail-page reply target selection so `r` defaults to the last
-      `.thread-detail-item article[data-post]`.
-- [x] Preserve existing hover behavior for explicit post actions.
-- [x] Preserve timeline/list behavior outside post detail pages.
-- [x] Add focused tests for root-detail tail reply selection.
-- [x] Run focused verification and document results.
+- [x] Inspect collection timeline and feed ordering queries.
+- [x] Add regression coverage for hidden collection roots, normal replies, and
+      quiet replies.
+- [x] Update the service-layer ordering so collection pages/feed use thread
+      activity where appropriate.
+- [x] Run focused tests and record verification.
 
 ## Review
 
-Done. The `r` shortcut now uses a dedicated reply-target resolver instead of
-the edit/menu target resolver. On thread detail pages, it selects the last
-rendered `.thread-detail-item article[data-post]`, so opening the root URL of a
-thread and pressing `r` replies to the latest post. This also avoids the
-browser `:hover` state accidentally picking the root article under the cursor.
+Done. Collection timeline and collection feed ordering now use the thread
+root's `lastActivityAt` as the newest/activity sort key. A normal published
+reply already updates that root timestamp, so a `latest_hidden` root inside a
+collection moves back to the top when it receives a non-quiet reply. A quiet
+reply leaves `lastActivityAt` unchanged, so it does not bump the thread.
 
-`e`, `c`, and `f` still use the existing current/hover resolver, so edit,
-collection, and featured shortcuts keep their previous explicit-post behavior.
-Outside thread detail pages, reply target selection falls back to the existing
-current/hover behavior.
+The ordering helper stays in `PostService`; routes continue to ask the service
+for ordered thread roots/feed entries and do not duplicate collection/thread
+business logic.
+
+Regression coverage was added for:
+
+- hidden collection roots bumped by non-quiet replies
+- quiet replies not bumping collection threads
+- collection feeds using thread activity from replies
 
 Verification:
 
-- `mise run test -- src/client/__tests__/compose-launch.test.ts src/client/__tests__/compose-shortcuts.test.ts`
-  passed: 2 files, 15 tests.
-- That mise task also completed full workspace typecheck, ESLint, and the core
-  library build before running Vitest.
+- `mise run test -- src/services/__tests__/post-timeline.test.ts` passed:
+  1 file, 25 tests.
+- `mise run check-tests` passed: 216 files, 2562 tests.
+- `mise run check-lint` passed.
