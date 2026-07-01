@@ -100,3 +100,25 @@ narrow-column-bug class — an improvement.
 
 Out of scope: the export-theme static copy (own breakpoints, no sidenote rules) — left for a
 separate pass if wanted.
+
+---
+
+# Cmd+K Slash Path Mode
+
+## Plan
+
+- [x] Add a `/` mode to `jant-command-palette` without changing the palette API.
+- [x] When the query starts with a single `/`, show `Go to /path` first and `Search for "path"` second.
+- [x] Keep navigation same-origin by treating entered paths as local paths, not absolute URLs.
+- [x] Run focused checks for the changed client component.
+
+## Review
+
+Done. Cmd+K now treats `/` and fullwidth `／` as path mode. Slash queries render `Go to /path`
+as the first option and `Search for "path"` as the second option. Repeated leading slashes are
+collapsed into a local path, so `//example.com` becomes `/example.com` instead of a cross-origin
+navigation.
+
+Verification: `mise run test -- src/client/components/__tests__/jant-command-palette.test.ts`
+passed. The project task ran typecheck, lint, core library build, and the focused vitest file
+(3 tests).
