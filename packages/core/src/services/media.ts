@@ -32,10 +32,18 @@ import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import {
   generateStorageKey,
+  imageExtensionForMimeType,
+  isAllowedSideloadImageType,
   SITE_ASSET_STORAGE_KEY_LIKE_PATTERN,
+  sniffImageMimeType,
   toMediaKind,
   validateUploadFileMetadata,
 } from "../lib/upload.js";
+import {
+  IMAGE_DIMENSION_PEEK_BYTES,
+  parseImageDimensions,
+} from "../lib/image-dimensions.js";
+import { assertPublicHttpUrl, fetchImageBytes } from "../lib/url-fetch.js";
 import type {
   Media,
   MediaKind,
@@ -56,6 +64,26 @@ import {
 import type { HostedControlPlaneClient } from "../lib/hosted-control-plane.js";
 
 const DEFAULT_MEDIA_POSITION = "a0";
+
+/**
+ * Derive a display filename from a remote image URL, falling back to
+ * `image.<ext>` when the path has no usable basename.
+ *
+ * @param url - The remote image URL
+ * @param ext - Extension to use when the URL path lacks one
+ * @returns A sanitized original filename
+ */
+function remoteImageName(url: URL, ext: string): string {
+  let base: string;
+  try {
+    base = decodeURIComponent(url.pathname.split("/").pop() ?? "");
+  } catch {
+    base = url.pathname.split("/").pop() ?? "";
+  }
+  base = base.trim().replace(/[\r\n"\\]+/g, "");
+  if (!base) return `image.${ext}`;
+  return base.includes(".") ? base : `${base}.${ext}`;
+}
 
 /**
  * Recycle-window length for deleted media storage objects. On delete we
@@ -187,6 +215,12 @@ export interface TextAttachmentDeps {
   maxFileSizeMB: number;
 }
 
+export interface IngestFromUrlDeps {
+  storage: StorageDriver;
+  storageDriver: string;
+  maxFileSizeMB: number;
+}
+
 export interface MediaService {
   assertCanWriteBytes(additionalBytes: number): Promise<void>;
   getById(id: string): Promise<Media | null>;
@@ -195,6 +229,24 @@ export interface MediaService {
   getByPostIds(postIds: string[]): Promise<Map<string, Media[]>>;
   list(filters?: MediaFilters): Promise<Media[]>;
   create(data: CreateMediaData): Promise<Media>;
+  /**
+   * Fetch a remote image URL server-side and store it as the site's own media.
+   *
+   * Used to rehost images pasted from external articles: the server downloads
+   * the bytes (bypassing browser CORS), verifies they are a real image format,
+   * and stores them. The created row has `postId = null` like other compose
+   * uploads (reaped by the orphan sweep if the post is never published).
+   *
+   * @param input.url - The remote http(s) image URL
+   * @param input.alt - Optional alt text
+   * @param deps - Storage driver, provider name, and the max file size
+   * @returns The created media row
+   * @throws {ValidationError} For unsafe URLs, non-image content, or oversize files
+   */
+  ingestFromUrl(
+    input: { url: string; alt?: string },
+    deps: IngestFromUrlDeps,
+  ): Promise<Media>;
   /**
    * Validate media IDs: checks count limit and verifies all IDs exist in the database.
    * No-op when the array is empty.
@@ -786,6 +838,65 @@ export function createMediaService(
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
       return toMedia(result[0]!);
+    },
+
+    async ingestFromUrl(input, deps) {
+      const url = assertPublicHttpUrl(input.url);
+      const maxBytes = deps.maxFileSizeMB * 1024 * 1024;
+
+      const { bytes } = await fetchImageBytes(url, {
+        maxBytes,
+        timeoutMs: 15000,
+      });
+
+      // Trust the bytes, not the server's content-type header: only store data
+      // we can positively identify as a supported image format. This blocks
+      // content-type spoofing (e.g. an HTML/script payload served as an image).
+      const sniffed = sniffImageMimeType(bytes);
+      const mimeType =
+        sniffed && isAllowedSideloadImageType(sniffed) ? sniffed : null;
+      if (!mimeType) {
+        throw new ValidationError(
+          "That URL didn't return a supported image. Try a different image.",
+        );
+      }
+
+      await assertCanWriteBytes(bytes.byteLength);
+
+      const dimensions = parseImageDimensions(
+        mimeType,
+        bytes.subarray(0, IMAGE_DIMENSION_PEEK_BYTES),
+      );
+      const ext = imageExtensionForMimeType(mimeType) ?? "bin";
+      const { id, filename, storageKey } = generateStorageKey(
+        siteId,
+        `image.${ext}`,
+      );
+      const originalName = remoteImageName(url, ext);
+
+      // SVG can carry scripts. Display still works via <img> (browsers disable
+      // scripting there), and attachment disposition makes direct navigation to
+      // the raw object download instead of render — neutralizing the XSS vector.
+      await deps.storage.put(storageKey, bytes, {
+        contentType: mimeType,
+        contentDisposition:
+          mimeType === "image/svg+xml" ? "attachment" : "inline",
+        cacheControl: "public, max-age=31536000, immutable",
+      });
+
+      return this.create({
+        id,
+        filename,
+        originalName,
+        mimeType,
+        size: bytes.byteLength,
+        storageKey,
+        provider: deps.storageDriver,
+        mediaKind: "image",
+        width: dimensions?.width,
+        height: dimensions?.height,
+        alt: input.alt?.trim() || undefined,
+      });
     },
 
     async createTextAttachment(data, deps) {

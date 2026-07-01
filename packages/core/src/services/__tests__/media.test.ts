@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Test assertions use ! for readability */
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { eq } from "drizzle-orm";
 import {
   createTestDatabase,
@@ -1544,5 +1544,172 @@ describe("MediaService", () => {
         [...storage.files.keys()].filter((k) => k.startsWith("trash/")).length,
       ).toBe(1);
     });
+  });
+});
+
+/** Minimal valid PNG header (signature + IHDR with width 4, height 6). */
+function createPngBytes(): Uint8Array {
+  return new Uint8Array([
+    0x89,
+    0x50,
+    0x4e,
+    0x47,
+    0x0d,
+    0x0a,
+    0x1a,
+    0x0a, // signature
+    0x00,
+    0x00,
+    0x00,
+    0x0d, // IHDR length (13)
+    0x49,
+    0x48,
+    0x44,
+    0x52, // "IHDR"
+    0x00,
+    0x00,
+    0x00,
+    0x04, // width = 4
+    0x00,
+    0x00,
+    0x00,
+    0x06, // height = 6
+    0x08,
+    0x06,
+    0x00,
+    0x00,
+    0x00, // bit depth, color type, ...
+  ]);
+}
+
+describe("MediaService.ingestFromUrl", () => {
+  let db: Database;
+  let mediaService: ReturnType<typeof createMediaService>;
+
+  beforeEach(() => {
+    const testDb = createTestDatabase();
+    db = testDb.db as unknown as Database;
+    mediaService = createMediaService(db, DEFAULT_TEST_SITE_ID);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const deps = () => ({
+    storage: createMockStorage(),
+    storageDriver: "local",
+    maxFileSizeMB: 25,
+  });
+
+  it("fetches a remote image, stores it, and creates a media row", async () => {
+    const bytes = createPngBytes();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(bytes, { headers: { "content-type": "image/png" } }),
+      ),
+    );
+
+    const d = deps();
+    const media = await mediaService.ingestFromUrl(
+      { url: "https://example.com/photo.png", alt: "A photo" },
+      d,
+    );
+
+    expect(media.mimeType).toBe("image/png");
+    expect(media.mediaKind).toBe("image");
+    expect(media.width).toBe(4);
+    expect(media.height).toBe(6);
+    expect(media.alt).toBe("A photo");
+    expect(media.postId).toBeNull();
+
+    const stored = d.storage.files.get(media.storageKey);
+    expect(stored).toBeDefined();
+    expect(stored?.contentType).toBe("image/png");
+    expect(stored?.contentDisposition).toBe("inline");
+  });
+
+  it("stores SVG with attachment disposition (XSS-safe direct navigation)", async () => {
+    const svg = new TextEncoder().encode(
+      '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(svg, {
+            headers: { "content-type": "image/svg+xml" },
+          }),
+      ),
+    );
+
+    const d = deps();
+    const media = await mediaService.ingestFromUrl(
+      { url: "https://example.com/icon.svg" },
+      d,
+    );
+
+    expect(media.mimeType).toBe("image/svg+xml");
+    const stored = d.storage.files.get(media.storageKey);
+    expect(stored?.contentDisposition).toBe("attachment");
+  });
+
+  it("rejects content that isn't a real image (content-type spoofing)", async () => {
+    const html = new TextEncoder().encode(
+      "<!doctype html><script>alert(1)</script>",
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        // Server lies: claims PNG, returns HTML.
+        async () =>
+          new Response(html, { headers: { "content-type": "image/png" } }),
+      ),
+    );
+
+    await expect(
+      mediaService.ingestFromUrl(
+        { url: "https://example.com/evil.png" },
+        deps(),
+      ),
+    ).rejects.toThrow(/supported image/i);
+  });
+
+  it("rejects an oversize image", async () => {
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(2 * 1024 * 1024));
+        controller.close();
+      },
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(stream, { headers: { "content-type": "image/png" } }),
+      ),
+    );
+
+    await expect(
+      mediaService.ingestFromUrl(
+        { url: "https://example.com/huge.png" },
+        { ...deps(), maxFileSizeMB: 1 },
+      ),
+    ).rejects.toThrow(/too large/i);
+  });
+
+  it("rejects a private/SSRF URL before fetching", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      mediaService.ingestFromUrl(
+        { url: "http://169.254.169.254/latest/meta-data" },
+        deps(),
+      ),
+    ).rejects.toThrow(/private address/i);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

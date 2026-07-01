@@ -24,6 +24,8 @@ import { MoreBreak } from "./more-break.js";
 import { EmbedNode } from "./embed-node.js";
 import { HtmlBlockNode } from "./html-block-node.js";
 import { EmbedPaste } from "./embed-paste.js";
+import { RehostImages } from "./rehost-images.js";
+import type { RehostImagesOptions } from "./rehost-images.js";
 import { MarkdownClipboard } from "./markdown-clipboard.js";
 import {
   MARKDOWN_MARKED_OPTIONS,
@@ -34,6 +36,7 @@ export interface EditorExtensionOptions {
   placeholder?: string;
   toolbarMode?: FormattingToolbarMode;
   pasteMedia?: PasteMediaOptions;
+  rehostImages?: RehostImagesOptions;
 }
 
 /**
@@ -113,6 +116,7 @@ export function createEditorExtensions(
     SlashCommands,
     EmbedPaste,
     PasteMedia.configure(options.pasteMedia ?? {}),
+    RehostImages.configure(options.rehostImages ?? {}),
     BubbleMenu.configure({
       toolbarMode: options.toolbarMode ?? "default",
     }),

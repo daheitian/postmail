@@ -46,7 +46,11 @@ import { createTiptapEditor } from "../tiptap/create-editor.js";
 import {
   uploadAndInsertInlineImage,
   adoptPendingInlineImageUploads,
+  rehostInlineImage,
+  sideloadImage,
 } from "../tiptap/inline-image-upload.js";
+import { clearRehostInFlight } from "../tiptap/rehost-images.js";
+import { uploadWithMetadata } from "../upload-with-metadata.js";
 import { getClipboardFiles } from "../tiptap/paste-media.js";
 import { isSafeAbsoluteUrl } from "../../lib/url.js";
 import { randomUUID } from "../random-uuid.js";
@@ -247,6 +251,8 @@ export class JantComposeEditor extends LitElement {
   private _suppressContentChangedOnce = false;
   #inlineImageUploadGeneration = 0;
   #inlineImageUploadPromises = new Set<Promise<void>>();
+  #rehostFailureCount = 0;
+  #rehostFailureNoticeTimer: ReturnType<typeof setTimeout> | undefined;
   #sortable: { destroy(): void } | null = null;
   #revertNextSibling: globalThis.Node | null = null;
 
@@ -429,6 +435,102 @@ export class JantComposeEditor extends LitElement {
     return uploadPromise;
   }
 
+  /**
+   * Decide whether a pasted image node's `src` should be rehosted into our own
+   * storage. Skips images that are already ours (same-origin or on the
+   * configured media CDN), relative paths, and `blob:` placeholders (handled by
+   * the insert flow). Remote `http(s)` and inline `data:` srcs are rehosted.
+   */
+  #shouldRehostSrc(src: string): boolean {
+    if (src.startsWith("data:")) return true;
+    if (!/^https?:\/\//i.test(src)) return false;
+    let origin: string;
+    try {
+      origin = new URL(src).origin;
+    } catch {
+      return false;
+    }
+    if (origin === window.location.origin) return false;
+    const mediaBase = document.documentElement.dataset.mediaBase;
+    if (mediaBase && src.startsWith(mediaBase)) return false;
+    return true;
+  }
+
+  /**
+   * Rehost a pasted inline image into our storage and swap its `src`. Remote
+   * URLs go through the server sideload endpoint (bypasses CORS); `data:` URLs
+   * are decoded locally and run through the normal client upload pipeline
+   * (gaining WebP/resize/blurhash). Tracked like other inline uploads so submit
+   * waits for it; failures leave the node with its original src.
+   */
+  #rehostInlineImage(src: string) {
+    const editor = this._editor;
+    if (!editor) {
+      clearRehostInFlight(src);
+      return;
+    }
+
+    const resolver = src.startsWith("data:")
+      ? async () => {
+          const blob = await (await fetch(src)).blob();
+          const file = new File([blob], "pasted-image", {
+            type: blob.type || "image/png",
+          });
+          return (await uploadWithMetadata(file)).url;
+        }
+      : async () => (await sideloadImage(src)).url;
+
+    // Surface failures so a blocked rehost (e.g. a host's hotlink protection)
+    // isn't silent — the node keeps its original link, but the author is told.
+    const trackedResolver = async () => {
+      try {
+        return await resolver();
+      } catch (error) {
+        this.#noteRehostFailure();
+        throw error;
+      }
+    };
+
+    const generation = this.#inlineImageUploadGeneration;
+    const rehostPromise = rehostInlineImage(
+      editor,
+      src,
+      trackedResolver,
+    ).finally(() => {
+      clearRehostInFlight(src);
+      if (generation !== this.#inlineImageUploadGeneration) return;
+      this.#inlineImageUploadPromises.delete(rehostPromise);
+    });
+    this.#inlineImageUploadPromises.add(rehostPromise);
+  }
+
+  /** Count a failed rehost and debounce a single batched notice. */
+  #noteRehostFailure() {
+    this.#rehostFailureCount += 1;
+    if (this.#rehostFailureNoticeTimer !== undefined) return;
+    this.#rehostFailureNoticeTimer = setTimeout(() => {
+      this.#flushRehostFailureNotice();
+    }, 800);
+  }
+
+  /** Show one toast summarizing all rehost failures collected in the window. */
+  #flushRehostFailureNotice() {
+    this.#rehostFailureNoticeTimer = undefined;
+    const count = this.#rehostFailureCount;
+    this.#rehostFailureCount = 0;
+    if (count <= 0 || !this.isConnected) return;
+
+    const message =
+      count === 1
+        ? (this.labels.imageNotRehosted ??
+          "An image couldn't be saved to your library — its original link was kept.")
+        : (
+            this.labels.imagesNotRehosted ??
+            "{count} images couldn't be saved to your library — their original links were kept."
+          ).replace("{count}", String(count));
+    showToast(message, "error");
+  }
+
   hasPendingInlineImageUploads(): boolean {
     return this.#inlineImageUploadPromises.size > 0;
   }
@@ -446,6 +548,11 @@ export class JantComposeEditor extends LitElement {
   #clearPendingInlineImageUploads() {
     this.#inlineImageUploadGeneration += 1;
     this.#inlineImageUploadPromises.clear();
+    if (this.#rehostFailureNoticeTimer !== undefined) {
+      clearTimeout(this.#rehostFailureNoticeTimer);
+      this.#rehostFailureNoticeTimer = undefined;
+    }
+    this.#rehostFailureCount = 0;
   }
 
   /** Adopt in-flight inline image uploads from another editor (e.g. fullscreen). */
@@ -823,6 +930,10 @@ export class JantComposeEditor extends LitElement {
         onPasteFiles: (files) => {
           this.addFiles(files);
         },
+      },
+      rehostImages: {
+        shouldRehost: (src) => this.#shouldRehostSrc(src),
+        rehost: (src) => this.#rehostInlineImage(src),
       },
     });
     this._lastEditorSelection = this._readEditorSelection();

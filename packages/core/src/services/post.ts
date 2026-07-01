@@ -1105,6 +1105,21 @@ export function createPostService(
     return conditions;
   }
 
+  function buildCollectionThreadActivityExpr(alias: string) {
+    return sql<number>`MAX(
+      COALESCE(
+        (
+          SELECT root.last_activity_at
+          FROM post AS root
+          WHERE root.site_id = ${siteId}
+            AND root.id = ${posts.threadId}
+        ),
+        ${posts.publishedAt},
+        ${posts.updatedAt}
+      )
+    )`.as(alias);
+  }
+
   function isMediaAttachmentInput(
     attachment: PostAttachmentInput,
   ): attachment is Extract<PostAttachmentInput, { type: "media" }> {
@@ -2845,6 +2860,8 @@ export function createPostService(
         sortOrder === "oldest"
           ? sql<number>`MIN(${posts.publishedAt})`.as("published_at")
           : sql<number>`MAX(${posts.publishedAt})`.as("published_at");
+      const threadActivityAt =
+        buildCollectionThreadActivityExpr("thread_activity_at");
       const ratingPresence = sql<number>`MAX(
         CASE
           WHEN ${posts.rating} IS NULL THEN 0
@@ -2864,6 +2881,7 @@ export function createPostService(
         .select({
           threadId: posts.threadId,
           publishedAt,
+          threadActivityAt,
           collectionPinnedAt,
           ratingPresence,
           ratingValue,
@@ -2891,12 +2909,12 @@ export function createPostService(
                 desc(collectionPinnedAt),
                 desc(ratingPresence),
                 desc(ratingValue),
-                desc(publishedAt),
+                desc(threadActivityAt),
                 desc(posts.threadId),
               )
             : baseQuery.orderBy(
                 desc(collectionPinnedAt),
-                desc(publishedAt),
+                desc(threadActivityAt),
                 desc(posts.threadId),
               );
 
@@ -2923,9 +2941,8 @@ export function createPostService(
         ...buildThreadRootPageConditions(options),
         buildCollectionMembershipCondition(collectionIds),
       ];
-      const publishedAt = sql<number>`MAX(${posts.publishedAt})`.as(
-        "published_at",
-      );
+      const threadActivityAt =
+        buildCollectionThreadActivityExpr("thread_activity_at");
       const collectedAt = sql<number>`MAX(${postCollections.createdAt})`.as(
         "collected_at",
       );
@@ -2937,7 +2954,7 @@ export function createPostService(
       let query = db
         .select({
           threadId: posts.threadId,
-          publishedAt,
+          threadActivityAt,
           collectedAt,
           collectionPinnedAt,
         })
@@ -2953,7 +2970,7 @@ export function createPostService(
         .groupBy(posts.threadId)
         .orderBy(
           desc(collectionPinnedAt),
-          desc(publishedAt),
+          desc(threadActivityAt),
           desc(posts.threadId),
         );
 

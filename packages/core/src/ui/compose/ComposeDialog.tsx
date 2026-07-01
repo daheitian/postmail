@@ -43,6 +43,22 @@ export const ComposeForm: FC<ComposeFormProps> = ({
         comment: "@context: Close compose dialog",
       }),
     ),
+    imageNotRehosted: i18n._(
+      msg({
+        message:
+          "An image couldn't be saved to your library — its original link was kept.",
+        comment:
+          "@context: Toast when a single pasted remote image couldn't be rehosted (e.g. blocked by the source's hotlink protection)",
+      }),
+    ),
+    imagesNotRehosted: i18n._(
+      msg({
+        message:
+          "{count} images couldn't be saved to your library — their original links were kept.",
+        comment:
+          "@context: Toast when several pasted remote images couldn't be rehosted; {count} is the number of images",
+      }),
+    ),
     note: i18n._(
       msg({
         message: "Note",

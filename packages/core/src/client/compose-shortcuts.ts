@@ -2,6 +2,7 @@ import {
   getActiveCollectionId,
   getComposeDialog,
   getCurrentDetailPostArticle,
+  getReplyTargetArticle,
   openNewCompose,
   openReplyForArticle,
 } from "./compose-launch.js";
@@ -93,14 +94,16 @@ document.addEventListener("keydown", (event: globalThis.KeyboardEvent) => {
     return;
   }
 
-  const article = getCurrentDetailPostArticle();
-  if (!article) return;
-
   if (key === "r") {
+    const article = getReplyTargetArticle();
+    if (!article) return;
     event.preventDefault();
     void openReplyForArticle(article);
     return;
   }
+
+  const article = getCurrentDetailPostArticle();
+  if (!article) return;
 
   if (key === "e") {
     const postId = article.dataset.postId;
