@@ -1,42 +1,37 @@
-# Fix: Collection Thread Bumps From Non-Quiet Replies
+# Tune: Reply Composer Typography Scale
 
 ## Problem
 
-A `latest_hidden` thread root inside a collection does not move back to the top
-of that collection when a later non-quiet reply is published. Only quiet replies
-should avoid bumping the thread. Collection ordering should use thread activity
-for normal replies, even when the root is hidden from Latest.
+Reply compose uses the same large form typography as the full composer. Because
+the replied-to context is intentionally smaller, note/link/quote fields in reply
+mode can feel oversized and out of proportion.
 
 ## Plan
 
-- [x] Inspect collection timeline and feed ordering queries.
-- [x] Add regression coverage for hidden collection roots, normal replies, and
-      quiet replies.
-- [x] Update the service-layer ordering so collection pages/feed use thread
-      activity where appropriate.
-- [x] Run focused tests and record verification.
+- [x] Inspect compose typography tokens and reply-scoped CSS.
+- [x] Add a reply-only compact typography scale for note body, title, link, and
+      quote fields.
+- [x] Update focused CSS coverage.
+- [x] Run proportionate verification and record results.
 
 ## Review
 
-Done. Collection timeline and collection feed ordering now use the thread
-root's `lastActivityAt` as the newest/activity sort key. A normal published
-reply already updates that root timestamp, so a `latest_hidden` root inside a
-collection moves back to the top when it receives a non-quiet reply. A quiet
-reply leaves `lastActivityAt` unchanged, so it does not bump the thread.
+Done. Reply compose now has a compact typography scale scoped to
+`compose-reply-compose-layout`:
 
-The ordering helper stays in `PostService`; routes continue to ask the service
-for ordered thread roots/feed entries and do not duplicate collection/thread
-business logic.
+- title and link title fields use `--type-content-subtitle`, keeping them above
+  body text without returning to the full desktop compose title size
+- quote textarea uses `--type-secondary`
+- URL/author/source inputs use `--type-base`
+- TipTap body text keeps the normal content body size for readability, with
+  slightly tighter reply-only paragraph margins
+- rich headings pasted into reply bodies are capped to `--type-secondary`
 
-Regression coverage was added for:
-
-- hidden collection roots bumped by non-quiet replies
-- quiet replies not bumping collection threads
-- collection feeds using thread activity from replies
+The full composer keeps its existing larger typography. Focused CSS coverage was
+updated to lock the reply-only typography variables and TipTap body size.
 
 Verification:
 
-- `mise run test -- src/services/__tests__/post-timeline.test.ts` passed:
-  1 file, 25 tests.
-- `mise run check-tests` passed: 216 files, 2562 tests.
-- `mise run check-lint` passed.
+- `mise run test -- src/client/components/__tests__/jant-compose-dialog.test.ts`
+  passed from `packages/core`: typecheck, full ESLint, build, and 123 Vitest
+  tests.

@@ -23,7 +23,8 @@
         body    → Hugo-rendered .Content (stripped of <script>/<style>)
         rating  → <p>★★★★☆ 4/5</p>
         link    → trailing <p><a href=permalink> ★ </a></p>
-        replies → <hr/> + <p><small><time>{dt}</time></small></p> + content
+        replies → <hr/> + <p><small><time>{dt}</time></small></p>
+                  + inline title/link metadata + content
 
   Hugo's default RSS media-type override (`[outputFormats.RSS]`) makes this
   template produce application/atom+xml at /{section}/index.xml.

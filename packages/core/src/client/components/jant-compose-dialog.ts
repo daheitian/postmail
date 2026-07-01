@@ -5432,7 +5432,11 @@ export class JantComposeDialog extends LitElement {
 
     return html`
       <div
-        class="compose-thread-layout compose-thread-compose-layout"
+        class=${classMap({
+          "compose-thread-layout": true,
+          "compose-thread-compose-layout": true,
+          "compose-reply-compose-layout": isReply,
+        })}
         @jant:compose-content-changed=${() => this._scheduleDraftSave()}
       >
         ${isReply ? this._renderReplyContext() : nothing}
@@ -5502,7 +5506,9 @@ export class JantComposeDialog extends LitElement {
             ? this._renderThreadComposeLayout()
             : isReply
               ? html`
-                  <div class="compose-thread-layout">
+                  <div
+                    class="compose-thread-layout compose-reply-compose-layout"
+                  >
                     ${this._renderReplyContext()}
                     <div
                       class="compose-editor-row"

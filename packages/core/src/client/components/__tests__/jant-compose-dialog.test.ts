@@ -644,6 +644,9 @@ describe("JantComposeDialog", () => {
     ).toBeNull();
     // ...it sits inline above the reply editor instead.
     expect(el.querySelector(".compose-thread-post-header")).not.toBeNull();
+    expect(
+      el.querySelector(".compose-thread-layout.compose-reply-compose-layout"),
+    ).not.toBeNull();
   });
 
   it("shows an Edit title with the format selector above the post when editing a reply", async () => {
@@ -3064,6 +3067,21 @@ describe("JantComposeDialog", () => {
     expect(css).toMatch(/\.compose-tools-row\s*\{[\s\S]*flex-shrink:\s*0;/);
     expect(css).toMatch(
       /\.compose-editor-row\s+\.compose-attachments-dock\s*\{[\s\S]*max-height:\s*min\(240px,\s*34dvh\);[\s\S]*overflow-y:\s*auto;/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-editor-row\s+\.compose-attachments-dock\s*\{[\s\S]*--compose-reply-attachment-width:\s*96px;[\s\S]*--compose-reply-attachment-height:\s*72px;[\s\S]*max-height:\s*min\(116px,\s*18dvh\);/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout[\s\S]*\.compose-attachment:only-child[\s\S]*\.compose-attachment-img,[\s\S]*\.compose-reply-compose-layout[\s\S]*\.compose-attachment:not\(:only-child\)[\s\S]*\.compose-attachment-img\s*\{[\s\S]*height:\s*var\(--compose-reply-attachment-height\);[\s\S]*object-fit:\s*cover;/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-thread-post-header\s*\+\s*\.compose-body\s*\{[\s\S]*padding-top:\s*12px;/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout\s*\{[\s\S]*--compose-title-input-size:\s*var\(--type-content-subtitle\);[\s\S]*--compose-quote-input-size:\s*var\(--type-secondary\);[\s\S]*--compose-inline-input-size:\s*var\(--type-base\);/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-tiptap-body\s+\.tiptap\s*\{[\s\S]*font-size:\s*var\(--type-content-body\);/,
     );
   });
 
