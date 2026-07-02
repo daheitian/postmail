@@ -1,5 +1,14 @@
 # Lessons
 
+- When a settings shortcut links to a public page with an edit-opening query
+  parameter, verify the server route can render every detected resource state
+  needed for that shortcut. Client auto-open code cannot run after a server-side 404.
+- When a control is only a contextual next action for a nearby field, render it
+  as inline helper text plus a link/button. Avoid promoting it into a separate
+  settings block unless it has independent configuration.
+- Glossary notes are translator guidance only. Never copy glossary `note` text
+  into PO `msgstr` values; compact UI labels such as compose format tabs must
+  stay as short labels in every catalog.
 - When a thread is collapsed into one Atom/RSS entry, inline replies must render
   their own title/link metadata inside `<content>`; they cannot rely on
   entry-level `<title>`, `<link>`, or enclosure metadata that belongs to the

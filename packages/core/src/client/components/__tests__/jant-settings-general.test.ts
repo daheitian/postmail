@@ -7,6 +7,7 @@ import type {
   SettingsCjkFont,
   SettingsDashboardLanguage,
   SettingsSaveDetail,
+  SettingsAboutPageStatus,
 } from "../settings-types.js";
 import { MAX_SITE_NAME_LENGTH } from "../../../types.js";
 import "../jant-settings-general.js";
@@ -76,6 +77,12 @@ const labels: SettingsLabels = {
   uploadError: "Upload failed.",
   general: "General",
   site: "Site",
+  aboutPage: "About page",
+  aboutPagePrompt: "Want to write a fuller introduction?",
+  aboutPageConflict:
+    "/about is already used. Rename that item before creating an About page.",
+  createAboutPage: "Create About page",
+  editAboutPage: "Edit About page",
   languageAndTime: "Language & Time",
   home: "Home",
   search: "Search",
@@ -167,6 +174,7 @@ function findCheckboxByLabel(
 async function createElement(
   opts: {
     demoMode?: boolean;
+    aboutPage?: SettingsAboutPageStatus;
   } = {},
 ): Promise<JantSettingsGeneral> {
   const el = document.createElement(
@@ -182,6 +190,14 @@ async function createElement(
   el.latestFeedUrl = "/latest/feed";
   el.featuredFeedUrl = "/featured/feed";
   el.archiveFeedUrl = "/archive/feed";
+  el.aboutPage =
+    opts.aboutPage ??
+    ({
+      state: "missing",
+      path: "/about",
+    } satisfies SettingsAboutPageStatus);
+  el.aboutEditUrl = "/about?edit=1";
+  el.aboutCreateUrl = "/settings/general/about-page";
   el.demoMode = opts.demoMode ?? false;
   document.body.appendChild(el);
   await el.updateComplete;
@@ -209,6 +225,61 @@ describe("JantSettingsGeneral", () => {
       labels.home,
       labels.search,
     ]);
+
+    const siteSection = requireElement(
+      findSectionByHeading(el, labels.site),
+      "expected site section",
+    );
+    expect(siteSection.querySelector("[data-about-page-row]")).not.toBeNull();
+  });
+
+  it("renders a create About form from the missing About prompt", async () => {
+    const el = await createElement();
+    const aboutRow = requireElement(
+      el.querySelector<HTMLElement>("[data-about-page-row]"),
+      "expected About page row",
+    );
+    const form = requireElement(
+      aboutRow.querySelector<HTMLFormElement>("form"),
+      "expected create About page form",
+    );
+    const button = requireElement(
+      form.querySelector<HTMLButtonElement>("button"),
+      "expected create About page button",
+    );
+
+    expect(aboutRow.textContent).toContain(labels.aboutPagePrompt);
+    expect(form.method).toBe("post");
+    expect(form.action).toContain("/settings/general/about-page");
+    expect(button.textContent).toContain(labels.createAboutPage);
+  });
+
+  it("renders an edit link when the About page exists", async () => {
+    const el = await createElement({
+      aboutPage: {
+        state: "ready",
+        path: "/about",
+        post: {
+          id: "pst_about000000000000000000000",
+          title: "About",
+          status: "published",
+          visibility: "latest_hidden",
+        },
+      },
+    });
+
+    const aboutRow = requireElement(
+      el.querySelector<HTMLElement>("[data-about-page-row]"),
+      "expected About page row",
+    );
+    const editLink = requireElement(
+      aboutRow.querySelector<HTMLAnchorElement>("a"),
+      "expected About edit link",
+    );
+
+    expect(aboutRow.textContent).toContain(labels.aboutPagePrompt);
+    expect(editLink.textContent).toContain(labels.editAboutPage);
+    expect(editLink.href).toContain("/about?edit=1");
   });
 
   it("renders form fields with initial values", async () => {

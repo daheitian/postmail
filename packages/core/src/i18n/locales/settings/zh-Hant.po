@@ -18,6 +18,11 @@ msgstr ""
 msgid "/* Your custom CSS here */"
 msgstr "/* 在此放入您的自訂 CSS */"
 
+#. @context: Compact conflict message when /about is occupied
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "/about is already used. Rename that item before creating an About page."
+msgstr "/about 已被佔用。重新命名該項目後再建立 About 頁面。"
+
 #. @context: GitHub sync picker — entry at the bottom of the owner dropdown that starts a new install flow
 #: src/routes/dash/settings.tsx
 msgid "+ Install on another account"
@@ -47,6 +52,11 @@ msgstr "顯示在您的主頁上的簡短介紹。"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "A warmer look, like slightly aged paper."
 msgstr "更暖一些，像略舊的紙。"
+
+#. @context: Link label for editing or creating the About page
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "About page"
+msgstr "About 頁面"
 
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -537,6 +547,11 @@ msgstr "在 GitHub 建立新儲存庫"
 msgid "Create a post with curl:"
 msgstr "使用 curl 建立貼文："
 
+#. @context: Button to create the standard About page
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Create About page"
+msgstr "建立 About 頁面"
+
 #. @context: Button to save new custom URL
 #: src/routes/dash/custom-urls.tsx
 msgid "Create Custom URL"
@@ -753,6 +768,11 @@ msgstr "例如 iOS 捷徑"
 #: src/ui/dash/ActionButtons.tsx
 msgid "Edit"
 msgstr "編輯"
+
+#. @context: Link to edit the standard About page
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Edit About page"
+msgstr "編輯 About 頁面"
 
 #. @context: GitHub sync picker — shown when the selected repo has no commits
 #: src/routes/dash/settings.tsx
@@ -1030,7 +1050,7 @@ msgstr "連結"
 #. @context: Post format badge - link
 #: src/ui/dash/FormatBadge.tsx
 msgid "Link"
-msgstr "連結 (Jant 的貼文格式之一。)"
+msgstr "連結"
 
 #. @context: Label for list posts curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -1407,7 +1427,7 @@ msgstr "查詢參數"
 #. @context: Post format badge - quote
 #: src/ui/dash/FormatBadge.tsx
 msgid "Quote"
-msgstr "引用 (Jant 的貼文格式之一。)"
+msgstr "引用"
 
 #. @context: Lead text before a live <html lang> preview of the content language
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1945,6 +1965,11 @@ msgstr "檢視"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
 msgstr "想要更細緻的控制？"
+
+#. @context: Prompt shown below the short site description, before the About page action
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Want to write a fuller introduction?"
+msgstr "想寫更完整的介紹？"
 
 #. @context: Dune color theme preview help line
 #: src/ui/dash/appearance/ColorThemeContent.tsx

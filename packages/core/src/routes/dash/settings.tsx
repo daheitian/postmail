@@ -75,6 +75,7 @@ import {
   isSyncPending,
   markSyncPending,
   runBackgroundSync,
+  triggerGitHubSyncInline,
 } from "../../lib/github-sync-trigger.js";
 import { buildSyncSiteConfig } from "../../lib/github-sync-site-config.js";
 import {
@@ -115,6 +116,10 @@ const UpdateSearchSettingsSchema = z.object({
 
 function publicPath(c: Context<Env>, path: string): string {
   return toPublicPath(path, c.var.appConfig.sitePathPrefix);
+}
+
+function aboutEditPath(c: Context<Env>): string {
+  return `${publicPath(c, "/about")}?edit=1`;
 }
 
 /**
@@ -302,7 +307,10 @@ settingsRoutes.get("/general", async (c) => {
   const dbSiteDescription = allSettings["SITE_DESCRIPTION"] ?? "";
 
   const saved = c.req.query("saved") !== undefined;
-  const navData = await getNavigationData(c);
+  const [navData, aboutPage] = await Promise.all([
+    getNavigationData(c),
+    c.var.services.aboutPage.getStatus(),
+  ]);
   const siteUrlForDisplay =
     appConfig.siteUrl || new URL(publicPath(c, "/"), c.req.url).toString();
 
@@ -356,6 +364,9 @@ settingsRoutes.get("/general", async (c) => {
           noindex={appConfig.noindex}
           demoMode={appConfig.demoMode}
           timezones={TIMEZONES}
+          aboutPage={aboutPage}
+          aboutEditUrl={aboutEditPath(c)}
+          aboutCreateUrl={publicPath(c, "/settings/general/about-page")}
         />
       </>
     ),
@@ -532,6 +543,32 @@ settingsRoutes.post("/general/search", async (c) => {
       }),
     ),
   );
+});
+
+settingsRoutes.post("/general/about-page", async (c) => {
+  try {
+    await c.var.services.aboutPage.ensurePage();
+    await triggerGitHubSyncInline(c);
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      const wantsJson = c.req.header("accept")?.includes("application/json");
+      if (wantsJson) {
+        return c.json({ error: error.message, code: error.code }, 400);
+      }
+      return c.text(error.message, 400);
+    }
+    throw error;
+  }
+
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    return c.json({
+      status: "redirect" as const,
+      url: aboutEditPath(c),
+    });
+  }
+
+  return c.redirect(aboutEditPath(c));
 });
 
 // ===========================================================================

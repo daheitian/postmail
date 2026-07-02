@@ -37,6 +37,8 @@ function createProps(
     siteName: "My Blog",
     siteDescription: "A test blog",
     siteLanguage: "en",
+    dashboardLanguage: "en",
+    cjkSerifFont: "off",
     siteNameFallback: "Fallback Name",
     siteDescriptionFallback: "Fallback Description",
     mainRssFeed: "featured" as const,
@@ -49,6 +51,12 @@ function createProps(
     showJantBrandingOnHome: false,
     noindex: false,
     demoMode,
+    aboutPage: {
+      state: "missing" as const,
+      path: "/about" as const,
+    },
+    aboutEditUrl: "/about?edit=1",
+    aboutCreateUrl: "/settings/general/about-page",
     timezones: [
       {
         value: "UTC",

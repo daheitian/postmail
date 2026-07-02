@@ -18,6 +18,11 @@ export interface SettingsLabels {
   // General
   general: string;
   site: string;
+  aboutPage: string;
+  aboutPagePrompt: string;
+  aboutPageConflict: string;
+  createAboutPage: string;
+  editAboutPage: string;
   languageAndTime: string;
   home: string;
   search: string;
@@ -99,6 +104,31 @@ export interface SettingsInitialData {
   showJantBrandingOnHome: boolean;
   noindex: boolean;
 }
+
+export type SettingsAboutPageStatus =
+  | {
+      state: "missing";
+      path: "/about";
+    }
+  | {
+      state: "ready";
+      path: "/about";
+      post: {
+        id: string;
+        title: string | null;
+        status: "draft" | "published";
+        visibility: "public" | "latest_hidden" | "private";
+      };
+    }
+  | {
+      state: "conflict";
+      path: "/about";
+      conflict: {
+        targetType: "collection" | "redirect" | "archive" | "post";
+        id: string | null;
+        title: string | null;
+      };
+    };
 
 /** Event detail dispatched when a settings form is saved */
 export interface SettingsSaveDetail {

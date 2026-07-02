@@ -18,6 +18,11 @@ msgstr ""
 msgid "/* Your custom CSS here */"
 msgstr "/* Your custom CSS here */"
 
+#. @context: Compact conflict message when /about is occupied
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "/about is already used. Rename that item before creating an About page."
+msgstr "/about is already used. Rename that item before creating an About page."
+
 #. @context: GitHub sync picker — entry at the bottom of the owner dropdown that starts a new install flow
 #: src/routes/dash/settings.tsx
 msgid "+ Install on another account"
@@ -47,6 +52,11 @@ msgstr "A short intro shown on your home page."
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "A warmer look, like slightly aged paper."
 msgstr "A warmer look, like slightly aged paper."
+
+#. @context: Link label for editing or creating the About page
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "About page"
+msgstr "About page"
 
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -537,6 +547,11 @@ msgstr "Create a new repository on GitHub"
 msgid "Create a post with curl:"
 msgstr "Create a post with curl:"
 
+#. @context: Button to create the standard About page
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Create About page"
+msgstr "Create About page"
+
 #. @context: Button to save new custom URL
 #: src/routes/dash/custom-urls.tsx
 msgid "Create Custom URL"
@@ -753,6 +768,11 @@ msgstr "e.g. iOS Shortcuts"
 #: src/ui/dash/ActionButtons.tsx
 msgid "Edit"
 msgstr "Edit"
+
+#. @context: Link to edit the standard About page
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Edit About page"
+msgstr "Edit About page"
 
 #. @context: GitHub sync picker — shown when the selected repo has no commits
 #: src/routes/dash/settings.tsx
@@ -1945,6 +1965,11 @@ msgstr "View"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
 msgstr "Want more control?"
+
+#. @context: Prompt shown below the short site description, before the About page action
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Want to write a fuller introduction?"
+msgstr "Want to write a fuller introduction?"
 
 #. @context: Dune color theme preview help line
 #: src/ui/dash/appearance/ColorThemeContent.tsx

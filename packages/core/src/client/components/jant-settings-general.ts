@@ -21,6 +21,7 @@ import type {
   SettingsTimezone,
   SettingsCjkFont,
   SettingsDashboardLanguage,
+  SettingsAboutPageStatus,
 } from "./settings-types.js";
 import { showToast } from "../toast.js";
 import {
@@ -44,6 +45,12 @@ export class JantSettingsGeneral extends LitElement {
     latestFeedUrl: { type: String, attribute: "latest-feed-url" },
     featuredFeedUrl: { type: String, attribute: "featured-feed-url" },
     archiveFeedUrl: { type: String, attribute: "archive-feed-url" },
+    aboutPage: { type: Object, attribute: "about-page" },
+    aboutEditUrl: { type: String, attribute: "about-edit-url" },
+    aboutCreateUrl: {
+      type: String,
+      attribute: "about-create-url",
+    },
 
     // Site group
     _siteName: { state: true },
@@ -92,6 +99,9 @@ export class JantSettingsGeneral extends LitElement {
   declare latestFeedUrl: string;
   declare featuredFeedUrl: string;
   declare archiveFeedUrl: string;
+  declare aboutPage: SettingsAboutPageStatus;
+  declare aboutEditUrl: string;
+  declare aboutCreateUrl: string;
 
   // Site
   declare _siteName: string;
@@ -162,6 +172,12 @@ export class JantSettingsGeneral extends LitElement {
     this.latestFeedUrl = "/latest/feed";
     this.featuredFeedUrl = "/featured/feed";
     this.archiveFeedUrl = "/archive/feed";
+    this.aboutPage = {
+      state: "missing",
+      path: "/about",
+    };
+    this.aboutEditUrl = "/about?edit=1";
+    this.aboutCreateUrl = "/settings/general/about-page";
 
     this._siteName = "";
     this._siteDescription = "";
@@ -757,6 +773,45 @@ export class JantSettingsGeneral extends LitElement {
     `;
   }
 
+  private _renderAboutPageRow() {
+    const status = this.aboutPage;
+
+    return html`
+      <div class="mt-2 text-sm text-muted-foreground" data-about-page-row>
+        ${this.labels.aboutPagePrompt}
+        ${status.state === "ready"
+          ? html`
+              <a
+                class="font-medium text-foreground underline-offset-4 hover:underline"
+                href=${this.aboutEditUrl}
+              >
+                ${this.labels.editAboutPage}
+              </a>
+            `
+          : status.state === "missing"
+            ? html`
+                <form
+                  class="inline"
+                  method="post"
+                  action=${this.aboutCreateUrl}
+                >
+                  <button
+                    type="submit"
+                    class="inline cursor-pointer border-0 bg-transparent p-0 font-medium text-foreground underline-offset-4 hover:underline"
+                  >
+                    ${this.labels.createAboutPage}
+                  </button>
+                </form>
+              `
+            : html`
+                <span class="text-destructive"
+                  >${this.labels.aboutPageConflict}</span
+                >
+              `}
+      </div>
+    `;
+  }
+
   private _renderGeneralForm() {
     return html`
       <div class="flex flex-col gap-8">
@@ -796,6 +851,7 @@ export class JantSettingsGeneral extends LitElement {
             <p class="text-sm text-muted-foreground mt-1">
               ${this.labels.aboutBlogHelp}
             </p>
+            ${this._renderAboutPageRow()}
           </div>
 
           <div class="field">
