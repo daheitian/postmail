@@ -408,3 +408,169 @@ Verification:
 
 - `mise run i18n-build` passed; settings catalog missing count is 0 for en,
   zh-Hans, and zh-Hant.
+
+# Compact Feed Body Headings
+
+## Problem
+
+Post titles in list/feed contexts are `h2`, while headings authored inside the
+post body can also render as `h2`. Visually, body headings should not compete
+with the post title when the post is shown in a list.
+
+## Plan
+
+- [x] Add feed-scoped CSS that compacts authored body headings from `h1` through
+      `h6` without changing detail-page prose.
+- [x] Mirror the treatment in the static export theme.
+- [x] Add focused regression coverage for the CSS rules.
+- [x] Run proportionate verification and document the result.
+
+## Review
+
+Done. Feed/list body headings now use a compact visual ladder. Follow-up
+corrections: the first pass only moved `h1`/`h2` to subtitle scale, which the
+browser showed as 21.6px and still too close to post-title scale; the next pass
+moved them all the way to body scale, which made them read too small.
+
+- `h1`/`h2` render at a token-derived midpoint just above body scale.
+- `h3`/`h4` render at body scale.
+- `h5`/`h6` render at secondary scale and muted color.
+
+The rules are scoped to live feed/list post bodies and exported Hugo post cards,
+so single-post detail prose keeps its normal reading hierarchy.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/preset.css packages/core/src/services/export-theme/styles/main.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts tasks/todo.md tasks/lessons.md`
+  passed.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
+  `packages/core` (typecheck, ESLint, core build, and 26 Vitest tests).
+- `git diff --check` passed.
+
+# Detail Header Spacing
+
+## Problem
+
+On post detail pages, titled notes keep the publish time close to the `h1` title
+and then move into the body. The title-to-time gap is a little tight, and the
+time-to-body gap can use a touch more breathing room for reading.
+
+## Plan
+
+- [x] Increase the detail title-to-meta gap slightly.
+- [x] Increase the meta-to-body gap slightly.
+- [x] Add focused CSS regression coverage.
+- [x] Run proportionate verification and document the result.
+
+## Review
+
+Done. Detail titled-note headers now have slightly more reading air:
+
+- Title-to-time gap increased from `0.55rem` to `0.7rem`.
+- Time-to-body gap increased from `1.5rem` to `1.7rem`.
+
+This keeps the title and timestamp as one header group while separating the
+metadata a bit more cleanly from the body.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/styles/ui.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts tasks/todo.md`
+  passed.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
+  `packages/core` (typecheck, ESLint, core build, and 27 Vitest tests).
+- `git diff --check` passed.
+
+# Prose List Indentation
+
+## Problem
+
+Public prose lists currently use `padding-left: 1.625em`, which gives list items
+roughly 27px of indentation at the current body size. That reads a bit wide in
+Jant's narrow reading column.
+
+## Plan
+
+- [x] Reduce public prose `ul`/`ol` indentation to `1.4em`.
+- [x] Mirror the indentation in the Hugo export theme.
+- [x] Add focused CSS regression coverage.
+- [x] Run proportionate verification and document the result.
+
+## Review
+
+Done. Public prose list indentation is now tighter:
+
+- Live prose `ul`/`ol` padding changed from `1.625em` to `1.4em`.
+- Hugo export theme `ul`/`ol` padding changed from `1.625em` to `1.4em`.
+
+This reduces the list text indent from roughly 27px to 23.5px at the current
+body size while leaving browser-native marker spacing intact.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/preset.css packages/core/src/services/export-theme/styles/main.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts tasks/todo.md`
+  passed.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
+  `packages/core` (typecheck, ESLint, core build, and 28 Vitest tests).
+- `git diff --check` passed.
+
+## Follow-up: List Item Rhythm
+
+The list indentation is now better, but individual list items still use
+`margin-top`/`margin-bottom: 1.2em`, which makes short bullet lists feel too
+loose.
+
+Plan:
+
+- [x] Reduce public prose `li` vertical margins to `0.65em`.
+- [x] Mirror the rhythm in the Hugo export theme.
+- [x] Update focused CSS regression coverage.
+- [x] Run proportionate verification and document the result.
+
+Result:
+
+- Live prose `li`/`dt` vertical margins changed from `1.2em` to `0.65em`.
+- Hugo export theme `li` margins changed from `1.2em` to `0.65em`.
+- List block outer margin remains `1.25em 0`, so lists still separate cleanly
+  from surrounding paragraphs while the items inside read as a tighter group.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/preset.css packages/core/src/services/export-theme/styles/main.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts tasks/todo.md`
+  passed.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
+  `packages/core` (typecheck, ESLint, core build, and 28 Vitest tests).
+- `git diff --check` passed.
+
+# Proportional Code Typography
+
+## Problem
+
+Inline code currently uses the fixed `--type-base` token, which computes to
+15px while prose body text is 16.8px. That makes inline code feel smaller than
+the surrounding sentence instead of integrated with it.
+
+## Plan
+
+- [x] Make inline code size proportional to prose body size.
+- [x] Keep code blocks slightly smaller than inline code for dense reading.
+- [x] Add focused regression coverage for the token relationship.
+- [x] Run proportionate verification and document the result.
+
+## Review
+
+Done. Code typography now tracks prose body size instead of fixed base tokens:
+
+- Inline code uses `calc(var(--type-body-size) * 0.94)`.
+- Code blocks use `calc(var(--type-body-size) * 0.9)`.
+
+With the current 16.8px prose body size, inline code computes to about 15.8px
+and code blocks to about 15.1px. Exported Hugo themes inherit the same tokens
+because export writes the core `tokens.css` into `static/tokens.css`.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/styles/tokens.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts tasks/todo.md`
+  passed.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
+  `packages/core` (typecheck, ESLint, core build, and 26 Vitest tests).
+- `git diff --check` passed.

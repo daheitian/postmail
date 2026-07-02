@@ -136,6 +136,33 @@ describe("timeline cards", () => {
     expect(css).toContain("margin-bottom: 0;");
   });
 
+  it("keeps prose list rhythm compact in live and exported reading", () => {
+    const presetCss = readFileSync(
+      new URL("../../../preset.css", import.meta.url),
+      "utf8",
+    );
+    const exportCss = readFileSync(
+      new URL(
+        "../../../services/export-theme/styles/main.css",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+
+    expect(presetCss).toMatch(
+      /:where\(ul,\s*ol\)\s*\{[\s\S]*padding-left:\s*1\.4em;/,
+    );
+    expect(exportCss).toMatch(
+      /ul,\s*[\s\S]*ol\s*\{[\s\S]*padding-left:\s*1\.4em;/,
+    );
+    expect(presetCss).toMatch(
+      /:where\(li,\s*dt\)\s*\{[\s\S]*margin-top:\s*0\.65em;[\s\S]*margin-bottom:\s*0\.65em;/,
+    );
+    expect(exportCss).toMatch(
+      /li\s*\{[\s\S]*margin-top:\s*0\.65em;[\s\S]*margin-bottom:\s*0\.65em;/,
+    );
+  });
+
   it("uses dedicated markdown code surfaces in live and exported prose", () => {
     const presetCss = readFileSync(
       new URL("../../../preset.css", import.meta.url),
@@ -155,6 +182,12 @@ describe("timeline cards", () => {
 
     expect(tokenCss).toContain("--site-code-bg:");
     expect(tokenCss).toContain("--site-code-block-bg:");
+    expect(tokenCss).toContain(
+      "--type-code: calc(var(--type-body-size) * 0.94);",
+    );
+    expect(tokenCss).toContain(
+      "--type-code-block: calc(var(--type-body-size) * 0.9);",
+    );
     expect(presetCss).toContain("background-color: var(--site-code-bg);");
     expect(presetCss).toContain("background-color: var(--site-code-block-bg);");
     expect(exportCss).toContain("background-color: var(--site-code-bg);");
@@ -185,6 +218,39 @@ describe("timeline cards", () => {
       /\.compose-tiptap-body\s+\.tiptap\s+h[23]\s*\{[^}]*font-style:\s*italic;/,
     );
     expect(exportCss).not.toMatch(/h[23]\s*\{[^}]*font-style:\s*italic;/);
+  });
+
+  it("compacts authored headings inside feed body prose", () => {
+    const presetCss = readFileSync(
+      new URL("../../../preset.css", import.meta.url),
+      "utf8",
+    );
+    const exportCss = readFileSync(
+      new URL(
+        "../../../services/export-theme/styles/main.css",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+
+    expect(presetCss).toContain(
+      '[data-post]:not([data-page="post"]) [data-post-body].prose',
+    );
+    expect(presetCss).toMatch(
+      /:where\(h1,\s*h2\)\s*\{[\s\S]*font-size:\s*calc\(var\(--type-content-body\) \* 1\.12\);/,
+    );
+    expect(presetCss).toMatch(
+      /:where\(h3,\s*h4\)\s*\{[\s\S]*font-size:\s*var\(--type-content-body\);/,
+    );
+    expect(presetCss).toMatch(
+      /:where\(h5,\s*h6\)\s*\{[\s\S]*font-size:\s*var\(--type-secondary\);/,
+    );
+    expect(exportCss).toMatch(
+      /\.post-card > \.post-card-summary :is\(h1,\s*h2\),/,
+    );
+    expect(exportCss).toMatch(
+      /\.post-card > \.post-card-summary :is\(h5,\s*h6\),/,
+    );
   });
 
   it("keeps quote footers on the shared card spacing baseline", () => {
@@ -314,6 +380,20 @@ describe("timeline cards", () => {
     expect(detailHtml.match(/data-post-menu-trigger/g)).toHaveLength(1);
     expect(detailHtml.indexOf('class="post-header-meta-row"')).toBeLessThan(
       detailHtml.indexOf("data-post-body"),
+    );
+  });
+
+  it("keeps titled detail headers spaced as one reading group", () => {
+    const css = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.post-header-block\s*\{[\s\S]*margin-bottom:\s*1\.7rem;/,
+    );
+    expect(css).toMatch(
+      /\.post-header-block-detail\s*\{[\s\S]*gap:\s*0\.7rem;/,
     );
   });
 

@@ -65,8 +65,8 @@
    *   --type-subtitle   1.8rem  (27px)   — h3
    *   --type-body       1.4rem  (21px)   — running text, form inputs
    *   --type-secondary  1.1rem  (16.5px) — meta, nav, sidenotes, UI labels
-   *   --type-base       1.0rem  (15px)   — code, UI buttons, controls
-   *   --type-sm         0.9rem  (13.5px) — code blocks, small UI text
+   *   --type-base       1.0rem  (15px)   — UI buttons, controls
+   *   --type-sm         0.9rem  (13.5px) — small UI text
    *   --type-xs         0.8rem  (12px)   — captions, descriptions, chips
    *   --type-2xs        0.65rem (9.75px) — tiny labels, file sizes, badges
    */
@@ -93,9 +93,9 @@
   --type-content-body: calc(var(--type-body) * var(--type-content-scale));
 
   /* Semantic aliases */
-  --type-code: var(--type-base);
-  --type-code-block: var(--type-sm);
   --type-body-size: var(--type-content-body);
+  --type-code: calc(var(--type-body-size) * 0.94);
+  --type-code-block: calc(var(--type-body-size) * 0.9);
   --type-body-tracking: 0;
   --type-ui-title: var(--type-secondary);
   --type-ui-control: var(--type-base);

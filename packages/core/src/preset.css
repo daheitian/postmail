@@ -234,12 +234,12 @@ html {
 
   :where(ul, ol) {
     margin: 1.25em 0;
-    padding-left: 1.625em;
+    padding-left: 1.4em;
   }
 
   :where(li, dt) {
-    margin-top: 1.2em;
-    margin-bottom: 1.2em;
+    margin-top: 0.65em;
+    margin-bottom: 0.65em;
   }
 
   /* Normalize li > p so list spacing is controlled by li alone,
@@ -438,6 +438,37 @@ html {
 
 .prose > :last-child {
   margin-bottom: 0;
+}
+
+/*
+ * Feed body headings
+ *
+ * In list contexts, the post title owns the card heading level. Authored
+ * headings inside the body should remain visible, but they should read as
+ * sections within the card rather than as peer post titles.
+ */
+[data-post]:not([data-page="post"]) [data-post-body].prose {
+  :where(h1, h2) {
+    font-size: calc(var(--type-content-body) * 1.12);
+    font-weight: var(--fw-medium);
+    margin-top: 1.45rem;
+    margin-bottom: 0.55rem;
+  }
+
+  :where(h3, h4) {
+    font-size: var(--type-content-body);
+    font-weight: var(--fw-medium);
+    margin-top: 1.2rem;
+    margin-bottom: 0.45rem;
+  }
+
+  :where(h5, h6) {
+    font-size: var(--type-secondary);
+    font-weight: var(--fw-medium);
+    color: var(--site-text-secondary);
+    margin-top: 1rem;
+    margin-bottom: 0.35rem;
+  }
 }
 
 /*

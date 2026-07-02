@@ -2237,13 +2237,13 @@
   }
 
   .post-header-block {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.7rem;
   }
 
   .post-header-block-detail {
     display: flex;
     flex-direction: column;
-    gap: 0.55rem;
+    gap: 0.7rem;
   }
 
   .post-header-block .feed-link-title,

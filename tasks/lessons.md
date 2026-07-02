@@ -60,3 +60,9 @@
 - When a conclusion keeps one strong operational point, add a compact bridge for the other major arguments so the ending does not appear to ignore the rest of the essay.
 - For CTA-style endings in argument-driven docs, avoid button copy and marketing uplift. The final sentence should sound like the article's own conclusion first, with navigation doing the explicit conversion work.
 - When the user rejects a CTA for an essay conclusion, close by reframing the article's central question or implication instead of nudging the reader toward setup, action, or conversion.
+- For visual hierarchy fixes, compare actual computed token sizes before
+  calling the result done. A one-token step down may be technically applied but
+  still too subtle to solve the user's visual problem.
+- When adjacent type tokens make a UI element swing from too large to too small,
+  derive an explicit midpoint from the existing tokens instead of forcing the
+  component onto either endpoint.
