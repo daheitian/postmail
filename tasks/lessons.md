@@ -66,3 +66,6 @@
 - When adjacent type tokens make a UI element swing from too large to too small,
   derive an explicit midpoint from the existing tokens instead of forcing the
   component onto either endpoint.
+- For multi-format compose UI, compare all formats in the same layout before
+  finishing a spacing change. The first visible control may differ by format
+  even when the shared wrapper padding is identical.

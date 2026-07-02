@@ -3078,7 +3078,16 @@ describe("JantComposeDialog", () => {
       /\.compose-reply-compose-layout\s+\.compose-thread-post-header\s*\+\s*\.compose-body\s*\{[\s\S]*padding-top:\s*12px;/,
     );
     expect(css).toMatch(
-      /\.compose-reply-compose-layout\s*\{[\s\S]*--compose-title-input-size:\s*var\(--type-content-subtitle\);[\s\S]*--compose-quote-input-size:\s*var\(--type-secondary\);[\s\S]*--compose-inline-input-size:\s*var\(--type-base\);/,
+      /\.compose-reply-compose-layout\s*\{[\s\S]*--compose-title-input-size:\s*var\(--type-content-subtitle\);[\s\S]*--compose-quote-input-size:\s*calc\(var\(--type-content-body\) \* 1\.06\);[\s\S]*--compose-inline-input-size:\s*var\(--type-base\);/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-quote-wrap\s*\{[\s\S]*margin-top:\s*0\.4rem;[\s\S]*padding:\s*24px 18px 18px;[\s\S]*border-radius:\s*0\.95rem;/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-link-url-wrap\s*\{[\s\S]*margin-top:\s*0\.4rem;/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-quote-text\s*\{[\s\S]*min-height:\s*6\.5rem;[\s\S]*padding-top:\s*0\.35rem;/,
     );
     expect(css).toMatch(
       /\.compose-reply-compose-layout\s+\.compose-tiptap-body\s+\.tiptap\s*\{[\s\S]*font-size:\s*var\(--type-content-body\);/,

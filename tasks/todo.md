@@ -447,6 +447,73 @@ Verification:
   `packages/core` (typecheck, ESLint, core build, and 26 Vitest tests).
 - `git diff --check` passed.
 
+# Compact Reply Quote Composer
+
+## Problem
+
+When replying and switching the composer to Quote, the quote textarea uses the
+large normal quote container but the reply-specific quote font is much smaller.
+That makes the field feel oversized and visually weak in the reply composer.
+
+## Plan
+
+- [x] Increase reply quote text slightly above normal reply body size.
+- [x] Tighten the reply quote container padding and minimum textarea height.
+- [x] Add focused CSS regression coverage.
+- [x] Run proportionate verification and document the result.
+
+## Review
+
+Done. Reply quote compose now uses a compact quote treatment:
+
+- Reply quote text uses `calc(var(--type-content-body) * 1.06)` instead of
+  `--type-secondary`.
+- Reply quote wrap padding is reduced to `24px 18px 18px` on narrow screens and
+  `25px 20px 18px` on wider screens.
+- Reply quote textarea min-height is reduced from `9rem`/`9.5rem` to `6.5rem`.
+- The decorative quote mark is scaled and positioned for the tighter container.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/styles/ui.css packages/core/src/client/components/__tests__/jant-compose-dialog.test.ts tasks/todo.md`
+  passed.
+- `mise run test -- src/client/components/__tests__/jant-compose-dialog.test.ts`
+  passed from `packages/core` (typecheck, ESLint, core build, and 123 Vitest
+  tests).
+- `git diff --check` passed.
+
+## Follow-up: Reply Format Field Rhythm
+
+The reply format switcher now exposes another rhythm mismatch: Note starts with
+a text editor and feels more open, while Link and Quote start with bordered
+controls that sit too close to the `note/link/quote` selector.
+
+Plan:
+
+- [x] Add reply-scoped top rhythm to Link and Quote first fields.
+- [x] Keep normal compose and Note reply spacing unchanged.
+- [x] Update focused CSS regression coverage.
+- [x] Run proportionate verification and document the result.
+
+Result:
+
+- Reply Link's URL box now gets `margin-top: 0.4rem`.
+- Reply Quote's quote card now gets `margin-top: 0.4rem`.
+- Note reply spacing remains unchanged.
+
+This keeps the format selector-to-field rhythm closer across Note, Link, and
+Quote without changing normal non-reply compose.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/styles/ui.css packages/core/src/client/components/__tests__/jant-compose-dialog.test.ts tasks/todo.md tasks/lessons.md`
+  passed.
+- `mise run test -- src/client/components/__tests__/jant-compose-dialog.test.ts`
+  passed from `packages/core` (typecheck, ESLint, core build, and 123 Vitest
+  tests). The run printed happy-dom fetch abort logs during teardown, but exited
+  successfully.
+- `git diff --check` passed.
+
 # Detail Header Spacing
 
 ## Problem

@@ -7431,8 +7431,47 @@
   .compose-reply-compose-layout {
     --compose-title-input-size: var(--type-content-subtitle);
     --compose-title-input-leading: 1.35;
-    --compose-quote-input-size: var(--type-secondary);
+    --compose-quote-input-size: calc(var(--type-content-body) * 1.06);
     --compose-inline-input-size: var(--type-base);
+  }
+
+  .compose-reply-compose-layout .compose-quote-wrap {
+    margin-top: 0.4rem;
+    padding: 24px 18px 18px;
+    border-radius: 0.95rem;
+  }
+
+  .compose-reply-compose-layout .compose-link-url-wrap {
+    margin-top: 0.4rem;
+  }
+
+  .compose-reply-compose-layout .compose-quote-mark {
+    top: 0.58rem;
+    left: 0.9rem;
+    width: 1.55rem;
+  }
+
+  .compose-reply-compose-layout .compose-quote-text {
+    min-height: 6.5rem;
+    padding-top: 0.35rem;
+  }
+
+  @media (min-width: 700px) {
+    .compose-reply-compose-layout .compose-quote-wrap {
+      padding: 25px 20px 18px;
+      border-radius: 1rem;
+    }
+
+    .compose-reply-compose-layout .compose-quote-mark {
+      top: 0.62rem;
+      left: 1rem;
+      width: 1.6rem;
+    }
+
+    .compose-reply-compose-layout .compose-quote-text {
+      min-height: 6.5rem;
+      padding-top: 0.35rem;
+    }
   }
 
   /* Continuous vertical line through the rail */
