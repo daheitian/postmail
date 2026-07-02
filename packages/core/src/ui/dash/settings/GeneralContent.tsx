@@ -10,6 +10,7 @@
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "../../../i18n/context.js";
 import type { TimezoneEntry } from "../../../lib/timezones.js";
+import type { AboutPageStatus } from "../../../services/about-page.js";
 
 export function GeneralContent({
   siteName,
@@ -30,6 +31,9 @@ export function GeneralContent({
   noindex,
   demoMode,
   timezones,
+  aboutPage,
+  aboutEditUrl,
+  aboutCreateUrl,
 }: {
   siteName: string;
   siteDescription: string;
@@ -49,6 +53,9 @@ export function GeneralContent({
   noindex: boolean;
   demoMode: boolean;
   timezones: TimezoneEntry[];
+  aboutPage: AboutPageStatus;
+  aboutEditUrl: string;
+  aboutCreateUrl: string;
 }) {
   const { i18n } = useLingui();
 
@@ -63,6 +70,38 @@ export function GeneralContent({
       msg({
         message: "Site",
         comment: "@context: Settings subsection heading for basic site fields",
+      }),
+    ),
+    aboutPage: i18n._(
+      msg({
+        message: "About page",
+        comment: "@context: Link label for editing or creating the About page",
+      }),
+    ),
+    aboutPagePrompt: i18n._(
+      msg({
+        message: "Want to write a fuller introduction?",
+        comment:
+          "@context: Prompt shown below the short site description, before the About page action",
+      }),
+    ),
+    createAboutPage: i18n._(
+      msg({
+        message: "Create About page",
+        comment: "@context: Button to create the standard About page",
+      }),
+    ),
+    editAboutPage: i18n._(
+      msg({
+        message: "Edit About page",
+        comment: "@context: Link to edit the standard About page",
+      }),
+    ),
+    aboutPageConflict: i18n._(
+      msg({
+        message:
+          "/about is already used. Rename that item before creating an About page.",
+        comment: "@context: Compact conflict message when /about is occupied",
       }),
     ),
     languageAndTime: i18n._(
@@ -369,6 +408,8 @@ export function GeneralContent({
     { value: "ko", label: "\uD55C\uAD6D\uC5B4 (Korean)" },
   ]).replace(/</g, "\\u003c");
 
+  const aboutPageJson = JSON.stringify(aboutPage).replace(/</g, "\\u003c");
+
   const initialData = JSON.stringify({
     siteName,
     siteDescription,
@@ -397,6 +438,9 @@ export function GeneralContent({
           featured-feed-url={featuredFeedUrl}
           archive-feed-url={archiveFeedUrl}
           demo-mode={demoMode || undefined}
+          about-page={aboutPageJson}
+          about-edit-url={aboutEditUrl}
+          about-create-url={aboutCreateUrl}
         >
           {/* SSR fallback skeleton */}
           <div>

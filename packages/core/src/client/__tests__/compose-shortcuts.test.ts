@@ -2,7 +2,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { __testOnly as composeDiscoveryTestOnly } from "../compose-discovery.js";
-import "../compose-shortcuts.js";
+import { __testOnly as composeShortcutsTestOnly } from "../compose-shortcuts.js";
 
 type ComposeHarness = HTMLElement & {
   openNew: (options?: unknown) => Promise<void>;
@@ -267,6 +267,21 @@ describe("compose shortcuts", () => {
 
     expect(event.defaultPrevented).toBe(true);
     expect(composeEl.openEdit).toHaveBeenCalledWith("post-hovered");
+  });
+
+  it("opens the current post editor from the edit query parameter", async () => {
+    const composeEl = createComposeHarness();
+    composeEl.openEdit = vi.fn(async () => {});
+    document.body.setAttribute("data-authenticated", "true");
+    renderThreadDetailPage();
+    globalThis.history.pushState({}, "", "/about?edit=1");
+
+    composeShortcutsTestOnly.openEditFromQueryParam();
+    await Promise.resolve();
+
+    expect(composeEl.openEdit).toHaveBeenCalledWith("post-current");
+    expect(window.location.pathname).toBe("/about");
+    expect(window.location.search).toBe("");
   });
 
   it("keeps using the hovered post for reply shortcuts in the timeline", () => {

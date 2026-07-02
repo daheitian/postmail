@@ -32,6 +32,12 @@ const labels: SettingsLabels = {
   uploadError: "Upload failed.",
   general: "General",
   site: "Site",
+  aboutPage: "About page",
+  aboutPagePrompt: "Want to write a fuller introduction?",
+  aboutPageConflict:
+    "/about is already used. Rename that item before creating an About page.",
+  createAboutPage: "Create About page",
+  editAboutPage: "Edit About page",
   languageAndTime: "Language & Time",
   home: "Home",
   search: "Search",
