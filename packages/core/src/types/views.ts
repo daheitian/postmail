@@ -171,6 +171,19 @@ export interface NavItemView {
   freshAt?: number;
 }
 
+export type SuggestedNavLinkTargetType = "page" | "collection" | "archive";
+
+export type SuggestedNavLinkNavItemType = "link" | "collection";
+
+export interface SuggestedNavLink {
+  key: string;
+  label: string;
+  url: string;
+  targetType: SuggestedNavLinkTargetType;
+  navItemType: SuggestedNavLinkNavItemType;
+  collectionId?: string;
+}
+
 /**
  * Search result from FTS5
  */

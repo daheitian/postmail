@@ -1,5 +1,7 @@
 # Lessons
 
+- In Lit component tests, a click handler that starts an async fetch needs both
+  promise microtasks and `updateComplete` awaited before asserting DOM changes.
 - When a settings shortcut links to a public page with an edit-opening query
   parameter, verify the server route can render every detected resource state
   needed for that shortcut. Client auto-open code cannot run after a server-side 404.

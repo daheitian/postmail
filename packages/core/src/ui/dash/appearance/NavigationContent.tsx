@@ -7,12 +7,14 @@ import { useLingui } from "../../../i18n/context.js";
 import type {
   CollectionsDirectoryData,
   NavItem,
+  SuggestedNavLink,
   SystemNavKey,
 } from "../../../types.js";
 import { SYSTEM_NAV_KEYS } from "../../../types.js";
 import type {
   NavManagerCollection,
   NavManagerLabels,
+  NavManagerSuggestedLink,
   SystemNavConfig,
 } from "../../../client/components/nav-manager-types.js";
 import { toPublicHref, toPublicPath } from "../../../lib/url.js";
@@ -30,12 +32,14 @@ import {
 export function NavigationContent({
   navItems,
   directoryData,
+  suggestedLinks,
   mainRssFeed,
   siteName,
   sitePathPrefix = "",
 }: {
   navItems: NavItem[];
   directoryData: CollectionsDirectoryData;
+  suggestedLinks: SuggestedNavLink[];
   mainRssFeed: string;
   siteName: string;
   sitePathPrefix?: string;
@@ -60,6 +64,27 @@ export function NavigationContent({
     }),
   );
   const moreLabel = i18n._(NAV_MORE_LABEL);
+
+  const suggestedTargetLabels = {
+    page: i18n._(
+      msg({
+        message: "Page",
+        comment: "@context: Suggested navigation link target type",
+      }),
+    ),
+    collection: i18n._(
+      msg({
+        message: "Collection",
+        comment: "@context: Suggested navigation link target type",
+      }),
+    ),
+    archive: i18n._(
+      msg({
+        message: "Archive",
+        comment: "@context: Suggested navigation link target type",
+      }),
+    ),
+  } satisfies Record<SuggestedNavLink["targetType"], string>;
 
   // Serialize nav items for the Lit component
   const itemsData = navItems.map((item) => {
@@ -109,6 +134,13 @@ export function NavigationContent({
 
     return result;
   })();
+
+  const suggestedLinksData: NavManagerSuggestedLink[] = suggestedLinks.map(
+    (link) => ({
+      ...link,
+      targetLabel: suggestedTargetLabels[link.targetType],
+    }),
+  );
 
   // Build system nav config array for the Lit component
   const systemNavData: SystemNavConfig[] = (
@@ -297,6 +329,30 @@ export function NavigationContent({
         comment: "@context: Error toast when nav link fields are empty",
       }),
     ),
+    suggestedLinks: i18n._(
+      msg({
+        message: "Suggested links",
+        comment: "@context: Section heading for suggested nav links",
+      }),
+    ),
+    suggestedLinksDescription: i18n._(
+      msg({
+        message: "Add common destinations that already exist on your site.",
+        comment: "@context: Description for suggested nav links",
+      }),
+    ),
+    addSuggestedLink: i18n._(
+      msg({
+        message: "Add",
+        comment: "@context: Button to add a suggested nav link",
+      }),
+    ),
+    suggestedLinkAdded: i18n._(
+      msg({
+        message: "Link added to navigation.",
+        comment: "@context: Toast after adding a suggested nav link",
+      }),
+    ),
     collection: i18n._(
       msg({
         message: "collection",
@@ -356,6 +412,7 @@ export function NavigationContent({
         labels={escapeJson(labels)}
         system-nav-items={escapeJson(systemNavData)}
         collections={escapeJson(collectionsData)}
+        suggested-links={escapeJson(suggestedLinksData)}
         site-name={siteName}
       >
         {/* SSR fallback: static preview until JS hydrates */}

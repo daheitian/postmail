@@ -182,3 +182,44 @@ Verification:
   passed from `packages/core`.
 - `mise run test` passed: typecheck, ESLint, core build, and 219 Vitest files /
   2579 tests.
+
+## Suggested Navigation Links
+
+Navigation settings should suggest common destinations that already exist on the
+site, such as `/about` and `/now`, without turning them into built-in system
+links. Suggestions should use an Add action and create normal navigation items
+that users can edit, reorder, move to More, or delete.
+
+Plan:
+
+- [x] Add a service-level suggested navigation links projection for known paths.
+- [x] Detect `/about` and `/now` by resolved path target, not by title.
+- [x] Hide suggestions that are already represented by URL or collection id.
+- [x] Pass suggestions into `Settings > Navigation`.
+- [x] Render suggestions with one-shot Add buttons in the nav manager.
+- [x] Add focused service/component coverage and run proportionate verification.
+
+Review:
+
+- `NavItemService.listSuggestedLinks()` now detects `/about` and `/now` via
+  `path_registry`, returns only existing navigable targets, skips draft/private
+  posts, and hides suggestions already covered by path or collection id.
+- `Settings > Navigation` passes suggested links into the nav manager with
+  translated target labels.
+- The nav manager renders a compact “Suggested links” section with Add buttons.
+  Adding a canonical collection creates a collection nav item; page/custom/alias
+  targets create normal link nav items.
+- The suggestion disappears immediately after Add because the client also
+  de-duplicates against current nav state.
+
+Verification:
+
+- `mise run test -- src/services/__tests__/navigation.test.ts src/client/components/__tests__/jant-nav-manager.test.ts src/ui/dash/appearance/__tests__/NavigationContent.test.tsx`
+  passed from `packages/core` after typecheck, lint, and build.
+- `mise run test` passed: typecheck, ESLint, core build, and 219 Vitest files /
+  2586 tests.
+- `mise run i18n-build` passed; settings catalog missing count is 0 for en,
+  zh-Hans, and zh-Hant.
+- `mise exec -- npx prettier --check ...` passed for the changed code/style/task
+  files.
+- `git diff --check` passed.
