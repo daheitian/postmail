@@ -126,6 +126,7 @@ describe("timeline cards", () => {
     expect(tokens).toMatch(
       /--type-content-quote:\s*calc\(var\(--type-content-body\) \* 1\.16\);/,
     );
+    expect(tokens).toMatch(/--type-content-quote-leading:\s*1\.4;/);
     expect(css).toMatch(
       /\.feed-note-title\s*\{[\s\S]*font-size:\s*var\(--feed-note-title-size\);/,
     );
@@ -136,10 +137,10 @@ describe("timeline cards", () => {
       /\.post-card-title\s*\{[\s\S]*font-size:\s*var\(--feed-note-title-size\);/,
     );
     expect(css).toMatch(
-      /\.feed-quote-content\s*\{[\s\S]*font-size:\s*var\(--type-content-quote\);[\s\S]*white-space:\s*pre-line;/,
+      /\.feed-quote-content\s*\{[\s\S]*font-size:\s*var\(--type-content-quote\);[\s\S]*line-height:\s*var\(--type-content-quote-leading\);[\s\S]*white-space:\s*pre-line;/,
     );
     expect(exportCss).toMatch(
-      /\.post-card-quote-content\s*\{[\s\S]*font-size:\s*var\(--type-content-quote\);[\s\S]*white-space:\s*pre-line;/,
+      /\.post-card-quote-content\s*\{[\s\S]*font-size:\s*var\(--type-content-quote\);[\s\S]*line-height:\s*var\(--type-content-quote-leading\);[\s\S]*white-space:\s*pre-line;/,
     );
   });
 

@@ -92,6 +92,7 @@
   );
   --type-content-body: calc(var(--type-body) * var(--type-content-scale));
   --type-content-quote: calc(var(--type-content-body) * 1.16);
+  --type-content-quote-leading: 1.4;
 
   /* Semantic aliases */
   --type-body-size: var(--type-content-body);

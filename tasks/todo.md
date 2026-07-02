@@ -577,6 +577,33 @@ Verification:
   but exited successfully.
 - `git diff --check` passed.
 
+## Follow-up: Reading Quote Line Height
+
+After the reading quote text size was lowered, the text still inherited
+`--type-heading-leading` (`1.15`). Multi-line quote posts felt cramped because
+the quote is now reading text, not a heading.
+
+Plan:
+
+- [x] Add a semantic reading quote line-height token.
+- [x] Apply it to live quote posts and exported quote posts.
+- [x] Update focused CSS regression coverage.
+- [x] Run proportionate verification and document the result.
+
+Result:
+
+- Added `--type-content-quote-leading: 1.4`.
+- Live `.feed-quote-content` now uses `--type-content-quote-leading`.
+- Exported `.post-card-quote-content` now uses the same token.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/styles/tokens.css packages/core/src/styles/ui.css packages/core/src/services/export-theme/styles/main.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts tasks/todo.md tasks/lessons.md`
+  passed.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
+  `packages/core` (typecheck, ESLint, core build, and 28 Vitest tests).
+- `git diff --check` passed.
+
 ## Follow-up: Feed Title Type Size
 
 Note and Link titles in list views used `--type-content-title`, which computes

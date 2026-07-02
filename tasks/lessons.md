@@ -85,3 +85,7 @@
 - When judging feed title size, compare against both detail-page h1 and
   authored headings inside feed summaries. A feed title can be technically below
   h1 but still feel too page-title-like in a compact list.
+- When lowering reading display type into a body-adjacent size, revisit
+  line-height at the same time. Keeping a heading leading value on multi-line
+  reading text can make the result feel cramped even when the font-size is
+  right.

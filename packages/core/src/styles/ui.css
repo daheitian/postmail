@@ -2945,7 +2945,7 @@
     font-family: var(--font-serif);
     color: var(--site-text-primary);
     font-size: var(--type-content-quote);
-    line-height: var(--type-heading-leading);
+    line-height: var(--type-content-quote-leading);
     white-space: pre-line;
     text-wrap: pretty;
   }
