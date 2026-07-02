@@ -15,7 +15,11 @@ vi.mock("sortablejs", () => ({
   },
 }));
 
-import type { NavManagerItem, NavManagerLabels } from "../nav-manager-types.js";
+import type {
+  NavManagerItem,
+  NavManagerLabels,
+  NavManagerSuggestedLink,
+} from "../nav-manager-types.js";
 import "../jant-nav-manager.js";
 import type { JantNavManager } from "../jant-nav-manager.js";
 
@@ -43,6 +47,10 @@ const labels: NavManagerLabels = {
   addLinkDescription: "Add a custom nav link.",
   urlPlaceholder: "/about",
   labelAndUrlRequired: "Add a label and URL.",
+  suggestedLinks: "Suggested links",
+  suggestedLinksDescription: "Add common destinations.",
+  addSuggestedLink: "Add",
+  suggestedLinkAdded: "Link added to navigation.",
   headerSection: "Header",
   moreSection: "More",
   moreEmptyHint: "Move links here to hide them under More.",
@@ -81,6 +89,18 @@ const items: NavManagerItem[] = [
     label: "Archive",
     url: "/archive",
     placement: "more",
+  },
+];
+
+const suggestedLinks: NavManagerSuggestedLink[] = [
+  {
+    key: "now",
+    label: "Now",
+    url: "/now",
+    targetType: "collection",
+    targetLabel: "Collection",
+    navItemType: "collection",
+    collectionId: "col_now",
   },
 ];
 
@@ -133,6 +153,7 @@ async function createElement(): Promise<JantNavManager> {
   el.labels = labels;
   el.items = items;
   el.systemNavItems = [];
+  el.suggestedLinks = [];
   el.siteName = "Test Site";
   document.body.appendChild(el);
   await el.updateComplete;
@@ -249,6 +270,61 @@ describe("JantNavManager", () => {
 
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(popover.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("adds a suggested collection link through the nav items API", async () => {
+    const el = await createElement();
+    el.suggestedLinks = suggestedLinks;
+    el.requestUpdate();
+    await el.updateComplete;
+
+    const addButton = requireElement(
+      el.querySelector<HTMLButtonElement>(".nav-suggestion-item button"),
+      "expected suggested link add button",
+    );
+    expect(el.textContent).toContain("Now");
+    expect(el.textContent).toContain("/now · Collection");
+
+    const created: NavManagerItem = {
+      id: "nav-now",
+      type: "collection",
+      collectionId: "col_now",
+      label: "Now",
+      url: "/now",
+      placement: "header",
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => created,
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    addButton.click();
+    await Promise.resolve();
+    await Promise.resolve();
+    await el.updateComplete;
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/nav-items",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          type: "collection",
+          collectionId: "col_now",
+          placement: "header",
+        }),
+      }),
+    );
+    expect(
+      getListIds(
+        requireElement(
+          el.querySelector<HTMLElement>("#nav-items-header"),
+          "expected header nav list",
+        ),
+      ),
+    ).toContain("nav-now");
+    expect(el.querySelector(".nav-suggestion-item")).toBeNull();
   });
 
   it("confirms before dispatching nav deletion", async () => {

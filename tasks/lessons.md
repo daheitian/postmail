@@ -3,6 +3,8 @@
 - Rehost-on-paste image logic must be keyed to paste transactions, not generic
   document changes. Saved external image URLs are valid fallback content after a
   failed import and should not be retried on every later edit.
+- In Lit component tests, a click handler that starts an async fetch needs both
+  promise microtasks and `updateComplete` awaited before asserting DOM changes.
 - When a settings shortcut links to a public page with an edit-opening query
   parameter, verify the server route can render every detected resource state
   needed for that shortcut. Client auto-open code cannot run after a server-side 404.

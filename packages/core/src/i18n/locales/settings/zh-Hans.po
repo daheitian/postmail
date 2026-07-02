@@ -96,6 +96,11 @@ msgstr "活动会话"
 msgid "Active Tokens"
 msgstr "活动令牌"
 
+#. @context: Button to add a suggested nav link
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add"
+msgstr "添加"
+
 #. @context: Description in link popover form
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add a custom link to any URL"
@@ -110,6 +115,11 @@ msgstr "添加合集"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add collection to navigation"
 msgstr "向导航添加合集"
+
+#. @context: Description for suggested nav links
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add common destinations that already exist on your site."
+msgstr "添加站点中已经存在的常用入口。"
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -192,8 +202,10 @@ msgstr "应用于整个站点，包括管理页面。选择一个调色板，然
 
 #. @context: Custom URL target type badge for an archive view
 #. @context: Custom URL type option for filtered archive view
+#. @context: Suggested navigation link target type
 #: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Archive"
 msgstr "归档"
 
@@ -368,8 +380,10 @@ msgstr "合集"
 
 #. @context: Custom URL target type badge for a collection
 #. @context: Custom URL type option
+#. @context: Suggested navigation link target type
 #: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Collection"
 msgstr "合集"
 
@@ -1052,6 +1066,11 @@ msgstr "链接"
 msgid "Link"
 msgstr "链接"
 
+#. @context: Toast after adding a suggested nav link
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Link added to navigation."
+msgstr "链接已添加到导航。"
+
 #. @context: Label for list posts curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "List posts:"
@@ -1294,6 +1313,11 @@ msgstr "带橘调的底色。最暖的一套。"
 #: src/routes/dash/settings.tsx
 msgid "owner/repo"
 msgstr "owner/repo"
+
+#. @context: Suggested navigation link target type
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Page"
+msgstr "页面"
 
 #. @context: Bone color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1694,6 +1718,11 @@ msgstr "柔象牙白"
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Stop accepting posts from Telegram. Your existing notes stay published."
 msgstr "停止接受来自 Telegram 的帖子。您的现有笔记将保持已发布。"
+
+#. @context: Section heading for suggested nav links
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Suggested links"
+msgstr "建议添加的链接"
 
 #. @context: Button to trigger a full content push to GitHub on GitHub Sync settings
 #: src/ui/dash/settings/GitHubSyncContent.tsx

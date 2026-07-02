@@ -33,6 +33,7 @@ import type {
   NavManagerLabels,
   NavManagerUpdateDetail,
   NavManagerDeleteDetail,
+  NavManagerSuggestedLink,
   SystemNavConfig,
 } from "./nav-manager-types.js";
 
@@ -42,6 +43,7 @@ export class JantNavManager extends LitElement {
     labels: { type: Object },
     systemNavItems: { type: Array, attribute: "system-nav-items" },
     collections: { type: Array },
+    suggestedLinks: { type: Array, attribute: "suggested-links" },
     siteName: { type: String, attribute: "site-name" },
 
     _items: { state: true },
@@ -56,12 +58,14 @@ export class JantNavManager extends LitElement {
     _showPreviewMore: { state: true },
     _addingCollectionId: { state: true },
     _showCollectionPicker: { state: true },
+    _addingSuggestedKey: { state: true },
   };
 
   declare items: NavManagerItem[];
   declare labels: NavManagerLabels;
   declare systemNavItems: SystemNavConfig[];
   declare collections: NavManagerCollection[];
+  declare suggestedLinks: NavManagerSuggestedLink[];
   declare siteName: string;
 
   declare _items: NavManagerItem[];
@@ -78,6 +82,8 @@ export class JantNavManager extends LitElement {
   /** ID of the collection currently being added (for loading state) */
   declare _addingCollectionId: string | null;
   declare _showCollectionPicker: boolean;
+  /** Key of the suggested link currently being added */
+  declare _addingSuggestedKey: string | null;
 
   #sortableHeader: { destroy(): void } | null = null;
   #sortableMore: { destroy(): void } | null = null;
@@ -124,6 +130,7 @@ export class JantNavManager extends LitElement {
     this.labels = {} as NavManagerLabels;
     this.systemNavItems = [];
     this.collections = [];
+    this.suggestedLinks = [];
     this.siteName = "";
 
     this._items = [];
@@ -138,6 +145,7 @@ export class JantNavManager extends LitElement {
     this._showPreviewMore = false;
     this._addingCollectionId = null;
     this._showCollectionPicker = false;
+    this._addingSuggestedKey = null;
   }
 
   protected update(changedProperties: PropertyValueMap<JantNavManager>): void {
@@ -445,6 +453,99 @@ export class JantNavManager extends LitElement {
       showToast(this.labels.saveFailed, "error");
     } finally {
       this._addingCollectionId = null;
+    }
+  }
+
+  // ===========================================================================
+  // Suggested link handlers
+  // ===========================================================================
+
+  #getComparableInternalPath(url: string): string | null {
+    if (
+      url.startsWith("http://") ||
+      url.startsWith("https://") ||
+      url.startsWith("//") ||
+      url.startsWith("mailto:") ||
+      url.startsWith("tel:") ||
+      url.startsWith("#")
+    ) {
+      return null;
+    }
+
+    try {
+      const pathname = new URL(url, "https://jant.invalid").pathname;
+      const normalized = pathname
+        .trim()
+        .toLowerCase()
+        .replace(/^\/+|\/+$/g, "")
+        .replace(/\/+/g, "/");
+      return normalized ? `/${normalized}` : "/";
+    } catch {
+      return null;
+    }
+  }
+
+  #isSuggestedLinkAdded(link: NavManagerSuggestedLink): boolean {
+    const path = this.#getComparableInternalPath(link.url);
+    const hasMatchingPath =
+      path !== null &&
+      this._items.some(
+        (item) => this.#getComparableInternalPath(item.url) === path,
+      );
+    if (hasMatchingPath) return true;
+
+    return Boolean(
+      link.collectionId &&
+      this._items.some(
+        (item) =>
+          item.type === "collection" && item.collectionId === link.collectionId,
+      ),
+    );
+  }
+
+  get #availableSuggestedLinks(): NavManagerSuggestedLink[] {
+    return (this.suggestedLinks ?? []).filter(
+      (link) => !this.#isSuggestedLinkAdded(link),
+    );
+  }
+
+  async #handleAddSuggestedLink(link: NavManagerSuggestedLink) {
+    if (this._addingSuggestedKey) return;
+
+    this._addingSuggestedKey = link.key;
+    try {
+      const body =
+        link.navItemType === "collection" && link.collectionId
+          ? {
+              type: "collection",
+              collectionId: link.collectionId,
+              placement: "header",
+            }
+          : {
+              type: "link",
+              label: link.label,
+              url: link.url,
+              placement: "header",
+            };
+
+      const res = await fetch("/api/nav-items", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const created: NavManagerItem = await res.json();
+      this.#destroySortables();
+      this._items = [...this._items, created];
+      showToast(this.labels.suggestedLinkAdded);
+    } catch {
+      showToast(this.labels.saveFailed, "error");
+    } finally {
+      this._addingSuggestedKey = null;
     }
   }
 
@@ -834,6 +935,45 @@ export class JantNavManager extends LitElement {
     `;
   }
 
+  #renderSuggestedLinksSection() {
+    const available = this.#availableSuggestedLinks;
+    if (available.length === 0) return nothing;
+
+    return html`
+      <section class="mt-8">
+        <h2 class="text-lg font-semibold mb-1">
+          ${this.labels.suggestedLinks}
+        </h2>
+        <p class="text-sm text-muted-foreground mb-3">
+          ${this.labels.suggestedLinksDescription}
+        </p>
+        <div class="nav-suggestions-list">
+          ${available.map((link) => {
+            const adding = this._addingSuggestedKey === link.key;
+            return html`
+              <div class="nav-suggestion-item">
+                <div class="nav-suggestion-info">
+                  <span class="nav-suggestion-title">${link.label}</span>
+                  <span class="nav-suggestion-meta">
+                    ${link.url} · ${link.targetLabel}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="btn-sm"
+                  ?disabled=${adding || this._addingSuggestedKey !== null}
+                  @click=${() => this.#handleAddSuggestedLink(link)}
+                >
+                  ${this.labels.addSuggestedLink}
+                </button>
+              </div>
+            `;
+          })}
+        </div>
+      </section>
+    `;
+  }
+
   #renderAddLinkSection() {
     return html`
       <section class="mt-8">
@@ -1175,8 +1315,8 @@ export class JantNavManager extends LitElement {
         </div>
       </section>
 
-      ${this.#renderAddLinkSection()} ${this.#renderAddCollectionSection()}
-      ${this.#renderSystemToggles()}
+      ${this.#renderSuggestedLinksSection()} ${this.#renderAddLinkSection()}
+      ${this.#renderAddCollectionSection()} ${this.#renderSystemToggles()}
     `;
   }
 }

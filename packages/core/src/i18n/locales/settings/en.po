@@ -96,6 +96,11 @@ msgstr "Active Sessions"
 msgid "Active Tokens"
 msgstr "Active Tokens"
 
+#. @context: Button to add a suggested nav link
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add"
+msgstr "Add"
+
 #. @context: Description in link popover form
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add a custom link to any URL"
@@ -110,6 +115,11 @@ msgstr "Add Collection"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add collection to navigation"
 msgstr "Add collection to navigation"
+
+#. @context: Description for suggested nav links
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add common destinations that already exist on your site."
+msgstr "Add common destinations that already exist on your site."
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -192,8 +202,10 @@ msgstr "Applies to your entire site, including admin pages. Pick a palette, then
 
 #. @context: Custom URL target type badge for an archive view
 #. @context: Custom URL type option for filtered archive view
+#. @context: Suggested navigation link target type
 #: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Archive"
 msgstr "Archive"
 
@@ -368,8 +380,10 @@ msgstr "collection"
 
 #. @context: Custom URL target type badge for a collection
 #. @context: Custom URL type option
+#. @context: Suggested navigation link target type
 #: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Collection"
 msgstr "Collection"
 
@@ -1052,6 +1066,11 @@ msgstr "link"
 msgid "Link"
 msgstr "Link"
 
+#. @context: Toast after adding a suggested nav link
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Link added to navigation."
+msgstr "Link added to navigation."
+
 #. @context: Label for list posts curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "List posts:"
@@ -1294,6 +1313,11 @@ msgstr "Orange-tinted background. The warmest palette."
 #: src/routes/dash/settings.tsx
 msgid "owner/repo"
 msgstr "owner/repo"
+
+#. @context: Suggested navigation link target type
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Page"
+msgstr "Page"
 
 #. @context: Bone color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1694,6 +1718,11 @@ msgstr "Soft ivory"
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Stop accepting posts from Telegram. Your existing notes stay published."
 msgstr "Stop accepting posts from Telegram. Your existing notes stay published."
+
+#. @context: Section heading for suggested nav links
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Suggested links"
+msgstr "Suggested links"
 
 #. @context: Button to trigger a full content push to GitHub on GitHub Sync settings
 #: src/ui/dash/settings/GitHubSyncContent.tsx

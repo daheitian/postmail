@@ -780,9 +780,10 @@ settingsRoutes.post("/avatar/display", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/navigation", async (c) => {
-  const [navItems, directoryData] = await Promise.all([
+  const [navItems, directoryData, suggestedLinks] = await Promise.all([
     c.var.services.navItems.list(),
     c.var.services.collections.listDirectoryData(),
+    c.var.services.navItems.listSuggestedLinks(),
   ]);
   const navData = await getNavigationData(c);
 
@@ -799,6 +800,7 @@ settingsRoutes.get("/navigation", async (c) => {
         <NavigationContent
           navItems={navItems}
           directoryData={directoryData}
+          suggestedLinks={suggestedLinks}
           mainRssFeed={c.var.appConfig.mainRssFeed}
           siteName={navData.siteName}
           sitePathPrefix={c.var.appConfig.sitePathPrefix}
