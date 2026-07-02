@@ -504,19 +504,15 @@ async function mediaSpecFromJantMedia(entry, sourceRootDir) {
     srcFilePath,
     poster,
     posterFilePath,
-    mimeType:
-      typeof entry.mime_type === "string" ? entry.mime_type : undefined,
+    mimeType: typeof entry.mime_type === "string" ? entry.mime_type : undefined,
     originalName,
     size: typeof entry.size === "number" ? entry.size : undefined,
     width: typeof entry.width === "number" ? entry.width : undefined,
     height: typeof entry.height === "number" ? entry.height : undefined,
     alt: typeof entry.alt === "string" ? entry.alt : undefined,
-    position:
-      typeof entry.position === "string" ? entry.position : undefined,
-    blurhash:
-      typeof entry.blurhash === "string" ? entry.blurhash : undefined,
-    waveform:
-      typeof entry.waveform === "string" ? entry.waveform : undefined,
+    position: typeof entry.position === "string" ? entry.position : undefined,
+    blurhash: typeof entry.blurhash === "string" ? entry.blurhash : undefined,
+    waveform: typeof entry.waveform === "string" ? entry.waveform : undefined,
     summary: typeof entry.summary === "string" ? entry.summary : undefined,
     chars: typeof entry.chars === "number" ? entry.chars : undefined,
   };
@@ -587,8 +583,7 @@ async function normalizeTextAttachmentSpec(spec, siteConfig, sourceRootDir) {
     return null;
   }
 
-  const summary =
-    typeof spec.summary === "string" ? spec.summary : undefined;
+  const summary = typeof spec.summary === "string" ? spec.summary : undefined;
 
   // Legacy inline content path — no network fetch needed.
   if (
@@ -1648,9 +1643,7 @@ function resolveCollectionMemberships(frontMatter, collectionSlugToId) {
     if (!id) continue;
     const entry = { collectionId: id };
     if (typeof raw.collected_at === "string" && raw.collected_at) {
-      entry.createdAt = Math.floor(
-        new Date(raw.collected_at).getTime() / 1000,
-      );
+      entry.createdAt = Math.floor(new Date(raw.collected_at).getTime() / 1000);
     }
     if (typeof raw.position === "number") {
       entry.position = raw.position;
@@ -1662,6 +1655,38 @@ function resolveCollectionMemberships(frontMatter, collectionSlugToId) {
     ids.push(id);
   }
   return { entries, ids };
+}
+
+function parseImportTimestamp(value) {
+  if (typeof value !== "string" || value.trim() === "") return null;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : null;
+}
+
+function getImportedRootLastActivityAt(frontMatter) {
+  return (
+    parseImportTimestamp(frontMatter.last_activity_at) ??
+    parseImportTimestamp(frontMatter.date)
+  );
+}
+
+function getImportedPostStatus(frontMatter) {
+  if (frontMatter.status === "draft" || frontMatter.status === "published") {
+    return frontMatter.status;
+  }
+  return frontMatter.draft ? "draft" : "published";
+}
+
+function shouldImportReplyQuietly(rootFrontMatter, replyFrontMatter) {
+  if (getImportedPostStatus(replyFrontMatter) !== "published") return false;
+
+  const rootLastActivityAt = getImportedRootLastActivityAt(rootFrontMatter);
+  const replyPublishedAt = parseImportTimestamp(replyFrontMatter.date);
+  return (
+    rootLastActivityAt !== null &&
+    replyPublishedAt !== null &&
+    replyPublishedAt > rootLastActivityAt
+  );
 }
 
 /**
@@ -1690,7 +1715,8 @@ function buildPostPayloadFromBundle(bundle, options) {
     frontMatter.visibility === "private"
       ? frontMatter.visibility
       : undefined;
-  const { entries: collectionEntries, ids: collectionIds } = options.memberships;
+  const { entries: collectionEntries, ids: collectionIds } =
+    options.memberships;
 
   const data = {
     format,
@@ -1728,6 +1754,7 @@ function buildPostPayloadFromBundle(bundle, options) {
         : undefined,
     rating:
       typeof frontMatter.rating === "number" ? frontMatter.rating : undefined,
+    quietReply: options.quietReply ? true : undefined,
   };
 
   if (options.replyToId) {
@@ -1777,6 +1804,7 @@ export const __test__ = {
   mediaSpecFromJantMedia,
   resolveCollectionMemberships,
   buildPostPayloadFromBundle,
+  shouldImportReplyQuietly,
 };
 
 function printImportUsage() {
@@ -2096,8 +2124,7 @@ export async function run(argv) {
     for (const rootBundle of rootBundles) {
       const { frontMatter: rootFm } = rootBundle;
       const postSlug = rootBundle.slug;
-      const format =
-        typeof rootFm.format === "string" ? rootFm.format : "note";
+      const format = typeof rootFm.format === "string" ? rootFm.format : "note";
       const postLabel =
         (format === "quote"
           ? typeof rootFm.source_name === "string"
@@ -2215,9 +2242,7 @@ export async function run(argv) {
       if (dryRun) {
         console.log(`[dry-run] Would create post: ${postLabel} (${format})`);
         if (rootBundle.children.length > 0) {
-          console.log(
-            `  [dry-run] With ${rootBundle.children.length} replies`,
-          );
+          console.log(`  [dry-run] With ${rootBundle.children.length} replies`);
         }
         postsCreated++;
         repliesCreated += rootBundle.children.length;
@@ -2349,6 +2374,7 @@ export async function run(argv) {
           attachments: replyAttachments,
           memberships: replyMemberships,
           replyToId: threadTailId,
+          quietReply: shouldImportReplyQuietly(rootFm, replyFm),
         });
 
         try {
@@ -2410,4 +2436,3 @@ export async function run(argv) {
     }
   }
 }
-

@@ -24,6 +24,7 @@ const {
   uploadMediaList,
   normalizeTextAttachmentSpec,
   isAbsoluteImportUrl,
+  shouldImportReplyQuietly,
 } = __test__;
 
 async function writeFileTree(
@@ -368,6 +369,35 @@ describe("Hugo import CLI helpers", () => {
     });
   });
 
+  it("buildPostPayloadFromBundle can mark imported replies as quiet", () => {
+    const bundle = {
+      slug: "reply-a",
+      frontMatter: {
+        id: "pst_reply",
+        title: "Reply A",
+        date: "2026-04-01T01:00:00Z",
+        slug: "reply-a",
+        type: "post",
+        format: "note",
+        status: "published",
+        visibility: "public",
+      },
+      body: "Reply body",
+    };
+    const data = buildPostPayloadFromBundle(bundle, {
+      bodyMarkdown: "Reply body",
+      attachments: [],
+      memberships: { entries: [], ids: [] },
+      replyToId: "pst_root",
+      quietReply: true,
+    });
+
+    expect(data).toMatchObject({
+      replyToId: "pst_root",
+      quietReply: true,
+    });
+  });
+
   it("buildPostPayloadFromBundle preserves every canonical visibility value", () => {
     const base = {
       slug: "hello",
@@ -404,6 +434,51 @@ describe("Hugo import CLI helpers", () => {
       payloadOptions,
     );
     expect(fallback.visibility).toBeUndefined();
+  });
+
+  it("shouldImportReplyQuietly preserves exported thread activity cutoffs", () => {
+    const rootFrontMatter = {
+      date: "2026-04-01T00:00:00Z",
+      last_activity_at: "2026-04-01T01:00:00Z",
+    };
+
+    expect(
+      shouldImportReplyQuietly(rootFrontMatter, {
+        date: "2026-04-01T00:30:00Z",
+        status: "published",
+      }),
+    ).toBe(false);
+    expect(
+      shouldImportReplyQuietly(rootFrontMatter, {
+        date: "2026-04-01T01:00:00Z",
+        status: "published",
+      }),
+    ).toBe(false);
+    expect(
+      shouldImportReplyQuietly(rootFrontMatter, {
+        date: "2026-04-01T02:00:00Z",
+        status: "published",
+      }),
+    ).toBe(true);
+  });
+
+  it("shouldImportReplyQuietly falls back to root date for all-quiet threads", () => {
+    const rootFrontMatter = {
+      date: "2026-04-01T00:00:00Z",
+    };
+
+    expect(
+      shouldImportReplyQuietly(rootFrontMatter, {
+        date: "2026-04-01T01:00:00Z",
+        status: "published",
+      }),
+    ).toBe(true);
+    expect(
+      shouldImportReplyQuietly(rootFrontMatter, {
+        date: "2026-04-01T01:00:00Z",
+        status: "draft",
+      }),
+    ).toBe(false);
   });
 
   it("getRootAliasPathsForImport prefers root_aliases and strips reply slugs", () => {

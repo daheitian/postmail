@@ -1,3 +1,46 @@
+# Investigate Quiet Reply Export Import
+
+## Problem
+
+`site export` / `site import` may not preserve the "Reply quietly" behavior.
+A recent import appears to have turned quiet replies into normal replies that
+bump the thread in Latest.
+
+## Plan
+
+- [x] Trace how `quietReply` affects post creation and timeline bump state.
+- [x] Inspect `site export` output for any quiet-reply marker or equivalent
+      metadata.
+- [x] Inspect `site import` parsing and `createPost` calls for matching
+      metadata handling.
+- [x] Add or run focused verification that proves whether quiet replies
+      round-trip correctly.
+- [x] Document findings and, if needed, the fix in this task.
+
+## Review
+
+Done. `Reply quietly` is not stored as a per-reply export field. The persistent
+state is the root post's `last_activity_at`, which records whether the thread
+was bumped in Latest.
+
+The bug was in `site import`: it ignored exported root `last_activity_at` and
+created every imported reply as a normal reply. That made replies originally
+published quietly bump the imported thread.
+
+Fix:
+
+- Added importer logic that compares each reply's `date` against the exported
+  root `last_activity_at` (falling back to the root `date` when absent).
+- Replies newer than that activity timestamp are imported with
+  `quietReply: true`, so the API preserves the original thread activity state.
+- Documented that quiet reply round-tripping is root-activity based, not a
+  per-reply marker.
+
+Verification:
+
+- `mise run test -- src/__tests__/import-site-command.test.ts` passed from
+  `packages/core` (typecheck, ESLint, core build, and 17 Vitest tests).
+
 # Try Plain Markdown Headings
 
 ## Problem

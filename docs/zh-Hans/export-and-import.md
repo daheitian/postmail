@@ -145,6 +145,7 @@ static/                   用户自有静态文件 + 下载的媒体
 
 - `featured_at` 与 `pinned_at` 在 front matter 里写 ISO 时间戳，而非布尔值；重新导入后会恢复到该 post 当时被 Feature 或置顶的具体时刻。
 - Front matter 顶层的 `collections` 数组，每条 entry 携带 `collected_at`、`position` 以及 per-collection `pinned_at`；每个回复的 leaf bundle 在自身 front matter 中保留同等信息。
+- Thread root 的 `last_activity_at` 会保留 **Reply quietly** 的效果。导出里没有 per-reply 的 quiet 字段；导入时会用 root 的活动时间判断哪些回复原本不应把 thread bump 到 Latest 顶部。
 
 未在文档中列出的字段属于 Jant 内部使用，不要手动改：再次导入时它们会原样写回数据库，覆盖你后来在 Jant 中的修改。
 

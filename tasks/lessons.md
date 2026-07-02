@@ -1,5 +1,8 @@
 # Lessons
 
+- When an export format preserves behavior as a root-level projection, such as
+  thread `last_activity_at`, the importer must consume that projection when
+  replaying child records. Do not assume every behavior has a per-child marker.
 - Rehost-on-paste image logic must be keyed to paste transactions, not generic
   document changes. Saved external image URLs are valid fallback content after a
   failed import and should not be retried on every later edit.

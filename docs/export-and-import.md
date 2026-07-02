@@ -145,6 +145,7 @@ A `site export` → `site import` round-trip preserves every post's Featured, pi
 
 - `featured_at` and `pinned_at` are written to front matter as ISO timestamps, not booleans, so re-importing restores the precise moment a post was Featured or pinned.
 - The top-level `collections` array in front matter carries `collected_at`, `position`, and per-collection `pinned_at` for every entry. Each reply leaf bundle keeps the same metadata in its own front matter.
+- Thread root `last_activity_at` preserves the effect of replies published with **Reply quietly**. Quietness is not a per-reply field in the export; import uses the root activity timestamp to avoid bumping replies that originally landed quietly.
 
 Fields not documented here are Jant-internal — don't hand-edit them. They get written back to the database verbatim on the next import and will overwrite any later changes you made in Jant.
 
