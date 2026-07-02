@@ -21,6 +21,22 @@ function editorOf(el: JantComposeEditor): Editor {
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function dispatchPaste(editor: Editor, html: string, text = "") {
+  const event = new Event("paste", {
+    bubbles: true,
+    cancelable: true,
+  }) as Event & { clipboardData: unknown };
+  event.clipboardData = {
+    getData: (type: string) =>
+      type === "text/html" ? html : type === "text/plain" ? text : "",
+    files: [],
+    items: [],
+    types: ["text/html", "text/plain"],
+  };
+  editor.commands.focus();
+  editor.view.dom.dispatchEvent(event);
+}
+
 beforeEach(() => {
   const container = document.createElement("div");
   container.id = "toast-container";
@@ -48,7 +64,10 @@ describe("compose editor: rehost failure notice", () => {
     document.body.appendChild(el);
     await el.updateComplete;
 
-    editorOf(el).commands.setImage({ src: "https://ext.example/blocked.png" });
+    dispatchPaste(
+      editorOf(el),
+      '<p><img src="https://ext.example/blocked.png"></p>',
+    );
 
     // Let the rehost fire, the sideload fail, then the debounce window elapse.
     await wait(50);

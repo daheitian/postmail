@@ -136,6 +136,57 @@ describe("timeline cards", () => {
     expect(css).toContain("margin-bottom: 0;");
   });
 
+  it("uses dedicated markdown code surfaces in live and exported prose", () => {
+    const presetCss = readFileSync(
+      new URL("../../../preset.css", import.meta.url),
+      "utf8",
+    );
+    const tokenCss = readFileSync(
+      new URL("../../../styles/tokens.css", import.meta.url),
+      "utf8",
+    );
+    const exportCss = readFileSync(
+      new URL(
+        "../../../services/export-theme/styles/main.css",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+
+    expect(tokenCss).toContain("--site-code-bg:");
+    expect(tokenCss).toContain("--site-code-block-bg:");
+    expect(presetCss).toContain("background-color: var(--site-code-bg);");
+    expect(presetCss).toContain("background-color: var(--site-code-block-bg);");
+    expect(exportCss).toContain("background-color: var(--site-code-bg);");
+    expect(exportCss).toContain("background-color: var(--site-code-block-bg);");
+  });
+
+  it("keeps markdown h2 and h3 headings upright across surfaces", () => {
+    const presetCss = readFileSync(
+      new URL("../../../preset.css", import.meta.url),
+      "utf8",
+    );
+    const uiCss = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+    const exportCss = readFileSync(
+      new URL(
+        "../../../services/export-theme/styles/main.css",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+
+    expect(presetCss).not.toMatch(
+      /:where\(h[23]\)\s*\{[^}]*font-style:\s*italic;/,
+    );
+    expect(uiCss).not.toMatch(
+      /\.compose-tiptap-body\s+\.tiptap\s+h[23]\s*\{[^}]*font-style:\s*italic;/,
+    );
+    expect(exportCss).not.toMatch(/h[23]\s*\{[^}]*font-style:\s*italic;/);
+  });
+
   it("keeps quote footers on the shared card spacing baseline", () => {
     const css = readFileSync(
       new URL("../../../styles/ui.css", import.meta.url),

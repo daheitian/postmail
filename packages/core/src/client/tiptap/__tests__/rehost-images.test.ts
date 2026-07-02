@@ -52,6 +52,22 @@ function track(src: string): string {
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+function dispatchPaste(editor: Editor, html: string, text = "") {
+  const event = new Event("paste", {
+    bubbles: true,
+    cancelable: true,
+  }) as Event & { clipboardData: unknown };
+  event.clipboardData = {
+    getData: (type: string) =>
+      type === "text/html" ? html : type === "text/plain" ? text : "",
+    files: [],
+    items: [],
+    types: ["text/html", "text/plain"],
+  };
+  editor.commands.focus();
+  editor.view.dom.dispatchEvent(event);
+}
+
 afterEach(() => {
   while (editors.length > 0) editors.pop()?.destroy();
   for (const src of usedSrcs) clearRehostInFlight(src);
@@ -62,12 +78,12 @@ afterEach(() => {
 });
 
 describe("RehostImages extension", () => {
-  it("fires rehost once for a remote image", async () => {
+  it("fires rehost once for a pasted remote image", async () => {
     const rehost = vi.fn();
     const editor = createEditor(rehost);
     const src = track("https://ext.example/a-remote.png");
 
-    editor.commands.setImage({ src });
+    dispatchPaste(editor, `<p><img src="${src}"></p>`);
     await flush();
 
     expect(rehost).toHaveBeenCalledTimes(1);
@@ -79,7 +95,7 @@ describe("RehostImages extension", () => {
     const editor = createEditor(rehost);
     const src = track("data:image/png;base64,AAAAb");
 
-    editor.commands.setImage({ src });
+    dispatchPaste(editor, `<p><img src="${src}"></p>`);
     await flush();
 
     expect(rehost).toHaveBeenCalledWith(src);
@@ -89,13 +105,15 @@ describe("RehostImages extension", () => {
     const rehost = vi.fn();
     document.documentElement.dataset.mediaBase = "https://cdn.mysite.test";
     const editor = createEditor(rehost);
+    const sameOrigin = track(`${window.location.origin}/m/x.png`);
+    const relative = track("/relative/y.png");
+    const blob = track("blob:abc-123");
+    const mediaBase = track("https://cdn.mysite.test/z.png");
 
-    editor.commands.setImage({
-      src: track(`${window.location.origin}/m/x.png`),
-    });
-    editor.commands.setImage({ src: track("/relative/y.png") });
-    editor.commands.setImage({ src: track("blob:abc-123") });
-    editor.commands.setImage({ src: track("https://cdn.mysite.test/z.png") });
+    dispatchPaste(
+      editor,
+      `<p><img src="${sameOrigin}"><img src="${relative}"><img src="${blob}"><img src="${mediaBase}"></p>`,
+    );
     await flush();
 
     expect(rehost).not.toHaveBeenCalled();
@@ -106,8 +124,43 @@ describe("RehostImages extension", () => {
     const editor = createEditor(rehost);
     const src = track("https://ext.example/dupe.png");
 
-    editor.commands.setImage({ src });
-    editor.commands.setImage({ src });
+    dispatchPaste(editor, `<p><img src="${src}"><img src="${src}"></p>`);
+    await flush();
+
+    expect(rehost).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not rehost remote images loaded through setContent", async () => {
+    const rehost = vi.fn();
+    const editor = createEditor(rehost);
+    const src = track("https://ext.example/saved-external.png");
+
+    editor.commands.setContent({
+      type: "doc",
+      content: [
+        { type: "paragraph" },
+        {
+          type: "image",
+          attrs: { src },
+        },
+      ],
+    });
+    await flush();
+
+    expect(rehost).not.toHaveBeenCalled();
+  });
+
+  it("does not retry a failed paste rehost on later edits", async () => {
+    const rehost = vi.fn();
+    const editor = createEditor(rehost);
+    const src = track("https://ext.example/blocked.png");
+
+    dispatchPaste(editor, `<p><img src="${src}"></p>`);
+    await flush();
+    expect(rehost).toHaveBeenCalledTimes(1);
+
+    clearRehostInFlight(src);
+    editor.commands.insertContent("later edit");
     await flush();
 
     expect(rehost).toHaveBeenCalledTimes(1);
@@ -118,7 +171,7 @@ describe("RehostImages extension", () => {
     const editor = createEditor(rehost);
     const src = track("https://ext.example/swap.png");
 
-    editor.commands.setImage({ src });
+    dispatchPaste(editor, `<p><img src="${src}"></p>`);
     await flush();
     expect(rehost).toHaveBeenCalledTimes(1);
 

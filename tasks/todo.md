@@ -1,3 +1,119 @@
+# Try Plain Markdown Headings
+
+## Problem
+
+Markdown `h2`/`h3` headings currently use italic styling, which feels awkward
+in Chinese and too literary in mixed-language posts.
+
+## Plan
+
+- [x] Remove italic styling from public `h2`/`h3` prose headings.
+- [x] Keep compose-editor and Hugo export headings consistent.
+- [x] Run focused CSS verification and provide a local preview URL.
+
+## Review
+
+Done. Markdown `h2`/`h3` headings are now upright in:
+
+- public `.prose` rendering,
+- the compose TipTap editor,
+- the Hugo export theme.
+
+Blockquote and empty-state italics were left unchanged because they carry
+different UI/content semantics.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/preset.css packages/core/src/services/export-theme/styles/main.css packages/core/src/styles/ui.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts tasks/todo.md`
+  passed.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
+  `packages/core` (including typecheck, ESLint, core build, and 25 tests).
+- `mise run build` passed.
+- `git diff --check` passed.
+- Generated client CSS confirms public and compose `h2`/`h3` no longer include
+  `font-style: italic`.
+
+Preview:
+
+- Existing local Jant dev server is available at `http://localhost:3000/`.
+
+# Stop Repeated Remote Image Rehost Warnings
+
+## Problem
+
+Editing a saved post that still contains external images from an earlier paste
+can repeatedly show the toast that those images could not be saved to the media
+library. The old external image links should stay in the article without being
+retried on every edit/save cycle.
+
+## Plan
+
+- [x] Trace the compose editor and TipTap rehost trigger path.
+- [x] Restrict rehosting to actual paste transactions instead of every document
+      change containing a remote image.
+- [x] Add focused regression coverage for loading/editing a document that
+      already has remote images.
+- [x] Run proportionate verification and document the result.
+
+## Review
+
+Done. Rehost is now a paste-only side effect:
+
+- `RehostImages` only scans for remote image candidates when a document-changing
+  transaction is marked as a paste.
+- Loading saved content with remote image URLs no longer attempts to sideload
+  those URLs.
+- A failed paste rehost can settle and clear its in-flight marker without later
+  typing/editing retrying the same external URL.
+- The toast regression test now dispatches a real paste event instead of
+  simulating one with `setImage()`.
+
+Verification:
+
+- `mise run test -- src/client/tiptap/__tests__/rehost-images.test.ts src/client/tiptap/__tests__/paste-rehost-e2e.test.ts src/client/components/__tests__/jant-compose-editor-rehost-notice.test.ts`
+  passed from `packages/core` (including typecheck, ESLint, core build, and 3
+  Vitest files / 9 tests).
+- `git diff --check -- packages/core/src/client/tiptap/rehost-images.ts packages/core/src/client/tiptap/__tests__/rehost-images.test.ts packages/core/src/client/components/__tests__/jant-compose-editor-rehost-notice.test.ts tasks/todo.md`
+  passed.
+
+# Normalize Markdown Code Styling
+
+## Problem
+
+Inline markdown `<code>` currently reads too heavy and boxy against normal prose.
+Code blocks also share feed-card surface tokens, which makes technical snippets
+feel more like cards than quiet reading content.
+
+## Plan
+
+- [x] Inspect current prose/code rules in the live app and export theme.
+- [x] Replace inline and block code styling with quieter token-driven surfaces.
+- [x] Verify the CSS and document the result.
+
+## Review
+
+Done. Markdown inline code and code blocks now use dedicated reading-surface
+tokens instead of feed-card styling:
+
+- Added `--site-code-*` tokens for text, inline background, block background,
+  and block border.
+- Updated live `.prose` styles so inline code is lighter, borderless, wraps
+  cleanly, and resets typography plugin pseudo-content.
+- Updated the Hugo export theme with matching inline and block code styling.
+- Added a focused CSS regression check covering live and exported prose.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/styles/tokens.css packages/core/src/preset.css packages/core/src/services/export-theme/styles/main.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts tasks/todo.md`
+  passed.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
+  `packages/core`.
+- `mise run build` passed.
+- `git diff --check` passed.
+- Generated client CSS contains the new inline code, code block, and pseudo
+  reset rules. Browser screenshot verification was skipped because the in-app
+  browser was unavailable and local Playwright is not installed.
+
 # Integrate About Page in General Settings
 
 ## Problem

@@ -62,7 +62,11 @@ export const RehostImages = Extension.create<RehostImagesOptions>({
       new Plugin({
         key: rehostImagesKey,
         appendTransaction(transactions, _oldState, newState) {
-          if (!transactions.some((tr) => tr.docChanged)) return null;
+          if (
+            !transactions.some((tr) => tr.docChanged && tr.getMeta("paste"))
+          ) {
+            return null;
+          }
           const { shouldRehost, rehost } = options;
           if (!shouldRehost || !rehost) return null;
 

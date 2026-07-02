@@ -264,6 +264,22 @@
     var(--site-text-primary) 12%,
     transparent
   );
+  --site-code-text: color-mix(
+    in srgb,
+    var(--site-reading-heading) 86%,
+    var(--site-reading-body)
+  );
+  --site-code-bg: color-mix(in srgb, var(--site-reading-meta) 12%, transparent);
+  --site-code-block-bg: color-mix(
+    in srgb,
+    var(--site-elevated-bg) 94%,
+    var(--site-nav-hover-bg)
+  );
+  --site-code-block-border: color-mix(
+    in srgb,
+    var(--site-divider) 62%,
+    transparent
+  );
   --site-feed-divider-color: color-mix(
     in srgb,
     var(--site-text-secondary) 30%,

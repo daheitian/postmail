@@ -8826,14 +8826,12 @@
 
   .compose-tiptap-body .tiptap h2 {
     font-size: var(--type-content-title);
-    font-style: italic;
     margin-top: 2.1rem;
     margin-bottom: 1.4rem;
   }
 
   .compose-tiptap-body .tiptap h3 {
     font-size: var(--type-content-subtitle);
-    font-style: italic;
     margin-top: 2rem;
     margin-bottom: 1.4rem;
   }

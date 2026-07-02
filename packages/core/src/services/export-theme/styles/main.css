@@ -84,13 +84,11 @@ h1 {
 
 h2 {
   font-size: var(--type-content-title);
-  font-style: italic;
   margin: 2.1rem 0 1.4rem;
 }
 
 h3 {
   font-size: var(--type-content-subtitle);
-  font-style: italic;
   margin: 2rem 0 1.4rem;
 }
 
@@ -119,6 +117,12 @@ kbd,
 samp {
   font-family: var(--font-mono);
   font-size: var(--type-code);
+  line-height: 1.42;
+}
+
+code {
+  color: var(--site-code-text);
+  overflow-wrap: break-word;
 }
 
 pre {
@@ -127,23 +131,26 @@ pre {
   line-height: 1.5;
   padding: 1rem;
   overflow-x: auto;
-  background-color: var(--site-feed-card-bg);
-  border: 1px solid var(--site-feed-card-border);
-  border-radius: 0.375rem;
+  color: var(--site-code-text);
+  background-color: var(--site-code-block-bg);
+  border: 1px solid var(--site-code-block-border);
+  border-radius: 6px;
 }
 
 pre code {
   padding: 0;
   background: transparent;
   border: 0;
+  color: inherit;
   font-size: inherit;
 }
 
 :not(pre) > code {
-  padding: 0.1em 0.35em;
-  background-color: var(--site-feed-card-bg);
-  border: 1px solid var(--site-feed-card-border);
-  border-radius: 0.25rem;
+  padding: 0.08em 0.28em;
+  background-color: var(--site-code-bg);
+  border-radius: 0.22em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 /* Blockquotes — tinted background card with quote icon (matches main site). */
