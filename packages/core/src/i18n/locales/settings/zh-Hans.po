@@ -682,7 +682,7 @@ msgstr "要删除此自定义 URL 吗？使用它的访问者将不再被重定�
 #. @context: Confirm dialog for deleting a custom navigation link
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Delete this navigation link? Visitors won't see it in your site header anymore."
-msgstr "删除此导航链接？ 访客将不再在您网站的页眉中看到它。"
+msgstr "删除此导航链接？访客将不再在你的网站导航栏中看到它。"
 
 #. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -731,7 +731,7 @@ msgstr "断开 Telegram？您可以随时使用新的绑定码重新连接。"
 #. @context: Checkbox to show avatar in the site header
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Display avatar in my site header"
-msgstr "在我的站点页眉显示头像"
+msgstr "在我的站点顶部显示头像"
 
 #. @context: Help text for site footer field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -816,7 +816,7 @@ msgstr "导出站点"
 #. @context: Settings item description for avatar
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Favicon and the profile mark in your header"
-msgstr "Favicon 和页眉中的个人标识"
+msgstr "Favicon 和站点顶部的个人标识"
 
 #. @context: Browse filter label for featured posts
 #. @context: Post badge - featured
@@ -910,17 +910,17 @@ msgstr "GitHub 同步"
 #. @context: Section label for nav items shown in header
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Header"
-msgstr "页眉"
+msgstr "导航栏"
 
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Header links, home feed, and overflow menu"
-msgstr "页眉链接、首页信息流和溢出菜单"
+msgstr "导航链接、首页信息流和更多菜单"
 
 #. @context: Description for the RSS system navigation toggle. {feed} is either Latest or Featured.
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Header RSS points to your {feed} feed (/feed). Change what /feed returns in General."
-msgstr "页眉 RSS 指向你的 {feed} 源 (/feed)。在 常规 中更改 /feed 返回的内容。"
+msgstr "导航栏 RSS 指向你的 {feed} 订阅源 (/feed)。在“常规”中更改 /feed 返回的内容。"
 
 #. @context: Fallback color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1171,7 +1171,7 @@ msgstr "名称、元数据、语言和搜索默认设置"
 #: src/routes/dash/settings.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Navigation"
-msgstr "导航"
+msgstr "站点导航"
 
 #. @context: Section heading for nav items
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1505,7 +1505,7 @@ msgstr "移除 webhook 并停止同步。您的仓库内容不会被删除。"
 #. @context: Confirm dialog for removing the blog avatar
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Remove this avatar? Your favicon and header icon will go back to the default."
-msgstr "移除此头像？您的网站图标和页眉图标将恢复为默认设置。"
+msgstr "移除此头像？你的网站图标和站点顶部图标将恢复为默认设置。"
 
 #. @context: Confirm dialog for removing a collection nav item
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1873,7 +1873,7 @@ msgstr "时区"
 #. @context: Description for built-in nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Toggle built-in navigation items. Their order controls what shows in the header and which feed the homepage opens first."
-msgstr "切换内置导航项。它们的顺序决定页眉显示的内容以及首页显示哪个视图。"
+msgstr "切换内置导航项。它们的顺序决定导航栏显示的内容，以及首页先打开哪个视图。"
 
 #. @context: Button to expand/collapse nav item edit
 #: src/ui/dash/appearance/NavigationContent.tsx

@@ -339,3 +339,29 @@ Verification:
 - `mise exec -- npx prettier --check ...` passed for the changed code/style/task
   files.
 - `git diff --check` passed.
+
+## Settings Navigation Copy
+
+The Simplified Chinese settings catalog currently translates some navigation
+surface labels as “页眉”, which reads like a document page header rather than the
+site navigation area.
+
+Plan:
+
+- [x] Translate the settings navigation entry as “站点导航”.
+- [x] Replace navigation-page “页眉” wording with “导航栏” where it refers to nav
+      items.
+- [x] Use “站点顶部” for non-navigation header identity/avatar copy.
+- [x] Run a focused i18n verification.
+
+Review:
+
+- Simplified Chinese now translates the settings navigation entry as “站点导航”.
+- Navigation placement copy uses “导航栏” instead of “页眉”.
+- Avatar/header identity copy uses “站点顶部” where it is not specifically about
+  navigation.
+
+Verification:
+
+- `mise run i18n-build` passed; settings catalog missing count is 0 for en,
+  zh-Hans, and zh-Hant.

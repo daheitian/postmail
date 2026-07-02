@@ -84,7 +84,7 @@
      mobile overrides below cap sizes for small screens.
      --type-content-scale uniformly scales all content sizes
      without affecting UI controls. */
-  --type-content-scale: 0.78;
+  --type-content-scale: 0.8;
   --type-content-display: calc(var(--type-display) * var(--type-content-scale));
   --type-content-title: calc(var(--type-title) * var(--type-content-scale));
   --type-content-subtitle: calc(
@@ -109,7 +109,7 @@
   --type-thread-context-meta: var(--type-sm);
   --feed-note-title-size: var(--type-content-title);
   --feed-note-title-leading: var(--type-heading-leading);
-  --type-body-leading: 1.5;
+  --type-body-leading: 1.7;
   --type-display-leading: 1.15;
   --type-heading-leading: 1.15;
   --type-heading-weight: var(--fw-regular);
@@ -500,7 +500,7 @@
   :root {
     /* Content layer — tighter scale for mobile reading.
        Ratio ≈ 1.88 : 1.42 : 1.15 : 1 (display:title:subtitle:body).
-       At 15px root × 0.78 content-scale: 28.7 / 21.6 / 17.6 / 15.2px.
+       At 15px root × 0.8 content-scale: 29.4 / 22.2 / 18 / 15.6px.
        Body is floored to a 16px minimum below (max()) for readability;
        the floor still yields to calc() when the user zooms the root up. */
     --type-content-display: calc(2.45rem * var(--type-content-scale));
