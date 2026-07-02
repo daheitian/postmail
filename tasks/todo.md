@@ -762,3 +762,102 @@ Verification:
 - `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
   `packages/core` (typecheck, ESLint, core build, and 26 Vitest tests).
 - `git diff --check` passed.
+
+# Migrate Claude Commands to Codex Skills
+
+## Problem
+
+The repository has reusable Claude Code commands in `.claude/commands/`, but
+Codex does not load those files as slash commands. They should be available as
+repo-scoped Codex skills instead.
+
+## Plan
+
+- [x] Create repo skills for the existing `demo` and `release` commands.
+- [x] Preserve the command workflows while converting them to `SKILL.md`
+      frontmatter and instructions.
+- [x] Validate the generated skill folders.
+- [x] Document the verification result.
+
+## Review
+
+Done. The old Claude command workflows are now repo-scoped Codex skills:
+
+- `.agents/skills/demo/SKILL.md` migrates `.claude/commands/demo.md` into a
+  `$demo` skill for creating Showboat/Rodney visual proof documents.
+- `.agents/skills/release/SKILL.md` migrates `.claude/commands/release.md` into
+  a `$release` skill for creating and committing fixed-version changesets.
+- Each skill includes `agents/openai.yaml` UI metadata with a default prompt.
+
+Verification:
+
+- `uv run --with pyyaml python /Users/green/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/demo`
+  passed.
+- `uv run --with pyyaml python /Users/green/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/release`
+  passed.
+- `mise exec -- npx prettier --check .agents/skills/demo/SKILL.md .agents/skills/release/SKILL.md .agents/skills/demo/agents/openai.yaml .agents/skills/release/agents/openai.yaml tasks/todo.md`
+  passed.
+- `git diff --check` passed.
+
+## Follow-up: Bare Skill Invocation
+
+Problem:
+
+After opening a new Codex session, invoking `$release` alone attached the skill
+context but did not behave like the old Claude slash command.
+
+Plan:
+
+- [x] Confirm the pasted `<skill>` context means Codex discovered the skill.
+- [x] Add explicit default-invocation behavior to `$release`.
+- [x] Add the same default-invocation behavior to `$demo` for consistency.
+- [x] Validate the skill files and document the result.
+
+Result:
+
+- `$release` now explicitly treats a bare invocation as a request to run the
+  changeset workflow.
+- `$demo` now explicitly treats a bare invocation as a request to generate a
+  visual demo for the current work.
+- `tasks/lessons.md` documents the migration rule: a skill mention attaches
+  context, but the skill should define what to do when no other task text is
+  provided.
+
+Verification:
+
+- `uv run --with pyyaml python /Users/green/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/demo`
+  passed.
+- `uv run --with pyyaml python /Users/green/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/release`
+  passed.
+- `mise exec -- npx prettier --check .agents/skills/demo/SKILL.md .agents/skills/release/SKILL.md .agents/skills/demo/agents/openai.yaml .agents/skills/release/agents/openai.yaml tasks/todo.md tasks/lessons.md`
+  passed.
+- `git diff --check` passed.
+
+## Follow-up: Command Completion
+
+Problem:
+
+Codex discovered `$release`, but typing `$release` did not provide command-style
+autocomplete. Repo skills are discoverable context, not Claude-style slash
+commands.
+
+Plan:
+
+- [x] Keep `.agents/skills/*` as the shared source of truth.
+- [x] Add local `~/.codex/prompts/release.md` and `~/.codex/prompts/demo.md`
+      as slash-menu shortcuts.
+- [x] Verify the prompt files and document the exact invocation.
+
+Result:
+
+- Use `/prompts:release` for slash-menu completion, optionally with
+  `bump=patch`, `bump=minor`, or `bump=major`.
+- Use `/prompts:demo` for slash-menu completion, optionally with a focus string.
+- Restart Codex or open a new chat after adding or editing prompt files so Codex
+  reloads them.
+
+Verification:
+
+- `mise exec -- npx prettier --check /Users/green/.codex/prompts/release.md /Users/green/.codex/prompts/demo.md tasks/todo.md tasks/lessons.md`
+  passed.
+- `git diff --check` passed.

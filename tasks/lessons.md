@@ -1,5 +1,12 @@
 # Lessons
 
+- When migrating Claude slash commands to Codex skills, include explicit
+  default-invocation behavior in `SKILL.md`. A bare `$skill` mention attaches
+  the skill context, but the skill still needs to say what to do when no other
+  task text is provided.
+- Repo-scoped Codex skills do not provide Claude-style `$command`
+  autocomplete. Use `/skills` for repo skills, or a local `~/.codex/prompts/*.md`
+  custom prompt when slash-menu completion is the desired interaction.
 - When an export format preserves behavior as a root-level projection, such as
   thread `last_activity_at`, the importer must consume that projection when
   replaying child records. Do not assume every behavior has a per-child marker.
