@@ -1041,7 +1041,7 @@ hr.feed-divider {
 .post-card-quote-content {
   font-family: var(--font-serif);
   color: var(--site-text-primary);
-  font-size: var(--type-content-subtitle);
+  font-size: var(--type-content-quote);
   line-height: var(--type-heading-leading);
   white-space: pre-line;
   text-wrap: pretty;

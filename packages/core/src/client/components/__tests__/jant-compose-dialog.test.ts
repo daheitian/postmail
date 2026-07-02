@@ -3078,7 +3078,13 @@ describe("JantComposeDialog", () => {
       /\.compose-reply-compose-layout\s+\.compose-thread-post-header\s*\+\s*\.compose-body\s*\{[\s\S]*padding-top:\s*12px;/,
     );
     expect(css).toMatch(
-      /\.compose-reply-compose-layout\s*\{[\s\S]*--compose-title-input-size:\s*var\(--type-content-subtitle\);[\s\S]*--compose-quote-input-size:\s*calc\(var\(--type-content-body\) \* 1\.06\);[\s\S]*--compose-inline-input-size:\s*var\(--type-base\);/,
+      /\.compose-dialog,[\s\S]*\.compose-page-shell\s*>\s*jant-compose-dialog\s*\{[\s\S]*--compose-quote-input-size:\s*var\(--type-content-subtitle\);[\s\S]*--compose-quote-input-leading:\s*1\.32;/,
+    );
+    expect(css).toMatch(
+      /\.compose-quote-text\s*\{[\s\S]*font-size:\s*var\(--compose-quote-input-size\);[\s\S]*line-height:\s*var\(--compose-quote-input-leading\);/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout\s*\{[\s\S]*--compose-title-input-size:\s*var\(--type-content-subtitle\);[\s\S]*--compose-quote-input-size:\s*calc\(var\(--type-content-body\) \* 1\.06\);[\s\S]*--compose-quote-input-leading:\s*1\.42;[\s\S]*--compose-inline-input-size:\s*var\(--type-base\);/,
     );
     expect(css).toMatch(
       /\.compose-reply-compose-layout\s+\.compose-quote-wrap\s*\{[\s\S]*margin-top:\s*0\.4rem;[\s\S]*padding:\s*24px 18px 18px;[\s\S]*border-radius:\s*0\.95rem;/,

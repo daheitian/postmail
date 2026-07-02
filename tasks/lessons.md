@@ -69,3 +69,19 @@
 - For multi-format compose UI, compare all formats in the same layout before
   finishing a spacing change. The first visible control may differ by format
   even when the shared wrapper padding is identical.
+- When a compose field gets a context-specific font-size override, check whether
+  its line-height needs a context-specific token too. Serif quote text can feel
+  cramped when it inherits a line-height tuned for a larger default size.
+- When sizing serif quote text against sans body text, account for perceived
+  size as well as computed pixels. A small multiplier above body size may still
+  read too prominent because the font family and quote container already create
+  hierarchy.
+- When discussing "quote" styles, clarify whether the surface is reading
+  display, compose textarea, or editor blockquote before changing CSS. These
+  share vocabulary but have separate selectors and visual roles.
+- When replacing repeated type tokens in CSS, inspect the surrounding selector
+  after the patch. A context-free replacement can hit a nearby heading rule
+  instead of the intended component rule.
+- When judging feed title size, compare against both detail-page h1 and
+  authored headings inside feed summaries. A feed title can be technically below
+  h1 but still feel too page-title-like in a compact list.

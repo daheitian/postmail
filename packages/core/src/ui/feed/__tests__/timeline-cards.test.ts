@@ -104,13 +104,42 @@ describe("timeline cards", () => {
   });
 
   it("preserves authored line breaks in quote cards", () => {
+    const tokens = readFileSync(
+      new URL("../../../styles/tokens.css", import.meta.url),
+      "utf8",
+    );
     const css = readFileSync(
       new URL("../../../styles/ui.css", import.meta.url),
       "utf8",
     );
+    const exportCss = readFileSync(
+      new URL(
+        "../../../services/export-theme/styles/main.css",
+        import.meta.url,
+      ),
+      "utf8",
+    );
 
+    expect(tokens).toMatch(
+      /--feed-note-title-size:\s*calc\(var\(--type-content-body\) \* 1\.36\);/,
+    );
+    expect(tokens).toMatch(
+      /--type-content-quote:\s*calc\(var\(--type-content-body\) \* 1\.16\);/,
+    );
     expect(css).toMatch(
-      /\.feed-quote-content\s*\{[\s\S]*white-space:\s*pre-line;/,
+      /\.feed-note-title\s*\{[\s\S]*font-size:\s*var\(--feed-note-title-size\);/,
+    );
+    expect(css).toMatch(
+      /\.feed-link-title\s*\{[\s\S]*font-size:\s*var\(--feed-note-title-size\);/,
+    );
+    expect(exportCss).toMatch(
+      /\.post-card-title\s*\{[\s\S]*font-size:\s*var\(--feed-note-title-size\);/,
+    );
+    expect(css).toMatch(
+      /\.feed-quote-content\s*\{[\s\S]*font-size:\s*var\(--type-content-quote\);[\s\S]*white-space:\s*pre-line;/,
+    );
+    expect(exportCss).toMatch(
+      /\.post-card-quote-content\s*\{[\s\S]*font-size:\s*var\(--type-content-quote\);[\s\S]*white-space:\s*pre-line;/,
     );
   });
 

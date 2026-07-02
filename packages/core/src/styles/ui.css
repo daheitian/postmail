@@ -2944,7 +2944,7 @@
     padding-left: 0;
     font-family: var(--font-serif);
     color: var(--site-text-primary);
-    font-size: var(--type-content-subtitle);
+    font-size: var(--type-content-quote);
     line-height: var(--type-heading-leading);
     white-space: pre-line;
     text-wrap: pretty;
@@ -4535,6 +4535,7 @@
     --compose-title-input-size: var(--type-content-subtitle);
     --compose-title-input-leading: var(--type-display-leading);
     --compose-quote-input-size: var(--type-content-subtitle);
+    --compose-quote-input-leading: 1.32;
     --compose-inline-input-size: var(--type-ui-input);
     --compose-panel-label-size: var(--type-ui-control);
     --compose-panel-hint-size: var(--type-ui-hint);
@@ -5201,7 +5202,7 @@
     font-size: var(--compose-quote-input-size);
     font-style: normal;
     font-weight: var(--fw-regular);
-    line-height: 1.32;
+    line-height: var(--compose-quote-input-leading);
     letter-spacing: -0.02em;
     min-height: 9rem;
     padding-top: 0.5rem;
@@ -7432,6 +7433,7 @@
     --compose-title-input-size: var(--type-content-subtitle);
     --compose-title-input-leading: 1.35;
     --compose-quote-input-size: calc(var(--type-content-body) * 1.06);
+    --compose-quote-input-leading: 1.42;
     --compose-inline-input-size: var(--type-base);
   }
 

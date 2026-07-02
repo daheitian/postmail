@@ -514,6 +514,100 @@ Verification:
   successfully.
 - `git diff --check` passed.
 
+## Follow-up: Reply Quote Line Height
+
+The reply quote textarea now uses a smaller, reply-specific size, but it still
+inherited the default quote line-height. That made the serif quote text feel
+tighter than the reply body editor.
+
+Plan:
+
+- [x] Add a semantic quote input line-height variable.
+- [x] Keep the normal compose quote line-height at `1.32`.
+- [x] Give reply quote input a looser `1.42` line-height.
+- [x] Update focused CSS regression coverage.
+- [x] Run proportionate verification and document the result.
+
+Result:
+
+- `--compose-quote-input-leading` now controls quote textarea line-height.
+- Normal quote compose keeps `--compose-quote-input-leading: 1.32`.
+- Reply quote compose overrides it to `1.42`, matching the smaller reply quote
+  type without making the field as loose as the main body editor.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/styles/ui.css packages/core/src/client/components/__tests__/jant-compose-dialog.test.ts tasks/todo.md tasks/lessons.md`
+  passed.
+- `mise run test -- src/client/components/__tests__/jant-compose-dialog.test.ts`
+  passed from `packages/core` (typecheck, ESLint, core build, and 123 Vitest
+  tests). The run printed local 401 logs from discovery slash-command requests,
+  but exited successfully.
+- `git diff --check` passed.
+
+## Follow-up: Reading Quote Type Size
+
+The previous quote-size discussion was about the reading surface, not the
+compose textarea. Reading quote posts used `--type-content-subtitle`, which
+computes to about 21.6px at the current scale while body text is about 16.8px.
+That made quote text read closer to a heading than a highlighted quotation.
+
+Plan:
+
+- [x] Restore reply compose quote size to its previous `1.06` multiplier.
+- [x] Add a semantic reading quote size token.
+- [x] Apply it to live quote posts and exported quote posts.
+- [x] Update focused CSS regression coverage.
+- [x] Run proportionate verification and document the result.
+
+Result:
+
+- Added `--type-content-quote: calc(var(--type-content-body) * 1.16)`.
+- Live `.feed-quote-content` now uses `--type-content-quote`.
+- Exported `.post-card-quote-content` now uses the same token.
+- At the current scale, reading quote text moves from about 21.6px to 19.5px.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/styles/tokens.css packages/core/src/styles/ui.css packages/core/src/services/export-theme/styles/main.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts packages/core/src/client/components/__tests__/jant-compose-dialog.test.ts tasks/todo.md tasks/lessons.md`
+  passed after formatting the focused feed test file with Prettier.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts src/client/components/__tests__/jant-compose-dialog.test.ts`
+  passed from `packages/core` (typecheck, ESLint, core build, and 151 Vitest
+  tests). The run printed local 401 logs from discovery slash-command requests,
+  but exited successfully.
+- `git diff --check` passed.
+
+## Follow-up: Feed Title Type Size
+
+Note and Link titles in list views used `--type-content-title`, which computes
+to about 25.2px at the current scale. That keeps them below detail-page h1
+titles, but still makes list entries feel closer to page titles than compact
+post-entry headings.
+
+Plan:
+
+- [x] Lower the feed title token without changing detail-page h1.
+- [x] Keep Note and Link list titles on the same token.
+- [x] Preserve export theme title behavior through the shared token.
+- [x] Update focused CSS regression coverage.
+- [x] Run proportionate verification and document the result.
+
+Result:
+
+- `--feed-note-title-size` now uses
+  `calc(var(--type-content-body) * 1.36)`.
+- At the current scale, list Note/Link titles move from about 25.2px to 22.8px.
+- Detail-page h1 remains on `--type-content-display`.
+- Feed body headings remain smaller at `calc(var(--type-content-body) * 1.12)`.
+
+Verification:
+
+- `mise exec -- npx prettier --check packages/core/src/styles/tokens.css packages/core/src/styles/ui.css packages/core/src/services/export-theme/styles/main.css packages/core/src/ui/feed/__tests__/timeline-cards.test.ts packages/core/src/client/components/__tests__/jant-compose-dialog.test.ts tasks/todo.md tasks/lessons.md`
+  passed.
+- `mise run test -- src/ui/feed/__tests__/timeline-cards.test.ts` passed from
+  `packages/core` (typecheck, ESLint, core build, and 28 Vitest tests).
+- `git diff --check` passed.
+
 # Detail Header Spacing
 
 ## Problem

@@ -91,6 +91,7 @@
     var(--type-subtitle) * var(--type-content-scale)
   );
   --type-content-body: calc(var(--type-body) * var(--type-content-scale));
+  --type-content-quote: calc(var(--type-content-body) * 1.16);
 
   /* Semantic aliases */
   --type-body-size: var(--type-content-body);
@@ -107,7 +108,7 @@
   --type-thread-context: var(--type-base);
   --type-thread-context-title: var(--type-secondary);
   --type-thread-context-meta: var(--type-sm);
-  --feed-note-title-size: var(--type-content-title);
+  --feed-note-title-size: calc(var(--type-content-body) * 1.36);
   --feed-note-title-leading: var(--type-heading-leading);
   --type-body-leading: 1.7;
   --type-display-leading: 1.15;
