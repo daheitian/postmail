@@ -126,6 +126,7 @@ async function buildLatestFeedData(
     excludeLatestHidden: true,
     excludePrivate: true,
     format,
+    ignorePinnedSort: true,
     limit: feedLimit,
   });
 

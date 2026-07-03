@@ -121,6 +121,48 @@ describe("Atom Feed Routes", () => {
       expect(xml).not.toContain("Hidden Post");
     });
 
+    it("ignores pinned ordering when the main feed is latest", async () => {
+      const { app, services } = createFeedTestApp({
+        RSS_FEED_LIMIT: "2",
+      });
+
+      await services.settings.set("MAIN_RSS_FEED", "latest");
+
+      await services.posts.create({
+        format: "note",
+        title: "Older pinned",
+        bodyMarkdown: "Pinned but old",
+        status: "published",
+        pinned: true,
+        publishedAt: 1000,
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Newer unpinned",
+        bodyMarkdown: "Newer",
+        status: "published",
+        publishedAt: 2000,
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Newest unpinned",
+        bodyMarkdown: "Newest",
+        status: "published",
+        publishedAt: 3000,
+      });
+
+      const res = await app.request("/feed");
+      expect(res.status).toBe(200);
+
+      const xml = await res.text();
+      expect(xml).toContain("Newest unpinned");
+      expect(xml).toContain("Newer unpinned");
+      expect(xml).not.toContain("Older pinned");
+      expect(xml.indexOf("Newest unpinned")).toBeLessThan(
+        xml.indexOf("Newer unpinned"),
+      );
+    });
+
     it("returns Atom content type", async () => {
       const { app } = createFeedTestApp();
 

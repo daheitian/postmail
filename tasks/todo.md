@@ -1,3 +1,27 @@
+# Decouple Home Feed from Navigation Order
+
+## Problem
+
+The home page currently decides whether `/` shows Latest or Featured from the
+first built-in navigation item among Latest and Featured. That makes removing or
+reordering navigation links change the home feed, so a site cannot hide the
+Latest header link while still keeping Latest on the home page.
+
+## Plan
+
+- [ ] Trace every caller that derives `homeDefaultView` from nav item order.
+- [ ] Switch home rendering, public navigation data, export config, and hosted
+      site metadata to the explicit `HOME_DEFAULT_VIEW` app setting.
+- [ ] Keep nav item URL rewriting based on the explicit home default so header
+      links still route cleanly.
+- [ ] Update copy/tests/docs that still describe nav order as controlling the
+      home feed.
+- [ ] Run focused verification and document the result.
+
+## Review
+
+Pending.
+
 # Investigate Quiet Reply Export Import
 
 ## Problem
@@ -861,3 +885,45 @@ Verification:
 - `mise exec -- npx prettier --check /Users/green/.codex/prompts/release.md /Users/green/.codex/prompts/demo.md tasks/todo.md tasks/lessons.md`
   passed.
 - `git diff --check` passed.
+
+# RSS Ignores Pinned Ordering
+
+## Problem
+
+Atom/RSS feeds currently reuse page timeline ordering, so pinned posts can stay
+ahead of newer posts in subscription feeds. Feeds should remain chronological
+subscription streams and ignore pinning as a display-only page concern.
+
+## Plan
+
+- [x] Add a feed-only list option that excludes global `pinnedAt` from post sort
+      keys without changing normal page/archive/search ordering.
+- [x] Use that option from main/latest/archive Atom feed builders.
+- [x] Add the equivalent collection-feed option so collection RSS ignores
+      per-collection pins.
+- [x] Update the exported Hugo Atom template to match live RSS behavior.
+- [x] Add focused regression tests and run proportionate verification.
+
+## Review
+
+Done. Atom/RSS feed builders now treat pinning as a page-display concern:
+
+- Main/latest and archive feeds pass `ignorePinnedSort: true`, so pinned posts
+  only appear in their natural chronological position.
+- Collection feeds pass `ignoreCollectionPinnedSort: true`, so per-collection
+  pins no longer push old entries ahead in subscription feeds.
+- Normal page/list ordering still keeps pinned posts first.
+- Exported Hugo Atom collection feeds now match the live behavior by sorting
+  collection members without a pinned-first split.
+
+Verification:
+
+- `mise run test -- src/services/__tests__/post.test.ts src/services/__tests__/post-timeline.test.ts src/routes/feed/__tests__/feed.test.ts`
+  passed from `packages/core` (typecheck, ESLint, core build, and 172 Vitest
+  tests).
+- `mise run test -- src/routes/pages/__tests__/collection-routing.test.ts src/__tests__/export-service.test.ts src/__tests__/export-hugo-build.test.ts`
+  passed from `packages/core` (typecheck, ESLint, core build, and 32 Vitest
+  tests).
+- `mise exec -- npx prettier --check packages/core/src/services/post.ts packages/core/src/routes/feed/feed.ts packages/core/src/routes/pages/archive.tsx packages/core/src/routes/pages/collection.tsx packages/core/src/services/__tests__/post.test.ts packages/core/src/services/__tests__/post-timeline.test.ts packages/core/src/routes/feed/__tests__/feed.test.ts tasks/todo.md`
+  passed. The Hugo `rss.xml` template was skipped because Prettier cannot infer
+  a parser for Hugo XML templates.

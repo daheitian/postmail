@@ -28,6 +28,10 @@
   their own title/link metadata inside `<content>`; they cannot rely on
   entry-level `<title>`, `<link>`, or enclosure metadata that belongs to the
   thread root.
+- Atom/RSS subscription feeds should opt out of pinned display ordering. Pinned
+  posts may appear at their natural chronological position, but pin timestamps
+  must not push old posts ahead of newer feed entries or consume feed-limit
+  slots ahead of newer content.
 - Reply composer typography should be scoped as a compact editor, not inherited
   wholesale from the full composer. Keep the current reply more prominent than
   the quoted context, but avoid full-post title/body scale inside the reply rail.

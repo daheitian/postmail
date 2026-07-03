@@ -591,6 +591,62 @@ describe("PostService - Timeline features", () => {
       expect(entries[1]?.collectedAt).toBe(100);
     });
 
+    it("can ignore collection pins for subscription feed ordering", async () => {
+      const collection = await collectionService.create({
+        slug: "rss",
+        title: "RSS",
+      });
+      const olderRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Older pinned root",
+        publishedAt: 1000,
+      });
+      const newerRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Newer unpinned root",
+        publishedAt: 2000,
+      });
+
+      await db.insert(postCollections).values([
+        {
+          siteId: DEFAULT_TEST_SITE_ID,
+          postId: olderRoot.id,
+          collectionId: collection.id,
+          createdAt: 100,
+          pinnedAt: 5000,
+        },
+        {
+          siteId: DEFAULT_TEST_SITE_ID,
+          postId: newerRoot.id,
+          collectionId: collection.id,
+          createdAt: 200,
+        },
+      ]);
+
+      const pageEntries = await postService.listCollectionFeedEntries(
+        collection.id,
+        {
+          status: "published",
+        },
+      );
+      const feedEntries = await postService.listCollectionFeedEntries(
+        collection.id,
+        {
+          status: "published",
+          ignoreCollectionPinnedSort: true,
+        },
+      );
+
+      expect(pageEntries.map((entry) => entry.post.id)).toEqual([
+        olderRoot.id,
+        newerRoot.id,
+      ]);
+      expect(feedEntries.map((entry) => entry.post.id)).toEqual([
+        newerRoot.id,
+        olderRoot.id,
+      ]);
+    });
+
     it("dedupes shared threads across multiple collections", async () => {
       const smart = await collectionService.create({
         slug: "smart",
