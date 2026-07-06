@@ -46,7 +46,6 @@ export interface GeneralSettingsData {
   dashboardLanguage?: string;
   cjkSerifFont: string;
   showJantBrandingOnHome: boolean;
-  homeDefaultView?: FeedKind;
   mainRssFeed?: FeedKind;
   timeZone: string;
 }
@@ -403,15 +402,6 @@ export function createSettingsService(
         oldLanguage: opts.oldLanguage,
         oldCjkSerifFont: opts.oldCjkSerifFont,
       });
-
-      // Homepage default view: only update if provided (may be managed separately)
-      if (data.homeDefaultView !== undefined) {
-        if (data.homeDefaultView === "featured") {
-          await this.set("HOME_DEFAULT_VIEW", data.homeDefaultView);
-        } else {
-          await this.remove("HOME_DEFAULT_VIEW");
-        }
-      }
 
       await this.updateFeedSettings({ mainRssFeed: data.mainRssFeed });
 

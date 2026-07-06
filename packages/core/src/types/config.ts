@@ -4,6 +4,8 @@
  * Single Source of Truth for all configuration fields.
  */
 
+import type { FeedKind } from "./constants.js";
+
 /**
  * Configuration Registry - Single Source of Truth
  *
@@ -52,11 +54,6 @@ export const CONFIG_FIELDS = {
     defaultValue: "off",
     envOnly: false,
     envKeys: ["CJK_SERIF_FONT"],
-  },
-  HOME_DEFAULT_VIEW: {
-    defaultValue: "latest",
-    envOnly: false,
-    envKeys: ["HOME_DEFAULT_VIEW"],
   },
   MAIN_RSS_FEED: {
     defaultValue: "featured",
@@ -470,8 +467,7 @@ export interface AppConfig {
   dashboardLanguage: string;
   /** CJK serif font locale: "off", "zh-Hans", "zh-Hant", "ja", or "ko" */
   cjkSerifFont: string;
-  homeDefaultView: string;
-  mainRssFeed: string;
+  mainRssFeed: FeedKind;
   /** Canonical IANA timezone identifier used for date/time display. */
   timeZone: string;
   siteFooter: string;

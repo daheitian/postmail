@@ -914,8 +914,8 @@ msgstr "頁首"
 
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Header links, home feed, and overflow menu"
-msgstr "頁首連結、首頁動態與更多選單"
+msgid "Header links, built-in destinations, and overflow menu"
+msgstr "頁首連結、內建目的地與更多選單"
 
 #. @context: Description for the RSS system navigation toggle. {feed} is either Latest or Featured.
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1650,6 +1650,11 @@ msgstr "設定"
 msgid "Show \"Build with Jant\" at the bottom of the home page"
 msgstr "在首頁底部顯示「Build with Jant」"
 
+#. @context: Description for built-in nav toggles
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Show or hide built-in destinations in the header and More menu."
+msgstr "在頁首和更多選單中顯示或隱藏內建目的地。"
+
 #. @context: GitHub sync picker — paginated repo count hint. Placeholders {shown} and {total} are integers.
 #: src/routes/dash/settings.tsx
 msgid "Showing {shown} of {total}"
@@ -1869,11 +1874,6 @@ msgstr "這會永久刪除您所有的資料 — 文章、媒體、選集、設�
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Time Zone"
 msgstr "時區"
-
-#. @context: Description for built-in nav toggles
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Toggle built-in navigation items. Their order controls what shows in the header and which feed the homepage opens first."
-msgstr "切換內建導覽項目。它們的順序決定頁首顯示哪些項目，以及首頁會先開啟哪一個 feed。"
 
 #. @context: Button to expand/collapse nav item edit
 #: src/ui/dash/appearance/NavigationContent.tsx

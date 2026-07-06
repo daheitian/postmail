@@ -23,7 +23,6 @@ import type {
   NavItemType,
   NavItemPlacement,
   AppConfig,
-  FeedKind,
   SystemNavKey,
 } from "../types.js";
 import { SYSTEM_NAV_KEYS } from "../types/constants.js";
@@ -474,7 +473,6 @@ export function toPostViewsFromPosts(
 export function toNavItemView(
   item: NavItem,
   currentPath: string,
-  homeDefaultView: FeedKind = "latest",
   isAuthenticated = false,
   sitePathPrefix = "",
   collectionFreshness?: Map<string, number>,
@@ -491,13 +489,12 @@ export function toNavItemView(
       url = config.url;
     }
 
-    // Special overrides for conditional system URLs
     if (item.systemKey === "latest") {
-      url = homeDefaultView === "latest" ? "/" : "/latest";
+      url = "/";
     }
 
     if (item.systemKey === "featured") {
-      url = homeDefaultView === "featured" ? "/" : "/featured";
+      url = "/featured";
     }
 
     if (item.systemKey === "settings") {
@@ -557,7 +554,6 @@ export function toNavItemView(
 export function toNavItemViews(
   items: NavItem[],
   currentPath: string,
-  homeDefaultView: FeedKind = "latest",
   isAuthenticated = false,
   sitePathPrefix = "",
   collectionFreshness?: Map<string, number>,
@@ -567,7 +563,6 @@ export function toNavItemViews(
     toNavItemView(
       item,
       currentPath,
-      homeDefaultView,
       isAuthenticated,
       sitePathPrefix,
       collectionFreshness,

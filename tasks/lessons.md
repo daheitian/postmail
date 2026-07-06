@@ -1,5 +1,8 @@
 # Lessons
 
+- When a user is still evaluating product/design options, keep the turn in
+  discussion mode and do not start implementation until they explicitly confirm
+  the chosen direction.
 - When migrating Claude slash commands to Codex skills, include explicit
   default-invocation behavior in `SKILL.md`. A bare `$skill` mention attaches
   the skill context, but the skill still needs to say what to do when no other

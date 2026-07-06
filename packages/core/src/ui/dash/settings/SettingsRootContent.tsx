@@ -171,7 +171,7 @@ export function SettingsRootContent({
           )}
           description={i18n._(
             msg({
-              message: "Header links, home feed, and overflow menu",
+              message: "Header links, built-in destinations, and overflow menu",
               comment: "@context: Settings item description for navigation",
             }),
           )}

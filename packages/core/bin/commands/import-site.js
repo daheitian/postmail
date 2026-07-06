@@ -751,8 +751,8 @@ function coerceBoolean(value) {
  * Hugo writes two sources of truth:
  *   - `hugo.toml`: baseURL, title, languageCode, theme params
  *   - `data/jant.toml`: everything Jant owns — nav items, branding modes,
- *     home_default_view, site_footer, avatar urls, display preferences,
- *     and the ordered collections directory under `[[directory]]`.
+ *     site_footer, avatar urls, display preferences, and the ordered
+ *     collections directory under `[[directory]]`.
  *
  * This merger normalizes them into a single shape that downstream helpers
  * (`buildSettingsUpdatesFromConfig`, `normalizeImportedNavItems`,
@@ -832,12 +832,6 @@ async function loadSiteConfig(rootDir) {
         theme_mode:
           (typeof params.theme_mode === "string" && params.theme_mode) ||
           (typeof jantData.theme_mode === "string" ? jantData.theme_mode : ""),
-        home_default_view:
-          (typeof params.home_default_view === "string" &&
-            params.home_default_view) ||
-          (typeof jantData.home_default_view === "string"
-            ? jantData.home_default_view
-            : ""),
         show_jant_branding_on_home: coerceBoolean(
           params.show_jant_branding_on_home ??
             jantData.show_jant_branding_on_home,
@@ -900,8 +894,6 @@ function buildSettingsUpdatesFromConfig(siteConfig, customCss = "") {
     SITE_DESCRIPTION: String(siteConfig?.description || ""),
     SITE_LANGUAGE: String(siteConfig?.default_language || "en"),
     SITE_FOOTER: String(jant.site_footer_markdown || ""),
-    HOME_DEFAULT_VIEW:
-      String(jant.home_default_view || "") === "featured" ? "featured" : "",
     SHOW_JANT_BRANDING_ON_HOME: jant.show_jant_branding_on_home ? "true" : "",
     NOINDEX: jant.noindex ? "true" : "",
     SHOW_HEADER_AVATAR: jant.show_header_avatar ? "true" : "",

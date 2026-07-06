@@ -9,18 +9,47 @@ Latest header link while still keeping Latest on the home page.
 
 ## Plan
 
-- [ ] Trace every caller that derives `homeDefaultView` from nav item order.
-- [ ] Switch home rendering, public navigation data, export config, and hosted
-      site metadata to the explicit `HOME_DEFAULT_VIEW` app setting.
-- [ ] Keep nav item URL rewriting based on the explicit home default so header
-      links still route cleanly.
-- [ ] Update copy/tests/docs that still describe nav order as controlling the
-      home feed.
-- [ ] Run focused verification and document the result.
+- [x] Trace every caller that derives `homeDefaultView` from nav item order.
+- [x] Check production data read-only to see whether any current site relies on
+      Featured being first in navigation as the homepage.
+- [x] Remove the proposed `HOME_DEFAULT_VIEW` setting and compatibility
+      backfill.
+- [x] Make `/` fixed to Latest, `/featured` fixed to Featured, and `/latest`
+      redirect to `/`.
+- [x] Restore General settings order to Site, Language & Time, Feeds, Home,
+      Search, with Home containing only the Jant credit toggle.
+- [x] Update export/import, docs, tests, and generated strings to match the
+      fixed Latest homepage.
+- [x] Run focused verification plus the normal checks and document the result.
 
 ## Review
 
-Pending.
+Done. A read-only production check found 79 sites, 0 explicit
+`HOME_DEFAULT_VIEW` rows, and 0 sites whose first enabled Latest/Featured nav
+item would make Featured the legacy homepage. Based on that, the final design
+keeps the homepage fixed to Latest instead of adding a new user-facing setting.
+
+Changes:
+
+- Removed the proposed `HOME_DEFAULT_VIEW` config path, Settings UI, service
+  methods, docs, export fields, and compatibility backfill.
+- `/` now always renders Latest, `/featured` always renders Featured, and
+  `/latest` redirects to `/`.
+- Built-in nav URL resolution is fixed again: Latest -> `/`, Featured ->
+  `/featured`; navigation order no longer changes homepage behavior.
+- `Settings > General` is ordered as Site, Language & Time, Feeds, Home,
+  Search. Home contains only the existing "Build with Jant" toggle.
+- Hugo export/import, GitHub Sync, hosted export, canonical fixtures, sitemap,
+  and API docs were updated to match the fixed Latest homepage.
+
+Verification:
+
+- `mise run i18n-build`
+- `mise run test -- src/lib/__tests__/navigation.test.ts src/lib/__tests__/view.test.ts src/lib/__tests__/resolve-config.test.ts src/services/__tests__/settings.test.ts src/services/__tests__/site-profile.test.ts src/db/__tests__/migrations.test.ts src/client/components/__tests__/jant-settings-general.test.ts src/client/components/__tests__/jant-settings-avatar.test.ts src/ui/dash/settings/__tests__/GeneralContent.test.tsx src/routes/feed/__tests__/sitemap.test.ts src/__tests__/export-service.test.ts src/__tests__/import-site-command.test.ts`
+- `mise run check-tests`
+- `mise run check-lint`
+- `mise exec -- npx prettier --check ...`
+- `git diff --check`
 
 # Investigate Quiet Reply Export Import
 

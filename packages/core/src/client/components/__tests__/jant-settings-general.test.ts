@@ -657,6 +657,7 @@ describe("JantSettingsGeneral", () => {
     const d = detail as unknown as SettingsSaveDetail;
     expect(d.endpoint).toBe("/settings/general/home");
     expect(d.section).toBe("home");
+    expect(d.data).not.toHaveProperty("homeDefaultView");
     expect(d.data.showJantBrandingOnHome).toBe(true);
     expect(siteSaveBtn?.disabled).toBe(true);
   });

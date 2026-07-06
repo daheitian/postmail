@@ -164,7 +164,6 @@ describe("SettingsService", () => {
       siteLanguage: "en",
       cjkSerifFont: "off",
       showJantBrandingOnHome: false,
-      homeDefaultView: "latest",
       mainRssFeed: "featured",
       timeZone: "UTC",
     };
@@ -196,25 +195,6 @@ describe("SettingsService", () => {
       );
 
       expect(await settingsService.get("SITE_NAME")).toBe("Trimmed");
-    });
-
-    it("removes HOME_DEFAULT_VIEW when set to default", async () => {
-      await settingsService.set("HOME_DEFAULT_VIEW", "featured");
-      await settingsService.updateGeneral(
-        { ...defaults, homeDefaultView: "latest" },
-        { oldLanguage: "en", fallbackSiteName: "Jant" },
-      );
-
-      expect(await settingsService.get("HOME_DEFAULT_VIEW")).toBeNull();
-    });
-
-    it("stores HOME_DEFAULT_VIEW when set to featured", async () => {
-      await settingsService.updateGeneral(
-        { ...defaults, homeDefaultView: "featured" },
-        { oldLanguage: "en", fallbackSiteName: "Jant" },
-      );
-
-      expect(await settingsService.get("HOME_DEFAULT_VIEW")).toBe("featured");
     });
 
     it("removes MAIN_RSS_FEED when set to default (featured)", async () => {
@@ -514,6 +494,11 @@ describe("SettingsService", () => {
 
       await settingsService.updateSearchSettings(true, { demoMode: false });
       expect(await settingsService.get("NOINDEX")).toBeNull();
+
+      await settingsService.updateHomeBranding(false);
+      expect(
+        await settingsService.get("SHOW_JANT_BRANDING_ON_HOME"),
+      ).toBeNull();
     });
   });
 });

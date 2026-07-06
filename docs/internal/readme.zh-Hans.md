@@ -183,7 +183,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 3.3 首页 Timeline
 
-- 首页默认展示所有 published 帖子（可通过 `HOME_DEFAULT_VIEW` 设置切换为仅展示 featured 帖子）
+- 首页展示所有 published 帖子；精选内容固定在 `/featured`
 - 置顶帖子（pinned）显示在日期分组之前
 - 帖子卡片根据 format 和内容自动适配不同样式
 - 基于页码分页加载更多
@@ -266,27 +266,27 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 5.2 前台路由
 
-| URL                        | 内容                                                                  |
-| -------------------------- | --------------------------------------------------------------------- |
-| `/`                        | 首页（默认展示最新帖子；`HOME_DEFAULT_VIEW=featured` 时展示精选帖子） |
-| `/latest`                  | 最新帖子（当首页已展示最新时，302 重定向到 `/`）                      |
-| `/featured`                | 精选帖子（当首页已展示精选时，302 重定向到 `/`）                      |
-| `/{slug}`                  | 单条帖子（slug 自动生成或自定义）                                     |
-| `/{slug}`                  | 单个合集帖子列表                                                      |
-| `/collections/{slug}`      | 组合合集帖子列表                                                      |
-| `/collections`             | 合集列表页                                                            |
-| `/archive`                 | 归档（支持 ?format= &featured= 筛选）                                 |
-| `/search`                  | 搜索                                                                  |
-| `/feed`                    | RSS 2.0 站点主 Feed（默认精选，可在设置中切换为 Latest）              |
-| `/feed/atom.xml`           | Atom 站点主 Feed（默认精选，可在设置中切换为 Latest）                 |
-| `/latest/feed`             | RSS 2.0 Latest Feed（公开帖子，支持 `?format=` 筛选）                 |
-| `/featured/feed`           | RSS 2.0 Featured Feed（仅精选帖子）                                   |
-| `/archive/feed`            | RSS 2.0 全量归档 Feed（含 `Hidden from Latest`，支持归档筛选参数）    |
-| `/feed/latest`             | 旧地址，`308` 永久跳转到 `/latest/feed`（保留 query）                 |
-| `/feed/featured`           | 旧地址，`308` 永久跳转到 `/featured/feed`                             |
-| `/{slug}/feed`             | 单个合集的 RSS Feed                                                   |
-| `/collections/{slug}/feed` | 组合合集的 RSS Feed                                                   |
-| `/sitemap.xml`             | 自动生成的站点地图                                                    |
+| URL                        | 内容                                                               |
+| -------------------------- | ------------------------------------------------------------------ |
+| `/`                        | 首页（展示最新帖子）                                               |
+| `/latest`                  | 302 重定向到 `/`                                                   |
+| `/featured`                | 精选帖子                                                           |
+| `/{slug}`                  | 单条帖子（slug 自动生成或自定义）                                  |
+| `/{slug}`                  | 单个合集帖子列表                                                   |
+| `/collections/{slug}`      | 组合合集帖子列表                                                   |
+| `/collections`             | 合集列表页                                                         |
+| `/archive`                 | 归档（支持 ?format= &featured= 筛选）                              |
+| `/search`                  | 搜索                                                               |
+| `/feed`                    | RSS 2.0 站点主 Feed（默认精选，可在设置中切换为 Latest）           |
+| `/feed/atom.xml`           | Atom 站点主 Feed（默认精选，可在设置中切换为 Latest）              |
+| `/latest/feed`             | RSS 2.0 Latest Feed（公开帖子，支持 `?format=` 筛选）              |
+| `/featured/feed`           | RSS 2.0 Featured Feed（仅精选帖子）                                |
+| `/archive/feed`            | RSS 2.0 全量归档 Feed（含 `Hidden from Latest`，支持归档筛选参数） |
+| `/feed/latest`             | 旧地址，`308` 永久跳转到 `/latest/feed`（保留 query）              |
+| `/feed/featured`           | 旧地址，`308` 永久跳转到 `/featured/feed`                          |
+| `/{slug}/feed`             | 单个合集的 RSS Feed                                                |
+| `/collections/{slug}/feed` | 组合合集的 RSS Feed                                                |
+| `/sitemap.xml`             | 自动生成的站点地图                                                 |
 
 ### 5.3 后台路由
 
@@ -362,16 +362,15 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 **用户可配置**（后台设置）：
 
-| 字段                | 说明                                           | 默认值     |
-| ------------------- | ---------------------------------------------- | ---------- |
-| `SITE_NAME`         | 站点名称                                       | `Jant`     |
-| `SITE_DESCRIPTION`  | 站点描述                                       | 自动生成   |
-| `SITE_LANGUAGE`     | 站点语言（en, zh-Hans, zh-Hant）               | `en`       |
-| `HOME_DEFAULT_VIEW` | 首页默认视图（latest / featured）              | `latest`   |
-| `MAIN_RSS_FEED`     | `/feed` 默认输出（featured / latest）          | `featured` |
-| `TIME_ZONE`         | 时区（IANA 标识，例如 `UTC`、`Asia/Shanghai`） | `UTC`      |
-| `SITE_FOOTER`       | 自定义页脚                                     |            |
-| `NOINDEX`           | 是否禁止搜索引擎索引                           |            |
+| 字段               | 说明                                           | 默认值     |
+| ------------------ | ---------------------------------------------- | ---------- |
+| `SITE_NAME`        | 站点名称                                       | `Jant`     |
+| `SITE_DESCRIPTION` | 站点描述                                       | 自动生成   |
+| `SITE_LANGUAGE`    | 站点语言（en, zh-Hans, zh-Hant）               | `en`       |
+| `MAIN_RSS_FEED`    | `/feed` 默认输出（featured / latest）          | `featured` |
+| `TIME_ZONE`        | 时区（IANA 标识，例如 `UTC`、`Asia/Shanghai`） | `UTC`      |
+| `SITE_FOOTER`      | 自定义页脚                                     |            |
+| `NOINDEX`          | 是否禁止搜索引擎索引                           |            |
 
 **环境配置**（`wrangler.toml` / `.dev.vars`）：
 

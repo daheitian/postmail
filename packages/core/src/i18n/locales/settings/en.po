@@ -914,8 +914,8 @@ msgstr "Header"
 
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Header links, home feed, and overflow menu"
-msgstr "Header links, home feed, and overflow menu"
+msgid "Header links, built-in destinations, and overflow menu"
+msgstr "Header links, built-in destinations, and overflow menu"
 
 #. @context: Description for the RSS system navigation toggle. {feed} is either Latest or Featured.
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1650,6 +1650,11 @@ msgstr "Settings"
 msgid "Show \"Build with Jant\" at the bottom of the home page"
 msgstr "Show \"Build with Jant\" at the bottom of the home page"
 
+#. @context: Description for built-in nav toggles
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Show or hide built-in destinations in the header and More menu."
+msgstr "Show or hide built-in destinations in the header and More menu."
+
 #. @context: GitHub sync picker — paginated repo count hint. Placeholders {shown} and {total} are integers.
 #: src/routes/dash/settings.tsx
 msgid "Showing {shown} of {total}"
@@ -1869,11 +1874,6 @@ msgstr "This will permanently delete all your data — posts, media, collections
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Time Zone"
 msgstr "Time Zone"
-
-#. @context: Description for built-in nav toggles
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Toggle built-in navigation items. Their order controls what shows in the header and which feed the homepage opens first."
-msgstr "Toggle built-in navigation items. Their order controls what shows in the header and which feed the homepage opens first."
 
 #. @context: Button to expand/collapse nav item edit
 #: src/ui/dash/appearance/NavigationContent.tsx

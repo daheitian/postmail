@@ -27,10 +27,6 @@ featuredRoutes.get("/", async (c) => {
   const navData = await getNavigationData(c);
   const i18n = getI18n(c);
 
-  // When homepage already shows featured, redirect to avoid duplicate content
-  if (navData.homeDefaultView === "featured") {
-    return c.redirect(toPublicPath("/", navData.sitePathPrefix), 302);
-  }
   const page = parsePageNumber(c.req.query("page"));
   const featuredTitle = i18n._(
     msg({

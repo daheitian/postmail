@@ -98,7 +98,6 @@ describe("Hugo import CLI helpers", () => {
         'site_name = "Example Site"',
         'site_description = "A description"',
         'site_language = "en"',
-        'home_default_view = "featured"',
         "show_jant_branding_on_home = true",
         "show_header_avatar = false",
         "noindex = false",
@@ -136,7 +135,7 @@ describe("Hugo import CLI helpers", () => {
     expect(siteConfig.title).toBe("Example Site");
     expect(siteConfig.base_url).toBe("https://example.com/");
     expect(siteConfig.extra.jant.theme_id).toBe("paper");
-    expect(siteConfig.extra.jant.home_default_view).toBe("featured");
+    expect(siteConfig.extra.jant).not.toHaveProperty("home_default_view");
     expect(siteConfig.extra.jant.nav_exported).toBe(true);
     expect(siteConfig.extra.jant.nav).toHaveLength(1);
     expect(siteConfig.extra.jant.collections_directory_exported).toBe(true);

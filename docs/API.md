@@ -1958,7 +1958,6 @@ All values are strings because they map directly to stored config values.
 | `SITE_NAME`                  | Site title              | `"My Blog"`         |
 | `SITE_DESCRIPTION`           | Site description        | `"Notes and links"` |
 | `SITE_LANGUAGE`              | Language code           | `"en"`              |
-| `HOME_DEFAULT_VIEW`          | Home feed mode          | `"latest"`          |
 | `MAIN_RSS_FEED`              | Canonical feed kind     | `"featured"`        |
 | `TIME_ZONE`                  | IANA timezone           | `"Asia/Shanghai"`   |
 | `SITE_FOOTER`                | Footer HTML/text        | `"<p>Footer</p>"`   |
@@ -1988,7 +1987,6 @@ Response:
     "SITE_NAME": "Jant",
     "SITE_DESCRIPTION": "Thoughts, links, and quotes — one post at a time",
     "SITE_LANGUAGE": "en",
-    "HOME_DEFAULT_VIEW": "latest",
     "MAIN_RSS_FEED": "featured",
     "TIME_ZONE": "UTC",
     "SITE_FOOTER": "",
@@ -2041,7 +2039,6 @@ Example partial-apply response:
     "SITE_NAME": "New Name",
     "SITE_DESCRIPTION": "Thoughts, links, and quotes — one post at a time",
     "SITE_LANGUAGE": "en",
-    "HOME_DEFAULT_VIEW": "latest",
     "MAIN_RSS_FEED": "featured",
     "TIME_ZONE": "UTC",
     "SITE_FOOTER": "",

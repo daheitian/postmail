@@ -819,12 +819,10 @@ msgstr "Favicon"
 
 #. @context: Archive visibility filter - featured posts
 #. @context: Browser page title for the featured feed
-#. @context: Browser page title for the featured feed
 #. @context: Inactive browse tab label on sample page
 #. @context: Page heading for the featured posts feed
 #. @context: Tooltip and screen reader label for the featured-post icon in the post footer when no featured date is available
 #: src/routes/pages/featured.tsx
-#: src/routes/pages/home.tsx
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/FeaturedPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1064,10 +1062,8 @@ msgstr "Label (optional)"
 
 #. @context: Active browse tab label on sample page
 #. @context: Browser page title for the latest feed
-#. @context: Browser page title for the latest feed
 #. @context: Page heading for the latest posts feed
 #: src/routes/pages/home.tsx
-#: src/routes/pages/latest.tsx
 #: src/ui/pages/HomePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Latest"

@@ -268,7 +268,7 @@ export function NavigationContent({
     systemLinksDescription: i18n._(
       msg({
         message:
-          "Toggle built-in navigation items. Their order controls what shows in the header and which feed the homepage opens first.",
+          "Show or hide built-in destinations in the header and More menu.",
         comment: "@context: Description for built-in nav toggles",
       }),
     ),
