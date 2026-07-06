@@ -1,3 +1,211 @@
+# Investigate Production Media Cleanup
+
+## Problem
+
+线上文章 `https://www.owenyoung.com/blog/links/2024-12-09-4` 里的图片
+`med_01kn1418sefzt8gyvxjk40x5zg.webp` 已经 404。需要确认这是早期删除行为的
+历史 bug，还是当前自动清理仍会误删正文内图片，并明确有标题文章正文图片是否会被
+自动删除。
+
+## Plan
+
+- [x] Trace current upload/media cleanup implementation and its scheduled entry
+      points.
+- [x] Verify how the cleaner distinguishes attached media, orphan media, site
+      assets, and trash purge records.
+- [x] Query production read-only data for the affected media key, post, upload
+      session, and purge history.
+- [x] Check whether titled posts with inline body images carry a durable media
+      attachment marker.
+- [x] Document findings, risk, and any recommended follow-up.
+
+## Review
+
+Read-only production findings:
+
+- Target media `med_01kn1418sefzt8gyvxjk40x5zg` no longer has a `media` row and
+  the public media URL returns 404.
+- Its `upload_session` row still exists and shows a completed upload at
+  `2026-03-31 04:57:09 UTC`, with final key
+  `media/sit_01kmyfab3cfztrzn5qs9b80083/files/med_01kn1418sefzt8gyvxjk40x5zg.webp`.
+- The target post `pst_01kmygfh61esj9nxdc64y9xzm9` still contains that URL in
+  TipTap body JSON, but there are no `media` rows attached to the post.
+- There is no matching `storage_purge` row for the target key. Since orphan
+  media cleanup was introduced on 2026-06-16 and the 30-day trash queue was
+  introduced on 2026-06-19, this specific deletion most likely happened during
+  the first orphan cleanup window before trash recovery existed.
+
+Current strategy:
+
+- Hosted cron currently runs media cleanup roughly once per minute across 79
+  managed sites.
+- Core cleanup deletes finalized media rows with `post_id IS NULL` and
+  `created_at < now() - 7 days`, excluding site assets by storage-key pattern.
+- Current deletion goes through `media.deleteByIds`, which removes the DB row,
+  frees the original public object key immediately, and records a 30-day
+  `storage_purge` trash entry when the active storage driver supports copy.
+- Completed `upload_session` rows are not enough to protect media from orphan
+  cleanup.
+
+Current risk:
+
+- Titled compose posts can paste/upload images inline into the body. That path
+  stores the image URL in the TipTap document but does not include the media ID
+  in post attachments, so the `media.post_id` marker remains null.
+- A production scan of `owenyoung.com` found 83 body media references with
+  missing `media` rows and 2 live body media references whose `media.post_id`
+  is still null.
+- Those 2 live references currently return 200 but will cross the 7-day orphan
+  threshold on 2026-07-07 UTC if the cleanup/binding logic is not changed first:
+  `med_01kwbng6yge489h3emx40j77v9` and
+  `med_01kwbpb15we489h3fn1t9myhdr`.
+
+Recommended follow-up:
+
+- Fix submit/save to extract first-party inline media IDs from body JSON and
+  attach them to the post, or teach cleanup to treat first-party media IDs
+  referenced by post bodies as live.
+- Run a one-off repair after the code fix to bind existing live inline-body
+  media rows to their referencing posts.
+- Consider pausing hosted orphan-media cleanup or narrowing it to rows not
+  referenced by any post body until the fix and repair are deployed.
+
+## Follow-up: Cross-Site Impact
+
+### Plan
+
+- [x] Scan all hosted sites for post bodies that reference first-party media
+      URLs.
+- [x] Classify referenced media as missing, live-but-unattached, attached to the
+      same post, attached to another post, or cross-site.
+- [x] Summarize affected sites/posts and sample the most relevant records.
+- [x] Recommend a healthier cleanup model based on the observed blast radius.
+
+### Review
+
+Read-only production scan across all sites:
+
+- Body inline-media refs with missing `media` rows: 127 refs, 58 posts, 5 sites.
+- Body inline-media refs with live `media` rows but `post_id IS NULL`: 24 refs,
+  8 posts, 7 sites. These are still accessible today but will be deleted by the
+  current orphan cleaner after each row crosses the 7-day threshold.
+- Affected site summary:
+  - `owen.jant.blog`, `www.owenyoung.com`: 85 refs / 30 posts
+    (83 missing, 2 live-unattached).
+  - `luxiblog.jant.blog`, `luxi.blog`: 30 refs / 17 posts
+    (all missing).
+  - `michaelwang.jant.blog`, `mikelab.jant.blog`, `michaelwang.nz`: 7 refs /
+    7 posts (all missing).
+  - `ayden.jant.blog`, `aydengen.com`: 6 refs / 5 posts
+    (5 missing, 1 live-unattached).
+  - `bern3rsh.jant.blog`: 11 refs / 1 post (all live-unattached).
+  - `afan.jant.blog`, `www.afan.wiki`: 4 refs / 1 post (all live-unattached).
+  - `fieldcraft.jant.blog`: 4 refs / 1 post (all live-unattached).
+  - `mlyz.jant.blog`, `mlyz.me`: 2 refs / 1 post (all missing).
+  - `createmyself.jant.blog`: 1 ref / 1 post (live-unattached).
+  - `cyberhz.jant.blog`, `haozhe.wang`: 1 ref / 1 post
+    (live-unattached).
+- Earliest upcoming live-unattached cleanup deadlines are:
+  - `createmyself.jant.blog`: `2026-07-06 22:56:20 UTC`.
+  - `owenyoung.com`: `2026-07-07 07:04:40 UTC` and
+    `2026-07-07 07:19:19 UTC`.
+  - `bern3rsh.jant.blog`: `2026-07-07 10:08:23-24 UTC`.
+
+Recommended cleanup model:
+
+- Keep cleanup for expired temporary upload sessions, aborted multipart uploads,
+  and 30-day trash purging. Those are operational garbage and do not represent
+  published content.
+- Pause or disable finalized orphan-media deletion until it is reference-aware.
+  A `post_id IS NULL` check is not a safe liveness test because inline body
+  images are persisted as URLs, not as post attachments.
+- Proper fix: introduce an explicit media reference model, or at minimum extract
+  first-party media IDs from TipTap body JSON on save and protect them in the
+  cleanup query. A single `media.post_id` is too weak long-term because the same
+  media URL can appear in more than one post.
+- Safer policy after the fix: delete only finalized media that has zero live
+  references across posts/settings/site assets, is older than a conservative
+  grace window, and first enters recoverable trash with a durable audit trail.
+
+# Hotfix: Stop Finalized Orphan Media Cleanup
+
+## Problem
+
+The hosted upload cleanup job currently deletes finalized media rows when
+`post_id IS NULL` and the row is older than seven days. This misclassifies
+first-party inline body images as orphaned because inline images are persisted
+in TipTap body JSON as URLs, not as post attachments.
+
+## Plan
+
+- [x] Remove finalized orphan-media deletion from upload cleanup.
+- [x] Keep expired upload session cleanup and due trash purging intact.
+- [x] Update regression coverage so finalized unattached media is retained.
+- [x] Run focused verification and document the result.
+
+## Review
+
+Done. `uploads.cleanupExpired` no longer calls
+`media.listOrphanedMediaIds` / `media.deleteByIds` for finalized media rows with
+`post_id IS NULL`. It still cleans expired upload sessions and purges due
+`storage_purge` trash entries. The response keeps `deletedOrphanMedia: 0` for
+API/CLI compatibility.
+
+Updated internal uploads cleanup coverage so an old finalized unattached media
+row remains in both DB and storage and does not create a trash entry.
+
+Verification:
+
+- `mise run test -- src/routes/api/internal/__tests__/uploads.test.ts src/__tests__/bin/uploads-cleanup.test.ts`
+- `mise run test -- src/services/__tests__/media.test.ts src/routes/api/internal/__tests__/uploads.test.ts`
+- `mise exec -- npx prettier --check src/services/upload-session.ts src/routes/api/internal/__tests__/uploads.test.ts src/routes/api/internal/sites.ts ../../tasks/todo.md`
+- `git diff --check`
+
+# Merge Preview Into Branch 2
+
+## Problem
+
+The current `2` branch needs `preview` merged before deployment. The working
+tree contains the finalized-media cleanup hotfix, and `preview` also touches
+`tasks/todo.md`, so the merge may need conflict resolution.
+
+## Plan
+
+- [x] Stash current uncommitted hotfix changes.
+- [x] Fetch latest `origin/preview` and merge it into `2`.
+- [x] Reapply the hotfix changes and resolve conflicts.
+- [x] Fix the post-merge snapshot test environment isolation failure.
+- [x] Run focused verification for the merge and hotfix.
+- [x] Document the result.
+
+## Review
+
+Done. Branch `2` fast-forwarded to `origin/preview` at
+`c787f63b Keep homepage fixed to latest`. The finalized-media cleanup hotfix was
+stashed before the merge and reapplied cleanly afterward.
+
+No merge conflict markers remain. `git status` shows only the intended
+uncommitted files from the hotfix, the post-merge snapshot test isolation fix,
+and this task note.
+
+Post-merge verification initially exposed a snapshot test failure: the CLI test
+fixture used local storage paths, but the CLI auto-loaded local `.env.node` S3
+settings. The test now forces `STORAGE_DRIVER=local` for snapshot runtime
+switches and restores Node/S3 CLI env keys after each test.
+
+Verification:
+
+- `mise run test -- src/node/__tests__/cli-site-snapshot.test.ts` passed from
+  `packages/core`.
+- `mise run check-tests` passed: 219 files, 2594 tests.
+- `mise run check-lint` passed.
+- `mise run test -- src/node/__tests__/cli-site-snapshot.test.ts src/routes/api/internal/__tests__/uploads.test.ts src/__tests__/bin/uploads-cleanup.test.ts`
+  passed from `packages/core`.
+- `mise exec -- npx prettier --check packages/core/src/services/upload-session.ts packages/core/src/routes/api/internal/__tests__/uploads.test.ts packages/core/src/routes/api/internal/sites.ts packages/core/src/node/__tests__/cli-site-snapshot.test.ts tasks/todo.md`
+  passed.
+- `git diff --check` passed.
+- `rg -n "^(<<<<<<<|=======|>>>>>>>)" .` found no conflict markers.
+
 # Decouple Home Feed from Navigation Order
 
 ## Problem

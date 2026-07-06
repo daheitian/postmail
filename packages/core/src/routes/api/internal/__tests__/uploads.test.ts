@@ -136,7 +136,7 @@ describe("Internal upload admin routes", () => {
     expect(storage.files.has(row.tempStorageKey)).toBe(false);
   });
 
-  it("deletes orphaned media past the grace window and keeps fresh orphans", async () => {
+  it("keeps finalized unattached media during upload cleanup", async () => {
     const storage = createMockStorage();
     const { app, services, sqlite } = createTestApp({
       authenticated: false,
@@ -187,28 +187,24 @@ describe("Internal upload admin routes", () => {
     await expect(res.json()).resolves.toEqual({
       abortedMultipartUploads: 0,
       deletedSessions: 0,
-      deletedOrphanMedia: 1,
-      // The reaped orphan's object is freshly enqueued (30 days out), so the
-      // same sweep purges nothing yet.
+      deletedOrphanMedia: 0,
       purgedStorageObjects: 0,
     });
 
-    // Old orphan: DB row gone, original key freed immediately, bytes moved to
-    // a trash/ key recorded in storage_purge (recoverable within the window).
+    // Finalized media may be referenced from post body JSON without being a
+    // post attachment, so upload cleanup must not delete it from `postId IS
+    // NULL` alone.
     expect(
       sqlite.prepare("select id from media where id = ?").get(oldOrphan.id),
-    ).toBeUndefined();
-    expect(storage.files.has(oldStorageKey)).toBe(false);
-    expect([...storage.files.keys()].some((k) => k.startsWith("trash/"))).toBe(
-      true,
-    );
+    ).toBeDefined();
+    expect(storage.files.has(oldStorageKey)).toBe(true);
     expect(
       sqlite
         .prepare("select id from storage_purge where original_key = ?")
         .get(oldStorageKey),
-    ).toBeDefined();
+    ).toBeUndefined();
 
-    // Fresh orphan: untouched.
+    // Fresh unattached media is also untouched.
     expect(
       sqlite.prepare("select id from media where id = ?").get(freshOrphan.id),
     ).toBeDefined();

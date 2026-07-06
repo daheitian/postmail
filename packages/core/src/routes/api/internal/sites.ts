@@ -163,11 +163,11 @@ internalSitesRoutes.get(
   },
 );
 
-// Clean up a single managed site's expired upload sessions and orphaned media
-// (uploaded during compose but never published). Invoked per-site by the
-// hosted control plane's scheduled maintenance. Self-hosted operators use the
-// host-scoped `POST /api/internal/uploads/cleanup` route / `jant uploads
-// cleanup` CLI instead.
+// Clean up a single managed site's expired upload sessions and due trash
+// objects. Invoked per-site by the hosted control plane's scheduled
+// maintenance. Self-hosted operators use the host-scoped
+// `POST /api/internal/uploads/cleanup` route / `jant uploads cleanup` CLI
+// instead.
 internalSitesRoutes.post(
   "/:siteId/uploads/cleanup",
   requireInternalAdminApi(),
