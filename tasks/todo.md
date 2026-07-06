@@ -1,3 +1,28 @@
+# Hide Same-Site Absolute About Navigation Suggestions
+
+## Problem
+
+Settings → Navigation still suggests `/about` when an existing custom nav link
+points to the same page with the site's absolute URL, such as
+`https://preview-test.owenyoung.com/about`.
+
+## Plan
+
+- [x] Trace how suggested navigation links detect existing items.
+- [x] Normalize same-site absolute nav URLs before comparing suggestion paths.
+- [x] Add regression coverage for an absolute `/about` link.
+- [x] Run repository verification.
+
+## Review
+
+- Updated navigation suggestion detection so same-site absolute URLs are
+  normalized to internal paths before comparing against `/about` and `/now`.
+- Passed the current site origin/path prefix from the settings navigation route
+  into the service.
+- Added regression coverage for `https://preview-test.owenyoung.com/about` and
+  for same-site absolute URLs under a public path prefix.
+- Verification: `mise run check-tests` passed.
+
 # Recover Deleted Inline Media
 
 ## Problem

@@ -15,7 +15,12 @@ import {
 import { createEntityId } from "../lib/ids.js";
 import { ValidationError } from "../lib/errors.js";
 import { now } from "../lib/time.js";
-import { normalizePath } from "../lib/url.js";
+import {
+  normalizePath,
+  normalizeSitePathPrefix,
+  stripSitePathPrefix,
+  toSameSitePath,
+} from "../lib/url.js";
 import { COLLECTION_FRESHNESS_WINDOW_SECONDS } from "../types.js";
 import type {
   NavItem,
@@ -34,6 +39,11 @@ const SUGGESTED_NAV_LINK_CANDIDATES = [
   { key: "now", path: "/now", label: "Now" },
 ] as const;
 
+export interface ListSuggestedLinksOptions {
+  siteOrigin?: string;
+  sitePathPrefix?: string;
+}
+
 // Re-export shared constraint detection — see db/dialect.ts
 import { isUniqueConstraintError } from "../db/dialect.js";
 
@@ -51,7 +61,9 @@ export interface NavItemService {
     afterId: string | null,
     beforeId: string | null,
   ): Promise<NavItem | null>;
-  listSuggestedLinks(): Promise<SuggestedNavLink[]>;
+  listSuggestedLinks(
+    options?: ListSuggestedLinksOptions,
+  ): Promise<SuggestedNavLink[]>;
   getCollectionFreshness(collectionIds: string[]): Promise<Map<string, number>>;
 }
 
@@ -134,21 +146,40 @@ export function createNavItemService(
     return normalized ? `/${normalized}` : "/";
   }
 
-  function getComparableInternalPath(url: string): string | null {
+  function getComparableInternalPath(
+    url: string,
+    options: ListSuggestedLinksOptions = {},
+  ): string | null {
+    const value = url.trim();
+    const sitePathPrefix = normalizeSitePathPrefix(
+      options.sitePathPrefix ?? "",
+    );
+    const sameSitePath = toSameSitePath(value, options.siteOrigin ?? "");
+    if (sameSitePath !== null) {
+      try {
+        const pathname = new URL(sameSitePath, "https://jant.invalid").pathname;
+        const internalPath = stripSitePathPrefix(pathname, sitePathPrefix);
+        return internalPath ? withLeadingSlash(internalPath) : null;
+      } catch {
+        return null;
+      }
+    }
+
     if (
-      url.startsWith("http://") ||
-      url.startsWith("https://") ||
-      url.startsWith("//") ||
-      url.startsWith("mailto:") ||
-      url.startsWith("tel:") ||
-      url.startsWith("#")
+      value.startsWith("http://") ||
+      value.startsWith("https://") ||
+      value.startsWith("//") ||
+      value.startsWith("mailto:") ||
+      value.startsWith("tel:") ||
+      value.startsWith("#")
     ) {
       return null;
     }
 
     try {
-      const pathname = new URL(url, "https://jant.invalid").pathname;
-      return withLeadingSlash(pathname);
+      const pathname = new URL(value, "https://jant.invalid").pathname;
+      const internalPath = stripSitePathPrefix(pathname, sitePathPrefix);
+      return internalPath ? withLeadingSlash(internalPath) : null;
     } catch {
       return null;
     }
@@ -455,7 +486,7 @@ export function createNavItemService(
       throw new Error("Failed to assign a unique nav item position");
     },
 
-    async listSuggestedLinks() {
+    async listSuggestedLinks(options: ListSuggestedLinksOptions = {}) {
       const existingRows = await db
         .select({
           url: navItems.url,
@@ -465,7 +496,7 @@ export function createNavItemService(
         .where(eq(navItems.siteId, siteId));
       const existingPaths = new Set(
         existingRows.flatMap((item) => {
-          const path = getComparableInternalPath(item.url);
+          const path = getComparableInternalPath(item.url, options);
           return path ? [path] : [];
         }),
       );

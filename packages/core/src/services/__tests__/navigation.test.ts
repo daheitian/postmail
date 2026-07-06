@@ -446,6 +446,47 @@ describe("NavItemService", () => {
       expect(suggestions).toEqual([]);
     });
 
+    it("hides suggestions already represented by a same-site absolute URL", async () => {
+      insertTestPost(sqlite, {
+        id: TEST_POST_ID,
+        slug: "about",
+        title: "About",
+      });
+
+      await navItemService.create({
+        type: "link",
+        label: "About",
+        url: "https://preview-test.owenyoung.com/about",
+      });
+
+      const suggestions = await navItemService.listSuggestedLinks({
+        siteOrigin: "https://preview-test.owenyoung.com",
+      });
+
+      expect(suggestions).toEqual([]);
+    });
+
+    it("hides suggestions already represented by a public path prefix", async () => {
+      insertTestPost(sqlite, {
+        id: TEST_POST_ID,
+        slug: "about",
+        title: "About",
+      });
+
+      await navItemService.create({
+        type: "link",
+        label: "About",
+        url: "https://example.com/blog/about",
+      });
+
+      const suggestions = await navItemService.listSuggestedLinks({
+        siteOrigin: "https://example.com",
+        sitePathPrefix: "/blog",
+      });
+
+      expect(suggestions).toEqual([]);
+    });
+
     it("does not suggest draft or private posts", async () => {
       insertTestPost(sqlite, {
         id: TEST_POST_ID,

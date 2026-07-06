@@ -783,7 +783,10 @@ settingsRoutes.get("/navigation", async (c) => {
   const [navItems, directoryData, suggestedLinks] = await Promise.all([
     c.var.services.navItems.list(),
     c.var.services.collections.listDirectoryData(),
-    c.var.services.navItems.listSuggestedLinks(),
+    c.var.services.navItems.listSuggestedLinks({
+      siteOrigin: c.var.appConfig.siteOrigin,
+      sitePathPrefix: c.var.appConfig.sitePathPrefix,
+    }),
   ]);
   const navData = await getNavigationData(c);
 
