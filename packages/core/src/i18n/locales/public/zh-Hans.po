@@ -578,7 +578,7 @@ msgstr ""
 #. @context: Inline editor button label for removing a broken image
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Delete image"
-msgstr "删除图片"
+msgstr ""
 
 #. @context: Confirm dialog for deleting a collection
 #: src/ui/shared/collection-management-labels.ts
@@ -986,7 +986,7 @@ msgstr ""
 #. @context: Inline editor placeholder title shown when an image cannot load
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Image unavailable"
-msgstr "图片无法显示"
+msgstr ""
 
 #. @context: Archive media filter - images
 #: src/ui/pages/ArchivePage.tsx
@@ -1404,7 +1404,7 @@ msgstr ""
 #. @context: Inline editor button label for opening the original URL of a broken image
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Open image URL"
-msgstr "打开图片地址"
+msgstr ""
 
 #. @context: Button label to open a raw brand asset in the browser
 #: src/ui/pages/BrandPage.tsx
@@ -1662,7 +1662,7 @@ msgstr ""
 #. @context: Inline editor button label for replacing a broken image
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Replace image"
-msgstr "替换图片"
+msgstr ""
 
 #. @context: Archive tile label for multiple thread replies
 #: src/ui/pages/ArchivePage.tsx
