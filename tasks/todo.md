@@ -1,3 +1,142 @@
+# Recover Deleted Inline Media
+
+## Problem
+
+The finalized-media cleanup bug deleted media rows/objects that were still
+referenced from post body JSON. We need to quantify which affected inline media
+can still be recovered from trash/storage and define a safe restoration path
+without mutating production data during the investigation.
+
+## Plan
+
+- [x] Re-read the storage trash implementation and deletion timeline.
+- [x] Query production read-only for missing first-party inline media refs.
+- [x] Cross-check missing refs against `storage_purge` trash records and any
+      recoverable storage objects.
+- [x] Summarize affected sites/posts/media by recovery status.
+- [x] Propose a safe restore/backfill procedure and operational safeguards.
+
+## Review
+
+Read-only production findings:
+
+- Current post bodies contain 151 distinct first-party `media/<site>/files/<id>`
+  refs across 65 posts and 10 sites.
+- 24 refs still have live `media` rows.
+- 127 refs are broken because their `media` row is missing and the original
+  object key is absent from storage.
+- 41 of those 127 broken refs have unexpired `storage_purge` trash records, and
+  all 41 corresponding trash objects exist in storage.
+- The 41 recoverable refs cover 41 media IDs and 26 posts across 4 sites. None
+  of the recoverable media IDs is referenced by multiple posts.
+- The earliest trash purge deadline among recoverable objects is
+  `2026-07-18 21:12:15 UTC`; the latest is `2026-07-28 08:55:34 UTC`.
+
+Recovery status by site:
+
+- `luxi.blog`: 30 broken refs / 17 posts / 30 media. 27 refs / 14 posts / 27
+  media are recoverable from trash; 3 refs / 3 posts / 3 media are not
+  recoverable from current storage/trash.
+- `michaelwang.nz`: 7 broken refs / 7 posts / 7 media, all recoverable.
+- `aydengen.com`: 5 broken refs / 4 posts / 5 media, all recoverable.
+- `mlyz.me`: 2 broken refs / 1 post / 2 media, all recoverable.
+- `www.owenyoung.com`: 83 broken refs / 29 posts / 82 media, none recoverable
+  from current storage/trash. 10 of these have `upload_session` rows, but the
+  original objects are gone and there are no `storage_purge` rows.
+
+Backup check:
+
+- Production has hourly database backups (`postgres`, `sqlite`, `redis`) and a
+  backup service that uploads those backups to S3 with 30-day retention.
+- No local media/object backup directory was found under `/data/backups`.
+- Database backups can help reconstruct deleted `media` row metadata, but they
+  cannot recover missing image bytes unless the object itself still exists in
+  trash/storage or another external cache/source.
+
+Recommended restore procedure:
+
+- Deploy the cleanup hotfix before restoring rows; otherwise restored
+  `post_id IS NULL` inline-media rows could be deleted again.
+- Build a one-off idempotent restore job from a generated manifest of the 41
+  recoverable rows:
+  - Verify the `media` row is still missing and the original key is still
+    missing.
+  - Verify the trash key still exists.
+  - Copy `storage_purge.storage_key` back to `storage_purge.original_key`,
+    preserving object metadata.
+  - Recreate a `media` row with the original media ID, site ID, provider,
+    original storage key, `media_kind = 'image'`, and `post_id = NULL`.
+  - Prefer exact row metadata from a pre-delete DB backup; fall back to
+    `upload_session` and object `head-object` metadata when exact rows are not
+    needed.
+  - Leave the `storage_purge` row in place or delete it only after verification;
+    leaving it only purges the trash copy later, not the restored original key.
+  - Verify restored public URLs return 200.
+- For unrecoverable refs, generate per-site/post reports and either notify
+  users to re-upload the missing images or add a later product repair flow for
+  replacing/removing broken image nodes.
+
+## Follow-up: Restore Script
+
+Problem:
+
+The cleanup hotfix has been prepared, and the remaining recoverable production
+data should be restored via an audited, repeatable operation rather than manual
+SQL edits.
+
+Plan:
+
+- [x] Add a production-host restore script with dry-run and apply modes.
+- [x] Make the script idempotent: skip existing media rows, verify trash
+      objects, copy only missing original keys, and insert rows with conflict
+      protection.
+- [x] Run dry-run against production.
+- [x] Document the exact apply procedure and remaining risks.
+
+Result:
+
+- Added `scripts/ops/restore-inline-media-from-trash.sh`.
+- The script defaults to `--dry-run`; `--apply` is required for writes.
+- It reads production `/srv/jant/.env`, queries Postgres for missing inline refs
+  with unexpired `storage_purge` rows, validates trash objects with
+  `aws s3api head-object`, and checks whether the original object key already
+  exists.
+- In `--apply`, it copies each trash object back to its original key, then
+  inserts missing `media` rows inside a DB transaction using conflict
+  protection.
+- It does not delete `storage_purge` rows; the later purge only removes trash
+  copies, not restored original keys.
+
+Production dry-run:
+
+- Command:
+  `ssh prod-deploy 'bash -s -- --dry-run' < scripts/ops/restore-inline-media-from-trash.sh`
+- Recoverable DB candidates: 41.
+- Ready: 41.
+- Original already existed: 0.
+- Missing trash: 0.
+- Copy failed: 0.
+- Skipped: 0.
+- Ready by site: `aydengen.com` 5, `luxi.blog` 27, `michaelwang.nz` 7,
+  `mlyz.me` 2.
+
+Apply command:
+
+```sh
+ssh prod-deploy 'bash -s -- --apply' < scripts/ops/restore-inline-media-from-trash.sh
+```
+
+Remaining risks:
+
+- Run only after the cleanup hotfix is deployed; otherwise restored unattached
+  inline media could be deleted again by the old cleanup job.
+- The script restores object bytes and minimal `media` rows. Exact historical
+  fields such as dimensions/blurhash/alt are not reconstructed unless they are
+  added from DB backups later. Public URLs should recover because post bodies
+  already point at the original storage keys.
+- The 86 unrecoverable refs remain broken because neither original objects nor
+  trash objects exist in current storage.
+
 # Investigate Production Media Cleanup
 
 ## Problem
