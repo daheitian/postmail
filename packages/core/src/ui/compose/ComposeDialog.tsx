@@ -59,6 +59,34 @@ export const ComposeForm: FC<ComposeFormProps> = ({
           "@context: Toast when several pasted remote images couldn't be rehosted; {count} is the number of images",
       }),
     ),
+    brokenImageUnavailable: i18n._(
+      msg({
+        message: "Image unavailable",
+        comment:
+          "@context: Inline editor placeholder title shown when an image cannot load",
+      }),
+    ),
+    brokenImageDelete: i18n._(
+      msg({
+        message: "Delete image",
+        comment:
+          "@context: Inline editor button label for removing a broken image",
+      }),
+    ),
+    brokenImageReplace: i18n._(
+      msg({
+        message: "Replace image",
+        comment:
+          "@context: Inline editor button label for replacing a broken image",
+      }),
+    ),
+    brokenImageOpen: i18n._(
+      msg({
+        message: "Open image URL",
+        comment:
+          "@context: Inline editor button label for opening the original URL of a broken image",
+      }),
+    ),
     note: i18n._(
       msg({
         message: "Note",

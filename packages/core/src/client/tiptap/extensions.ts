@@ -19,7 +19,7 @@ import { WrappingInputRules } from "./wrapping-input-rules.js";
 import { InsertParagraphAround } from "./insert-paragraph-around.js";
 import { Footnotes } from "./footnotes.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
-import { ImageNode } from "./image-node.js";
+import { ImageNode, type ImageNodeLabels } from "./image-node.js";
 import { MoreBreak } from "./more-break.js";
 import { EmbedNode } from "./embed-node.js";
 import { HtmlBlockNode } from "./html-block-node.js";
@@ -27,6 +27,7 @@ import { EmbedPaste } from "./embed-paste.js";
 import { RehostImages } from "./rehost-images.js";
 import type { RehostImagesOptions } from "./rehost-images.js";
 import { MarkdownClipboard } from "./markdown-clipboard.js";
+import { ImageInputRules } from "./image-input-rules.js";
 import {
   MARKDOWN_MARKED_OPTIONS,
   createMarkdownContentExtensions,
@@ -37,6 +38,7 @@ export interface EditorExtensionOptions {
   toolbarMode?: FormattingToolbarMode;
   pasteMedia?: PasteMediaOptions;
   rehostImages?: RehostImagesOptions;
+  imageNodeLabels?: Partial<ImageNodeLabels>;
 }
 
 /**
@@ -97,7 +99,9 @@ export function createEditorExtensions(
 ): Extensions {
   return [
     ...createMarkdownContentExtensions({
-      imageExtension: ImageNode,
+      imageExtension: ImageNode.configure({
+        labels: options.imageNodeLabels,
+      }),
       moreBreakExtension: MoreBreak,
       embedExtension: EmbedNode,
       htmlBlockExtension: HtmlBlockNode,
@@ -110,6 +114,7 @@ export function createEditorExtensions(
       placeholder: options.placeholder ?? "Write something…",
     }),
     Footnotes,
+    ImageInputRules,
     LinkInputRules,
     WrappingInputRules,
     MarkdownClipboard,

@@ -1016,7 +1016,9 @@ describe("JantComposeEditor", () => {
     image.dispatchEvent(new Event("error"));
     await el.updateComplete;
 
-    expect(el.querySelector("[data-preview-failed='image']")).not.toBeNull();
+    const fallback = el.querySelector("[data-preview-failed='image']");
+    expect(fallback).not.toBeNull();
+    expect(fallback?.textContent).toContain("Image unavailable");
     expect(el.querySelector(".compose-attachment-remove")).not.toBeNull();
     expect(el.querySelector(".compose-attachment-img")).toBeNull();
   });

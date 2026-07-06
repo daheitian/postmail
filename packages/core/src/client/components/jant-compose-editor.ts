@@ -59,6 +59,7 @@ import {
   markSlashCommandDiscovered,
   scheduleSlashCommandHint,
 } from "../slash-discovery.js";
+import { getInlineImageNodeLabels } from "./inline-image-issues.js";
 
 interface ComposeFilePickerCloseDetail {
   cancelled: boolean;
@@ -935,6 +936,7 @@ export class JantComposeEditor extends LitElement {
         shouldRehost: (src) => this.#shouldRehostSrc(src),
         rehost: (src) => this.#rehostInlineImage(src),
       },
+      imageNodeLabels: getInlineImageNodeLabels(this.labels),
     });
     this._lastEditorSelection = this._readEditorSelection();
 
@@ -1851,11 +1853,14 @@ export class JantComposeEditor extends LitElement {
   }
 
   private _renderAttachmentPreviewFallback(category: "image" | "video") {
+    const unavailableLabel =
+      this.labels.brokenImageUnavailable ?? "Image unavailable";
+
     return html`
       <div
         class="compose-attachment-preview-fallback"
         data-preview-failed=${category}
-        aria-hidden="true"
+        aria-label=${unavailableLabel}
       >
         <svg
           width="28"
@@ -1871,6 +1876,9 @@ export class JantComposeEditor extends LitElement {
           <circle cx="9" cy="10" r="1.25" />
           <path d="m7 16 3.4-3.45 2.65 2.45 2.45-3.05 1.95 2.5" />
         </svg>
+        <span class="compose-attachment-preview-fallback-label">
+          ${unavailableLabel}
+        </span>
         ${category === "video"
           ? html`
               <div class="compose-attachment-play-icon">

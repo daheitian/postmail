@@ -12,6 +12,7 @@ import {
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
 import type { PasteMediaOptions } from "./paste-media.js";
 import type { RehostImagesOptions } from "./rehost-images.js";
+import type { ImageNodeLabels } from "./image-node.js";
 import { normalizeFootnoteArtifacts } from "../../lib/footnotes.js";
 import { tiptapJsonToMarkdown } from "../../lib/tiptap-to-markdown.js";
 import { parseMarkdownDocument } from "../../lib/markdown-manager.js";
@@ -26,6 +27,7 @@ export interface CreateEditorOptions {
   toolbarMode?: FormattingToolbarMode;
   pasteMedia?: PasteMediaOptions;
   rehostImages?: RehostImagesOptions;
+  imageNodeLabels?: Partial<ImageNodeLabels>;
 }
 
 /**
@@ -42,6 +44,7 @@ export function createTiptapEditor(options: CreateEditorOptions): Editor {
       toolbarMode: options.toolbarMode,
       pasteMedia: options.pasteMedia,
       rehostImages: options.rehostImages,
+      imageNodeLabels: options.imageNodeLabels,
     }),
     content: options.content ?? undefined,
     editorProps: {

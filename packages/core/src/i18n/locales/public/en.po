@@ -575,6 +575,11 @@ msgstr "Delete"
 msgid "Delete Draft"
 msgstr "Delete Draft"
 
+#. @context: Inline editor button label for removing a broken image
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Delete image"
+msgstr "Delete image"
+
 #. @context: Confirm dialog for deleting a collection
 #: src/ui/shared/collection-management-labels.ts
 msgid "Delete this collection permanently? Posts inside won't be removed."
@@ -977,6 +982,11 @@ msgstr "If this article still feels like a page you want to keep reading, the pa
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "If this page feels too branded, the first place to soften is the default theme’s site accent, not the border or body text."
 msgstr "If this page feels too branded, the first place to soften is the default theme’s site accent, not the border or body text."
+
+#. @context: Inline editor placeholder title shown when an image cannot load
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Image unavailable"
+msgstr "Image unavailable"
 
 #. @context: Archive media filter - images
 #: src/ui/pages/ArchivePage.tsx
@@ -1391,6 +1401,11 @@ msgstr "Open a few links and check whether they still feel native to the page."
 msgid "Open external link"
 msgstr "Open external link"
 
+#. @context: Inline editor button label for opening the original URL of a broken image
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Open image URL"
+msgstr "Open image URL"
+
 #. @context: Button label to open a raw brand asset in the browser
 #: src/ui/pages/BrandPage.tsx
 msgid "Open raw asset"
@@ -1646,6 +1661,11 @@ msgstr "Remove Link"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Remove this link from Collections? The destination won't change."
 msgstr "Remove this link from Collections? The destination won't change."
+
+#. @context: Inline editor button label for replacing a broken image
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Replace image"
+msgstr "Replace image"
 
 #. @context: Archive tile label for multiple thread replies
 #: src/ui/pages/ArchivePage.tsx

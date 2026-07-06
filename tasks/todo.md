@@ -1,3 +1,151 @@
+# Remove Broken Inline Image Summary
+
+## Problem
+
+The compose editor's top-level "images couldn't load" warning is visually
+heavier than the problem warrants. Broken inline images already render their own
+localized placeholder with delete, replace, and open actions at the image
+position.
+
+## Plan
+
+- [x] Remove the compose/fullscreen top summary and jump-to-image behavior.
+- [x] Remove now-unused summary copy, CSS, and tests while keeping the local
+      broken-image placeholder.
+- [x] Run focused verification and document the result.
+
+## Review
+
+- Removed the top-level broken inline image summary from compose and fullscreen
+  editors, including the jump-to-image state, refresh timers, CSS, and tests.
+- Kept the image-node-local missing-image UI and labels, so each broken image
+  still shows its own "Image unavailable" block with delete, replace, and open
+  actions.
+- Removed unused summary/jump label fields and Lingui message descriptors.
+- Verification:
+  - `mise run test -- src/client/components/__tests__/jant-compose-editor.test.ts src/client/components/__tests__/jant-compose-fullscreen.test.ts src/client/tiptap/__tests__/block-insertion.test.ts`
+    passed: 3 files / 51 tests.
+  - `mise run check-tests` passed: 220 files / 2601 tests.
+  - `mise run check-lint` passed.
+  - `mise x -- npx prettier --check ...` passed for the touched files.
+  - `git diff --check` passed.
+
+# Compose Markdown Image Input Rule
+
+## Problem
+
+Compose supports Markdown image parsing through `bodyMarkdown` and plain-text
+paste, but typing `![alt](url)` in the rich editor does not convert it to an
+inline image. The existing Markdown link input rule can also consume the inner
+`[alt](url)` before an image-specific rule exists.
+
+## Plan
+
+- [x] Add a TipTap image input rule that runs before Markdown link input rules.
+- [x] Wire the rule into the standard compose editor extension set.
+- [x] Add focused regression tests for typed Markdown image conversion and link
+      rule precedence.
+- [x] Run proportional verification and document the result.
+
+## Review
+
+- Added `ImageInputRules` for compose TipTap editors. Typing
+  `![alt](url)` now inserts the existing block image node and moves the cursor
+  into the following paragraph, matching the existing upload/slash image flow.
+- The image rule runs before Markdown link input rules so the inner
+  `[alt](url)` does not get converted to a link first. It supports empty alt
+  text and optional quoted titles.
+- Added focused regression coverage for empty-alt images, alt/title parsing,
+  link-rule precedence, and unsafe URL fallback.
+- Verification:
+  - `mise run test -- src/client/tiptap/__tests__/image-input-rules.test.ts`
+    passed after a regex correction: 1 file / 4 tests.
+  - `mise run check-tests` passed: 220 files / 2603 tests.
+  - `mise run check-lint` passed.
+  - `mise x -- npx prettier --check ...` passed for the touched files.
+  - Full `mise run check-format` remains blocked by existing repository
+    formatting/parser issues, primarily Hugo template files under
+    `packages/core/src/services/export-theme/layouts/` and
+    `sites/demo-source/canonical/site-export/themes/jant/layouts/`, plus a few
+    pre-existing formatting warnings outside this change.
+
+# Larger Missing Attachment Preview
+
+## Problem
+
+Saved image attachments whose preview URL no longer loads can collapse into a
+small broken-looking thumbnail with a tiny remove control. The fallback state
+should be large enough to recognize and remove confidently.
+
+## Plan
+
+- [x] Inspect current attachment fallback and remove-button sizing.
+- [x] Increase only the failed-preview attachment card sizing, preserving compact
+      reply attachments.
+- [x] Run focused formatting/verification and document the result.
+
+## Review
+
+- Failed image attachment previews now get a stable medium card: about 112x84
+  in multi-attachment strips and up to 160x120 when it is the only attachment.
+- The fallback now includes an explicit "Image unavailable" label instead of
+  relying on a neutral picture icon.
+- The remove button grows from 22px to 24px only on failed-preview attachment
+  cards, making the delete affordance a little easier to hit without dominating
+  the thumbnail.
+- Reply composer attachments keep their compact 96x72 preview size and 20px
+  remove button.
+- Verification:
+  - `mise run test -- src/client/components/__tests__/jant-compose-editor.test.ts -t "keeps a removable fallback card when a single saved image preview fails"` passed.
+  - `mise x -- npx prettier --write packages/core/src/styles/ui.css tasks/todo.md` completed with no changes needed.
+
+# Broken Inline Image Editing
+
+## Problem
+
+Editing an article with missing inline images makes it hard to locate the
+broken image node and remove or replace it. The editor should surface broken
+images as first-class, keyboard-accessible blocks instead of leaving authors to
+hunt for browser broken-image icons.
+
+## Plan
+
+- [x] Trace the existing TipTap image node view and compose editor wiring.
+- [x] Add a missing-image state with in-place actions for locating and deleting
+      the broken image node.
+- [x] Add an editor-level broken-image summary with "jump to next" behavior.
+- [x] Add focused regression coverage for broken-image detection and deletion.
+- [x] Run proportional verification and document the result.
+
+## Review
+
+- Added a missing-image state to the TipTap image NodeView. Failed inline
+  images now render as an in-place block with the original source hint and
+  actions to delete, replace, or open the original URL. The focused block also
+  handles Delete/Backspace.
+- Added compose and fullscreen editor summaries for broken inline images, with a
+  jump action that scrolls to and selects the next broken image node.
+- Routed new image-node labels through compose labels and Lingui catalogs,
+  including Simplified and Traditional Chinese translations.
+- Added focused regression coverage for the image NodeView placeholder/delete
+  behavior, compose broken-image summary/jump, and fullscreen summary.
+- Verification:
+  - `mise run check-tests` passed: 219 files / 2599 tests.
+  - `mise run test -- src/client/tiptap/__tests__/block-insertion.test.ts src/client/components/__tests__/jant-compose-editor.test.ts src/client/components/__tests__/jant-compose-fullscreen.test.ts` passed.
+  - `mise run i18n-build` passed and updated the catalogs.
+  - `mise x -- npx prettier --check ...` passed for the touched source files.
+  - Full `mise run check-format` is blocked by existing Hugo template parse
+    errors under `packages/core/src/services/export-theme/layouts/` and
+    `sites/demo-source/canonical/site-export/themes/jant/layouts/`.
+  - Local `mise run i18n-check` reports the expected uncommitted catalog diff
+    after adding new messages; the generated locale output contains the new
+    labels.
+- Local preview:
+  - `dev-debug` started after retrying with proxy environment variables unset.
+  - App URL: `http://localhost:19020/`
+  - Auto-login URL:
+    `http://localhost:19020/__dev/login?token=jnt_dev&redirect=/settings`
+
 # Hide Same-Site Absolute About Navigation Suggestions
 
 ## Problem

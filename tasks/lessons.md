@@ -86,6 +86,16 @@
 - When a compose field gets a context-specific font-size override, check whether
   its line-height needs a context-specific token too. Serif quote text can feel
   cramped when it inherits a line-height tuned for a larger default size.
+- When a Lit component helper only needs DOM querying, type the helper against
+  `querySelectorAll` instead of `ParentNode`. Custom element classes in this
+  repo can have framework-specific DOM method types that are not assignable to
+  the full browser interface.
+- Failed media placeholders need both legible size and explicit state text. A
+  larger neutral icon alone can look like an empty thumbnail instead of a
+  recoverable failure state.
+- In proxy-enabled shells, local `dev-debug` can fail if proxy banners pollute
+  Wrangler JSON output. Retry with proxy environment variables unset for that
+  command before treating the dev server as broken.
 - When sizing serif quote text against sans body text, account for perceived
   size as well as computed pixels. A small multiplier above body size may still
   read too prominent because the font family and quote container already create
@@ -103,3 +113,10 @@
   line-height at the same time. Keeping a heading leading value on multi-line
   reading text can make the result feel cramped even when the font-size is
   right.
+- TipTap input rules may not preserve author-typed whitespace exactly in the
+  text passed to regex matchers. For Markdown rules with optional quoted suffixes,
+  exclude quote characters from the URL/body group instead of relying only on
+  whitespace as the separator.
+- Broken inline media should be handled at the image node by default. Avoid
+  adding a top-level compose warning unless the user needs cross-document
+  navigation or a blocking action.

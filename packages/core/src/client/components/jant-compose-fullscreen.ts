@@ -21,6 +21,7 @@ import type {
 } from "./compose-types.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 import { uploadAndInsertInlineImage } from "../tiptap/inline-image-upload.js";
+import { getInlineImageNodeLabels } from "./inline-image-issues.js";
 
 const ESCAPE_OVERLAY_SELECTOR = ".tiptap-slash-menu, .tiptap-link-input";
 
@@ -159,6 +160,7 @@ export class JantComposeFullscreen extends LitElement {
         shouldInsertInline: (file) => file.type.startsWith("image/"),
         uploadInlineImage: (file) => this._uploadAndInsertImage(file),
       },
+      imageNodeLabels: getInlineImageNodeLabels(this.labels),
     });
 
     const selection = this._selection;

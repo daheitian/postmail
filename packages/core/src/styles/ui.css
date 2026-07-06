@@ -7008,11 +7008,26 @@
     max-width: 100%;
   }
 
+  .compose-attachment:has(.compose-attachment-preview-fallback) {
+    width: 112px;
+  }
+
+  .compose-attachment:only-child:has(.compose-attachment-preview-fallback) {
+    width: min(100%, 160px);
+  }
+
   .compose-attachment-thumb {
     position: relative;
     border-radius: var(--media-radius, 0.5rem);
     overflow: hidden;
     background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-attachment:has(.compose-attachment-preview-fallback)
+    .compose-attachment-thumb,
+  .compose-attachment:has(.compose-attachment-preview-fallback)
+    .compose-attachment-sortable {
+    width: 100%;
   }
 
   .compose-attachment-sortable {
@@ -7065,8 +7080,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 120px;
-    aspect-ratio: 1 / 1;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    padding: 10px;
     border: 1px solid color-mix(in srgb, var(--site-divider) 88%, transparent);
     border-radius: var(--media-radius, 0.5rem);
     background: linear-gradient(
@@ -7078,7 +7096,22 @@
   }
 
   .compose-attachment-preview-fallback svg {
+    width: 24px;
+    height: 24px;
     opacity: 0.82;
+  }
+
+  .compose-attachment-preview-fallback-label {
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--site-text-secondary);
+    font-family: var(--font-ui);
+    font-size: var(--type-2xs);
+    font-weight: var(--fw-medium);
+    line-height: 1.2;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Single image: constrain to container width. min-width keeps the preview
@@ -7093,8 +7126,7 @@
   }
 
   .compose-attachment:only-child .compose-attachment-preview-fallback {
-    width: min(100%, 320px);
-    max-width: 100%;
+    width: 100%;
     aspect-ratio: 4 / 3;
   }
 
@@ -7107,8 +7139,13 @@
   }
 
   .compose-attachment:not(:only-child) .compose-attachment-preview-fallback {
-    width: 150px;
-    aspect-ratio: 3 / 4;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+  }
+
+  .compose-attachment:only-child .compose-attachment-preview-fallback svg {
+    width: 28px;
+    height: 28px;
   }
 
   .compose-attachment-overlay {
@@ -7197,6 +7234,14 @@
       box-shadow 0.18s ease;
   }
 
+  .compose-attachment:has(.compose-attachment-preview-fallback)
+    .compose-attachment-remove {
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+  }
+
   .compose-attachment-remove:hover {
     transform: translateY(-0.5px);
     background-color: color-mix(in srgb, black 58%, transparent);
@@ -7220,6 +7265,13 @@
     height: 11px;
     flex-shrink: 0;
     pointer-events: none;
+  }
+
+  .compose-attachment:has(.compose-attachment-preview-fallback)
+    .compose-attachment-remove
+    svg {
+    width: 12px;
+    height: 12px;
   }
 
   .compose-attachment-alt {
@@ -7558,6 +7610,12 @@
 
   .compose-reply-compose-layout
     .compose-editor-row
+    .compose-attachment:has(.compose-attachment-preview-fallback) {
+    width: var(--compose-reply-attachment-width);
+  }
+
+  .compose-reply-compose-layout
+    .compose-editor-row
     .compose-attachment:only-child
     .compose-attachment-img,
   .compose-reply-compose-layout
@@ -7582,6 +7640,14 @@
     width: var(--compose-reply-attachment-width);
     height: var(--compose-reply-attachment-height);
     aspect-ratio: auto;
+  }
+
+  .compose-reply-compose-layout
+    .compose-editor-row
+    .compose-attachment-preview-fallback
+    svg {
+    width: 28px;
+    height: 28px;
   }
 
   .compose-reply-compose-layout
@@ -9092,6 +9158,134 @@
     object-fit: contain;
     border-radius: 4px;
     display: block;
+  }
+
+  .tiptap-image-figure[data-load-state="missing"] img {
+    display: none;
+  }
+
+  .tiptap-image-missing {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-height: clamp(132px, 26vw, 220px);
+    padding: 18px;
+    border-radius: 4px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--site-elevated-bg) 88%, var(--site-accent)),
+      var(--site-elevated-bg)
+    );
+    color: var(--site-text-secondary);
+    text-align: left;
+  }
+
+  .tiptap-image-figure[data-load-state="missing"] .tiptap-image-missing {
+    display: flex;
+  }
+
+  .tiptap-image-missing:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  .tiptap-image-missing-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 1px solid var(--site-divider);
+    background: var(--compose-paper-bg);
+    color: var(--site-text-secondary);
+    flex-shrink: 0;
+  }
+
+  .tiptap-image-missing-copy {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .tiptap-image-missing-copy strong {
+    color: var(--site-text-primary);
+    font-family: var(--font-ui);
+    font-size: var(--type-sm);
+    line-height: 1.2;
+  }
+
+  .tiptap-image-missing-source {
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--site-text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--type-2xs);
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tiptap-image-missing-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+  }
+
+  .tiptap-image-missing-actions button {
+    border: 1px solid var(--site-divider);
+    border-radius: 5px;
+    padding: 5px 8px;
+    background: var(--compose-paper-bg);
+    color: var(--site-text-primary);
+    font-family: var(--font-ui);
+    font-size: var(--type-2xs);
+    line-height: 1.2;
+    cursor: pointer;
+    transition:
+      border-color 0.16s ease,
+      color 0.16s ease,
+      background-color 0.16s ease;
+  }
+
+  .tiptap-image-missing-actions button:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--site-accent) 45%,
+      var(--site-divider)
+    );
+    color: var(--site-accent);
+  }
+
+  .tiptap-image-missing-actions button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .tiptap-image-missing-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .tiptap-image-missing-delete {
+    color: var(--destructive);
+  }
+
+  @media (max-width: 640px) {
+    .tiptap-image-missing {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .tiptap-image-missing-actions,
+    .tiptap-image-missing-actions button {
+      width: 100%;
+    }
   }
 
   /* Layout variants — in compact dialog, wide/full just fill the container */
