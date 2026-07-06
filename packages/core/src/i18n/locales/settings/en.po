@@ -68,18 +68,21 @@ msgstr "About this blog"
 msgid "Accent"
 msgstr "Accent"
 
-#. @context: Breadcrumb label
 #. @context: GitHub sync picker — owner dropdown label
-#. @context: Page title for the account settings menu
 #. @context: Settings group label for account settings
-#. @context: Settings item — account settings
 #: src/routes/dash/settings.tsx
-#: src/routes/dash/settings.tsx
-#: src/ui/dash/settings/AccountMenuContent.tsx
-#: src/ui/dash/settings/SettingsRootContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Account"
 msgstr "Account"
+
+#. @context: Breadcrumb label
+#. @context: Page title for the account settings menu
+#. @context: Settings item — account settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Account & Data"
+msgstr "Account & Data"
 
 #. @context: Error shown when account deletion is blocked in demo mode
 #: src/routes/dash/settings.tsx
@@ -1113,8 +1116,8 @@ msgstr "Manage password and hosted access in {providerLabel}"
 
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Manage sign-in security, exports, and irreversible actions."
-msgstr "Manage sign-in security, exports, and irreversible actions."
+msgid "Manage sign-in security, site exports, and irreversible actions."
+msgstr "Manage sign-in security, site exports, and irreversible actions."
 
 #. @context: Intro text on the hosted account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1633,11 +1636,6 @@ msgstr "Session management is off in demo mode. Use the shared demo session inst
 msgid "Sessions"
 msgstr "Sessions"
 
-#. @context: Settings item description for account settings on the settings home page
-#: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Sessions and password"
-msgstr "Sessions and password"
-
 #. @context: Breadcrumb label
 #. @context: Page title for the settings home page
 #: src/routes/dash/settings.tsx
@@ -1664,6 +1662,11 @@ msgstr "Showing {shown} of {total}"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sign Out"
 msgstr "Sign Out"
+
+#. @context: Settings item description for account settings on the settings home page
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Sign-in, export, and deletion"
+msgstr "Sign-in, export, and deletion"
 
 #. @context: Session creation date
 #: src/ui/dash/settings/SessionsContent.tsx

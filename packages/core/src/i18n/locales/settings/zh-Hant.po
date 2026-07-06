@@ -68,18 +68,21 @@ msgstr "關於本部落格"
 msgid "Accent"
 msgstr "強調色"
 
-#. @context: Breadcrumb label
 #. @context: GitHub sync picker — owner dropdown label
-#. @context: Page title for the account settings menu
 #. @context: Settings group label for account settings
-#. @context: Settings item — account settings
 #: src/routes/dash/settings.tsx
-#: src/routes/dash/settings.tsx
-#: src/ui/dash/settings/AccountMenuContent.tsx
-#: src/ui/dash/settings/SettingsRootContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Account"
 msgstr "帳戶"
+
+#. @context: Breadcrumb label
+#. @context: Page title for the account settings menu
+#. @context: Settings item — account settings
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Account & Data"
+msgstr "帳戶與資料"
 
 #. @context: Error shown when account deletion is blocked in demo mode
 #: src/routes/dash/settings.tsx
@@ -1113,8 +1116,8 @@ msgstr "在 {providerLabel} 管理密碼與託管存取"
 
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Manage sign-in security, exports, and irreversible actions."
-msgstr "管理登入安全、匯出，以及不可逆的操作。"
+msgid "Manage sign-in security, site exports, and irreversible actions."
+msgstr "管理登入安全、站點匯出和無法復原的操作。"
 
 #. @context: Intro text on the hosted account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1633,11 +1636,6 @@ msgstr "在示範模式中已停用工作階段管理。請改用共用示範工
 msgid "Sessions"
 msgstr "工作階段"
 
-#. @context: Settings item description for account settings on the settings home page
-#: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Sessions and password"
-msgstr "工作階段與密碼"
-
 #. @context: Breadcrumb label
 #. @context: Page title for the settings home page
 #: src/routes/dash/settings.tsx
@@ -1664,6 +1662,11 @@ msgstr "顯示 {shown} 共 {total}"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sign Out"
 msgstr "登出"
+
+#. @context: Settings item description for account settings on the settings home page
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Sign-in, export, and deletion"
+msgstr "登入、匯出和刪除"
 
 #. @context: Session creation date
 #: src/ui/dash/settings/SessionsContent.tsx

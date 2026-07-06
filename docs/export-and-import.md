@@ -213,7 +213,7 @@ Import does not merge, overwrite, or roll back transactions — it walks the inb
 
 ### Clearing the target site
 
-When migration hits field conflicts or a previous import didn't complete cleanly, there's currently no lightweight "wipe content but keep the account" entry point. The fastest path is to use **Settings → Account → Delete Account** to remove the account along with all its content, then re-register — a common shortcut during first-time migration. The flow forces a `site export` download as a final backup, then asks for a confirmation phrase.
+When migration hits field conflicts or a previous import didn't complete cleanly, there's currently no lightweight "wipe content but keep the account" entry point. The fastest path is to use **Settings → Account & Data → Delete Account** to remove the account along with all its content, then re-register — a common shortcut during first-time migration. The flow forces a `site export` download as a final backup, then asks for a confirmation phrase.
 
 On hosted sites, **Delete Account** removes the same content and account but leaves billing, domain bindings, and the jant.me instance itself intact. After re-registering you can re-initialize the same instance.
 

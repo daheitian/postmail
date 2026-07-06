@@ -1321,6 +1321,7 @@ export class JantComposeDialog extends LitElement {
     index: number,
     status: "published" | "draft",
   ): ComposeSubmitDetail {
+    editor.promoteLeadingH1Title({ force: true });
     const editorData = editor.getData();
     const mediaAttachments = new Map(
       (editorData.attachments ?? []).map((a) => [a.clientId, a]),
@@ -1389,6 +1390,7 @@ export class JantComposeDialog extends LitElement {
     const editor = this._editor;
     if (!editor) return null;
 
+    editor.promoteLeadingH1Title({ force: true });
     const editorData = editor.getData();
     const mediaAttachments = new Map(
       (editorData.attachments ?? []).map((attachment) => [

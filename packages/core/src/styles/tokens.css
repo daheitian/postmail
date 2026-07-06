@@ -114,9 +114,9 @@
   --type-body-leading: 1.7;
   --type-display-leading: 1.15;
   --type-heading-leading: 1.15;
-  --type-heading-weight: var(--fw-regular);
+  --type-heading-weight: var(--fw-medium);
   --type-heading-tracking: 0;
-  --type-display-weight: var(--fw-regular);
+  --type-display-weight: var(--fw-medium);
   --type-display-tracking: 0;
   --type-label-weight: var(--fw-medium);
   --type-label-tracking: 0.08em;

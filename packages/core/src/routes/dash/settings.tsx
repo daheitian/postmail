@@ -189,7 +189,10 @@ function breadcrumbLabel(
       );
     case "account":
       return i18n._(
-        msg({ message: "Account", comment: "@context: Breadcrumb label" }),
+        msg({
+          message: "Account & Data",
+          comment: "@context: Breadcrumb label",
+        }),
       );
     case "sessions":
       return i18n._(

@@ -32,6 +32,10 @@ import type {
 } from "./compose-types.js";
 import type { ComposeConvertFields } from "./compose-format-convert.js";
 import {
+  promoteLeadingH1Title as getLeadingH1TitlePromotion,
+  type LeadingH1TitlePromotion,
+} from "./compose-title-from-heading.js";
+import {
   UPLOAD_ACCEPT,
   getMediaCategory,
   validateUploadFile,
@@ -632,6 +636,67 @@ export class JantComposeEditor extends LitElement {
     return this._isEmptyDoc(json) ? null : json;
   }
 
+  private _isSelectionInsideTopLevelBlock(index: number): boolean {
+    const editor = this._editor;
+    if (!editor) return false;
+    return editor.state.selection.$from.index(0) === index;
+  }
+
+  private _removedTopLevelSize(promotion: LeadingH1TitlePromotion): number {
+    const doc = this._editor?.state.doc;
+    if (!doc) return 0;
+
+    let size = 0;
+    for (let index = 0; index <= promotion.headingIndex; index += 1) {
+      size += doc.child(index)?.nodeSize ?? 0;
+    }
+    return size;
+  }
+
+  promoteLeadingH1Title(options: { force?: boolean } = {}): boolean {
+    if (this.format !== "note" || this._title.trim()) return false;
+
+    const currentBodyJson = this._editor?.getJSON() ?? this._bodyJson;
+    const promotion = getLeadingH1TitlePromotion(currentBodyJson);
+    if (!promotion) return false;
+
+    if (
+      !options.force &&
+      this._isSelectionInsideTopLevelBlock(promotion.headingIndex)
+    ) {
+      return false;
+    }
+
+    const editor = this._editor;
+    const wasFocused = Boolean(editor?.isFocused);
+    const previousSelectionFrom = editor?.state.selection.from ?? null;
+    const removedSize = this._removedTopLevelSize(promotion);
+
+    this._title = promotion.title;
+    this._showTitle = true;
+    this._bodyJson = promotion.bodyJson;
+
+    if (editor) {
+      if (promotion.bodyJson) {
+        editor.commands.setContent(promotion.bodyJson);
+      } else {
+        editor.commands.clearContent();
+      }
+
+      if (wasFocused && previousSelectionFrom !== null) {
+        const max = editor.state.doc.content.size;
+        if (max > 0) {
+          editor.commands.setTextSelection(
+            Math.max(1, Math.min(previousSelectionFrom - removedSize, max)),
+          );
+          editor.commands.focus();
+        }
+      }
+    }
+
+    return true;
+  }
+
   getNormalizedBodyJson(): JSONContent | null {
     return this._normalizeDocJson(this._bodyJson);
   }
@@ -914,6 +979,7 @@ export class JantComposeEditor extends LitElement {
       onUpdate: (json) => {
         this._bodyJson = json;
         this._ensureScrollBuffer();
+        this.promoteLeadingH1Title();
         hideSlashCommandHint(this);
       },
       onFocus: () => {
@@ -921,6 +987,9 @@ export class JantComposeEditor extends LitElement {
         if (this._editor?.isEmpty) {
           scheduleSlashCommandHint(this);
         }
+      },
+      onBlur: () => {
+        this.promoteLeadingH1Title({ force: true });
       },
       onSelectionUpdate: (selection) => {
         this._lastEditorSelection = selection;
