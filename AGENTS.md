@@ -51,7 +51,8 @@ The project is in **pre-1.0 development**. Breaking changes are expected and wel
 3. Track Progress: Mark items complete in the same task file as you go.
 4. Explain Changes: High-level summary at each step.
 5. Document Results: Add the review/results section to the same task file.
-6. Capture Lessons: Update `tasks/lessons.md` after corrections, but only for reusable rules that should prevent future mistakes.
+6. Clean Up Completed Tasks: After the work is verified, documented, and committed, remove the task-specific file from `tasks/todos/` by default. Keep `tasks/todos/` focused on active or handoff-ready work. Only retain a completed task file when it has long-term reference value; if retained for history, move it out of `tasks/todos/` into an archive location.
+7. Capture Lessons: Update `tasks/lessons.md` after corrections, but only for reusable rules that should prevent future mistakes.
 
 ## Development Philosophy
 
