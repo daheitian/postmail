@@ -81,13 +81,3 @@ export interface NavManagerLabels {
   placementSaved: string;
   cancel: string;
 }
-
-export interface NavManagerUpdateDetail {
-  id: string;
-  label: string;
-  url?: string;
-}
-
-export interface NavManagerDeleteDetail {
-  id: string;
-}

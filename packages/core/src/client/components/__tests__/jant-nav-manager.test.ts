@@ -104,6 +104,46 @@ const suggestedLinks: NavManagerSuggestedLink[] = [
   },
 ];
 
+function renderHeaderFragment(label: string): string {
+  return `
+    <header class="site-header" data-site-header-fragment="header">
+      <div class="site-header-inner">
+        <div class="site-header-top">
+          <a href="/" class="site-logo">Test Site</a>
+          <nav class="site-header-nav" aria-label="Primary">
+            <a href="/now" class="site-header-link">${label}</a>
+          </nav>
+          <button
+            type="button"
+            class="site-header-hamburger"
+            aria-controls="site-nav-drawer"
+            aria-expanded="false"
+          ></button>
+        </div>
+      </div>
+    </header>
+    <div
+      class="site-nav-drawer-backdrop"
+      data-site-header-fragment="drawer-backdrop"
+      aria-hidden="true"
+    ></div>
+    <div
+      id="site-nav-drawer"
+      class="site-nav-drawer"
+      data-site-header-fragment="drawer"
+      aria-hidden="true"
+      inert
+    >
+      <button class="site-nav-drawer-close" type="button"></button>
+      <a href="/now" class="site-nav-drawer-link">${label}</a>
+    </div>
+  `;
+}
+
+function installCurrentHeaderFragment(label = "Old"): void {
+  document.body.insertAdjacentHTML("afterbegin", renderHeaderFragment(label));
+}
+
 function requireElement<T>(value: T | null, message: string): T {
   if (!value) {
     throw new Error(message);
@@ -148,6 +188,12 @@ function getSortableOptions(
   return options as Record<string, ((event: unknown) => void) | undefined>;
 }
 
+async function flushAsyncWork(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 async function createElement(): Promise<JantNavManager> {
   const el = document.createElement("jant-nav-manager") as JantNavManager;
   el.labels = labels;
@@ -170,6 +216,7 @@ describe("JantNavManager", () => {
       vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
+        json: async () => ({ ...items[1] }),
       }),
     );
   });
@@ -209,8 +256,7 @@ describe("JantNavManager", () => {
     });
 
     await el.updateComplete;
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushAsyncWork();
 
     expect(getListIds(headerList)).toEqual(["nav-1"]);
     expect(getListIds(moreList)).toEqual(["nav-2", "nav-3"]);
@@ -234,6 +280,9 @@ describe("JantNavManager", () => {
       "/api/nav-items/nav-2/move",
       expect.objectContaining({
         method: "PUT",
+        headers: expect.objectContaining({
+          "X-Jant-Site-Header": "include",
+        }),
         body: JSON.stringify({
           after: null,
           before: "nav-3",
@@ -293,22 +342,28 @@ describe("JantNavManager", () => {
       url: "/now",
       placement: "header",
     };
+    installCurrentHeaderFragment("Old");
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => created,
+      json: async () => ({
+        ...created,
+        headerHtml: renderHeaderFragment("Now"),
+      }),
     });
     vi.stubGlobal("fetch", fetchMock);
 
     addButton.click();
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushAsyncWork();
     await el.updateComplete;
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/nav-items",
       expect.objectContaining({
         method: "POST",
+        headers: expect.objectContaining({
+          "X-Jant-Site-Header": "include",
+        }),
         body: JSON.stringify({
           type: "collection",
           collectionId: "col_now",
@@ -325,12 +380,25 @@ describe("JantNavManager", () => {
       ),
     ).toContain("nav-now");
     expect(el.querySelector(".nav-suggestion-item")).toBeNull();
+    expect(
+      document
+        .querySelector<HTMLElement>('[data-site-header-fragment="header"]')
+        ?.textContent?.trim(),
+    ).toContain("Now");
   });
 
-  it("confirms before dispatching nav deletion", async () => {
+  it("confirms before deleting a navigation item", async () => {
     const el = await createElement();
-    const deleteHandler = vi.fn();
-    el.addEventListener("jant:nav-delete", deleteHandler);
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        success: true,
+        headerHtml: renderHeaderFragment("Links"),
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    installCurrentHeaderFragment("About");
 
     (
       el as unknown as { _editingId: string | null; requestUpdate: () => void }
@@ -343,7 +411,7 @@ describe("JantNavManager", () => {
       "expected nav delete button",
     );
     deleteButton.click();
-    await Promise.resolve();
+    await flushAsyncWork();
 
     const host = requireElement(
       document.querySelector<HTMLElement>("jant-confirm-dialog"),
@@ -356,19 +424,37 @@ describe("JantNavManager", () => {
       "expected confirm button",
     );
     confirmButton.click();
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushAsyncWork();
+    await el.updateComplete;
 
-    expect(deleteHandler).toHaveBeenCalledTimes(1);
-    expect(deleteHandler.mock.calls[0]?.[0]).toMatchObject({
-      detail: { id: "nav-1" },
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/nav-items/nav-1",
+      expect.objectContaining({
+        method: "DELETE",
+        headers: expect.objectContaining({
+          "X-Jant-Site-Header": "include",
+        }),
+      }),
+    );
+    expect(
+      getListIds(
+        requireElement(
+          el.querySelector<HTMLElement>("#nav-items-header"),
+          "expected header nav list",
+        ),
+      ),
+    ).toEqual(["nav-2"]);
+    expect(
+      document
+        .querySelector<HTMLElement>('[data-site-header-fragment="header"]')
+        ?.textContent?.trim(),
+    ).toContain("Links");
   });
 
-  it("does not dispatch nav deletion when confirmation is canceled", async () => {
+  it("does not delete when confirmation is canceled", async () => {
     const el = await createElement();
-    const deleteHandler = vi.fn();
-    el.addEventListener("jant:nav-delete", deleteHandler);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
 
     (
       el as unknown as { _editingId: string | null; requestUpdate: () => void }
@@ -381,7 +467,7 @@ describe("JantNavManager", () => {
       "expected nav delete button",
     );
     deleteButton.click();
-    await Promise.resolve();
+    await flushAsyncWork();
 
     const host = requireElement(
       document.querySelector<HTMLElement>("jant-confirm-dialog"),
@@ -394,9 +480,8 @@ describe("JantNavManager", () => {
       "expected cancel button",
     );
     cancelButton.click();
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushAsyncWork();
 
-    expect(deleteHandler).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

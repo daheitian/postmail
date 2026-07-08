@@ -49,7 +49,7 @@ export interface NavigationData {
  */
 export async function getNavigationData(
   c: Context,
-  options?: { preloadedItems?: NavItem[] },
+  options?: { preloadedItems?: NavItem[]; includeCollections?: boolean },
 ): Promise<NavigationData> {
   // Callers that already fetched nav items can pass them in to avoid a
   // redundant DB round-trip.
@@ -104,7 +104,7 @@ export async function getNavigationData(
   );
 
   // Only load collections when authenticated (for compose dialog)
-  if (isAuthenticated) {
+  if (isAuthenticated && options?.includeCollections !== false) {
     collections = await c.var.services.collections.listByRecentActivity();
   }
 
