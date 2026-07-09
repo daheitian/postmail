@@ -352,10 +352,15 @@ describe("timeline cards", () => {
       new URL("../../../styles/ui.css", import.meta.url),
       "utf8",
     );
-
-    expect(uiCss).toMatch(
-      /\.compose-reply-context-body\s*:is\([\s\S]*\[data-post-body\]\.prose[\s\S]*\)\s*\{[\s\S]*width:\s*100%;[\s\S]*max-width:\s*none;/,
+    const unlayeredCssStart = uiCss.indexOf(" * Home description");
+    const resetRule = uiCss.match(
+      /\.compose-reply-context-body\s*:is\([^{}]*\[data-post-body\]\.prose[^{}]*\)\s*\{[^{}]*width:\s*100%;[^{}]*max-width:\s*none;[^{}]*\}/,
     );
+
+    expect(unlayeredCssStart).toBeGreaterThan(0);
+    expect(resetRule?.index).toBeGreaterThan(unlayeredCssStart);
+    expect(resetRule?.[0]).toContain("width: 100%;");
+    expect(resetRule?.[0]).toContain("max-width: none;");
   });
 
   it("keeps link and quote attachments hidden in compact mode", () => {

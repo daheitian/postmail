@@ -7735,28 +7735,9 @@
 
   /*
    * Reply context clones feed/detail card internals into a much narrower shell.
-   * Reset the reading widths and heading scale so the preview uses the thread
-   * context ladder instead of the original page/card layout.
+   * Scale headings to the thread context ladder instead of the original
+   * page/card layout.
    */
-  .compose-reply-context-body
-    :is(
-      .post-detail-title,
-      .post-detail-body,
-      .post-body-summary,
-      .feed-note-title,
-      .feed-link-title,
-      .feed-quote,
-      .feed-quote-attribution,
-      .feed-quote-commentary,
-      .feed-link-domain,
-      .feed-continue-link,
-      [data-post-body].prose,
-      [data-post-meta]
-    ) {
-    width: 100%;
-    max-width: none;
-  }
-
   .compose-reply-context-body
     :is(.post-detail-title, .feed-note-title, .feed-link-title),
   .compose-reply-context-body .prose :is(h1, h2, h3, h4) {
@@ -7976,11 +7957,11 @@
     }
 
     .compose-thread-layout {
-      padding-top: 0.45rem;
+      padding-top: 0.75rem;
     }
 
     .compose-thread-layout::before {
-      top: 0.45rem;
+      top: 0.75rem;
     }
 
     .compose-reply-context {
@@ -12157,4 +12138,29 @@
     transparent
   );
   color: color-mix(in srgb, var(--site-text-secondary) 80%, transparent);
+}
+
+/*
+ * Compose reply context renders cloned feed/detail post HTML. Keep this
+ * outside @layer components so it can override the unlayered global post-body
+ * width rules that intentionally make normal desktop post text use the 55%
+ * reading column.
+ */
+.compose-reply-context-body
+  :is(
+    .post-detail-title,
+    .post-detail-body,
+    .post-body-summary,
+    .feed-note-title,
+    .feed-link-title,
+    .feed-quote,
+    .feed-quote-attribution,
+    .feed-quote-commentary,
+    .feed-link-domain,
+    .feed-continue-link,
+    [data-post-body].prose,
+    [data-post-meta]
+  ) {
+  width: 100%;
+  max-width: none;
 }
