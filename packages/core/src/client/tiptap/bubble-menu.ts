@@ -7,7 +7,7 @@
  */
 
 import { Extension, type Editor } from "@tiptap/core";
-import { Plugin, PluginKey, Selection } from "@tiptap/pm/state";
+import { Plugin, PluginKey, Selection, TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import { isLinkToolbarInputActive } from "./link-toolbar.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
@@ -280,9 +280,9 @@ export const BubbleMenu = Extension.create({
     function shouldShow(view: EditorView): boolean {
       const { state } = view;
       const { selection } = state;
-      const { empty } = selection;
       // Only show for non-empty text selections (not node selections)
-      if (empty) return false;
+      if (!(selection instanceof TextSelection) || selection.empty)
+        return false;
       if (!selection.$from.parent.isTextblock) return false;
       // Hide when link input popup is open
       if (isLinkToolbarInputActive()) return false;

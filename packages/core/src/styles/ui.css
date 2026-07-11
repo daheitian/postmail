@@ -9816,6 +9816,7 @@
     vertical-align: super;
     color: var(--site-accent);
     white-space: nowrap;
+    cursor: pointer;
   }
 
   .compose-tiptap-body
@@ -9851,11 +9852,20 @@
 
   .compose-tiptap-body
     .tiptap
-    > :not(.tiptap-footnote-definition)
-    + .tiptap-footnote-definition {
+    > :not(.tiptap-footnote-definition, .ProseMirror-gapcursor)
+    ~ .tiptap-footnote-definition {
     margin-top: 2rem;
     padding-top: 1rem;
     border-top: 1px solid var(--site-divider);
+  }
+
+  .compose-tiptap-body
+    .tiptap
+    > .tiptap-footnote-definition
+    ~ .tiptap-footnote-definition {
+    margin-top: 1rem;
+    padding-top: 0;
+    border-top: 0;
   }
 
   .compose-tiptap-body .tiptap .tiptap-footnote-definition > :first-child {

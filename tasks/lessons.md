@@ -120,3 +120,10 @@
 - Broken inline media should be handled at the image node by default. Avoid
   adding a top-level compose warning unless the user needs cross-document
   navigation or a blocking action.
+- For paired editor structures such as footnote references and definitions,
+  enforce referential integrity at the whole-document transaction boundary and
+  test orphan paste, initial load, pointer activation, and keyboard activation.
+  Parser-only normalization does not cover the full interaction lifecycle.
+- ProseMirror may insert decoration DOM such as gap cursors between document
+  nodes. Structural editor CSS must not rely on uninterrupted adjacent siblings;
+  use selectors that remain correct when transient decoration elements appear.

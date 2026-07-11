@@ -723,6 +723,7 @@ export function createMarkdownContentExtensions(
       heading: { levels: [1, 2, 3] },
       link: { openOnClick: false, autolink: false },
       codeBlock: false,
+      trailingNode: { notAfter: ["footnoteDefinition"] },
     }),
     MarkdownCodeBlock,
     Table.configure({
@@ -742,11 +743,19 @@ export function createMarkdownContentExtensions(
   ];
 }
 
-function normalizeMarkdownDoc(node: JSONContent): JSONContent {
+/**
+ * Normalizes Markdown parser output before it enters the editor schema.
+ *
+ * @param node - Parsed Tiptap document or descendant node
+ * @returns A normalized copy safe to load into an editor
+ * @example
+ * const normalized = normalizeMarkdownDocument(markdownManager.parse(source));
+ */
+export function normalizeMarkdownDocument(node: JSONContent): JSONContent {
   const normalized: JSONContent = { ...node };
 
   if (normalized.content) {
-    normalized.content = normalized.content.map(normalizeMarkdownDoc);
+    normalized.content = normalized.content.map(normalizeMarkdownDocument);
   }
 
   if (normalized.marks) {
@@ -810,9 +819,9 @@ function normalizeMarkdownDoc(node: JSONContent): JSONContent {
         child?.type === "text" &&
         typeof child.text === "string" &&
         nextChild?.type === "footnoteReference" &&
-        child.text.endsWith("\n")
+        /\n[ \t]*$/.test(child.text)
       ) {
-        const trimmedText = child.text.replace(/\n$/, "");
+        const trimmedText = child.text.replace(/\n[ \t]*$/, "");
         if (trimmedText) {
           nextContent.push({
             ...child,
@@ -854,7 +863,7 @@ export function getMarkdownManager(): MarkdownManager {
 }
 
 export function parseMarkdownDocument(markdown: string): JSONContent {
-  return normalizeMarkdownDoc(getMarkdownManager().parse(markdown));
+  return normalizeMarkdownDocument(getMarkdownManager().parse(markdown));
 }
 
 export function serializeMarkdownDocument(doc: JSONContent): string {
