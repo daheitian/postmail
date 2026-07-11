@@ -134,6 +134,15 @@ function moreLinkRevealTier(idx: number): string {
   return "site-header-more-link-show-lg";
 }
 
+function getResponsiveOverflowTier(
+  headerLinkCount: number,
+): "sm" | "md" | "lg" | null {
+  if (headerLinkCount >= 5) return "lg";
+  if (headerLinkCount === 4) return "md";
+  if (headerLinkCount === 3) return "sm";
+  return null;
+}
+
 export const SiteHeader: FC<SiteHeaderProps> = ({
   siteName,
   links,
@@ -176,22 +185,17 @@ export const SiteHeader: FC<SiteHeaderProps> = ({
     (l) => l.placement === "header" || !l.placement,
   );
   const moreLinks = linksWithLabels.filter((l) => l.placement === "more");
-  const hasResponsiveOverflow = headerLinks.length > 2;
+  const responsiveOverflowTier = getResponsiveOverflowTier(headerLinks.length);
+  const hasResponsiveOverflow = responsiveOverflowTier !== null;
   const hasSupplementalMoreLinks = moreLinks.length > 0;
   const showMoreMenu = hasResponsiveOverflow || hasSupplementalMoreLinks;
 
   // Decide the widest breakpoint at which the "More" button must appear
   // when there are no supplemental links.
-  let responsiveTierClass = "";
-  if (hasResponsiveOverflow && !hasSupplementalMoreLinks) {
-    if (headerLinks.length >= 5) {
-      responsiveTierClass = "site-header-more-tier-lg";
-    } else if (headerLinks.length === 4) {
-      responsiveTierClass = "site-header-more-tier-md";
-    } else {
-      responsiveTierClass = "site-header-more-tier-sm";
-    }
-  }
+  const responsiveTierClass =
+    responsiveOverflowTier && !hasSupplementalMoreLinks
+      ? `site-header-more-tier-${responsiveOverflowTier}`
+      : "";
   const moreMenuClass = [
     "site-header-more",
     hasResponsiveOverflow && !hasSupplementalMoreLinks
@@ -297,8 +301,10 @@ export const SiteHeader: FC<SiteHeaderProps> = ({
                         </a>
                       );
                     })}
-                    {hasResponsiveOverflow && hasSupplementalMoreLinks && (
-                      <div class="site-header-more-divider site-header-more-divider-responsive" />
+                    {responsiveOverflowTier && hasSupplementalMoreLinks && (
+                      <div
+                        class={`site-header-more-divider site-header-more-divider-responsive site-header-more-divider-show-${responsiveOverflowTier}`}
+                      />
                     )}
                     {moreLinks.map((link) => (
                       <a

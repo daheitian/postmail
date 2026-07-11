@@ -848,7 +848,7 @@
       display: flex;
     }
 
-    .site-header-more-divider-responsive {
+    .site-header-more-divider-show-lg {
       display: block;
     }
   }
@@ -865,6 +865,10 @@
     .site-header-more-link-show-md {
       display: flex;
     }
+
+    .site-header-more-divider-show-md {
+      display: block;
+    }
   }
 
   @media (max-width: 580px) {
@@ -878,6 +882,10 @@
 
     .site-header-more-link-show-sm {
       display: flex;
+    }
+
+    .site-header-more-divider-show-sm {
+      display: block;
     }
   }
 
