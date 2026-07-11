@@ -5433,6 +5433,30 @@
     color: var(--site-text-primary);
   }
 
+  .compose-attached-done {
+    margin-left: auto;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--site-text-primary);
+    color: var(--site-elevated-bg);
+    font-size: var(--type-ui-control);
+    font-weight: var(--fw-medium);
+    line-height: 1.25;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .compose-attached-done:hover {
+    opacity: 0.82;
+  }
+
+  .compose-attached-done:focus-visible {
+    outline: 2px solid
+      color-mix(in srgb, var(--site-text-primary) 24%, transparent);
+    outline-offset: 2px;
+  }
+
   .compose-attached-tiptap {
     flex: 1;
     min-height: 0;
@@ -5442,6 +5466,10 @@
 
   .compose-attached-tiptap .tiptap {
     min-height: 100%;
+  }
+
+  .compose-attached-tiptap .tiptap > :first-child {
+    margin-top: 0;
   }
 
   .compose-attached-tiptap::-webkit-scrollbar {

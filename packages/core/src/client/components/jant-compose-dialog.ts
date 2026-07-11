@@ -4033,7 +4033,7 @@ export class JantComposeDialog extends LitElement {
           <span class="compose-alt-title">${this.labels.attachedText}</span>
           <button
             type="button"
-            class="compose-post-btn ml-auto"
+            class="compose-attached-done"
             @click=${() => this._doneAttachedPanel()}
           >
             ${this.labels.done}
