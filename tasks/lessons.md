@@ -127,3 +127,6 @@
 - ProseMirror may insert decoration DOM such as gap cursors between document
   nodes. Structural editor CSS must not rely on uninterrupted adjacent siblings;
   use selectors that remain correct when transient decoration elements appear.
+- Do not show an alternate keyboard shortcut when the sole visible action is
+  already executed by Enter, and do not cap an in-memory result list without a
+  measured performance or usability reason; use scrolling for overflow.

@@ -30,6 +30,19 @@ interface CommandItem {
   action: () => void;
 }
 
+interface DisplayItem {
+  label: string;
+  secondary?: string;
+  icon: string;
+  /** For search-mode items: the query to execute */
+  searchQuery?: string;
+  /** For path-mode items: the local path to open */
+  pathTarget?: string;
+  /** Keep cross-mode actions visible below the scrollable result list. */
+  placement?: "results" | "footer";
+  shortcut?: string;
+}
+
 // ---------------------------------------------------------------------------
 // SVG icon paths (reuse existing Lucide-style icons from the codebase)
 // ---------------------------------------------------------------------------
@@ -280,15 +293,7 @@ export class JantCommandPalette extends LitElement {
     return COMMANDS.filter((c) => !q || c.label.toLowerCase().includes(q));
   }
 
-  get #displayItems(): Array<{
-    label: string;
-    secondary?: string;
-    icon: string;
-    /** For search-mode items: the query to execute */
-    searchQuery?: string;
-    /** For path-mode items: the local path to open */
-    pathTarget?: string;
-  }> {
+  get #displayItems(): DisplayItem[] {
     const mode = this.#mode;
 
     if (mode === "command") {
@@ -320,13 +325,7 @@ export class JantCommandPalette extends LitElement {
     if (mode === "path") {
       const target = getPathCommandTarget(this._query);
       const searchQuery = getPathCommandSearchQuery(this._query);
-      const items: Array<{
-        label: string;
-        secondary?: string;
-        icon: string;
-        searchQuery?: string;
-        pathTarget?: string;
-      }> = [
+      const items: DisplayItem[] = [
         {
           label: `Go to ${target}`,
           icon: ICONS.path,
@@ -346,25 +345,25 @@ export class JantCommandPalette extends LitElement {
     }
 
     // Navigate mode — show all items when no query (autocomplete)
-    const navItems: Array<{
-      label: string;
-      secondary?: string;
-      icon: string;
-      searchQuery?: string;
-      pathTarget?: string;
-    }> = this.#navigateItems.map((item) => ({
+    // Rank direct destinations and let the scrollable result list handle
+    // overflow without hiding valid matches.
+    const q = normalizeSearch(this._query);
+    const navItems: DisplayItem[] = this.#navigateItems.map((item) => ({
       label: item.title,
-      secondary: item.type === "system" ? item.path : item.path,
+      secondary: item.path,
       icon: ICONS[item.type],
     }));
 
-    // When navigate mode has no matches, offer a full-text search fallback
-    const q = normalizeSearch(this._query);
-    if (navItems.length === 0 && q) {
+    // Full-text search is a persistent action, not another navigation result.
+    // Keep it outside the scrollable list while retaining it as the final
+    // keyboard option.
+    if (q) {
       navItems.push({
-        label: `Search for "${this._query.trim()}"`,
+        label: `Search all content for "${this._query.trim()}"`,
         icon: ICONS.search,
         searchQuery: this._query.trim(),
+        placement: "footer",
+        ...(navItems.length > 0 ? { shortcut: "⌘/Ctrl ↵" } : {}),
       });
     }
 
@@ -374,6 +373,12 @@ export class JantCommandPalette extends LitElement {
   // -----------------------------------------------------------------------
   // Actions
   // -----------------------------------------------------------------------
+
+  #executeSearch(query: string) {
+    saveHistory(SEARCH_HISTORY_KEY, query);
+    this.close();
+    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+  }
 
   #executeItem(index: number) {
     const mode = this.#mode;
@@ -391,9 +396,7 @@ export class JantCommandPalette extends LitElement {
       const displayItem = this.#displayItems[index];
       const q = displayItem?.searchQuery;
       if (q) {
-        saveHistory(SEARCH_HISTORY_KEY, q);
-        this.close();
-        window.location.href = `/search?q=${encodeURIComponent(q)}`;
+        this.#executeSearch(q);
       }
       return;
     }
@@ -408,10 +411,7 @@ export class JantCommandPalette extends LitElement {
       }
 
       if (displayItem?.searchQuery) {
-        const q = displayItem.searchQuery;
-        saveHistory(SEARCH_HISTORY_KEY, q);
-        this.close();
-        window.location.href = `/search?q=${encodeURIComponent(q)}`;
+        this.#executeSearch(displayItem.searchQuery);
       }
       return;
     }
@@ -419,10 +419,7 @@ export class JantCommandPalette extends LitElement {
     // Navigate mode — check if the selected item is a search fallback
     const displayItem = this.#displayItems[index];
     if (displayItem?.searchQuery) {
-      const q = displayItem.searchQuery;
-      saveHistory(SEARCH_HISTORY_KEY, q);
-      this.close();
-      window.location.href = `/search?q=${encodeURIComponent(q)}`;
+      this.#executeSearch(displayItem.searchQuery);
       return;
     }
 
@@ -475,6 +472,19 @@ export class JantCommandPalette extends LitElement {
       return;
     }
 
+    if (
+      event.key === "Enter" &&
+      (event.metaKey || event.ctrlKey) &&
+      this.#mode === "navigate"
+    ) {
+      const query = this._query.trim();
+      if (query) {
+        event.preventDefault();
+        this.#executeSearch(query);
+        return;
+      }
+    }
+
     if (event.key === "Enter") {
       event.preventDefault();
       this.#executeItem(this._selectedIndex);
@@ -521,10 +531,49 @@ export class JantCommandPalette extends LitElement {
   // Render
   // -----------------------------------------------------------------------
 
+  #renderItem(item: DisplayItem, index: number, footer = false) {
+    return html`
+      <div
+        id="command-palette-item-${index}"
+        class=${classMap({
+          "command-palette-result": true,
+          "command-palette-result-selected": index === this._selectedIndex,
+          "command-palette-search-action": footer,
+        })}
+        role="option"
+        aria-selected=${index === this._selectedIndex}
+        @click=${this.#handleItemClick(index)}
+      >
+        <span class="command-palette-result-icon">${unsafeSVG(item.icon)}</span>
+        <span class="command-palette-result-body">
+          <span class="command-palette-result-title">${item.label}</span>
+          ${item.secondary
+            ? html`<span class="command-palette-result-path"
+                >${item.secondary}</span
+              >`
+            : nothing}
+        </span>
+        ${item.shortcut
+          ? html`<kbd
+              class="command-palette-result-shortcut"
+              aria-label="Command or Control plus Enter"
+              >${item.shortcut}</kbd
+            >`
+          : nothing}
+      </div>
+    `;
+  }
+
   render() {
     if (!this._open) return nothing;
 
     const items = this.#displayItems;
+    const resultItems = items
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.placement !== "footer");
+    const footerItems = items
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.placement === "footer");
 
     return html`
       <dialog
@@ -563,41 +612,22 @@ export class JantCommandPalette extends LitElement {
 
           ${items.length > 0
             ? html`
-                <ul
+                <div
                   id="command-palette-results"
-                  class="command-palette-results"
+                  class="command-palette-results-container"
                   role="listbox"
                 >
-                  ${items.map(
-                    (item, i) => html`
-                      <li
-                        id="command-palette-item-${i}"
-                        class=${classMap({
-                          "command-palette-result": true,
-                          "command-palette-result-selected":
-                            i === this._selectedIndex,
-                        })}
-                        role="option"
-                        aria-selected=${i === this._selectedIndex}
-                        @click=${this.#handleItemClick(i)}
-                      >
-                        <span class="command-palette-result-icon"
-                          >${unsafeSVG(item.icon)}</span
-                        >
-                        <span class="command-palette-result-body">
-                          <span class="command-palette-result-title"
-                            >${item.label}</span
-                          >
-                          ${item.secondary
-                            ? html`<span class="command-palette-result-path"
-                                >${item.secondary}</span
-                              >`
-                            : nothing}
-                        </span>
-                      </li>
-                    `,
+                  ${resultItems.length > 0
+                    ? html`<div class="command-palette-results">
+                        ${resultItems.map(({ item, index }) =>
+                          this.#renderItem(item, index),
+                        )}
+                      </div>`
+                    : nothing}
+                  ${footerItems.map(({ item, index }) =>
+                    this.#renderItem(item, index, true),
                   )}
-                </ul>
+                </div>
               `
             : this._query.trim() && !this._loading
               ? html`<div class="command-palette-empty">No results</div>`
