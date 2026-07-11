@@ -120,3 +120,6 @@
 - Broken inline media should be handled at the image node by default. Avoid
   adding a top-level compose warning unless the user needs cross-document
   navigation or a blocking action.
+- Do not show an alternate keyboard shortcut when the sole visible action is
+  already executed by Enter, and do not cap an in-memory result list without a
+  measured performance or usability reason; use scrolling for overflow.
