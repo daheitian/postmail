@@ -236,7 +236,7 @@ describe("PostService - Timeline features", () => {
       expect(result.size).toBe(0);
     });
 
-    it("returns second and latest as the same post for a 2-post thread", async () => {
+    it("returns the only reply as leading and latest context", async () => {
       const root = await postService.create({
         format: "note",
         bodyMarkdown: "root",
@@ -250,13 +250,13 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
-      expect(ctx?.secondReply?.id).toBe(reply.id);
-      expect(ctx?.penultimateReply).toBeNull();
+      expect(ctx?.leadingReplies.map((post) => post.id)).toEqual([reply.id]);
+      expect(ctx?.trailingReplies).toEqual([]);
       expect(ctx?.latestReply.id).toBe(reply.id);
       expect(ctx?.totalReplyCount).toBe(1);
     });
 
-    it("returns second, penultimate, and latest slots for a 3-post thread", async () => {
+    it("returns overlapping leading and trailing context for short threads", async () => {
       const root = await postService.create({
         format: "note",
         bodyMarkdown: "root",
@@ -275,13 +275,16 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
-      expect(ctx?.secondReply?.id).toBe(reply1.id);
-      expect(ctx?.penultimateReply?.id).toBe(reply1.id);
+      expect(ctx?.leadingReplies.map((post) => post.id)).toEqual([
+        reply1.id,
+        reply2.id,
+      ]);
+      expect(ctx?.trailingReplies.map((post) => post.id)).toEqual([reply1.id]);
       expect(ctx?.latestReply.id).toBe(reply2.id);
       expect(ctx?.totalReplyCount).toBe(2);
     });
 
-    it("returns second, penultimate, and latest slots for longer threads", async () => {
+    it("returns the first two and last three reply positions for longer threads", async () => {
       const root = await postService.create({
         format: "note",
         bodyMarkdown: "root",
@@ -298,8 +301,14 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
-      expect(ctx?.secondReply?.bodyText).toBe("reply 0");
-      expect(ctx?.penultimateReply?.bodyText).toBe("reply 3");
+      expect(ctx?.leadingReplies.map((post) => post.bodyText)).toEqual([
+        "reply 0",
+        "reply 1",
+      ]);
+      expect(ctx?.trailingReplies.map((post) => post.bodyText)).toEqual([
+        "reply 2",
+        "reply 3",
+      ]);
       expect(ctx?.latestReply.bodyText).toBe("reply 4");
       expect(ctx?.totalReplyCount).toBe(5);
     });
@@ -326,7 +335,7 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
-      expect(ctx?.secondReply?.id).toBe(reply1.id);
+      expect(ctx?.leadingReplies.map((post) => post.id)).toEqual([reply1.id]);
       expect(ctx?.latestReply.id).toBe(reply1.id);
       expect(ctx?.totalReplyCount).toBe(1);
     });
@@ -351,7 +360,9 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
-      expect(ctx?.secondReply?.id).toBe(publishedReply.id);
+      expect(ctx?.leadingReplies.map((post) => post.id)).toEqual([
+        publishedReply.id,
+      ]);
       expect(ctx?.latestReply.id).toBe(publishedReply.id);
       expect(ctx?.totalReplyCount).toBe(1);
     });
@@ -381,8 +392,8 @@ describe("PostService - Timeline features", () => {
         root2.id,
       ]);
       expect(result.size).toBe(2);
-      expect(result.get(root1.id)?.secondReply?.id).toBe(r1Reply.id);
-      expect(result.get(root2.id)?.secondReply?.id).toBe(r2Reply.id);
+      expect(result.get(root1.id)?.leadingReplies[0]?.id).toBe(r1Reply.id);
+      expect(result.get(root2.id)?.leadingReplies[0]?.id).toBe(r2Reply.id);
       expect(result.get(root1.id)?.latestReply.id).toBe(r1Reply.id);
       expect(result.get(root2.id)?.latestReply.id).toBe(r2Reply.id);
     });

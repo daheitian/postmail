@@ -157,18 +157,14 @@ describe("Timeline data assembly", () => {
         return {
           post: postWithMedia,
           threadPreview: {
-            secondReply: threadCtx.secondReply
-              ? {
-                  ...threadCtx.secondReply,
-                  mediaAttachments: [],
-                }
-              : undefined,
-            penultimateReply: threadCtx.penultimateReply
-              ? {
-                  ...threadCtx.penultimateReply,
-                  mediaAttachments: [],
-                }
-              : undefined,
+            leadingReplies: threadCtx.leadingReplies.map((reply) => ({
+              ...reply,
+              mediaAttachments: [],
+            })),
+            trailingReplies: threadCtx.trailingReplies.map((reply) => ({
+              ...reply,
+              mediaAttachments: [],
+            })),
             latestReply: {
               ...threadCtx.latestReply,
               mediaAttachments: [],
@@ -183,7 +179,9 @@ describe("Timeline data assembly", () => {
 
     expect(items).toHaveLength(1);
     expect(items[0]?.threadPreview).toBeDefined();
-    expect(items[0]?.threadPreview?.secondReply?.bodyText).toBe("Reply 1");
+    expect(items[0]?.threadPreview?.leadingReplies[0]?.bodyText).toBe(
+      "Reply 1",
+    );
     expect(items[0]?.threadPreview?.latestReply.bodyText).toBe("Reply 2");
     expect(items[0]?.threadPreview?.totalReplyCount).toBe(2);
   });

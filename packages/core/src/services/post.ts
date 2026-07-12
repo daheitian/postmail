@@ -2718,8 +2718,8 @@ export function createPostService(
         .from(rankedReplies)
         .where(
           or(
-            eq(rankedReplies.firstReplyRank, 1),
-            lte(rankedReplies.latestReplyRank, 2),
+            lte(rankedReplies.firstReplyRank, 2),
+            lte(rankedReplies.latestReplyRank, 3),
           ),
         );
 
@@ -2730,25 +2730,25 @@ export function createPostService(
       const contextByThreadId = new Map<
         string,
         {
-          secondReplyId: string | null;
-          penultimateReplyId: string | null;
+          leadingReplyIds: Map<number, string>;
+          trailingReplyIds: Map<number, string>;
           latestReplyId: string | null;
           totalReplyCount: number;
         }
       >();
       for (const row of contextRows) {
         const existing = contextByThreadId.get(row.threadId) ?? {
-          secondReplyId: null,
-          penultimateReplyId: null,
+          leadingReplyIds: new Map<number, string>(),
+          trailingReplyIds: new Map<number, string>(),
           latestReplyId: null,
           totalReplyCount: row.totalReplyCount,
         };
 
-        if (row.firstReplyRank === 1) {
-          existing.secondReplyId = row.id;
+        if (row.firstReplyRank <= 2) {
+          existing.leadingReplyIds.set(row.firstReplyRank, row.id);
         }
-        if (row.latestReplyRank === 2) {
-          existing.penultimateReplyId = row.id;
+        if (row.latestReplyRank === 2 || row.latestReplyRank === 3) {
+          existing.trailingReplyIds.set(row.latestReplyRank, row.id);
         }
         if (row.latestReplyRank === 1) {
           existing.latestReplyId = row.id;
@@ -2764,13 +2764,20 @@ export function createPostService(
         const latestReply = hydratedPosts.get(context.latestReplyId);
         if (!latestReply) continue;
 
+        const hydrateReplyIds = (ids: Array<string | undefined>) =>
+          ids
+            .map((id) => (id ? hydratedPosts.get(id) : undefined))
+            .filter((post): post is Post => post !== undefined);
+
         result.set(threadId, {
-          secondReply: context.secondReplyId
-            ? (hydratedPosts.get(context.secondReplyId) ?? null)
-            : null,
-          penultimateReply: context.penultimateReplyId
-            ? (hydratedPosts.get(context.penultimateReplyId) ?? null)
-            : null,
+          leadingReplies: hydrateReplyIds([
+            context.leadingReplyIds.get(1),
+            context.leadingReplyIds.get(2),
+          ]),
+          trailingReplies: hydrateReplyIds([
+            context.trailingReplyIds.get(3),
+            context.trailingReplyIds.get(2),
+          ]),
           latestReply,
           totalReplyCount: context.totalReplyCount,
         });

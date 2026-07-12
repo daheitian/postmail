@@ -215,8 +215,8 @@ export interface SearchResultView {
 export interface TimelineItemView {
   post: PostView;
   threadPreview?: {
-    secondReply?: PostView;
-    penultimateReply?: PostView;
+    leadingReplies: PostView[];
+    trailingReplies: PostView[];
     latestReply: PostView;
     totalReplyCount: number;
   };
