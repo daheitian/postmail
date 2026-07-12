@@ -18,7 +18,7 @@ import { renderPublicPage } from "../../lib/render.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { AdminBreadcrumb } from "../../ui/shared/AdminBreadcrumb.js";
-import { TIMEZONES } from "../../lib/timezones.js";
+import { getTimeZoneOptions } from "../../lib/timezones.js";
 import { ValidationError } from "../../lib/errors.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { getAvailableThemes } from "../../lib/theme.js";
@@ -366,7 +366,7 @@ settingsRoutes.get("/general", async (c) => {
           showJantBrandingOnHome={appConfig.showJantBrandingOnHome}
           noindex={appConfig.noindex}
           demoMode={appConfig.demoMode}
-          timezones={TIMEZONES}
+          timezones={getTimeZoneOptions(appConfig.timeZone)}
           aboutPage={aboutPage}
           aboutEditUrl={aboutEditPath(c)}
           aboutCreateUrl={publicPath(c, "/settings/general/about-page")}

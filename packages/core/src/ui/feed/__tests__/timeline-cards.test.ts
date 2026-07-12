@@ -465,7 +465,18 @@ describe("timeline cards", () => {
       /\.post-footer-detail\s*\{[^}]*margin-top:\s*24px;[^}]*font-size:\s*var\(--type-ui-hint\);[^}]*color:\s*var\(--site-text-secondary\);/,
     );
     expect(css).toMatch(
-      /\.thread-group-detail \.post-footer-detail\s*\{[^}]*margin-top:\s*0;/,
+      /\.thread-group-detail \.post-footer-detail\s*\{[^}]*margin-top:\s*var\(--content-gap\);/,
+    );
+  });
+
+  it("adds breathing room when a quote source leads directly into its footer", () => {
+    const css = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.feed-quote-attribution:has\(\+ \.post-menu-footer\)\s*\{[^}]*margin-bottom:\s*0\.45rem;/,
     );
   });
 

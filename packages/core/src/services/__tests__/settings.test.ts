@@ -50,6 +50,14 @@ describe("SettingsService", () => {
       expect(result).toBe("Asia/Shanghai");
     });
 
+    it("preserves runtime-supported IANA zones and fixed offsets", async () => {
+      await settingsService.set("TIME_ZONE", "America/Phoenix");
+      expect(await settingsService.get("TIME_ZONE")).toBe("America/Phoenix");
+
+      await settingsService.set("TIME_ZONE", "+08");
+      expect(await settingsService.get("TIME_ZONE")).toBe("+08:00");
+    });
+
     it("rejects unsupported timezone values", async () => {
       await expect(settingsService.set("TIME_ZONE", "+8")).rejects.toThrowError(
         "Choose a valid time zone.",

@@ -2999,6 +2999,10 @@
     line-height: 1.3;
   }
 
+  .feed-quote-attribution:has(+ .post-menu-footer) {
+    margin-bottom: 0.45rem;
+  }
+
   .feed-quote-attribution::before {
     content: "";
     width: 0.9rem;
@@ -3181,11 +3185,11 @@
     color: var(--site-text-secondary);
   }
 
-  /* A standalone detail footer still needs breathing room to close the
-     reading surface. In a thread, spacing belongs to the shared timeline
-     rhythm, so its footer should sit as tightly as the feed variant. */
+  /* A standalone detail footer needs extra breathing room to close the
+     reading surface. Thread entries keep a smaller content gap so their
+     metadata stays connected without crowding the post body. */
   .thread-group-detail .post-footer-detail {
-    margin-top: 0;
+    margin-top: var(--content-gap);
   }
 
   .post-footer-meta {

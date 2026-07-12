@@ -2337,17 +2337,22 @@ Request body:
 {
   "key": "demo-cloud",
   "primaryHost": "demo-cloud.example.com",
-  "siteName": "Demo Cloud"
+  "siteName": "Demo Cloud",
+  "siteLanguage": "en-US",
+  "timeZone": "America/New_York"
 }
 ```
 
 Fields:
 
-| Field         | Type   | Required | Default | Notes                                                     |
-| ------------- | ------ | -------- | ------- | --------------------------------------------------------- |
-| `key`         | string | yes      | —       | Lowercase site key, `3-40` chars, letters/numbers/hyphens |
-| `primaryHost` | string | yes      | —       | Lowercase hostname, max `255`                             |
-| `siteName`    | string | yes      | —       | Display name, `1-120` chars after trim                    |
+| Field            | Type   | Required | Default | Notes                                                        |
+| ---------------- | ------ | -------- | ------- | ------------------------------------------------------------ |
+| `key`            | string | yes      | —       | Lowercase site key, `3-40` chars, letters/numbers/hyphens    |
+| `primaryHost`    | string | yes      | —       | Lowercase hostname, max `255`                                |
+| `siteName`       | string | yes      | —       | Display name, `1-120` chars after trim                       |
+| `siteLanguage`   | string | no       | `en`    | Content locale detected by the control plane                 |
+| `timeZone`       | string | no       | `UTC`   | Runtime-supported IANA name or fixed offset such as `+08:00` |
+| `idempotencyKey` | string | no       | —       | Retry key, max `128` chars                                   |
 
 Response:
 
@@ -2363,6 +2368,10 @@ Notes:
 
 - New managed sites start with `status: "active"`.
 - Jant seeds onboarding as completed and stores the provided `SITE_NAME`.
+- Valid browser timezone identifiers retain their own IANA or fixed-offset
+  semantics instead of being collapsed by the curated settings UI list.
+- Unknown optional timezone metadata falls back to UTC and does not fail site
+  provisioning. Explicit settings updates still reject invalid timezones.
 - Duplicate site keys return `409`.
 - Duplicate primary hosts return `409`.
 

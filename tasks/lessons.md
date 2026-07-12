@@ -130,3 +130,6 @@
 - Do not show an alternate keyboard shortcut when the sole visible action is
   already executed by Enter, and do not cap an in-memory result list without a
   measured performance or usability reason; use scrolling for overflow.
+- When aligning metadata across feed and detail views, treat typography and
+  color separately from vertical rhythm. Thread entries still need a content
+  gap between the body and footer even when their metadata matches the feed.
