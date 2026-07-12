@@ -9027,26 +9027,34 @@
 
   .compose-tiptap-body .tiptap ul {
     list-style-type: disc;
-    padding-left: 1.5em;
-    margin: 0.25em 0;
+    padding-left: 1.4em;
+    margin: 1.25em 0;
   }
 
   .compose-tiptap-body .tiptap ol {
     list-style-type: decimal;
-    padding-left: 1.5em;
-    margin: 0.25em 0;
+    padding-left: 1.4em;
+    margin: 1.25em 0;
   }
 
   .compose-tiptap-body .tiptap li {
-    margin: 0.15em 0;
+    margin: 0.5em 0;
+  }
+
+  .compose-tiptap-body .tiptap li > p:first-child {
+    margin-top: 0;
+  }
+
+  .compose-tiptap-body .tiptap li > p:last-child {
+    margin-bottom: 0;
   }
 
   .compose-tiptap-body .tiptap blockquote {
     --_blockquote-bg: var(--compose-blockquote-bg);
     --_blockquote-text: var(--compose-blockquote-text);
     position: relative;
-    margin: 0.72em 0;
-    padding: 1.3rem 0.9em 0.76em 1em;
+    margin: 1.4rem 0;
+    padding: 1.4rem 1rem 0.75rem;
     border: none;
     border-radius: 6px;
     background: var(--_blockquote-bg);
@@ -9059,6 +9067,22 @@
     transition:
       background 0.18s ease,
       color 0.18s ease;
+  }
+
+  /* Reply compose deliberately stays denser than ordinary authored prose. */
+  .compose-reply-compose-layout .compose-tiptap-body .tiptap ul,
+  .compose-reply-compose-layout .compose-tiptap-body .tiptap ol {
+    padding-left: 1.5em;
+    margin: 0.25em 0;
+  }
+
+  .compose-reply-compose-layout .compose-tiptap-body .tiptap li {
+    margin: 0.15em 0;
+  }
+
+  .compose-reply-compose-layout .compose-tiptap-body .tiptap blockquote {
+    margin: 0.72em 0;
+    padding: 1.3rem 0.9em 0.76em 1em;
   }
 
   /* CJK: no italic for blockquotes (no true italic glyph) */

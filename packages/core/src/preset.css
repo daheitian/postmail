@@ -238,8 +238,8 @@ html {
   }
 
   :where(li, dt) {
-    margin-top: 0.65em;
-    margin-bottom: 0.65em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
   }
 
   /* Normalize li > p so list spacing is controlled by li alone,

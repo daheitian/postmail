@@ -166,9 +166,13 @@ describe("timeline cards", () => {
     expect(css).toContain("margin-bottom: 0;");
   });
 
-  it("keeps prose list rhythm compact in live and exported reading", () => {
+  it("aligns list rhythm across published and ordinary compose prose", () => {
     const presetCss = readFileSync(
       new URL("../../../preset.css", import.meta.url),
+      "utf8",
+    );
+    const uiCss = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
       "utf8",
     );
     const exportCss = readFileSync(
@@ -186,10 +190,20 @@ describe("timeline cards", () => {
       /ul,\s*[\s\S]*ol\s*\{[\s\S]*padding-left:\s*1\.4em;/,
     );
     expect(presetCss).toMatch(
-      /:where\(li,\s*dt\)\s*\{[\s\S]*margin-top:\s*0\.65em;[\s\S]*margin-bottom:\s*0\.65em;/,
+      /:where\(li,\s*dt\)\s*\{[\s\S]*margin-top:\s*0\.5em;[\s\S]*margin-bottom:\s*0\.5em;/,
     );
     expect(exportCss).toMatch(
-      /li\s*\{[\s\S]*margin-top:\s*0\.65em;[\s\S]*margin-bottom:\s*0\.65em;/,
+      /li\s*\{[\s\S]*margin-top:\s*0\.5em;[\s\S]*margin-bottom:\s*0\.5em;/,
+    );
+    expect(uiCss).toMatch(
+      /\.compose-tiptap-body\s+\.tiptap\s+ul\s*\{[^}]*padding-left:\s*1\.4em;[^}]*margin:\s*1\.25em 0;/,
+    );
+    expect(uiCss).toMatch(
+      /\.compose-tiptap-body\s+\.tiptap\s+li\s*\{[^}]*margin:\s*0\.5em 0;/,
+    );
+    expect(uiCss).toContain(".compose-tiptap-body .tiptap li > p:first-child");
+    expect(uiCss).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-tiptap-body\s+\.tiptap\s+li\s*\{[^}]*margin:\s*0\.15em 0;/,
     );
   });
 
@@ -306,6 +320,12 @@ describe("timeline cards", () => {
     );
     expect(css).toMatch(
       /\.compose-tiptap-body\s+\.tiptap\s+blockquote:focus-within\s*\{/,
+    );
+    expect(css).toMatch(
+      /\.compose-tiptap-body\s+\.tiptap\s+blockquote\s*\{[^}]*margin:\s*1\.4rem 0;[^}]*padding:\s*1\.4rem 1rem 0\.75rem;/,
+    );
+    expect(css).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-tiptap-body\s+\.tiptap\s+blockquote\s*\{[^}]*margin:\s*0\.72em 0;/,
     );
   });
 
