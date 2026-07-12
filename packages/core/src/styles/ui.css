@@ -2285,7 +2285,7 @@
   .post-header-meta-link {
     color: var(--site-text-secondary);
     font-family: var(--font-ui);
-    font-size: var(--type-ui-meta);
+    font-size: var(--type-ui-hint);
     text-decoration: none;
     white-space: nowrap;
   }
@@ -2332,19 +2332,13 @@
   [data-page="post"] .feed-quote-attribution,
   [data-page="post"] .post-header-meta-row,
   [data-page="post"] .post-header-meta-link,
-  [data-page="post"] .post-header-meta-link time,
-  [data-page="post"] [data-post-meta],
-  [data-page="post"] [data-post-meta] .post-footer-meta,
-  [data-page="post"] [data-post-meta] a,
-  [data-page="post"] [data-post-meta] time {
+  [data-page="post"] .post-header-meta-link time {
     color: var(--site-reading-meta);
   }
 
   [data-page="post"] .feed-link-domain:hover,
   [data-page="post"] .feed-quote-source:hover,
-  [data-page="post"] .post-header-meta-link:hover,
-  [data-page="post"] [data-post-meta] a:hover,
-  [data-page="post"] [data-post-meta] .post-footer-external-link:hover {
+  [data-page="post"] .post-header-meta-link:hover {
     color: var(--site-reading-body);
   }
 
@@ -3183,8 +3177,15 @@
 
   .post-footer-detail {
     margin-top: 24px;
-    font-size: var(--type-ui-meta);
+    font-size: var(--type-ui-hint);
     color: var(--site-text-secondary);
+  }
+
+  /* A standalone detail footer still needs breathing room to close the
+     reading surface. In a thread, spacing belongs to the shared timeline
+     rhythm, so its footer should sit as tightly as the feed variant. */
+  .thread-group-detail .post-footer-detail {
+    margin-top: 0;
   }
 
   .post-footer-meta {

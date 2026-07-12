@@ -452,6 +452,23 @@ describe("timeline cards", () => {
     );
   });
 
+  it("keeps detail dates quiet while preserving standalone footer spacing", () => {
+    const css = readFileSync(
+      new URL("../../../styles/ui.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.post-header-meta-link\s*\{[^}]*font-size:\s*var\(--type-ui-hint\);/,
+    );
+    expect(css).toMatch(
+      /\.post-footer-detail\s*\{[^}]*margin-top:\s*24px;[^}]*font-size:\s*var\(--type-ui-hint\);[^}]*color:\s*var\(--site-text-secondary\);/,
+    );
+    expect(css).toMatch(
+      /\.thread-group-detail \.post-footer-detail\s*\{[^}]*margin-top:\s*0;/,
+    );
+  });
+
   it("renders titled note feed summaries as secondary prose without shrinking detail reading", () => {
     const post = createPostView({
       format: "note",

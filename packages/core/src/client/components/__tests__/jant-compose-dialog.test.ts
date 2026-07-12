@@ -2364,6 +2364,34 @@ describe("JantComposeDialog", () => {
     expect(el._threadItems).toHaveLength(MAX_THREAD_POSTS);
   });
 
+  it("scrolls the thread composer to the bottom after adding an item", async () => {
+    const el = await createElement();
+    el._threadItems = [
+      { id: "thread-1", format: "note" },
+      { id: "thread-2", format: "note" },
+    ];
+    await el.updateComplete;
+
+    const threadLayout = requireElement(
+      el.querySelector<HTMLElement>(".compose-thread-compose-layout"),
+      "expected thread compose layout",
+    );
+    Object.defineProperty(threadLayout, "scrollHeight", {
+      configurable: true,
+      value: 640,
+    });
+    threadLayout.scrollTop = 120;
+
+    (
+      el as unknown as {
+        _addThreadItem: () => void;
+      }
+    )._addThreadItem();
+    await flushUpdates(el);
+
+    expect(threadLayout.scrollTop).toBe(640);
+  });
+
   it("omits visibility from locked edit submissions", async () => {
     const el = await createElement();
     const editor = requireElement(

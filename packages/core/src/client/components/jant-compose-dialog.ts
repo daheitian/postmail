@@ -5254,6 +5254,12 @@ export class JantComposeDialog extends LitElement {
         "jant-compose-editor",
       );
       editors[this._focusedThreadIndex]?.focusInput();
+      const threadLayout = this.querySelector<HTMLElement>(
+        ".compose-thread-compose-layout",
+      );
+      if (threadLayout) {
+        threadLayout.scrollTop = threadLayout.scrollHeight;
+      }
     });
   }
 
