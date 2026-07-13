@@ -233,6 +233,20 @@ const labels: ComposeLabels = {
   replyTitle: "Reply",
   editTitle: "Edit",
   slashHint: "Type / for commands",
+  tableControls: {
+    toolbarLabel: "Table controls",
+    addRowAbove: "Add row above",
+    addRowBelow: "Add row below",
+    addColumnBefore: "Add column before",
+    addColumnAfter: "Add column after",
+    options: "Table options",
+    deleteRow: "Delete row",
+    deleteColumn: "Delete column",
+    toggleHeaderRow: "Toggle header row",
+    deleteTable: "Delete table",
+    sizePickerLabel: "Choose table size",
+    insertTableSize: "Insert %rows% by %cols% table",
+  },
   collectionFormLabels: {
     titleLabel: "Title",
     titlePlaceholder: "My Collection",
@@ -3904,6 +3918,57 @@ describe("JantComposeDialog", () => {
     expect(requestCloseSpy).not.toHaveBeenCalled();
     expect(el._confirmPanelOpen).toBe(false);
     expect(document.querySelector(".tiptap-slash-menu")).toBeNull();
+    expect(tiptap.getText()).toBe("");
+  });
+
+  it("Escape cancels the table size picker without closing compose", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const tiptap = requireEditor(editor);
+
+    tiptap.commands.focus("end");
+    tiptap.commands.insertContent("/tab");
+    await flushUpdates(el);
+
+    const tableItem = Array.from(
+      document.querySelectorAll<HTMLElement>(".tiptap-slash-item"),
+    ).find((item) => item.textContent?.includes("Table"));
+    requireElement(
+      tableItem ?? null,
+      "expected Table slash item",
+    ).dispatchEvent(
+      new globalThis.MouseEvent("mousedown", {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    await vi.waitFor(() => {
+      expect(
+        document.querySelector(".tiptap-table-size-picker"),
+      ).not.toBeNull();
+    });
+
+    const requestCloseSpy = vi.spyOn(el, "requestClose");
+    const currentSize = requireElement(
+      document.querySelector<HTMLButtonElement>(
+        ".tiptap-table-size-cell.is-current",
+      ),
+      "expected current table size",
+    );
+    const escapeEvent = new globalThis.KeyboardEvent("keydown", {
+      key: "Escape",
+      bubbles: true,
+      cancelable: true,
+    });
+    currentSize.dispatchEvent(escapeEvent);
+    await flushUpdates(el);
+
+    expect(escapeEvent.defaultPrevented).toBe(true);
+    expect(requestCloseSpy).not.toHaveBeenCalled();
+    expect(document.querySelector(".tiptap-table-size-picker")).toBeNull();
     expect(tiptap.getText()).toBe("");
   });
 

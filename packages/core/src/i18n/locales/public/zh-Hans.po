@@ -163,9 +163,29 @@ msgstr ""
 msgid "Add Collection"
 msgstr ""
 
+#. @context: Compose table action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add column after"
+msgstr ""
+
+#. @context: Compose table action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add column before"
+msgstr ""
+
 #. @context: Primary action to add a custom link on collections page
 #: src/ui/shared/collection-management-labels.ts
 msgid "Add Link"
+msgstr ""
+
+#. @context: Compose table action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add row above"
+msgstr ""
+
+#. @context: Compose table action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add row below"
 msgstr ""
 
 #. @context: Archive filter - collection dropdown default
@@ -350,6 +370,11 @@ msgstr ""
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
+msgstr ""
+
+#. @context: Accessible title for the table dimension picker
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Choose table size"
 msgstr ""
 
 #. @context: Body copy for the logo downloads section
@@ -570,6 +595,11 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
+#. @context: Compose table action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Delete column"
+msgstr ""
+
 #. @context: Draft item action
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Delete Draft"
@@ -578,6 +608,16 @@ msgstr ""
 #. @context: Inline editor button label for removing a broken image
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Delete image"
+msgstr ""
+
+#. @context: Compose table action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Delete row"
+msgstr ""
+
+#. @context: Destructive compose table action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Delete table"
 msgstr ""
 
 #. @context: Confirm dialog for deleting a collection
@@ -1011,6 +1051,11 @@ msgstr ""
 #. @context: Table cell in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Inline link"
+msgstr ""
+
+#. @context: Accessible label for a table size option. %rows% and %cols% are replaced with dimensions
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Insert %rows% by %cols% table"
 msgstr ""
 
 #. @context: Sample note summary suffix on the theme sample page
@@ -1979,6 +2024,16 @@ msgstr ""
 msgid "Switch to the white logo when the standard green version would lose contrast."
 msgstr ""
 
+#. @context: Accessible label for the compose table toolbar
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Table controls"
+msgstr ""
+
+#. @context: Compose table menu button label
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Table options"
+msgstr ""
+
 #. @context: Label on failed upload overlay button, tells user tapping retries the upload
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Tap to retry"
@@ -2179,6 +2234,11 @@ msgstr ""
 #. @context: Sample quote commentary suffix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "to make sure both still feel like they belong to the same product."
+msgstr ""
+
+#. @context: Compose table action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Toggle header row"
 msgstr ""
 
 #. @context: Usage label for the square logo PNG asset card

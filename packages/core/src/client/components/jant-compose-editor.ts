@@ -1006,6 +1006,7 @@ export class JantComposeEditor extends LitElement {
         rehost: (src) => this.#rehostInlineImage(src),
       },
       imageNodeLabels: getInlineImageNodeLabels(this.labels),
+      tableControlLabels: this.labels.tableControls,
     });
     this._lastEditorSelection = this._readEditorSelection();
 

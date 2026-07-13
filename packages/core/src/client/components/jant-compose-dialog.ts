@@ -2551,6 +2551,7 @@ export class JantComposeDialog extends LitElement {
         placeholder: this.labels.attachedTextPlaceholder,
         content,
         toolbarMode: "compose",
+        tableControlLabels: this.labels.tableControls,
       });
       this._focusAttachedEditorBoundary(content);
     });

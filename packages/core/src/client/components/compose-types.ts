@@ -7,6 +7,7 @@
 
 import type { JSONContent } from "@tiptap/core";
 import type { CollectionFormLabels } from "./collection-types.js";
+import type { TableControlLabels } from "../tiptap/table-control-labels.js";
 
 export type ComposeFormat = "note" | "link" | "quote";
 
@@ -229,6 +230,7 @@ export interface ComposeLabels {
   replyTitle: string;
   editTitle: string;
   slashHint: string;
+  tableControls: TableControlLabels;
   collectionFormLabels: CollectionFormLabels;
 }
 

@@ -8941,6 +8941,9 @@
   .compose-tiptap-body .tiptap {
     outline: none;
     min-height: 120px;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
     font-size: var(--type-content-body);
     line-height: var(--type-body-leading);
     letter-spacing: var(--type-body-tracking);
@@ -9170,9 +9173,9 @@
 
   .compose-tiptap-body .tiptap table {
     border-collapse: collapse;
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     margin: 0.75em 0;
-    overflow: hidden;
   }
 
   .compose-tiptap-body .tiptap td,
@@ -9180,7 +9183,7 @@
     border: 1px solid var(--site-divider);
     padding: 0.4em 0.6em;
     vertical-align: top;
-    min-width: 1em;
+    min-width: 6rem;
     position: relative;
   }
 
@@ -9191,6 +9194,211 @@
 
   .compose-tiptap-body .tiptap .selectedCell {
     background: oklch(from var(--site-accent) l c h / 0.12);
+  }
+
+  /* Contextual table toolbar — deliberately quieter than the text bubble menu. */
+  .tiptap-table-controls {
+    position: fixed;
+    z-index: 10001;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid color-mix(in srgb, var(--site-divider) 58%, transparent);
+    border-radius: 11px;
+    background: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 96%,
+      var(--site-nav-hover-bg) 4%
+    );
+    box-shadow:
+      0 10px 24px oklch(from var(--site-text-primary) l c h / 0.07),
+      0 2px 5px oklch(from var(--site-text-primary) l c h / 0.035);
+  }
+
+  .tiptap-table-control-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    color: var(--site-text-secondary);
+    cursor: pointer;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .tiptap-table-control-btn:hover,
+  .tiptap-table-control-btn:focus-visible,
+  .tiptap-table-control-btn[aria-expanded="true"] {
+    color: var(--site-text-primary);
+    background: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 78%,
+      var(--site-elevated-bg) 22%
+    );
+  }
+
+  .tiptap-table-control-btn:focus-visible,
+  .tiptap-table-menu-item:focus-visible,
+  .tiptap-table-size-cell:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--site-accent) 72%, transparent);
+    outline-offset: 1px;
+  }
+
+  .tiptap-table-control-btn:disabled,
+  .tiptap-table-menu-item:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .tiptap-table-options {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    width: min(13.5rem, calc(100vw - 20px));
+    padding: 5px;
+    border: 1px solid color-mix(in srgb, var(--site-divider) 58%, transparent);
+    border-radius: 12px;
+    background: var(--site-elevated-bg);
+    box-shadow:
+      0 14px 28px oklch(from var(--site-text-primary) l c h / 0.08),
+      0 2px 6px oklch(from var(--site-text-primary) l c h / 0.04);
+    transform: translateX(-50%);
+  }
+
+  .tiptap-table-options[hidden] {
+    display: none;
+  }
+
+  .tiptap-table-menu-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 2.25rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 8px;
+    color: var(--site-text-primary);
+    font-size: var(--type-sm);
+    line-height: 1.25;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .tiptap-table-menu-item:hover,
+  .tiptap-table-menu-item:focus-visible {
+    background: var(--site-nav-hover-bg);
+  }
+
+  .tiptap-table-menu-item.is-destructive {
+    color: var(--destructive);
+  }
+
+  .tiptap-table-options-separator {
+    height: 1px;
+    margin: 4px 5px;
+    background: color-mix(in srgb, var(--site-divider) 58%, transparent);
+  }
+
+  /* Slash-command table size picker. */
+  .tiptap-table-size-picker {
+    position: fixed;
+    z-index: 10002;
+    width: min(17rem, calc(100vw - 20px));
+    padding: 10px;
+    border: 1px solid color-mix(in srgb, var(--site-divider) 58%, transparent);
+    border-radius: 13px;
+    background: linear-gradient(
+      180deg,
+      color-mix(
+          in srgb,
+          var(--site-elevated-bg) 96%,
+          var(--site-nav-hover-bg) 4%
+        )
+        0%,
+      var(--site-elevated-bg) 100%
+    );
+    box-shadow:
+      0 14px 30px oklch(from var(--site-text-primary) l c h / 0.08),
+      0 2px 6px oklch(from var(--site-text-primary) l c h / 0.035);
+  }
+
+  .tiptap-table-size-picker-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 2px 8px;
+    color: var(--site-text-secondary);
+    font-size: var(--type-xs);
+    font-weight: var(--fw-medium);
+  }
+
+  .tiptap-table-size-picker-dimensions {
+    color: var(--site-text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tiptap-table-size-grid {
+    display: grid;
+    gap: 3px;
+  }
+
+  .tiptap-table-size-grid-row {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .tiptap-table-size-cell {
+    aspect-ratio: 1;
+    min-width: 0;
+    border: 1px solid color-mix(in srgb, var(--site-divider) 68%, transparent);
+    border-radius: 4px;
+    background: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 90%,
+      var(--site-nav-hover-bg) 10%
+    );
+    cursor: pointer;
+    transition:
+      border-color 0.1s ease,
+      background-color 0.1s ease,
+      transform 0.1s ease;
+  }
+
+  .tiptap-table-size-cell.is-selected {
+    border-color: color-mix(
+      in srgb,
+      var(--site-accent) 38%,
+      var(--site-divider)
+    );
+    background: color-mix(
+      in srgb,
+      var(--site-accent) 14%,
+      var(--site-elevated-bg)
+    );
+  }
+
+  .tiptap-table-size-cell.is-current {
+    border-color: color-mix(
+      in srgb,
+      var(--site-accent) 72%,
+      var(--site-divider)
+    );
+    transform: scale(0.9);
+  }
+
+  @media (pointer: coarse) {
+    .tiptap-table-control-btn {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+
+    .tiptap-table-menu-item {
+      min-height: 2.75rem;
+    }
   }
 
   /* --- Image figure in editor ------------------------------------------- */

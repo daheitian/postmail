@@ -29,6 +29,8 @@ import { RehostImages } from "./rehost-images.js";
 import type { RehostImagesOptions } from "./rehost-images.js";
 import { MarkdownClipboard } from "./markdown-clipboard.js";
 import { ImageInputRules } from "./image-input-rules.js";
+import { TableControls } from "./table-controls.js";
+import type { TableControlLabels } from "./table-control-labels.js";
 import {
   MARKDOWN_MARKED_OPTIONS,
   createMarkdownContentExtensions,
@@ -40,6 +42,7 @@ export interface EditorExtensionOptions {
   pasteMedia?: PasteMediaOptions;
   rehostImages?: RehostImagesOptions;
   imageNodeLabels?: Partial<ImageNodeLabels>;
+  tableControlLabels?: TableControlLabels;
 }
 
 /**
@@ -121,6 +124,9 @@ export function createEditorExtensions(
     WrappingInputRules,
     MarkdownClipboard,
     SlashCommands,
+    ...(options.tableControlLabels
+      ? [TableControls.configure({ labels: options.tableControlLabels })]
+      : []),
     EmbedPaste,
     PasteMedia.configure(options.pasteMedia ?? {}),
     RehostImages.configure(options.rehostImages ?? {}),
