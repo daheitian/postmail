@@ -83,17 +83,7 @@ export function toggleMarkAndExit(editor: Editor, markName: string): void {
  * @returns Nothing
  */
 export function clearFormatting(editor: Editor): void {
-  editor
-    .chain()
-    .focus()
-    .command(({ tr }) => {
-      const { from, to } = tr.selection;
-      for (const markType of Object.values(tr.doc.type.schema.marks)) {
-        if (markType.name !== "link") tr.removeMark(from, to, markType);
-      }
-      return true;
-    })
-    .run();
+  editor.chain().focus().unsetAllMarks().run();
 
   const { to } = editor.state.selection;
   editor.commands.setTextSelection(to);

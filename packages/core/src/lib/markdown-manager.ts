@@ -7,6 +7,7 @@ import {
 } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import CodeBlock from "@tiptap/extension-code-block";
+import Link from "@tiptap/extension-link";
 import StarterKit from "@tiptap/starter-kit";
 import {
   Table,
@@ -215,6 +216,10 @@ const MarkdownCodeBlock = CodeBlock.extend({
 
     return `${fence}${language}\n${content}\n${fence}`;
   },
+});
+
+const SemanticLink = Link.extend({
+  clearable: false,
 });
 
 const MarkdownFigureImageSupport = Extension.create({
@@ -721,10 +726,11 @@ export function createMarkdownContentExtensions(
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },
-      link: { openOnClick: false, autolink: false },
+      link: false,
       codeBlock: false,
       trailingNode: { notAfter: ["footnoteDefinition"] },
     }),
+    SemanticLink.configure({ openOnClick: false, autolink: false }),
     MarkdownCodeBlock,
     Table.configure({
       resizable: false,

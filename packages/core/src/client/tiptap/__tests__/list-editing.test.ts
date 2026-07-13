@@ -2,8 +2,8 @@
 
 import { afterEach, describe, expect, it } from "vitest";
 import { Editor } from "@tiptap/core";
-import StarterKit from "@tiptap/starter-kit";
 import { TextSelection } from "@tiptap/pm/state";
+import { createMarkdownContentExtensions } from "../../../lib/markdown-manager.js";
 import { TabIndent } from "../tab-indent.js";
 import { WrappingInputRules } from "../wrapping-input-rules.js";
 import { clearFormatting } from "../bubble-menu.js";
@@ -18,7 +18,7 @@ function createEditor(content: string): Editor {
   const editor = new Editor({
     element,
     extensions: [
-      StarterKit,
+      ...createMarkdownContentExtensions(),
       WrappingInputRules,
       ListParagraphBackspace,
       TabIndent,
@@ -65,6 +65,21 @@ function pressKey(editor: Editor, key: string, shiftKey = false): boolean {
       ),
     ),
   );
+}
+
+function pasteHtml(editor: Editor, html: string): void {
+  const event = new Event("paste", {
+    bubbles: true,
+    cancelable: true,
+  }) as Event & { clipboardData: unknown };
+  event.clipboardData = {
+    getData: (type: string) => (type === "text/html" ? html : ""),
+    files: [],
+    items: [],
+    types: ["text/html"],
+  };
+  editor.commands.focus();
+  editor.view.dom.dispatchEvent(event);
 }
 
 afterEach(() => {
@@ -147,6 +162,26 @@ describe("ordered-list editing", () => {
       "First paragraphSecond paragraph",
     );
     expect(secondItem?.child(1).textContent).toBe("Third paragraph");
+  });
+
+  it("preserves multiple paragraphs and a nested list when pasting HTML", () => {
+    const editor = createEditor("<p></p>");
+
+    pasteHtml(
+      editor,
+      '<ol start="4"><li><p>First paragraph</p><p>Second paragraph</p><ol><li><p>Nested item</p></li></ol></li><li><p>Next item</p></li></ol>',
+    );
+
+    const list = editor.state.doc.firstChild;
+    const firstItem = list?.firstChild;
+    expect(list?.type.name).toBe("orderedList");
+    expect(list?.attrs.start).toBe(4);
+    expect(list?.childCount).toBe(2);
+    expect(firstItem?.childCount).toBe(3);
+    expect(firstItem?.child(0).textContent).toBe("First paragraph");
+    expect(firstItem?.child(1).textContent).toBe("Second paragraph");
+    expect(firstItem?.child(2).type.name).toBe("orderedList");
+    expect(firstItem?.child(2).firstChild?.textContent).toBe("Nested item");
   });
 
   it("clears marks without changing a pasted blockquote or nested ordered list", () => {
