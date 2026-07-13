@@ -70,6 +70,35 @@ export function toggleMarkAndExit(editor: Editor, markName: string): void {
     .run();
 }
 
+/**
+ * Clears presentational inline marks without changing links or document structure.
+ *
+ * TipTap treats marks (bold, italic, links, and similar text formatting) and
+ * nodes (headings, blockquotes, lists, and similar document structure) as
+ * separate concerns. Links are semantic content and have their own explicit
+ * unlink action, so the formatting reset preserves them as well. Structural
+ * nodes are changed through their own toggle or conversion commands.
+ *
+ * @param editor - Editor whose current selection should be cleared
+ * @returns Nothing
+ */
+export function clearFormatting(editor: Editor): void {
+  editor
+    .chain()
+    .focus()
+    .command(({ tr }) => {
+      const { from, to } = tr.selection;
+      for (const markType of Object.values(tr.doc.type.schema.marks)) {
+        if (markType.name !== "link") tr.removeMark(from, to, markType);
+      }
+      return true;
+    })
+    .run();
+
+  const { to } = editor.state.selection;
+  editor.commands.setTextSelection(to);
+}
+
 function getButtons(
   editor: Editor,
   toolbarMode: FormattingToolbarMode,
@@ -114,16 +143,7 @@ function getButtons(
         key: "clear",
         icon: ICONS.clear,
         title: "Clear formatting",
-        action: () => {
-          const { to } = editor.state.selection;
-          editor
-            .chain()
-            .focus()
-            .unsetAllMarks()
-            .clearNodes()
-            .setTextSelection(to)
-            .run();
-        },
+        action: () => clearFormatting(editor),
         isActive: () => false,
       },
     ];

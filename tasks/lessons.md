@@ -133,3 +133,10 @@
 - When aligning metadata across feed and detail views, treat typography and
   color separately from vertical rhythm. Thread entries still need a content
   gap between the body and footer even when their metadata matches the feed.
+- Editor-specific Tab handlers must consume the event whenever the selection
+  is in their context, even when the structural command cannot apply. Returning
+  `false` at a boundary lets browser focus navigation unexpectedly take over.
+- Treat editor marks and structural nodes as separate formatting concerns.
+  “Clear formatting” should remove clearable marks generically; lists, quotes,
+  headings, and other nodes should use explicit structural controls instead of
+  a growing node-type allowlist.
