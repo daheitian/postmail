@@ -9,6 +9,14 @@
  * This higher-priority shortcut handles the narrower paragraph-merge case
  * first. ListKeymap still owns Backspace at the first paragraph, where its
  * list-item join/lift behavior is appropriate.
+ *
+ * TipTap upgrade note: this compatibility extension was added against 3.22.1.
+ * TipTap 3.25 changed list-item Backspace to lift before merging, but that is
+ * still different from joining later sibling paragraphs inside the same item.
+ * Do not remove this extension solely because TipTap was upgraded. Temporarily
+ * remove it from the test editor and run the "merges paragraphs inside a list
+ * item without removing its marker" regression test first; delete the local
+ * extension only when the upstream keymap passes that behavior on its own.
  */
 
 import { Extension, type Editor } from "@tiptap/core";
