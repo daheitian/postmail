@@ -14,6 +14,7 @@ import { BubbleMenu } from "./bubble-menu.js";
 import { LinkToolbar } from "./link-toolbar.js";
 import { ExitableMarks } from "./exitable-marks.js";
 import { TabIndent } from "./tab-indent.js";
+import { ListParagraphBackspace } from "./list-paragraph-backspace.js";
 import { LinkInputRules } from "./link-input-rules.js";
 import { WrappingInputRules } from "./wrapping-input-rules.js";
 import { InsertParagraphAround } from "./insert-paragraph-around.js";
@@ -87,6 +88,7 @@ export function createSettingsEditorExtensions(
     MarkdownClipboard,
     ExitableMarks,
     InsertParagraphAround,
+    ListParagraphBackspace,
     BubbleMenu.configure({
       toolbarMode: "compose",
     }),
@@ -128,6 +130,7 @@ export function createEditorExtensions(
     LinkToolbar,
     ExitableMarks,
     InsertParagraphAround,
+    ListParagraphBackspace,
     TabIndent,
   ];
 }

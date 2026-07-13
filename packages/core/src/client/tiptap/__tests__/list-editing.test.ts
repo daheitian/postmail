@@ -7,6 +7,7 @@ import { TextSelection } from "@tiptap/pm/state";
 import { TabIndent } from "../tab-indent.js";
 import { WrappingInputRules } from "../wrapping-input-rules.js";
 import { clearFormatting } from "../bubble-menu.js";
+import { ListParagraphBackspace } from "../list-paragraph-backspace.js";
 
 const editors: Editor[] = [];
 
@@ -16,7 +17,12 @@ function createEditor(content: string): Editor {
 
   const editor = new Editor({
     element,
-    extensions: [StarterKit, WrappingInputRules, TabIndent],
+    extensions: [
+      StarterKit,
+      WrappingInputRules,
+      ListParagraphBackspace,
+      TabIndent,
+    ],
     content,
   });
 
@@ -114,6 +120,33 @@ describe("ordered-list editing", () => {
 
     expect(pressKey(editor, "Tab")).toBe(true);
     expect(editor.getJSON()).toEqual(before);
+  });
+
+  it("merges paragraphs inside a list item without removing its marker", () => {
+    const editor = createEditor(
+      "<ol><li><p>First item</p></li><li><p>First paragraph</p><p>Second paragraph</p><p>Third paragraph</p></li></ol>",
+    );
+    let secondParagraphPos = 0;
+    editor.state.doc.descendants((node, pos) => {
+      if (
+        node.type.name === "paragraph" &&
+        node.textContent === "Second paragraph"
+      ) {
+        secondParagraphPos = pos + 1;
+      }
+    });
+    setCursor(editor, secondParagraphPos);
+
+    expect(pressKey(editor, "Backspace")).toBe(true);
+
+    const list = editor.state.doc.firstChild;
+    const secondItem = list?.child(1);
+    expect(list?.childCount).toBe(2);
+    expect(secondItem?.childCount).toBe(2);
+    expect(secondItem?.child(0).textContent).toBe(
+      "First paragraphSecond paragraph",
+    );
+    expect(secondItem?.child(1).textContent).toBe("Third paragraph");
   });
 
   it("clears marks without changing a pasted blockquote or nested ordered list", () => {
