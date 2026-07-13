@@ -132,14 +132,6 @@ export const NoteCard: FC<TimelineCardProps> = ({
       {(() => {
         const tail = (
           <>
-            {!isCompact && post.media.length > 0 && (
-              <div class="mt-3" data-post-media>
-                <MediaGallery
-                  attachments={post.media}
-                  postPermalink={post.permalink}
-                />
-              </div>
-            )}
             {!isDetail &&
               !isCompact &&
               !showFullBody &&
@@ -160,6 +152,14 @@ export const NoteCard: FC<TimelineCardProps> = ({
                   {readMoreLabel}
                 </a>
               ))}
+            {!isCompact && post.media.length > 0 && (
+              <div class="mt-3" data-post-media>
+                <MediaGallery
+                  attachments={post.media}
+                  postPermalink={post.permalink}
+                />
+              </div>
+            )}
             {!isCompact && !showHeaderRating && !display?.hideRating && (
               <StarRating rating={post.rating} />
             )}

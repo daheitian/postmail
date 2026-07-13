@@ -553,6 +553,28 @@ describe("timeline cards", () => {
     expect(html).toContain("<p>Rest</p>");
   });
 
+  it("renders read more before text attachments on truncated notes", () => {
+    const post = createPostView({
+      format: "note",
+      title: undefined,
+      bodyHtml: "<p>Intro</p><span data-note-break></span><p>Rest</p>",
+      summaryHasMore: true,
+      media: [
+        createMediaView({
+          url: "/attachments/notes.txt",
+          thumbnailUrl: undefined,
+          mimeType: "text/plain",
+        }),
+      ],
+    });
+
+    const html = renderWithI18n(NoteCard({ post, mode: "feed" }));
+
+    expect(html.indexOf("data-note-expand")).toBeLessThan(
+      html.indexOf("data-post-media"),
+    );
+  });
+
   it("renders untitled notes in full without a control when not truncated", () => {
     const post = createPostView({
       format: "note",
