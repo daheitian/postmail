@@ -199,11 +199,36 @@ describe("timeline cards", () => {
       /\.compose-tiptap-body\s+\.tiptap\s+ul\s*\{[^}]*padding-left:\s*1\.4em;[^}]*margin:\s*1\.25em 0;/,
     );
     expect(uiCss).toMatch(
+      /\.compose-tiptap-body\s+\.tiptap\s+ol\s*\{[^}]*padding-left:\s*2\.25em;[^}]*margin:\s*1\.25em 0;/,
+    );
+    expect(uiCss).toMatch(
+      /\.compose-tiptap-body\s+\.tiptap\s+ol ol\s*\{[^}]*list-style-type:\s*lower-alpha;[^}]*padding-left:\s*1\.75em;[^}]*margin:\s*0\.4em 0;/,
+    );
+    expect(uiCss).toMatch(
+      /\.compose-tiptap-body\s+\.tiptap\s+ol ol ol\s*\{[^}]*list-style-type:\s*lower-roman;/,
+    );
+    expect(uiCss).toMatch(
       /\.compose-tiptap-body\s+\.tiptap\s+li\s*\{[^}]*margin:\s*0\.5em 0;/,
     );
     expect(uiCss).toContain(".compose-tiptap-body .tiptap li > p:first-child");
     expect(uiCss).toMatch(
       /\.compose-reply-compose-layout\s+\.compose-tiptap-body\s+\.tiptap\s+li\s*\{[^}]*margin:\s*0\.15em 0;/,
+    );
+    expect(uiCss).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-tiptap-body\s+\.tiptap\s+ol\s*\{[^}]*padding-left:\s*2\.25em;[^}]*margin:\s*0\.25em 0;/,
+    );
+    expect(uiCss).toMatch(
+      /\.compose-reply-compose-layout\s+\.compose-tiptap-body\s+\.tiptap\s+ol ol\s*\{[^}]*padding-left:\s*1\.75em;[^}]*margin:\s*0\.2em 0;/,
+    );
+    expect(presetCss).toMatch(
+      /:where\(ol ol\)\s*\{[^}]*list-style-type:\s*lower-alpha;/,
+    );
+    expect(presetCss).toMatch(
+      /:where\(ol ol ol\)\s*\{[^}]*list-style-type:\s*lower-roman;/,
+    );
+    expect(exportCss).toMatch(/ol ol\s*\{[^}]*list-style-type:\s*lower-alpha;/);
+    expect(exportCss).toMatch(
+      /ol ol ol\s*\{[^}]*list-style-type:\s*lower-roman;/,
     );
   });
 

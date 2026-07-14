@@ -237,6 +237,14 @@ html {
     padding-left: 1.4em;
   }
 
+  :where(ol ol) {
+    list-style-type: lower-alpha;
+  }
+
+  :where(ol ol ol) {
+    list-style-type: lower-roman;
+  }
+
   :where(li, dt) {
     margin-top: 0.5em;
     margin-bottom: 0.5em;

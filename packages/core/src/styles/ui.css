@@ -9041,8 +9041,19 @@
 
   .compose-tiptap-body .tiptap ol {
     list-style-type: decimal;
-    padding-left: 1.4em;
+    /* Keep multi-digit markers inside the editor's scrollable bounds. */
+    padding-left: 2.25em;
     margin: 1.25em 0;
+  }
+
+  .compose-tiptap-body .tiptap ol ol {
+    list-style-type: lower-alpha;
+    padding-left: 1.75em;
+    margin: 0.4em 0;
+  }
+
+  .compose-tiptap-body .tiptap ol ol ol {
+    list-style-type: lower-roman;
   }
 
   .compose-tiptap-body .tiptap li {
@@ -9078,10 +9089,19 @@
   }
 
   /* Reply compose deliberately stays denser than ordinary authored prose. */
-  .compose-reply-compose-layout .compose-tiptap-body .tiptap ul,
-  .compose-reply-compose-layout .compose-tiptap-body .tiptap ol {
+  .compose-reply-compose-layout .compose-tiptap-body .tiptap ul {
     padding-left: 1.5em;
     margin: 0.25em 0;
+  }
+
+  .compose-reply-compose-layout .compose-tiptap-body .tiptap ol {
+    padding-left: 2.25em;
+    margin: 0.25em 0;
+  }
+
+  .compose-reply-compose-layout .compose-tiptap-body .tiptap ol ol {
+    padding-left: 1.75em;
+    margin: 0.2em 0;
   }
 
   .compose-reply-compose-layout .compose-tiptap-body .tiptap li {
