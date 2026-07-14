@@ -8,6 +8,7 @@ import { TabIndent } from "../tab-indent.js";
 import { WrappingInputRules } from "../wrapping-input-rules.js";
 import { clearFormatting } from "../bubble-menu.js";
 import { ListParagraphBackspace } from "../list-paragraph-backspace.js";
+import { ContinuousOrderedLists } from "../continuous-ordered-lists.js";
 
 const editors: Editor[] = [];
 
@@ -21,6 +22,7 @@ function createEditor(content: string): Editor {
       ...createMarkdownContentExtensions(),
       WrappingInputRules,
       ListParagraphBackspace,
+      ContinuousOrderedLists,
       TabIndent,
     ],
     content,
@@ -88,6 +90,80 @@ afterEach(() => {
 });
 
 describe("ordered-list editing", () => {
+  it("joins adjacent fragments so later items renumber with earlier edits", () => {
+    const editor = createEditor(
+      '<ol><li><p>One</p></li><li><p>Two</p></li></ol><ol start="8"><li><p>Three</p></li><li><p>Four</p></li></ol>',
+    );
+
+    const list = editor.state.doc.firstChild;
+    expect(list?.type.name).toBe("orderedList");
+    expect(list?.attrs.start).toBe(1);
+    expect(list?.childCount).toBe(4);
+    expect(list?.content.content.map((item) => item.textContent)).toEqual([
+      "One",
+      "Two",
+      "Three",
+      "Four",
+    ]);
+
+    let secondItemEnd = 0;
+    editor.state.doc.descendants((node, pos) => {
+      if (node.type.name === "paragraph" && node.textContent === "Two") {
+        secondItemEnd = pos + 1 + node.content.size;
+      }
+    });
+    setCursor(editor, secondItemEnd);
+
+    expect(pressKey(editor, "Enter")).toBe(true);
+    expect(
+      editor.state.doc.firstChild?.content.content.map(
+        (item) => item.textContent,
+      ),
+    ).toEqual(["One", "Two", "", "Three", "Four"]);
+  });
+
+  it("keeps an intentional restart separated by another block", () => {
+    const editor = createEditor(
+      "<ol><li><p>One</p></li></ol><p>New section</p><ol><li><p>One again</p></li></ol>",
+    );
+
+    expect(editor.state.doc.child(0).type.name).toBe("orderedList");
+    expect(editor.state.doc.child(1).type.name).toBe("paragraph");
+    expect(editor.state.doc.child(2).type.name).toBe("orderedList");
+    expect(editor.state.doc.child(2).attrs.start).toBe(1);
+  });
+
+  it("normalizes ordered-list fragments introduced by a later paste", () => {
+    const editor = createEditor("<p></p>");
+
+    pasteHtml(
+      editor,
+      '<ol start="3"><li><p>Three</p></li></ol><ol start="9"><li><p>Four</p></li></ol>',
+    );
+
+    const list = editor.state.doc.firstChild;
+    expect(list?.type.name).toBe("orderedList");
+    expect(list?.attrs.start).toBe(3);
+    expect(list?.childCount).toBe(2);
+    expect(list?.content.content.map((item) => item.textContent)).toEqual([
+      "Three",
+      "Four",
+    ]);
+  });
+
+  it("normalizes adjacent nested ordered-list fragments", () => {
+    const editor = createEditor(
+      '<ol><li><p>Parent</p><ol type="a"><li><p>First child</p></li></ol><ol start="7"><li><p>Second child</p></li></ol></li></ol>',
+    );
+
+    const parentItem = editor.state.doc.firstChild?.firstChild;
+    const nestedList = parentItem?.child(1);
+    expect(parentItem?.childCount).toBe(2);
+    expect(nestedList?.type.name).toBe("orderedList");
+    expect(nestedList?.attrs.start).toBe(1);
+    expect(nestedList?.childCount).toBe(2);
+  });
+
   it("joins an expected next number to the preceding ordered list", () => {
     const editor = createEditor(
       '<ol start="5"><li><p>Five</p></li><li><p>Six</p></li></ol><p></p>',
