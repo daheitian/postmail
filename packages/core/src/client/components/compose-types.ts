@@ -252,6 +252,7 @@ export interface ComposeFullscreenOpenDetail {
   selection?: ComposeEditorSelection | null;
   labels?: ComposeLabels;
   replyContext?: ComposeFullscreenReplyContext | null;
+  editorIndex?: number;
 }
 
 export interface ComposeFullscreenCloseDetail {
@@ -260,6 +261,8 @@ export interface ComposeFullscreenCloseDetail {
   showTitle: boolean;
   selection?: ComposeEditorSelection | null;
   replyExpanded: boolean;
+  intent?: "publish";
+  editorIndex?: number;
 }
 
 export type ComposeVisibility = "public" | "latest_hidden" | "private";

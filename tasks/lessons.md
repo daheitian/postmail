@@ -146,3 +146,5 @@
 - When nested content is described as “too far,” distinguish horizontal
   indentation from vertical block spacing and inspect the rendered DOM margins
   before changing list padding.
+- When adding a requested keyboard shortcut to an intentionally minimal surface,
+  do not add a visible action unless the user explicitly asks for one.

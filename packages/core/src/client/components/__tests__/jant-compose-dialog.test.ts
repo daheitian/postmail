@@ -7,6 +7,8 @@ import type { Editor } from "@tiptap/core";
 import { MAX_THREAD_POSTS } from "../../../types.js";
 
 import type {
+  ComposeFullscreenCloseDetail,
+  ComposeFullscreenOpenDetail,
   ComposeLabels,
   ComposeCollection,
   ComposeSubmitDetail,
@@ -4194,10 +4196,12 @@ describe("JantComposeDialog", () => {
     };
     await editor.updateComplete;
 
-    const submitSpy = vi.spyOn(
-      el as unknown as { _submit: (status: "published" | "draft") => void },
-      "_submit",
-    );
+    const submitSpy = vi
+      .spyOn(
+        el as unknown as { _submit: (status: "published" | "draft") => void },
+        "_submit",
+      )
+      .mockImplementation(() => {});
 
     el.dispatchEvent(
       new globalThis.KeyboardEvent("keydown", {
@@ -4208,6 +4212,139 @@ describe("JantComposeDialog", () => {
     );
 
     expect(submitSpy).toHaveBeenCalledWith("published");
+  });
+
+  it("publishes the latest fullscreen content after handing it back", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const submitSpy = vi
+      .spyOn(
+        el as unknown as { _submit: (status: "published" | "draft") => void },
+        "_submit",
+      )
+      .mockImplementation(() => {});
+    const setEditorStateSpy = vi.spyOn(editor, "setEditorState");
+
+    (
+      el as unknown as {
+        _handleFullscreenClose: (
+          event: CustomEvent<ComposeFullscreenCloseDetail>,
+        ) => void;
+      }
+    )._handleFullscreenClose(
+      new CustomEvent<ComposeFullscreenCloseDetail>("jant:fullscreen-close", {
+        detail: {
+          json: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Written while fullscreen" }],
+              },
+            ],
+          },
+          title: "Fullscreen title",
+          showTitle: true,
+          replyExpanded: false,
+          intent: "publish",
+          editorIndex: 0,
+        },
+      }),
+    );
+
+    expect(setEditorStateSpy).toHaveBeenCalled();
+    expect(editor.getData()).toMatchObject({
+      title: "Fullscreen title",
+      body: expect.stringContaining("Written while fullscreen"),
+    });
+    expect(submitSpy).toHaveBeenCalledWith("published");
+  });
+
+  it("does not submit an empty fullscreen post", async () => {
+    const el = await createElement();
+    const submitSpy = vi.spyOn(
+      el as unknown as { _submit: (status: "published" | "draft") => void },
+      "_submit",
+    );
+
+    (
+      el as unknown as {
+        _handleFullscreenClose: (
+          event: CustomEvent<ComposeFullscreenCloseDetail>,
+        ) => void;
+      }
+    )._handleFullscreenClose(
+      new CustomEvent<ComposeFullscreenCloseDetail>("jant:fullscreen-close", {
+        detail: {
+          json: { type: "doc", content: [{ type: "paragraph" }] },
+          title: "",
+          showTitle: false,
+          replyExpanded: false,
+          intent: "publish",
+          editorIndex: 0,
+        },
+      }),
+    );
+
+    expect(submitSpy).not.toHaveBeenCalled();
+  });
+
+  it("tracks the source editor for fullscreen thread editing", async () => {
+    const el = await createElement();
+    el._threadItems = [
+      { id: "thread-1", format: "note" },
+      { id: "thread-2", format: "note" },
+    ];
+    await el.updateComplete;
+
+    const editors = Array.from(
+      el.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
+    );
+    const openDetail: ComposeFullscreenOpenDetail = {
+      json: null,
+      title: "",
+      showTitle: false,
+    };
+    editors[1]?.dispatchEvent(
+      new CustomEvent<ComposeFullscreenOpenDetail>("jant:fullscreen-open", {
+        bubbles: true,
+        detail: openDetail,
+      }),
+    );
+
+    expect(openDetail).toMatchObject({ editorIndex: 1 });
+
+    (
+      el as unknown as {
+        _handleFullscreenClose: (
+          event: CustomEvent<ComposeFullscreenCloseDetail>,
+        ) => void;
+      }
+    )._handleFullscreenClose(
+      new CustomEvent<ComposeFullscreenCloseDetail>("jant:fullscreen-close", {
+        detail: {
+          json: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Second thread post" }],
+              },
+            ],
+          },
+          title: "",
+          showTitle: false,
+          replyExpanded: false,
+          editorIndex: 1,
+        },
+      }),
+    );
+
+    expect(editors[0]?.getData().body).toBe("");
+    expect(editors[1]?.getData().body).toContain("Second thread post");
   });
 
   it("Cmd/Ctrl+Enter focuses the link URL when the URL is invalid", async () => {

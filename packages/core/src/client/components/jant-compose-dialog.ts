@@ -2437,15 +2437,7 @@ export class JantComposeDialog extends LitElement {
       this._handleConfirmSave();
     } else if ((ke.metaKey || ke.ctrlKey) && ke.key === "Enter") {
       e.preventDefault();
-      if (this._attachedPanelOpen) {
-        this._doneAttachedPanel();
-        return;
-      }
-      if (!this._canPublish()) {
-        this._focusBlockedSubmitField("published");
-        return;
-      }
-      void this._submit("published");
+      this._publishFromShortcut();
     } else if (
       (ke.metaKey || ke.ctrlKey) &&
       !ke.altKey &&
@@ -2470,6 +2462,18 @@ export class JantComposeDialog extends LitElement {
       }
     }
   };
+
+  private _publishFromShortcut() {
+    if (this._attachedPanelOpen) {
+      this._doneAttachedPanel();
+      return;
+    }
+    if (!this._canPublish()) {
+      this._focusBlockedSubmitField("published");
+      return;
+    }
+    void this._submit("published");
+  }
 
   private _handleAltPanelOpen = (e: Event) => {
     const detail = (e as CustomEvent<{ index: number }>).detail;
@@ -2500,7 +2504,10 @@ export class JantComposeDialog extends LitElement {
   private _handleFullscreenClose = (
     e: CustomEvent<ComposeFullscreenCloseDetail>,
   ) => {
-    const editor = this._editor;
+    const editors = Array.from(
+      this.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
+    );
+    const editor = editors[e.detail.editorIndex ?? 0] ?? this._editor;
     if (editor) {
       editor.setEditorState(
         e.detail.json as import("@tiptap/core").JSONContent,
@@ -2511,9 +2518,16 @@ export class JantComposeDialog extends LitElement {
       // Adopt any in-flight inline image uploads from the fullscreen editor
       // so blob: placeholder URLs get replaced when uploads complete.
       editor.adoptPendingUploads();
-      this.updateComplete.then(() => editor.focusSelection(e.detail.selection));
+      if (e.detail.intent !== "publish") {
+        this.updateComplete.then(() =>
+          editor.focusSelection(e.detail.selection),
+        );
+      }
     }
     this._replyExpanded = e.detail.replyExpanded;
+    if (e.detail.intent === "publish") {
+      this._publishFromShortcut();
+    }
   };
 
   private _buildFullscreenReplyContext(): ComposeFullscreenReplyContext | null {
@@ -2530,6 +2544,11 @@ export class JantComposeDialog extends LitElement {
     e: CustomEvent<ComposeFullscreenOpenDetail>,
   ) => {
     e.detail.replyContext = this._buildFullscreenReplyContext();
+    const editors = Array.from(
+      this.querySelectorAll<JantComposeEditor>("jant-compose-editor"),
+    );
+    const editorIndex = editors.indexOf(e.target as JantComposeEditor);
+    e.detail.editorIndex = editorIndex >= 0 ? editorIndex : 0;
   };
 
   private _handleAttachedPanelOpen = (e: Event) => {
