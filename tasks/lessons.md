@@ -1,5 +1,8 @@
 # Lessons
 
+- Treat an adapted content language as the authoritative font profile. Manual
+  CJK selection is only a fallback for unadapted content languages, while the
+  active font theme remains responsible for serif/sans choices.
 - When a user is still evaluating product/design options, keep the turn in
   discussion mode and do not start implementation until they explicitly confirm
   the chosen direction.

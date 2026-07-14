@@ -8,14 +8,12 @@
 
 :root {
   /* Typography — Font families */
-  --font-cjk-serif-fallback:
-    "Songti SC", STSong, SimSun, "Songti TC", PMingLiU, MingLiU,
-    "Noto Serif SC", "Noto Serif CJK SC", "Noto Serif TC", "Noto Serif CJK TC";
+  --font-cjk-serif-fallback: "Jant Language Fallback";
+  --font-cjk-sans-fallback: "Jant Language Fallback";
   --font-body:
     system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC",
-    "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei",
-    "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif;
+    "Helvetica Neue", Helvetica, Arial, var(--font-cjk-sans-fallback),
+    sans-serif;
   --font-heading:
     "New York Small", "New York", "Iowan Old Style", Charter,
     "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
@@ -29,9 +27,8 @@
     "Iowan Old Style", Charter, Georgia, "Times New Roman", Times, serif;
   --font-ui:
     system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC",
-    "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei",
-    "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif;
+    "Helvetica Neue", Helvetica, Arial, var(--font-cjk-sans-fallback),
+    sans-serif;
   --font-mono:
     ui-monospace, Menlo, Monaco, Consolas, "Cascadia Code", "Courier New",
     monospace;

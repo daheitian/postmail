@@ -354,10 +354,10 @@ msgstr "為您的網站選擇一種排版風格。每個主題會同時改變字
 msgid "Choose the GitHub account and repository to sync with this site."
 msgstr "選擇要與此網站同步的 GitHub 帳號和儲存庫."
 
-#. @context: Settings form field for CJK serif font selection
+#. @context: Settings field for a manual Chinese, Japanese, or Korean font fallback
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "CJK Font"
-msgstr "CJK 字體"
+msgid "CJK fallback"
+msgstr "CJK 字型備援"
 
 #. @context: Paper color theme preview help line
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -865,6 +865,11 @@ msgstr "細緻的樣式覆寫"
 msgid "Fixed feed URLs"
 msgstr "固定的 RSS 檔案網址"
 
+#. @context: CJK font fallback option that uses the configured content language
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Follow content language"
+msgstr "跟隨內容語言"
+
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Follow each visitor's system preference."
@@ -1078,11 +1083,6 @@ msgstr "連結已新增到導覽。"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "List posts:"
 msgstr "列出貼文:"
-
-#. @context: Help text for CJK serif font selection
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "Load a serif font optimized for Chinese, Japanese, or Korean content."
-msgstr "載入為中文、日文或韓文內容最佳化的襯線字型。"
 
 #. @context: GitHub sync picker — loading state
 #: src/routes/dash/settings.tsx
@@ -1972,6 +1972,11 @@ msgstr "用法"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Use these when you want a feed URL that never changes."
 msgstr "當你想要一個永遠不會改變的 feed URL 時，請使用這些。"
+
+#. @context: Help text for the manual CJK font fallback setting
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Used when the content language has no built-in font profile. Your font theme still controls serif and sans styling."
+msgstr "當內容語言沒有內建字型設定時使用。字型主題仍會決定襯線與無襯線樣式。"
 
 #. @context: Description for choosing featured posts as the main RSS feed
 #: src/ui/dash/settings/GeneralContent.tsx

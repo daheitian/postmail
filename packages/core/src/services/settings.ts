@@ -333,7 +333,7 @@ export function createSettingsService(
           (opts.oldDashboardLanguage ?? "") !== dashboardLanguage;
       }
 
-      // CJK serif font setting
+      // Optional CJK fallback for content languages without a font profile.
       const cjkFont = data.cjkSerifFont?.trim() ?? "";
       if (cjkFont && isCjkSerifFont(cjkFont) && cjkFont !== "off") {
         await this.set("CJK_SERIF_FONT", cjkFont);

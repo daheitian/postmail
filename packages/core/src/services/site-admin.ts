@@ -24,7 +24,7 @@ import { baseLocale } from "../i18n/locales.js";
 import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
 import {
   BUILTIN_FONT_THEMES,
-  getCjkSerifCssVariables,
+  getCjkFontCssVariables,
   getFontThemeCssVariables,
 } from "../ui/font-themes.js";
 import type { Site, SiteDomain } from "../types.js";
@@ -774,7 +774,10 @@ export function createSiteAdminService(
           )
         : undefined;
       const fontOverrides = {
-        ...getCjkSerifCssVariables(appConfig.cjkSerifFont),
+        ...getCjkFontCssVariables(
+          appConfig.siteLanguage,
+          appConfig.cjkSerifFont,
+        ),
         ...(fontTheme ? getFontThemeCssVariables(fontTheme) : {}),
       };
       const themeCss = buildThemeStyle(

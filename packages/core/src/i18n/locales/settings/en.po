@@ -354,10 +354,10 @@ msgstr "Choose a typographic direction for your site. Each theme changes both th
 msgid "Choose the GitHub account and repository to sync with this site."
 msgstr "Choose the GitHub account and repository to sync with this site."
 
-#. @context: Settings form field for CJK serif font selection
+#. @context: Settings field for a manual Chinese, Japanese, or Korean font fallback
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "CJK Font"
-msgstr "CJK Font"
+msgid "CJK fallback"
+msgstr "CJK fallback"
 
 #. @context: Paper color theme preview help line
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -865,6 +865,11 @@ msgstr "Fine-grained styling overrides"
 msgid "Fixed feed URLs"
 msgstr "Fixed feed URLs"
 
+#. @context: CJK font fallback option that uses the configured content language
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Follow content language"
+msgstr "Follow content language"
+
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Follow each visitor's system preference."
@@ -1078,11 +1083,6 @@ msgstr "Link added to navigation."
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "List posts:"
 msgstr "List posts:"
-
-#. @context: Help text for CJK serif font selection
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "Load a serif font optimized for Chinese, Japanese, or Korean content."
-msgstr "Load a serif font optimized for Chinese, Japanese, or Korean content."
 
 #. @context: GitHub sync picker — loading state
 #: src/routes/dash/settings.tsx
@@ -1972,6 +1972,11 @@ msgstr "Usage"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Use these when you want a feed URL that never changes."
 msgstr "Use these when you want a feed URL that never changes."
+
+#. @context: Help text for the manual CJK font fallback setting
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Used when the content language has no built-in font profile. Your font theme still controls serif and sans styling."
+msgstr "Used when the content language has no built-in font profile. Your font theme still controls serif and sans styling."
 
 #. @context: Description for choosing featured posts as the main RSS feed
 #: src/ui/dash/settings/GeneralContent.tsx

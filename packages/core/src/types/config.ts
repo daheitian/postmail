@@ -465,7 +465,7 @@ export interface AppConfig {
    * the translated catalog locales ("en", "zh-Hans", "zh-Hant").
    */
   dashboardLanguage: string;
-  /** CJK serif font locale: "off", "zh-Hans", "zh-Hant", "ja", or "ko" */
+  /** Optional CJK font fallback when the content language has no profile. */
   cjkSerifFont: string;
   mainRssFeed: FeedKind;
   /** Canonical IANA timezone identifier used for date/time display. */
