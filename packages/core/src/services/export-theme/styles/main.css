@@ -230,6 +230,8 @@ ol {
 
 ol ol {
   list-style-type: lower-alpha;
+  margin-top: 0.4em;
+  margin-bottom: 0.4em;
 }
 
 ol ol ol {
@@ -248,6 +250,10 @@ li > p:first-child {
 }
 
 li > p:last-child {
+  margin-bottom: 0;
+}
+
+li > p:has(+ ol) {
   margin-bottom: 0;
 }
 

@@ -143,3 +143,6 @@
   “Clear formatting” should remove clearable marks generically; lists, quotes,
   headings, and other nodes should use explicit structural controls instead of
   a growing node-type allowlist.
+- When nested content is described as “too far,” distinguish horizontal
+  indentation from vertical block spacing and inspect the rendered DOM margins
+  before changing list padding.

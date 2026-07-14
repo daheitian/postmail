@@ -9048,7 +9048,7 @@
 
   .compose-tiptap-body .tiptap ol ol {
     list-style-type: lower-alpha;
-    padding-left: 1.75em;
+    padding-left: 1.5em;
     margin: 0.4em 0;
   }
 
@@ -9065,6 +9065,13 @@
   }
 
   .compose-tiptap-body .tiptap li > p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* A nested list makes its leading paragraph no longer the last child, so
+     clear the body-paragraph margin that would otherwise separate the levels. */
+  .compose-tiptap-body .tiptap li > p:has(+ ol),
+  .compose-tiptap-body .tiptap li > p:has(+ .ProseMirror-gapcursor + ol) {
     margin-bottom: 0;
   }
 
@@ -9100,7 +9107,7 @@
   }
 
   .compose-reply-compose-layout .compose-tiptap-body .tiptap ol ol {
-    padding-left: 1.75em;
+    padding-left: 1.5em;
     margin: 0.2em 0;
   }
 
