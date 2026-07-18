@@ -92,7 +92,7 @@ export interface PostView {
   // Media -- URLs pre-computed
   media: MediaView[];
 
-  // Collections this post belongs to
+  // Thread-level Collections projected onto this post
   collections: CollectionTagView[];
 
   // Thread context
@@ -222,6 +222,8 @@ export interface TimelineItemView {
   };
   curatedThread?: {
     rootPost: PostView;
+    /** Show ratings on non-highlighted context posts (complete Collection Threads). */
+    showContextRatings: boolean;
     segments: {
       post: PostView;
       hiddenBeforeCount: number;
