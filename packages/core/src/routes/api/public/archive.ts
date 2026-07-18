@@ -108,6 +108,7 @@ publicArchiveApiRoutes.get("/", async (c) => {
     hasMedia: mediaPresence ?? hasMedia,
     hasTitle: title ?? hasTitle,
     hasReplies: replies,
+    ignorePinnedSort: true,
   });
 
   const postIds = posts.map((post) => post.id);

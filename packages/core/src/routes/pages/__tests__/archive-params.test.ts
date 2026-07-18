@@ -133,3 +133,30 @@ describe("archive page legacy param redirect", () => {
     expect(res.headers.get("location")).toBe("/archive?title=any");
   });
 });
+
+describe("archive page ordering", () => {
+  it("keeps newer posts ahead of older pinned posts", async () => {
+    const { app, services } = setupApp();
+    await services.posts.create({
+      format: "note",
+      title: "Older pinned post",
+      bodyMarkdown: "older",
+      pinned: true,
+      publishedAt: Date.UTC(2025, 0, 1) / 1000,
+    });
+    await services.posts.create({
+      format: "note",
+      title: "Newer unpinned post",
+      bodyMarkdown: "newer",
+      publishedAt: Date.UTC(2026, 0, 1) / 1000,
+    });
+
+    const res = await app.request("/archive?view=list");
+    expect(res.status).toBe(200);
+    const html = await res.text();
+
+    expect(html.indexOf("Newer unpinned post")).toBeLessThan(
+      html.indexOf("Older pinned post"),
+    );
+  });
+});
