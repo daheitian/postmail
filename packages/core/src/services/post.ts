@@ -120,7 +120,7 @@ export interface PostFilters {
   hasReplies?: boolean;
   /** Explicit result sort order */
   sortOrder?: SortOrder;
-  /** Ignore global pinned ordering when sorting subscription/feed results. */
+  /** Ignore global pinned ordering when results must remain chronological. */
   ignorePinnedSort?: boolean;
   limit?: number;
   cursor?: string;
