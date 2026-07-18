@@ -154,3 +154,7 @@
 - Domain scope such as Root-versus-Child must not depend on presentation mode.
   Derive it from stable IDs and centralize shared interactive data attributes
   across feed, detail, search, and partial-render components.
+- When recovering deleted prose and Git history contains multiple plausible
+  versions, show the candidate commit and exact passage before editing. Keep
+  restoration separate from copy rewrites, terminology cleanup, or behavior
+  corrections unless the user approves that broader scope.

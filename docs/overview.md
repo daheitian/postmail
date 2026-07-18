@@ -14,7 +14,7 @@ You can also look at the author's own blog as a real-world example: [www.owenyou
 
 ## A quieter way to write in public
 
-The name comes from _Jantelagen_ — a concept from a 1933 Nordic satirical novel, often summarized as "don't show off, don't compare." In Scandinavia the term carries a critical edge, often invoked as shorthand for a collective culture that suppresses individuality. Happiness researchers tend to read it the other way around: a quiet agreement not to compete or intrude on each other is part of what makes Nordic societies feel calm, and one of the reasons people there report being so content.
+The name comes from _Jantelagen_ — a concept from a 1933 Nordic satirical novel, often summarized as "don't show off, don't compare." In Scandinavia the term carries a critical edge, often invoked as shorthand for a collective culture that suppresses individuality. Happiness researchers tend to read it the other way around: a quiet agreement not to compete or intrude on each other is part of what makes Nordic societies feel calm, and one of the reasons people there report being so content. I've always liked the word. It felt right for something that's meant to be quiet.
 
 Today's social networks push in exactly the opposite direction:
 
