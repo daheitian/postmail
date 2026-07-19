@@ -158,3 +158,34 @@
   versions, show the candidate commit and exact passage before editing. Keep
   restoration separate from copy rewrites, terminology cleanup, or behavior
   corrections unless the user approves that broader scope.
+- For multi-tenant data migrations, measure the full tenant population before
+  estimating scope or risk. A single production site is a compatibility sample,
+  not evidence for the size or shape of the global migration.
+- For DPUB-ARIA footnotes, reserve `doc-footnote` for notes embedded in the body.
+  A collection after the document body should use `doc-endnotes` with native
+  ordered-list items, and should not add the deprecated `doc-endnote` role.
+- When a prose component must hide native list markers in one presentation,
+  set `list-style-type: none` on the affected `li`, not only its parent list.
+  Higher cascade layers can restore the parent's marker style, but cannot
+  override a value specified directly on the list item through inheritance.
+- When a component link lives inside `.prose`, customize the existing
+  `--site-prose-link-*` variables at the component boundary. A declaration in a
+  component cascade layer cannot override Jant's unlayered prose-link rules.
+- Reserve persistent fragment-target highlighting for jumps where the reader
+  needs help relocating. Suppress it when the target is already spatially
+  aligned with its trigger, such as a wide-screen sidenote rail.
+- Keep stored and public content HTML free of layout protocols. When an
+  optional presentation needs wrappers, row metadata, or measured positions,
+  derive that state as a progressive client enhancement over natural semantic
+  source order.
+- Normalize clipboard artifacts only behind a stable source marker and an
+  exact observed shape. Do not apply broad "visually empty" cleanup to generic
+  rich HTML or nested authored content.
+- A projection-version backfill proves only that derived bytes were rebuilt.
+  Before claiming a semantic content migration is complete, test real
+  historical canonical shapes and report canonical upgrades separately from
+  projection rewrites.
+- Before running a remote migration or backfill, verify the configured host,
+  database, and deployment target as one identity. Environment labels such as
+  `preview` may refer to different Worker and hosted stacks; a matching label
+  is not proof that the command reaches the intended data.
