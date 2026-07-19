@@ -152,6 +152,8 @@ export interface PostFilters {
   hasReplies?: boolean;
   /** Explicit result sort order */
   sortOrder?: SortOrder;
+  /** Timestamp used for chronological sorting (defaults to thread activity). */
+  sortBy?: "activity" | "published";
   /** Ignore global pinned ordering when results must remain chronological. */
   ignorePinnedSort?: boolean;
   limit?: number;
@@ -920,7 +922,13 @@ export function createPostService(
     return rows[0]?.id ?? null;
   }
 
-  function getCursorSortTimestamp(row: typeof posts.$inferSelect): number {
+  function getCursorSortTimestamp(
+    row: typeof posts.$inferSelect,
+    filters: PostFilters,
+  ): number {
+    if (filters.sortBy === "published") {
+      return row.publishedAt ?? row.createdAt;
+    }
     return row.status === "draft" ? row.updatedAt : (row.lastActivityAt ?? -1);
   }
 
@@ -964,14 +972,16 @@ export function createPostService(
     }
 
     const sortTimestampExpr =
-      filters.status === "draft"
-        ? posts.updatedAt
-        : filters.status === "published"
-          ? posts.lastActivityAt
-          : sql<number>`CASE
-              WHEN ${posts.status} = 'draft' THEN ${posts.updatedAt}
-              ELSE ${posts.lastActivityAt}
-            END`;
+      filters.sortBy === "published"
+        ? sql<number>`coalesce(${posts.publishedAt}, ${posts.createdAt})`
+        : filters.status === "draft"
+          ? posts.updatedAt
+          : filters.status === "published"
+            ? posts.lastActivityAt
+            : sql<number>`CASE
+                WHEN ${posts.status} = 'draft' THEN ${posts.updatedAt}
+                ELSE ${posts.lastActivityAt}
+              END`;
     const pinnedSortExpr = sql<number>`coalesce(${posts.pinnedAt}, -1)`;
     const featuredPublishedSortExpr = sql<number>`coalesce(
       ${posts.publishedAt}, ${posts.createdAt}, -1
@@ -985,7 +995,7 @@ export function createPostService(
     const cursorPinnedAt = cursorPost.pinnedAt ?? -1;
     const cursorFeaturedPublishedAt =
       cursorPost.publishedAt ?? cursorPost.createdAt;
-    const cursorSortTimestamp = getCursorSortTimestamp(cursorPost);
+    const cursorSortTimestamp = getCursorSortTimestamp(cursorPost, filters);
     const cursorRatingPresence = cursorPost.rating === null ? 0 : 1;
     const cursorRating = cursorPost.rating ?? -1;
     const withPinnedSortKey = (
@@ -1495,14 +1505,16 @@ export function createPostService(
         return [];
       }
       const sortTimestamp =
-        filters.status === "draft"
-          ? posts.updatedAt
-          : filters.status === "published"
-            ? posts.lastActivityAt
-            : sql<number>`CASE
-                WHEN ${posts.status} = 'draft' THEN ${posts.updatedAt}
-                ELSE ${posts.lastActivityAt}
-              END`;
+        filters.sortBy === "published"
+          ? sql<number>`coalesce(${posts.publishedAt}, ${posts.createdAt})`
+          : filters.status === "draft"
+            ? posts.updatedAt
+            : filters.status === "published"
+              ? posts.lastActivityAt
+              : sql<number>`CASE
+                  WHEN ${posts.status} = 'draft' THEN ${posts.updatedAt}
+                  ELSE ${posts.lastActivityAt}
+                END`;
 
       if (cursorCondition) {
         conditions.push(cursorCondition);

@@ -207,6 +207,7 @@ function buildArchivePostFilters(
     hasMedia: params.hasMedia,
     hasTitle: params.hasTitle,
     hasReplies: params.hasReplies,
+    sortBy: "published",
     ignorePinnedSort: true,
   };
 }

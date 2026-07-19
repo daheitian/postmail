@@ -135,6 +135,36 @@ describe("archive page legacy param redirect", () => {
 });
 
 describe("archive page ordering", () => {
+  it("orders threads by their root publication time, not recent replies", async () => {
+    const { app, services } = setupApp();
+    const olderThread = await services.posts.create({
+      format: "note",
+      title: "Older active thread",
+      bodyMarkdown: "older root",
+      publishedAt: Date.UTC(2024, 0, 1) / 1000,
+    });
+    await services.posts.create({
+      format: "note",
+      bodyMarkdown: "recent reply",
+      replyToId: olderThread.id,
+      publishedAt: Date.UTC(2026, 0, 1) / 1000,
+    });
+    await services.posts.create({
+      format: "note",
+      title: "Newer root thread",
+      bodyMarkdown: "newer root",
+      publishedAt: Date.UTC(2025, 0, 1) / 1000,
+    });
+
+    const res = await app.request("/archive");
+    expect(res.status).toBe(200);
+    const html = await res.text();
+
+    expect(html.indexOf("Newer root thread")).toBeLessThan(
+      html.indexOf("Older active thread"),
+    );
+  });
+
   it("keeps newer posts ahead of older pinned posts", async () => {
     const { app, services } = setupApp();
     await services.posts.create({
