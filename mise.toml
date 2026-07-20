@@ -587,6 +587,11 @@ run = "bash scripts/worktree/remove-all.sh"
 description = "List all git worktrees"
 run = "git worktree list"
 
+[tasks.worktree-sync]
+alias = "ws"
+description = "Merge the primary worktree's current branch into 1, 2, 3, multi, and worker"
+run = "bash scripts/worktree/sync.sh"
+
 [tasks.branch-remove-all-local]
 description = "Delete all local branches except main"
 run = "git branch | grep -v '^\\* main$' | grep -v '^  main$' | xargs git branch -D"
