@@ -391,7 +391,7 @@ These top-level paths are reserved and can't be used as a post or custom page sl
 
 ```text
 featured, latest, collections, signin, signout, setup, settings, dash,
-api, feed, search, archive, media, pages, reset, compose, new, static, assets,
+api, feed, search, archive, media, pages, reset, compose, preview, new, static, assets,
 _assets, healthz, readyz
 ```
 

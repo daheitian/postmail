@@ -78,16 +78,14 @@ import { secureHeadersMiddleware } from "./middleware/secure-headers.js";
 import { apiCors } from "./middleware/cors.js";
 
 import { getConfiguredSingleSitePathPrefix } from "./lib/env.js";
-import { getRuntimeSitePathPrefix } from "./lib/site-resolution.js";
 import { getStartupConfigurationErrorPage } from "./lib/startup-config.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
 import {
   getDefaultJantAppleTouchIconBytes,
   getDefaultJantFaviconIcoBytes,
 } from "./lib/jant-branding.js";
-import { isAssetPath } from "./lib/asset-path.js";
 import { getHostedCanonicalRedirect } from "./lib/hosted-domain.js";
-import { stripSitePathPrefix, toPublicHref } from "./lib/url.js";
+import { stripSitePathPrefix } from "./lib/url.js";
 import { withWorkerResponseCache } from "./lib/worker-response-cache.js";
 import { createRequestRuntime } from "./runtime/index.js";
 import { getInstanceReadiness } from "./runtime/readiness.js";
@@ -483,31 +481,6 @@ export function createApp(): App {
       const newUrl = c.var.publicPath.slice(0, -1) + publicUrl.search;
       return c.redirect(newUrl, 301);
     }
-    await next();
-  });
-
-  // Redirect middleware — only handles redirect-type custom URLs
-  app.use("*", async (c, next) => {
-    const path = new URL(c.req.url).pathname;
-    // Skip redirect check for API routes and static assets
-    if (path.startsWith("/api/") || isAssetPath(path)) {
-      return next();
-    }
-
-    const customUrl = await c.var.services.customUrls.getByPath(path.slice(1));
-    if (customUrl?.targetType === "redirect" && customUrl.toPath) {
-      return c.redirect(
-        toPublicHref(
-          customUrl.toPath,
-          getRuntimeSitePathPrefix({
-            env: c.env,
-            currentSiteDomain: c.var.currentSiteDomain,
-          }),
-        ),
-        customUrl.redirectType ?? 301,
-      );
-    }
-
     await next();
   });
 

@@ -9,6 +9,7 @@ describe("RESERVED_PATHS", () => {
     expect(RESERVED_PATHS).toContain("signin");
     expect(RESERVED_PATHS).toContain("search");
     expect(RESERVED_PATHS).toContain("collections");
+    expect(RESERVED_PATHS).toContain("preview");
     expect(RESERVED_PATHS).toContain("_assets");
   });
 });
@@ -24,12 +25,14 @@ describe("isReservedPath", () => {
   it("checks only the first segment", () => {
     expect(isReservedPath("dash/settings")).toBe(true);
     expect(isReservedPath("api/posts")).toBe(true);
+    expect(isReservedPath("preview/draft-slug")).toBe(true);
   });
 
   it("is case-insensitive", () => {
     expect(isReservedPath("DASH")).toBe(true);
     expect(isReservedPath("Api")).toBe(true);
     expect(isReservedPath("FEED")).toBe(true);
+    expect(isReservedPath("PREVIEW/DRAFT-SLUG")).toBe(true);
   });
 
   it("returns false for non-reserved paths", () => {

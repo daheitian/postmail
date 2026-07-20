@@ -2662,6 +2662,7 @@ export class JantComposeDialog extends LitElement {
       const allDraftItems = (posts as Record<string, unknown>[]).map(
         (p): DraftItem => ({
           id: p.id as string,
+          slug: p.slug as string,
           format: p.format as ComposeFormat,
           title:
             ((p.format as ComposeFormat) === "quote"
@@ -3454,6 +3455,8 @@ export class JantComposeDialog extends LitElement {
 
   private _renderDraftItem(draft: DraftItem) {
     const preview = this._getDraftPreview(draft);
+    const menuId = `draft-actions-${draft.id}`;
+    const menuOpen = this._draftMenuOpenId === draft.id;
 
     return html`
       <div class="compose-draft-item" @click=${() => this._loadDraft(draft.id)}>
@@ -3470,7 +3473,7 @@ export class JantComposeDialog extends LitElement {
           </div>
         </div>
         <div class="relative">
-          ${this._draftMenuOpenId === draft.id
+          ${menuOpen
             ? html`<div
                 class="compose-dropdown-backdrop"
                 @click=${(e: Event) => {
@@ -3482,6 +3485,10 @@ export class JantComposeDialog extends LitElement {
           <button
             type="button"
             class="compose-draft-more"
+            aria-label=${this.labels.draftActions}
+            aria-haspopup="menu"
+            aria-expanded=${menuOpen ? "true" : "false"}
+            aria-controls=${menuId}
             @click=${(e: Event) => {
               e.stopPropagation();
               this._draftMenuOpenId =
@@ -3494,12 +3501,34 @@ export class JantComposeDialog extends LitElement {
               <circle cx="12" cy="8" r="1.2" />
             </svg>
           </button>
-          ${this._draftMenuOpenId === draft.id
+          ${menuOpen
             ? html`
-                <div class="compose-dropdown compose-dropdown-right">
+                <div
+                  id=${menuId}
+                  class="compose-dropdown compose-dropdown-right"
+                  role="menu"
+                >
+                  <a
+                    class="compose-dropdown-item"
+                    href=${publicPath(`/preview/${draft.slug}`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    role="menuitem"
+                    @click=${(e: Event) => {
+                      e.stopPropagation();
+                      this._draftMenuOpenId = null;
+                    }}
+                  >
+                    ${this.labels.previewDraft}
+                  </a>
+                  <div
+                    class="compose-dropdown-separator"
+                    role="separator"
+                  ></div>
                   <button
                     type="button"
                     class="compose-dropdown-item compose-dropdown-item-danger"
+                    role="menuitem"
                     @click=${(e: Event) => {
                       e.stopPropagation();
                       this._deleteDraft(draft.id);
