@@ -30,6 +30,8 @@ export interface HomePageProps {
 export interface PostPageProps {
   post: PostView;
   threadPosts?: PostView[];
+  /** Hide owner-only actions while preserving the public post rendering. */
+  isPreview?: boolean;
 }
 
 /** Props for the featured page component */

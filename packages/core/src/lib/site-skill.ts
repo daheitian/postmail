@@ -2,7 +2,7 @@ import SITE_SKILL_TEMPLATE from "../../../../docs/skill.md?raw";
 import { normalizeSiteUrl } from "./url.js";
 
 const INTRODUCTION =
-  "This page is written for AI assistants. If a human is reading you this URL, they are asking you to migrate content from another blog or CMS into a Jant site. Follow the steps below.";
+  "This page is written for AI assistants working with one Jant site. Use it when the user asks you to read, publish, edit, organize, search, or migrate site content through Jant's HTTP API or MCP interface.";
 const GENERIC_SITE_URL = "https://example.com";
 const GENERIC_SITE_CONFIRMATION = `- The Jant site URL (e.g. \`${GENERIC_SITE_URL}\`).`;
 const GENERIC_SITE_EXPORT = `export JANT_SITE=${GENERIC_SITE_URL}\n`;
@@ -22,7 +22,7 @@ function replaceLiteral(
 }
 
 /**
- * Render the import guide for one concrete Jant site.
+ * Render the Agent skill for one concrete Jant site.
  *
  * @param siteUrl - Resolved public site URL, including any path prefix
  * @returns Markdown with every target-site placeholder bound to `siteUrl`

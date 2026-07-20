@@ -49,6 +49,12 @@ A post's URL is generated from its title by default. Expand **Custom link** to s
 
 This is the simplest way to lock in a link when you first publish. Note: **changing this link after publishing makes the old address 404** — Jant won't redirect it. To change the URL of a post that's already published, use [Custom URLs](#custom-urls) below instead, which 301-redirects the old address to the new one.
 
+### Preview a draft
+
+Save the post, open **Drafts**, then choose **… → Preview** on its row. Jant opens `/preview/{slug}` in a new tab using the same Note, Link, Quote, media, and Thread rendering as the published page. A status bar marks the page as a draft preview.
+
+Preview URLs require sign-in and are never indexed or cached. They are working URLs for the author, not public links to share.
+
 ## Threads
 
 A Thread is a structure that strings multiple posts together in chronological order — you write a root post, and each subsequent post is a "reply" attached to it.
@@ -213,7 +219,9 @@ If you really do edit the slug field directly in the editor, note that Jant won'
 
 The following top-level paths are used by Jant itself and can't be used as custom URLs:
 
-`featured`, `latest`, `signin`, `signout`, `setup`, `settings`, `dash`, `api`, `feed`, `search`, `archive`, `media`, `pages`, `reset`, `collections`, `compose`, `new`, `static`, `assets`, `_assets`, `healthz`, `readyz`
+`featured`, `latest`, `signin`, `signout`, `setup`, `settings`, `dash`, `api`, `feed`, `search`, `archive`, `media`, `pages`, `reset`, `collections`, `compose`, `preview`, `new`, `static`, `assets`, `_assets`, `healthz`, `readyz`
+
+If an older site already uses `/preview` as a post or custom URL, that stored record is left unchanged but the old link becomes a 404. Older custom URLs below that prefix also stop resolving as custom URLs because the whole namespace now belongs to authenticated previews. Jant doesn't generate a replacement slug or redirect; edit the conflicting post or custom URL yourself if you want a new public address.
 
 Custom paths can only contain lowercase letters, digits, hyphens (`-`), slashes (`/`), and dots (`.`). The first character must be a letter or digit.
 

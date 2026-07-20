@@ -22,6 +22,7 @@ export const RESERVED_PATHS = [
   "reset",
   "collections",
   "compose",
+  "preview",
   "new",
   "static",
   "assets",

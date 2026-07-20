@@ -30,6 +30,73 @@
     counter-reset: sidenote-counter;
   }
 
+  /* Authenticated utility chrome lives outside .site-page so the previewed
+     theme layout remains the same subtree visitors receive after publishing. */
+  .draft-preview-bar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    width: 100%;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--site-divider) 78%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 94%,
+      var(--site-nav-hover-bg)
+    );
+    color: var(--site-text-secondary);
+    font-family: var(--font-ui);
+    box-shadow: 0 1px 0
+      color-mix(in srgb, var(--site-elevated-bg) 70%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .draft-preview-bar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    min-height: 2.5rem;
+    max-width: var(--layout-body-max-width);
+    margin: 0 auto;
+    padding: 0.45rem var(--site-padding);
+    font-size: var(--type-ui-caption);
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  .draft-preview-bar-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    flex: none;
+    color: var(--site-text-primary);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--type-label-tracking);
+    text-transform: uppercase;
+  }
+
+  .draft-preview-bar-dot {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: var(--site-accent);
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--site-accent) 12%, transparent);
+  }
+
+  .draft-preview-bar-description {
+    color: var(--site-text-secondary);
+  }
+
+  @media (max-width: 480px) {
+    .draft-preview-bar-inner {
+      flex-direction: column;
+      gap: 0.18rem;
+    }
+  }
+
   /*
    * Tufte horizontal frame — single source of truth for left/right positioning.
    * Every page-level section gets the same asymmetric padding.
@@ -6840,11 +6907,18 @@
     text-align: left;
     font-size: var(--compose-panel-control-size);
     color: var(--site-text-primary);
+    text-decoration: none;
     transition: background-color 0.12s ease;
   }
 
   .compose-dropdown-item:hover {
     background-color: var(--compose-control-bg);
+  }
+
+  .compose-dropdown-separator {
+    height: 1px;
+    margin: 4px 8px;
+    background-color: var(--compose-control-border);
   }
 
   .compose-slug-suggestion {

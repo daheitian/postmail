@@ -51,6 +51,8 @@ describe("GET /skill.md", () => {
     expect(response.headers.get("X-Robots-Tag")).toBe("noindex");
 
     const markdown = await response.text();
+    expect(markdown).toContain("name: jant-site");
+    expect(markdown).toContain("# Jant Site Skill");
     expect(markdown).toContain(
       "This site-scoped copy is bound to <https://owen.jant.blog>",
     );
@@ -66,6 +68,9 @@ describe("GET /skill.md", () => {
     expect(markdown).not.toContain("$JANT_SITE");
     expect(markdown).not.toContain("<site>");
     expect(markdown).not.toContain("export JANT_SITE=");
+    expect(markdown).toContain("## Common Content Operations");
+    expect(markdown).toContain("## Import Content from Another Platform");
+    expect(markdown).not.toContain("## If You Need to Start Over");
     expect(markdown).toContain('"url": "https://example.com/post"');
     expect(markdown).toContain("https://jant.me/docs/API.md");
   });

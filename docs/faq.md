@@ -136,7 +136,7 @@ Possibly, but only when warranted. Every breaking change is documented in the co
 
 ## How do I move my old blog into Jant (WordPress, Tumblr, etc.)?
 
-There's no fixed importer — every platform exports differently. The easiest path is to hand your site's `/skill.md` URL (for example, `https://example.com/skill.md`) to an AI assistant: it's a site-bound import guide written for AI, covering Jant's data model, how to map common source formats, and which API calls to make. Give the assistant your export file and a site API token, and let it run the migration. See [Export and import](export-and-import.md#coming-from-another-blog-or-cms).
+There's no fixed importer — every platform exports differently. The easiest path is to hand your site's `/skill.md` URL (for example, `https://example.com/skill.md`) to an AI assistant. This site-bound Jant guide includes a dedicated import workflow covering the data model, source-format mapping, resumable writes, and verification. Give the assistant your export file and a site API token, and let it run the migration. See [Export and import](export-and-import.md#coming-from-another-blog-or-cms).
 
 ## Can I migrate back to WordPress / Ghost?
 

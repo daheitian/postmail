@@ -215,6 +215,8 @@ const labels: ComposeLabels = {
   discardChangesConfirm: "Discard changes?",
   drafts: "Drafts",
   draftsEmpty: "No drafts yet. Save a draft to find it here.",
+  previewDraft: "Preview",
+  draftActions: "Draft actions",
   deleteDraft: "Delete Draft",
   draftDeleted: "Draft deleted.",
   publishFailedDraft: "Couldn't publish. Saved as draft.",

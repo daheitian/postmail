@@ -47,6 +47,7 @@ export interface AttachedTextItem {
 
 export interface DraftItem {
   id: string;
+  slug: string;
   format: ComposeFormat;
   title: string | null;
   bodyText: string | null;
@@ -181,6 +182,8 @@ export interface ComposeLabels {
   discardChangesConfirm: string;
   drafts: string;
   draftsEmpty: string;
+  previewDraft: string;
+  draftActions: string;
   deleteDraft: string;
   draftDeleted: string;
   publishFailedDraft: string;

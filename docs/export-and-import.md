@@ -32,7 +32,7 @@ This page covers one-shot commands. For ongoing backups, see [Backups and recove
 
 The tools above move content between Jant sites. There's no fixed importer for non-Jant sources — WordPress, Tumblr, Ghost, an RSS dump — because every platform exports differently.
 
-Instead, hand your site's `/skill.md` URL (for example, `https://example.com/skill.md`) to an AI assistant. It's a site-bound import guide written for AI: it covers Jant's data model, how to map common source formats onto it, and which HTTP API calls to make. Give the assistant your export file and an [API token](automation-and-api.md), and let it run the migration.
+Instead, hand your site's `/skill.md` URL (for example, `https://example.com/skill.md`) to an AI assistant. It's a site-bound guide for working with Jant and includes a dedicated import workflow covering the data model, source-format mapping, resumable writes, and verification. Give the assistant your export file and an [API token](automation-and-api.md), and let it run the migration.
 
 ## Runtime targets
 

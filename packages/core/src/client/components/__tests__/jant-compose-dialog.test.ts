@@ -183,6 +183,8 @@ const labels: ComposeLabels = {
   discardChangesConfirm: "Discard changes?",
   drafts: "Drafts",
   draftsEmpty: "No drafts yet. Save a draft to find it here.",
+  previewDraft: "Preview",
+  draftActions: "Draft actions",
   deleteDraft: "Delete Draft",
   draftDeleted: "Draft deleted.",
   publishFailedDraft: "Couldn't publish. Saved as draft.",
@@ -296,6 +298,7 @@ describe("JantComposeDialog", () => {
     vi.restoreAllMocks();
     document.body.innerHTML = "";
     globalThis.localStorage.clear();
+    delete document.documentElement.dataset.sitePathPrefix;
     Object.defineProperty(globalThis, "matchMedia", {
       configurable: true,
       writable: true,
@@ -3080,6 +3083,67 @@ describe("JantComposeDialog", () => {
     expect(el.querySelector(".compose-drafts-panel")).not.toBeNull();
 
     fetchSpy.mockRestore();
+  });
+
+  it("opens a prefixed draft preview from the overflow menu without loading the editor", async () => {
+    document.documentElement.dataset.sitePathPrefix = "/blog";
+    const el = await createElement();
+    el._draftsPanelOpen = true;
+    el._draftsLoading = false;
+    el._drafts = [
+      {
+        id: "pst_draft",
+        slug: "draft-slug",
+        format: "note",
+        title: "Preview me",
+        bodyText: "Draft body",
+        bodyHtml: "<p>Draft body</p>",
+        url: null,
+        quoteText: null,
+        replyToId: null,
+        updatedAt: 0,
+        mediaAttachments: [],
+      },
+    ];
+    await el.updateComplete;
+
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-draft-more"),
+      "expected draft actions trigger",
+    );
+    expect(trigger.getAttribute("aria-label")).toBe("Draft actions");
+    expect(trigger.getAttribute("aria-haspopup")).toBe("menu");
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+
+    trigger.click();
+    await el.updateComplete;
+
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    const menu = requireElement(
+      el.querySelector<HTMLElement>('[role="menu"]'),
+      "expected draft actions menu",
+    );
+    const items = menu.querySelectorAll<HTMLElement>('[role="menuitem"]');
+    expect(items).toHaveLength(2);
+    expect(items[0]?.textContent?.trim()).toBe("Preview");
+    expect(items[1]?.textContent?.trim()).toBe("Delete Draft");
+
+    const previewLink = requireElement(
+      menu.querySelector<HTMLAnchorElement>('a[role="menuitem"]'),
+      "expected preview link",
+    );
+    expect(previewLink.getAttribute("href")).toBe("/blog/preview/draft-slug");
+    expect(previewLink.target).toBe("_blank");
+    expect(previewLink.rel).toBe("noopener noreferrer");
+
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    previewLink.addEventListener("click", (event) => event.preventDefault());
+    previewLink.click();
+    await el.updateComplete;
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(el._draftsPanelOpen).toBe(true);
+    expect(el._draftMenuOpenId).toBeNull();
   });
 
   it("does not dispatch submit when loading", async () => {

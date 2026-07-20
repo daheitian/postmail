@@ -192,3 +192,7 @@
   database, and deployment target as one identity. Environment labels such as
   `preview` may refer to different Worker and hosted stacks; a matching label
   is not proof that the command reaches the intended data.
+- When a new system route enters the shared root namespace, reserve its whole
+  top-level prefix and resolve explicit/reserved routes before stored aliases
+  or redirects. Decide legacy collisions explicitly; do not invent a backfill
+  or replacement slug when invalidating the old path is the intended policy.

@@ -49,6 +49,12 @@ URL 是必填项；需要自己填标题，可以附上你的评论。
 
 这是发帖时一次把链接定好的最简单方式。注意：**发布后再改这里的链接，旧地址会直接 404**——Jant 不会自动跳转。帖子已经发布、又想换 URL，请改用下面的[自定义 URL](#自定义-url)，它会把旧地址自动 301 跳到新地址。
 
+### 预览草稿
+
+保存帖子后打开**草稿箱**，在对应条目的 **… → 预览** 中打开。Jant 会在新标签页访问 `/preview/{slug}`，并使用与正式页面相同的 Note、Link、Quote、媒体和 Thread 渲染；页面顶部会明确标记当前是草稿预览。
+
+预览地址必须登录后才能访问，也不会被索引或缓存。它是作者的工作地址，不是可对外分享的公开链接。
+
 ## Threads
 
 Thread 是把多条帖子按时间顺序串在一起的结构——你写一条根帖，之后的每一条都"回复"到它下面。
@@ -213,7 +219,9 @@ Feed：
 
 下列一级路径是 Jant 自身在用的入口，不能用作自定义 URL：
 
-`featured`、`latest`、`signin`、`signout`、`setup`、`settings`、`dash`、`api`、`feed`、`search`、`archive`、`media`、`pages`、`reset`、`collections`、`compose`、`new`、`static`、`assets`、`_assets`、`healthz`、`readyz`
+`featured`、`latest`、`signin`、`signout`、`setup`、`settings`、`dash`、`api`、`feed`、`search`、`archive`、`media`、`pages`、`reset`、`collections`、`compose`、`preview`、`new`、`static`、`assets`、`_assets`、`healthz`、`readyz`
+
+如果旧站点已经有帖子或自定义 URL 直接使用 `/preview`，原记录会保留，但旧链接会变成 404。`/preview` 前缀下已有的自定义 URL 也不再按旧记录解析，因为整个命名空间现在属于登录后的草稿预览。Jant 不会自动生成替代 slug 或 Redirect；需要新公开地址时，请自行修改冲突的帖子或自定义 URL。
 
 自定义路径只能包含小写字母、数字、连字符（`-`）、斜杠（`/`）和点（`.`）。首字符必须是字母或数字。
 

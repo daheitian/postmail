@@ -15,22 +15,23 @@ For static export and round-trip import, also see [Export and Import](export-and
 
 ## API Surface
 
-| Area                    | Base path                              | Auth                 |
-| ----------------------- | -------------------------------------- | -------------------- |
-| Public posts            | `/api/public/posts`                    | Public               |
-| Public archive          | `/api/public/archive`                  | Public               |
-| Posts                   | `/api/posts`                           | API token or session |
-| Uploads (recommended)   | `/api/uploads`                         | API token or session |
-| Uploads (legacy)        | `/api/upload`, `/api/upload/multipart` | API token or session |
-| Text attachment content | `/api/attachments`                     | API token or session |
-| MCP                     | `/api/mcp`                             | API token or session |
-| Collections             | `/api/collections`                     | Mixed                |
-| Navigation items        | `/api/nav-items`                       | Mixed                |
-| Custom URLs             | `/api/custom-urls`                     | API token or session |
-| Settings                | `/api/settings`                        | API token or session |
-| Search                  | `/api/search`                          | Public               |
-| Export                  | `/api/export`                          | API token or session |
-| Internal admin          | `/api/internal/*`                      | Internal admin token |
+| Area                    | Base path               | Auth                 |
+| ----------------------- | ----------------------- | -------------------- |
+| Public posts            | `/api/public/posts`     | Public               |
+| Public archive          | `/api/public/archive`   | Public               |
+| Posts                   | `/api/posts`            | API token or session |
+| Upload sessions         | `/api/uploads`          | API token or session |
+| One-shot upload         | `/api/upload`           | API token or session |
+| Legacy multipart relay  | `/api/upload/multipart` | API token or session |
+| Text attachment content | `/api/attachments`      | API token or session |
+| MCP                     | `/api/mcp`              | API token or session |
+| Collections             | `/api/collections`      | Mixed                |
+| Navigation items        | `/api/nav-items`        | Mixed                |
+| Custom URLs             | `/api/custom-urls`      | API token or session |
+| Settings                | `/api/settings`         | API token or session |
+| Search                  | `/api/search`           | Public               |
+| Export                  | `/api/export`           | API token or session |
+| Internal admin          | `/api/internal/*`       | Internal admin token |
 
 Auth labels in this document:
 
@@ -842,15 +843,15 @@ All upload endpoints require auth.
 
 Jant currently exposes three upload APIs:
 
-1. `/api/uploads`: recommended session-based upload API for new clients
-2. `/api/upload`: legacy single-request upload API
+1. `/api/upload`: one-shot upload, preferred for ordinary scripts and migrations
+2. `/api/uploads`: session-based upload, preferred for large files, unreliable connections, and application clients that need resumable transport
 3. `/api/upload/multipart`: legacy explicit multipart relay API
 
 File size is limited by `UPLOAD_MAX_FILE_SIZE_MB` and defaults to `1024 MB`.
 
 Jant accepts a broad set of image, video, audio, document, text, archive, font, design, and code MIME types. Unsupported types return `400`.
 
-### Recommended upload flow
+### Session-based upload flow
 
 Base path: `/api/uploads`
 
@@ -1128,11 +1129,11 @@ Response:
 { "success": true }
 ```
 
-### Legacy one-shot upload
+### One-shot upload
 
 Base path: `/api/upload`
 
-Use this only if you want the older multipart form upload behavior in a single request. New clients should prefer `/api/uploads`.
+Use this when a script or one-time migration benefits from sending one file in a single multipart request. Use `/api/uploads` when files are large or the connection is unreliable.
 
 #### Upload a file
 
