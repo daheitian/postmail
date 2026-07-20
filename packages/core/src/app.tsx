@@ -66,6 +66,7 @@ import { composeRoutes } from "./routes/compose.js";
 import { feedRoutes } from "./routes/feed/feed.js";
 import { sitemapRoutes } from "./routes/feed/sitemap.js";
 import { manifestRoutes } from "./routes/feed/manifest.js";
+import { siteSkillRoutes } from "./routes/site-skill.js";
 
 // Middleware
 import { requireAuth } from "./middleware/auth.js";
@@ -489,8 +490,8 @@ export function createApp(): App {
   // Redirect middleware — only handles redirect-type custom URLs
   app.use("*", async (c, next) => {
     const path = new URL(c.req.url).pathname;
-    // Skip redirect check for API routes and static assets
-    if (path.startsWith("/api/") || isAssetPath(path)) {
+    // Skip redirect lookup for fixed machine routes and static assets.
+    if (path.startsWith("/api/") || path === "/skill.md" || isAssetPath(path)) {
       return next();
     }
 
@@ -516,6 +517,9 @@ export function createApp(): App {
   app.use("*", i18nMiddleware());
 
   // --- Routes that need config ---
+
+  // Public machine-readable site guide
+  app.route("/", siteSkillRoutes);
 
   // API Routes
   app.route("/api/public/posts", publicPostsApiRoutes);

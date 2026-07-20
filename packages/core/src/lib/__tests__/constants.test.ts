@@ -10,6 +10,7 @@ describe("RESERVED_PATHS", () => {
     expect(RESERVED_PATHS).toContain("search");
     expect(RESERVED_PATHS).toContain("collections");
     expect(RESERVED_PATHS).toContain("_assets");
+    expect(RESERVED_PATHS).toContain("skill.md");
   });
 });
 
@@ -19,6 +20,7 @@ describe("isReservedPath", () => {
     expect(isReservedPath("api")).toBe(true);
     expect(isReservedPath("feed")).toBe(true);
     expect(isReservedPath("signin")).toBe(true);
+    expect(isReservedPath("skill.md")).toBe(true);
   });
 
   it("checks only the first segment", () => {

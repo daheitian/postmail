@@ -28,6 +28,7 @@ export const RESERVED_PATHS = [
   "_assets",
   "healthz",
   "readyz",
+  "skill.md",
 ] as const;
 
 export type ReservedPath = (typeof RESERVED_PATHS)[number];

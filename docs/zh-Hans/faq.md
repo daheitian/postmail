@@ -136,7 +136,7 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。默认 `/feed`
 
 ## 怎么把别的博客的内容迁进来（WordPress、Tumblr 等）？
 
-没有固定的导入器——每个平台的导出格式都不一样。最省事的办法是把 [`jant.me/skill.md`](https://jant.me/skill.md) 交给 AI 助手：这是一份专为 AI 写的导入指南，讲清楚了 Jant 的数据模型、常见来源格式怎么映射、该调哪些 API。把导出文件和站点的 API token 给它，让它来跑这次迁移。详见 [导出与导入](export-and-import.md#从别的博客或-cms-迁移过来)。
+没有固定的导入器——每个平台的导出格式都不一样。最省事的办法是把当前站点的 `/skill.md` 地址（例如 `https://example.com/skill.md`）交给 AI 助手：这是一份绑定当前站点、专为 AI 写的导入指南，讲清楚了 Jant 的数据模型、常见来源格式怎么映射、该调哪些 API。把导出文件和站点的 API token 给它，让它来跑这次迁移。详见 [导出与导入](export-and-import.md#从别的博客或-cms-迁移过来)。
 
 ## 能迁回 WordPress / Ghost 吗？
 

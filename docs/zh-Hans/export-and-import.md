@@ -32,7 +32,7 @@
 
 上面这些工具是在 Jant 站点之间搬内容。从非 Jant 来源迁入——WordPress、Tumblr、Ghost、一份 RSS 导出——没有固定的导入器，因为每个平台的导出格式都不一样。
 
-这种情况把 [`jant.me/skill.md`](https://jant.me/skill.md) 交给 AI 助手即可。这是一份专为 AI 写的导入指南：讲清楚了 Jant 的数据模型、常见来源格式怎么映射、该调哪些 HTTP API。把导出文件和一个 [API token](automation-and-api.md) 给它，让它来跑这次迁移。
+这种情况把当前站点的 `/skill.md` 地址（例如 `https://example.com/skill.md`）交给 AI 助手即可。这是一份绑定当前站点、专为 AI 写的导入指南：讲清楚了 Jant 的数据模型、常见来源格式怎么映射、该调哪些 HTTP API。把导出文件和一个 [API token](automation-and-api.md) 给它，让它来跑这次迁移。
 
 ## 运行环境
 

@@ -368,6 +368,16 @@ describe("PostService", () => {
       ).rejects.toThrow("Parent post not found");
     });
 
+    it("rejects reserved paths that would otherwise become aliases", async () => {
+      await expect(
+        postService.create({
+          format: "note",
+          bodyMarkdown: "reserved path",
+          path: "skill.md",
+        }),
+      ).rejects.toThrow('Path "skill.md" is reserved and cannot be used');
+    });
+
     it("rolls back the post insert when slug persistence fails inside the batch", async () => {
       await postService.create({
         format: "note",

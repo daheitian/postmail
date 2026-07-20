@@ -6,6 +6,9 @@
 - When a user is still evaluating product/design options, keep the turn in
   discussion mode and do not start implementation until they explicitly confirm
   the chosen direction.
+- When a legacy or generic URL remains only for compatibility, keep it working
+  without advertising it beside the canonical URL unless users need it for a
+  migration step. Product docs should present one clear preferred path.
 - When migrating Claude slash commands to Codex skills, include explicit
   default-invocation behavior in `SKILL.md`. A bare `$skill` mention attaches
   the skill context, but the skill still needs to say what to do when no other

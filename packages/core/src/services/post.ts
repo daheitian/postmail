@@ -46,6 +46,7 @@ import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import { generatePostSlug } from "../lib/slug.js";
 import { getSlugValidationIssue } from "../lib/slug-format.js";
+import { isReservedPath } from "../lib/constants.js";
 import { normalizePath, slugify } from "../lib/url.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
@@ -1846,6 +1847,11 @@ export function createPostService(
 
       if (data.path) {
         const normalized = normalizePath(data.path);
+        if (isReservedPath(normalized)) {
+          throw new ValidationError(
+            `Path "${normalized}" is reserved and cannot be used`,
+          );
+        }
         if (isValidSlug(normalized)) {
           // Path is a valid slug — use it directly
           slug = await generatePostSlug({

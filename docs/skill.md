@@ -24,7 +24,7 @@ If the source has tags or categories, ask the user whether to map them to collec
 
 Before writing any code, confirm with the user:
 
-- The Jant site URL (e.g. `https://notes.example.com`).
+- The Jant site URL (e.g. `https://example.com`).
 - That the **target site is empty**, or that they accept duplicates erroring out. The HTTP API does not require an empty site, but slug collisions return `409 CONFLICT`.
 - Whether to publish posts immediately (`status: "published"`) or import as drafts (`status: "draft"`) for review.
 
@@ -38,7 +38,7 @@ The token is used as `Authorization: Bearer jnt_...`. Treat it like a password. 
 
 ```bash
 export JANT_API_TOKEN=jnt_...
-export JANT_SITE=https://notes.example.com
+export JANT_SITE=https://example.com
 ```
 
 ---
