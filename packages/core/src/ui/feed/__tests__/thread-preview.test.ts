@@ -536,14 +536,15 @@ describe("getThreadPreviewState", () => {
           showContextRatings: true,
           segments: [
             { post: root, hiddenBeforeCount: 0, highlighted: false },
-            { post: reply, hiddenBeforeCount: 0, highlighted: false },
+            { post: reply, hiddenBeforeCount: 0, highlighted: true },
           ],
         },
       }),
     );
 
     expect(html.match(/class="post-rating"/g)).toHaveLength(2);
-    expect(html).not.toContain("thread-item-curated");
+    expect(html.match(/thread-item-curated/g)).toHaveLength(1);
+    expect(html).toContain("thread-item-context");
   });
 
   it("keeps non-selected Featured context ratings hidden", () => {
