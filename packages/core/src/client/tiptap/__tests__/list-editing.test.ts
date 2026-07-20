@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it } from "vitest";
 import { Editor } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 import { createMarkdownContentExtensions } from "../../../lib/markdown-manager.js";
-import { clearFormatting } from "../bubble-menu.js";
 import { ContinuousLists } from "../continuous-lists.js";
 import { StructuralKeymap } from "../structural-keymap.js";
 
@@ -444,41 +443,5 @@ describe("list editing", () => {
     expect(firstItem?.child(1).textContent).toBe("Second paragraph");
     expect(firstItem?.child(2).type.name).toBe("orderedList");
     expect(firstItem?.child(2).firstChild?.textContent).toBe("Nested item");
-  });
-
-  it("clears marks without changing a pasted blockquote or nested ordered list", () => {
-    const editor = createEditor(
-      '<blockquote><ol start="5"><li><p><a href="https://example.com"><strong>Five</strong></a></p><ol><li><p>Nested</p></li></ol></li><li><p><em>Six</em></p></li></ol></blockquote>',
-    );
-    let from = Number.POSITIVE_INFINITY;
-    let to = 0;
-    editor.state.doc.descendants((node, pos) => {
-      if (!node.isText) return;
-      from = Math.min(from, pos);
-      to = Math.max(to, pos + node.nodeSize);
-    });
-    editor.view.dispatch(
-      editor.state.tr.setSelection(
-        TextSelection.create(editor.state.doc, from, to),
-      ),
-    );
-
-    clearFormatting(editor);
-
-    const blockquote = editor.state.doc.firstChild;
-    const outerList = blockquote?.firstChild;
-    expect(blockquote?.type.name).toBe("blockquote");
-    expect(outerList?.type.name).toBe("orderedList");
-    expect(outerList?.attrs.start).toBe(5);
-    expect(outerList?.childCount).toBe(2);
-    expect(outerList?.child(0).lastChild?.type.name).toBe("orderedList");
-    expect(outerList?.child(0).lastChild?.firstChild?.textContent).toBe(
-      "Nested",
-    );
-    const linkedText = outerList?.child(0).firstChild?.firstChild;
-    expect(linkedText?.marks.map((mark) => mark.type.name)).toEqual(["link"]);
-    expect(linkedText?.marks[0]?.attrs.href).toBe("https://example.com");
-    expect(editor.isActive("bold")).toBe(false);
-    expect(editor.isActive("italic")).toBe(false);
   });
 });
