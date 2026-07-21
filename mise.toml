@@ -589,7 +589,7 @@ run = "git worktree list"
 
 [tasks.worktree-sync]
 alias = "ws"
-description = "Merge the primary worktree's current branch into 1, 2, 3, multi, and worker"
+description = "Merge the primary branch into worker worktrees and report targets that fail"
 run = "bash scripts/worktree/sync.sh"
 
 [tasks.branch-remove-all-local]
