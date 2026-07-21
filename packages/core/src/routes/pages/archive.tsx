@@ -463,7 +463,9 @@ export async function renderArchivePage(
         isAuthenticated={navData.isAuthenticated}
         sitePathPrefix={navData.sitePathPrefix}
         timeZone={appConfig.timeZone}
-        feedHref={`/archive/feed${feedQuery}`}
+        feedHref={
+          appConfig.rssFeedsEnabled ? `/archive/feed${feedQuery}` : undefined
+        }
       />
     ),
   });

@@ -88,28 +88,23 @@ type RuntimeNumberConfigKey =
   | "ARCHIVE_PAGE_SIZE"
   | "SUMMARY_MAX_PARAGRAPHS"
   | "SUMMARY_MAX_CHARS"
-  | "RSS_FEED_LIMIT";
+  | "RSS_FEED_LIMIT"
+  | "RSS_PUBLISH_DELAY_SECONDS";
 
 function parseConfigInt(
   key: RuntimeNumberConfigKey,
   value: string,
   fallback: number,
 ): number {
-  const parsed = Number(value);
+  const normalized = value.trim();
+  const parsed = Number(normalized);
   const definition = CONFIG_FIELDS[key].editor;
-  return Number.isInteger(parsed) &&
+  return normalized.length > 0 &&
+    Number.isInteger(parsed) &&
     (definition.min === undefined || parsed >= definition.min) &&
     (definition.max === undefined || parsed <= definition.max)
     ? parsed
     : fallback;
-}
-
-function parseNonNegativeConfigInt(value: string, fallback: number): number {
-  const normalized = value.trim();
-  if (!/^\d+$/.test(normalized)) return fallback;
-
-  const parsed = Number(normalized);
-  return Number.isSafeInteger(parsed) ? parsed : fallback;
 }
 
 /**
@@ -238,6 +233,9 @@ export function resolveConfig(
     showJantBrandingOnHome:
       resolve("SHOW_JANT_BRANDING_ON_HOME", allSettings, env) === "true",
     noindex: demoMode || resolve("NOINDEX", allSettings, env) === "true",
+    publicApiEnabled:
+      resolve("PUBLIC_API_ENABLED", allSettings, env) === "true",
+    rssFeedsEnabled: resolve("RSS_FEEDS_ENABLED", allSettings, env) === "true",
 
     // Infrastructure (ENV only)
     siteUrl,
@@ -272,7 +270,7 @@ export function resolveConfig(
     // Slug (ENV only)
     slugIdLength: parseInt(getEnvString(env, "SLUG_ID_LENGTH") ?? "5", 10) || 5,
 
-    // Pagination/feed (sizes and limit: DB > ENV > Default; delay: ENV > Default)
+    // Pagination/feed (DB > ENV > Default)
     pageSize,
     searchPageSize,
     archivePageSize,
@@ -281,7 +279,8 @@ export function resolveConfig(
       resolve("RSS_FEED_LIMIT", allSettings, env),
       50,
     ),
-    rssPublishDelaySeconds: parseNonNegativeConfigInt(
+    rssPublishDelaySeconds: parseConfigInt(
+      "RSS_PUBLISH_DELAY_SECONDS",
       resolve("RSS_PUBLISH_DELAY_SECONDS", allSettings, env),
       300,
     ),

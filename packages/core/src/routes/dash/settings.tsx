@@ -818,6 +818,7 @@ settingsRoutes.get("/navigation", async (c) => {
           directoryData={directoryData}
           suggestedLinks={suggestedLinks}
           mainRssFeed={c.var.appConfig.mainRssFeed}
+          rssFeedsEnabled={c.var.appConfig.rssFeedsEnabled}
           siteName={navData.siteName}
           sitePathPrefix={c.var.appConfig.sitePathPrefix}
         />

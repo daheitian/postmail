@@ -253,11 +253,14 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     socialImageHeightValue !== undefined &&
     socialImageWidthValue > socialImageHeightValue &&
     socialImageWidthValue >= 300;
-  const mainFeedHref = appConfig ? toPublicPath("/feed", sitePathPrefix) : null;
-  const latestFeedHref = appConfig
+  const feedsEnabled = appConfig?.rssFeedsEnabled === true;
+  const mainFeedHref = feedsEnabled
+    ? toPublicPath("/feed", sitePathPrefix)
+    : null;
+  const latestFeedHref = feedsEnabled
     ? toPublicPath("/latest/feed", sitePathPrefix)
     : null;
-  const featuredFeedHref = appConfig
+  const featuredFeedHref = feedsEnabled
     ? toPublicPath("/featured/feed", sitePathPrefix)
     : null;
   const mainFeedTitle =

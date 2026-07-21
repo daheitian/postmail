@@ -25,10 +25,13 @@ describe("editable settings registry", () => {
       "SUMMARY_MAX_PARAGRAPHS",
       "SUMMARY_MAX_CHARS",
       "RSS_FEED_LIMIT",
+      "RSS_PUBLISH_DELAY_SECONDS",
       "TIME_ZONE",
       "SITE_FOOTER",
       "SHOW_JANT_BRANDING_ON_HOME",
       "NOINDEX",
+      "PUBLIC_API_ENABLED",
+      "RSS_FEEDS_ENABLED",
     ]);
     expect(editableSettingKeys).not.toContain("AUTH_SECRET");
     expect(editableSettingKeys).not.toContain("GITHUB_SYNC_TOKEN");
@@ -73,6 +76,7 @@ describe("editable settings registry", () => {
         SITE_NAME: "Database name",
         SITE_LANGUAGE: "cy",
         PAGE_SIZE: "80",
+        RSS_PUBLISH_DELAY_SECONDS: "0",
         TIME_ZONE: "Pacific/Chatham",
         CUSTOM_CSS: "body { color: red; }",
         GITHUB_SYNC_ENABLED: "true",
@@ -84,6 +88,7 @@ describe("editable settings registry", () => {
         SITE_NAME: "Environment name",
         SITE_DESCRIPTION: "Environment description",
         NOINDEX: "true",
+        RSS_PUBLISH_DELAY_SECONDS: "600",
       } as Bindings,
       false,
     );
@@ -138,6 +143,18 @@ describe("editable settings registry", () => {
       modified: true,
       min: 1,
       max: 100,
+      step: 1,
+    });
+    expect(
+      fields.find((field) => field.key === "RSS_PUBLISH_DELAY_SECONDS"),
+    ).toMatchObject({
+      mode: "edit",
+      type: "number",
+      value: "0",
+      fallbackValue: "600",
+      modified: true,
+      min: 0,
+      max: 7200,
       step: 1,
     });
     expect(
@@ -213,6 +230,7 @@ describe("editable settings registry", () => {
     expect(settings.SITE_NAME).toBe("From environment");
     expect(settings.SHOW_JANT_BRANDING_ON_HOME).toBe("false");
     expect(settings.NOINDEX).toBe("false");
+    expect(settings.RSS_PUBLISH_DELAY_SECONDS).toBe("300");
   });
 
   it("uses valid numeric environment values and inherited page-size fallbacks", () => {

@@ -40,6 +40,8 @@ export interface Bindings {
   TIME_ZONE?: EnvBindingValue;
   SITE_FOOTER?: EnvBindingValue;
   NOINDEX?: EnvBindingValue;
+  PUBLIC_API_ENABLED?: EnvBindingValue;
+  RSS_FEEDS_ENABLED?: EnvBindingValue;
   R2_PUBLIC_URL?: EnvBindingValue;
   IMAGE_TRANSFORM_URL?: EnvBindingValue;
   DEMO_EMAIL?: EnvBindingValue;

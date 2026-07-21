@@ -28,6 +28,8 @@ describe("resolveConfig", () => {
     expect(config.timeZone).toBe("UTC");
     expect(config.showJantBrandingOnHome).toBe(false);
     expect(config.noindex).toBe(false);
+    expect(config.publicApiEnabled).toBe(true);
+    expect(config.rssFeedsEnabled).toBe(true);
     expect(config.demoMode).toBe(false);
     expect(config.pageSize).toBe(50);
     expect(config.searchPageSize).toBe(50);
@@ -207,11 +209,15 @@ describe("resolveConfig", () => {
   it("resolves boolean fields correctly", () => {
     const config = resolveConfig(makeEnv(), {
       NOINDEX: "true",
+      PUBLIC_API_ENABLED: "false",
+      RSS_FEEDS_ENABLED: "false",
       SHOW_HEADER_AVATAR: "true",
       SHOW_JANT_BRANDING_ON_HOME: "true",
     });
 
     expect(config.noindex).toBe(true);
+    expect(config.publicApiEnabled).toBe(false);
+    expect(config.rssFeedsEnabled).toBe(false);
     expect(config.showHeaderAvatar).toBe(true);
     expect(config.showJantBrandingOnHome).toBe(true);
   });
@@ -291,12 +297,14 @@ describe("resolveConfig", () => {
         SUMMARY_MAX_PARAGRAPHS: "6",
         SUMMARY_MAX_CHARS: "600",
         RSS_FEED_LIMIT: "60",
+        RSS_PUBLISH_DELAY_SECONDS: "600",
       }),
       {
         PAGE_SIZE: "80",
         SUMMARY_MAX_PARAGRAPHS: "12",
         SUMMARY_MAX_CHARS: "1200",
         RSS_FEED_LIMIT: "120",
+        RSS_PUBLISH_DELAY_SECONDS: "0",
       },
     );
 
@@ -306,6 +314,7 @@ describe("resolveConfig", () => {
     expect(config.summaryMaxParagraphs).toBe(12);
     expect(config.summaryMaxChars).toBe(1200);
     expect(config.rssFeedLimit).toBe(120);
+    expect(config.rssPublishDelaySeconds).toBe(0);
   });
 
   it("inherits runtime page size and rejects out-of-range numeric values", () => {
@@ -317,6 +326,7 @@ describe("resolveConfig", () => {
         SUMMARY_MAX_PARAGRAPHS: "51",
         SUMMARY_MAX_CHARS: "1501",
         RSS_FEED_LIMIT: "201",
+        RSS_PUBLISH_DELAY_SECONDS: "7201",
       }),
       { PAGE_SIZE: "75" },
     );
@@ -327,6 +337,7 @@ describe("resolveConfig", () => {
     expect(config.summaryMaxParagraphs).toBe(5);
     expect(config.summaryMaxChars).toBe(500);
     expect(config.rssFeedLimit).toBe(50);
+    expect(config.rssPublishDelaySeconds).toBe(300);
   });
 
   it("resolves summary limits without the full app config", () => {

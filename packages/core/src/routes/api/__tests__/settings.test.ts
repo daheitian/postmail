@@ -41,6 +41,7 @@ describe("Settings API Routes", () => {
       expect(body.settings.PAGE_SIZE).toBe("50");
       expect(body.settings.SEARCH_PAGE_SIZE).toBe("50");
       expect(body.settings.ARCHIVE_PAGE_SIZE).toBe("50");
+      expect(body.settings.RSS_PUBLISH_DELAY_SECONDS).toBe("0");
     });
 
     it("returns stored settings overriding defaults", async () => {
@@ -282,6 +283,7 @@ describe("Settings API Routes", () => {
           SUMMARY_MAX_PARAGRAPHS: "20",
           SUMMARY_MAX_CHARS: "1200",
           RSS_FEED_LIMIT: "150",
+          RSS_PUBLISH_DELAY_SECONDS: "0",
         }),
       });
       expect(validResponse.status).toBe(200);
@@ -293,6 +295,7 @@ describe("Settings API Routes", () => {
           SUMMARY_MAX_PARAGRAPHS: "20",
           SUMMARY_MAX_CHARS: "1200",
           RSS_FEED_LIMIT: "150",
+          RSS_PUBLISH_DELAY_SECONDS: "0",
         },
       });
 
@@ -302,6 +305,7 @@ describe("Settings API Routes", () => {
         ["SUMMARY_MAX_PARAGRAPHS", "51"],
         ["SUMMARY_MAX_CHARS", "1501"],
         ["RSS_FEED_LIMIT", "201"],
+        ["RSS_PUBLISH_DELAY_SECONDS", "7201"],
       ]) {
         const response = await app.request("/api/settings", {
           method: "PUT",

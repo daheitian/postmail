@@ -1,6 +1,7 @@
 import type { Bindings } from "../types.js";
 import { getConfiguredSingleSitePathPrefix } from "./env.js";
 import { POST_BODY_HTML_VERSION } from "./post-body-html.js";
+import { isRssFeedPath } from "./feed-path.js";
 import { stripSitePathPrefix } from "./url.js";
 
 const TRACKING_QUERY_PARAMS = [
@@ -52,29 +53,13 @@ export interface WorkerResponseCacheOptions {
  * @returns `true` when the request should be eligible for Worker response caching
  */
 export function isWorkerResponseCachePath(path: string): boolean {
-  if (path === "/feed" || path.startsWith("/feed/")) {
-    return true;
-  }
-
-  if (path === "/archive/feed" || path.startsWith("/archive/feed/")) {
-    return true;
-  }
+  if (isRssFeedPath(path)) return true;
 
   if (path === "/sitemap.xml" || path === "/robots.txt") {
     return true;
   }
 
   if (path === "/favicon.ico" || path === "/apple-touch-icon.png") {
-    return true;
-  }
-
-  if (
-    path.endsWith("/feed") &&
-    !path.startsWith("/api/") &&
-    !path.startsWith("/settings") &&
-    !path.startsWith("/compose") &&
-    !path.startsWith("/_")
-  ) {
     return true;
   }
 

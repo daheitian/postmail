@@ -77,6 +77,7 @@ export class JantNavManager extends LitElement {
     collections: { type: Array },
     suggestedLinks: { type: Array, attribute: "suggested-links" },
     siteName: { type: String, attribute: "site-name" },
+    rssFeedsEnabled: { type: Boolean, attribute: "rss-feeds-enabled" },
 
     _items: { state: true },
     _editingId: { state: true },
@@ -120,6 +121,7 @@ export class JantNavManager extends LitElement {
   declare collections: NavManagerCollection[];
   declare suggestedLinks: NavManagerSuggestedLink[];
   declare siteName: string;
+  declare rssFeedsEnabled: boolean;
 
   declare _items: NavManagerItem[];
   declare _editingId: string | null;
@@ -227,6 +229,7 @@ export class JantNavManager extends LitElement {
     this.collections = [];
     this.suggestedLinks = [];
     this.siteName = "";
+    this.rssFeedsEnabled = false;
 
     this._items = [];
     this._editingId = null;
@@ -273,7 +276,7 @@ export class JantNavManager extends LitElement {
   }
 
   protected updated(): void {
-    if (this._showPreviewMore && this.#moreItems.length === 0) {
+    if (this._showPreviewMore && this.#previewMoreItems.length === 0) {
       this.#closePreviewMore();
     }
     this.#initSortable();
@@ -1261,6 +1264,20 @@ export class JantNavManager extends LitElement {
     return this._items.filter((i) => i.placement === "more");
   }
 
+  #isVisibleInPreview(item: NavManagerItem): boolean {
+    return (
+      this.rssFeedsEnabled || item.type !== "system" || item.systemKey !== "rss"
+    );
+  }
+
+  get #previewHeaderItems(): NavManagerItem[] {
+    return this.#headerItems.filter((item) => this.#isVisibleInPreview(item));
+  }
+
+  get #previewMoreItems(): NavManagerItem[] {
+    return this.#moreItems.filter((item) => this.#isVisibleInPreview(item));
+  }
+
   #closePreviewMore() {
     this._showPreviewMore = false;
     document.removeEventListener("click", this.#handlePreviewMoreDocumentClick);
@@ -1284,8 +1301,8 @@ export class JantNavManager extends LitElement {
   }
 
   #renderPreview() {
-    const headerItems = this.#headerItems;
-    const moreItems = this.#moreItems;
+    const headerItems = this.#previewHeaderItems;
+    const moreItems = this.#previewMoreItems;
 
     return html`
       <div class="nav-preview">

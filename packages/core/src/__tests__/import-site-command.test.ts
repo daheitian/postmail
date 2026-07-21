@@ -17,6 +17,7 @@ import { __test__ } from "../../bin/commands/import-site.js";
 const {
   walkHugoContent,
   loadSiteConfig,
+  buildSettingsUpdatesFromConfig,
   mediaSpecFromJantMedia,
   resolveCollectionMemberships,
   resolveThreadCollectionMemberships,
@@ -102,6 +103,8 @@ describe("Hugo import CLI helpers", () => {
         "show_jant_branding_on_home = true",
         "show_header_avatar = false",
         "noindex = false",
+        "public_api_enabled = false",
+        "rss_feeds_enabled = false",
         'site_avatar_mode = "none"',
         'favicon_mode = "default"',
         'apple_touch_mode = "default"',
@@ -136,6 +139,12 @@ describe("Hugo import CLI helpers", () => {
     expect(siteConfig.title).toBe("Example Site");
     expect(siteConfig.base_url).toBe("https://example.com/");
     expect(siteConfig.extra.jant.theme_id).toBe("paper");
+    expect(siteConfig.extra.jant.public_api_enabled).toBe(false);
+    expect(siteConfig.extra.jant.rss_feeds_enabled).toBe(false);
+    expect(buildSettingsUpdatesFromConfig(siteConfig)).toMatchObject({
+      PUBLIC_API_ENABLED: "false",
+      RSS_FEEDS_ENABLED: "false",
+    });
     expect(siteConfig.extra.jant).not.toHaveProperty("home_default_view");
     expect(siteConfig.extra.jant.nav_exported).toBe(true);
     expect(siteConfig.extra.jant.nav).toHaveLength(1);

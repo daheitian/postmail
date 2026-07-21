@@ -103,6 +103,10 @@ export interface SiteConfig {
   siteDescription: string;
   siteLanguage: string;
   showJantBrandingOnHome: boolean;
+  /** Whether anonymous JSON reads are enabled on the source Jant site. */
+  publicApiEnabled: boolean;
+  /** Whether the exported Hugo site should emit Atom feeds. */
+  rssFeedsEnabled: boolean;
   /** "latest" or "featured" — drives the default RSS nav link in the exported site. */
   mainRssFeed: string;
   siteFooter: string;
@@ -355,7 +359,12 @@ export function createExportService(
           collectionMetrics.get(collection.id)?.threadCount ?? 0;
         exportFiles.push({
           path: `content/${slug}/_index.md`,
-          content: await buildCollectionSection(collection, slug, entryCount),
+          content: await buildCollectionSection(
+            collection,
+            slug,
+            entryCount,
+            siteConfig.rssFeedsEnabled,
+          ),
         });
       }
 
@@ -374,7 +383,7 @@ export function createExportService(
       });
       exportFiles.push({
         path: "content/archive/_index.md",
-        content: await buildArchiveSection(),
+        content: await buildArchiveSection(siteConfig.rssFeedsEnabled),
       });
 
       const usedSlugs = new Set<string>();
@@ -383,7 +392,7 @@ export function createExportService(
       if (!usedSlugs.has("featured")) {
         exportFiles.push({
           path: "content/featured/_index.md",
-          content: await buildFeaturedSection(),
+          content: await buildFeaturedSection(siteConfig.rssFeedsEnabled),
         });
       }
 
@@ -1039,22 +1048,22 @@ async function buildCollectionsSection(): Promise<string> {
   return `${await formatFrontMatter(frontMatter)}\n`;
 }
 
-async function buildArchiveSection(): Promise<string> {
+async function buildArchiveSection(rssFeedsEnabled: boolean): Promise<string> {
   const frontMatter: HugoFrontMatter = {
     title: "Archive",
     type: "archive",
     // Opt into Atom output at /archive/index.xml.
-    outputs: ["html", "rss"],
+    outputs: rssFeedsEnabled ? ["html", "rss"] : ["html"],
   };
   return `${await formatFrontMatter(frontMatter)}\n`;
 }
 
-async function buildFeaturedSection(): Promise<string> {
+async function buildFeaturedSection(rssFeedsEnabled: boolean): Promise<string> {
   const frontMatter: HugoFrontMatter = {
     title: "Featured",
     type: "featured",
     // Opt into Atom output at /featured/index.xml.
-    outputs: ["html", "rss"],
+    outputs: rssFeedsEnabled ? ["html", "rss"] : ["html"],
   };
   return `${await formatFrontMatter(frontMatter)}\n`;
 }
@@ -1063,6 +1072,7 @@ async function buildCollectionSection(
   collection: Collection,
   slug: string,
   entryCount: number,
+  rssFeedsEnabled: boolean,
 ): Promise<string> {
   const frontMatter: HugoFrontMatter = {
     title: collection.title,
@@ -1072,7 +1082,7 @@ async function buildCollectionSection(
     sort_order: collection.sortOrder,
     entry_count: entryCount,
     // Opt into Atom output at /{slug}/index.xml.
-    outputs: ["html", "rss"],
+    outputs: rssFeedsEnabled ? ["html", "rss"] : ["html"],
   };
   return `${await formatFrontMatter(frontMatter)}\n`;
 }
@@ -1444,7 +1454,7 @@ function buildHugoToml(config: SiteConfig): string {
     // Override the built-in RSS output format to emit Atom instead of
     // RSS 2.0 so the wire format mirrors the main site's `lib/feed.ts`.
     "[outputs]",
-    '  home = ["html", "rss"]',
+    `  home = ["html"${config.rssFeedsEnabled ? ', "rss"' : ""}]`,
     // Hugo's default for sections is ["html", "rss"] — without overriding
     // it here every root post (which is a section) would get its own
     // /{slug}/index.xml. Turn sections off by default and re-enable RSS
@@ -1469,6 +1479,8 @@ function buildHugoToml(config: SiteConfig): string {
     "[params]",
     `  description = "${escapeTomlString(config.siteDescription)}"`,
     `  main_rss_feed = "${escapeTomlString(config.mainRssFeed)}"`,
+    `  public_api_enabled = ${config.publicApiEnabled}`,
+    `  rss_feeds_enabled = ${config.rssFeedsEnabled}`,
     `  show_jant_branding_on_home = ${config.showJantBrandingOnHome}`,
     `  show_header_avatar = ${config.showHeaderAvatar}`,
     `  noindex = ${config.noindex}`,
@@ -1510,6 +1522,8 @@ function buildJantDataToml(
     `site_description = "${escapeTomlString(config.siteDescription)}"`,
     `site_language = "${escapeTomlString(config.siteLanguage)}"`,
     `main_rss_feed = "${escapeTomlString(config.mainRssFeed)}"`,
+    `public_api_enabled = ${config.publicApiEnabled}`,
+    `rss_feeds_enabled = ${config.rssFeedsEnabled}`,
     `show_jant_branding_on_home = ${config.showJantBrandingOnHome}`,
     `show_header_avatar = ${config.showHeaderAvatar}`,
     `noindex = ${config.noindex}`,
@@ -1547,6 +1561,13 @@ function buildJantDataToml(
     // `settings` is authenticated-only and has no corresponding page in the
     // static Hugo site — drop it at export time so it never shows up in nav.
     if (item.systemKey === "settings") continue;
+    if (
+      !config.rssFeedsEnabled &&
+      item.type === "system" &&
+      item.systemKey === "rss"
+    ) {
+      continue;
+    }
     parts.push("");
     parts.push("[[nav]]");
     parts.push(`type = "${escapeTomlString(item.type)}"`);

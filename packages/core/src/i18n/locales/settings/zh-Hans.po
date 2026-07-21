@@ -199,6 +199,11 @@ msgstr "所有可用的端点和请求格式。"
 msgid "All collections are already in your navigation."
 msgstr "所有合集已在您的导航中。"
 
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Allow published content to be read without an API token."
+msgstr "允许无需 API 令牌读取已发布内容。"
+
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Allow search engines to index my site"
@@ -829,6 +834,11 @@ msgstr "后台语言"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Data"
 msgstr "数据"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Delay new posts and replies before they appear in feeds. Use 0 to turn this off."
+msgstr "延迟新帖子和回复进入订阅源的时间。设为 0 可关闭延迟。"
 
 #. @context: Button to delete custom URL
 #. @context: Button to delete item
@@ -1744,6 +1754,11 @@ msgstr "私有"
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "处理中..."
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Publish Atom feeds for the site, archive, and collections."
+msgstr "发布站点、归档和合集的 Atom feeds。"
 
 #. @context: Post status badge - published
 #: src/ui/dash/StatusBadge.tsx

@@ -172,6 +172,15 @@ export function ConfigEditorContent({
         }),
       ),
     },
+    RSS_PUBLISH_DELAY_SECONDS: {
+      description: i18n._(
+        msg({
+          message:
+            "Delay new posts and replies before they appear in feeds. Use 0 to turn this off.",
+          comment: "@context: Config Editor setting description",
+        }),
+      ),
+    },
     THEME: {
       description: i18n._(
         msg({
@@ -267,6 +276,22 @@ export function ConfigEditorContent({
         msg({
           message:
             "Ask search engines not to index public pages or include them in results.",
+          comment: "@context: Config Editor setting description",
+        }),
+      ),
+    },
+    PUBLIC_API_ENABLED: {
+      description: i18n._(
+        msg({
+          message: "Allow published content to be read without an API token.",
+          comment: "@context: Config Editor setting description",
+        }),
+      ),
+    },
+    RSS_FEEDS_ENABLED: {
+      description: i18n._(
+        msg({
+          message: "Publish Atom feeds for the site, archive, and collections.",
           comment: "@context: Config Editor setting description",
         }),
       ),

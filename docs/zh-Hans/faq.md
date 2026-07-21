@@ -94,8 +94,9 @@ Jant 把"发布到站点"和"广播给订阅者"看成两件事。默认 `/feed`
 feeds。内容会立即显示在网页上，等待的只有 feed 分发。这段时间可以用来修正
 错误，或者在 feed 阅读器抓取前撤回内容。
 
-由于 feed 缓存和阅读器各自的轮询周期，实际看到内容的时间可能稍晚。自部署
-用户可以修改 `RSS_PUBLISH_DELAY_SECONDS`，设为 `0` 则关闭延迟。详见
+由于 feed 缓存和阅读器各自的轮询周期，实际看到内容的时间可能稍晚。可以在
+**Settings → Advanced → Config Editor** 中把 `RSS_PUBLISH_DELAY_SECONDS`
+设为 `0–7200` 的整数；设为 `0` 会关闭延迟。详见
 [配置 § Feed 默认值](configuration.md#feed-默认值可选)。
 
 ## 能挂在子路径下吗（例如 `example.com/blog`）？

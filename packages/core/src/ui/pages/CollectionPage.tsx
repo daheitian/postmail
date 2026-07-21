@@ -38,6 +38,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   isAuthenticated,
   isInNavigation = false,
   sitePathPrefix = "",
+  feedHref,
 }) => {
   const primaryCollection = collections[0];
   if (!primaryCollection) return null;
@@ -306,25 +307,30 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                         "@context: Plural thread count label on collection detail page",
                     }),
                   )}
-              {pageLabel ? <span> / {pageLabel}</span> : null}{" "}
-              <a
-                href={toPublicPath(`${pagePath}/feed`, sitePathPrefix)}
-                class="feed-link"
-                title={i18n._(
-                  msg({
-                    message: "RSS feed",
-                    comment:
-                      "@context: Tooltip for the RSS feed link on a collection page",
-                  }),
-                )}
-                rel="noopener noreferrer"
-              >
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: getIconSvg("rss") ?? "",
-                  }}
-                />
-              </a>
+              {pageLabel ? <span> / {pageLabel}</span> : null}
+              {feedHref ? (
+                <>
+                  {" "}
+                  <a
+                    href={toPublicPath(feedHref, sitePathPrefix)}
+                    class="feed-link"
+                    title={i18n._(
+                      msg({
+                        message: "RSS feed",
+                        comment:
+                          "@context: Tooltip for the RSS feed link on a collection page",
+                      }),
+                    )}
+                    rel="noopener noreferrer"
+                  >
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: getIconSvg("rss") ?? "",
+                      }}
+                    />
+                  </a>
+                </>
+              ) : null}
             </p>
             <span class="collection-page-meta-divider" aria-hidden="true">
               &middot;

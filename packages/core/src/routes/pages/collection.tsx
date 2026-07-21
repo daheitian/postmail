@@ -230,6 +230,11 @@ export async function renderCollectionPage(
             item.collectionId === primaryCollection.id,
         )}
         sitePathPrefix={navData.sitePathPrefix}
+        feedHref={
+          c.var.appConfig.rssFeedsEnabled
+            ? `${canonicalPagePath}/feed`
+            : undefined
+        }
       />
     ),
   });

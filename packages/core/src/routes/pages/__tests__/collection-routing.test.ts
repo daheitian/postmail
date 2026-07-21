@@ -77,6 +77,22 @@ describe("Collection Routing", () => {
     expect(html).toContain("Thread follow-up");
   });
 
+  it("hides the collection feed button when feeds are disabled", async () => {
+    const { app, services } = createCollectionRoutingTestApp();
+    await services.settings.set("RSS_FEEDS_ENABLED", "false");
+    await createCollectionWithPost(services, {
+      slug: "reading",
+      title: "Reading",
+      postTitle: "Book log",
+    });
+
+    const response = await app.request("/reading");
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).not.toContain('class="feed-link"');
+  });
+
   it("redirects namespaced single-collection paths to the root canonical URL", async () => {
     const { app, services } = createCollectionRoutingTestApp();
 
