@@ -281,8 +281,9 @@ export const CONFIG_FIELDS = {
   },
   RSS_PUBLISH_DELAY_SECONDS: {
     defaultValue: "300",
-    envOnly: true,
+    envOnly: false,
     envKeys: ["RSS_PUBLISH_DELAY_SECONDS"],
+    editor: { type: "number", min: 0, max: 7200, step: 1 },
   },
 
   // Internal settings (DB-only, not configurable via env or settings UI)
@@ -710,7 +711,7 @@ export interface AppConfig {
   /** Max characters to include in auto-extracted summary. Defaults to 500. */
   summaryMaxChars: number;
 
-  // Pagination/feed (sizes and limit: DB > ENV > Default; delay: ENV > Default)
+  // Pagination/feed (DB > ENV > Default)
   pageSize: number;
   searchPageSize: number;
   archivePageSize: number;

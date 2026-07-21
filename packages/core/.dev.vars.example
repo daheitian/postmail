@@ -35,6 +35,7 @@
 # SEARCH_PAGE_SIZE=50
 # ARCHIVE_PAGE_SIZE=50
 # RSS_FEED_LIMIT=50
+# 0 disables the delay; maximum 7200 seconds.
 # RSS_PUBLISH_DELAY_SECONDS=300
 
 # Cloudflare media URLs and image transformations.

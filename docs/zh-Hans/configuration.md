@@ -90,9 +90,9 @@ Node 和 Docker 的常用变量：
 `featured` 默认开启是有意为之。Jant 假设很多帖子应该留在站点上，但不一定要自动成为默认订阅 feed 的内容。
 
 帖子仍会立即显示在网页上。延迟只影响 Jant 动态生成的 Atom feeds，让作者能在
-feed 阅读器抓取前修改或撤回刚发布的内容。设为
-`RSS_PUBLISH_DELAY_SECONDS=0` 可关闭延迟。由于 feed 响应还会被缓存，实际延迟
-可能比配置的最短时间略长。
+feed 阅读器抓取前修改或撤回刚发布的内容。它接受 `0–7200` 的整数，也可以在
+Config Editor 中实时修改；设为 `0` 可关闭延迟。重置运行时覆盖值后，会重新
+使用环境变量。由于 feed 响应还会被缓存，实际延迟可能比配置的最短时间略长。
 
 ### 分页（可选）
 
@@ -369,6 +369,7 @@ location /_assets/ {
 | `SUMMARY_MAX_PARAGRAPHS`     | 摘要段落数上限（`1–50`）                |
 | `SUMMARY_MAX_CHARS`          | 摘要字符数上限（`1–1500`）              |
 | `RSS_FEED_LIMIT`             | 每个 RSS feed 的帖子数（`1–200`）       |
+| `RSS_PUBLISH_DELAY_SECONDS`  | Feed 发布延迟秒数（`0–7200`）           |
 | `SITE_FOOTER`                | 自定义页脚文本                          |
 | `SHOW_JANT_BRANDING_ON_HOME` | 是否在首页显示 Jant 品牌标识            |
 | `NOINDEX`                    | 请求搜索引擎不要收录这个站点            |

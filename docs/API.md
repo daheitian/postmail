@@ -1990,6 +1990,7 @@ All values are strings because they map directly to stored config values.
 | `SUMMARY_MAX_PARAGRAPHS`     | Summary paragraph limit    | `"5"`               |
 | `SUMMARY_MAX_CHARS`          | Summary character limit    | `"500"`             |
 | `RSS_FEED_LIMIT`             | RSS item limit             | `"50"`              |
+| `RSS_PUBLISH_DELAY_SECONDS`  | Feed publication delay     | `"300"`             |
 | `TIME_ZONE`                  | IANA timezone              | `"Asia/Shanghai"`   |
 | `SITE_FOOTER`                | Footer HTML/text           | `"<p>Footer</p>"`   |
 | `SHOW_JANT_BRANDING_ON_HOME` | Branding toggle            | `"true"`            |
@@ -2027,6 +2028,7 @@ Response:
     "SUMMARY_MAX_PARAGRAPHS": "5",
     "SUMMARY_MAX_CHARS": "500",
     "RSS_FEED_LIMIT": "50",
+    "RSS_PUBLISH_DELAY_SECONDS": "300",
     "TIME_ZONE": "UTC",
     "SITE_FOOTER": "",
     "SHOW_JANT_BRANDING_ON_HOME": "false",
@@ -2069,6 +2071,7 @@ Request rules:
 - `SUMMARY_MAX_PARAGRAPHS` accepts integers from `1` to `50`.
 - `SUMMARY_MAX_CHARS` accepts integers from `1` to `1500`.
 - `RSS_FEED_LIMIT` accepts integers from `1` to `200`.
+- `RSS_PUBLISH_DELAY_SECONDS` accepts integers from `0` to `7200`; `0` disables the delay.
 - Resetting `SEARCH_PAGE_SIZE` or `ARCHIVE_PAGE_SIZE` makes it inherit the effective `PAGE_SIZE` value.
 
 Behavior:

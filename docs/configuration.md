@@ -91,9 +91,11 @@ The official Docker image already defaults `DATA_DIR` to `/var/lib/jant`, and Do
 
 Posts remain immediately visible on the website. The delay only affects Jant's
 dynamic Atom feeds and gives authors time to correct or unpublish new content
-before feed readers can fetch it. Set `RSS_PUBLISH_DELAY_SECONDS=0` to disable
-the delay. Feed response caching may make the observed delay slightly longer
-than the configured minimum.
+before feed readers can fetch it. It accepts an integer from `0` to `7200`
+seconds and can also be changed at runtime in Config Editor. Set it to `0` to
+disable the delay. The environment variable remains the fallback after a
+runtime override is reset. Feed response caching may make the observed delay
+slightly longer than the configured minimum.
 
 ### Pagination (optional)
 
@@ -402,6 +404,7 @@ These settings can be changed on Jant's Settings page after setup. Each one can 
 | `SUMMARY_MAX_PARAGRAPHS`     | Summary paragraph limit (`1–50`)                 |
 | `SUMMARY_MAX_CHARS`          | Summary character limit (`1–1500`)               |
 | `RSS_FEED_LIMIT`             | Posts included in each RSS feed (`1–200`)        |
+| `RSS_PUBLISH_DELAY_SECONDS`  | Feed publication delay in seconds (`0–7200`)     |
 | `SITE_FOOTER`                | Custom footer text                               |
 | `SHOW_JANT_BRANDING_ON_HOME` | Show or hide Jant branding on the home page      |
 | `NOINDEX`                    | Ask search engines not to index the site         |

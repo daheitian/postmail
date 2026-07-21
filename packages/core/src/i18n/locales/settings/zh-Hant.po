@@ -830,6 +830,11 @@ msgstr "後台語言"
 msgid "Data"
 msgstr "資料"
 
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Delay new posts and replies before they appear in feeds. Use 0 to turn this off."
+msgstr "延遲新貼文和回覆進入訂閱源的時間。設為 0 可關閉延遲。"
+
 #. @context: Button to delete custom URL
 #. @context: Button to delete item
 #. @context: Delete nav item

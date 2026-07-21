@@ -830,6 +830,11 @@ msgstr "Dashboard language"
 msgid "Data"
 msgstr "Data"
 
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Delay new posts and replies before they appear in feeds. Use 0 to turn this off."
+msgstr "Delay new posts and replies before they appear in feeds. Use 0 to turn this off."
+
 #. @context: Button to delete custom URL
 #. @context: Button to delete item
 #. @context: Delete nav item

@@ -96,8 +96,8 @@ only feed delivery waits. This gives you time to fix a mistake or unpublish the
 content before a feed reader can fetch it.
 
 Feed caching and each reader's polling schedule can make the content appear
-later. Self-hosters can change `RSS_PUBLISH_DELAY_SECONDS`, or set it to `0` to
-disable the delay. See
+later. Change `RSS_PUBLISH_DELAY_SECONDS` in **Settings → Advanced → Config
+Editor** to any whole number from `0` to `7200`; `0` disables the delay. See
 [Configuration § Feed defaults](configuration.md#feed-defaults-optional).
 
 ## Can I host under a subpath (e.g., `example.com/blog`)?

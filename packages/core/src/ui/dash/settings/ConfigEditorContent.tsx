@@ -172,6 +172,15 @@ export function ConfigEditorContent({
         }),
       ),
     },
+    RSS_PUBLISH_DELAY_SECONDS: {
+      description: i18n._(
+        msg({
+          message:
+            "Delay new posts and replies before they appear in feeds. Use 0 to turn this off.",
+          comment: "@context: Config Editor setting description",
+        }),
+      ),
+    },
     THEME: {
       description: i18n._(
         msg({
