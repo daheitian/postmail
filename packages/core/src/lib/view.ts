@@ -543,6 +543,7 @@ export function toNavItemView(
     type: item.type as NavItemType,
     systemKey: item.systemKey,
     collectionId: item.collectionId,
+    postId: item.postId,
     label,
     url: publicUrl,
     placement: item.placement as NavItemPlacement,
