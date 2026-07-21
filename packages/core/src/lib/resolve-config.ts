@@ -233,6 +233,9 @@ export function resolveConfig(
     showJantBrandingOnHome:
       resolve("SHOW_JANT_BRANDING_ON_HOME", allSettings, env) === "true",
     noindex: demoMode || resolve("NOINDEX", allSettings, env) === "true",
+    publicApiEnabled:
+      resolve("PUBLIC_API_ENABLED", allSettings, env) === "true",
+    rssFeedsEnabled: resolve("RSS_FEEDS_ENABLED", allSettings, env) === "true",
 
     // Infrastructure (ENV only)
     siteUrl,

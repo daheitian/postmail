@@ -8,6 +8,7 @@ import { z } from "zod";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
+import { requirePublicApiAccess } from "../../middleware/public-content-access.js";
 import {
   CreateNavItemSchema,
   NavItemIdSchema,
@@ -53,7 +54,7 @@ async function withSiteHeaderHtml<T extends object>(
 }
 
 // List nav items
-navItemsApiRoutes.get("/", async (c) => {
+navItemsApiRoutes.get("/", requirePublicApiAccess(), async (c) => {
   const items = await c.var.services.navItems.list();
   return c.json({ navItems: items });
 });

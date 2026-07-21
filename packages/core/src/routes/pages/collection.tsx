@@ -225,6 +225,11 @@ export async function renderCollectionPage(
         showRatingSort={showRatingSort}
         isAuthenticated={navData.isAuthenticated}
         sitePathPrefix={navData.sitePathPrefix}
+        feedHref={
+          c.var.appConfig.rssFeedsEnabled
+            ? `${canonicalPagePath}/feed`
+            : undefined
+        }
       />
     ),
   });

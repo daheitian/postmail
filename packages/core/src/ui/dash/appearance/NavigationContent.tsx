@@ -36,6 +36,7 @@ export function NavigationContent({
   directoryData,
   suggestedLinks,
   mainRssFeed,
+  rssFeedsEnabled,
   siteName,
   sitePathPrefix = "",
 }: {
@@ -43,6 +44,7 @@ export function NavigationContent({
   directoryData: CollectionsDirectoryData;
   suggestedLinks: SuggestedNavLink[];
   mainRssFeed: string;
+  rssFeedsEnabled: boolean;
   siteName: string;
   sitePathPrefix?: string;
 }) {
@@ -734,13 +736,19 @@ export function NavigationContent({
         collections={escapeJson(collectionsData)}
         suggested-links={escapeJson(suggestedLinksData)}
         site-name={siteName}
+        rss-feeds-enabled={rssFeedsEnabled || undefined}
       >
         {/* SSR fallback: static preview until JS hydrates */}
         {(() => {
-          const headerNavItems = navItems.filter(
+          const previewItems = rssFeedsEnabled
+            ? navItems
+            : navItems.filter(
+                (item) => item.type !== "system" || item.systemKey !== "rss",
+              );
+          const headerNavItems = previewItems.filter(
             (item) => item.placement !== "more",
           );
-          const moreNavItems = navItems.filter(
+          const moreNavItems = previewItems.filter(
             (item) => item.placement === "more",
           );
           return (

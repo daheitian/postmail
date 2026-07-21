@@ -21,10 +21,13 @@ import {
   resolveCollectionSortOrder,
   supportsCollectionRatingSort,
 } from "../../../lib/collection-sort.js";
+import { requirePublicApiEnabled } from "../../../middleware/public-content-access.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const publicPostsApiRoutes = new Hono<Env>();
+
+publicPostsApiRoutes.use("*", requirePublicApiEnabled());
 
 const ListPublicPostsQuerySchema = z.object({
   format: FormatSchema.optional(),

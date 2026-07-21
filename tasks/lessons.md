@@ -6,6 +6,9 @@
 - When a user is still evaluating product/design options, keep the turn in
   discussion mode and do not start implementation until they explicitly confirm
   the chosen direction.
+- For public-surface switches, define anonymous, session, token, and public HTML
+  behavior separately. Dedicated public endpoints can disappear while shared
+  dashboard endpoints fall back to authentication and HTML pages stay public.
 - When a legacy or generic URL remains only for compatibility, keep it working
   without advertising it beside the canonical URL unless users need it for a
   migration step. Product docs should present one clear preferred path.

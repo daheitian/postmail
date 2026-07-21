@@ -52,7 +52,7 @@ Jant 提供两条通道：
 Authorization: Bearer jnt_...
 ```
 
-少量公开读接口不需要 token：`GET /api/collections`、`GET /api/collections/:id`、`GET /api/search`、`GET /api/public/posts`、`GET /api/public/posts/:slug`、`GET /api/public/archive`。
+少量公开读接口默认不需要 token：`GET /api/collections`、`GET /api/collections/:id`、`GET /api/nav-items`、`GET /api/search`、`GET /api/public/posts`、`GET /api/public/posts/:slug`、`GET /api/public/archive`。如果设置了 `PUBLIC_API_ENABLED=false`，`/api/public/*` 会对所有调用方返回 `404`；Collection、导航和搜索 JSON 读取则需要浏览器 session 或 Bearer token。包括 `/search` 在内的公开 HTML 页面不受影响。
 
 ### 常用端点
 

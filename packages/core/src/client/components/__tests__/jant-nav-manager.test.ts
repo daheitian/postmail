@@ -586,6 +586,31 @@ describe("JantNavManager", () => {
     expect(popover.getAttribute("aria-hidden")).toBe("true");
   });
 
+  it("hides a saved RSS item from the preview without removing its editor", async () => {
+    const el = await createElement();
+    el.items = [
+      ...items,
+      {
+        id: "nav-rss",
+        type: "system",
+        systemKey: "rss",
+        label: "Feed",
+        displayLabel: "Feed",
+        url: "/feed",
+        placement: "header",
+      },
+    ];
+    el.rssFeedsEnabled = false;
+    await el.updateComplete;
+
+    expect(getPreviewHeaderLabels(el)).not.toContain("Feed");
+    expect(el.querySelector('[data-nav-id="nav-rss"]')).not.toBeNull();
+
+    el.rssFeedsEnabled = true;
+    await el.updateComplete;
+    expect(getPreviewHeaderLabels(el)).toContain("Feed");
+  });
+
   it("adds a suggested collection link through the nav items API", async () => {
     const el = await createElement();
     el.suggestedLinks = suggestedLinks;

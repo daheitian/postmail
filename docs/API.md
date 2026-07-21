@@ -15,27 +15,29 @@ For static export and round-trip import, also see [Export and Import](export-and
 
 ## API Surface
 
-| Area                    | Base path               | Auth                 |
-| ----------------------- | ----------------------- | -------------------- |
-| Public posts            | `/api/public/posts`     | Public               |
-| Public archive          | `/api/public/archive`   | Public               |
-| Posts                   | `/api/posts`            | API token or session |
-| Upload sessions         | `/api/uploads`          | API token or session |
-| One-shot upload         | `/api/upload`           | API token or session |
-| Legacy multipart relay  | `/api/upload/multipart` | API token or session |
-| Text attachment content | `/api/attachments`      | API token or session |
-| MCP                     | `/api/mcp`              | API token or session |
-| Collections             | `/api/collections`      | Mixed                |
-| Navigation items        | `/api/nav-items`        | Mixed                |
-| Custom URLs             | `/api/custom-urls`      | API token or session |
-| Settings                | `/api/settings`         | API token or session |
-| Search                  | `/api/search`           | Public               |
-| Export                  | `/api/export`           | API token or session |
-| Internal admin          | `/api/internal/*`       | Internal admin token |
+| Area                    | Base path               | Auth                    |
+| ----------------------- | ----------------------- | ----------------------- |
+| Public posts            | `/api/public/posts`     | Public when enabled     |
+| Public archive          | `/api/public/archive`   | Public when enabled     |
+| Posts                   | `/api/posts`            | API token or session    |
+| Upload sessions         | `/api/uploads`          | API token or session    |
+| One-shot upload         | `/api/upload`           | API token or session    |
+| Legacy multipart relay  | `/api/upload/multipart` | API token or session    |
+| Text attachment content | `/api/attachments`      | API token or session    |
+| MCP                     | `/api/mcp`              | API token or session    |
+| Collections             | `/api/collections`      | Mixed                   |
+| Navigation items        | `/api/nav-items`        | Mixed                   |
+| Custom URLs             | `/api/custom-urls`      | API token or session    |
+| Settings                | `/api/settings`         | API token or session    |
+| Search                  | `/api/search`           | Public or authenticated |
+| Export                  | `/api/export`           | API token or session    |
+| Internal admin          | `/api/internal/*`       | Internal admin token    |
 
 Auth labels in this document:
 
 - `Public`: no auth required
+- `Public when enabled`: public by default; returns `404` to every caller when `PUBLIC_API_ENABLED=false`
+- `Public or authenticated`: public by default; requires a session or token when `PUBLIC_API_ENABLED=false`
 - `Session or token`: browser session cookie or `Authorization: Bearer <token>`
 - `Internal admin token`: `Authorization: Bearer <INTERNAL_ADMIN_TOKEN>`
 
@@ -96,7 +98,7 @@ Auth resolution for both surfaces:
 
 - pass `Authorization: Bearer jnt_...` (issued under Settings → API Tokens), or
 - on local hosts, send the same value with `DEV_API_TOKEN` from `.dev.vars`.
-- a small set of read endpoints — `GET /api/collections`, `GET /api/collections/:slug`, `GET /api/search` — work without a token.
+- a small set of read endpoints — public posts/archive, Collections, navigation items, and search — work without a token while `PUBLIC_API_ENABLED=true`.
 
 ### MCP
 
@@ -350,6 +352,8 @@ Notes:
 Base path: `/api/public/posts`
 
 These endpoints expose the public reading view, not the editing view used in Settings.
+When `PUBLIC_API_ENABLED=false`, these dedicated public endpoints return `404`
+to every caller. Authenticated clients can use `/api/posts` instead.
 
 Public post responses include these fields:
 
@@ -1995,6 +1999,8 @@ All values are strings because they map directly to stored config values.
 | `SITE_FOOTER`                | Footer HTML/text           | `"<p>Footer</p>"`   |
 | `SHOW_JANT_BRANDING_ON_HOME` | Branding toggle            | `"true"`            |
 | `NOINDEX`                    | Search-engine exclusion    | `"true"`            |
+| `PUBLIC_API_ENABLED`         | Anonymous JSON reads       | `"true"`            |
+| `RSS_FEEDS_ENABLED`          | Atom feed publishing       | `"true"`            |
 
 Notes:
 
@@ -2032,7 +2038,9 @@ Response:
     "TIME_ZONE": "UTC",
     "SITE_FOOTER": "",
     "SHOW_JANT_BRANDING_ON_HOME": "false",
-    "NOINDEX": "false"
+    "NOINDEX": "false",
+    "PUBLIC_API_ENABLED": "true",
+    "RSS_FEEDS_ENABLED": "true"
   }
 }
 ```
@@ -2684,7 +2692,7 @@ Notes:
 
 ### Feeds
 
-All feed endpoints are public and return cached XML with `Cache-Control: public, max-age=60`.
+Feed endpoints are public and return cached XML with `Cache-Control: public, max-age=60` while `RSS_FEEDS_ENABLED=true`. When disabled, canonical and legacy feed URLs return `404`; previously cached responses may remain available for up to 60 seconds.
 
 Feed notes:
 
@@ -2699,6 +2707,7 @@ Feed notes:
 - `GET /feed/all` and `GET /feed/all/atom.xml` are legacy aliases that redirect to `/latest/feed` with `308`, preserving the query string.
 - `GET /:slug/feed` returns an RSS feed for a single collection.
 - `GET /collections/:slug/feed` returns an RSS feed for a collection selection and redirects normalized selections to the canonical path with `301`.
+- Disabling feeds also removes HTML autodiscovery, Archive and Collection feed buttons, and the built-in RSS navigation item. Saved navigation configuration is retained for later re-enabling.
 
 ### Sitemap and robots
 
