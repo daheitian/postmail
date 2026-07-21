@@ -169,6 +169,11 @@ Feed：
 - `/{slug}/feed` 返回单个 Collection 的 feed
 - `/collections/{slug1}+{slug2}/feed` 返回组合 Collection 的 feed
 
+Jant 动态生成的所有 Atom feeds 都使用同一段发布缓冲时间。新帖子和回复会立即
+显示在网页上，但默认五分钟后才可以进入 feed。这给你留出时间检查刚发布的
+内容、修正错误，或者在 feed 阅读器抓取前撤回。详见
+[配置 § Feed 默认值](configuration.md#feed-默认值可选)。
+
 ## 自定义 URL
 
 除了默认的 slug，Jant 还支持给帖子、Collection、归档页设置自定义路径，并支持配置跳转规则。在管理后台进入 **设置 → 高级 → 自定义 URL** 即可统一管理（对应路径是 `/settings/custom-urls`）。

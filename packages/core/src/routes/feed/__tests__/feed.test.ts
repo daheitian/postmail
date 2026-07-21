@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import type { Bindings } from "../../../types.js";
@@ -43,6 +43,7 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
     const env = {
       SITE_ORIGIN: `http://localhost:${DEFAULT_APP_PORT}`,
       SITE_PATH_PREFIX: "",
+      RSS_PUBLISH_DELAY_SECONDS: 0,
       ...envOverrides,
     } as Bindings;
     c.env = env;
@@ -66,6 +67,10 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
 
   return { app, services, db: db as unknown as Database };
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("Atom Feed Routes", () => {
   describe("/feed — site main feed", () => {
@@ -170,6 +175,7 @@ describe("Atom Feed Routes", () => {
       expect(res.headers.get("Content-Type")).toBe(
         "application/atom+xml; charset=utf-8",
       );
+      expect(res.headers.get("Cache-Control")).toBe("public, max-age=60");
     });
 
     it("orders Featured Threads by selected Post publication time", async () => {
@@ -591,6 +597,85 @@ describe("Atom Feed Routes", () => {
     });
   });
 
+  describe("RSS_PUBLISH_DELAY_SECONDS env var", () => {
+    it("includes the exact 300-second boundary and excludes newer Posts", async () => {
+      const currentTime = 2_000_000;
+      vi.spyOn(Date, "now").mockReturnValue(currentTime * 1000);
+      const { app, services } = createFeedTestApp({
+        RSS_PUBLISH_DELAY_SECONDS: 300,
+      });
+
+      await services.posts.create({
+        format: "note",
+        title: "Boundary Post",
+        bodyMarkdown: "Eligible at exactly five minutes",
+        status: "published",
+        publishedAt: currentTime - 300,
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Recent Post",
+        bodyMarkdown: "Still inside the edit window",
+        status: "published",
+        publishedAt: currentTime - 299,
+      });
+
+      const xml = await (await app.request("/latest/feed")).text();
+
+      expect(xml).toContain("Boundary Post");
+      expect(xml).not.toContain("Recent Post");
+    });
+
+    it("applies the delay to Featured Posts", async () => {
+      const currentTime = 2_000_000;
+      vi.spyOn(Date, "now").mockReturnValue(currentTime * 1000);
+      const { app, services } = createFeedTestApp({
+        RSS_PUBLISH_DELAY_SECONDS: 300,
+      });
+
+      await services.posts.create({
+        format: "note",
+        title: "Eligible Featured Post",
+        bodyMarkdown: "Old enough",
+        status: "published",
+        featured: true,
+        publishedAt: currentTime - 300,
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Recent Featured Post",
+        bodyMarkdown: "Too new",
+        status: "published",
+        featured: true,
+        publishedAt: currentTime,
+      });
+
+      const xml = await (await app.request("/featured/feed")).text();
+
+      expect(xml).toContain("Eligible Featured Post");
+      expect(xml).not.toContain("Recent Featured Post");
+    });
+
+    it("lets zero disable the delay", async () => {
+      const currentTime = 2_000_000;
+      vi.spyOn(Date, "now").mockReturnValue(currentTime * 1000);
+      const { app, services } = createFeedTestApp({
+        RSS_PUBLISH_DELAY_SECONDS: 0,
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Immediate Post",
+        bodyMarkdown: "No edit window",
+        status: "published",
+        publishedAt: currentTime,
+      });
+
+      const xml = await (await app.request("/latest/feed")).text();
+
+      expect(xml).toContain("Immediate Post");
+    });
+  });
+
   describe("thread content in feed", () => {
     it("includes thread replies inline with hr separators", async () => {
       const { app, services } = createFeedTestApp();
@@ -615,6 +700,61 @@ describe("Atom Feed Routes", () => {
       expect(xml).toContain("Root content");
       expect(xml).toContain("Reply content");
       expect(xml).toContain("<hr/>");
+    });
+
+    it("delays new replies inside an already eligible Thread", async () => {
+      const currentTime = 2_000_000;
+      const dateNow = vi.spyOn(Date, "now").mockReturnValue(currentTime * 1000);
+      const { app, services } = createFeedTestApp({
+        RSS_PUBLISH_DELAY_SECONDS: 300,
+      });
+      const root = await services.posts.create({
+        format: "note",
+        title: "Eligible Thread Root",
+        bodyMarkdown: "Root content",
+        status: "published",
+        publishedAt: currentTime - 600,
+      });
+      await services.posts.create({
+        format: "note",
+        bodyMarkdown: "Recent reply content",
+        status: "published",
+        replyToId: root.id,
+        publishedAt: currentTime,
+      });
+
+      const beforeDelay = await (await app.request("/latest/feed")).text();
+      expect(beforeDelay).toContain("Root content");
+      expect(beforeDelay).not.toContain("Recent reply content");
+
+      dateNow.mockReturnValue((currentTime + 300) * 1000);
+      const afterDelay = await (await app.request("/latest/feed")).text();
+      expect(afterDelay).toContain("Recent reply content");
+    });
+
+    it("reflects eligible content edits in the Atom entry updated timestamp", async () => {
+      const currentTime = 2_000_000;
+      vi.spyOn(Date, "now").mockReturnValue(currentTime * 1000);
+      const { app, services } = createFeedTestApp({
+        RSS_PUBLISH_DELAY_SECONDS: 300,
+      });
+      const root = await services.posts.create({
+        format: "note",
+        title: "Edited Post",
+        bodyMarkdown: "Original copy",
+        status: "published",
+        publishedAt: currentTime - 300,
+      });
+      await services.posts.update(root.id, {
+        bodyMarkdown: "Corrected copy",
+      });
+
+      const xml = await (await app.request("/latest/feed")).text();
+      const entry = xml.match(/<entry>[\s\S]*?<\/entry>/)?.[0];
+
+      expect(entry).toContain("Corrected copy");
+      expect(entry).not.toContain("Original copy");
+      expect(entry).toContain("<updated>1970-01-24T03:33:20.000Z</updated>");
     });
   });
 });

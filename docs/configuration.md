@@ -82,11 +82,18 @@ The official Docker image already defaults `DATA_DIR` to `/var/lib/jant`, and Do
 
 ### Feed defaults (optional)
 
-| Variable        | Default    | Description                                           |
-| --------------- | ---------- | ----------------------------------------------------- |
-| `MAIN_RSS_FEED` | `featured` | Controls what `/feed` returns: `featured` or `latest` |
+| Variable                    | Default    | Description                                                     |
+| --------------------------- | ---------- | --------------------------------------------------------------- |
+| `MAIN_RSS_FEED`             | `featured` | Controls what `/feed` returns: `featured` or `latest`           |
+| `RSS_PUBLISH_DELAY_SECONDS` | `300`      | Wait before published posts and replies enter Jant's Atom feeds |
 
 `featured` is the default on purpose. Jant assumes many posts should remain on the site without automatically becoming the default subscriber feed.
+
+Posts remain immediately visible on the website. The delay only affects Jant's
+dynamic Atom feeds and gives authors time to correct or unpublish new content
+before feed readers can fetch it. Set `RSS_PUBLISH_DELAY_SECONDS=0` to disable
+the delay. Feed response caching may make the observed delay slightly longer
+than the configured minimum.
 
 ### Pagination (optional)
 

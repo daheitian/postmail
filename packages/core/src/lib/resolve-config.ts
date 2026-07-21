@@ -78,6 +78,14 @@ function parseConfigInt(value: string, fallback: number): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function parseNonNegativeConfigInt(value: string, fallback: number): number {
+  const normalized = value.trim();
+  if (!/^\d+$/.test(normalized)) return fallback;
+
+  const parsed = Number(normalized);
+  return Number.isSafeInteger(parsed) ? parsed : fallback;
+}
+
 /**
  * Resolve the environment-only limits used for automatic post summaries.
  *
@@ -226,6 +234,10 @@ export function resolveConfig(
     archivePageSize,
     rssFeedLimit:
       parseInt(getEnvString(env, "RSS_FEED_LIMIT") ?? "50", 10) || 50,
+    rssPublishDelaySeconds: parseNonNegativeConfigInt(
+      resolve("RSS_PUBLISH_DELAY_SECONDS", allSettings, env),
+      300,
+    ),
 
     // Demo (ENV only)
     demoEmail: getEnvString(env, "DEMO_EMAIL") || "",

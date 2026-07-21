@@ -83,6 +83,7 @@ export interface Bindings {
   SLUG_ID_LENGTH?: EnvBindingValue;
   // RSS feed
   RSS_FEED_LIMIT?: EnvBindingValue;
+  RSS_PUBLISH_DELAY_SECONDS?: EnvBindingValue;
   // Node runtime database URL. SQLite uses file: URLs; Postgres uses
   // postgres:/postgresql: URLs.
   DATABASE_URL?: string;

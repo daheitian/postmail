@@ -33,6 +33,7 @@ describe("resolveConfig", () => {
     expect(config.searchPageSize).toBe(50);
     expect(config.archivePageSize).toBe(50);
     expect(config.rssFeedLimit).toBe(50);
+    expect(config.rssPublishDelaySeconds).toBe(300);
   });
 
   it("DB settings override ENV and defaults", () => {
@@ -232,6 +233,7 @@ describe("resolveConfig", () => {
         SEARCH_PAGE_SIZE: 7,
         ARCHIVE_PAGE_SIZE: "9",
         RSS_FEED_LIMIT: 25,
+        RSS_PUBLISH_DELAY_SECONDS: "600",
       }),
       {},
     );
@@ -239,6 +241,13 @@ describe("resolveConfig", () => {
     expect(config1.searchPageSize).toBe(7);
     expect(config1.archivePageSize).toBe(9);
     expect(config1.rssFeedLimit).toBe(25);
+    expect(config1.rssPublishDelaySeconds).toBe(600);
+
+    const configWithNoDelay = resolveConfig(
+      makeEnv({ RSS_PUBLISH_DELAY_SECONDS: 0 }),
+      {},
+    );
+    expect(configWithNoDelay.rssPublishDelaySeconds).toBe(0);
 
     const config2 = resolveConfig(
       makeEnv({
@@ -246,6 +255,7 @@ describe("resolveConfig", () => {
         SEARCH_PAGE_SIZE: 0,
         ARCHIVE_PAGE_SIZE: false,
         RSS_FEED_LIMIT: "invalid",
+        RSS_PUBLISH_DELAY_SECONDS: "-1",
       }),
       {},
     );
@@ -253,6 +263,13 @@ describe("resolveConfig", () => {
     expect(config2.searchPageSize).toBe(50);
     expect(config2.archivePageSize).toBe(50);
     expect(config2.rssFeedLimit).toBe(50);
+    expect(config2.rssPublishDelaySeconds).toBe(300);
+
+    const configWithBlankDelay = resolveConfig(
+      makeEnv({ RSS_PUBLISH_DELAY_SECONDS: "   " }),
+      {},
+    );
+    expect(configWithBlankDelay.rssPublishDelaySeconds).toBe(300);
   });
 
   it("resolves summary limits without the full app config", () => {
