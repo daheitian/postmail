@@ -29,7 +29,7 @@ export const COLLECTION_SORT_ORDERS = [
 ] as const;
 export type CollectionSortOrder = (typeof COLLECTION_SORT_ORDERS)[number];
 
-export const NAV_ITEM_TYPES = ["link", "system", "collection"] as const;
+export const NAV_ITEM_TYPES = ["link", "system", "collection", "page"] as const;
 export type NavItemType = (typeof NAV_ITEM_TYPES)[number];
 
 export const NAV_ITEM_PLACEMENTS = ["header", "more"] as const;

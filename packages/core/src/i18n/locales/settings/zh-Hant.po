@@ -134,10 +134,35 @@ msgstr "新增自訂 CSS 以覆寫任何樣式。使用像 [data-page]、[data-p
 msgid "Add custom link to navigation"
 msgstr "新增自訂連結到導覽"
 
+#. @context: Description after quick page creation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add it to navigation now or open the editor to add content."
+msgstr "立即加入導覽，或開啟編輯器補充內容。"
+
+#. @context: Description after quick collection creation in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add it to navigation now or open the editor to add details."
+msgstr "立即加入導覽，或開啟編輯器補充詳細資料。"
+
 #. @context: Button and heading for adding custom link
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Link"
 msgstr "新增連結"
+
+#. @context: Button that opens the navigation page picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add Page"
+msgstr "加入頁面"
+
+#. @context: Section heading for adding a page to navigation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add page to navigation"
+msgstr "將頁面加入導覽"
+
+#. @context: Button that adds a created page to navigation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add to Navigation"
+msgstr "加入導覽"
 
 #. @context: Settings group label for advanced settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -246,6 +271,11 @@ msgstr "頭像"
 msgid "Avatar display updated."
 msgstr "頭像顯示已更新."
 
+#. @context: Button returning from page creation to page search
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Back"
+msgstr "返回"
+
 #. @context: Settings item description for GitHub sync
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Back up and sync content with a GitHub repository"
@@ -339,10 +369,20 @@ msgstr "變更密碼"
 msgid "Changing this updates what subscribers get from /feed."
 msgstr "變更此設定會更新訂閱者從 /feed 取得的內容。"
 
+#. @context: Loading text while checking page slug availability
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Checking address…"
+msgstr "正在檢查網址…"
+
 #. @context: GitHub sync picker — status text while classifying the picked repo
 #: src/routes/dash/settings.tsx
 msgid "Checking repository…"
 msgstr "正在檢查儲存庫…"
+
+#. @context: Description for adding a page to navigation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Choose a titled note that isn't already in navigation, or create a new page."
+msgstr "選擇一則尚未加入導覽的有標題筆記，或建立新頁面。"
 
 #. @context: Font theme settings description
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -389,6 +429,21 @@ msgstr "選集"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Collection"
 msgstr "選集"
+
+#. @context: Confirmation after adding a collection to navigation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Collection added to navigation."
+msgstr "選集已加入導覽。"
+
+#. @context: Heading after quick collection creation in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Collection created."
+msgstr "選集已建立。"
+
+#. @context: Collection slug field in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Collection link"
+msgstr "選集連結"
 
 #. @context: Appearance settings heading
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -524,10 +579,25 @@ msgstr "無法複製. 請再試一次."
 msgid "Couldn't connect. Check the error and try again."
 msgstr "無法連線。請檢查錯誤並再試一次。"
 
+#. @context: Error when quick collection creation fails in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Couldn't create the collection. Check the details and try again."
+msgstr "無法建立選集。請檢查資料後再試一次。"
+
+#. @context: Error when quick page creation fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Couldn't create the page. Check the details and try again."
+msgstr "無法建立頁面。請檢查資料後再試一次。"
+
 #. @context: Error toast when nav delete fails
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Couldn't delete. Try again in a moment."
 msgstr "無法刪除。請稍後再試。"
+
+#. @context: Error shown when navigation page search fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Couldn't load pages. Try again in a moment."
+msgstr "無法載入頁面。請稍後再試。"
 
 #. @context: Error toast when nav save fails
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -564,20 +634,45 @@ msgstr "在 GitHub 建立新儲存庫"
 msgid "Create a post with curl:"
 msgstr "使用 curl 建立貼文："
 
+#. @context: Description in the quick-create page dialog
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Create a public page that won't appear in Latest."
+msgstr "建立一個不會出現在 Latest 的公開頁面。"
+
 #. @context: Button to create the standard About page
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Create About page"
 msgstr "建立 About 頁面"
+
+#. @context: Button and dialog title for quick collection creation in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Create Collection"
+msgstr "建立選集"
 
 #. @context: Button to save new custom URL
 #: src/routes/dash/custom-urls.tsx
 msgid "Create Custom URL"
 msgstr "建立自訂網址"
 
+#. @context: Action at the bottom of the Navigation collection picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Create new collection"
+msgstr "建立新選集"
+
+#. @context: Action at the bottom of the navigation page picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Create new page"
+msgstr "建立新頁面"
+
 #. @context: Link text pointing to GitHub's fine-grained PAT creation page
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Create one on GitHub"
 msgstr "在 GitHub 上建立一個"
+
+#. @context: Button and dialog title for quick page creation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Create Page"
+msgstr "建立頁面"
 
 #. @context: Help text for GitHub repository input on GitHub Sync settings, telling users they must create the repo themselves
 #: src/ui/dash/settings/GitHubSyncContent.tsx
@@ -588,6 +683,16 @@ msgstr "先在 GitHub 上建立儲存庫 — 可以是空的。"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Created {date}"
 msgstr "建立於 {date}"
+
+#. @context: Loading label while creating a collection in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Creating collection…"
+msgstr "正在建立選集…"
+
+#. @context: Loading label while creating a page
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Creating page…"
+msgstr "正在建立頁面…"
 
 #. @context: Badge indicating the current active session
 #: src/ui/dash/settings/SessionsContent.tsx
@@ -791,10 +896,30 @@ msgstr "編輯"
 msgid "Edit About page"
 msgstr "編輯 About 頁面"
 
+#. @context: Button that opens a newly created collection for editing
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Edit Collection"
+msgstr "編輯選集"
+
+#. @context: Button to edit the generated collection slug in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Edit link"
+msgstr "編輯連結"
+
+#. @context: Button that opens a page for editing
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Edit Page"
+msgstr "編輯頁面"
+
 #. @context: GitHub sync picker — shown when the selected repo has no commits
 #: src/routes/dash/settings.tsx
 msgid "Empty repository. Ready to connect."
 msgstr "倉庫為空。準備連線。"
+
+#. @context: Validation error for an empty quick page title
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Enter a page title."
+msgstr "請輸入頁面標題。"
 
 #. @context: Help text under the archive feed URL, explaining it is the complete feed
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -987,6 +1112,16 @@ msgstr "安裝 GitHub App，以授予存取權而無需管理個人權杖。權�
 msgid "Integrations"
 msgstr "第三方整合"
 
+#. @context: Validation error for a long page slug
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Keep the page address under 200 characters."
+msgstr "頁面網址不能超過 200 個字元。"
+
+#. @context: Long collection slug error in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Keep this link under 200 characters."
+msgstr "連結不能超過 200 個字元。"
+
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Label"
@@ -1159,10 +1294,20 @@ msgstr "更多"
 msgid "More actions"
 msgstr "更多操作"
 
+#. @context: Helper text in quick collection creation in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "More options are available after you create it."
+msgstr "建立後可以設定更多選項。"
+
 #. @context: Clay color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Muted red-brown background, earthy and warm."
 msgstr "低飽和的紅棕底，溫暖、有泥土感。"
+
+#. @context: Collection title placeholder in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "My Collection"
+msgstr "我的選集"
 
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1174,7 +1319,7 @@ msgstr "名稱, 中繼資料, 語言, 和 搜尋預設值"
 #: src/routes/dash/settings.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Navigation"
-msgstr "導覽"
+msgstr "導覽列"
 
 #. @context: Section heading for nav items
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1194,7 +1339,7 @@ msgstr "導覽位置已更新。"
 #. @context: Label for nav preview section
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Navigation Preview"
-msgstr "導覽預覽"
+msgstr "導覽列預覽"
 
 #. @context: Ink color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1242,8 +1387,8 @@ msgstr "目前沒有任何活動中的工作階段。已登入的裝置會顯示
 
 #. @context: Empty state when no collections exist for nav picker
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "No collections yet. Create one first, then add it to your navigation."
-msgstr "目前還沒有選集。請先建立一個，然後將它加入您的導覽。"
+msgid "No collections yet. Create one here to add it to navigation."
+msgstr "目前還沒有選集。在這裡建立一個並加入導覽。"
 
 #. @context: Empty state message
 #: src/routes/dash/custom-urls.tsx
@@ -1260,10 +1405,20 @@ msgstr "未選取檔案。請選擇要上傳的檔案。"
 msgid "No matches."
 msgstr "無相符結果。"
 
+#. @context: Empty search results in the page picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No matching pages available to add. Try another title or create a new page."
+msgstr "找不到可加入的相符頁面。換個標題搜尋，或建立新頁面。"
+
 #. @context: Empty state for navigation items
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "No navigation items yet. Add links or enable system items below."
 msgstr "目前尚無導覽項目。請新增連結或在下方啟用系統項目。"
+
+#. @context: Empty state in the navigation page picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No pages available. Create one to add it to navigation."
+msgstr "沒有可加入的頁面。建立頁面後即可加入導覽。"
 
 #. @context: GitHub sync picker — empty state when search returns nothing
 #: src/routes/dash/settings.tsx
@@ -1317,10 +1472,30 @@ msgstr "帶橘調的底色。最暖的一套。"
 msgid "owner/repo"
 msgstr "owner/repo"
 
+#. @context: Nav item type badge for page items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "page"
+msgstr "頁面"
+
 #. @context: Suggested navigation link target type
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Page"
 msgstr "頁面"
+
+#. @context: Confirmation after adding a page to navigation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Page added to navigation."
+msgstr "頁面已加入導覽。"
+
+#. @context: Slug field label in quick page creation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Page address"
+msgstr "頁面網址"
+
+#. @context: Heading after quick page creation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Page created."
+msgstr "頁面已建立。"
 
 #. @context: Bone color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1461,6 +1636,11 @@ msgstr "引用"
 msgid "Readers and search engines see"
 msgstr "讀者和搜尋引擎看到的是"
 
+#. @context: Heading above recent pages in the page picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Recently updated"
+msgstr "最近更新"
+
 #. @context: Custom URL target type badge for a redirect
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
@@ -1515,6 +1695,11 @@ msgstr "移除這個頭像？您的 favicon 與頁首圖示會回復為預設。
 msgid "Remove this collection from navigation? The collection itself won't be deleted."
 msgstr "要從導覽移除這個選集嗎？選集本身不會被刪除。"
 
+#. @context: Confirm dialog for removing a page from navigation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Remove this page from navigation? The page itself won't be deleted."
+msgstr "從導覽中移除此頁面？頁面本身不會被刪除。"
+
 #. @context: GitHub sync picker — repo dropdown label
 #. @context: Label for GitHub repository input on GitHub Sync settings
 #. @context: Label for connected repository on GitHub Sync status
@@ -1523,6 +1708,11 @@ msgstr "要從導覽移除這個選集嗎？選集本身不會被刪除。"
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Repository"
 msgstr "儲存庫"
+
+#. @context: Button to reset the collection slug in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Reset link"
+msgstr "重設連結"
 
 #. @context: Button to revoke API token
 #. @context: Button to revoke a session
@@ -1577,6 +1767,11 @@ msgstr "儲存 CSS"
 msgid "Search"
 msgstr "搜尋"
 
+#. @context: Placeholder for the navigation page search
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Search pages"
+msgstr "搜尋頁面"
+
 #. @context: GitHub sync picker — search input placeholder
 #: src/routes/dash/settings.tsx
 msgid "Search repositories"
@@ -1593,6 +1788,11 @@ msgstr "搜尋設定已更新。"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Search…"
 msgstr "搜尋…"
+
+#. @context: Loading state in the navigation page picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Searching pages…"
+msgstr "正在搜尋頁面…"
 
 #. @context: Settings group label for account security settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1768,6 +1968,16 @@ msgstr "Telegram"
 msgid "Telegram is set up, but the bot couldn't be reached. Check the bot token and try again."
 msgstr "已設定 Telegram，但無法連線到機器人。請檢查機器人權杖並再試一次。"
 
+#. @context: Validation error for an unavailable page slug
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "That address is already in use. Choose another one."
+msgstr "此網址已被使用。請選擇其他網址。"
+
+#. @context: Validation error for a reserved page slug
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "That address is reserved. Choose another one."
+msgstr "此網址為保留網址。請選擇其他網址。"
+
 #. @context: Error toast when selected font theme is not valid
 #: src/routes/dash/settings.tsx
 msgid "That font theme isn't available. Pick another one."
@@ -1802,6 +2012,11 @@ msgstr "你撰寫內容所用的語言。透過 HTML lang 和 RSS 向讀者與�
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "The original Jant palette, and a solid everyday pick."
 msgstr "Jant 最初的配色，日常穩妥之選。"
+
+#. @context: Visibility note in quick page creation
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "The page is public but stays out of Latest."
+msgstr "頁面是公開的，但不會出現在 Latest。"
 
 #. @context: Custom URL target slug help text
 #: src/routes/dash/custom-urls.tsx
@@ -1838,10 +2053,20 @@ msgstr "這會控制 /feed 回傳的內容。"
 msgid "This hosted site signs in through {providerLabel}. Manage password and hosted access there."
 msgstr "此託管網站透過 {providerLabel} 登入。請在該處管理密碼與託管存取權限。"
 
+#. @context: Collection slug help text in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "This is the last part of the collection link."
+msgstr "這是選集連結的最後一部分。"
+
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
 msgstr "此圖會用於您的 favicon 和 apple-touch-icon。為達最佳效果，請上傳至少 512x512 像素、背景為純色的正方形 PNG。"
+
+#. @context: Reserved collection slug error in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "This link is reserved. Choose something else."
+msgstr "此連結為保留連結。請選擇其他連結。"
 
 #. @context: Fallback color theme preview title
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1877,6 +2102,13 @@ msgstr "這會永久刪除您所有的資料 — 文章、媒體、選集、設�
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Time Zone"
 msgstr "時區"
+
+#. @context: Collection title field in Navigation settings
+#. @context: Title field label in quick page creation
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Title"
+msgstr "標題"
 
 #. @context: Button to expand/collapse nav item edit
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1967,6 +2199,16 @@ msgstr "URL"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Usage"
 msgstr "用法"
+
+#. @context: Collection slug validation error in Navigation settings
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Use lowercase letters, numbers, and hyphens only."
+msgstr "只能使用小寫字母、數字和連字號。"
+
+#. @context: Validation error for an invalid page slug
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Use lowercase letters, numbers, and hyphens."
+msgstr "使用小寫字母、數字和連字號。"
 
 #. @context: Help text for the explicit latest and featured feed URLs
 #: src/ui/dash/settings/GeneralContent.tsx

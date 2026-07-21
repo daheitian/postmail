@@ -143,6 +143,13 @@ export type CreateNavItem =
       url: string;
       placement?: NavItemPlacement;
       position?: string;
+    }
+  | {
+      type: "page";
+      postId: string;
+      label?: string;
+      placement?: NavItemPlacement;
+      position?: string;
     };
 
 export interface UpdateNavItem {

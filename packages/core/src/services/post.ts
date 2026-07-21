@@ -600,7 +600,8 @@ export function createPostService(
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): PostService {
   const resolvedPaths = paths ?? createPathService(db, siteId, databaseSchema);
-  const { pathRegistry, posts, sites, threadCollections } = databaseSchema;
+  const { navItems, pathRegistry, posts, sites, threadCollections } =
+    databaseSchema;
   const databaseDialect = config.databaseDialect ?? "sqlite";
   const usesBatchWrites = !supportsDrizzleTransaction(db, databaseDialect);
 
@@ -2218,6 +2219,19 @@ export function createPostService(
 
       const nextTitle =
         data.title !== undefined ? data.title?.trim() || null : existing.title;
+      const effectiveNextVisibility = nextVisibility ?? existing.visibility;
+      const wasNavigationPageEligible =
+        existing.format === "note" &&
+        existing.status === "published" &&
+        existing.visibility !== "private" &&
+        !isThreadReply(existing) &&
+        hasNonEmptyText(existing.title);
+      const remainsNavigationPageEligible =
+        nextFormat === "note" &&
+        nextStatus === "published" &&
+        effectiveNextVisibility !== "private" &&
+        !isThreadReply(existing) &&
+        hasNonEmptyText(nextTitle);
 
       assertPostFormatShape({
         format: nextFormat,
@@ -2362,8 +2376,19 @@ export function createPostService(
         data.collectionEntries !== undefined;
       const needsThreadActivityRecalc =
         statusChanged || publishedAtChanged || existing.status === "draft";
+      const needsPageNavDelete =
+        wasNavigationPageEligible && !remainsNavigationPageEligible;
+      const needsPageNavUrlUpdate =
+        wasNavigationPageEligible &&
+        remainsNavigationPageEligible &&
+        slugChanged &&
+        Boolean(data.slug);
       const hasExtraWrites =
-        needsCascade || needsReplyVisibilityCleanup || needsCollectionSync;
+        needsCascade ||
+        needsReplyVisibilityCleanup ||
+        needsCollectionSync ||
+        needsPageNavDelete ||
+        needsPageNavUrlUpdate;
 
       if (!hasExtraWrites) {
         // Simple case: only the post update
@@ -2483,6 +2508,24 @@ export function createPostService(
             .returning(),
         );
 
+        if (needsPageNavDelete) {
+          writeQueries.push(
+            db
+              .delete(navItems)
+              .where(and(eq(navItems.siteId, siteId), eq(navItems.postId, id))),
+          );
+        } else if (needsPageNavUrlUpdate && data.slug) {
+          writeQueries.push(
+            db
+              .update(navItems)
+              .set({
+                url: `/${normalizePath(data.slug)}`,
+                updatedAt: timestamp,
+              })
+              .where(and(eq(navItems.siteId, siteId), eq(navItems.postId, id))),
+          );
+        }
+
         if (needsCollectionSync) {
           // Delete all and re-insert the one shared Thread membership set.
           writeQueries.push(
@@ -2554,6 +2597,20 @@ export function createPostService(
             .set(updates)
             .where(and(eq(posts.siteId, siteId), eq(posts.id, id)))
             .returning();
+
+          if (needsPageNavDelete) {
+            await tx
+              .delete(navItems)
+              .where(and(eq(navItems.siteId, siteId), eq(navItems.postId, id)));
+          } else if (needsPageNavUrlUpdate && data.slug) {
+            await tx
+              .update(navItems)
+              .set({
+                url: `/${normalizePath(data.slug)}`,
+                updatedAt: timestamp,
+              })
+              .where(and(eq(navItems.siteId, siteId), eq(navItems.postId, id)));
+          }
 
           if (needsCollectionSync) {
             // Delete all and re-insert the one shared Thread membership set.

@@ -33,6 +33,9 @@
 - Glossary notes are translator guidance only. Never copy glossary `note` text
   into PO `msgstr` values; compact UI labels such as compose format tabs must
   stay as short labels in every catalog.
+- Treat repeated localized settings actions as shared product terminology.
+  Compare nearby headings and CTAs, and keep the verb and word order consistent
+  when they describe the same action.
 - When a thread is collapsed into one Atom/RSS entry, inline replies must render
   their own title/link metadata inside `<content>`; they cannot rely on
   entry-level `<title>`, `<link>`, or enclosure metadata that belongs to the

@@ -1223,6 +1223,171 @@ svg[stroke-width].icon-fine {
   .collection-picker-title {
     @apply truncate flex-1;
   }
+
+  .collection-picker-footer {
+    @apply sticky mt-1 border-t px-1 pb-1 pt-1;
+    bottom: -0.375rem;
+    background-color: var(--color-popover);
+  }
+
+  .collection-picker-create {
+    @apply flex w-full cursor-pointer items-center gap-1 rounded-md border-0 bg-transparent px-2 py-1.5 text-left text-sm font-normal;
+    color: var(--color-muted-foreground);
+    transition:
+      background-color 0.1s,
+      color 0.1s;
+
+    &:hover,
+    &:focus-visible {
+      background-color: var(--color-accent);
+      color: var(--color-foreground);
+      outline: none;
+    }
+  }
+
+  /* Page picker — a focused search/create flow inside Navigation settings */
+  .nav-page-dialog > .nav-page-dialog-panel {
+    width: min(34rem, calc(100% - 2rem));
+    gap: 1.25rem;
+  }
+
+  .nav-page-picker-section {
+    min-height: 16rem;
+  }
+
+  .nav-page-search-wrap {
+    @apply relative;
+
+    > svg {
+      @apply pointer-events-none absolute left-3 top-1/2 -translate-y-1/2;
+      color: var(--color-muted-foreground);
+    }
+  }
+
+  .nav-page-search-wrap .nav-page-search-input.nav-page-search-input {
+    padding-inline-start: 2.5rem;
+  }
+
+  .nav-page-results-label {
+    @apply mb-1.5 mt-4 text-xs font-medium;
+    color: var(--color-muted-foreground);
+  }
+
+  .nav-page-results {
+    @apply -mx-2 flex flex-col gap-1 overflow-y-auto px-2;
+    max-height: min(18rem, 42vh);
+  }
+
+  .nav-page-result {
+    @apply flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border-0 bg-transparent px-3 py-2.5 text-left;
+    color: var(--color-foreground);
+    transition:
+      background-color 0.12s,
+      color 0.12s;
+
+    &:hover:not(:disabled),
+    &:focus-visible,
+    &.nav-page-result-selected {
+      background-color: var(--color-accent);
+      outline: none;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    > svg {
+      @apply shrink-0;
+      color: var(--color-muted-foreground);
+    }
+  }
+
+  .nav-page-result-copy {
+    @apply flex min-w-0 flex-col gap-0.5;
+  }
+
+  .nav-page-result-title {
+    @apply truncate text-sm font-medium;
+  }
+
+  .nav-page-result-path {
+    @apply truncate text-xs;
+    color: var(--color-muted-foreground);
+  }
+
+  .nav-page-status {
+    @apply flex min-h-44 items-center justify-center px-6 text-center text-sm;
+    color: var(--color-muted-foreground);
+  }
+
+  .nav-page-dialog-footer.nav-page-dialog-footer {
+    @apply sm:justify-between;
+  }
+
+  .nav-page-create-link {
+    @apply gap-2;
+  }
+
+  .nav-page-spinner {
+    @apply size-4 shrink-0 animate-spin rounded-full border-2;
+    border-color: var(--color-border);
+    border-top-color: var(--color-foreground);
+  }
+
+  .nav-page-slug-field {
+    @apply flex items-center overflow-hidden rounded-md border;
+    background-color: var(--color-background);
+    border-color: var(--color-input);
+
+    &:focus-within {
+      border-color: var(--color-ring);
+      box-shadow: 0 0 0 1px var(--color-ring);
+    }
+  }
+
+  .nav-page-slug-prefix {
+    @apply shrink-0 pl-3 text-sm;
+    color: var(--color-muted-foreground);
+  }
+
+  .nav-page-slug-input.nav-page-slug-input {
+    @apply min-w-0 flex-1 border-0 pl-0 shadow-none outline-none;
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+
+  .nav-page-visibility-note {
+    @apply flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm;
+    color: var(--color-muted-foreground);
+    background-color: var(--color-muted);
+
+    > svg {
+      @apply mt-0.5 shrink-0;
+    }
+  }
+
+  .nav-collection-dialog > .nav-collection-dialog-panel {
+    width: min(32rem, calc(100% - 2rem));
+    gap: 1.25rem;
+  }
+
+  .nav-create-success-header {
+    @apply items-center text-center;
+  }
+
+  .nav-create-success-icon {
+    @apply mb-1 flex size-10 items-center justify-center rounded-full;
+    color: var(--color-primary);
+    background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+
+  .nav-create-success-card {
+    @apply flex flex-col gap-1 rounded-lg border px-4 py-3;
+    background-color: var(--color-muted);
+  }
 }
 
 /* Skeleton screen sizing — used in SSR fallbacks while Lit hydrates */
