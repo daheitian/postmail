@@ -81,6 +81,9 @@ import {
 } from "../lib/youtube.js";
 import { getPreviewStorageKey } from "../lib/upload.js";
 import { generateRandomId } from "../lib/nanoid.js";
+import { resolveSummaryConfig } from "../lib/resolve-config.js";
+import type { Bindings } from "../types/bindings.js";
+import type { SettingsService } from "./settings.js";
 
 /** Dependencies for operations that coordinate with other services */
 export interface PostDeleteDeps {
@@ -172,6 +175,8 @@ interface ThreadRootPageOptions {
   status?: Status;
   excludePrivate?: boolean;
   excludeLatestHidden?: boolean;
+  /** Exclude Posts published at or after this Unix timestamp. */
+  publishedBefore?: number;
   /** Restrict by the Thread root's format without excluding Child Posts. */
   rootFormat?: Format;
   /** Restrict to Threads with at least one rated published post. */
@@ -406,8 +411,11 @@ export interface PostService {
     collectionIds: string[],
     options?: CollectionFeedEntryOptions,
   ): Promise<CollectionFeedEntry[]>;
-  /** Fetch all published, non-deleted posts for each requested thread root */
-  getPublishedThreads(rootIds: string[]): Promise<Map<string, Post[]>>;
+  /** Fetch published Posts for each requested Thread root. */
+  getPublishedThreads(
+    rootIds: string[],
+    options?: Pick<PostFilters, "publishedBefore">,
+  ): Promise<Map<string, Post[]>>;
   /** Get distinct years that have published posts */
   getDistinctYears(filters?: PostFilters): Promise<number[]>;
   /** For each thread ID, return the ID of the last published, non-deleted post */
@@ -445,6 +453,33 @@ export interface PostService {
   rebuildBodyHtml(
     options?: RebuildBodyHtmlOptions,
   ): Promise<RebuildBodyHtmlResult>;
+}
+
+/**
+ * Rebuild body HTML using the site's current runtime summary settings.
+ *
+ * Internal maintenance routes do not run behind the normal app-config
+ * middleware, so this service-level orchestration preserves the same
+ * DB → environment → built-in resolution used by regular requests.
+ *
+ * @param services - Site-scoped post and settings services.
+ * @param env - Runtime environment bindings.
+ * @param options - Rebuild options supplied by the maintenance caller.
+ * @returns Rebuild progress and outcome counts.
+ */
+export async function rebuildPostBodyHtmlWithRuntimeSettings(
+  services: Pick<
+    { posts: PostService; settings: SettingsService },
+    "posts" | "settings"
+  >,
+  env: Bindings,
+  options: Omit<RebuildBodyHtmlOptions, "summaryConfig"> = {},
+): Promise<RebuildBodyHtmlResult> {
+  const allSettings = await services.settings.getAll();
+  return services.posts.rebuildBodyHtml({
+    ...options,
+    summaryConfig: resolveSummaryConfig(env, allSettings),
+  });
 }
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
@@ -600,7 +635,8 @@ export function createPostService(
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): PostService {
   const resolvedPaths = paths ?? createPathService(db, siteId, databaseSchema);
-  const { pathRegistry, posts, sites, threadCollections } = databaseSchema;
+  const { navItems, pathRegistry, posts, sites, threadCollections } =
+    databaseSchema;
   const databaseDialect = config.databaseDialect ?? "sqlite";
   const usesBatchWrites = !supportsDrizzleTransaction(db, databaseDialect);
 
@@ -1219,6 +1255,18 @@ export function createPostService(
     }
     if (options?.excludeLatestHidden) {
       conditions.push(sql`${effectiveVisibilityExpr} != 'latest_hidden'`);
+    }
+    if (options?.publishedBefore !== undefined) {
+      conditions.push(
+        sql`${posts.publishedAt} < ${options.publishedBefore}`,
+        sql`EXISTS (
+          SELECT 1
+          FROM post AS publication_root
+          WHERE publication_root.site_id = ${siteId}
+            AND publication_root.id = ${posts.threadId}
+            AND publication_root.published_at < ${options.publishedBefore}
+        )`,
+      );
     }
     if (options?.rootFormat) {
       conditions.push(sql`EXISTS (
@@ -2218,6 +2266,19 @@ export function createPostService(
 
       const nextTitle =
         data.title !== undefined ? data.title?.trim() || null : existing.title;
+      const effectiveNextVisibility = nextVisibility ?? existing.visibility;
+      const wasNavigationPageEligible =
+        existing.format === "note" &&
+        existing.status === "published" &&
+        existing.visibility !== "private" &&
+        !isThreadReply(existing) &&
+        hasNonEmptyText(existing.title);
+      const remainsNavigationPageEligible =
+        nextFormat === "note" &&
+        nextStatus === "published" &&
+        effectiveNextVisibility !== "private" &&
+        !isThreadReply(existing) &&
+        hasNonEmptyText(nextTitle);
 
       assertPostFormatShape({
         format: nextFormat,
@@ -2362,8 +2423,19 @@ export function createPostService(
         data.collectionEntries !== undefined;
       const needsThreadActivityRecalc =
         statusChanged || publishedAtChanged || existing.status === "draft";
+      const needsPageNavDelete =
+        wasNavigationPageEligible && !remainsNavigationPageEligible;
+      const needsPageNavUrlUpdate =
+        wasNavigationPageEligible &&
+        remainsNavigationPageEligible &&
+        slugChanged &&
+        Boolean(data.slug);
       const hasExtraWrites =
-        needsCascade || needsReplyVisibilityCleanup || needsCollectionSync;
+        needsCascade ||
+        needsReplyVisibilityCleanup ||
+        needsCollectionSync ||
+        needsPageNavDelete ||
+        needsPageNavUrlUpdate;
 
       if (!hasExtraWrites) {
         // Simple case: only the post update
@@ -2483,6 +2555,24 @@ export function createPostService(
             .returning(),
         );
 
+        if (needsPageNavDelete) {
+          writeQueries.push(
+            db
+              .delete(navItems)
+              .where(and(eq(navItems.siteId, siteId), eq(navItems.postId, id))),
+          );
+        } else if (needsPageNavUrlUpdate && data.slug) {
+          writeQueries.push(
+            db
+              .update(navItems)
+              .set({
+                url: `/${normalizePath(data.slug)}`,
+                updatedAt: timestamp,
+              })
+              .where(and(eq(navItems.siteId, siteId), eq(navItems.postId, id))),
+          );
+        }
+
         if (needsCollectionSync) {
           // Delete all and re-insert the one shared Thread membership set.
           writeQueries.push(
@@ -2554,6 +2644,20 @@ export function createPostService(
             .set(updates)
             .where(and(eq(posts.siteId, siteId), eq(posts.id, id)))
             .returning();
+
+          if (needsPageNavDelete) {
+            await tx
+              .delete(navItems)
+              .where(and(eq(navItems.siteId, siteId), eq(navItems.postId, id)));
+          } else if (needsPageNavUrlUpdate && data.slug) {
+            await tx
+              .update(navItems)
+              .set({
+                url: `/${normalizePath(data.slug)}`,
+                updatedAt: timestamp,
+              })
+              .where(and(eq(navItems.siteId, siteId), eq(navItems.postId, id)));
+          }
 
           if (needsCollectionSync) {
             // Delete all and re-insert the one shared Thread membership set.
@@ -3421,21 +3525,23 @@ export function createPostService(
       });
     },
 
-    async getPublishedThreads(rootIds) {
+    async getPublishedThreads(rootIds, options = {}) {
       const result = new Map<string, Post[]>();
       if (rootIds.length === 0) return result;
 
       const unique = [...new Set(rootIds)];
+      const conditions = [
+        eq(posts.siteId, siteId),
+        inArray(posts.threadId, unique),
+        eq(posts.status, "published"),
+      ];
+      if (options.publishedBefore !== undefined) {
+        conditions.push(sql`${posts.publishedAt} < ${options.publishedBefore}`);
+      }
       const rows = await db
         .select()
         .from(posts)
-        .where(
-          and(
-            eq(posts.siteId, siteId),
-            inArray(posts.threadId, unique),
-            eq(posts.status, "published"),
-          ),
-        )
+        .where(and(...conditions))
         .orderBy(posts.threadId, posts.createdAt, posts.id);
 
       for (const post of await hydratePosts(rows)) {

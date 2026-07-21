@@ -52,7 +52,7 @@ Send the header:
 Authorization: Bearer jnt_...
 ```
 
-A few public read endpoints don't need a token: `GET /api/collections`, `GET /api/collections/:id`, `GET /api/search`, `GET /api/public/posts`, `GET /api/public/posts/:slug`, `GET /api/public/archive`.
+A few public read endpoints don't need a token by default: `GET /api/collections`, `GET /api/collections/:id`, `GET /api/nav-items`, `GET /api/search`, `GET /api/public/posts`, `GET /api/public/posts/:slug`, `GET /api/public/archive`. When `PUBLIC_API_ENABLED=false`, `/api/public/*` returns `404` to every caller; Collection, navigation, and search JSON reads require a browser session or Bearer token. Public HTML pages, including `/search`, remain available.
 
 ### Common endpoints
 

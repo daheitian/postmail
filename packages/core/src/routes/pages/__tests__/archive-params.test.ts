@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { archiveRoutes } from "../archive.js";
 
@@ -21,13 +21,45 @@ async function fetchFeed(
   return res.text();
 }
 
-function setupApp() {
-  const { app, services } = createTestApp({ authenticated: false });
+function setupApp(rssPublishDelaySeconds = 0) {
+  const { app, services } = createTestApp({
+    authenticated: false,
+    rssPublishDelaySeconds,
+  });
   app.route("/archive", archiveRoutes);
   return { app, services };
 }
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe("archive feed filter params", () => {
+  it("applies the RSS publication delay", async () => {
+    const currentTime = 2_000_000;
+    vi.spyOn(Date, "now").mockReturnValue(currentTime * 1000);
+    const { app, services } = setupApp(300);
+    await services.posts.create({
+      format: "note",
+      title: "Eligible Archive Post",
+      bodyMarkdown: "Old enough for RSS",
+      status: "published",
+      publishedAt: currentTime - 300,
+    });
+    await services.posts.create({
+      format: "note",
+      title: "Recent Archive Post",
+      bodyMarkdown: "Still inside the edit window",
+      status: "published",
+      publishedAt: currentTime,
+    });
+
+    const xml = await fetchFeed(app, "");
+
+    expect(xml).toContain("Eligible Archive Post");
+    expect(xml).not.toContain("Recent Archive Post");
+  });
+
   it("filters by title with the new param and the legacy fallback", async () => {
     const { app, services } = setupApp();
     await services.posts.create({

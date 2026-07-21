@@ -163,15 +163,7 @@ export function createSettingsService(
   const { settings } = databaseSchema;
 
   function normalizeSettingValue(key: SettingsKey, value: string): string {
-    if (key !== SETTINGS_KEYS.TIME_ZONE) {
-      return normalizeEditableSettingValue(key, value);
-    }
-
-    if (!isSupportedTimeZone(value)) {
-      throw new ValidationError("Choose a valid time zone.");
-    }
-
-    return normalizeTimeZone(value);
+    return normalizeEditableSettingValue(key, value);
   }
 
   return {

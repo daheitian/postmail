@@ -88,6 +88,18 @@ No. Multi-author needs roles, review, attribution, notifications — a full set 
 
 Jant treats "publish to the site" and "broadcast to subscribers" as two separate things. The default `/feed` points at Featured so you can write small everyday notes without spamming subscribers. To switch back to traditional behavior, change **Settings → General → Feeds → Main RSS feed** to Latest. The three feeds (`/featured/feed`, `/latest/feed`, `/archive/feed`) each cover a different slice. See [Writing and organizing § Why the default feed is Featured](writing-and-organizing.md#why-the-default-feed-is-featured).
 
+## Why doesn't a newly published post appear in RSS right away?
+
+Jant gives new posts and replies a five-minute correction window before they
+can enter its Atom feeds. The content appears on your website immediately;
+only feed delivery waits. This gives you time to fix a mistake or unpublish the
+content before a feed reader can fetch it.
+
+Feed caching and each reader's polling schedule can make the content appear
+later. Change `RSS_PUBLISH_DELAY_SECONDS` in **Settings → Advanced → Config
+Editor** to any whole number from `0` to `7200`; `0` disables the delay. See
+[Configuration § Feed defaults](configuration.md#feed-defaults-optional).
+
 ## Can I host under a subpath (e.g., `example.com/blog`)?
 
 Yes. Set `SITE_PATH_PREFIX=/blog`. On Cloudflare you also need to point Workers Routes for `yourdomain.com/blog*` at the Worker. See [Deployment § Deploying under a subpath](deployment.md#deploying-under-a-subpath).

@@ -6,6 +6,9 @@
 - When a user is still evaluating product/design options, keep the turn in
   discussion mode and do not start implementation until they explicitly confirm
   the chosen direction.
+- For public-surface switches, define anonymous, session, token, and public HTML
+  behavior separately. Dedicated public endpoints can disappear while shared
+  dashboard endpoints fall back to authentication and HTML pages stay public.
 - When a legacy or generic URL remains only for compatibility, keep it working
   without advertising it beside the canonical URL unless users need it for a
   migration step. Product docs should present one clear preferred path.
@@ -30,9 +33,18 @@
 - When a control is only a contextual next action for a nearby field, render it
   as inline helper text plus a link/button. Avoid promoting it into a separate
   settings block unless it has independent configuration.
+- Use a directional arrow and normal same-tab navigation for links to another
+  settings page. Reserve external-link icons and forced new tabs for genuinely
+  external destinations.
+- When a secondary action is revealed on hover, keep it visible on touch
+  devices and reveal it with `:focus-within` for keyboard users; do not remove
+  it from the tab order.
 - Glossary notes are translator guidance only. Never copy glossary `note` text
   into PO `msgstr` values; compact UI labels such as compose format tabs must
   stay as short labels in every catalog.
+- Treat repeated localized settings actions as shared product terminology.
+  Compare nearby headings and CTAs, and keep the verb and word order consistent
+  when they describe the same action.
 - When a thread is collapsed into one Atom/RSS entry, inline replies must render
   their own title/link metadata inside `<content>`; they cannot rely on
   entry-level `<title>`, `<link>`, or enclosure metadata that belongs to the
@@ -192,7 +204,24 @@
   database, and deployment target as one identity. Environment labels such as
   `preview` may refer to different Worker and hosted stacks; a matching label
   is not proof that the command reaches the intended data.
+- On dense settings surfaces, represent each persistent state once. Keep reset
+  and save feedback contextual, and avoid stacking row cards inside a larger
+  bordered container when a divided list already provides enough structure.
+- Keep API editability separate from Config Editor presentation. A runtime-safe
+  multi-line value can remain API-editable while the UI links to its dedicated
+  textarea instead of forcing it into a generic single-line control.
 - When a new system route enters the shared root namespace, reserve its whole
   top-level prefix and resolve explicit/reserved routes before stored aliases
   or redirects. Decide legacy collisions explicitly; do not invent a backfill
   or replacement slug when invalidating the old path is the intended policy.
+- Before adding cross-surface settings links, verify the canonical path from
+  the registered route instead of inferring it from the UI section hierarchy.
+- On content-first public pages, render optional post-action guidance as part
+  of the page rhythm rather than as a bordered success card. Do not repeat
+  content already visible in an adjacent list, and compress non-blocking
+  dismissal into an accessible icon control.
+- When an inline prompt owns a short multi-step action, update that surface in
+  place for completion instead of moving the success feedback to a toast.
+- When a restrained inline notice is too easy to miss, add salience through a
+  subtle token-based surface and a reduced-motion-safe entrance—not more copy
+  or decorative status icons.

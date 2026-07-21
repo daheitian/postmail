@@ -178,6 +178,7 @@ export interface NavItem {
   type: NavItemType;
   systemKey?: SystemNavKey;
   collectionId?: string;
+  postId?: string;
   label: string;
   url: string;
   placement: NavItemPlacement;

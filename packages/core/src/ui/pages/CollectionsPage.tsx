@@ -14,6 +14,7 @@ import { CollectionsManager } from "../shared/CollectionsManager.js";
 export const CollectionsPage: FC<CollectionsPageProps> = ({
   items,
   isAuthenticated,
+  navigationCollectionIds = [],
   sitePathPrefix = "",
   siteOrigin = "",
 }) => {
@@ -30,6 +31,7 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
       <div class="py-6" data-page="collections">
         <CollectionsManager
           items={items}
+          navigationCollectionIds={navigationCollectionIds}
           sitePathPrefix={sitePathPrefix}
           siteOrigin={siteOrigin}
         />

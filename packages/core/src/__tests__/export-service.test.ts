@@ -401,6 +401,56 @@ describe("createExportService (Hugo)", () => {
     }
   });
 
+  it("disables all Hugo feed outputs and hides only system RSS navigation", async () => {
+    const collection = makeCollection({ id: "col-1", slug: "ideas" });
+    const service = createExportService(
+      buildServices({ posts: [], collections: [collection] }),
+      makeSiteConfig({
+        publicApiEnabled: false,
+        rssFeedsEnabled: false,
+        navItems: [
+          {
+            type: "system",
+            systemKey: "rss",
+            label: "System feed",
+            url: "/feed",
+            position: 0,
+            placement: "header",
+          },
+          {
+            type: "link",
+            systemKey: null,
+            label: "Custom feed",
+            url: "/feed",
+            position: 1,
+            placement: "header",
+          },
+        ],
+      }),
+    );
+    const files = filesToMap(await service.generateHugoFiles());
+    const toml = files.get("hugo.toml") as string;
+    const data = files.get("data/jant.toml") as string;
+
+    expect(toml).toMatch(/\[outputs\][\s\S]*home = \[\s*"html"\s*\]/);
+    expect(toml).toContain("public_api_enabled = false");
+    expect(toml).toContain("rss_feeds_enabled = false");
+    expect(data).toContain("public_api_enabled = false");
+    expect(data).toContain("rss_feeds_enabled = false");
+    expect(data).not.toContain('label = "System feed"');
+    expect(data).toContain('label = "Custom feed"');
+
+    for (const path of [
+      "content/featured/_index.md",
+      "content/archive/_index.md",
+      "content/ideas/_index.md",
+    ]) {
+      const raw = files.get(path) as string;
+      const { frontMatter } = await parseFrontMatter(raw);
+      expect(frontMatter.outputs).toEqual(["html"]);
+    }
+  });
+
   it("resolves the nav RSS link to /featured/index.xml when mainRssFeed=featured", async () => {
     const service = createExportService(
       buildServices({ posts: [] }),

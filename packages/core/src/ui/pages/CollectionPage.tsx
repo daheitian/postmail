@@ -19,6 +19,7 @@ import { toPublicPath } from "../../lib/url.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
 import { getCollectionMutationLabels } from "../shared/collection-management-labels.js";
 import { getIconSvg } from "../../lib/icons.js";
+import { NAVIGATION_SETTINGS_PATH } from "../../lib/settings-paths.js";
 
 const escapeJson = (data: unknown) =>
   JSON.stringify(data).replace(/</g, "\\u003c");
@@ -35,7 +36,9 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   defaultSort,
   showRatingSort,
   isAuthenticated,
+  isInNavigation = false,
   sitePathPrefix = "",
+  feedHref,
 }) => {
   const primaryCollection = collections[0];
   if (!primaryCollection) return null;
@@ -56,6 +59,10 @@ export const CollectionPage: FC<CollectionPageProps> = ({
     `${getCollectionEditPath(primaryCollection.slug)}?returnTo=${encodeURIComponent(
       collectionUrl,
     )}`,
+    sitePathPrefix,
+  );
+  const navigationSettingsUrl = toPublicPath(
+    NAVIGATION_SETTINGS_PATH,
     sitePathPrefix,
   );
   const sortUiId = isAggregate
@@ -300,25 +307,30 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                         "@context: Plural thread count label on collection detail page",
                     }),
                   )}
-              {pageLabel ? <span> / {pageLabel}</span> : null}{" "}
-              <a
-                href={toPublicPath(`${pagePath}/feed`, sitePathPrefix)}
-                class="feed-link"
-                title={i18n._(
-                  msg({
-                    message: "RSS feed",
-                    comment:
-                      "@context: Tooltip for the RSS feed link on a collection page",
-                  }),
-                )}
-                rel="noopener noreferrer"
-              >
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: getIconSvg("rss") ?? "",
-                  }}
-                />
-              </a>
+              {pageLabel ? <span> / {pageLabel}</span> : null}
+              {feedHref ? (
+                <>
+                  {" "}
+                  <a
+                    href={toPublicPath(feedHref, sitePathPrefix)}
+                    class="feed-link"
+                    title={i18n._(
+                      msg({
+                        message: "RSS feed",
+                        comment:
+                          "@context: Tooltip for the RSS feed link on a collection page",
+                      }),
+                    )}
+                    rel="noopener noreferrer"
+                  >
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: getIconSvg("rss") ?? "",
+                      }}
+                    />
+                  </a>
+                </>
+              ) : null}
             </p>
             <span class="collection-page-meta-divider" aria-hidden="true">
               &middot;
@@ -452,6 +464,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 data-collection-page-actions
                 data-collection-id={primaryCollection.id}
                 data-collection-page-labels={escapeJson(mutationLabels)}
+                data-collection-in-navigation={String(isInNavigation)}
                 data-collection-page-redirect-url={toPublicPath(
                   getCollectionsDirectoryPath(),
                   sitePathPrefix,
@@ -510,6 +523,70 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                     </span>
                     <span class="collections-page-menu-item-label">
                       {mutationLabels.edit}
+                    </span>
+                  </a>
+                  <button
+                    type="button"
+                    class="collections-page-menu-item"
+                    role="menuitem"
+                    data-collection-page-action="add-to-navigation"
+                    hidden={isInNavigation}
+                  >
+                    <span
+                      class="collections-page-menu-item-icon"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M12 5v14" />
+                        <path d="M5 12h14" />
+                      </svg>
+                    </span>
+                    <span class="collections-page-menu-item-label">
+                      {mutationLabels.addToNavigation}
+                    </span>
+                  </button>
+                  <a
+                    href={navigationSettingsUrl}
+                    class="collections-page-menu-item"
+                    role="menuitem"
+                    data-collection-page-edit-navigation
+                    hidden={!isInNavigation}
+                  >
+                    <span
+                      class="collections-page-menu-item-icon"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M8 6h13" />
+                        <path d="M8 12h13" />
+                        <path d="M8 18h13" />
+                        <path d="M3 6h.01" />
+                        <path d="M3 12h.01" />
+                        <path d="M3 18h.01" />
+                      </svg>
+                    </span>
+                    <span class="collections-page-menu-item-label">
+                      {mutationLabels.editNavigation}
                     </span>
                   </a>
                   <button

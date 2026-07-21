@@ -188,6 +188,16 @@ msgstr "Add row above"
 msgid "Add row below"
 msgstr "Add row below"
 
+#. @context: Action that adds a Collection to site navigation
+#: src/ui/shared/collection-management-labels.ts
+msgid "Add to Navigation"
+msgstr "Add to Navigation"
+
+#. @context: Loading label while adding a Collection to site navigation
+#: src/ui/shared/collection-management-labels.ts
+msgid "Adding…"
+msgstr "Adding…"
+
 #. @context: Archive filter - collection dropdown default
 #: src/ui/pages/ArchivePage.tsx
 msgid "All collections"
@@ -421,7 +431,12 @@ msgstr "collection"
 msgid "Collection"
 msgstr "Collection"
 
-#. @context: Toast shown after creating a collection
+#. @context: Confirmation after adding a Collection to site navigation
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection added to navigation."
+msgstr "Collection added to navigation."
+
+#. @context: Confirmation shown after creating a collection
 #: src/ui/shared/collection-management-labels.ts
 msgid "Collection created."
 msgstr "Collection created."
@@ -506,6 +521,11 @@ msgstr "Continue →"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Controls"
 msgstr "Controls"
+
+#. @context: Error after a Collection could not be added to site navigation
+#: src/ui/shared/collection-management-labels.ts
+msgid "Couldn't add this collection to navigation. Try again."
+msgstr "Couldn't add this collection to navigation. Try again."
 
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
@@ -797,6 +817,11 @@ msgstr "Edit custom link"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Edit link"
 msgstr "Edit link"
+
+#. @context: Action that opens Navigation settings for a Collection already in navigation
+#: src/ui/shared/collection-management-labels.ts
+msgid "Edit Navigation"
+msgstr "Edit Navigation"
 
 #. @context: Compose dialog header title in edit mode
 #: src/ui/compose/ComposeDialog.tsx
@@ -1390,6 +1415,11 @@ msgstr "No results. Try different keywords."
 #: src/ui/pages/ArchivePage.tsx
 msgid "No threads match these filters. Try adjusting your selection or clear all filters."
 msgstr "No threads match these filters. Try adjusting your selection or clear all filters."
+
+#. @context: Action to dismiss the post-create Collection navigation prompt
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Not now"
+msgstr "Not now"
 
 #. @context: Compose format tab
 #. @context: Post format label - note

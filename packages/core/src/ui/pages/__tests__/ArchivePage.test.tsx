@@ -106,4 +106,11 @@ describe("ArchivePage", () => {
     expect(html).toContain("archive-chip-active");
     expect(html).toContain("Single posts");
   });
+
+  it("renders the feed button only when a feed href is provided", () => {
+    expect(renderArchivePage()).not.toContain('class="feed-link"');
+    expect(renderArchivePage({ feedHref: "/archive/feed" })).toContain(
+      'class="feed-link"',
+    );
+  });
 });

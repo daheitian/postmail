@@ -53,10 +53,17 @@ export async function getNavigationData(
 ): Promise<NavigationData> {
   // Callers that already fetched nav items can pass them in to avoid a
   // redundant DB round-trip.
-  const items =
+  const savedItems =
     options?.preloadedItems ?? (await c.var.services.navItems.list());
   const currentPath = c.var.publicPath;
   const appConfig = c.var.appConfig;
+  // Keep the saved RSS item untouched so its placement and custom label come
+  // back when feeds are re-enabled. Only the rendered projection is filtered.
+  const items = appConfig.rssFeedsEnabled
+    ? savedItems
+    : savedItems.filter(
+        (item: NavItem) => item.type !== "system" || item.systemKey !== "rss",
+      );
 
   const siteName = appConfig.siteName;
   const siteFooter = appConfig.siteFooter;

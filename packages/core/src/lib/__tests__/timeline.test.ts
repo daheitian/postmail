@@ -687,12 +687,12 @@ describe("Timeline data assembly", () => {
       expect.objectContaining({
         post: expect.objectContaining({ id: collectedReplyB.id }),
         hiddenBeforeCount: 0,
-        highlighted: false,
+        highlighted: true,
       }),
     ]);
   });
 
-  it("renders the complete Thread when its root belongs to a collection", async () => {
+  it("renders the complete Thread and highlights its latest Post", async () => {
     const collection = await collectionService.create({
       slug: "root-only",
       title: "Root only",
@@ -728,7 +728,7 @@ describe("Timeline data assembly", () => {
       expect.objectContaining({
         post: expect.objectContaining({ id: uncollectedReply.id }),
         hiddenBeforeCount: 0,
-        highlighted: false,
+        highlighted: true,
       }),
     ]);
   });
@@ -804,7 +804,7 @@ describe("Timeline data assembly", () => {
       expect.objectContaining({
         post: expect.objectContaining({ id: movieReply.id }),
         hiddenBeforeCount: 0,
-        highlighted: false,
+        highlighted: true,
       }),
     ]);
   });

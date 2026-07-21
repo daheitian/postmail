@@ -5,7 +5,11 @@ import {
   getTextSerializersFromSchema,
   type Editor,
 } from "@tiptap/core";
-import { Fragment, Slice } from "@tiptap/pm/model";
+import {
+  Fragment,
+  Slice,
+  type Node as ProseMirrorNode,
+} from "@tiptap/pm/model";
 import { AllSelection, Plugin } from "@tiptap/pm/state";
 import {
   getFootnoteLabelKey,
@@ -529,6 +533,102 @@ function normalizePastedHtml(html: string): string {
   return normalizePastedFootnoteHtml(normalizeObsidianClipboardArtifacts(html));
 }
 
+interface NormalizedPasteNodes {
+  nodes: ProseMirrorNode[];
+  changed: boolean;
+}
+
+/**
+ * Split a paragraph where rich-text producers used consecutive `<br>` nodes
+ * to imitate paragraph spacing. A single hard break remains an intentional
+ * line break; a run of two or more becomes a semantic block boundary.
+ */
+function splitPastedParagraph(node: ProseMirrorNode): NormalizedPasteNodes {
+  const children: ProseMirrorNode[] = [];
+  node.forEach((child) => children.push(child));
+
+  const paragraphs: ProseMirrorNode[][] = [];
+  let current: ProseMirrorNode[] = [];
+  let changed = false;
+
+  for (let index = 0; index < children.length; index += 1) {
+    const child = children[index];
+    if (child?.type.name !== "hardBreak") {
+      if (child) current.push(child);
+      continue;
+    }
+
+    let runEnd = index + 1;
+    while (children[runEnd]?.type.name === "hardBreak") runEnd += 1;
+
+    if (runEnd - index === 1) {
+      current.push(child);
+      continue;
+    }
+
+    changed = true;
+    if (current.length > 0) paragraphs.push(current);
+    current = [];
+    index = runEnd - 1;
+  }
+
+  if (!changed) return { nodes: [node], changed: false };
+  if (current.length > 0) paragraphs.push(current);
+
+  // Keep a valid empty paragraph when the pasted block contained only visual
+  // spacing (for example `<p><br><br></p>`).
+  if (paragraphs.length === 0) paragraphs.push([]);
+
+  return {
+    nodes: paragraphs.map((content) => node.copy(Fragment.fromArray(content))),
+    changed: true,
+  };
+}
+
+/**
+ * Normalize paragraph-like breaks inside a pasted rich-text tree while
+ * retaining the surrounding list, quote, table, and inline-mark structure.
+ */
+function normalizePastedNode(node: ProseMirrorNode): NormalizedPasteNodes {
+  if (node.type.name === "paragraph") return splitPastedParagraph(node);
+  if (node.isLeaf || node.childCount === 0) {
+    return { nodes: [node], changed: false };
+  }
+
+  const children: ProseMirrorNode[] = [];
+  let changed = false;
+  node.forEach((child) => {
+    const normalized = normalizePastedNode(child);
+    children.push(...normalized.nodes);
+    changed ||= normalized.changed;
+  });
+
+  if (!changed) return { nodes: [node], changed: false };
+
+  const content = Fragment.fromArray(children);
+  if (!node.type.validContent(content)) {
+    return { nodes: [node], changed: false };
+  }
+
+  return { nodes: [node.copy(content)], changed: true };
+}
+
+function normalizePastedSlice(slice: Slice, plain: boolean): Slice {
+  if (plain) return slice;
+
+  const nodes: ProseMirrorNode[] = [];
+  let changed = false;
+  slice.content.forEach((node) => {
+    const normalized = normalizePastedNode(node);
+    nodes.push(...normalized.nodes);
+    changed ||= normalized.changed;
+  });
+
+  return changed
+    ? new Slice(Fragment.fromArray(nodes), slice.openStart, slice.openEnd)
+    : slice;
+}
+
 export const MarkdownClipboard = Extension.create({
   name: "markdownClipboard",
 
@@ -543,6 +643,8 @@ export const MarkdownClipboard = Extension.create({
           clipboardTextSerializer: () => serializeClipboardText(this.editor),
 
           transformPastedHTML: normalizePastedHtml,
+          transformPasted: (slice, _view, plain) =>
+            normalizePastedSlice(slice, plain),
 
           /**
            * Prefer an explicit Markdown flavor. Marked Obsidian and detected

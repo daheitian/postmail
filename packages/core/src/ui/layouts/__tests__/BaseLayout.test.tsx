@@ -18,11 +18,13 @@ function createContext(
     defaultThemeId?: string;
     siteLanguage?: string;
     cjkSerifFont?: string;
+    rssFeedsEnabled?: boolean;
   },
 ) {
   const values = {
     appConfig: {
       mainRssFeed,
+      rssFeedsEnabled: overrides?.rssFeedsEnabled ?? true,
       sitePathPrefix: overrides?.sitePathPrefix ?? "",
       siteUrl: overrides?.siteUrl ?? "https://example.com",
       siteAvatarUrl: overrides?.siteAvatarUrl,
@@ -302,6 +304,20 @@ describe("BaseLayout", () => {
     expect(html).toContain('href="/feed"');
     expect(html).toContain('href="/featured/feed"');
     expect(html).not.toContain('href="/latest/feed"');
+  });
+
+  it("omits feed autodiscovery when feed publishing is disabled", async () => {
+    const { BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        c: createContext("featured", { rssFeedsEnabled: false }),
+        children: "Test",
+      }),
+    );
+
+    expect(html).not.toContain('type="application/atom+xml"');
+    expect(html).not.toContain('href="/feed"');
   });
 
   it("uses the public asset base path from appConfig in production", async () => {

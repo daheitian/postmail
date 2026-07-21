@@ -11,6 +11,7 @@
 import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
+import { NAVIGATION_SETTINGS_PATH } from "../../lib/settings-paths.js";
 import { openNewCompose } from "../compose-launch.js";
 import { getBestFieldSearchRank, normalizeSearch } from "../search-rank.js";
 
@@ -122,7 +123,7 @@ const SYSTEM_PAGES: PaletteItem[] = [
   { title: "Collections", path: "/collections", type: "system" },
   { title: "Settings", path: "/settings", type: "system" },
   { title: "General", path: "/settings/general", type: "system" },
-  { title: "Navigation", path: "/settings/navigation", type: "system" },
+  { title: "Navigation", path: NAVIGATION_SETTINGS_PATH, type: "system" },
   {
     title: "Appearance",
     path: "/settings/appearance/color-theme",

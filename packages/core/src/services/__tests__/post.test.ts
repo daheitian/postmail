@@ -8,6 +8,7 @@ import { threadCollections, posts, sites } from "../../db/schema.js";
 import { createPostService } from "../post.js";
 import { createMediaService } from "../media.js";
 import { createCollectionService } from "../collection.js";
+import { createNavItemService } from "../navigation.js";
 import type { Database } from "../../db/index.js";
 import { createPathService } from "../path.js";
 import type { MediaService } from "../media.js";
@@ -1566,11 +1567,17 @@ describe("PostService", () => {
       expect(updated?.pinnedAt).toBeTypeOf("number");
     });
 
-    it("updates slug", async () => {
+    it("updates slug and its page navigation URL", async () => {
       const post = await postService.create({
         format: "note",
-        bodyMarkdown: "test",
+        title: "Test page",
         slug: "old-slug",
+        visibility: "latest_hidden",
+      });
+      const navItemService = createNavItemService(db, DEFAULT_TEST_SITE_ID);
+      const navItem = await navItemService.create({
+        type: "page",
+        postId: post.id,
       });
 
       const updated = await postService.update(post.id, {
@@ -1578,6 +1585,25 @@ describe("PostService", () => {
       });
 
       expect(updated?.slug).toBe("new-slug");
+      expect(await navItemService.getById(navItem.id)).toMatchObject({
+        label: "Test page",
+        url: "/new-slug",
+      });
+    });
+
+    it("removes page navigation when the page becomes a draft", async () => {
+      const post = await postService.create({
+        format: "note",
+        title: "Temporary page",
+        slug: "temporary-page",
+        visibility: "latest_hidden",
+      });
+      const navItemService = createNavItemService(db, DEFAULT_TEST_SITE_ID);
+      await navItemService.create({ type: "page", postId: post.id });
+
+      await postService.update(post.id, { status: "draft" });
+
+      expect(await navItemService.list()).toEqual([]);
     });
 
     it("updates quoteText and rating", async () => {
@@ -1752,6 +1778,21 @@ describe("PostService", () => {
 
       const found = await postService.getById(post.id);
       expect(found).toBeNull();
+    });
+
+    it("cascade deletes the post's page navigation item", async () => {
+      const post = await postService.create({
+        format: "note",
+        title: "Disposable page",
+        slug: "disposable-page",
+        visibility: "latest_hidden",
+      });
+      const navItemService = createNavItemService(db, DEFAULT_TEST_SITE_ID);
+      await navItemService.create({ type: "page", postId: post.id });
+
+      await postService.delete(post.id);
+
+      expect(await navItemService.list()).toEqual([]);
     });
 
     it("returns false for non-existent post", async () => {

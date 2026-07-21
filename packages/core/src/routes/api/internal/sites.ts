@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { requireInternalAdminApi } from "../../../middleware/auth.js";
 import { ConflictError } from "../../../lib/errors.js";
-import { resolveSummaryConfig } from "../../../lib/resolve-config.js";
 import { parseValidated } from "../../../lib/schemas.js";
+import { rebuildPostBodyHtmlWithRuntimeSettings } from "../../../services/post.js";
 import {
   getConfiguredStorageDriver,
   getSiteResolutionMode,
@@ -218,10 +218,7 @@ internalSitesRoutes.post(
     const services = c.var.servicesForSite(c.req.param("siteId"));
 
     return c.json(
-      await services.posts.rebuildBodyHtml({
-        ...body,
-        summaryConfig: resolveSummaryConfig(c.env),
-      }),
+      await rebuildPostBodyHtmlWithRuntimeSettings(services, c.env, body),
     );
   },
 );

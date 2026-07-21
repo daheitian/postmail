@@ -241,6 +241,159 @@ describe("MarkdownClipboard", () => {
     });
   });
 
+  it("turns pasted blank-line breaks into semantic paragraphs", () => {
+    const element = document.createElement("div");
+    document.body.appendChild(element);
+    const editor = createTiptapEditor({ element });
+    editors.push(editor);
+
+    dispatchMarkdownPaste(
+      editor,
+      "First paragraph\n\nSecond paragraph\ncontinued",
+      [
+        "<p>First paragraph<br><br>",
+        '<strong>Second paragraph</strong><br><a href="https://example.com">continued</a>',
+        "</p>",
+      ].join(""),
+    );
+
+    expect(editor.getJSON()).toEqual({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "First paragraph" }],
+        },
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              marks: [{ type: "bold" }],
+              text: "Second paragraph",
+            },
+            { type: "hardBreak" },
+            {
+              type: "text",
+              marks: [
+                expect.objectContaining({
+                  type: "link",
+                  attrs: expect.objectContaining({
+                    href: "https://example.com",
+                  }),
+                }),
+              ],
+              text: "continued",
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("preserves a single hard break in pasted rich text", () => {
+    const element = document.createElement("div");
+    document.body.appendChild(element);
+    const editor = createTiptapEditor({ element });
+    editors.push(editor);
+
+    dispatchMarkdownPaste(
+      editor,
+      "First line\nSecond line",
+      "<p>First line<br>Second line</p>",
+    );
+
+    expect(editor.getJSON().content).toEqual([
+      {
+        type: "paragraph",
+        content: [
+          { type: "text", text: "First line" },
+          { type: "hardBreak" },
+          { type: "text", text: "Second line" },
+        ],
+      },
+    ]);
+  });
+
+  it("keeps a valid empty paragraph for break-only pasted blocks", () => {
+    const element = document.createElement("div");
+    document.body.appendChild(element);
+    const editor = createTiptapEditor({ element });
+    editors.push(editor);
+
+    dispatchMarkdownPaste(editor, "", "<p><br><br><br></p>");
+
+    expect(editor.getJSON()).toEqual({
+      type: "doc",
+      content: [{ type: "paragraph" }],
+    });
+  });
+
+  it("normalizes longer break runs inside their structural container", () => {
+    const element = document.createElement("div");
+    document.body.appendChild(element);
+    const editor = createTiptapEditor({ element });
+    editors.push(editor);
+
+    dispatchMarkdownPaste(
+      editor,
+      "First quote\n\nSecond quote",
+      "<blockquote><p>First quote<br> \n <br>\t<br>Second quote</p></blockquote>",
+    );
+
+    expect(editor.getJSON().content).toEqual([
+      {
+        type: "blockquote",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "First quote" }],
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Second quote" }],
+          },
+        ],
+      },
+      { type: "paragraph" },
+    ]);
+  });
+
+  it("does not rewrite existing documents outside the paste boundary", () => {
+    const element = document.createElement("div");
+    document.body.appendChild(element);
+    const editor = createTiptapEditor({
+      element,
+      content: {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              { type: "text", text: "First" },
+              { type: "hardBreak" },
+              { type: "hardBreak" },
+              { type: "text", text: "Second" },
+            ],
+          },
+        ],
+      },
+    });
+    editors.push(editor);
+
+    expect(editor.getJSON().content).toEqual([
+      {
+        type: "paragraph",
+        content: [
+          { type: "text", text: "First" },
+          { type: "hardBreak" },
+          { type: "hardBreak" },
+          { type: "text", text: "Second" },
+        ],
+      },
+    ]);
+  });
+
   it("copies a complete document as canonical Markdown without changing it", () => {
     const element = document.createElement("div");
     document.body.appendChild(element);

@@ -70,6 +70,11 @@ collectionsPageRoutes.get("/", async (c) => {
       <CollectionsPage
         items={directoryData.items}
         isAuthenticated={navData.isAuthenticated ?? false}
+        navigationCollectionIds={navData.links.flatMap((item) =>
+          item.type === "collection" && item.collectionId
+            ? [item.collectionId]
+            : [],
+        )}
         sitePathPrefix={navData.sitePathPrefix}
         siteOrigin={c.var.appConfig.siteOrigin}
       />

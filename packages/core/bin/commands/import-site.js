@@ -840,6 +840,20 @@ async function loadSiteConfig(rootDir) {
           params.show_header_avatar ?? jantData.show_header_avatar,
         ),
         noindex: coerceBoolean(params.noindex ?? jantData.noindex),
+        public_api_enabled:
+          params.public_api_enabled === undefined &&
+          jantData.public_api_enabled === undefined
+            ? true
+            : coerceBoolean(
+                params.public_api_enabled ?? jantData.public_api_enabled,
+              ),
+        rss_feeds_enabled:
+          params.rss_feeds_enabled === undefined &&
+          jantData.rss_feeds_enabled === undefined
+            ? true
+            : coerceBoolean(
+                params.rss_feeds_enabled ?? jantData.rss_feeds_enabled,
+              ),
         site_footer_markdown:
           typeof jantData.site_footer_markdown === "string"
             ? jantData.site_footer_markdown
@@ -896,6 +910,8 @@ function buildSettingsUpdatesFromConfig(siteConfig, customCss = "") {
     SITE_FOOTER: String(jant.site_footer_markdown || ""),
     SHOW_JANT_BRANDING_ON_HOME: jant.show_jant_branding_on_home ? "true" : "",
     NOINDEX: jant.noindex ? "true" : "",
+    PUBLIC_API_ENABLED: jant.public_api_enabled === false ? "false" : "true",
+    RSS_FEEDS_ENABLED: jant.rss_feeds_enabled === false ? "false" : "true",
     SHOW_HEADER_AVATAR: jant.show_header_avatar ? "true" : "",
     THEME: themeId && themeId !== defaultThemeId ? themeId : "",
     FONT_THEME: fontThemeId && fontThemeId !== "default" ? fontThemeId : "",
