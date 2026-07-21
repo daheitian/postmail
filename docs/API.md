@@ -2622,7 +2622,7 @@ Notes:
 
 ### Feeds
 
-All feed endpoints are public and return cached XML with `Cache-Control: public, max-age=180`.
+All feed endpoints are public and return cached XML with `Cache-Control: public, max-age=60`.
 
 Feed notes:
 

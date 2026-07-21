@@ -172,6 +172,8 @@ interface ThreadRootPageOptions {
   status?: Status;
   excludePrivate?: boolean;
   excludeLatestHidden?: boolean;
+  /** Exclude Posts published at or after this Unix timestamp. */
+  publishedBefore?: number;
   /** Restrict by the Thread root's format without excluding Child Posts. */
   rootFormat?: Format;
   /** Restrict to Threads with at least one rated published post. */
@@ -406,8 +408,11 @@ export interface PostService {
     collectionIds: string[],
     options?: CollectionFeedEntryOptions,
   ): Promise<CollectionFeedEntry[]>;
-  /** Fetch all published, non-deleted posts for each requested thread root */
-  getPublishedThreads(rootIds: string[]): Promise<Map<string, Post[]>>;
+  /** Fetch published Posts for each requested Thread root. */
+  getPublishedThreads(
+    rootIds: string[],
+    options?: Pick<PostFilters, "publishedBefore">,
+  ): Promise<Map<string, Post[]>>;
   /** Get distinct years that have published posts */
   getDistinctYears(filters?: PostFilters): Promise<number[]>;
   /** For each thread ID, return the ID of the last published, non-deleted post */
@@ -1220,6 +1225,18 @@ export function createPostService(
     }
     if (options?.excludeLatestHidden) {
       conditions.push(sql`${effectiveVisibilityExpr} != 'latest_hidden'`);
+    }
+    if (options?.publishedBefore !== undefined) {
+      conditions.push(
+        sql`${posts.publishedAt} < ${options.publishedBefore}`,
+        sql`EXISTS (
+          SELECT 1
+          FROM post AS publication_root
+          WHERE publication_root.site_id = ${siteId}
+            AND publication_root.id = ${posts.threadId}
+            AND publication_root.published_at < ${options.publishedBefore}
+        )`,
+      );
     }
     if (options?.rootFormat) {
       conditions.push(sql`EXISTS (
@@ -3478,21 +3495,23 @@ export function createPostService(
       });
     },
 
-    async getPublishedThreads(rootIds) {
+    async getPublishedThreads(rootIds, options = {}) {
       const result = new Map<string, Post[]>();
       if (rootIds.length === 0) return result;
 
       const unique = [...new Set(rootIds)];
+      const conditions = [
+        eq(posts.siteId, siteId),
+        inArray(posts.threadId, unique),
+        eq(posts.status, "published"),
+      ];
+      if (options.publishedBefore !== undefined) {
+        conditions.push(sql`${posts.publishedAt} < ${options.publishedBefore}`);
+      }
       const rows = await db
         .select()
         .from(posts)
-        .where(
-          and(
-            eq(posts.siteId, siteId),
-            inArray(posts.threadId, unique),
-            eq(posts.status, "published"),
-          ),
-        )
+        .where(and(...conditions))
         .orderBy(posts.threadId, posts.createdAt, posts.id);
 
       for (const post of await hydratePosts(rows)) {

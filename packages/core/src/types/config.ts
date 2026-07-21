@@ -191,6 +191,11 @@ export const CONFIG_FIELDS = {
     envOnly: true,
     envKeys: ["RSS_FEED_LIMIT"],
   },
+  RSS_PUBLISH_DELAY_SECONDS: {
+    defaultValue: "300",
+    envOnly: true,
+    envKeys: ["RSS_PUBLISH_DELAY_SECONDS"],
+  },
 
   // Internal settings (DB-only, not configurable via env or settings UI)
   THEME: {
@@ -503,6 +508,8 @@ export interface AppConfig {
   searchPageSize: number;
   archivePageSize: number;
   rssFeedLimit: number;
+  /** Seconds a published Post waits before it can appear in Atom feeds. */
+  rssPublishDelaySeconds: number;
 
   // Slug (ENV only)
   /** Length of random IDs used in auto-generated slugs. Defaults to 5. */
