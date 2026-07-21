@@ -17,6 +17,12 @@ export interface CollectionManagerLabels {
   dividerLabelPlaceholder: string;
   newCollection: string;
   edit: string;
+  addToNavigation: string;
+  addingToNavigation: string;
+  addedToNavigation: string;
+  editNavigation: string;
+  addToNavigationFailed: string;
+  notNow: string;
   label: string;
   url: string;
   linkLabelPlaceholder: string;

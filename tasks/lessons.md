@@ -211,3 +211,14 @@
   top-level prefix and resolve explicit/reserved routes before stored aliases
   or redirects. Decide legacy collisions explicitly; do not invent a backfill
   or replacement slug when invalidating the old path is the intended policy.
+- Before adding cross-surface settings links, verify the canonical path from
+  the registered route instead of inferring it from the UI section hierarchy.
+- On content-first public pages, render optional post-action guidance as part
+  of the page rhythm rather than as a bordered success card. Do not repeat
+  content already visible in an adjacent list, and compress non-blocking
+  dismissal into an accessible icon control.
+- When an inline prompt owns a short multi-step action, update that surface in
+  place for completion instead of moving the success feedback to a toast.
+- When a restrained inline notice is too easy to miss, add salience through a
+  subtle token-based surface and a reduced-motion-safe entrance—not more copy
+  or decorative status icons.

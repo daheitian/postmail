@@ -5,6 +5,7 @@
 import { msg } from "@lingui/core/macro";
 import { coalesceDisplayText } from "../../../lib/display-text.js";
 import { useLingui } from "../../../i18n/context.js";
+import { NAVIGATION_SETTINGS_PATH } from "../../../lib/settings-paths.js";
 import { extractDomain, toPublicPath } from "../../../lib/url.js";
 import {
   SettingsDirectoryLink,
@@ -162,7 +163,7 @@ export function SettingsRootContent({
           )}
         />
         <SettingsDirectoryLink
-          href={toPublicPath("/settings/navigation", sitePathPrefix)}
+          href={toPublicPath(NAVIGATION_SETTINGS_PATH, sitePathPrefix)}
           icon={ICONS.menu}
           name={i18n._(
             msg({

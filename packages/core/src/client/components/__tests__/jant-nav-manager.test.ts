@@ -450,7 +450,7 @@ describe("JantNavManager", () => {
     );
     const editLink = requireElement(
       el.querySelector<HTMLAnchorElement>(
-        'a[href="/collections/books/edit?returnTo=%2Fsettings%2Fappearance%2Fnavigation"]',
+        'a[href="/collections/books/edit?returnTo=%2Fsettings%2Fnavigation"]',
       ),
       "expected collection edit link",
     );

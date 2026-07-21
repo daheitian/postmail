@@ -15,12 +15,14 @@ const escapeJson = (data: unknown) =>
 
 export interface CollectionsManagerProps {
   items: CollectionDirectoryItem[];
+  navigationCollectionIds?: string[];
   sitePathPrefix?: string;
   siteOrigin?: string;
 }
 
 export const CollectionsManager: FC<CollectionsManagerProps> = ({
   items,
+  navigationCollectionIds = [],
   sitePathPrefix = "",
   siteOrigin = "",
 }) => {
@@ -124,6 +126,13 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
       msg({
         message: "Collection order updated.",
         comment: "@context: Toast after reordering collections",
+      }),
+    ),
+    notNow: i18n._(
+      msg({
+        message: "Not now",
+        comment:
+          "@context: Action to dismiss the post-create Collection navigation prompt",
       }),
     ),
     ...mutationLabels,
@@ -312,6 +321,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
       <jant-collections-manager
         items={escapeJson(items)}
         labels={escapeJson(labels)}
+        navigation-collection-ids={escapeJson(navigationCollectionIds)}
       >
         <CollectionDirectory
           items={items}

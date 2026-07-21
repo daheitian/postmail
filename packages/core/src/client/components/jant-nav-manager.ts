@@ -27,7 +27,8 @@ import {
 import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
-import { destroySiteHeaderNav, initSiteHeaderNav } from "../site-header-nav.js";
+import { applySiteHeaderHtml } from "../site-header-fragment.js";
+import { NAVIGATION_SETTINGS_PATH } from "../../lib/settings-paths.js";
 import {
   getCollectionEditPath,
   getCollectionPagePath,
@@ -325,34 +326,6 @@ export class JantNavManager extends LitElement {
     return { ...item, displayLabel };
   }
 
-  #applySiteHeaderHtml(headerHtml: string | undefined) {
-    if (!headerHtml) return;
-
-    const template = document.createElement("template");
-    template.innerHTML = headerHtml.trim();
-
-    const selectors = [
-      '[data-site-header-fragment="header"]',
-      '[data-site-header-fragment="drawer-backdrop"]',
-      '[data-site-header-fragment="drawer"]',
-    ];
-    let replaced = false;
-
-    destroySiteHeaderNav(document);
-    for (const selector of selectors) {
-      const current = document.querySelector<HTMLElement>(selector);
-      const next = template.content.querySelector<HTMLElement>(selector);
-      if (!current || !next) continue;
-
-      current.replaceWith(next);
-      replaced = true;
-    }
-
-    if (replaced) {
-      initSiteHeaderNav(document);
-    }
-  }
-
   // ===========================================================================
   // Page picker and quick-create dialog
   // ===========================================================================
@@ -480,7 +453,7 @@ export class JantNavManager extends LitElement {
       this.#destroySortables();
       this._items = [...this._items, created];
       this._pages = this._pages.filter((candidate) => candidate.id !== page.id);
-      this.#applySiteHeaderHtml(response.headerHtml);
+      applySiteHeaderHtml(response.headerHtml);
       showToast(this.labels.pageAdded);
 
       this.#closePageDialog();
@@ -941,7 +914,7 @@ export class JantNavManager extends LitElement {
 
       const moved =
         (await moveRes.json()) as NavManagerMutationResponse<NavManagerItem>;
-      this.#applySiteHeaderHtml(moved.headerHtml);
+      applySiteHeaderHtml(moved.headerHtml);
       showToast(
         crossList ? this.labels.placementSaved : this.labels.orderSaved,
       );
@@ -992,7 +965,7 @@ export class JantNavManager extends LitElement {
         current.id === updated.id ? updated : current,
       );
       this._editingId = null;
-      this.#applySiteHeaderHtml(response.headerHtml);
+      applySiteHeaderHtml(response.headerHtml);
     } catch {
       showToast(this.labels.saveFailed, "error");
     }
@@ -1030,7 +1003,7 @@ export class JantNavManager extends LitElement {
       this.#destroySortables();
       this._items = this._items.filter((current) => current.id !== item.id);
       this._editingId = null;
-      this.#applySiteHeaderHtml(response.headerHtml);
+      applySiteHeaderHtml(response.headerHtml);
     } catch {
       showToast(this.labels.deleteFailed, "error");
     }
@@ -1066,7 +1039,7 @@ export class JantNavManager extends LitElement {
       this._newLinkUrl = "";
       this._showLinkForm = false;
       document.removeEventListener("click", this.#closeLinkForm);
-      this.#applySiteHeaderHtml(response.headerHtml);
+      applySiteHeaderHtml(response.headerHtml);
     } catch {
       showToast(this.labels.saveFailed, "error");
     } finally {
@@ -1100,7 +1073,7 @@ export class JantNavManager extends LitElement {
       this.#destroySortables();
       this._items = [...this._items, created];
       this.#closeCollectionPicker();
-      this.#applySiteHeaderHtml(response.headerHtml);
+      applySiteHeaderHtml(response.headerHtml);
       showToast(this.labels.collectionAdded);
       if (this._collectionDialogOpen) {
         this.#closeCollectionDialog();
@@ -1207,7 +1180,7 @@ export class JantNavManager extends LitElement {
       const created = this.#normalizeItem(this.#stripHeaderHtml(response));
       this.#destroySortables();
       this._items = [...this._items, created];
-      this.#applySiteHeaderHtml(response.headerHtml);
+      applySiteHeaderHtml(response.headerHtml);
       showToast(this.labels.suggestedLinkAdded);
     } catch {
       showToast(this.labels.saveFailed, "error");
@@ -1246,7 +1219,7 @@ export class JantNavManager extends LitElement {
         const created = this.#normalizeItem(this.#stripHeaderHtml(response));
         this.#destroySortables();
         this._items = [...this._items, created];
-        this.#applySiteHeaderHtml(response.headerHtml);
+        applySiteHeaderHtml(response.headerHtml);
       } else {
         const existing = this._items.find(
           (item) => item.type === "system" && item.systemKey === config.key,
@@ -1263,7 +1236,7 @@ export class JantNavManager extends LitElement {
           }>;
           this.#destroySortables();
           this._items = this._items.filter((item) => item.id !== existing.id);
-          this.#applySiteHeaderHtml(response.headerHtml);
+          applySiteHeaderHtml(response.headerHtml);
         }
       }
     } catch {
@@ -2418,7 +2391,7 @@ export class JantNavManager extends LitElement {
           .labels=${this.labels.collectionFormLabels}
           .initial=${initial}
           action=${publicPath("/api/collections")}
-          cancel-href=${publicPath("/settings/appearance/navigation")}
+          cancel-href=${publicPath(NAVIGATION_SETTINGS_PATH)}
           @jant:collection-submit=${(event: Event) =>
             void this.#handleCreateCollectionSubmit(event)}
         ></jant-collection-form>
@@ -2455,7 +2428,7 @@ export class JantNavManager extends LitElement {
     const collection = this._createdCollection;
     if (!collection) return nothing;
 
-    const returnTo = publicPath("/settings/appearance/navigation");
+    const returnTo = publicPath(NAVIGATION_SETTINGS_PATH);
     const editHref = `${publicPath(
       getCollectionEditPath(collection.slug),
     )}?returnTo=${encodeURIComponent(returnTo)}`;

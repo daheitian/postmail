@@ -110,6 +110,7 @@ export interface CollectionPageProps {
   defaultSort: CollectionSortOrder;
   showRatingSort: boolean;
   isAuthenticated: boolean;
+  isInNavigation?: boolean;
   sitePathPrefix?: string;
 }
 
@@ -125,6 +126,7 @@ export interface CollectionEditorPageProps {
 export interface CollectionsPageProps {
   items: CollectionDirectoryItem[];
   isAuthenticated: boolean;
+  navigationCollectionIds?: string[];
   sitePathPrefix?: string;
   siteOrigin?: string;
 }

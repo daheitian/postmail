@@ -224,6 +224,11 @@ export async function renderCollectionPage(
         defaultSort={defaultSort}
         showRatingSort={showRatingSort}
         isAuthenticated={navData.isAuthenticated}
+        isInNavigation={navData.links.some(
+          (item) =>
+            item.type === "collection" &&
+            item.collectionId === primaryCollection.id,
+        )}
         sitePathPrefix={navData.sitePathPrefix}
       />
     ),

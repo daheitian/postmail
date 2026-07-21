@@ -456,7 +456,13 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           {...(isAuthenticated ? { "data-authenticated": true } : {})}
         >
           {content}
-          <div id="toast-container" class="toast-container" popover="manual">
+          <div
+            id="toast-container"
+            class="toast-container"
+            popover="manual"
+            aria-live="polite"
+            aria-relevant="additions text"
+          >
             {toast && (
               <div
                 class={`toast ${toast.type === "error" ? "toast-error" : "toast-success"}`}
