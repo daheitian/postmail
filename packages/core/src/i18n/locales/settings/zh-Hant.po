@@ -13,6 +13,11 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. @context: Config Editor live search result count
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "{count} settings shown"
+msgstr "{count} 個設定已顯示"
+
 #. @context: Custom CSS textarea placeholder
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "/* Your custom CSS here */"
@@ -139,6 +144,21 @@ msgstr "新增自訂連結到導覽"
 msgid "Add Link"
 msgstr "新增連結"
 
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Add site-wide CSS in the dedicated code editor."
+msgstr "在專用程式碼編輯器中新增全站 CSS。"
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Add site-wide HTML before the closing body tag."
+msgstr "在 </body> 結束標籤之前新增全站 HTML。"
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Add site-wide HTML before the closing head tag."
+msgstr "在 head 標籤的閉合標記之前加入全站 HTML。"
+
 #. @context: Settings group label for advanced settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Advanced"
@@ -221,6 +241,11 @@ msgstr "封存 RSS 來源"
 #: src/routes/dash/custom-urls.tsx
 msgid "Archive filter parameters (e.g. format=note&view=list)"
 msgstr "封存篩選參數 (例如 format=note&view=list)"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Ask search engines not to index public pages or include them in results."
+msgstr "要求搜尋引擎不要索引公開頁面或將它們包含在搜尋結果中。"
 
 #. @context: Theme mode option label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -349,10 +374,35 @@ msgstr "正在檢查儲存庫…"
 msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 msgstr "為您的網站選擇一種排版風格。每個主題會同時改變字體配對與閱讀節奏。"
 
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Choose the color palette used across Jant."
+msgstr "選擇 Jant 全域使用的配色方案。"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Choose the content language announced to readers and search engines."
+msgstr "選擇要向讀者與搜尋引擎宣告的內容語言。"
+
 #. @context: GitHub sync picker — page subtitle
 #: src/routes/dash/settings.tsx
 msgid "Choose the GitHub account and repository to sync with this site."
 msgstr "選擇要與此網站同步的 GitHub 帳號和儲存庫."
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Choose the repository used for content backups."
+msgstr "選擇用於內容備份的儲存庫。"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Choose the time zone used to display dates and times."
+msgstr "選擇用於顯示日期和時間的時區。"
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Choose the typography used across Jant."
+msgstr "選擇 Jant 全域使用的字體。"
 
 #. @context: Settings field for a manual Chinese, Japanese, or Korean font fallback
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -402,6 +452,22 @@ msgstr "色彩主題"
 msgid "Color Theme"
 msgstr "色彩主題"
 
+#. @context: Breadcrumb label
+#. @context: Config Editor page title
+#. @context: Settings item — Config Editor
+#: src/routes/dash/settings.tsx
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Config Editor"
+msgstr "設定編輯器"
+
+#. @context: Config Editor linked setting status
+#. @context: Config Editor linked setting status
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Configured"
+msgstr "已設定"
+
 #. @context: Step 2 heading — user must type confirmation phrase
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Confirm account deletion"
@@ -433,6 +499,16 @@ msgstr "連接一個 Telegram 機器人，之後你傳給它的任何訊息都�
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Connect manually"
 msgstr "手動連接"
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Connect or manage automatic content backups to GitHub."
+msgstr "連接或管理 GitHub 內容自動備份。"
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Connect or manage the bot used to post from Telegram."
+msgstr "連接或管理用於從 Telegram 發文的 Bot。"
 
 #. @context: Heading on the Telegram settings page when ready to connect
 #: src/ui/dash/settings/TelegramContent.tsx
@@ -791,6 +867,16 @@ msgstr "編輯"
 msgid "Edit About page"
 msgstr "編輯 About 頁面"
 
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Edit the multi-line footer rendered at the bottom of public pages."
+msgstr "在完整表單中編輯顯示在公開頁面底部的多行頁尾。"
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Edit the multi-line introduction used on your home page and in metadata."
+msgstr "在完整表單中編輯首頁和中繼資料使用的多行簡介。"
+
 #. @context: GitHub sync picker — shown when the selected repo has no commits
 #: src/routes/dash/settings.tsx
 msgid "Empty repository. Ready to connect."
@@ -835,6 +921,11 @@ msgstr "精選"
 msgid "Featured feed"
 msgstr "精選 RSS 來源"
 
+#. @context: Config Editor RSS feed enum option
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Featured posts"
+msgstr "精選文章"
+
 #. @context: Toast after saving feed settings
 #: src/routes/dash/settings.tsx
 msgid "Feed settings updated."
@@ -866,6 +957,10 @@ msgid "Fixed feed URLs"
 msgstr "固定的 RSS 檔案網址"
 
 #. @context: CJK font fallback option that uses the configured content language
+#. @context: Config Editor enum option for automatic CJK font fallback
+#. @context: Config Editor enum option for no explicit dashboard language
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+#: src/ui/dash/settings/ConfigEditorContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Follow content language"
 msgstr "跟隨內容語言"
@@ -874,6 +969,11 @@ msgstr "跟隨內容語言"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Follow each visitor's system preference."
 msgstr "依照每位訪客的系統偏好。"
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Follow the device appearance or force a light or dark theme."
+msgstr "跟隨裝置外觀或強制使用淺色或深色主題。"
 
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -1044,6 +1144,11 @@ msgstr "最新"
 msgid "Latest feed"
 msgstr "最新 RSS 來源"
 
+#. @context: Config Editor RSS feed enum option
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Latest posts"
+msgstr "最新文章"
+
 #. @context: Suffix after Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "lets you override any theme variable."
@@ -1063,6 +1168,21 @@ msgstr "淺藍灰底，冷靜而均勻。"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Light sage-green with a matching green accent."
 msgstr "淺鼠尾草綠底，配同色系的綠。"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Limit characters used in automatically generated summaries."
+msgstr "限制自動產生摘要所使用的字元數。"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Limit paragraphs used in automatically generated summaries."
+msgstr "限制自動產生摘要所使用的段落數。"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Limit posts included in each RSS feed."
+msgstr "限制每個 RSS feed 中包含的貼文數。"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1088,6 +1208,11 @@ msgstr "列出貼文:"
 #: src/routes/dash/settings.tsx
 msgid "Loading…"
 msgstr "載入中…"
+
+#. @context: Config Editor badge for a setting locked by the runtime
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Locked"
+msgstr "已鎖定"
 
 #. @context: Label for the canonical /feed URL
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1148,6 +1273,11 @@ msgstr "傳送任何文字給機器人，該文字會作為筆記已發佈。"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Minimal color, low distraction."
 msgstr "色彩極少，干擾最小。"
+
+#. @context: Config Editor badge for a database override
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Modified"
+msgstr "已修改"
 
 #. @context: Section label for nav items hidden under More dropdown
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1270,6 +1400,13 @@ msgstr "目前尚無導覽項目。請新增連結或在下方啟用系統項目
 msgid "No repositories match."
 msgstr "沒有符合的儲存庫."
 
+#. @context: Config Editor linked setting status
+#. @context: Config Editor linked setting status
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Not configured"
+msgstr "未設定"
+
 #. @context: Shown when no sync has happened yet on GitHub Sync status
 #: src/ui/dash/settings/GitHubSyncContent.tsx
 msgid "Not synced yet"
@@ -1282,6 +1419,11 @@ msgstr "尚未同步"
 msgid "Note"
 msgstr "筆記"
 
+#. @context: Config Editor empty search state
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Nothing matches this search. Try a different name or description."
+msgstr "沒有任何項目符合此搜尋。請嘗試不同的名稱或描述。"
+
 #. @context: Tufte color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Off-white paper with a deep forest-green accent."
@@ -1291,6 +1433,13 @@ msgstr "米白紙底，配深森綠。"
 #: src/ui/dash/settings/TelegramContent.tsx
 msgid "Open {linkOpen}@{botUsername}{linkClose} and send:"
 msgstr "開啟 {linkOpen}@{botUsername}{linkClose} 並傳送:"
+
+#. @context: Config Editor link to a dedicated settings page
+#. @context: Config Editor link to a dedicated settings page
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Open setting"
+msgstr "開啟設定"
 
 #. @context: Button that opens the Telegram bot via a deep link
 #: src/ui/dash/settings/TelegramContent.tsx
@@ -1524,6 +1673,11 @@ msgstr "要從導覽移除這個選集嗎？選集本身不會被刪除。"
 msgid "Repository"
 msgstr "儲存庫"
 
+#. @context: Config Editor row action
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Reset to default"
+msgstr "還原為預設值"
+
 #. @context: Button to revoke API token
 #. @context: Button to revoke a session
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -1572,15 +1726,42 @@ msgstr "儲存機器人權杖"
 msgid "Save CSS"
 msgstr "儲存 CSS"
 
+#. @context: Config Editor row save status
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Saved"
+msgstr "已儲存"
+
+#. @context: Config Editor row save status
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Saving…"
+msgstr "儲存中…"
+
 #. @context: Settings section heading for search engine indexing settings
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Search"
 msgstr "搜尋"
 
+#. @context: Config Editor page description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Search and edit runtime settings. Changes apply immediately; reset restores the environment or built-in default."
+msgstr "搜尋和編輯執行階段設定。變更會立即生效；重設會恢復環境變數或內建預設值。"
+
 #. @context: GitHub sync picker — search input placeholder
 #: src/routes/dash/settings.tsx
 msgid "Search repositories"
 msgstr "搜尋儲存庫"
+
+#. @context: Settings item description for Config Editor
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Search runtime settings and open advanced configuration"
+msgstr "搜尋執行階段設定並開啟進階設定"
+
+#. @context: Config Editor search input placeholder
+#. @context: Config Editor search input placeholder
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Search settings"
+msgstr "搜尋設定"
 
 #. @context: Toast after saving search settings
 #. @context: Toast after saving search settings
@@ -1636,6 +1817,21 @@ msgstr "在示範模式中已停用工作階段管理。請改用共用示範工
 msgid "Sessions"
 msgstr "工作階段"
 
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Set posts per archive page; reset to inherit the main page size."
+msgstr "設定每頁封存貼文數；重設後繼承預設分頁大小。"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Set results per search page; reset to inherit the main page size."
+msgstr "設定每頁搜尋結果數；重設後繼承預設分頁大小。"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Set the default number of items shown per page."
+msgstr "設定預設每頁顯示的項目數。"
+
 #. @context: Breadcrumb label
 #. @context: Page title for the settings home page
 #: src/routes/dash/settings.tsx
@@ -1648,10 +1844,25 @@ msgstr "設定"
 msgid "Show \"Build with Jant\" at the bottom of the home page"
 msgstr "在首頁底部顯示「Build with Jant」"
 
+#. @context: Config Editor filter checkbox
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Show only modified"
+msgstr "僅顯示已修改項目"
+
 #. @context: Description for built-in nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Show or hide built-in destinations in the header and More menu."
 msgstr "在頁首和更多選單中顯示或隱藏內建目的地。"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Show the Jant credit on the home page."
+msgstr "在首頁顯示 Jant 的署名。"
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Show the site avatar in the public header."
+msgstr "在公開標頭顯示網站頭像。"
 
 #. @context: GitHub sync picker — paginated repo count hint. Placeholders {shown} and {total} are integers.
 #: src/routes/dash/settings.tsx
@@ -1793,6 +2004,11 @@ msgstr "預設主題。沉靜，適合長時間閱讀。"
 msgid "The language this admin dashboard shows in. Available in English, 简体中文, and 繁體中文."
 msgstr "後台介面顯示的語言。可選 English、简体中文 和 繁體中文。"
 
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "The language used by the private Jant dashboard."
+msgstr "私人 Jant 儀表板使用的語言。"
+
 #. @context: Help text under the content language picker
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "The language your posts are written in. Announced to readers and search engines through HTML lang and your RSS feed. Any BCP 47 tag works."
@@ -1803,10 +2019,20 @@ msgstr "你撰寫內容所用的語言。透過 HTML lang 和 RSS 向讀者與�
 msgid "The original Jant palette, and a solid everyday pick."
 msgstr "Jant 最初的配色，日常穩妥之選。"
 
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "The serif fallback used when the content language has no built-in profile."
+msgstr "當內容語言沒有內建設定檔時使用的襯線備援字型。"
+
 #. @context: Custom URL target slug help text
 #: src/routes/dash/custom-urls.tsx
 msgid "The slug of the target post or collection"
 msgstr "目標文章或選集的 slug"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "The title used across your site, browser tabs, and feeds."
+msgstr "此標題會用於整個網站、瀏覽器分頁與訂閱來源。"
 
 #. @context: Link to theming documentation on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -1867,6 +2093,11 @@ msgstr "此儲存庫已在備份另一個 Jant 網站 ({host}). 請選擇其他�
 #: src/routes/dash/settings.tsx
 msgid "This repository is already backing up this site."
 msgstr "此儲存庫已在備份本網站。"
+
+#. @context: Config Editor fallback error message
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "This setting wasn't saved. Check the value and try again."
+msgstr "此設定未儲存。請檢查設定值並再試一次。"
 
 #. @context: Warning text on account deletion page
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1952,6 +2183,11 @@ msgstr "上傳未成功. 請稍後再試."
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Upload failed. Please try again."
 msgstr "上傳失敗。請再試一次。"
+
+#. @context: Config Editor linked setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Upload the profile image and generated site icons."
+msgstr "上傳個人資料圖片與產生的網站圖示。"
 
 #. @context: Avatar upload button text while uploading
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2077,6 +2313,11 @@ msgstr "何時使用網站匯出、資料庫備份與復原演練。"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "When you want a cooler, sharper look."
 msgstr "想要更冷、更利落的觀感時。"
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Which post stream the canonical /feed URL returns."
+msgstr "正規的 /feed URL 會回傳哪個文章串流。"
 
 #. @context: Parchment color theme preview body
 #: src/ui/dash/appearance/ColorThemeContent.tsx

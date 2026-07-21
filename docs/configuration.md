@@ -97,6 +97,9 @@ The official Docker image already defaults `DATA_DIR` to `/var/lib/jant`, and Do
 | `ARCHIVE_PAGE_SIZE` | inherits `PAGE_SIZE` | Override archive pagination only         |
 
 Set `SEARCH_PAGE_SIZE` and `ARCHIVE_PAGE_SIZE` only when search or archive really needs a different page size from the rest of the site.
+All three values accept integers from `1` to `100`. They can also be changed at
+runtime in Config Editor; the environment variables remain their deployment
+fallbacks.
 
 ### Storage
 
@@ -338,6 +341,11 @@ Images have their own tighter limits. This setting mainly affects video, audio, 
 | `SUMMARY_MAX_CHARS`      | `500`   | Maximum characters in auto-generated summaries |
 | `RSS_FEED_LIMIT`         | `50`    | Maximum number of posts included in RSS feeds  |
 
+These values can also be changed at runtime in Config Editor. Paragraphs accept
+`1–50`, summary characters accept `1–1500`, and RSS feed items accept `1–200`.
+The environment variables remain the fallback after a runtime override is
+reset.
+
 ### Telegram bot (optional)
 
 Lets you publish Notes by messaging a Telegram bot. Connect an account on the
@@ -377,13 +385,53 @@ These settings can be changed on Jant's Settings page after setup. Each one can 
 | `SITE_NAME`                  | Site display name                                |
 | `SITE_DESCRIPTION`           | Meta description and feed description            |
 | `SITE_LANGUAGE`              | Primary language code                            |
+| `DASHBOARD_LANGUAGE`         | Private dashboard language                       |
+| `CJK_SERIF_FONT`             | CJK serif fallback                               |
 | `TIME_ZONE`                  | Display time zone, e.g. `UTC` or `Asia/Shanghai` |
 | `MAIN_RSS_FEED`              | What `/feed` returns                             |
+| `PAGE_SIZE`                  | Default items per page (`1–100`)                 |
+| `SEARCH_PAGE_SIZE`           | Search results per page (`1–100`)                |
+| `ARCHIVE_PAGE_SIZE`          | Archive posts per page (`1–100`)                 |
+| `SUMMARY_MAX_PARAGRAPHS`     | Summary paragraph limit (`1–50`)                 |
+| `SUMMARY_MAX_CHARS`          | Summary character limit (`1–1500`)               |
+| `RSS_FEED_LIMIT`             | Posts included in each RSS feed (`1–200`)        |
 | `SITE_FOOTER`                | Custom footer text                               |
 | `SHOW_JANT_BRANDING_ON_HOME` | Show or hide Jant branding on the home page      |
 | `NOINDEX`                    | Ask search engines not to index the site         |
 
 Color theme, font theme, custom CSS, avatar, and other appearance details are also managed in Settings.
+
+### Config Editor
+
+Open **Settings → Advanced → Config Editor** or go to `/settings/config` to
+search runtime-safe settings in one place. Simple boolean, text, number, and
+enum values can be edited there. Content language and time zone use the same
+constrained option sources as General settings, so the editor cannot save an
+invalid free-form value. Boolean and enum changes save immediately; text and
+number changes save on Enter or when leaving the field, while Escape restores
+the last saved value. Use **Reset to default** to remove a database override and
+restore the environment or built-in fallback. On desktop, the reset action
+appears when its row is hovered or focused; it remains visible on touch devices.
+
+Site identity and multi-line values such as `SITE_NAME`, `SITE_DESCRIPTION`,
+and `SITE_FOOTER` appear as links to their authoritative controls in General
+settings. Config Editor shows only a safe value or configured state, so it does
+not duplicate the primary form or force long prose and Markdown into a
+single-line field.
+
+Safe settings that need a preview, upload, code editor, or multi-field workflow
+also appear in search as a current-value link to their dedicated Settings page
+instead of duplicating that specialized UI inside Config Editor. Safe scalar
+links such as theme, font theme, theme mode, and header-avatar visibility can
+also be reset from Config Editor. Files and custom code stay under their
+specialized cleanup flows. GitHub Sync and Telegram expose only safe connection
+status entries that open their dedicated integration pages; repository tokens,
+bot tokens, webhook secrets, and transient sync state stay hidden.
+
+Config Editor is intentionally allowlisted. Deployment infrastructure,
+credentials, integration tokens, generated asset metadata, and transient
+internal state never appear there. Linked rows expose only a safe status or
+display value, never custom code or storage keys.
 
 ## Reserved paths
 

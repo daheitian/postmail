@@ -97,6 +97,8 @@ Node 和 Docker 的常用变量：
 | `ARCHIVE_PAGE_SIZE` | 继承 `PAGE_SIZE` | 只覆盖归档页分页                 |
 
 只有在搜索页或归档页真的需要和全站不同的分页大小时，才去设置 `SEARCH_PAGE_SIZE` 和 `ARCHIVE_PAGE_SIZE`。
+三个值都接受 `1–100` 的整数，也可以在 Config Editor 中实时修改；环境变量仍
+作为部署时的回退值。
 
 ### 存储
 
@@ -338,6 +340,10 @@ location /_assets/ {
 | `SUMMARY_MAX_CHARS`      | `500`  | 自动生成摘要时的最大字符数   |
 | `RSS_FEED_LIMIT`         | `50`   | RSS feeds 中包含的最大帖子数 |
 
+这些值也可以在 Config Editor 中实时修改。段落数范围为 `1–50`，摘要字符数范围
+为 `1–1500`，RSS 条目数范围为 `1–200`。重置运行时覆盖值后，会重新使用环境
+变量。
+
 ## Settings 页面设置
 
 这些设置可以在初始化完成后，通过 Jant 的 Settings 页面修改。所有设置都可以通过同名环境变量预置初始值——Settings 里改过的值优先级高于环境变量。
@@ -347,13 +353,47 @@ location /_assets/ {
 | `SITE_NAME`                  | 站点显示名称                            |
 | `SITE_DESCRIPTION`           | Meta description 和 feed description    |
 | `SITE_LANGUAGE`              | 主要语言代码                            |
+| `DASHBOARD_LANGUAGE`         | 私有管理界面语言                        |
+| `CJK_SERIF_FONT`             | CJK 衬线字体回退                        |
 | `TIME_ZONE`                  | 显示时区，例如 `UTC` 或 `Asia/Shanghai` |
 | `MAIN_RSS_FEED`              | 决定 `/feed` 返回什么                   |
+| `PAGE_SIZE`                  | 默认每页条目数（`1–100`）               |
+| `SEARCH_PAGE_SIZE`           | 每页搜索结果数（`1–100`）               |
+| `ARCHIVE_PAGE_SIZE`          | 每页归档帖子数（`1–100`）               |
+| `SUMMARY_MAX_PARAGRAPHS`     | 摘要段落数上限（`1–50`）                |
+| `SUMMARY_MAX_CHARS`          | 摘要字符数上限（`1–1500`）              |
+| `RSS_FEED_LIMIT`             | 每个 RSS feed 的帖子数（`1–200`）       |
 | `SITE_FOOTER`                | 自定义页脚文本                          |
 | `SHOW_JANT_BRANDING_ON_HOME` | 是否在首页显示 Jant 品牌标识            |
 | `NOINDEX`                    | 请求搜索引擎不要收录这个站点            |
 
 颜色主题、字型主题、自定义 CSS、头像以及其他外观细节，也都在 Settings 里管理。
+
+### Config Editor
+
+打开 **Settings → Advanced → Config Editor**，或访问 `/settings/config`，
+即可在一个页面中搜索可安全地在运行时使用的设置。简单的 boolean、text、
+number 和 enum 值可以直接编辑。内容语言和时区会复用 General 设置中的受限
+选项来源，因此不会保存无效的自由输入。Boolean 和 enum 更改会立即保存；
+text 和 number 更改会在按 Enter 或离开字段时保存，按 Escape 则恢复最近一次
+保存的值。使用 **Reset to default** 会删除数据库覆盖值，恢复环境变量或内置
+默认值。在桌面设备上，重置操作会在悬停或聚焦该行时出现；在触屏设备上则
+始终可见。
+
+`SITE_NAME`、`SITE_DESCRIPTION` 和 `SITE_FOOTER` 这类站点标识或多行内容会
+链接到 General 设置中的权威控件。Config Editor 只显示安全的当前值或配置
+状态，避免重复主要表单，也不会把长文本或 Markdown 挤进单行输入框。
+
+需要预览、上传、代码编辑器或多字段流程的安全设置也可以被搜索到，并以带有
+当前值的入口打开对应的专用 Settings 页面，而不是在 Config Editor 中复制一套
+简化界面。Theme、Font Theme、Theme Mode 和页眉头像显示这类安全标量也可以在
+Config Editor 中重置；文件和自定义代码仍由原设置页的专门清理流程管理。
+GitHub Sync 和 Telegram 只显示安全的连接状态并跳转到对应集成页面；仓库
+令牌、Bot 令牌、Webhook secret 和临时同步状态仍保持隐藏。
+
+Config Editor 使用显式允许清单。部署基础设施、凭据、集成令牌、生成的资源
+元数据和临时内部状态不会出现在这里。跳转行只会暴露安全状态或显示值，不会
+显示自定义代码或存储键。
 
 ## 保留路径
 

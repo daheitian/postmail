@@ -49,6 +49,16 @@ describe("resolveConfig", () => {
     expect(config.siteName).toBe("FromEnv");
   });
 
+  it("lets an explicit empty DB value override an environment fallback", () => {
+    const config = resolveConfig(
+      makeEnv({ SITE_DESCRIPTION: "From environment" }),
+      { SITE_DESCRIPTION: "" },
+    );
+
+    expect(config.siteDescription).toBe("");
+    expect(config.siteDescriptionExplicit).toBe(false);
+  });
+
   it("resolves mainRssFeed from DB, env, and defaults", () => {
     const defaultConfig = resolveConfig(makeEnv(), {});
     expect(defaultConfig.mainRssFeed).toBe("featured");
@@ -255,6 +265,53 @@ describe("resolveConfig", () => {
     expect(config2.rssFeedLimit).toBe(50);
   });
 
+  it("resolves runtime numeric settings from DB before environment values", () => {
+    const config = resolveConfig(
+      makeEnv({
+        PAGE_SIZE: "20",
+        SEARCH_PAGE_SIZE: "25",
+        ARCHIVE_PAGE_SIZE: "30",
+        SUMMARY_MAX_PARAGRAPHS: "6",
+        SUMMARY_MAX_CHARS: "600",
+        RSS_FEED_LIMIT: "60",
+      }),
+      {
+        PAGE_SIZE: "80",
+        SUMMARY_MAX_PARAGRAPHS: "12",
+        SUMMARY_MAX_CHARS: "1200",
+        RSS_FEED_LIMIT: "120",
+      },
+    );
+
+    expect(config.pageSize).toBe(80);
+    expect(config.searchPageSize).toBe(25);
+    expect(config.archivePageSize).toBe(30);
+    expect(config.summaryMaxParagraphs).toBe(12);
+    expect(config.summaryMaxChars).toBe(1200);
+    expect(config.rssFeedLimit).toBe(120);
+  });
+
+  it("inherits runtime page size and rejects out-of-range numeric values", () => {
+    const config = resolveConfig(
+      makeEnv({
+        PAGE_SIZE: "101",
+        SEARCH_PAGE_SIZE: "0",
+        ARCHIVE_PAGE_SIZE: "1.5",
+        SUMMARY_MAX_PARAGRAPHS: "51",
+        SUMMARY_MAX_CHARS: "1501",
+        RSS_FEED_LIMIT: "201",
+      }),
+      { PAGE_SIZE: "75" },
+    );
+
+    expect(config.pageSize).toBe(75);
+    expect(config.searchPageSize).toBe(75);
+    expect(config.archivePageSize).toBe(75);
+    expect(config.summaryMaxParagraphs).toBe(5);
+    expect(config.summaryMaxChars).toBe(500);
+    expect(config.rssFeedLimit).toBe(50);
+  });
+
   it("resolves summary limits without the full app config", () => {
     expect(
       resolveSummaryConfig(
@@ -273,6 +330,13 @@ describe("resolveConfig", () => {
         }),
       ),
     ).toEqual({ maxParagraphs: 5, maxChars: 500 });
+
+    expect(
+      resolveSummaryConfig(makeEnv({ SUMMARY_MAX_CHARS: "240" }), {
+        SUMMARY_MAX_PARAGRAPHS: "8",
+        SUMMARY_MAX_CHARS: "900",
+      }),
+    ).toEqual({ maxParagraphs: 8, maxChars: 900 });
   });
 
   it("resolves fallbacks without DB values", () => {

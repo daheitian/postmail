@@ -30,6 +30,12 @@
 - When a control is only a contextual next action for a nearby field, render it
   as inline helper text plus a link/button. Avoid promoting it into a separate
   settings block unless it has independent configuration.
+- Use a directional arrow and normal same-tab navigation for links to another
+  settings page. Reserve external-link icons and forced new tabs for genuinely
+  external destinations.
+- When a secondary action is revealed on hover, keep it visible on touch
+  devices and reveal it with `:focus-within` for keyboard users; do not remove
+  it from the tab order.
 - Glossary notes are translator guidance only. Never copy glossary `note` text
   into PO `msgstr` values; compact UI labels such as compose format tabs must
   stay as short labels in every catalog.
@@ -192,6 +198,12 @@
   database, and deployment target as one identity. Environment labels such as
   `preview` may refer to different Worker and hosted stacks; a matching label
   is not proof that the command reaches the intended data.
+- On dense settings surfaces, represent each persistent state once. Keep reset
+  and save feedback contextual, and avoid stacking row cards inside a larger
+  bordered container when a divided list already provides enough structure.
+- Keep API editability separate from Config Editor presentation. A runtime-safe
+  multi-line value can remain API-editable while the UI links to its dedicated
+  textarea instead of forcing it into a generic single-line control.
 - When a new system route enters the shared root namespace, reserve its whole
   top-level prefix and resolve explicit/reserved routes before stored aliases
   or redirects. Decide legacy collisions explicitly; do not invent a backfill

@@ -81,6 +81,9 @@ import {
 } from "../lib/youtube.js";
 import { getPreviewStorageKey } from "../lib/upload.js";
 import { generateRandomId } from "../lib/nanoid.js";
+import { resolveSummaryConfig } from "../lib/resolve-config.js";
+import type { Bindings } from "../types/bindings.js";
+import type { SettingsService } from "./settings.js";
 
 /** Dependencies for operations that coordinate with other services */
 export interface PostDeleteDeps {
@@ -445,6 +448,33 @@ export interface PostService {
   rebuildBodyHtml(
     options?: RebuildBodyHtmlOptions,
   ): Promise<RebuildBodyHtmlResult>;
+}
+
+/**
+ * Rebuild body HTML using the site's current runtime summary settings.
+ *
+ * Internal maintenance routes do not run behind the normal app-config
+ * middleware, so this service-level orchestration preserves the same
+ * DB → environment → built-in resolution used by regular requests.
+ *
+ * @param services - Site-scoped post and settings services.
+ * @param env - Runtime environment bindings.
+ * @param options - Rebuild options supplied by the maintenance caller.
+ * @returns Rebuild progress and outcome counts.
+ */
+export async function rebuildPostBodyHtmlWithRuntimeSettings(
+  services: Pick<
+    { posts: PostService; settings: SettingsService },
+    "posts" | "settings"
+  >,
+  env: Bindings,
+  options: Omit<RebuildBodyHtmlOptions, "summaryConfig"> = {},
+): Promise<RebuildBodyHtmlResult> {
+  const allSettings = await services.settings.getAll();
+  return services.posts.rebuildBodyHtml({
+    ...options,
+    summaryConfig: resolveSummaryConfig(env, allSettings),
+  });
 }
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
