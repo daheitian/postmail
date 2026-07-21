@@ -85,6 +85,7 @@ The official Docker image already defaults `DATA_DIR` to `/var/lib/jant`, and Do
 | Variable                    | Default    | Description                                                     |
 | --------------------------- | ---------- | --------------------------------------------------------------- |
 | `MAIN_RSS_FEED`             | `featured` | Controls what `/feed` returns: `featured` or `latest`           |
+| `RSS_FEEDS_ENABLED`         | `true`     | Publishes the site, archive, and Collection Atom feeds          |
 | `RSS_PUBLISH_DELAY_SECONDS` | `300`      | Wait before published posts and replies enter Jant's Atom feeds |
 
 `featured` is the default on purpose. Jant assumes many posts should remain on the site without automatically becoming the default subscriber feed.
@@ -96,6 +97,22 @@ seconds and can also be changed at runtime in Config Editor. Set it to `0` to
 disable the delay. The environment variable remains the fallback after a
 runtime override is reset. Feed response caching may make the observed delay
 slightly longer than the configured minimum.
+
+Set `RSS_FEEDS_ENABLED=false` to make canonical and legacy feed URLs return
+`404` and hide built-in feed discovery and navigation. A successful response
+already in the Worker cache can remain visible for up to 60 seconds.
+
+### Public API access (optional)
+
+| Variable             | Default | Description                                                    |
+| -------------------- | ------- | -------------------------------------------------------------- |
+| `PUBLIC_API_ENABLED` | `true`  | Allows published content to be read without a session or token |
+
+When disabled, `/api/public/*` returns `404` to every caller; authenticated
+clients can use `/api/posts` instead. Collection, navigation, and search JSON
+reads return `401` to anonymous requests but remain available to browser
+sessions and Bearer API tokens. Public HTML pages, including `/search`, are
+unchanged.
 
 ### Pagination (optional)
 
@@ -408,6 +425,8 @@ These settings can be changed on Jant's Settings page after setup. Each one can 
 | `SITE_FOOTER`                | Custom footer text                               |
 | `SHOW_JANT_BRANDING_ON_HOME` | Show or hide Jant branding on the home page      |
 | `NOINDEX`                    | Ask search engines not to index the site         |
+| `PUBLIC_API_ENABLED`         | Allow JSON reads without a session or API token  |
+| `RSS_FEEDS_ENABLED`          | Publish Atom feeds and built-in feed links       |
 
 Color theme, font theme, custom CSS, avatar, and other appearance details are also managed in Settings.
 

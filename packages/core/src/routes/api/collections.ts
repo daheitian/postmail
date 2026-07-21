@@ -7,6 +7,7 @@ import { z } from "zod";
 import type { Bindings, CollectionSortOrder } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
+import { requirePublicApiAccess } from "../../middleware/public-content-access.js";
 import {
   CollectionDirectoryItemIdSchema,
   CollectionDescriptionValueSchema,
@@ -44,7 +45,7 @@ const ListCollectionsQuerySchema = z.object({
 });
 
 // List collections (includes Thread counts and directory items)
-collectionsApiRoutes.get("/", async (c) => {
+collectionsApiRoutes.get("/", requirePublicApiAccess(), async (c) => {
   const query = parseValidated(ListCollectionsQuerySchema, c.req.query());
 
   if (query.view === "compose") {
@@ -135,7 +136,7 @@ collectionsApiRoutes.delete(
 );
 
 // Get single collection
-collectionsApiRoutes.get("/:id", async (c) => {
+collectionsApiRoutes.get("/:id", requirePublicApiAccess(), async (c) => {
   const id = parseIdParam(c.req.param("id"), ID_PREFIX.collection);
   const collection = assertFound(
     await c.var.services.collections.getById(id),

@@ -199,6 +199,11 @@ msgstr "所有可用的端點與請求格式。"
 msgid "All collections are already in your navigation."
 msgstr "所有選集已經在您的導覽中。"
 
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Allow published content to be read without an API token."
+msgstr "允許不使用 API 權杖讀取已發佈內容。"
+
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Allow search engines to index my site"
@@ -1749,6 +1754,11 @@ msgstr "私有"
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "處理中..."
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Publish Atom feeds for the site, archive, and collections."
+msgstr "發佈網站、封存與選集的 Atom feeds。"
 
 #. @context: Post status badge - published
 #: src/ui/dash/StatusBadge.tsx

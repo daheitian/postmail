@@ -199,6 +199,11 @@ msgstr "all available endpoints and request formats."
 msgid "All collections are already in your navigation."
 msgstr "All collections are already in your navigation."
 
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Allow published content to be read without an API token."
+msgstr "Allow published content to be read without an API token."
+
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Allow search engines to index my site"
@@ -1749,6 +1754,11 @@ msgstr "Private"
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "Processing..."
+
+#. @context: Config Editor setting description
+#: src/ui/dash/settings/ConfigEditorContent.tsx
+msgid "Publish Atom feeds for the site, archive, and collections."
+msgstr "Publish Atom feeds for the site, archive, and collections."
 
 #. @context: Post status badge - published
 #: src/ui/dash/StatusBadge.tsx

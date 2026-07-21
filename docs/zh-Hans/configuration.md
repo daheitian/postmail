@@ -85,6 +85,7 @@ Node 和 Docker 的常用变量：
 | 变量                        | 默认值     | 说明                                                |
 | --------------------------- | ---------- | --------------------------------------------------- |
 | `MAIN_RSS_FEED`             | `featured` | 控制 `/feed` 返回 `featured` 还是 `latest`          |
+| `RSS_FEEDS_ENABLED`         | `true`     | 是否发布站点、归档和 Collection 的 Atom feeds       |
 | `RSS_PUBLISH_DELAY_SECONDS` | `300`      | 帖子及回复发布后，等待多久才进入 Jant 的 Atom feeds |
 
 `featured` 默认开启是有意为之。Jant 假设很多帖子应该留在站点上，但不一定要自动成为默认订阅 feed 的内容。
@@ -93,6 +94,21 @@ Node 和 Docker 的常用变量：
 feed 阅读器抓取前修改或撤回刚发布的内容。它接受 `0–7200` 的整数，也可以在
 Config Editor 中实时修改；设为 `0` 可关闭延迟。重置运行时覆盖值后，会重新
 使用环境变量。由于 feed 响应还会被缓存，实际延迟可能比配置的最短时间略长。
+
+设置 `RSS_FEEDS_ENABLED=false` 后，所有正式和旧版 feed 地址都会返回 `404`，
+页面中的 feed 自动发现、按钮和系统 RSS 导航也会隐藏。Worker 中已经缓存的成功
+响应最多还可能保留 60 秒。
+
+### 公开 API 访问（可选）
+
+| 变量                 | 默认值 | 说明                                      |
+| -------------------- | ------ | ----------------------------------------- |
+| `PUBLIC_API_ENABLED` | `true` | 是否允许无 session 或 token 读取公开 JSON |
+
+关闭后，`/api/public/*` 会对所有调用方返回 `404`；已认证客户端可以改用
+`/api/posts`。匿名请求 Collection、导航和搜索 JSON 接口会收到 `401`，浏览器
+session 和 Bearer API token 仍可使用这些接口。包括 `/search` 在内的公开 HTML
+页面不受影响。
 
 ### 分页（可选）
 
@@ -354,25 +370,27 @@ location /_assets/ {
 
 这些设置可以在初始化完成后，通过 Jant 的 Settings 页面修改。所有设置都可以通过同名环境变量预置初始值——Settings 里改过的值优先级高于环境变量。
 
-| 设置                         | 用途                                    |
-| ---------------------------- | --------------------------------------- |
-| `SITE_NAME`                  | 站点显示名称                            |
-| `SITE_DESCRIPTION`           | Meta description 和 feed description    |
-| `SITE_LANGUAGE`              | 主要语言代码                            |
-| `DASHBOARD_LANGUAGE`         | 私有管理界面语言                        |
-| `CJK_SERIF_FONT`             | CJK 衬线字体回退                        |
-| `TIME_ZONE`                  | 显示时区，例如 `UTC` 或 `Asia/Shanghai` |
-| `MAIN_RSS_FEED`              | 决定 `/feed` 返回什么                   |
-| `PAGE_SIZE`                  | 默认每页条目数（`1–100`）               |
-| `SEARCH_PAGE_SIZE`           | 每页搜索结果数（`1–100`）               |
-| `ARCHIVE_PAGE_SIZE`          | 每页归档帖子数（`1–100`）               |
-| `SUMMARY_MAX_PARAGRAPHS`     | 摘要段落数上限（`1–50`）                |
-| `SUMMARY_MAX_CHARS`          | 摘要字符数上限（`1–1500`）              |
-| `RSS_FEED_LIMIT`             | 每个 RSS feed 的帖子数（`1–200`）       |
-| `RSS_PUBLISH_DELAY_SECONDS`  | Feed 发布延迟秒数（`0–7200`）           |
-| `SITE_FOOTER`                | 自定义页脚文本                          |
-| `SHOW_JANT_BRANDING_ON_HOME` | 是否在首页显示 Jant 品牌标识            |
-| `NOINDEX`                    | 请求搜索引擎不要收录这个站点            |
+| 设置                         | 用途                                      |
+| ---------------------------- | ----------------------------------------- |
+| `SITE_NAME`                  | 站点显示名称                              |
+| `SITE_DESCRIPTION`           | Meta description 和 feed description      |
+| `SITE_LANGUAGE`              | 主要语言代码                              |
+| `DASHBOARD_LANGUAGE`         | 私有管理界面语言                          |
+| `CJK_SERIF_FONT`             | CJK 衬线字体回退                          |
+| `TIME_ZONE`                  | 显示时区，例如 `UTC` 或 `Asia/Shanghai`   |
+| `MAIN_RSS_FEED`              | 决定 `/feed` 返回什么                     |
+| `PAGE_SIZE`                  | 默认每页条目数（`1–100`）                 |
+| `SEARCH_PAGE_SIZE`           | 每页搜索结果数（`1–100`）                 |
+| `ARCHIVE_PAGE_SIZE`          | 每页归档帖子数（`1–100`）                 |
+| `SUMMARY_MAX_PARAGRAPHS`     | 摘要段落数上限（`1–50`）                  |
+| `SUMMARY_MAX_CHARS`          | 摘要字符数上限（`1–1500`）                |
+| `RSS_FEED_LIMIT`             | 每个 RSS feed 的帖子数（`1–200`）         |
+| `RSS_PUBLISH_DELAY_SECONDS`  | Feed 发布延迟秒数（`0–7200`）             |
+| `SITE_FOOTER`                | 自定义页脚文本                            |
+| `SHOW_JANT_BRANDING_ON_HOME` | 是否在首页显示 Jant 品牌标识              |
+| `NOINDEX`                    | 请求搜索引擎不要收录这个站点              |
+| `PUBLIC_API_ENABLED`         | 是否允许无 session 或 API token 读取 JSON |
+| `RSS_FEEDS_ENABLED`          | 是否发布 Atom feeds 和内置 feed 入口      |
 
 颜色主题、字型主题、自定义 CSS、头像以及其他外观细节，也都在 Settings 里管理。
 

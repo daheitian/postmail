@@ -30,6 +30,8 @@ describe("editable settings registry", () => {
       "SITE_FOOTER",
       "SHOW_JANT_BRANDING_ON_HOME",
       "NOINDEX",
+      "PUBLIC_API_ENABLED",
+      "RSS_FEEDS_ENABLED",
     ]);
     expect(editableSettingKeys).not.toContain("AUTH_SECRET");
     expect(editableSettingKeys).not.toContain("GITHUB_SYNC_TOKEN");

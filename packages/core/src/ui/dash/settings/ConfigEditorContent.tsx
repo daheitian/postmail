@@ -280,6 +280,22 @@ export function ConfigEditorContent({
         }),
       ),
     },
+    PUBLIC_API_ENABLED: {
+      description: i18n._(
+        msg({
+          message: "Allow published content to be read without an API token.",
+          comment: "@context: Config Editor setting description",
+        }),
+      ),
+    },
+    RSS_FEEDS_ENABLED: {
+      description: i18n._(
+        msg({
+          message: "Publish Atom feeds for the site, archive, and collections.",
+          comment: "@context: Config Editor setting description",
+        }),
+      ),
+    },
     GITHUB_SYNC_ENABLED: {
       description: i18n._(
         msg({

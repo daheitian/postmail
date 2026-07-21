@@ -28,6 +28,8 @@ describe("resolveConfig", () => {
     expect(config.timeZone).toBe("UTC");
     expect(config.showJantBrandingOnHome).toBe(false);
     expect(config.noindex).toBe(false);
+    expect(config.publicApiEnabled).toBe(true);
+    expect(config.rssFeedsEnabled).toBe(true);
     expect(config.demoMode).toBe(false);
     expect(config.pageSize).toBe(50);
     expect(config.searchPageSize).toBe(50);
@@ -207,11 +209,15 @@ describe("resolveConfig", () => {
   it("resolves boolean fields correctly", () => {
     const config = resolveConfig(makeEnv(), {
       NOINDEX: "true",
+      PUBLIC_API_ENABLED: "false",
+      RSS_FEEDS_ENABLED: "false",
       SHOW_HEADER_AVATAR: "true",
       SHOW_JANT_BRANDING_ON_HOME: "true",
     });
 
     expect(config.noindex).toBe(true);
+    expect(config.publicApiEnabled).toBe(false);
+    expect(config.rssFeedsEnabled).toBe(false);
     expect(config.showHeaderAvatar).toBe(true);
     expect(config.showJantBrandingOnHome).toBe(true);
   });

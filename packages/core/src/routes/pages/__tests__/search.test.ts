@@ -3,6 +3,19 @@ import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { searchRoutes } from "../search.js";
 
 describe("Search Page Routes", () => {
+  it("keeps public HTML search available when anonymous JSON APIs are off", async () => {
+    const { app, services } = createTestApp({
+      authenticated: false,
+      fts: true,
+    });
+    await services.settings.set("PUBLIC_API_ENABLED", "false");
+    app.route("/search", searchRoutes);
+
+    const response = await app.request("/search?q=marker");
+
+    expect(response.status).toBe(200);
+  });
+
   it("hides visible Thread collection tags on a matching child post", async () => {
     const { app, services } = createTestApp({ fts: true });
     app.route("/search", searchRoutes);

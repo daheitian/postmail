@@ -420,6 +420,18 @@ export const CONFIG_FIELDS = {
     envKeys: ["NOINDEX"],
     editor: { type: "boolean" },
   },
+  PUBLIC_API_ENABLED: {
+    defaultValue: "true",
+    envOnly: false,
+    envKeys: ["PUBLIC_API_ENABLED"],
+    editor: { type: "boolean" },
+  },
+  RSS_FEEDS_ENABLED: {
+    defaultValue: "true",
+    envOnly: false,
+    envKeys: ["RSS_FEEDS_ENABLED"],
+    editor: { type: "boolean" },
+  },
   DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT: {
     defaultValue: "",
     envOnly: false,
@@ -686,6 +698,10 @@ export interface AppConfig {
   siteFooter: string;
   showJantBrandingOnHome: boolean;
   noindex: boolean;
+  /** Whether published content can be read from JSON APIs without authentication. */
+  publicApiEnabled: boolean;
+  /** Whether the site publishes its Atom feed endpoints. */
+  rssFeedsEnabled: boolean;
 
   // Infrastructure (ENV only)
   siteUrl: string;
