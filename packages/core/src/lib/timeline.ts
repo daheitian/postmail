@@ -35,6 +35,8 @@ interface CuratedThreadSource {
 
 interface CuratedThreadDisplayOptions {
   collectionPinnedThreadIds?: ReadonlySet<string>;
+  /** Visually focus the newest Post when the Thread itself is the selection. */
+  highlightLatestPost?: boolean;
   showContextRatings: boolean;
 }
 
@@ -250,7 +252,10 @@ async function buildCuratedThreadItems(
           previousPosition === undefined
             ? renderedPost.position
             : renderedPost.position - previousPosition - 1,
-        highlighted: thread.highlightedPostIds.has(renderedPost.view.id),
+        highlighted:
+          thread.highlightedPostIds.has(renderedPost.view.id) ||
+          (display.highlightLatestPost === true &&
+            renderedPost.view.id === lastPostId),
       });
 
       return items;
@@ -493,6 +498,7 @@ export async function assembleCollectionTimeline(
     curatedThreadsByRootId,
     {
       collectionPinnedThreadIds: pinnedThreadIds,
+      highlightLatestPost: true,
       showContextRatings: true,
     },
   );

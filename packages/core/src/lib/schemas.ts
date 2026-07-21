@@ -566,6 +566,12 @@ export const CreateNavItemSchema = z.discriminatedUnion("type", [
     label: sanitizeText(100).pipe(z.string().min(1)).optional(),
     placement: z.enum(["header", "more"]).optional(),
   }),
+  z.object({
+    type: z.literal("page"),
+    postId: PostIdSchema,
+    label: sanitizeText(100).pipe(z.string().min(1)).optional(),
+    placement: z.enum(["header", "more"]).optional(),
+  }),
 ]);
 
 /**

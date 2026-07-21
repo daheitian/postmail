@@ -104,6 +104,14 @@ function parseConfigInt(
     : fallback;
 }
 
+function parseNonNegativeConfigInt(value: string, fallback: number): number {
+  const normalized = value.trim();
+  if (!/^\d+$/.test(normalized)) return fallback;
+
+  const parsed = Number(normalized);
+  return Number.isSafeInteger(parsed) ? parsed : fallback;
+}
+
 /**
  * Resolve the runtime limits used for automatic post summaries.
  *
@@ -264,7 +272,7 @@ export function resolveConfig(
     // Slug (ENV only)
     slugIdLength: parseInt(getEnvString(env, "SLUG_ID_LENGTH") ?? "5", 10) || 5,
 
-    // Pagination/Feed (DB > ENV > Default)
+    // Pagination/feed (sizes and limit: DB > ENV > Default; delay: ENV > Default)
     pageSize,
     searchPageSize,
     archivePageSize,
@@ -272,6 +280,10 @@ export function resolveConfig(
       "RSS_FEED_LIMIT",
       resolve("RSS_FEED_LIMIT", allSettings, env),
       50,
+    ),
+    rssPublishDelaySeconds: parseNonNegativeConfigInt(
+      resolve("RSS_PUBLISH_DELAY_SECONDS", allSettings, env),
+      300,
     ),
 
     // Demo (ENV only)

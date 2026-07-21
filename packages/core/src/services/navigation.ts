@@ -5,7 +5,7 @@
  * with fractional indexing for efficient reordering.
  */
 
-import { and, eq, asc, sql, inArray } from "drizzle-orm";
+import { and, eq, asc, desc, isNull, sql, inArray } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
 import type { Database } from "../db/index.js";
 import {
@@ -30,6 +30,7 @@ import type {
   UpdateNavItem,
   SystemNavKey,
   SuggestedNavLink,
+  NavigationPageCandidate,
 } from "../types.js";
 import { SYSTEM_NAV_KEYS } from "../types.js";
 
@@ -49,6 +50,10 @@ import { isUniqueConstraintError } from "../db/dialect.js";
 
 export interface NavItemService {
   list(): Promise<NavItem[]>;
+  listPageCandidates(options?: {
+    query?: string;
+    limit?: number;
+  }): Promise<NavigationPageCandidate[]>;
   getById(id: string): Promise<NavItem | null>;
   create(data: CreateNavItem): Promise<NavItem>;
   ensureSystemDefaults(
@@ -91,6 +96,7 @@ export function createNavItemService(
       type: row.type as NavItemType,
       systemKey: (row.systemKey as SystemNavKey | null) ?? undefined,
       collectionId: row.collectionId ?? undefined,
+      postId: row.postId ?? undefined,
       label: row.label,
       url: row.url,
       placement: (row.placement ?? "header") as NavItemPlacement,
@@ -100,7 +106,7 @@ export function createNavItemService(
     };
   }
 
-  function normalizeCreateData(data: CreateNavItem) {
+  async function normalizeCreateData(data: CreateNavItem) {
     if (data.type === "system") {
       const config = SYSTEM_NAV_KEYS[data.systemKey];
       if (!config) {
@@ -111,6 +117,7 @@ export function createNavItemService(
         type: data.type,
         systemKey: data.systemKey,
         collectionId: null,
+        postId: null,
         label: "",
         url: config.url,
         placement: data.placement ?? config.defaultPlacement,
@@ -123,8 +130,55 @@ export function createNavItemService(
         type: data.type,
         systemKey: null,
         collectionId: data.collectionId,
+        postId: null,
         label: data.label,
         url: data.url,
+        placement: data.placement ?? "header",
+        position: data.position,
+      };
+    }
+
+    if (data.type === "page") {
+      const rows = await db
+        .select({
+          title: posts.title,
+          slug: pathRegistry.path,
+        })
+        .from(posts)
+        .innerJoin(
+          pathRegistry,
+          and(
+            eq(pathRegistry.siteId, siteId),
+            eq(pathRegistry.postId, posts.id),
+            eq(pathRegistry.kind, "slug"),
+          ),
+        )
+        .where(
+          and(
+            eq(posts.siteId, siteId),
+            eq(posts.id, data.postId),
+            eq(posts.format, "note"),
+            eq(posts.status, "published"),
+            sql`${posts.visibility} != 'private'`,
+            isNull(posts.replyToId),
+            sql`trim(${posts.title}) != ''`,
+          ),
+        )
+        .limit(1);
+      const page = rows[0];
+      if (!page?.title) {
+        throw new ValidationError(
+          "Page must be a published, non-private titled note",
+        );
+      }
+
+      return {
+        type: data.type,
+        systemKey: null,
+        collectionId: null,
+        postId: data.postId,
+        label: (data.label?.trim() || page.title.trim()).slice(0, 100),
+        url: withLeadingSlash(page.slug),
         placement: data.placement ?? "header",
         position: data.position,
       };
@@ -134,6 +188,7 @@ export function createNavItemService(
       type: data.type,
       systemKey: null,
       collectionId: null,
+      postId: null,
       label: data.label,
       url: data.url,
       placement: data.placement ?? "header",
@@ -256,6 +311,63 @@ export function createNavItemService(
       return rows.map(toNavItem);
     },
 
+    async listPageCandidates(options = {}) {
+      const query = options.query?.trim() ?? "";
+      const limit = Math.min(Math.max(Math.trunc(options.limit ?? 20), 1), 50);
+      const escapedQuery = query.replace(/[\\%_]/g, "\\$&");
+      const conditions = [
+        eq(posts.siteId, siteId),
+        eq(posts.format, "note"),
+        eq(posts.status, "published"),
+        sql`${posts.visibility} != 'private'`,
+        isNull(posts.replyToId),
+        sql`trim(${posts.title}) != ''`,
+        isNull(navItems.id),
+      ];
+      if (query) {
+        conditions.push(
+          sql`lower(${posts.title}) LIKE lower(${`%${escapedQuery}%`}) ESCAPE '\\'`,
+        );
+      }
+
+      const rows = await db
+        .select({
+          id: posts.id,
+          title: posts.title,
+          slug: pathRegistry.path,
+          updatedAt: posts.updatedAt,
+        })
+        .from(posts)
+        .innerJoin(
+          pathRegistry,
+          and(
+            eq(pathRegistry.siteId, siteId),
+            eq(pathRegistry.postId, posts.id),
+            eq(pathRegistry.kind, "slug"),
+          ),
+        )
+        .leftJoin(
+          navItems,
+          and(eq(navItems.siteId, siteId), eq(navItems.postId, posts.id)),
+        )
+        .where(and(...conditions))
+        .orderBy(desc(posts.updatedAt), desc(posts.id))
+        .limit(limit);
+
+      return rows.flatMap((row) =>
+        row.title
+          ? [
+              {
+                id: row.id,
+                title: row.title,
+                slug: row.slug,
+                updatedAt: row.updatedAt,
+              },
+            ]
+          : [],
+      );
+    },
+
     async getById(id) {
       const result = await db
         .select()
@@ -268,7 +380,7 @@ export function createNavItemService(
     async create(data) {
       const id = createEntityId("navItem");
       const timestamp = now();
-      const normalized = normalizeCreateData(data);
+      const normalized = await normalizeCreateData(data);
 
       if (normalized.systemKey) {
         const existingSystemItem = await db
@@ -304,6 +416,23 @@ export function createNavItemService(
         }
       }
 
+      if (normalized.postId) {
+        const existingPageItem = await db
+          .select({ id: navItems.id })
+          .from(navItems)
+          .where(
+            and(
+              eq(navItems.siteId, siteId),
+              eq(navItems.postId, normalized.postId),
+            ),
+          )
+          .limit(1);
+
+        if (existingPageItem[0]) {
+          throw new ValidationError("Page already added to navigation");
+        }
+      }
+
       if (normalized.position !== undefined) {
         const result = await db
           .insert(navItems)
@@ -313,6 +442,7 @@ export function createNavItemService(
             type: normalized.type,
             systemKey: normalized.systemKey,
             collectionId: normalized.collectionId,
+            postId: normalized.postId,
             label: normalized.label,
             url: normalized.url,
             placement: normalized.placement,
@@ -336,6 +466,7 @@ export function createNavItemService(
               type: normalized.type,
               systemKey: normalized.systemKey,
               collectionId: normalized.collectionId,
+              postId: normalized.postId,
               label: normalized.label,
               url: normalized.url,
               placement: normalized.placement,
@@ -408,12 +539,18 @@ export function createNavItemService(
         .limit(1);
       if (!existing[0]) return null;
 
-      if (existing[0].type === "system" || existing[0].type === "collection") {
+      if (
+        existing[0].type === "system" ||
+        existing[0].type === "collection" ||
+        existing[0].type === "page"
+      ) {
         if (data.url !== undefined) {
           throw new ValidationError(
             existing[0].type === "system"
               ? "Built-in navigation URLs are managed automatically"
-              : "Collection navigation URLs are managed automatically",
+              : existing[0].type === "collection"
+                ? "Collection navigation URLs are managed automatically"
+                : "Page navigation URLs are managed automatically",
           );
         }
       }
@@ -528,9 +665,12 @@ export function createNavItemService(
         if (record.postId) {
           const postRows = await db
             .select({
+              id: posts.id,
+              format: posts.format,
               title: posts.title,
               status: posts.status,
               visibility: posts.visibility,
+              replyToId: posts.replyToId,
             })
             .from(posts)
             .where(and(eq(posts.siteId, siteId), eq(posts.id, record.postId)))
@@ -538,8 +678,11 @@ export function createNavItemService(
           const post = postRows[0];
           if (
             !post ||
+            post.format !== "note" ||
             post.status !== "published" ||
-            post.visibility === "private"
+            post.visibility === "private" ||
+            post.replyToId !== null ||
+            !post.title?.trim()
           ) {
             continue;
           }
@@ -549,7 +692,8 @@ export function createNavItemService(
             label: normalizeSuggestedLabel(post.title, candidate.label),
             url: path,
             targetType: "page",
-            navItemType: "link",
+            navItemType: "page",
+            postId: post.id,
           });
           continue;
         }

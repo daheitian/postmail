@@ -279,6 +279,11 @@ export const CONFIG_FIELDS = {
     envKeys: ["RSS_FEED_LIMIT"],
     editor: { type: "number", min: 1, max: 200, step: 1 },
   },
+  RSS_PUBLISH_DELAY_SECONDS: {
+    defaultValue: "300",
+    envOnly: true,
+    envKeys: ["RSS_PUBLISH_DELAY_SECONDS"],
+  },
 
   // Internal settings (DB-only, not configurable via env or settings UI)
   THEME: {
@@ -705,11 +710,13 @@ export interface AppConfig {
   /** Max characters to include in auto-extracted summary. Defaults to 500. */
   summaryMaxChars: number;
 
-  // Pagination/Feed (DB > ENV > Default, parsed to number)
+  // Pagination/feed (sizes and limit: DB > ENV > Default; delay: ENV > Default)
   pageSize: number;
   searchPageSize: number;
   archivePageSize: number;
   rssFeedLimit: number;
+  /** Seconds a published Post waits before it can appear in Atom feeds. */
+  rssPublishDelaySeconds: number;
 
   // Slug (ENV only)
   /** Length of random IDs used in auto-generated slugs. Defaults to 5. */

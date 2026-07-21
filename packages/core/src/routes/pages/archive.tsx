@@ -27,10 +27,15 @@ import type {
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { defaultFeedRenderer } from "../../lib/feed.js";
+import {
+  getFeedEntryUpdatedAt,
+  getRssPublishedBefore,
+  RSS_FEED_CACHE_CONTROL,
+} from "../../lib/feed-policy.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
-import { formatYearMonth, toISOString } from "../../lib/time.js";
+import { formatYearMonth } from "../../lib/time.js";
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import {
   createMediaContext,
@@ -617,6 +622,12 @@ async function buildArchiveFeedData(
   const collection = params.collectionSlug
     ? await services.collections.getBySlug(params.collectionSlug)
     : undefined;
+  const rssPublishedBefore = getRssPublishedBefore(
+    appConfig.rssPublishDelaySeconds,
+  );
+  const yearPublishedBefore = params.validYear
+    ? Date.UTC(params.validYear + 1, 0, 1) / 1000
+    : undefined;
 
   // Feed mirrors the unauthenticated archive page: published + non-private,
   // including Hidden-from-Latest. /archive is the canonical "all posts" view,
@@ -636,9 +647,12 @@ async function buildArchiveFeedData(
     ...(params.validYear
       ? {
           publishedAfter: Date.UTC(params.validYear, 0, 1) / 1000,
-          publishedBefore: Date.UTC(params.validYear + 1, 0, 1) / 1000,
         }
       : {}),
+    publishedBefore:
+      yearPublishedBefore === undefined
+        ? rssPublishedBefore
+        : Math.min(yearPublishedBefore, rssPublishedBefore),
     limit: appConfig.rssFeedLimit,
   };
 
@@ -650,7 +664,9 @@ async function buildArchiveFeedData(
   // Batch load media, aliases, and thread replies
   const postIds = posts.map((p) => p.id);
   const [threadMap, rawMediaMap, aliasesMap] = await Promise.all([
-    services.posts.getPublishedThreads(rootIds),
+    services.posts.getPublishedThreads(rootIds, {
+      publishedBefore: rssPublishedBefore,
+    }),
     services.media.getByPostIds(postIds),
     services.paths.getPostAliases(postIds),
   ]);
@@ -704,9 +720,9 @@ async function buildArchiveFeedData(
     aliasMap,
   ).map((postView, index) => {
     const post = posts[index] as (typeof posts)[number];
+    const thread = threadMap.get(post.id);
 
     // Build thread replies
-    const thread = threadMap.get(post.id);
     const replies =
       thread && thread.length > 1
         ? toPostViews(
@@ -722,7 +738,7 @@ async function buildArchiveFeedData(
 
     return {
       ...postView,
-      feedUpdatedAt: toISOString(post.lastActivityAt),
+      feedUpdatedAt: getFeedEntryUpdatedAt(post, thread),
       threadReplies: replies,
     };
   });
@@ -750,7 +766,7 @@ archiveRoutes.get("/feed", async (c) => {
   return new Response(defaultFeedRenderer(feedData), {
     headers: {
       "Content-Type": "application/atom+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=180",
+      "Cache-Control": RSS_FEED_CACHE_CONTROL,
     },
   });
 });
