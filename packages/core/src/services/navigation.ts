@@ -21,7 +21,10 @@ import {
   stripSitePathPrefix,
   toSameSitePath,
 } from "../lib/url.js";
-import { COLLECTION_FRESHNESS_WINDOW_SECONDS } from "../types.js";
+import {
+  COLLECTION_FRESHNESS_WINDOW_SECONDS,
+  DEFAULT_NAVIGATION_PROFILE,
+} from "../types.js";
 import type {
   NavItem,
   NavItemType,
@@ -56,9 +59,12 @@ export interface NavItemService {
   }): Promise<NavigationPageCandidate[]>;
   getById(id: string): Promise<NavItem | null>;
   create(data: CreateNavItem): Promise<NavItem>;
-  ensureSystemDefaults(
-    systemKeys?: readonly SystemNavKey[],
-  ): Promise<NavItem[]>;
+  /**
+   * Add missing items from the current default profile without changing
+   * existing navigation state. Call only during provisioning or incomplete
+   * onboarding recovery.
+   */
+  materializeDefaultNavigation(): Promise<NavItem[]>;
   update(id: string, data: UpdateNavItem): Promise<NavItem | null>;
   delete(id: string): Promise<boolean>;
   move(
@@ -79,15 +85,6 @@ export function createNavItemService(
 ): NavItemService {
   const { navItems, threadCollections, posts, pathRegistry, collections } =
     databaseSchema;
-
-  const defaultSystemOrder = [
-    "latest",
-    "featured",
-    "collections",
-    "archive",
-    "rss",
-    "settings",
-  ] as const satisfies readonly SystemNavKey[];
 
   function toNavItem(row: typeof navItems.$inferSelect): NavItem {
     return {
@@ -491,7 +488,7 @@ export function createNavItemService(
       throw new Error("Failed to assign a unique nav item position");
     },
 
-    async ensureSystemDefaults(systemKeys = defaultSystemOrder) {
+    async materializeDefaultNavigation() {
       const existingRows = await db
         .select({ systemKey: navItems.systemKey })
         .from(navItems)
@@ -508,7 +505,7 @@ export function createNavItemService(
       );
 
       const created: NavItem[] = [];
-      for (const systemKey of systemKeys) {
+      for (const systemKey of DEFAULT_NAVIGATION_PROFILE.systemKeys) {
         if (existing.has(systemKey)) continue;
         try {
           created.push(

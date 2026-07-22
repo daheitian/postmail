@@ -81,6 +81,27 @@ export const SYSTEM_NAV_KEYS = {
   }
 >;
 
+export interface DefaultNavigationProfile {
+  version: number;
+  systemKeys: readonly SystemNavKey[];
+}
+
+/**
+ * Append-only default navigation profiles. A profile is materialized during
+ * initial setup/provisioning and incomplete-setup recovery. Existing rows are
+ * never removed, updated, or reordered to match a profile.
+ */
+export const DEFAULT_NAVIGATION_PROFILES = {
+  1: {
+    version: 1,
+    systemKeys: ["featured", "collections", "archive", "rss", "settings"],
+  },
+} as const satisfies Record<number, DefaultNavigationProfile>;
+
+export const DEFAULT_NAVIGATION_PROFILE_VERSION = 1 as const;
+export const DEFAULT_NAVIGATION_PROFILE =
+  DEFAULT_NAVIGATION_PROFILES[DEFAULT_NAVIGATION_PROFILE_VERSION];
+
 export const MAX_MEDIA_ATTACHMENTS = 20;
 export const MAX_THREAD_POSTS = 20;
 export const MAX_PINNED_POSTS = 3;

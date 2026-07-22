@@ -298,6 +298,43 @@ export function createSiteAdminService(
     };
   }
 
+  async function completeManagedSiteSetup(
+    targetDb: Database,
+    siteId: string,
+    input: {
+      siteName: string;
+      siteLanguage?: string | null;
+      timeZone: string;
+    },
+  ): Promise<void> {
+    const settingsService = createSettingsService(
+      targetDb,
+      siteId,
+      databaseSchema,
+      databaseDialect,
+    );
+    if (await settingsService.isOnboardingComplete()) {
+      return;
+    }
+
+    await settingsService.set(SETTINGS_KEYS.SITE_NAME, input.siteName);
+    await settingsService.updateLocaleSettings(
+      {
+        siteLanguage: input.siteLanguage?.trim()
+          ? detectLocaleFromHeader(input.siteLanguage)
+          : baseLocale,
+        cjkSerifFont: "off",
+        timeZone: input.timeZone,
+      },
+      {
+        oldLanguage: "",
+      },
+    );
+    const navItems = createNavItemService(targetDb, siteId, databaseSchema);
+    await navItems.materializeDefaultNavigation();
+    await settingsService.completeOnboarding();
+  }
+
   async function createWithDatabase(
     targetDb: Database,
     input: CreateManagedSiteInput,
@@ -323,6 +360,11 @@ export function createSiteAdminService(
             "Idempotency key was reused with a different site key or primary host.",
           );
         }
+        await completeManagedSiteSetup(targetDb, existing.site.id, {
+          siteName,
+          siteLanguage: input.siteLanguage,
+          timeZone,
+        });
         return existing;
       }
     }
@@ -387,44 +429,11 @@ export function createSiteAdminService(
       );
     }
 
-    await targetDb
-      .insert(settings)
-      .values({
-        siteId,
-        key: SETTINGS_KEYS.SITE_NAME,
-        value: siteName,
-        updatedAt: timestamp,
-      })
-      .onConflictDoUpdate({
-        target: [settings.siteId, settings.key],
-        set: {
-          value: siteName,
-          updatedAt: timestamp,
-        },
-      });
-
-    const settingsService = createSettingsService(
-      targetDb,
-      siteId,
-      databaseSchema,
-      databaseDialect,
-    );
-    await settingsService.updateLocaleSettings(
-      {
-        siteLanguage: input.siteLanguage?.trim()
-          ? detectLocaleFromHeader(input.siteLanguage)
-          : baseLocale,
-        cjkSerifFont: "off",
-        timeZone,
-      },
-      {
-        oldLanguage: "",
-      },
-    );
-    await settingsService.completeOnboarding();
-
-    const navItems = createNavItemService(targetDb, siteId, databaseSchema);
-    await navItems.ensureSystemDefaults();
+    await completeManagedSiteSetup(targetDb, siteId, {
+      siteName,
+      siteLanguage: input.siteLanguage,
+      timeZone,
+    });
 
     return {
       site: toSite(siteRow),

@@ -15,6 +15,7 @@ import {
   check,
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
+import { SYSTEM_NAV_KEY_VALUES } from "../types/constants.js";
 
 const SITE_STATUSES = ["active", "suspended"] as const;
 const SITE_DOMAIN_KINDS = ["primary", "alias"] as const;
@@ -25,14 +26,6 @@ const VISIBILITIES = ["public", "latest_hidden", "private"] as const;
 const COLLECTION_SORT_ORDERS = ["newest", "oldest", "rating_desc"] as const;
 const NAV_ITEM_TYPES = ["link", "system", "collection", "page"] as const;
 const NAV_ITEM_PLACEMENTS = ["header", "more"] as const;
-const SYSTEM_NAV_KEYS = [
-  "latest",
-  "featured",
-  "collections",
-  "archive",
-  "rss",
-  "settings",
-] as const;
 const UPLOAD_SESSION_STATES = [
   "pending",
   "uploaded",
@@ -623,7 +616,7 @@ export const navItems = sqliteTable(
       .notNull()
       .default("link"),
     systemKey: text("system_key", {
-      enum: SYSTEM_NAV_KEYS,
+      enum: SYSTEM_NAV_KEY_VALUES,
     }),
     collectionId: text("collection_id").references(() => collections.id, {
       onDelete: "cascade",

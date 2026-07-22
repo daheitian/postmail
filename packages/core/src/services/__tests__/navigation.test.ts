@@ -296,13 +296,11 @@ describe("NavItemService", () => {
     });
   });
 
-  describe("ensureSystemDefaults", () => {
-    it("creates the six default system items once", async () => {
-      const created = await navItemService.ensureSystemDefaults();
+  describe("materializeDefaultNavigation", () => {
+    it("creates the five-item default profile without Latest", async () => {
+      const created = await navItemService.materializeDefaultNavigation();
 
-      expect(created).toHaveLength(6);
       expect(created.map((item) => item.systemKey)).toEqual([
-        "latest",
         "featured",
         "collections",
         "archive",
@@ -313,39 +311,86 @@ describe("NavItemService", () => {
         "header",
         "header",
         "header",
-        "header",
         "more",
         "more",
       ]);
+      expect(created.map((item) => item.systemKey)).not.toContain("latest");
     });
 
-    it("creates only missing default system items", async () => {
-      await navItemService.create({
+    it("preserves an existing optional Latest item", async () => {
+      const latest = await navItemService.create({
         type: "system",
-        systemKey: "archive",
+        systemKey: "latest",
+      });
+      const customizedLatest = await navItemService.update(latest.id, {
+        label: "Recent writing",
+        placement: "more",
+        position: "a3",
       });
 
-      const created = await navItemService.ensureSystemDefaults();
+      const created = await navItemService.materializeDefaultNavigation();
       const items = await navItemService.list();
 
       expect(created.map((item) => item.systemKey)).toEqual([
-        "latest",
+        "featured",
+        "collections",
+        "archive",
+        "rss",
+        "settings",
+      ]);
+      expect(items.find((item) => item.id === latest.id)).toEqual(
+        customizedLatest,
+      );
+      expect(items.filter((item) => item.type === "system")).toHaveLength(6);
+    });
+
+    it("only appends missing profile items during recovery", async () => {
+      const archive = await navItemService.create({
+        type: "system",
+        systemKey: "archive",
+      });
+      const customizedArchive = await navItemService.update(archive.id, {
+        label: "All posts",
+        placement: "more",
+        position: "a2",
+      });
+      const customLink = await navItemService.create({
+        type: "link",
+        label: "Elsewhere",
+        url: "https://example.com",
+        position: "a3",
+      });
+
+      const created = await navItemService.materializeDefaultNavigation();
+      const items = await navItemService.list();
+
+      expect(created.map((item) => item.systemKey)).toEqual([
         "featured",
         "collections",
         "rss",
         "settings",
       ]);
-      expect(items.filter((item) => item.type === "system")).toHaveLength(6);
+      expect(items.slice(0, 2).map((item) => item.id)).toEqual([
+        archive.id,
+        customLink.id,
+      ]);
+      expect(items.find((item) => item.id === archive.id)).toEqual(
+        customizedArchive,
+      );
+      expect(items.find((item) => item.id === customLink.id)).toEqual(
+        customLink,
+      );
+      expect(items.map((item) => item.systemKey)).not.toContain("latest");
     });
 
-    it("is idempotent when defaults already exist", async () => {
-      await navItemService.ensureSystemDefaults();
+    it("is idempotent when the current profile already exists", async () => {
+      await navItemService.materializeDefaultNavigation();
 
-      const created = await navItemService.ensureSystemDefaults();
+      const created = await navItemService.materializeDefaultNavigation();
       const items = await navItemService.list();
 
       expect(created).toEqual([]);
-      expect(items.filter((item) => item.type === "system")).toHaveLength(6);
+      expect(items.filter((item) => item.type === "system")).toHaveLength(5);
     });
   });
 

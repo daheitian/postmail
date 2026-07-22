@@ -82,7 +82,14 @@ import PARTIAL_FEED_POST_CONTENT from "./export-theme/layouts/partials/feed-post
 
 import type { StorageDriver } from "../lib/storage.js";
 import { base64ToUint8Array } from "../lib/favicon.js";
-import type { Post, Collection, Media, NavItem } from "../types.js";
+import {
+  SYSTEM_NAV_KEYS,
+  type Collection,
+  type Media,
+  type NavItem,
+  type Post,
+  type SystemNavKey,
+} from "../types.js";
 
 /** A file entry in the exported Hugo site. */
 export interface ExportFile {
@@ -1351,27 +1358,11 @@ function buildExportedCollectionMetrics(
 // Nav item resolution
 // ---------------------------------------------------------------------------
 
-/**
- * System nav items on the main site store an empty `label` in the DB and
- * resolve their display text at render time through i18n
- * (`getNavItemDisplayLabel`). The Hugo export has no i18n runtime, so fall
- * back to these English defaults when serializing to `data/jant.toml`.
- * Users can still override by setting a custom label on the nav item.
- */
-const SYSTEM_NAV_FALLBACK_LABELS: Record<string, string> = {
-  latest: "Latest",
-  featured: "Featured",
-  collections: "Collections",
-  archive: "Archive",
-  rss: "RSS",
-  settings: "Settings",
-};
-
 function resolveNavItemLabel(item: SiteConfig["navItems"][number]): string {
   if (item.label) return item.label;
   if (item.systemKey) {
-    const fallback = SYSTEM_NAV_FALLBACK_LABELS[item.systemKey];
-    if (fallback) return fallback;
+    const definition = SYSTEM_NAV_KEYS[item.systemKey as SystemNavKey];
+    if (definition) return definition.defaultLabel;
   }
   return item.label;
 }

@@ -1196,6 +1196,11 @@ msgstr "Link added."
 msgid "Link removed."
 msgstr "Link removed."
 
+#. @context: Description for the featured system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to posts you've marked as featured."
+msgstr "Link to posts you've marked as featured."
+
 #. @context: Description for the archive system navigation toggle
 #: src/ui/shared/navigation-labels.ts
 msgid "Link to the post archive"
@@ -1206,15 +1211,10 @@ msgstr "Link to the post archive"
 msgid "Link to your collections page"
 msgstr "Link to your collections page"
 
-#. @context: Description for the featured system navigation toggle
-#: src/ui/shared/navigation-labels.ts
-msgid "Link to your featured posts. If it comes before Latest, the homepage opens here."
-msgstr "Link to your featured posts. If it comes before Latest, the homepage opens here."
-
 #. @context: Description for the latest system navigation toggle
 #: src/ui/shared/navigation-labels.ts
-msgid "Link to your latest posts. If it comes before Featured, the homepage opens here."
-msgstr "Link to your latest posts. If it comes before Featured, the homepage opens here."
+msgid "Link to your latest posts. Your homepage shows this feed."
+msgstr "Link to your latest posts. Your homepage shows this feed."
 
 #. @context: Toast after saving a custom collections link
 #: src/ui/shared/collection-management-labels.ts
