@@ -112,5 +112,21 @@ export default defineConfig({
     emptyOutDir: false,
   },
 
-  plugins: [swcPlugin()],
+  plugins: [
+    // ── 在 esbuild/SWC 之前拦截 ?raw 导入，避免 esbuild 尝试解析 .html 等文件 ──
+    {
+      name: "jant-raw-loader",
+      enforce: "pre",
+      resolveId(id) {
+        if (id.endsWith("?raw")) return id;
+      },
+      load(id) {
+        if (id.endsWith("?raw")) {
+          const filePath = resolve(dir, id.slice(0, -4));
+          return `export default ${JSON.stringify(readFileSync(filePath, "utf-8"))}`;
+        }
+      },
+    },
+    swcPlugin(),
+  ],
 });
