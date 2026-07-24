@@ -112,17 +112,19 @@ export default defineConfig({
     emptyOutDir: false,
   },
 
-    plugins: [
-    // Intercept ?raw imports before esbuild/SWC to avoid
-    // "No loader is configured for .html files" errors.
+     plugins: [
     {
       name: "jant-raw-loader",
       enforce: "pre",
-      resolveId(source, importer) {
+      async resolveId(source, importer, options) {
         if (source.endsWith("?raw")) {
-          const filePath = source.slice(0, -4);
-          const importerDir = importer ? dirname(importer) : dir;
-          return resolve(importerDir, filePath) + "?raw";
+          const cleanSource = source.slice(0, -4);
+          const resolved = await this.resolve(cleanSource, importer, {
+            skipSelf: true,
+            ...options,
+          });
+          if (resolved) return resolved.id + "?raw";
+          return null;
         }
       },
       load(id) {
@@ -133,4 +135,6 @@ export default defineConfig({
       },
     },
     swcPlugin(),
+  ],
+
   ],
