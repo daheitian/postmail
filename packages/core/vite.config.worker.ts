@@ -7,7 +7,7 @@
  * Internal imports (including @jant/core/i18n from SWC Lingui rewrites) are
  * resolved via package.json exports and bundled inline.
  */
-
+import { resolve, dirname } from "path";
 import { defineConfig } from "vite";
 import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
@@ -112,21 +112,25 @@ export default defineConfig({
     emptyOutDir: false,
   },
 
-  plugins: [
-    // ── 在 esbuild/SWC 之前拦截 ?raw 导入，避免 esbuild 尝试解析 .html 等文件 ──
+    plugins: [
+    // Intercept ?raw imports before esbuild/SWC to avoid
+    // "No loader is configured for .html files" errors.
     {
       name: "jant-raw-loader",
       enforce: "pre",
-      resolveId(id) {
-        if (id.endsWith("?raw")) return id;
+      resolveId(source, importer) {
+        if (source.endsWith("?raw")) {
+          const filePath = source.slice(0, -4);
+          const importerDir = importer ? dirname(importer) : dir;
+          return resolve(importerDir, filePath) + "?raw";
+        }
       },
       load(id) {
         if (id.endsWith("?raw")) {
-          const filePath = resolve(dir, id.slice(0, -4));
+          const filePath = id.slice(0, -4);
           return `export default ${JSON.stringify(readFileSync(filePath, "utf-8"))}`;
         }
       },
     },
     swcPlugin(),
   ],
-});
